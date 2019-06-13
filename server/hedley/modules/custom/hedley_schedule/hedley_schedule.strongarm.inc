@@ -20,6 +20,13 @@ function hedley_schedule_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_node_pmtct_participant';
+  $strongarm->value = '1';
+  $export['auto_entitylabel_node_pmtct_participant'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_node_session';
   $strongarm->value = '1';
   $export['auto_entitylabel_node_session'] = $strongarm;
@@ -34,6 +41,13 @@ function hedley_schedule_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_pattern_node_pmtct_participant';
+  $strongarm->value = '[node:field_clinic] - [node:field_person] - [node:field_adult]';
+  $export['auto_entitylabel_pattern_node_pmtct_participant'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_pattern_node_session';
   $strongarm->value = '[node:content-type] - [node:field-clinic:title] - [node:field-scheduled-date:value:custom:Y-m-d]';
   $export['auto_entitylabel_pattern_node_session'] = $strongarm;
@@ -44,6 +58,13 @@ function hedley_schedule_strongarm() {
   $strongarm->name = 'auto_entitylabel_php_node_counseling_topic';
   $strongarm->value = 0;
   $export['auto_entitylabel_php_node_counseling_topic'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_php_node_pmtct_participant';
+  $strongarm->value = 0;
+  $export['auto_entitylabel_php_node_pmtct_participant'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -123,19 +144,19 @@ function hedley_schedule_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'field_bundle_settings_node__health_center';
+  $strongarm->name = 'field_bundle_settings_node__pmtct_participant';
   $strongarm->value = array(
     'view_modes' => array(),
     'extra_fields' => array(
       'form' => array(
         'title' => array(
-          'weight' => '-5',
+          'weight' => '0',
         ),
       ),
       'display' => array(),
     ),
   );
-  $export['field_bundle_settings_node__health_center'] = $strongarm;
+  $export['field_bundle_settings_node__pmtct_participant'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -153,15 +174,6 @@ function hedley_schedule_strongarm() {
     ),
   );
   $export['field_bundle_settings_node__session'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'menu_options_catchment_area';
-  $strongarm->value = array(
-    0 => 'main-menu',
-  );
-  $export['menu_options_catchment_area'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -202,11 +214,11 @@ function hedley_schedule_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_options_health_center';
+  $strongarm->name = 'menu_options_pmtct_participant';
   $strongarm->value = array(
     0 => 'main-menu',
   );
-  $export['menu_options_health_center'] = $strongarm;
+  $export['menu_options_pmtct_participant'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -216,13 +228,6 @@ function hedley_schedule_strongarm() {
     0 => 'main-menu',
   );
   $export['menu_options_session'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'menu_parent_catchment_area';
-  $strongarm->value = 'main-menu:0';
-  $export['menu_parent_catchment_area'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -255,9 +260,9 @@ function hedley_schedule_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_parent_health_center';
+  $strongarm->name = 'menu_parent_pmtct_participant';
   $strongarm->value = 'main-menu:0';
-  $export['menu_parent_health_center'] = $strongarm;
+  $export['menu_parent_pmtct_participant'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -265,16 +270,6 @@ function hedley_schedule_strongarm() {
   $strongarm->name = 'menu_parent_session';
   $strongarm->value = 'main-menu:0';
   $export['menu_parent_session'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'node_options_catchment_area';
-  $strongarm->value = array(
-    0 => 'status',
-    1 => 'promote',
-  );
-  $export['node_options_catchment_area'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -319,12 +314,12 @@ function hedley_schedule_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_options_health_center';
+  $strongarm->name = 'node_options_pmtct_participant';
   $strongarm->value = array(
     0 => 'status',
     1 => 'promote',
   );
-  $export['node_options_health_center'] = $strongarm;
+  $export['node_options_pmtct_participant'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -335,13 +330,6 @@ function hedley_schedule_strongarm() {
     1 => 'promote',
   );
   $export['node_options_session'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'node_preview_catchment_area';
-  $strongarm->value = '1';
-  $export['node_preview_catchment_area'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -374,9 +362,9 @@ function hedley_schedule_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_preview_health_center';
+  $strongarm->name = 'node_preview_pmtct_participant';
   $strongarm->value = '1';
-  $export['node_preview_health_center'] = $strongarm;
+  $export['node_preview_pmtct_participant'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -384,13 +372,6 @@ function hedley_schedule_strongarm() {
   $strongarm->name = 'node_preview_session';
   $strongarm->value = '1';
   $export['node_preview_session'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'node_submitted_catchment_area';
-  $strongarm->value = 1;
-  $export['node_submitted_catchment_area'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -423,9 +404,9 @@ function hedley_schedule_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_submitted_health_center';
+  $strongarm->name = 'node_submitted_pmtct_participant';
   $strongarm->value = 1;
-  $export['node_submitted_health_center'] = $strongarm;
+  $export['node_submitted_pmtct_participant'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */

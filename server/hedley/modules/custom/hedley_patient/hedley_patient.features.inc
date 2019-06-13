@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * hedley_patient.features.inc
@@ -11,30 +12,6 @@ function hedley_patient_ctools_plugin_api($module = NULL, $api = NULL) {
   if ($module == "strongarm" && $api == "strongarm") {
     return array("version" => "1");
   }
-}
-
-/**
- * Implements hook_image_default_styles().
- */
-function hedley_patient_image_default_styles() {
-  $styles = array();
-
-  // Exported image style: patient-photo.
-  $styles['patient-photo'] = array(
-    'label' => 'Patient photo',
-    'effects' => array(
-      2 => array(
-        'name' => 'image_scale_and_crop',
-        'data' => array(
-          'width' => 200,
-          'height' => 200,
-        ),
-        'weight' => 1,
-      ),
-    ),
-  );
-
-  return $styles;
 }
 
 /**

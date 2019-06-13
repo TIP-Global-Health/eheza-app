@@ -7,12 +7,10 @@ module Activity.Utils exposing
     , getActivityCountForMother
     , getActivityIcon
     , getAllActivities
-    , getCheckedIn
+    , getAllChildActivities
+    , getAllMotherActivities
     , getParticipantCountForActivity
     , motherIsCheckedIn
-    , setCheckedIn
-    , summarizeByActivity
-    , summarizeByParticipant
     , summarizeChildActivity
     , summarizeChildParticipant
     , summarizeMotherActivity
@@ -30,21 +28,23 @@ expected (and not completed).
 -}
 
 import Activity.Model exposing (..)
-import Backend.Child.Model exposing (Child)
+import AllDict
+import AllDictList
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (applyEdit, currentValue, currentValues, mapMeasurementData)
-import Backend.Mother.Model exposing (ChildrenRelationType(..), Mother)
+import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
+import Backend.Person.Model exposing (Person)
+import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (..)
-import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMyMother, mapMotherEdits)
-import EveryDict exposing (EveryDict)
-import EveryDictList exposing (EveryDictList)
+import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
+import EveryDict
 import EverySet
 import Gizra.NominalDate exposing (diffDays)
-import List.Extra
+import Lazy exposing (force)
 import Maybe.Extra exposing (isJust, isNothing)
+import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 {-| Used for URL etc., not for display in the normal UI (since we'd translate
@@ -182,7 +182,7 @@ getAllMotherActivities =
 Note that we don't consider whether the child is checked in here -- just
 whether we would expect to perform this action if checked in.
 -}
-expectChildActivity : EditableSession -> ChildId -> ChildActivity -> Bool
+expectChildActivity : OfflineSession -> PersonId -> ChildActivity -> Bool
 expectChildActivity session childId activity =
     case activity of
         {- Counseling ->
@@ -205,7 +205,7 @@ counseling activity is expected, and `Just CounselingTiming` if one is
 expected.
 
 -}
-expectCounselingActivity : EditableSession -> ChildId -> Maybe CounselingTiming
+expectCounselingActivity : EditableSession -> PersonId -> Maybe CounselingTiming
 expectCounselingActivity session childId =
     let
         -- First, we check our current value. If we have a counseling session
@@ -218,25 +218,28 @@ expectCounselingActivity session childId =
         -- that one, and not switch to something else.
         cachedTiming =
             getChildMeasurementData childId session
-                |> mapMeasurementData .counselingSession .counseling
+                |> force
+                |> mapMeasurementData .counselingSession
                 |> currentValue
                 |> Maybe.map (.value >> Tuple.first)
 
         -- All the counseling session records from the past
         historical =
             getChildHistoricalMeasurements childId session.offlineSession
+                |> force
                 |> .counselingSessions
 
         -- Have we ever completed a counseling session of the specified type?
         completed timing =
-            List.any
-                (\( _, counseling ) -> Tuple.first counseling.value == timing)
+            AllDictList.any
+                (\_ counseling -> Tuple.first counseling.value == timing)
                 historical
 
         -- How long ago did we complete a session of the specified type?
         completedDaysAgo timing =
             historical
-                |> List.Extra.find (\( _, counseling ) -> Tuple.first counseling.value == timing)
+                |> AllDictList.filter (\_ counseling -> Tuple.first counseling.value == timing)
+                |> AllDictList.head
                 |> Maybe.map (\( _, counseling ) -> diffDays counseling.dateMeasured session.offlineSession.session.scheduledDate.start)
 
         -- How old will the child be as of the scheduled date of the session?
@@ -247,7 +250,12 @@ expectCounselingActivity session childId =
         -- contain the child, so it should be safe to default the age to 0.
         age =
             getChild childId session.offlineSession
-                |> Maybe.map (\child -> diffDays child.birthDate session.offlineSession.session.scheduledDate.start)
+                |> Maybe.andThen
+                    (\child ->
+                        Maybe.map
+                            (\birthDate -> diffDays birthDate session.offlineSession.session.scheduledDate.start)
+                            child.birthDate
+                    )
                 |> Maybe.withDefault 0
 
         -- We don't necessarily know when the next session will be scheduled,
@@ -391,41 +399,43 @@ expectCounselingActivity session childId =
 Note that we don't consider whether the mother is checked in here -- just
 whether we would expect to perform this action if checked in.
 -}
-expectMotherActivity : EditableSession -> MotherId -> MotherActivity -> Bool
+expectMotherActivity : OfflineSession -> PersonId -> MotherActivity -> Bool
 expectMotherActivity session motherId activity =
-    getMother motherId session.offlineSession
-        |> Maybe.map
-            (\mother ->
+    AllDict.get motherId session.participants.byMotherId
+        |> Maybe.withDefault []
+        |> List.any
+            (\participant ->
                 case activity of
                     FamilyPlanning ->
-                        case mother.relation of
-                            MotherRelation ->
+                        case participant.adultActivities of
+                            MotherActivities ->
                                 True
 
-                            CaregiverRelation ->
+                            CaregiverActivities ->
                                 False
              {- ParticipantConsent ->
                 expectParticipantConsent session motherId
-                    |> EveryDictList.isEmpty
+                    |> AllDictList.isEmpty
                     |> not
              -}
             )
-        |> Maybe.withDefault False
 
 
 {-| Which participant forms would we expect this mother to consent to in this session?
 -}
-expectParticipantConsent : EditableSession -> MotherId -> EveryDictList ParticipantFormId ParticipantForm
+expectParticipantConsent : EditableSession -> PersonId -> EntityUuidDictList ParticipantFormId ParticipantForm
 expectParticipantConsent session motherId =
     let
         previouslyConsented =
             getMotherHistoricalMeasurements motherId session.offlineSession
+                |> force
                 |> .consents
-                |> List.map (Tuple.second >> .value >> .formId)
+                |> AllDictList.map (\_ consent -> consent.value.formId)
+                |> AllDictList.values
                 |> EverySet.fromList
     in
     session.offlineSession.allParticipantForms
-        |> EveryDictList.filter (\id _ -> not (EverySet.member id previouslyConsented))
+        |> AllDictList.filter (\id _ -> not (EverySet.member id previouslyConsented))
 
 
 {-| For a particular child activity, figure out which children have completed
@@ -433,12 +443,11 @@ the activity and have the activity pending. (This may not add up to all the
 children, because we only consider a child "pending" if they are checked in and
 the activity is expected.
 -}
-summarizeChildActivity : ChildActivity -> EditableSession -> CompletedAndPending (EveryDictList ChildId Child)
-summarizeChildActivity activity session =
-    getCheckedIn session
-        |> .children
-        |> EveryDictList.filter (\childId _ -> expectChildActivity session childId activity)
-        |> EveryDictList.partition (\childId _ -> childHasCompletedActivity childId activity session)
+summarizeChildActivity : ChildActivity -> OfflineSession -> CheckedIn -> CompletedAndPending (EntityUuidDictList PersonId Person)
+summarizeChildActivity activity session checkedIn =
+    checkedIn.children
+        |> AllDictList.filter (\childId _ -> expectChildActivity session childId activity)
+        |> AllDictList.partition (\childId _ -> childHasCompletedActivity childId activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
 
@@ -447,47 +456,14 @@ the activity and have the activity pending. (This may not add up to all the
 mothers, because we only consider a mother "pending" if they are checked in and
 the activity is expected.
 -}
-summarizeMotherActivity : MotherActivity -> EditableSession -> CompletedAndPending (EveryDictList MotherId Mother)
-summarizeMotherActivity activity session =
+summarizeMotherActivity : MotherActivity -> OfflineSession -> CheckedIn -> CompletedAndPending (EntityUuidDictList PersonId Person)
+summarizeMotherActivity activity session checkedIn =
     -- For participant consent, we only consider the activity to be completed once
     -- all expected consents have been saved.
-    getCheckedIn session
-        |> .mothers
-        |> EveryDictList.filter (\motherId _ -> expectMotherActivity session motherId activity)
-        |> EveryDictList.partition (\motherId _ -> motherHasCompletedActivity motherId activity session)
+    checkedIn.mothers
+        |> AllDictList.filter (\motherId _ -> expectMotherActivity session motherId activity)
+        |> AllDictList.partition (\motherId _ -> motherHasCompletedActivity motherId activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
-
-
-{-| Summarize our data for the editable session in a way that is useful
-for our UI, when we're focused on activities. This only considers children &
-mothers who are checked in to the session.
--}
-summarizeByActivity : EditableSession -> SummaryByActivity
-summarizeByActivity session =
-    let
-        children =
-            getAllChildActivities
-                |> List.map
-                    (\activity ->
-                        ( activity
-                        , summarizeChildActivity activity session
-                        )
-                    )
-                |> EveryDict.fromList
-
-        mothers =
-            getAllMotherActivities
-                |> List.map
-                    (\activity ->
-                        ( activity
-                        , summarizeMotherActivity activity session
-                        )
-                    )
-                |> EveryDict.fromList
-    in
-    { children = children
-    , mothers = mothers
-    }
 
 
 {-| This summarizes our summary, by counting, for the given activity, how many
@@ -501,8 +477,8 @@ getParticipantCountForActivity summary activity =
                 |> EveryDict.get childActivity
                 |> Maybe.map
                     (\{ completed, pending } ->
-                        { completed = EveryDictList.size completed
-                        , pending = EveryDictList.size pending
+                        { completed = AllDictList.size completed
+                        , pending = AllDictList.size pending
                         }
                     )
                 |> Maybe.withDefault
@@ -515,8 +491,8 @@ getParticipantCountForActivity summary activity =
                 |> EveryDict.get motherActivity
                 |> Maybe.map
                     (\{ completed, pending } ->
-                        { completed = EveryDictList.size completed
-                        , pending = EveryDictList.size pending
+                        { completed = AllDictList.size completed
+                        , pending = AllDictList.size pending
                         }
                     )
                 |> Maybe.withDefault
@@ -529,7 +505,7 @@ getParticipantCountForActivity summary activity =
 and which are pending. (This may not add up to all the activities, because some
 activities may not be expected for this child).
 -}
-summarizeChildParticipant : ChildId -> EditableSession -> CompletedAndPending (List ChildActivity)
+summarizeChildParticipant : PersonId -> OfflineSession -> CompletedAndPending (List ChildActivity)
 summarizeChildParticipant id session =
     getAllChildActivities
         |> List.filter (expectChildActivity session id)
@@ -541,37 +517,12 @@ summarizeChildParticipant id session =
 and which are pending. (This may not add up to all the activities, because some
 activities may not be expected for this mother).
 -}
-summarizeMotherParticipant : MotherId -> EditableSession -> CompletedAndPending (List MotherActivity)
+summarizeMotherParticipant : PersonId -> OfflineSession -> CompletedAndPending (List MotherActivity)
 summarizeMotherParticipant id session =
     getAllMotherActivities
         |> List.filter (expectMotherActivity session id)
         |> List.partition (\activity -> motherHasCompletedActivity id activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
-
-
-{-| Summarize our data for the editable session in a way that is useful
-for our UI, when we're focused on participants. This only considers children &
-mothers who are checked in to the session.
--}
-summarizeByParticipant : EditableSession -> SummaryByParticipant
-summarizeByParticipant session =
-    let
-        checkedIn =
-            getCheckedIn session
-
-        children =
-            EveryDictList.map
-                (\childId _ -> summarizeChildParticipant childId session)
-                checkedIn.children
-
-        mothers =
-            EveryDictList.map
-                (\motherId _ -> summarizeMotherParticipant motherId session)
-                checkedIn.mothers
-    in
-    { children = children
-    , mothers = mothers
-    }
 
 
 {-| This summarizes our summary, by counting how many activities have been
@@ -581,11 +532,11 @@ It includes ativities for children of the mother, since we navigate from mother
 to child.
 
 -}
-getActivityCountForMother : MotherId -> Mother -> SummaryByParticipant -> CompletedAndPending Int
-getActivityCountForMother id mother summary =
+getActivityCountForMother : EditableSession -> PersonId -> Person -> SummaryByParticipant -> CompletedAndPending Int
+getActivityCountForMother session id mother summary =
     let
         motherCount =
-            EveryDictList.get id summary.mothers
+            AllDictList.get id summary.mothers
                 |> Maybe.map
                     (\activities ->
                         { pending = List.length activities.pending
@@ -598,8 +549,8 @@ getActivityCountForMother id mother summary =
                     }
     in
     List.foldl
-        (\childId accum ->
-            EveryDictList.get childId summary.children
+        (\( childId, _ ) accum ->
+            AllDictList.get childId summary.children
                 |> Maybe.map
                     (\activities ->
                         { pending = accum.pending + List.length activities.pending
@@ -609,41 +560,42 @@ getActivityCountForMother id mother summary =
                 |> Maybe.withDefault accum
         )
         motherCount
-        mother.children
+        (getChildren id session.offlineSession)
 
 
-hasCompletedChildActivity : ChildActivity -> MeasurementData ChildMeasurements ChildEdits -> Bool
+hasCompletedChildActivity : ChildActivity -> MeasurementData ChildMeasurements -> Bool
 hasCompletedChildActivity activityType measurements =
     case activityType of
         ChildPicture ->
-            isCompleted measurements.edits.photo (Maybe.map Tuple.second measurements.current.photo)
+            isCompleted (Maybe.map Tuple.second measurements.current.photo)
 
         -- Counseling ->
-        --    isCompleted measurements.edits.counseling (Maybe.map Tuple.second measurements.current.counselingSession)
+        --    isCompleted (Maybe.map Tuple.second measurements.current.counselingSession)
         Height ->
-            isCompleted measurements.edits.height (Maybe.map Tuple.second measurements.current.height)
+            isCompleted (Maybe.map Tuple.second measurements.current.height)
 
         Weight ->
-            isCompleted measurements.edits.weight (Maybe.map Tuple.second measurements.current.weight)
+            isCompleted (Maybe.map Tuple.second measurements.current.weight)
 
         Muac ->
-            isCompleted measurements.edits.muac (Maybe.map Tuple.second measurements.current.muac)
+            isCompleted (Maybe.map Tuple.second measurements.current.muac)
 
         NutritionSigns ->
-            isCompleted measurements.edits.nutrition (Maybe.map Tuple.second measurements.current.nutrition)
+            isCompleted (Maybe.map Tuple.second measurements.current.nutrition)
 
 
-childHasCompletedActivity : ChildId -> ChildActivity -> EditableSession -> Bool
+childHasCompletedActivity : PersonId -> ChildActivity -> OfflineSession -> Bool
 childHasCompletedActivity childId activityType session =
-    getChildMeasurementData childId session
+    getChildMeasurementData2 childId session
+        |> force
         |> hasCompletedChildActivity activityType
 
 
-hasCompletedMotherActivity : EditableSession -> MotherId -> MotherActivity -> MeasurementData MotherMeasurements MotherEdits -> Bool
+hasCompletedMotherActivity : OfflineSession -> PersonId -> MotherActivity -> MeasurementData MotherMeasurements -> Bool
 hasCompletedMotherActivity session motherId activityType measurements =
     case activityType of
         FamilyPlanning ->
-            isCompleted measurements.edits.familyPlanning (Maybe.map Tuple.second measurements.current.familyPlanning)
+            isCompleted (Maybe.map Tuple.second measurements.current.familyPlanning)
 
 
 
@@ -653,37 +605,38 @@ hasCompletedMotherActivity session motherId activityType measurements =
        -- consents have been saved.
        let
            current =
-               mapMeasurementData .consent .consent measurements
+               mapMeasurementData .consent measurements
                    |> currentValues
                    |> List.map (Tuple.second >> .value >> .formId)
                    |> EverySet.fromList
        in
        expectParticipantConsent session motherId
-           |> EveryDictList.all (\id _ -> EverySet.member id current)
+           |> AllDictList.all (\id _ -> EverySet.member id current)
 -}
 
 
-motherHasCompletedActivity : MotherId -> MotherActivity -> EditableSession -> Bool
+motherHasCompletedActivity : PersonId -> MotherActivity -> OfflineSession -> Bool
 motherHasCompletedActivity motherId activityType session =
-    getMotherMeasurementData motherId session
+    getMotherMeasurementData2 motherId session
+        |> force
         |> hasCompletedMotherActivity session motherId activityType
 
 
 {-| Should some measurement be considered completed? Note that this means that it has
 been entered locally, not that it has been saved to the backend.
 -}
-isCompleted : Edit id value -> Maybe value -> Bool
-isCompleted edit =
-    applyEdit edit >> isJust
+isCompleted : Maybe value -> Bool
+isCompleted =
+    isJust
 
 
-hasAnyCompletedMotherActivity : EditableSession -> MotherId -> MeasurementData MotherMeasurements MotherEdits -> Bool
+hasAnyCompletedMotherActivity : OfflineSession -> PersonId -> MeasurementData MotherMeasurements -> Bool
 hasAnyCompletedMotherActivity session motherId measurements =
     getAllMotherActivities
         |> List.any (\activity -> hasCompletedMotherActivity session motherId activity measurements)
 
 
-hasAnyCompletedChildActivity : MeasurementData ChildMeasurements ChildEdits -> Bool
+hasAnyCompletedChildActivity : MeasurementData ChildMeasurements -> Bool
 hasAnyCompletedChildActivity measurements =
     getAllChildActivities
         |> List.any (flip hasCompletedChildActivity measurements)
@@ -694,20 +647,15 @@ hasAnyCompletedChildActivity measurements =
 If we can't find the mother, we return False.
 
 -}
-motherOrAnyChildHasAnyCompletedActivity : MotherId -> EditableSession -> Bool
+motherOrAnyChildHasAnyCompletedActivity : PersonId -> OfflineSession -> Bool
 motherOrAnyChildHasAnyCompletedActivity motherId session =
     let
         motherHasOne =
             motherHasAnyCompletedActivity motherId session
 
         anyChildHasOne =
-            getMother motherId session.offlineSession
-                |> Maybe.map
-                    (\mother ->
-                        mother.children
-                            |> List.any (\childId -> childHasAnyCompletedActivity childId session)
-                    )
-                |> Maybe.withDefault False
+            getChildren motherId session
+                |> List.any (\( childId, _ ) -> childHasAnyCompletedActivity childId session)
     in
     motherHasOne || anyChildHasOne
 
@@ -719,12 +667,13 @@ has a completed activity ... that way, we can freely change the explicit
 check-in (and activities) without worrying about synchronizing the two.
 
 -}
-motherIsCheckedIn : MotherId -> EditableSession -> Bool
+motherIsCheckedIn : PersonId -> OfflineSession -> Bool
 motherIsCheckedIn motherId session =
     let
         explicitlyCheckedIn =
-            getMotherMeasurementData motherId session
-                |> (.edits >> .explicitlyCheckedIn)
+            getMotherMeasurementData2 motherId session
+                |> force
+                |> (.current >> .attendance >> Maybe.map (Tuple.second >> .value) >> (==) (Just True))
 
         hasCompletedActivity =
             motherOrAnyChildHasAnyCompletedActivity motherId session
@@ -732,84 +681,27 @@ motherIsCheckedIn motherId session =
     explicitlyCheckedIn || hasCompletedActivity
 
 
-setCheckedIn : Bool -> MotherId -> EditableSession -> EditableSession
-setCheckedIn checkedIn =
-    mapMotherEdits (\edits -> { edits | explicitlyCheckedIn = checkedIn })
-
-
-childIsCheckedIn : ChildId -> EditableSession -> Bool
+childIsCheckedIn : PersonId -> OfflineSession -> Bool
 childIsCheckedIn childId session =
-    getMyMother childId session.offlineSession
+    getMyMother childId session
         |> Maybe.map Tuple.first
         |> Maybe.map (\motherId -> motherIsCheckedIn motherId session)
         |> Maybe.withDefault False
 
 
-{-| Who is checked in, considering both explicit check in and anyone who has
-any completed activity?
--}
-getCheckedIn : EditableSession -> { mothers : EveryDictList MotherId Mother, children : EveryDictList ChildId Child }
-getCheckedIn session =
-    let
-        -- Which mothers have been explicitly checked in?
-        explicitlyCheckedInMothers =
-            EveryDict.filter (\_ edits -> edits.explicitlyCheckedIn)
-                session.edits.mothers
-
-        -- A mother is checked in if explicitly checked in or has any completed
-        -- activites.
-        mothers =
-            EveryDictList.filter
-                (\motherId _ ->
-                    EveryDict.member motherId explicitlyCheckedInMothers
-                        || motherOrAnyChildHasAnyCompletedActivity motherId session
-                )
-                session.offlineSession.mothers
-
-        -- A child is checked in if the mother is checked in.
-        children =
-            EveryDictList.filter
-                (\_ child ->
-                    child.motherId
-                        |> Maybe.map (\motherId -> EveryDictList.member motherId mothers)
-                        |> Maybe.withDefault False
-                )
-                session.offlineSession.children
-    in
-    { mothers = mothers
-    , children = children
-    }
-
-
 {-| Does the mother herself have any completed activity?
 -}
-motherHasAnyCompletedActivity : MotherId -> EditableSession -> Bool
+motherHasAnyCompletedActivity : PersonId -> OfflineSession -> Bool
 motherHasAnyCompletedActivity motherId session =
-    getMotherMeasurementData motherId session
+    getMotherMeasurementData2 motherId session
+        |> force
         |> hasAnyCompletedMotherActivity session motherId
 
 
 {-| Does the child have any completed activity?
 -}
-childHasAnyCompletedActivity : ChildId -> EditableSession -> Bool
+childHasAnyCompletedActivity : PersonId -> OfflineSession -> Bool
 childHasAnyCompletedActivity childId session =
-    getChildMeasurementData childId session
+    getChildMeasurementData2 childId session
+        |> force
         |> hasAnyCompletedChildActivity
-
-
-{-| Is there any completed activity of any kind?
--}
-hasAnyCompletedActivity : EditableSession -> Bool
-hasAnyCompletedActivity session =
-    let
-        forChildren =
-            session.offlineSession.children
-                |> EveryDictList.toList
-                |> List.any (\( id, _ ) -> childHasAnyCompletedActivity id session)
-
-        forMothers =
-            session.offlineSession.mothers
-                |> EveryDictList.toList
-                |> List.any (\( id, _ ) -> motherHasAnyCompletedActivity id session)
-    in
-    forChildren || forMothers

@@ -1,15 +1,18 @@
 module Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getMotherForm)
 
 import Activity.Utils exposing (expectCounselingActivity, expectParticipantConsent)
+import AllDict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData)
-import EveryDict
-import EveryDictList
 import EverySet
+import Lazy exposing (force)
 import Measurement.Model exposing (..)
+import Pages.Session.Model
+import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
+import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 getInputConstraintsHeight : FloatInputConstraints
@@ -35,41 +38,41 @@ getInputConstraintsWeight =
 
 {-| Initialize (or reset) a form with the given data.
 -}
-fromChildMeasurementData : MeasurementData ChildMeasurements ChildEdits -> ModelChild
+fromChildMeasurementData : MeasurementData ChildMeasurements -> ModelChild
 fromChildMeasurementData data =
     -- TODO: Clearly there is some kind of pattern below, but we won't try to abstract that
     -- just yet. Ultimately, this is the kind of thing which `RestfulData` would organize.
     { height =
         data
-            |> mapMeasurementData .height .height
+            |> mapMeasurementData .height
             |> currentValue
             |> Maybe.map (.value >> (\(HeightInCm cm) -> toString cm))
             |> Maybe.withDefault ""
     , muac =
         data
-            |> mapMeasurementData .muac .muac
+            |> mapMeasurementData .muac
             |> currentValue
             |> Maybe.map (.value >> (\(MuacInCm cm) -> toString cm))
             |> Maybe.withDefault ""
     , nutritionSigns =
         data
-            |> mapMeasurementData .nutrition .nutrition
+            |> mapMeasurementData .nutrition
             |> currentValue
             |> Maybe.map .value
             |> Maybe.withDefault EverySet.empty
     , counseling =
         data
-            |> mapMeasurementData .counselingSession .counseling
+            |> mapMeasurementData .counselingSession
             |> currentValue
             |> Maybe.map .value
     , photo =
         data
-            |> mapMeasurementData .photo .photo
+            |> mapMeasurementData .photo
             |> currentValue
             |> Maybe.map .value
     , weight =
         data
-            |> mapMeasurementData .weight .weight
+            |> mapMeasurementData .weight
             |> currentValue
             |> Maybe.map (.value >> (\(WeightInKg kg) -> toString kg))
             |> Maybe.withDefault ""
@@ -78,42 +81,43 @@ fromChildMeasurementData data =
 
 {-| Initialize (or reset) a form with the given data.
 -}
-fromMotherMeasurementData : MeasurementData MotherMeasurements MotherEdits -> ModelMother
+fromMotherMeasurementData : MeasurementData MotherMeasurements -> ModelMother
 fromMotherMeasurementData data =
     let
         -- We show the UI as completed for all current consents
         progress =
             data
-                |> mapMeasurementData .consent .consent
+                |> mapMeasurementData .consent
                 |> currentValues
                 |> List.map (Tuple.second >> .value >> .formId)
                 |> List.map (\formId -> ( formId, completedParticipantFormProgress ))
-                |> EveryDict.fromList
+                |> EntityUuidDict.fromList
     in
     { familyPlanningSigns =
         data
-            |> mapMeasurementData .familyPlanning .familyPlanning
+            |> mapMeasurementData .familyPlanning
             |> currentValue
             |> Maybe.map .value
             |> Maybe.withDefault EverySet.empty
     , participantConsent =
-        { expected = EveryDictList.empty
+        { expected = EntityUuidDictList.empty
         , view = Nothing
         , progress = progress
         }
     }
 
 
-getMotherForm : MotherId -> EditableSession -> ModelMother
-getMotherForm motherId session =
+getMotherForm : PersonId -> Pages.Session.Model.Model -> EditableSession -> ModelMother
+getMotherForm motherId pages session =
     -- Could use `Maybe.withDefault` here instead, but then
     -- `fromMotherMeasurementData` would get calculated every time
-    case EveryDict.get motherId session.motherForms of
+    case AllDict.get motherId pages.motherForms of
         Just motherForm ->
             motherForm
 
         Nothing ->
             getMotherMeasurementData motherId session
+                |> force
                 |> fromMotherMeasurementData
                 |> (\form ->
                         { form
@@ -126,16 +130,17 @@ getMotherForm motherId session =
                    )
 
 
-getChildForm : ChildId -> EditableSession -> ModelChild
-getChildForm childId session =
+getChildForm : PersonId -> Pages.Session.Model.Model -> EditableSession -> ModelChild
+getChildForm childId pages session =
     -- Could use `Maybe.withDefault` here instead, but then
     -- `fromChildMeasurementData` would get calculated every time
-    case EveryDict.get childId session.childForms of
+    case AllDict.get childId pages.childForms of
         Just childForm ->
             childForm
 
         Nothing ->
             getChildMeasurementData childId session
+                |> force
                 |> fromChildMeasurementData
                 |> (\form ->
                         -- We need some special logic for the counseling

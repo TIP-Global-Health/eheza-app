@@ -7,15 +7,15 @@ at a session.
 
 -}
 
-import Activity.Utils exposing (motherIsCheckedIn)
+import AllDictList
 import Backend.Entities exposing (..)
-import Backend.Mother.Model exposing (Mother)
+import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (EditableSession)
-import Backend.Session.Utils exposing (getChildren)
-import EveryDictList
+import Backend.Session.Utils exposing (getChildren, getMotherMeasurementData)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import Lazy exposing (force)
 import Pages.Attendance.Model exposing (..)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
@@ -23,8 +23,8 @@ import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 
 
-view : Language -> EditableSession -> Model -> Html Msg
-view language session model =
+view : Language -> ( SessionId, EditableSession ) -> Model -> Html Msg
+view language ( sessionId, session ) model =
     let
         filter =
             normalizeFilter model.filter
@@ -39,24 +39,24 @@ view language session model =
                 matchMotherAndHerChildren filter session.offlineSession
 
         mothers =
-            if EveryDictList.isEmpty session.offlineSession.mothers then
+            if AllDictList.isEmpty session.offlineSession.mothers then
                 [ div
                     [ class "ui message warning" ]
-                    [ text <| translate language Translate.ThisClinicHasNoMothers ]
+                    [ text <| translate language Translate.ThisGroupHasNoMothers ]
                 ]
 
             else
                 let
                     matching =
-                        EveryDictList.filter matches session.offlineSession.mothers
+                        AllDictList.filter matches session.offlineSession.mothers
                 in
-                if EveryDictList.isEmpty matching then
+                if AllDictList.isEmpty matching then
                     [ span [] [ text <| translate language Translate.NoMatchesFound ] ]
 
                 else
                     matching
-                        |> EveryDictList.map (viewMother session)
-                        |> EveryDictList.values
+                        |> AllDictList.map (viewMother session)
+                        |> AllDictList.values
     in
     div [ class "wrap wrap-alt-2 page-attendance" ]
         [ div
@@ -80,10 +80,10 @@ view language session model =
                     [ class "active" ]
                     [ a [] [ span [ class "icon-completed" ] [] ] ]
                 , li
-                    [ onClick <| SetActivePage <| SessionPage ParticipantsPage ]
+                    [ onClick <| SetActivePage <| UserPage <| SessionPage sessionId ParticipantsPage ]
                     [ a [] [ span [ class "icon-mother" ] [] ] ]
                 , li
-                    [ onClick <| SetActivePage <| SessionPage ActivitiesPage ]
+                    [ onClick <| SetActivePage <| UserPage <| SessionPage sessionId ActivitiesPage ]
                     [ a [] [ span [ class "icon-measurements" ] [] ] ]
                 ]
             ]
@@ -104,21 +104,32 @@ view language session model =
         ]
 
 
-viewMother : EditableSession -> MotherId -> Mother -> Html Msg
+viewMother : EditableSession -> PersonId -> Person -> Html Msg
 viewMother session motherId mother =
     let
+        attendanceId =
+            getMotherMeasurementData motherId session
+                |> (force >> .current >> .attendance)
+                |> Maybe.map Tuple.first
+
+        checkedIn =
+            force session.checkedIn
+
+        isCheckedIn =
+            AllDictList.member motherId checkedIn.mothers
+
         checkIn =
-            if motherIsCheckedIn motherId session then
+            if isCheckedIn then
                 a
                     [ class "link-checked-in"
-                    , onClick <| SetCheckedIn motherId False
+                    , onClick <| SetCheckedIn attendanceId motherId False
                     ]
                     [ span [ class "icon-checked-in" ] [] ]
 
             else
                 a
                     [ class "link-check-in"
-                    , onClick <| SetCheckedIn motherId True
+                    , onClick <| SetCheckedIn attendanceId motherId True
                     ]
                     [ span [ class "icon-check-in" ] [] ]
 

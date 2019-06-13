@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulCounselingTopics.
  */
-class HedleyRestfulCounselingTopics extends HedleyRestfulEntityBaseNode {
+class HedleyRestfulCounselingTopics extends HedleyRestfulSyncBase {
 
   /**
    * {@inheritdoc}
@@ -20,9 +20,6 @@ class HedleyRestfulCounselingTopics extends HedleyRestfulEntityBaseNode {
     $public_fields['kinyarwanda_title'] = [
       'property' => 'field_kinyarwanda_title',
     ];
-
-    unset($public_fields['self']);
-    unset($public_fields['created']);
 
     return $public_fields;
   }

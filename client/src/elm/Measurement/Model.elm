@@ -8,10 +8,10 @@ import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.ParticipantConsent.Model exposing (..)
-import EveryDict exposing (EveryDict)
-import EveryDictList exposing (EveryDictList)
 import EverySet exposing (EverySet)
 import Translate.Model exposing (Language)
+import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
+import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 {-| The strategy here, at least for now, is this:
@@ -40,7 +40,7 @@ type alias ModelChild =
     { height : String
     , muac : String
     , nutritionSigns : EverySet ChildNutritionSign
-    , photo : Maybe PhotoValue
+    , photo : Maybe PhotoUrl
     , weight : String
     , counseling : Maybe ( CounselingTiming, EverySet CounselingTopicId )
     }
@@ -63,17 +63,17 @@ type alias ModelMother =
 
 -}
 type alias ParticipantFormUI =
-    { expected : EveryDictList ParticipantFormId ParticipantForm
+    { expected : EntityUuidDictList ParticipantFormId ParticipantForm
     , view : Maybe ParticipantFormId
-    , progress : EveryDict ParticipantFormId ParticipantFormProgress
+    , progress : EntityUuidDict ParticipantFormId ParticipantFormProgress
     }
 
 
 emptyParticipantFormUI : ParticipantFormUI
 emptyParticipantFormUI =
-    { expected = EveryDictList.empty
+    { expected = EntityUuidDictList.empty
     , view = Nothing
-    , progress = EveryDict.empty
+    , progress = EntityUuidDict.empty
     }
 
 
@@ -143,19 +143,24 @@ type MsgMother
 {-| This is sort of the "opposite" of `Msg`. Instead of representing messages
 which we can handle, it represents messages we **can't** handle, and would
 like the caller to take care of.
+
+The `Maybe` IDs indicate whether we're trying to update an exsiting value, vs.
+creating a new one.
+
 -}
 type OutMsgChild
-    = SaveHeight HeightInCm
-    | SaveWeight WeightInKg
-    | SaveMuac MuacInCm
-    | SaveCounselingSession CounselingTiming (EverySet CounselingTopicId)
-    | SaveChildNutritionSigns (EverySet ChildNutritionSign)
-    | SavePhoto PhotoValue
+    = SaveHeight (Maybe HeightId) HeightInCm
+    | SaveWeight (Maybe WeightId) WeightInKg
+    | SaveMuac (Maybe MuacId) MuacInCm
+    | SaveCounselingSession (Maybe CounselingSessionId) CounselingTiming (EverySet CounselingTopicId)
+    | SaveChildNutritionSigns (Maybe ChildNutritionId) (EverySet ChildNutritionSign)
+    | SavePhoto (Maybe PhotoId) PhotoUrl
 
 
 type OutMsgMother
-    = SaveFamilyPlanningSigns (EverySet FamilyPlanningSign)
-    | SaveCompletedForm ParticipantFormId Language
+    = SaveAttendance (Maybe AttendanceId) Bool
+    | SaveFamilyPlanningSigns (Maybe FamilyPlanningId) (EverySet FamilyPlanningSign)
+    | SaveCompletedForm (Maybe ParticipantConsentId) ParticipantFormId Language
 
 
 emptyModelChild : ModelChild

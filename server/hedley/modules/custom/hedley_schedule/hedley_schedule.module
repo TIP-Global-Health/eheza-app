@@ -7,6 +7,9 @@
 
 include_once 'hedley_schedule.features.inc';
 
+define('HEDLEY_SCHEDULE_PMTCT_ACTIVITIES_CAREGIVER', 'caregiver');
+define('HEDLEY_SCHEDULE_PMTCT_ACTIVITIES_MOTHER', 'mother');
+
 /**
  * Implements hook_form_FORM_ID_alter().
  *
@@ -23,38 +26,19 @@ function hedley_schedule_form_counseling_session_node_form_alter(&$form, &$form_
  * Implements hook_node_presave().
  *
  * @throws \Exception
- *   Doesn't allow saving a session if there's already a session with the same
- *   clinic and start date.
+ *   In case of validation errors.
  */
 function hedley_schedule_node_presave($node) {
   if ($node->type == 'session') {
-    // Handles only "session" nodes saves.
-    $wrapper = entity_metadata_wrapper('node', $node);
-    $clinic_node = $wrapper->field_clinic->value();
-    $scheduled_dates = $wrapper->field_scheduled_date->value();
-
-    if (empty($clinic_node) || empty($scheduled_dates)) {
-      // No clinic or dates are available.
-      return;
-    }
-
-    if (!hedley_schedule_clinic_has_sessions($clinic_node->nid, $scheduled_dates['value'])) {
-      // No sessions found.
-      return;
-    }
-
-    if ($sessions_nids = hedley_schedule_clinic_get_sessions_by_date($clinic_node->nid, $scheduled_dates['value'])) {
-      foreach ($sessions_nids as $session_nid) {
-        if ($session_nid != $node->nid) {
-          throw new Exception('This session cannot be saved, there is already a session with the same starting date and same clinic.');
-        }
-      }
-    }
+    // TODO: Now that we're syncing, we can't reject duplicate sessions
+    // outright.  We'll have to flag them as conflicts to be resolved.
+    // hedley_schedule_check_duplicate_session($node);
+    hedley_schedule_check_unpublish_session($node);
   }
 
   if ($node->type == 'counseling_session') {
     // Handles only "counseling_session" nodes saves.
-    _hedley_schedule_set_entity_title_by_field($node, 'field_child', 'entity_reference');
+    _hedley_schedule_set_entity_title_by_field($node, 'field_person', 'entity_reference');
   }
 
   if ($node->type == 'counseling_schedule') {
@@ -64,46 +48,79 @@ function hedley_schedule_node_presave($node) {
 }
 
 /**
- * Implements hook_node_delete().
- *
- * When deleting a "session" node, check if it's a training session and delete
- * all it's measurements if it is, if not, then we check if it has any
- * measurements at all and stop the deletion request if it does.
+ * Validate session's clinic and start date.
  *
  * @throws \Exception
- *   Doesn't allow deleting a session if it's not a training session and it has
- *   any measurements at all.
+ *   Doesn't allow saving a session if there's already a session with the same
+ *   clinic and start date.
  */
-function hedley_schedule_node_delete($node) {
-  if ($node->type != 'session') {
-    // Handles only "session" nodes deletions.
+function hedley_schedule_check_duplicate_session($node) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $clinic_node = $wrapper->field_clinic->value();
+  $scheduled_dates = $wrapper->field_scheduled_date->value();
+
+  if (empty($clinic_node) || empty($scheduled_dates)) {
+    // No clinic or dates are available.
+    return;
+  }
+
+  if (!hedley_schedule_clinic_has_sessions($clinic_node->nid, $scheduled_dates['value'])) {
+    // No sessions found.
+    return;
+  }
+
+  if ($sessions_nids = hedley_schedule_clinic_get_sessions_by_date($clinic_node->nid, $scheduled_dates['value'])) {
+    foreach ($sessions_nids as $session_nid) {
+      if ($session_nid != $node->nid) {
+        throw new Exception('This session cannot be saved, there is already a session with the same starting date and same clinic.');
+      }
+    }
+  }
+}
+
+/**
+ * Check whether a session is being unpublished.
+ *
+ * @throws \Exception
+ *   Doesn't allow a session to be unpublished if it has measurements.
+ */
+function hedley_schedule_check_unpublish_session($node) {
+  // When unpublishing a "session" node, check if it's a training session and
+  // unpublish all its measurements if it is. Otherwise, don't let it be
+  // unpublished.
+  if (empty($node->original)) {
+    // This isn't a modification.
+    return;
+  }
+
+  if (($node->status != NODE_NOT_PUBLISHED) || ($node->original->status != NODE_PUBLISHED)) {
+    // We're not unpublishing the node.
     return;
   }
 
   $wrapper = entity_metadata_wrapper('node', $node);
-  $session_nid = $wrapper->getIdentifier();
 
   // The measurements content types.
   $measurement_types = hedley_activity_get_measurements_content_types();
 
-  // We need to delete the sessions measurements if the session is valid for
-  // deletion.
+  // We need to unpublsh the session's measurements if the session is valid for
+  // being unpublished.
   if ($wrapper->field_training->value()) {
-    $measurement_nodes = [];
     foreach ($measurement_types as $measurement_type) {
-      if ($add_measurement_nodes = hedley_activity_get_measurements_by_session($session_nid, $measurement_type)) {
-        $measurement_nodes = array_merge($add_measurement_nodes, $measurement_nodes);
+      $nids = hedley_activity_get_measurements_by_session($wrapper->getIdentifier(), $measurement_type);
+      $nodes = node_load_multiple($nids);
+      foreach ($nodes as $node) {
+        $node->status = NODE_NOT_PUBLISHED;
+        node_save($node);
       }
     }
-
-    node_delete_multiple($measurement_nodes);
   }
   else {
     foreach ($measurement_types as $measurement_type) {
       $has_measurements = !empty(hedley_activity_get_measurements_by_session($wrapper->getIdentifier(), $measurement_type));
 
       if ($has_measurements) {
-        throw new Exception('This session cannot be deleted because it has existing measurements');
+        throw new Exception('This session cannot be unpublished because it has existing measurements');
       }
     }
   }

@@ -53,14 +53,14 @@ class HedleyMigrateCounselingSessions extends HedleyMigrateBase {
     $child_query = new EntityFieldQuery();
     $child_result = $child_query
       ->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', 'child')
+      ->entityCondition('bundle', 'person')
       ->propertyCondition('status', NODE_PUBLISHED)
       ->range(0, 1)
       ->addTag('random')
       ->execute();
 
     if (!empty($child_result['node'])) {
-      $entity->field_child[LANGUAGE_NONE][0]['target_id'] = key($child_result['node']);
+      $entity->field_person[LANGUAGE_NONE][0]['target_id'] = key($child_result['node']);
     }
 
     // Get one random session to reference in this counseling session.

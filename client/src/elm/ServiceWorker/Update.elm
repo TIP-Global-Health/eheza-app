@@ -8,6 +8,7 @@ via sending messages through the `update` function.
 -}
 
 import App.Model
+import Backend.Model
 import Gizra.Update exposing (sequenceExtra)
 import Json.Decode exposing (Value, decodeValue)
 import Pages.Page
@@ -21,10 +22,10 @@ import Time exposing (Time)
 update : Time -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentTime msg model =
     case msg of
-        BackToLoginPage ->
+        BackToPinCodePage ->
             ( model
             , Cmd.none
-            , [ App.Model.SetActivePage Pages.Page.LoginPage ]
+            , [ App.Model.SetActivePage Pages.Page.PinCodePage ]
             )
 
         HandleIncomingMsg value ->
@@ -33,6 +34,10 @@ update currentTime msg model =
                     handleIncomingMsg currentTime incoming model
 
                 Err err ->
+                    let
+                        _ =
+                            Debug.log "decoder error" err
+                    in
                     ( model, Cmd.none, [] )
 
         SendOutgoingMsg msg ->
@@ -73,6 +78,24 @@ handleIncomingMsg currentTime msg model =
             , []
             )
                 |> sequenceExtra (update currentTime) extraMsgs
+
+        SetSyncData data ->
+            ( model
+            , Cmd.none
+            , [ Success data
+                    |> Backend.Model.HandleFetchedSyncData
+                    |> App.Model.MsgIndexedDb
+              ]
+            )
+
+        NewRevisions data ->
+            ( model
+            , Cmd.none
+            , [ data
+                    |> Backend.Model.HandleRevisions
+                    |> App.Model.MsgIndexedDb
+              ]
+            )
 
 
 sendOutgoingMsg : Time -> OutgoingMsg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

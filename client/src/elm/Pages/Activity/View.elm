@@ -1,16 +1,19 @@
 module Pages.Activity.View exposing (view)
 
 import Activity.Utils exposing (getActivityIcon)
+import AllDictList
+import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
-import EveryDictList exposing (EveryDictList)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
+import Lazy exposing (force)
 import List as List
 import Maybe.Extra
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
+import Pages.Session.Model
 import Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, normalizeFilter, viewNameFilter)
 import Participant.Model exposing (Participant)
 import Translate exposing (Language, translate)
@@ -34,16 +37,16 @@ Another option would be to return the caller's `Html msg` type ... then we
 could do our own mapping. The caller would have to pass in a tag for us to
 map with, which wouldn't be a problem.
 -}
-view : Participant id value activity msg -> Language -> NominalDate -> ZScore.Model.Model -> activity -> EditableSession -> Model id -> ( Html (Msg id msg), Maybe id )
-view config language currentDate zscores selectedActivity session model =
+view : Participant id value activity msg -> Language -> NominalDate -> ZScore.Model.Model -> activity -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model id -> ( Html (Msg id msg), Maybe id )
+view config language currentDate zscores selectedActivity ( sessionId, session ) pages model =
     let
         participants =
-            config.summarizeParticipantsForActivity selectedActivity session
+            config.summarizeParticipantsForActivity selectedActivity session.offlineSession (force session.checkedIn)
                 |> applyNameFilter
 
         applyNameFilter { pending, completed } =
-            { pending = EveryDictList.filter filterParticipantNames pending
-            , completed = EveryDictList.filter filterParticipantNames completed
+            { pending = AllDictList.filter filterParticipantNames pending
+            , completed = AllDictList.filter filterParticipantNames completed
             }
 
         filterParticipantNames _ participant =
@@ -68,12 +71,12 @@ view config language currentDate zscores selectedActivity session model =
         tabs =
             let
                 pendingTabTitle =
-                    EveryDictList.size participants.pending
+                    AllDictList.size participants.pending
                         |> Translate.ActivitiesToComplete
                         |> translate language
 
                 completedTabTitle =
-                    EveryDictList.size participants.completed
+                    AllDictList.size participants.completed
                         |> Translate.ActivitiesCompleted
                         |> translate language
             in
@@ -89,25 +92,25 @@ view config language currentDate zscores selectedActivity session model =
                     model.selectedParticipant
                         |> Maybe.andThen
                             (\participant ->
-                                if EveryDictList.member participant participants.completed then
+                                if AllDictList.member participant participants.completed then
                                     Just participant
 
                                 else
                                     Nothing
                             )
-                        |> Maybe.Extra.orElse (Maybe.map Tuple.first (EveryDictList.head participants.completed))
+                        |> Maybe.Extra.orElse (Maybe.map Tuple.first (AllDictList.head participants.completed))
 
                 Pending ->
                     model.selectedParticipant
                         |> Maybe.andThen
                             (\participant ->
-                                if EveryDictList.member participant participants.pending then
+                                if AllDictList.member participant participants.pending then
                                     Just participant
 
                                 else
                                     Nothing
                             )
-                        |> Maybe.Extra.orElse (Maybe.map Tuple.first (EveryDictList.head participants.pending))
+                        |> Maybe.Extra.orElse (Maybe.map Tuple.first (AllDictList.head participants.pending))
 
         participantsHtml =
             let
@@ -147,12 +150,12 @@ view config language currentDate zscores selectedActivity session model =
                         ]
 
                 participantsCards =
-                    if EveryDictList.size selectedParticipants == 0 then
+                    if AllDictList.size selectedParticipants == 0 then
                         [ span [] [ text emptySectionMessage ] ]
 
                     else
                         selectedParticipants
-                            |> EveryDictList.toList
+                            |> AllDictList.toList
                             |> List.map viewParticipantCard
             in
             div
@@ -168,7 +171,7 @@ view config language currentDate zscores selectedActivity session model =
                     -- This is a convenience for the way the code was structured ... ideally,
                     -- we'd build a `viewMeasurements` on top of smaller capabilities of the
                     -- `Participant` config, but this is faster for now.
-                    config.viewMeasurements language currentDate zscores id selectedActivity session
+                    config.viewMeasurements language currentDate zscores id selectedActivity pages session
 
                 Nothing ->
                     emptyNode
@@ -184,7 +187,7 @@ view config language currentDate zscores selectedActivity session model =
                     ]
                 , a
                     [ class "link-back"
-                    , onClick GoBackToActivitiesPage
+                    , onClick <| GoBackToActivitiesPage sessionId
                     ]
                     [ span [ class "icon-back" ] [] ]
                 ]

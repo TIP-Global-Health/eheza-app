@@ -1,11 +1,9 @@
-module Backend.Counseling.Encoder exposing (encodeCounselingSchedule, encodeCounselingTiming, encodeCounselingTopic, encodeEveryCounselingSchedule)
+module Backend.Counseling.Encoder exposing (encodeCounselingSchedule, encodeCounselingTiming, encodeCounselingTopic)
 
 import Backend.Counseling.Model exposing (..)
-import EveryDict
-import EveryDictList
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
-import Restful.Endpoint exposing (encodeEntityId)
+import Restful.Endpoint exposing (encodeEntityUuid)
 
 
 encodeCounselingTopic : CounselingTopic -> List ( String, Value )
@@ -38,25 +36,5 @@ encodeCounselingSchedule : CounselingSchedule -> Value
 encodeCounselingSchedule schedule =
     object
         [ ( "timing", encodeCounselingTiming schedule.timing )
-        , ( "topics"
-          , EveryDictList.toList schedule.topics
-                |> List.map (\( id, topic ) -> object (( "id", encodeEntityId id ) :: encodeCounselingTopic topic))
-                |> list
-          )
+        , ( "topics", list <| List.map encodeEntityUuid schedule.topics )
         ]
-
-
-{-| This encodes a structure representing the whole counseling schedule
-as a list of "Counseling Schedule" entities.
--}
-encodeEveryCounselingSchedule : EveryCounselingSchedule -> Value
-encodeEveryCounselingSchedule =
-    EveryDict.toList
-        >> List.map
-            (\( timing, topics ) ->
-                encodeCounselingSchedule
-                    { timing = timing
-                    , topics = topics
-                    }
-            )
-        >> list

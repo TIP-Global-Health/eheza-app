@@ -15,6 +15,11 @@ a {
   cursor: pointer;
 }
 
+.ui.table.session-list {
+  color: $color-text;
+  font-size: 1.75rem;
+}
+
 .consent-form-list {
   color: $color-text;
 }
@@ -59,6 +64,11 @@ a {
   width: 100%;
   z-index: 35000;
   background-color: rgba(0,0,0,0.5);
+
+  .actions .button.no-side-margins {
+    margin-left: 0;
+    margin-right: 0;
+  }
 }
 
 // CSS for the modal itself, inside an overlay. We center

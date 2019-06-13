@@ -1,10 +1,12 @@
 module Pages.Activities.View exposing (view)
 
-import Activity.Utils exposing (getActivityIcon, getAllActivities, getParticipantCountForActivity, summarizeByActivity)
+import Activity.Utils exposing (getActivityIcon, getAllActivities, getParticipantCountForActivity)
+import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
+import Lazy exposing (force)
 import List as List
 import Pages.Activities.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
@@ -12,11 +14,11 @@ import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, viewModal)
 
 
-view : Language -> EditableSession -> Model -> Html Msg
-view language session model =
+view : Language -> ( SessionId, EditableSession ) -> Model -> Html Msg
+view language ( sessionId, session ) model =
     let
         summary =
-            summarizeByActivity session
+            force session.summaryByActivity
 
         ( pendingActivities, noPendingActivities ) =
             getAllActivities
@@ -39,7 +41,7 @@ view language session model =
                 [ class "card" ]
                 [ div
                     [ class "image"
-                    , onClick <| SetRedirectPage <| SessionPage <| ActivityPage activity
+                    , onClick <| SetRedirectPage <| UserPage <| SessionPage sessionId <| ActivityPage activity
                     ]
                     [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
                 , div
@@ -73,7 +75,7 @@ view language session model =
                         , div
                             [ class "content" ]
                             [ p []
-                                [ text <| translate language Trans.OnceYouEndYourSession ]
+                                [ text <| translate language Trans.OnceYouEndYourGroupEncounter ]
                             ]
                         , div
                             [ class "actions" ]
@@ -120,10 +122,10 @@ view language session model =
                 ]
             , ul [ class "links-head" ]
                 [ li
-                    [ onClick <| SetRedirectPage <| SessionPage AttendancePage ]
+                    [ onClick <| SetRedirectPage <| UserPage <| SessionPage sessionId AttendancePage ]
                     [ a [] [ span [ class "icon-completed" ] [] ] ]
                 , li
-                    [ onClick <| SetRedirectPage <| SessionPage ParticipantsPage ]
+                    [ onClick <| SetRedirectPage <| UserPage <| SessionPage sessionId ParticipantsPage ]
                     [ a [] [ span [ class "icon-mother" ] [] ] ]
                 , li
                     [ class "active" ]
@@ -150,7 +152,7 @@ view language session model =
                     [ class "ui fluid primary button"
                     , onClick <| ShowEndSessionDialog True
                     ]
-                    [ text <| translate language Trans.EndSession ]
+                    [ text <| translate language Trans.EndGroupEncounter ]
                 ]
             ]
         , viewModal endSessionDialog

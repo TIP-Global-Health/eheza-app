@@ -80,10 +80,10 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $account = $this->drupalCreateUser();
 
     $role = user_role_load_by_name('administrator');
-    user_multiple_role_edit([$account->uid], 'add_role', $role->rid);
+    $account->roles[$role->rid] = $role->name;
+    user_save($account);
 
-    // Load the user to update the roles.
-    return user_load($account->uid);
+    return $account;
   }
 
   /**
@@ -99,14 +99,14 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $account = $this->drupalCreateUser();
 
     $role = user_role_load_by_name('nurse');
-    user_multiple_role_edit([$account->uid], 'add_role', $role->rid);
+    $account->roles[$role->rid] = $role->name;
+    user_save($account);
 
     $wrapper = entity_metadata_wrapper('user', $account);
     $wrapper->field_clinics->set([$clinic_id]);
     $wrapper->save();
 
-    // Load the user to update the roles.
-    return user_load($account->uid);
+    return $account;
   }
 
   /**
@@ -124,7 +124,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create a mother.
    *
-   * @param string $clinic_id
+   * @param int $clinic_id
    *   The clinic to assign the mother to.
    *
    * @return int
@@ -132,12 +132,12 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    */
   public function createMother($clinic_id) {
     $node = $this->drupalCreateNode([
-      'type' => 'mother',
+      'type' => 'person',
       'title' => $this->randomName(),
     ]);
 
     $wrapper = entity_metadata_wrapper('node', $node);
-    $wrapper->field_date_birth->set(strtotime('1998-07-01'));
+    $wrapper->field_birth_date->set(strtotime('1998-07-01'));
     $wrapper->field_clinic->set($clinic_id);
     $wrapper->field_ubudehe->set(1);
     $wrapper->field_education_level->set(2);
@@ -157,18 +157,49 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    */
   public function createChild($mother_id) {
     $node = $this->drupalCreateNode([
-      'type' => 'child',
+      'type' => 'person',
       'title' => $this->randomName(),
     ]);
 
     $wrapper = entity_metadata_wrapper('node', $node);
-    $wrapper->field_mother->set($mother_id);
-    $wrapper->field_date_birth->set(strtotime('2015-06-27'));
+    $wrapper->field_birth_date->set(strtotime('2015-06-27'));
     $wrapper->field_gender->set('male');
+    $wrapper->save();
+
+    $this->createRelationship($mother_id, $node->nid, HEDLEY_PERSON_RELATED_BY_PARENT_OF);
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a relationship.
+   *
+   * See HEDLEY_PERSON_RELATED_BY... for constants.
+   *
+   * @param int $person_id
+   *   The persons's node ID.
+   * @param int $related_to
+   *   The ID of the person related to
+   * @param string $related_by
+   *   How are the persons related?
+   *
+   * @return int
+   *   The relationship's node ID.
+   */
+  function createRelationship ($person_id, $related_to, $related_by) {
+    $node = $this->drupalCreateNode([
+      'type' => 'relationship',
+    ]);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($person_id);
+    $wrapper->field_related_to->set($related_to);
+    $wrapper->field_related_by->set($related_by);
     $wrapper->save();
 
     return $node->nid;
   }
+
 
   /**
    * Create a session for the clinic, starting today.
@@ -225,7 +256,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $node = $this->drupalCreateNode(['type' => 'family_planning']);
 
     $wrapper = entity_metadata_wrapper('node', $node);
-    $wrapper->field_mother->set($mother_id);
+    $wrapper->field_person->set($mother_id);
     $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_session->set($session_id);
     $wrapper->field_family_planning_signs->set(["pill"]);
@@ -254,7 +285,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $node = $this->drupalCreateNode(['type' => 'height']);
 
     $wrapper = entity_metadata_wrapper('node', $node);
-    $wrapper->field_child->set($child_id);
+    $wrapper->field_person->set($child_id);
     $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_session->set($session_id);
     $wrapper->field_height->set($height);
@@ -283,7 +314,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $node = $this->drupalCreateNode(['type' => 'weight']);
 
     $wrapper = entity_metadata_wrapper('node', $node);
-    $wrapper->field_child->set($child_id);
+    $wrapper->field_person->set($child_id);
     $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_session->set($session_id);
     $wrapper->field_weight->set($weight);

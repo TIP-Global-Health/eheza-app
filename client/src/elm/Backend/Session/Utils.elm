@@ -1,290 +1,158 @@
-module Backend.Session.Utils exposing (activeClinicName, emptyMotherMeasurementData, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMyMother, getPhotoUrls, isAuthorized, isClosed, makeEditableSession, mapAllChildEdits, mapChildEdits, mapMotherEdits, setPhotoFileId)
+module Backend.Session.Utils exposing (emptyMotherMeasurementData, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother, isAuthorized, isClosed)
 
-import Backend.Child.Model exposing (Child)
+import AllDict
+import AllDictList
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Mother.Model exposing (Mother)
-import Backend.Session.Model exposing (EditableSession, OfflineSession)
-import EveryDict
-import EveryDictList
+import Backend.Nurse.Model exposing (Nurse)
+import Backend.Person.Model exposing (Person)
+import Backend.Session.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
+import Lazy exposing (Lazy, lazy)
 import RemoteData exposing (RemoteData(..))
 import Time.Date
-import User.Model exposing (User)
 
 
 {-| Given a mother's id, get all her children from the offline session.
-
-  - If we can't find the mother in the OfflineSession, we just return an
-    empty list. So, it's the caller's job to know whether we really have
-    that mother or not.
-
-  - If the mother's data indicates that she has a child, but the child's
-    data isn't in the OfflineSession, we don't include the child in the
-    results. So, it's someone else's job to make sure that the OfflineSession
-    is internally consistent. (The backend sends it that way).
-
 -}
-getChildren : MotherId -> OfflineSession -> List ( ChildId, Child )
+getChildren : PersonId -> OfflineSession -> List ( PersonId, Person )
 getChildren motherId session =
-    getMother motherId session
-        |> Maybe.map
-            (\mother ->
-                mother.children
-                    |> List.filterMap
-                        (\childId ->
-                            EveryDictList.get childId session.children
-                                |> Maybe.map (\child -> ( childId, child ))
-                        )
-            )
+    AllDict.get motherId session.participants.byMotherId
         |> Maybe.withDefault []
-
-
-getChild : ChildId -> OfflineSession -> Maybe Child
-getChild childId session =
-    EveryDictList.get childId session.children
-
-
-getMother : MotherId -> OfflineSession -> Maybe Mother
-getMother motherId session =
-    EveryDictList.get motherId session.mothers
-
-
-getMyMother : ChildId -> OfflineSession -> Maybe ( MotherId, Mother )
-getMyMother childId session =
-    getChild childId session
-        |> Maybe.andThen .motherId
-        |> Maybe.andThen
-            (\motherId ->
-                getMother motherId session
-                    |> Maybe.map (\mother -> ( motherId, mother ))
+        |> List.filterMap
+            (\participant ->
+                AllDictList.get participant.child session.children
+                    |> Maybe.map (\child -> ( participant.child, child ))
             )
 
 
-getChildHistoricalMeasurements : ChildId -> OfflineSession -> ChildMeasurementList
+getChild : PersonId -> OfflineSession -> Maybe Person
+getChild childId session =
+    AllDictList.get childId session.children
+
+
+getMother : PersonId -> OfflineSession -> Maybe Person
+getMother motherId session =
+    AllDictList.get motherId session.mothers
+
+
+getMyMother : PersonId -> OfflineSession -> Maybe ( PersonId, Person )
+getMyMother childId session =
+    AllDict.get childId session.participants.byChildId
+        |> Maybe.withDefault []
+        |> List.head
+        |> Maybe.andThen
+            (\participant ->
+                AllDictList.get participant.adult session.mothers
+                    |> Maybe.map (\person -> ( participant.adult, person ))
+            )
+
+
+getChildHistoricalMeasurements : PersonId -> OfflineSession -> Lazy ChildMeasurementList
 getChildHistoricalMeasurements childId session =
-    EveryDict.get childId session.historicalMeasurements.children
-        |> Maybe.withDefault emptyChildMeasurementList
+    Lazy.map
+        (.historical >> .children >> AllDict.get childId >> Maybe.withDefault emptyChildMeasurementList)
+        session.measurements
 
 
-getMotherHistoricalMeasurements : MotherId -> OfflineSession -> MotherMeasurementList
+getMotherHistoricalMeasurements : PersonId -> OfflineSession -> Lazy MotherMeasurementList
 getMotherHistoricalMeasurements motherId session =
-    EveryDict.get motherId session.historicalMeasurements.mothers
-        |> Maybe.withDefault emptyMotherMeasurementList
+    Lazy.map
+        (.historical >> .mothers >> AllDict.get motherId >> Maybe.withDefault emptyMotherMeasurementList)
+        session.measurements
 
 
 {-| Gets the data in the form that `Measurement.View` (and others) will want.
 -}
-getChildMeasurementData : ChildId -> EditableSession -> MeasurementData ChildMeasurements ChildEdits
+getChildMeasurementData : PersonId -> EditableSession -> Lazy (MeasurementData ChildMeasurements)
 getChildMeasurementData childId session =
-    { current =
-        EveryDict.get childId session.offlineSession.currentMeasurements.children
-            |> Maybe.withDefault emptyChildMeasurements
-    , previous =
-        EveryDict.get childId session.offlineSession.previousMeasurements.children
-            |> Maybe.withDefault emptyChildMeasurements
-    , edits =
-        EveryDict.get childId session.edits.children
-            |> Maybe.withDefault emptyChildEdits
-    , update = session.update
-    }
+    Lazy.map
+        (\measurements ->
+            { current =
+                AllDict.get childId measurements.current.children
+                    |> Maybe.withDefault emptyChildMeasurements
+            , previous =
+                AllDict.get childId measurements.previous.children
+                    |> Maybe.withDefault emptyChildMeasurements
+            , update = session.update
+            }
+        )
+        session.offlineSession.measurements
+
+
+getChildMeasurementData2 : PersonId -> OfflineSession -> Lazy (MeasurementData ChildMeasurements)
+getChildMeasurementData2 childId session =
+    Lazy.map
+        (\measurements ->
+            { current =
+                AllDict.get childId measurements.current.children
+                    |> Maybe.withDefault emptyChildMeasurements
+            , previous =
+                AllDict.get childId measurements.previous.children
+                    |> Maybe.withDefault emptyChildMeasurements
+            , update = NotAsked
+            }
+        )
+        session.measurements
 
 
 {-| Gets the data in the form that `Measurement.View` (and others) will want.
 -}
-getMotherMeasurementData : MotherId -> EditableSession -> MeasurementData MotherMeasurements MotherEdits
+getMotherMeasurementData : PersonId -> EditableSession -> Lazy (MeasurementData MotherMeasurements)
 getMotherMeasurementData motherId session =
-    { current =
-        EveryDict.get motherId session.offlineSession.currentMeasurements.mothers
-            |> Maybe.withDefault emptyMotherMeasurements
-    , previous =
-        EveryDict.get motherId session.offlineSession.previousMeasurements.mothers
-            |> Maybe.withDefault emptyMotherMeasurements
-    , edits =
-        EveryDict.get motherId session.edits.mothers
-            |> Maybe.withDefault emptyMotherEdits
-    , update = session.update
-    }
+    Lazy.map
+        (\measurements ->
+            { current =
+                AllDict.get motherId measurements.current.mothers
+                    |> Maybe.withDefault emptyMotherMeasurements
+            , previous =
+                AllDict.get motherId measurements.previous.mothers
+                    |> Maybe.withDefault emptyMotherMeasurements
+            , update = session.update
+            }
+        )
+        session.offlineSession.measurements
 
 
-emptyMotherMeasurementData : EditableSession -> MeasurementData MotherMeasurements MotherEdits
+getMotherMeasurementData2 : PersonId -> OfflineSession -> Lazy (MeasurementData MotherMeasurements)
+getMotherMeasurementData2 motherId session =
+    Lazy.map
+        (\measurements ->
+            { current =
+                AllDict.get motherId measurements.current.mothers
+                    |> Maybe.withDefault emptyMotherMeasurements
+            , previous =
+                AllDict.get motherId measurements.previous.mothers
+                    |> Maybe.withDefault emptyMotherMeasurements
+            , update = NotAsked
+            }
+        )
+        session.measurements
+
+
+emptyMotherMeasurementData : EditableSession -> MeasurementData MotherMeasurements
 emptyMotherMeasurementData session =
     { current = emptyMotherMeasurements
     , previous = emptyMotherMeasurements
-    , edits = emptyMotherEdits
     , update = session.update
     }
-
-
-{-| Given an OfflineSession for which we don't have edits, fill in default
-values as a starting point for an EditableSession.
--}
-makeEditableSession : OfflineSession -> EditableSession
-makeEditableSession offlineSession =
-    { offlineSession = offlineSession
-    , edits = emptyMeasurementEdits
-    , update = NotAsked
-    , childForms = EveryDict.empty
-    , motherForms = EveryDict.empty
-    }
-
-
-{-| Given a function that changes ChildEdits, apply that to the motherId.
--}
-mapChildEdits : (ChildEdits -> ChildEdits) -> ChildId -> EditableSession -> EditableSession
-mapChildEdits func childId session =
-    let
-        edits =
-            session.edits
-    in
-    EveryDict.get childId edits.children
-        |> Maybe.withDefault emptyChildEdits
-        |> (\childEdits ->
-                { session
-                    | edits =
-                        { edits
-                            | children =
-                                EveryDict.insert childId (func childEdits) edits.children
-                        }
-                }
-           )
-
-
-mapAllChildEdits : (ChildId -> ChildEdits -> ChildEdits) -> EditableSession -> EditableSession
-mapAllChildEdits func session =
-    let
-        edits =
-            session.edits
-    in
-    edits.children
-        |> EveryDict.map func
-        |> (\childEdits ->
-                { session
-                    | edits =
-                        { edits | children = childEdits }
-                }
-           )
-
-
-{-| Given a function that changes MotherEdits, apply that to the motherId.
--}
-mapMotherEdits : (MotherEdits -> MotherEdits) -> MotherId -> EditableSession -> EditableSession
-mapMotherEdits func motherId session =
-    let
-        edits =
-            session.edits
-    in
-    EveryDict.get motherId edits.mothers
-        |> Maybe.withDefault emptyMotherEdits
-        |> (\motherEdits ->
-                { session
-                    | edits =
-                        { edits
-                            | mothers =
-                                EveryDict.insert motherId (func motherEdits) edits.mothers
-                        }
-                }
-           )
-
-
-{-| Return a list of all the photo URLs we ought to cache to work with this offline.
--}
-getPhotoUrls : OfflineSession -> List String
-getPhotoUrls session =
-    let
-        fromMothers =
-            session.mothers
-                |> EveryDictList.values
-                |> List.filterMap .avatarUrl
-
-        fromChildren =
-            session.children
-                |> EveryDictList.values
-                |> List.filterMap .avatarUrl
-
-        fromMeasurements =
-            session.historicalMeasurements.children
-                |> EveryDict.values
-                |> List.map
-                    (\measurements ->
-                        measurements.photos
-                            |> List.map (Tuple.second >> .value >> .url)
-                    )
-                |> List.concat
-    in
-    fromMothers ++ fromChildren ++ fromMeasurements
-
-
-{-| Given a file ID for the provided photo, record that in the edits in our
-editable session.
--}
-setPhotoFileId : Photo -> Int -> EditableSession -> EditableSession
-setPhotoFileId photo id =
-    -- TODO: This could use some generalization ...
-    mapAllChildEdits
-        (\_ edit ->
-            case edit.photo of
-                Unedited ->
-                    edit
-
-                Created created ->
-                    if created.value.url == photo.value.url then
-                        created.value
-                            |> (\value -> { edit | photo = Created { created | value = { value | fid = Just id } } })
-
-                    else
-                        edit
-
-                Edited change ->
-                    let
-                        edited =
-                            change.edited
-                    in
-                    if edited.value.url == photo.value.url then
-                        edited.value
-                            |> (\value ->
-                                    { edit
-                                        | photo =
-                                            Edited
-                                                { backend = change.backend
-                                                , id = change.id
-                                                , edited = { edited | value = { value | fid = Just id } }
-                                                }
-                                    }
-                               )
-
-                    else
-                        edit
-
-                Deleted _ _ ->
-                    edit
-        )
 
 
 {-| Tracks the various ways in which the session ought to be considered closed:
 
-  - Was closed on backend.
-  - Has been closed on device.
+  - Was explicitly closed.
   - Has passed its closed date.
 
 -}
-isClosed : NominalDate -> EditableSession -> Bool
+isClosed : NominalDate -> Session -> Bool
 isClosed currentDate session =
     let
         pastEnd =
-            Time.Date.compare currentDate session.offlineSession.session.scheduledDate.end == GT
+            Time.Date.compare currentDate session.scheduledDate.end == GT
     in
-    session.offlineSession.session.closed
-        || session.edits.explicitlyClosed
-        || pastEnd
+    session.closed || pastEnd
 
 
-isAuthorized : User -> EditableSession -> Bool
-isAuthorized user session =
-    List.member session.offlineSession.session.clinicId user.clinics
-
-
-activeClinicName : EditableSession -> Maybe String
-activeClinicName session =
-    EveryDictList.get session.offlineSession.session.clinicId session.offlineSession.clinics
-        |> Maybe.map .name
+isAuthorized : Nurse -> Session -> Bool
+isAuthorized nurse session =
+    List.member session.clinicId nurse.clinics

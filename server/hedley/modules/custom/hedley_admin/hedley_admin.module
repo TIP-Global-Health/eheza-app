@@ -80,20 +80,7 @@ function hedley_admin_block_view($delta) {
 
   $links = [];
   foreach ($results as $result) {
-    if (strpos($result->link_path, 'mother')) {
-      $is_caregiver_url = strpos($result->options, 'caregiver') && isset($_GET['type']) && $_GET['type'] == 'caregiver';
-      $is_mother_url = !strpos($result->options, 'caregiver') && !isset($_GET['type']) && $_GET['q'] == 'node/add/mother';
-
-      $class = '';
-      if ($is_caregiver_url || $is_mother_url) {
-        $class = ' class="active"';
-      }
-
-      $links[] = '<a href="' . url($result->link_path, unserialize($result->options)) . '"' . $class . '>' . $result->link_title . '</a>';
-    }
-    else {
-      $links[] = l($result->link_title, $result->link_path, unserialize($result->options));
-    }
+    $links[] = l($result->link_title, $result->link_path, unserialize($result->options));
   }
 
   $block = [

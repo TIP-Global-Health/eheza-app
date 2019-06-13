@@ -17,5 +17,5 @@ emptyModel =
 
 type Msg
     = SetActivePage Page
-    | SetCheckedIn MotherId Bool
+    | SetCheckedIn (Maybe AttendanceId) PersonId Bool
     | SetFilter String

@@ -1,24 +1,26 @@
 module Pages.Attendance.Update exposing (update)
 
 import Backend.Session.Model
+import Measurement.Model
 import Pages.Attendance.Model exposing (..)
-import Pages.Model exposing (MsgSession)
+import Pages.Session.Model
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, List MsgSession )
+update : Msg -> Model -> ( Model, Cmd Msg, List Pages.Session.Model.Msg )
 update msg model =
     case msg of
         SetActivePage page ->
             ( { model | filter = "" }
             , Cmd.none
-            , [ Pages.Model.SetActivePage page ]
+            , [ Pages.Session.Model.SetActivePage page ]
             )
 
-        SetCheckedIn motherId checkedIn ->
+        SetCheckedIn attendanceId motherId checkedIn ->
             ( model
             , Cmd.none
-            , [ Pages.Model.MsgEditableSession <|
-                    Backend.Session.Model.SetCheckedIn motherId checkedIn
+            , [ Measurement.Model.SaveAttendance attendanceId checkedIn
+                    |> Backend.Session.Model.MeasurementOutMsgMother motherId
+                    |> Pages.Session.Model.MsgSession
               ]
             )
 

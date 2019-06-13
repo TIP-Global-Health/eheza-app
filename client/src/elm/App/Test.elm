@@ -1,14 +1,13 @@
 module App.Test exposing (all)
 
 import App.Model exposing (..)
-import App.Update exposing (loginConfig)
 import App.View exposing (view)
 import Dict
 import Maybe exposing (withDefault)
-import Pages.Login.Model
+import Pages.Device.Model
+import Pages.PinCode.Model
 import Pusher.Model exposing (Cluster(..), PusherAppKey)
 import RemoteData exposing (RemoteData(..))
-import Restful.Login exposing (checkCachedCredentials)
 import Rollbar
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
@@ -29,7 +28,7 @@ viewConfigErrorTest =
 
 exampleFlags : Flags
 exampleFlags =
-    { credentials = ""
+    { pinCode = ""
     , hostname = ""
     , activeLanguage = "en"
     , activeServiceWorker = False
@@ -72,13 +71,12 @@ testConfigModel =
             , rollbarToken = Rollbar.token "the_token"
             , sandbox = False
             }
-
-        ( loginStatus, cmd ) =
-            checkCachedCredentials loginConfig testConfig.backendUrl (Just "")
     in
     { config = testConfig
-    , loginPage = Pages.Login.Model.emptyModel
-    , login = loginStatus
+    , device = NotAsked
+    , devicePage = Pages.Device.Model.emptyModel
+    , loggedIn = NotAsked
+    , pinCodePage = Pages.PinCode.Model.emptyModel
     }
 
 

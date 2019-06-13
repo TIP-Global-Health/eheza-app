@@ -122,8 +122,7 @@ gulp.task("zscore", [], function() {
     // And turn the JSON into an Elm fixture for testing
     .pipe($.transform('utf8', function(content, file) {
       var moduleName = capitalize(path.basename(file.path, '.json'));
-      return
-        `module ZScore.Fixture.${moduleName} exposing (..)\n\n\njson : String\njson =\n    """${content}"""`;
+      return `module ZScore.Fixture.${moduleName} exposing (..)\n\n\njson : String\njson =\n    """${content}"""`;
     })).pipe($.rename(function(path) {
       path.basename = capitalize(path.basename);
       path.extname = '.elm';

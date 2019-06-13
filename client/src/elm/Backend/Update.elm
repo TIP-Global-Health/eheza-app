@@ -1,125 +1,66 @@
-port module Backend.Update exposing (fetchEditableSession, subscriptions, updateBackend, updateCache)
+module Backend.Update exposing (updateIndexedDb)
 
-{-| This could perhaps be distributed one level down, to
-`Backend.Session.Update`, `Backend.Clinic.Update` etc. Or, perhaps it is nicer
-to keep it together here for now.
--}
-
-import Activity.Utils exposing (setCheckedIn)
+import Activity.Model exposing (SummaryByActivity, SummaryByParticipant)
+import Activity.Utils exposing (getAllChildActivities, getAllMotherActivities, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
+import AllDict
+import AllDictList
 import App.Model
-import Backend.Clinic.Decoder exposing (decodeClinic)
-import Backend.Clinic.Encoder exposing (encodeClinic)
-import Backend.Clinic.Model exposing (Clinic)
+import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
+import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Decoder exposing (decodeMeasurementEdits)
-import Backend.Measurement.Encoder exposing (encodeMeasurementEdits)
-import Backend.Measurement.Model exposing (Edit(..))
-import Backend.Measurement.Utils exposing (backendValue, getPhotosToUpload, mapMeasurementData)
+import Backend.Measurement.Model exposing (HistoricalMeasurements)
+import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMeasurements)
 import Backend.Model exposing (..)
-import Backend.Session.Decoder exposing (decodeOfflineSession, decodeSession, decodeTrainingSessionRequest)
-import Backend.Session.Encoder exposing (encodeOfflineSession, encodeOfflineSessionWithId, encodeSession, encodeTrainingSessionRequest)
-import Backend.Session.Model exposing (EditableSession, MsgEditableSession(..), OfflineSession, Session)
-import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData, getPhotoUrls, makeEditableSession, mapChildEdits, mapMotherEdits, setPhotoFileId)
-import Backend.Utils exposing (withEditableSession)
-import CacheStorage.Model exposing (cachePhotos, clearCachedPhotos)
-import CacheStorage.Update
-import Config.Model exposing (BackendUrl)
-import Dict exposing (Dict)
+import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
+import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
+import Backend.Relationship.Model exposing (RelatedBy(..))
+import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
+import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
+import Backend.Session.Update
+import Backend.Session.Utils exposing (getMyMother)
+import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements)
+import Dict
 import EveryDict
-import EveryDictList
-import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
-import Http exposing (Error)
-import HttpBuilder
-import Json.Decode exposing (field, succeed)
-import Json.Encode exposing (Value, object)
-import Json.Encode.Extra
-import Maybe.Extra exposing (toList)
-import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
-import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityId, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityId, endpoint, fromEntityId, toCmd, toEntityId, withParamsEncoder, withValueEncoder, withoutDecoder)
-import Rollbar
-import Utils.WebData exposing (resetError, resetSuccess)
+import Json.Encode exposing (object)
+import Lazy exposing (lazy)
+import Maybe.Extra
+import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Person.Model
+import Pages.Relationship.Model
+import RemoteData exposing (RemoteData(..), WebData)
+import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityUuid, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityUuid, endpoint, fromEntityUuid, toCmd, toEntityUuid, toTask, withKeyEncoder, withParamsEncoder, withValueEncoder, withoutDecoder)
+import Task
+import Time.Date
+import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
+import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
-clinicEndpoint : ReadWriteEndPoint Error ClinicId Clinic Clinic ()
-clinicEndpoint =
-    drupalEndpoint "api/clinics" decodeClinic
-        |> withValueEncoder (object << encodeClinic)
-
-
-{-| Type-safe params ... how nice!
--}
-type alias SessionParams =
-    { openAfter : Maybe NominalDate
-    }
-
-
-encodeSessionParams : SessionParams -> List ( String, String )
-encodeSessionParams params =
-    params.openAfter
-        |> Maybe.map (\open -> ( "open_after", Gizra.NominalDate.formatYYYYMMDD open ))
-        |> Maybe.Extra.toList
-
-
-sessionEndpoint : ReadWriteEndPoint Error SessionId Session Session SessionParams
-sessionEndpoint =
-    drupalEndpoint "api/sessions" decodeSession
-        |> withValueEncoder (object << encodeSession)
-        |> withParamsEncoder encodeSessionParams
-
-
-trainingSessionsEndpoint : ReadWriteEndPoint Error () TrainingSessionRequest TrainingSessionRequest ()
-trainingSessionsEndpoint =
-    -- This one is a little different because we're not expecting a key. So, we
-    -- just decode the key successfully as `()`. We can't use `drupalEndpont`
-    -- directly, because it assumes the key is some kind of `EntityId` (which
-    -- is normally convenient). This could change in future if the backend
-    -- were to queue the request and give it an ID, instead of executing it
-    -- immediately.
-    endpoint "api/training_session_actions" (succeed ()) decodeTrainingSessionRequest drupalBackend
-        |> withValueEncoder encodeTrainingSessionRequest
-
-
-offlineSessionEndpoint : ReadWriteEndPoint Error SessionId OfflineSession OfflineSession ()
-offlineSessionEndpoint =
-    drupalEndpoint "api/offline_sessions" decodeOfflineSession
-        |> withValueEncoder (object << encodeOfflineSession)
-
-
-updateBackend : BackendUrl -> String -> MsgBackend -> ModelBackend -> ( ModelBackend, Cmd MsgBackend, List MsgCached )
-updateBackend backendUrl accessToken msg model =
+updateIndexedDb : NominalDate -> Maybe NurseId -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
+updateIndexedDb currentDate nurseId msg model =
     let
-        crud =
-            applyBackendUrl backendUrl
-                |> applyAccessToken accessToken
-
-        resetErrorsIfSucceeded data =
-            sequenceExtra (updateBackend backendUrl accessToken) <|
-                case data of
-                    Success _ ->
-                        [ ResetErrors ]
-
-                    _ ->
-                        []
-
-        resetErrorsIfOk result =
-            sequenceExtra (updateBackend backendUrl accessToken) <|
-                case result of
-                    Ok _ ->
-                        [ ResetErrors ]
-
-                    Err _ ->
-                        []
+        sw =
+            applyBackendUrl "/sw"
     in
     case msg of
+        FetchChildMeasurements childId ->
+            ( { model | childMeasurements = AllDict.insert childId Loading model.childMeasurements }
+            , sw.get childMeasurementListEndpoint childId
+                |> toCmd (RemoteData.fromResult >> HandleFetchedChildMeasurements childId)
+            , []
+            )
+
+        HandleFetchedChildMeasurements childId data ->
+            ( { model | childMeasurements = AllDict.insert childId data model.childMeasurements }
+            , Cmd.none
+            , []
+            )
+
         FetchClinics ->
-            -- Ultimately, it would be nice to preserve any existing value of clnics
-            -- if we're reloading ... will need an `UpdateableWebData` for that.
             ( { model | clinics = Loading }
-            , crud.select clinicEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedClinics)
+            , sw.select clinicEndpoint ()
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList >> AllDictList.sortBy .name) >> HandleFetchedClinics)
             , []
             )
 
@@ -128,962 +69,920 @@ updateBackend backendUrl accessToken msg model =
             , Cmd.none
             , []
             )
-                |> resetErrorsIfSucceeded clinics
 
-        PostSession session ->
-            ( { model | postSessionRequest = Loading }
-            , crud.post sessionEndpoint session
-                |> toCmd (RemoteData.fromResult >> HandlePostedSession)
+        FetchEditableSession id ->
+            -- This one is a bit special. What we're asking for is not a fetch
+            -- from IndexedDB as such, but a certain kind of organization of
+            -- the data.
+            ( { model | editableSessions = AllDict.insert id (makeEditableSession id model) model.editableSessions }
+            , Cmd.none
             , []
             )
 
-        PostTrainingSessionRequest request ->
-            ( { model | postTrainingSessionRequest = Loading }
-            , crud.post trainingSessionsEndpoint request
-                -- We use the Tuple.second becausw we're only interested the
-                -- value ... the backend doesn't (currently) send a key.
-                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.second >> HandleTrainingSessionResponse)
-            , []
-            )
-
-        HandleTrainingSessionResponse webdata ->
+        FetchEveryCounselingSchedule ->
             let
-                futureSessions =
-                    case webdata of
-                        Success _ ->
-                            -- This will trigger the lazy load of the created sessions
-                            -- (or the sessions remaining after deletion).
-                            NotAsked
+                topicTask =
+                    sw.select counselingTopicEndpoint ()
+                        |> toTask
+                        |> Task.map (.items >> EntityUuidDict.fromList)
+                        |> RemoteData.fromTask
 
-                        _ ->
-                            model.futureSessions
+                scheduleTask =
+                    sw.select counselingScheduleEndpoint ()
+                        |> toTask
+                        |> Task.map (.items >> List.map Tuple.second)
+                        |> RemoteData.fromTask
+            in
+            ( { model | everyCounselingSchedule = Loading }
+            , Task.map2 (RemoteData.map2 combineCounselingSchedules) topicTask scheduleTask
+                |> Task.perform HandleFetchedEveryCounselingSchedule
+            , []
+            )
 
-                newModel =
-                    { model
-                        | postTrainingSessionRequest = webdata
-                        , futureSessions = futureSessions
+        HandleFetchedEveryCounselingSchedule data ->
+            ( { model | everyCounselingSchedule = data }
+            , Cmd.none
+            , []
+            )
+
+        FetchExpectedParticipants sessionId ->
+            let
+                merge value accum =
+                    accum
+                        |> Maybe.withDefault []
+                        |> (::) value
+                        |> Just
+
+                indexBy accessor _ value accum =
+                    AllDict.update (accessor value) (merge value) accum
+
+                processIndex byId =
+                    { byId = byId
+                    , byChildId = AllDict.foldl (indexBy .child) EntityUuidDict.empty byId
+                    , byMotherId = AllDict.foldl (indexBy .adult) EntityUuidDict.empty byId
                     }
             in
-            ( newModel, Cmd.none, [] )
+            ( { model | expectedParticipants = AllDict.insert sessionId Loading model.expectedParticipants }
+            , sw.select pmtctParticipantEndpoint (ParticipantsForSession sessionId)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDict.fromList >> processIndex) >> HandleFetchedExpectedParticipants sessionId)
+            , []
+            )
 
-        HandlePostedSession webdata ->
+        HandleFetchedExpectedParticipants sessionId data ->
+            ( { model | expectedParticipants = AllDict.insert sessionId data model.expectedParticipants }
+            , Cmd.none
+            , []
+            )
+
+        FetchPeopleByName name ->
             let
-                newModel =
-                    case webdata of
-                        Success ( sessionId, session ) ->
-                            -- We'll unconditionally insert this into
-                            -- futureSessions at the moment, to show
-                            -- success ... if we cache data differently at
-                            -- some point we'll need to change this.
-                            let
-                                futureSessions =
-                                    RemoteData.map
-                                        (Tuple.mapSecond (EveryDictList.insert sessionId session))
-                                        model.futureSessions
-                            in
-                            { model
-                                | postSessionRequest = webdata
-                                , futureSessions = futureSessions
-                            }
-
-                        _ ->
-                            { model | postSessionRequest = webdata }
+                trimmed =
+                    String.trim name
             in
-            ( newModel, Cmd.none, [] )
-
-        FetchFutureSessions date ->
-            ( { model | futureSessions = Loading }
-            , crud.select sessionEndpoint (SessionParams (Just date))
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedSessions date)
+            -- We'll limit the search to 100 each for now ... basically,
+            -- just to avoid truly pathological cases.
+            ( { model | personSearches = Dict.insert trimmed Loading model.personSearches }
+            , sw.selectRange personEndpoint { nameContains = Just trimmed } 0 (Just 100)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedPeopleByName trimmed)
             , []
             )
 
-        HandleFetchedSessions date result ->
-            -- We remember the date as well as the result, so that we can
-            -- know whether we need to reload (i.e. when the date changes,
-            -- due to the passage of time)
-            ( { model | futureSessions = RemoteData.map (\sessions -> ( date, sessions )) result }
-            , Cmd.none
-            , []
-            )
-                |> resetErrorsIfSucceeded result
-
-        FetchOfflineSessionFromBackend sessionId ->
-            ( { model | offlineSessionRequest = Loading }
-            , crud.get offlineSessionEndpoint sessionId
-                |> toCmd (Result.map (\session -> ( sessionId, session )) >> HandleFetchedOfflineSessionFromBackend)
-            , []
-            )
-
-        HandleFetchedOfflineSessionFromBackend result ->
-            resetErrorsIfOk result <|
-                case result of
-                    Err error ->
-                        ( { model | offlineSessionRequest = RemoteData.fromResult (Result.map Tuple.first result) }
-                        , Cmd.none
-                        , []
-                        )
-
-                    Ok ( sessionId, session ) ->
-                        -- We immediately kick off a save into the cache, and to cache the photos we'll need
-                        ( { model | offlineSessionRequest = Success sessionId }
-                        , Cmd.none
-                        , [ SetEditableSession sessionId (makeEditableSession session)
-                          , MsgCacheStorage <| cachePhotos <| getPhotoUrls session
-                          ]
-                        )
-
-        -- Like FetchOfflineSessionFromBackend, but just tries to fetch in
-        -- the background ...  doesn't complain if it doesn't work.  We'll
-        -- do this on reload, to pick up any changes made in the admin UI
-        -- on the backend. It can be done quite simply, because we don't
-        -- mutate the offlineSession ... we can just substitute it in.  An
-        -- alternative would be to push changes to clients, but that's a
-        -- bit tricky when we're contemplating periods offline ... see
-        -- disucssion at <https://github.com/Gizra/ihangane/issues/436>
-        RefetchOfflineSession sessionId ->
-            ( model
-            , crud.get offlineSessionEndpoint sessionId
-                |> toCmd (Result.map (\session -> ( sessionId, session )) >> HandleRefetchedOfflineSession)
-            , []
-            )
-
-        HandleRefetchedOfflineSession result ->
-            resetErrorsIfOk result <|
-                case result of
-                    Err error ->
-                        -- We just ignore errors ... we may well be
-                        -- offline, which is fine.
-                        ( model, Cmd.none, [] )
-
-                    Ok ( sessionId, session ) ->
-                        -- We immediately kick off a save into the cache,
-                        -- and to cache the photos we'll need.  The photo
-                        -- URLs appear to change when the photo changes, so
-                        -- we have code in app.js that won't re-cache a
-                        -- photo we already have.
-                        ( model
-                        , Cmd.none
-                        , [ SetOfflineSession sessionId session
-                          , MsgCacheStorage <| cachePhotos <| getPhotoUrls session
-                          ]
-                        )
-
-        ResetErrors ->
-            -- Reset some error conditions to `NotAsked`, so that they will
-            -- be automatically retried if needed.
-            ( { model
-                | clinics = resetError model.clinics
-                , futureSessions = resetError model.futureSessions
-              }
+        HandleFetchedPeopleByName name data ->
+            ( { model | personSearches = Dict.insert (String.trim name) data model.personSearches }
             , Cmd.none
             , []
             )
 
-        ResetSessionRequests ->
-            -- Reset session requests to `NotAsked` if `Error` or `Success`.
-            -- This is for requests where we're showing an  indication in the
-            -- UI, and we want to stop doing that at certain moments.
-            ( { model
-                | postSessionRequest = resetError <| resetSuccess model.postSessionRequest
-                , postTrainingSessionRequest = resetError <| resetSuccess model.postTrainingSessionRequest
-              }
-            , Cmd.none
-            , []
-            )
-
-        ResetOfflineSessionRequest ->
-            ( { model | offlineSessionRequest = NotAsked }
-            , Cmd.none
-            , []
-            )
-
-        UploadEdits sessionId edits ->
-            -- For now at least, our strategy is this:
-            --
-            -- 1. Get the photos we need to upload.
-            -- 2. If there are some, upload the first one.
-            -- 3. If not, upload the actual edits.
-            --
-            -- The response from trying to upload a photo will call back to
-            -- here, so we'll either upload the next photo, or upload the
-            -- edits themselves if we're done. Basically, a kind of
-            -- asynchronous recursion, I suppose.
-            --
-            -- There may be a more sensible way of doing this ... for instance
-            -- we could try uploading photos in parrallel? But this is
-            -- fairly comprehensible.
-            case getPhotosToUpload edits of
-                first :: _ ->
-                    -- We still have one to upload, so kick off a request.
-                    --
-                    -- TODO: We could be more sophisticated with `uploadEditsRequest`
-                    -- to show exactly what stage we're at ... e.g. how many photos
-                    -- are remaining?
-                    ( { model | uploadEditsRequest = Loading }
-                    , Cmd.none
-                    , []
-                    )
-                        |> sequenceExtra (updateBackend backendUrl accessToken)
-                            (List.map UploadPhoto [ first ])
-
-                [] ->
-                    -- All photos have been uploaded, so actually upload the edits
-                    ( { model | uploadEditsRequest = Loading }
-                    , crud.patchAny offlineSessionEndpoint sessionId (encodeMeasurementEdits edits)
-                        |> withoutDecoder
-                        |> toCmd (HandleUploadedEdits sessionId)
-                    , []
-                    )
-
-        HandleUploadedEdits sessionId result ->
-            resetErrorsIfOk result <|
-                case result of
-                    Err error ->
-                        ( { model | uploadEditsRequest = RemoteData.fromResult (Result.map (always sessionId) result) }
-                        , Cmd.none
-                        , []
-                        )
-
-                    Ok _ ->
-                        -- Record success, and delete our locally cached session.
-                        -- We also invalidate our `futureSessions`, which will indirectly make us fetch them again.
-                        ( { model
-                            | uploadEditsRequest = Success sessionId
-                            , futureSessions = NotAsked
-                          }
-                        , Cmd.none
-                        , [ DeleteEditableSession ]
-                        )
-
-        ResetUploadEditsRequest ->
-            ( { model | uploadEditsRequest = NotAsked }
-            , Cmd.none
-            , []
-            )
-
-        UploadPhoto photo ->
-            -- This is a bit of a special HTTP request, so we don't use
-            -- the ordinary endpoints.
+        FetchParticipantsForPerson personId ->
             let
-                json =
-                    object
-                        [ ( "backendUrl", Json.Encode.string backendUrl )
-                        , ( "accessToken", Json.Encode.string accessToken )
-                        , ( "cachedUrl", Json.Encode.string photo.value.url )
-                        ]
+                query1 =
+                    sw.select pmtctParticipantEndpoint (ParticipantsForChild personId)
+                        |> toTask
+                        |> Task.map (.items >> EntityUuidDict.fromList)
+                        |> RemoteData.fromTask
 
-                decoder =
-                    -- We expect what Drupal returns when you upload a file.
-                    decodeSingleDrupalEntity (field "id" decodeInt)
-
-                cmd =
-                    HttpBuilder.post "backend-upload/images"
-                        |> HttpBuilder.withJsonBody json
-                        |> HttpBuilder.withExpect (Http.expectJson decoder)
-                        |> HttpBuilder.send (HandleUploadPhotoResponse photo)
+                query2 =
+                    sw.select pmtctParticipantEndpoint (ParticipantsForAdult personId)
+                        |> toTask
+                        |> Task.map (.items >> EntityUuidDict.fromList)
+                        |> RemoteData.fromTask
             in
-            ( model
-            , cmd
+            ( { model | participantsByPerson = AllDict.insert personId Loading model.participantsByPerson }
+            , Task.map2 (RemoteData.map2 AllDict.union) query1 query2
+                |> Task.perform (HandleFetchedParticipantsForPerson personId)
             , []
             )
 
-        HandleUploadPhotoResponse photo result ->
-            case result of
-                Err err ->
-                    -- If we get an error, record that in our `uploadEditsRequest`
-                    ( { model | uploadEditsRequest = Failure err }
-                    , Cmd.none
-                    , []
-                    )
-
-                Ok fileId ->
-                    -- So, first we need to update our editable session to record that
-                    -- this photo now has a fileId. That needs to be cached, so that
-                    -- we don't upload the photo again (assuming the page gets reloaded
-                    -- etc.). Then, we want to try uploading the edits again, which will
-                    -- either upload the next photo, or actually upload the edits, if
-                    -- we're done.
-                    --
-                    -- Then, we kick off another request to upload the edits. We need to
-                    -- do that via MsgCached, because we don't actually know
-                    -- what the session is here ...
-                    ( model
-                    , Cmd.none
-                    , [ MsgEditableSession <| SetPhotoFileId photo fileId
-                      , ContinueUploadingEdits
-                      ]
-                    )
-
-
-updateCache : Maybe UserId -> NominalDate -> MsgCached -> ModelCached -> ( ModelCached, Cmd MsgCached, List App.Model.Msg )
-updateCache user currentDate msg model =
-    case msg of
-        CacheEditableSession ->
-            withEditableSession ( model, Cmd.none, [] )
-                (\sessionId session ->
-                    let
-                        json =
-                            ( encodeOfflineSessionWithId sessionId session.offlineSession
-                                |> Json.Encode.encode 0
-                            , encodeMeasurementEdits session.edits
-                                |> Json.Encode.encode 0
-                            )
-                    in
-                    ( { model | editableSession = Success <| Just ( sessionId, { session | update = Loading } ) }
-                    , cacheEditableSession json
-                    , []
-                    )
-                )
-                model
-
-        CacheEditableSessionResult result ->
-            -- TODO: Actually do something with the result. For now, we just mark Success.
-            withEditableSession ( model, Cmd.none, [] )
-                (\sessionId session ->
-                    ( { model | editableSession = Success <| Just ( sessionId, { session | update = Success () } ) }
-                    , Cmd.none
-                    , []
-                    )
-                )
-                model
-
-        CacheEdits ->
-            withEditableSession ( model, Cmd.none, [] )
-                (\sessionId session ->
-                    ( { model | editableSession = Success <| Just ( sessionId, { session | update = Loading } ) }
-                    , encodeMeasurementEdits session.edits
-                        |> Json.Encode.encode 0
-                        |> cacheEdits
-                    , []
-                    )
-                )
-                model
-
-        CacheEditsResult result ->
-            -- TODO: Actually consult the result ...
-            withEditableSession ( model, Cmd.none, [] )
-                (\sessionId session ->
-                    ( { model | editableSession = Success <| Just ( sessionId, { session | update = Success () } ) }
-                    , Cmd.none
-                    , []
-                    )
-                )
-                model
-
-        ContinueUploadingEdits ->
-            withEditableSession ( model, Cmd.none, [] )
-                (\sessionId session ->
-                    ( model
-                    , Cmd.none
-                    , [ UploadEdits sessionId session.edits
-                            |> App.Model.MsgBackend
-                            |> App.Model.MsgLoggedIn
-                      ]
-                    )
-                )
-                model
-
-        DeleteEditableSession ->
-            ( { model | editableSession = Success Nothing }
-            , deleteEditableSession ()
-            , []
-            )
-                |> sequenceExtra (updateCache user currentDate)
-                    [ MsgCacheStorage clearCachedPhotos ]
-
-        FetchEditableSessionFromCache ->
-            ( { model | editableSession = Loading }
-            , fetchEditableSession ()
-            , []
-            )
-
-        -- We just get this at startup time. So, we also kick off a re-check
-        -- to see if the offline session has changed.
-        HandleEditableSession ( offlineSessionJson, editsJson ) ->
-            let
-                decodedOfflineSession =
-                    if offlineSessionJson == "" then
-                        -- If the port gives us an empty string, then there was
-                        -- nothing found in local storage. This is fine ...  it
-                        -- just means we don't have any. So, we indicate an Ok
-                        -- result, but nothing found.
-                        Ok Nothing
-
-                    else
-                        -- If local storage had something other than an empty
-                        -- string, we try to decode it. This should succeed, so
-                        -- we indicate an error if it doesn't. If it does
-                        -- succeed, we wrap it in `Just`.
-                        Json.Decode.decodeString
-                            (Json.Decode.map2 (,) (Json.Decode.field "id" decodeEntityId) decodeOfflineSession)
-                            offlineSessionJson
-                            |> Result.map Just
-
-                decodedEdits =
-                    if editsJson == "" then
-                        -- If the port gave us an empty string for editsJson,
-                        -- that means nothing was found in local storage. This
-                        -- is fine ... it just means we don't have any. So, we
-                        -- indicate an OK result, but Nothing found.
-                        Ok Nothing
-
-                    else
-                        -- If we got something other than an empty string, we
-                        -- try to decode it. We wrap it in a `Just` -- that
-                        -- way, we either succeed in decoding and get actual
-                        -- edits, or we fail in decoding (where we should have
-                        -- succeeded, so it's an error).
-                        Json.Decode.decodeString decodeMeasurementEdits editsJson
-                            |> Result.map Just
-
-                decodedEditableSession =
-                    case ( decodedOfflineSession, decodedEdits ) of
-                        ( Ok Nothing, Ok Nothing ) ->
-                            -- If both were absent from local storage, then
-                            -- that's normal ... we just don't have a cached
-                            -- session.
-                            Success Nothing
-
-                        ( Ok (Just ( sessionId, offlineSession )), Ok Nothing ) ->
-                            -- If we have the offline session, but there were
-                            -- no edits in local storage, then we can start
-                            -- with some blank edits.
-                            ( sessionId, makeEditableSession offlineSession )
-                                |> Just
-                                |> Success
-
-                        ( Ok Nothing, Ok (Just _) ) ->
-                            -- If we have the edits, but no offline session, then
-                            -- something has gone wrong. So, we indicate that.
-                            FoundEditsButNoSession
-                                { editsJson = editsJson }
-                                |> Failure
-
-                        ( Ok (Just ( sessionId, offlineSession )), Ok (Just edits) ) ->
-                            -- We've got both, so this is the happy path
-                            makeEditableSession offlineSession
-                                |> (\session ->
-                                        ( sessionId
-                                        , { session | edits = edits }
-                                        )
-                                   )
-                                |> Just
-                                |> Success
-
-                        ( Err offlineSessionError, Ok _ ) ->
-                            DecodersFailed
-                                { editsJson = editsJson
-                                , editsError = Nothing
-                                , offlineSessionJson = offlineSessionJson
-                                , offlineSessionError = Just offlineSessionError
-                                }
-                                |> Failure
-
-                        ( Ok _, Err editsError ) ->
-                            DecodersFailed
-                                { editsJson = editsJson
-                                , editsError = Just editsError
-                                , offlineSessionJson = offlineSessionJson
-                                , offlineSessionError = Nothing
-                                }
-                                |> Failure
-
-                        ( Err offlineSessionError, Err editsError ) ->
-                            DecodersFailed
-                                { editsJson = editsJson
-                                , editsError = Just editsError
-                                , offlineSessionJson = offlineSessionJson
-                                , offlineSessionError = Just offlineSessionError
-                                }
-                                |> Failure
-
-                msgs =
-                    case decodedEditableSession of
-                        Success (Just ( sessionId, _ )) ->
-                            -- This is where we're re-checking to see if the backend
-                            -- has any updates to the offlineSession.
-                            [ RefetchOfflineSession sessionId
-                                |> App.Model.MsgBackend
-                                |> App.Model.MsgLoggedIn
-                            ]
-
-                        Success Nothing ->
-                            []
-
-                        Failure err ->
-                            [ App.Model.SendRollbar Rollbar.Error "Error getting session from local storage" (encodeForRollbar err)
-                            ]
-
-                        NotAsked ->
-                            []
-
-                        Loading ->
-                            []
-            in
-            ( { model | editableSession = decodedEditableSession }
-            , Cmd.none
-            , msgs
-            )
-
-        MsgCacheStorage subMsg ->
-            let
-                ( subModel, subCmd ) =
-                    CacheStorage.Update.update subMsg model.cacheStorage
-            in
-            ( { model | cacheStorage = subModel }
-            , Cmd.map MsgCacheStorage subCmd
-            , []
-            )
-
-        MsgEditableSession subMsg ->
-            case subMsg of
-                CloseSession ->
-                    withEditableSession ( model, Cmd.none, [] )
-                        (\sessionId session ->
-                            let
-                                newSession =
-                                    (\edits -> { session | edits = { edits | explicitlyClosed = True } })
-                                        session.edits
-                            in
-                            ( { model | editableSession = Success <| Just ( sessionId, newSession ) }
-                            , Cmd.none
-                            , []
-                            )
-                                |> sequenceExtra (updateCache user currentDate) [ CacheEdits ]
-                        )
-                        model
-
-                MeasurementOutMsgChild childId outMsg ->
-                    withEditableSession ( model, Cmd.none, [] )
-                        (\sessionId session ->
-                            let
-                                newSession =
-                                    makeChildEdit currentDate childId outMsg sessionId session
-                            in
-                            ( { model | editableSession = Success <| Just ( sessionId, newSession ) }
-                            , Cmd.none
-                            , []
-                            )
-                                |> sequenceExtra (updateCache user currentDate) [ CacheEdits ]
-                        )
-                        model
-
-                MeasurementOutMsgMother motherId outMsg ->
-                    withEditableSession ( model, Cmd.none, [] )
-                        (\sessionId session ->
-                            let
-                                newSession =
-                                    makeMotherEdit user currentDate motherId outMsg sessionId session
-                            in
-                            ( { model | editableSession = Success <| Just ( sessionId, newSession ) }
-                            , Cmd.none
-                            , []
-                            )
-                                |> sequenceExtra (updateCache user currentDate) [ CacheEdits ]
-                        )
-                        model
-
-                RefetchSession ->
-                    withEditableSession ( model, Cmd.none, [] )
-                        (\sessionId _ ->
-                            ( model
-                            , Cmd.none
-                            , [ RefetchOfflineSession sessionId
-                                    |> App.Model.MsgBackend
-                                    |> App.Model.MsgLoggedIn
-                              ]
-                            )
-                        )
-                        model
-
-                SetCheckedIn motherId checkedIn ->
-                    withEditableSession ( model, Cmd.none, [] )
-                        (\sessionId session ->
-                            ( { model | editableSession = Success <| Just ( sessionId, setCheckedIn checkedIn motherId session ) }
-                            , Cmd.none
-                            , []
-                            )
-                                |> sequenceExtra (updateCache user currentDate) [ CacheEdits ]
-                        )
-                        model
-
-                SetChildForm childId form ->
-                    withEditableSession ( model, Cmd.none, [] )
-                        (\sessionId session ->
-                            ( { model | editableSession = Success <| Just ( sessionId, { session | childForms = EveryDict.insert childId form session.childForms } ) }
-                            , Cmd.none
-                            , []
-                            )
-                        )
-                        model
-
-                SetMotherForm motherId form ->
-                    withEditableSession ( model, Cmd.none, [] )
-                        (\sessionId session ->
-                            ( { model | editableSession = Success <| Just ( sessionId, { session | motherForms = EveryDict.insert motherId form session.motherForms } ) }
-                            , Cmd.none
-                            , []
-                            )
-                        )
-                        model
-
-                SetPhotoFileId photo id ->
-                    withEditableSession ( model, Cmd.none, [] )
-                        (\sessionId session ->
-                            ( { model | editableSession = Success <| Just ( sessionId, setPhotoFileId photo id session ) }
-                            , Cmd.none
-                            , []
-                            )
-                                |> sequenceExtra (updateCache user currentDate) [ CacheEdits ]
-                        )
-                        model
-
-        SetEditableSession sessionId session ->
-            ( { model | editableSession = Success <| Just ( sessionId, session ) }
+        HandleFetchedParticipantsForPerson personId data ->
+            ( { model | participantsByPerson = AllDict.insert personId data model.participantsByPerson }
             , Cmd.none
             , []
             )
-                |> sequenceExtra (updateCache user currentDate) [ CacheEditableSession ]
 
-        -- Like SetEditableSession, but we just substitute the offlineSesttion part.
-        -- This works because we never mutate the offlineSession locally.
-        SetOfflineSession sessionId offlineSession ->
-            withEditableSession ( model, Cmd.none, [] )
-                (\currentId currentSession ->
-                    if sessionId == currentId then
+        FetchRelationshipsForPerson personId ->
+            let
+                -- We run two queries, one for the `person` field, and one for
+                -- `related_to` One could do this as an OR in the service
+                -- worker instead, but it would basically run two queries
+                -- anyway, so it's no more efficient.
+                query1 =
+                    sw.select relationshipEndpoint { person = Just personId, relatedTo = Nothing }
+                        |> toTask
+                        |> Task.map (.items >> EntityUuidDictList.fromList >> AllDictList.filterMap (always (toMyRelationship personId)))
+                        |> RemoteData.fromTask
+
+                query2 =
+                    sw.select relationshipEndpoint { person = Nothing, relatedTo = Just personId }
+                        |> toTask
+                        |> Task.map (.items >> EntityUuidDictList.fromList >> AllDictList.filterMap (always (toMyRelationship personId)))
+                        |> RemoteData.fromTask
+            in
+            ( { model | relationshipsByPerson = AllDict.insert personId Loading model.relationshipsByPerson }
+            , Task.map2 (RemoteData.map2 AllDictList.union) query1 query2
+                |> Task.perform (HandleFetchedRelationshipsForPerson personId)
+            , []
+            )
+
+        HandleFetchedRelationshipsForPerson personId data ->
+            ( { model | relationshipsByPerson = AllDict.insert personId data model.relationshipsByPerson }
+            , Cmd.none
+            , []
+            )
+
+        FetchExpectedSessions childId ->
+            ( { model | expectedSessions = AllDict.insert childId Loading model.expectedSessions }
+            , sw.select sessionEndpoint (ForChild childId)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedExpectedSessions childId)
+            , []
+            )
+
+        HandleFetchedExpectedSessions childId data ->
+            ( { model | expectedSessions = AllDict.insert childId data model.expectedSessions }
+            , Cmd.none
+            , []
+            )
+
+        FetchHealthCenters ->
+            ( { model | healthCenters = Loading }
+            , sw.select healthCenterEndpoint ()
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedHealthCenters)
+            , []
+            )
+
+        HandleFetchedHealthCenters data ->
+            ( { model | healthCenters = data }
+            , Cmd.none
+            , []
+            )
+
+        FetchMotherMeasurements motherId ->
+            ( { model | motherMeasurements = AllDict.insert motherId Loading model.motherMeasurements }
+            , sw.get motherMeasurementListEndpoint motherId
+                |> toCmd (RemoteData.fromResult >> HandleFetchedMotherMeasurements motherId)
+            , []
+            )
+
+        HandleFetchedMotherMeasurements motherId data ->
+            ( { model | motherMeasurements = AllDict.insert motherId data model.motherMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchParticipantForms ->
+            ( { model | participantForms = Loading }
+            , sw.select participantFormEndpoint ()
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedParticipantForms)
+            , []
+            )
+
+        HandleFetchedParticipantForms data ->
+            ( { model | participantForms = data }
+            , Cmd.none
+            , []
+            )
+
+        FetchPerson id ->
+            ( { model | people = AllDict.insert id Loading model.people }
+            , sw.get personEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedPerson id)
+            , []
+            )
+
+        HandleFetchedPerson id data ->
+            ( { model | people = AllDict.insert id data model.people }
+            , Cmd.none
+            , []
+            )
+
+        FetchSession sessionId ->
+            ( { model | sessions = AllDict.insert sessionId Loading model.sessions }
+            , sw.get sessionEndpoint sessionId
+                |> toCmd (RemoteData.fromResult >> HandleFetchedSession sessionId)
+            , []
+            )
+
+        HandleFetchedSession sessionId data ->
+            ( { model | sessions = AllDict.insert sessionId data model.sessions }
+            , Cmd.none
+            , []
+            )
+
+        FetchSessionsByClinic clinicId ->
+            ( { model | sessionsByClinic = AllDict.insert clinicId Loading model.sessionsByClinic }
+            , sw.select sessionEndpoint (ForClinic clinicId)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedSessionsByClinic clinicId)
+            , []
+            )
+
+        HandleFetchedSessionsByClinic clinicId data ->
+            ( { model | sessionsByClinic = AllDict.insert clinicId data model.sessionsByClinic }
+            , Cmd.none
+            , []
+            )
+
+        FetchSyncData ->
+            ( { model | syncData = Loading }
+            , sw.select syncDataEndpoint ()
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedSyncData)
+            , []
+            )
+
+        HandleFetchedSyncData data ->
+            ( { model | syncData = data }
+            , Cmd.none
+            , []
+            )
+
+        HandleRevisions revisions ->
+            let
+                ( newModel, recalculateEditableSessions ) =
+                    List.foldl handleRevision ( model, False ) revisions
+
+                withRecalc =
+                    -- If needed, we recalculate all editable sessions that we
+                    -- actually have.
+                    if recalculateEditableSessions then
                         let
-                            newSession =
-                                { currentSession | offlineSession = offlineSession }
+                            editableSessions =
+                                -- The `andThen` is so that we only recalculate
+                                -- the editable session if we already have a
+                                -- success.
+                                AllDict.map
+                                    (\id session ->
+                                        RemoteData.andThen (\_ -> makeEditableSession id newModel) session
+                                    )
+                                    newModel.editableSessions
                         in
-                        ( { model | editableSession = Success <| Just ( sessionId, newSession ) }
-                        , Cmd.none
-                        , []
-                        )
-                            |> sequenceExtra (updateCache user currentDate) [ CacheEditableSession ]
+                        { newModel | editableSessions = editableSessions }
 
                     else
-                        ( model, Cmd.none, [] )
-                )
-                model
-
-
-encodeForRollbar : CachedSessionError -> Dict String Value
-encodeForRollbar err =
-    case err of
-        FoundEditsButNoSession { editsJson } ->
-            Dict.fromList
-                [ ( "type", Json.Encode.string "Found edits but no session" )
-                , ( "edits", Json.Encode.string editsJson )
-                ]
-
-        DecodersFailed details ->
-            -- We send the full edits because it's nice to save that, and it
-            -- doesn't contain names. We don't send the full offline session,
-            -- because it's immutable, so we don't need to save it, and the
-            -- JSOn error itself typically contains enough information to see
-            -- what went wrong.
-            Dict.fromList
-                [ ( "type", Json.Encode.string "Decoders failed" )
-                , ( "edits", Json.Encode.string details.editsJson )
-                , ( "editsError", Json.Encode.Extra.maybe Json.Encode.string details.editsError )
-                , ( "offlineSessionError", Json.Encode.Extra.maybe Json.Encode.string details.offlineSessionError )
-                ]
-
-
-{-| We reach this when the user hits "Save" upon editing something in the measurement
-form. So, we want to change the appropriate edit ...
--}
-makeChildEdit : NominalDate -> ChildId -> OutMsgChild -> SessionId -> EditableSession -> EditableSession
-makeChildEdit currentDate childId outMsg sessionId session =
-    -- Clearly, there will be a function that could be abstracted to make
-    -- this less verbose, but I shall leave that for the future.
-    let
-        data =
-            getChildMeasurementData childId session
-    in
-    case outMsg of
-        SaveHeight height ->
-            let
-                backend =
-                    mapMeasurementData .height .height data
-                        |> backendValue
-
-                edit =
-                    case backend of
-                        -- TODO: Could do a comparison to possibly return to `Unedited`
-                        Just ( id, value ) ->
-                            Edited
-                                { backend = value
-                                , id = id
-                                , edited = { value | value = height }
-                                }
-
-                        Nothing ->
-                            Created
-                                { participantId = childId
-                                , sessionId = Just sessionId
-                                , dateMeasured = currentDate
-                                , value = height
-                                }
+                        newModel
             in
-            mapChildEdits (\edits -> { edits | height = edit }) childId session
+            ( withRecalc
+            , Cmd.none
+            , []
+            )
 
-        SaveWeight weight ->
+        SaveSyncData uuid data ->
+            ( { model | saveSyncDataRequests = AllDict.insert uuid Loading model.saveSyncDataRequests }
+            , sw.put syncDataEndpoint uuid data
+                |> withoutDecoder
+                |> toCmd (RemoteData.fromResult >> HandleSavedSyncData uuid)
+            , []
+            )
+
+        HandleSavedSyncData uuid data ->
+            ( { model | saveSyncDataRequests = AllDict.insert uuid data model.saveSyncDataRequests }
+            , Cmd.none
+            , []
+            )
+
+        DeleteSyncData uuid ->
+            ( { model | deleteSyncDataRequests = AllDict.insert uuid Loading model.deleteSyncDataRequests }
+            , sw.delete syncDataEndpoint uuid
+                |> toCmd (RemoteData.fromResult >> HandleDeletedSyncData uuid)
+            , []
+            )
+
+        HandleDeletedSyncData uuid data ->
+            ( { model | deleteSyncDataRequests = AllDict.insert uuid data model.deleteSyncDataRequests }
+            , Cmd.none
+            , []
+            )
+
+        MsgSession sessionId subMsg ->
             let
-                backend =
-                    mapMeasurementData .weight .weight data
-                        |> backendValue
+                requests =
+                    AllDict.get sessionId model.sessionRequests
+                        |> Maybe.withDefault Backend.Session.Model.emptyModel
 
-                edit =
-                    case backend of
-                        Just ( id, value ) ->
-                            Edited
-                                { backend = value
-                                , id = id
-                                , edited = { value | value = weight }
-                                }
-
-                        Nothing ->
-                            Created
-                                { participantId = childId
-                                , sessionId = Just sessionId
-                                , dateMeasured = currentDate
-                                , value = weight
-                                }
+                ( subModel, subCmd ) =
+                    Backend.Session.Update.update nurseId sessionId currentDate subMsg requests
             in
-            mapChildEdits (\edits -> { edits | weight = edit }) childId session
+            ( { model | sessionRequests = AllDict.insert sessionId subModel model.sessionRequests }
+            , Cmd.map (MsgSession sessionId) subCmd
+            , []
+            )
 
-        SaveMuac muac ->
+        PostPmtctParticipant data ->
+            ( { model | postPmtctParticipant = AllDict.insert data.child Loading model.postPmtctParticipant }
+            , sw.post pmtctParticipantEndpoint data
+                |> toCmd (RemoteData.fromResult >> HandlePostedPmtctParticipant data.child)
+            , []
+            )
+
+        HandlePostedPmtctParticipant id data ->
+            ( { model | postPmtctParticipant = AllDict.insert id data model.postPmtctParticipant }
+            , Cmd.none
+            , []
+            )
+
+        PostRelationship personId myRelationship addGroup ->
             let
-                backend =
-                    mapMeasurementData .muac .muac data
-                        |> backendValue
-
-                edit =
-                    case backend of
-                        Just ( id, value ) ->
-                            Edited
-                                { backend = value
-                                , id = id
-                                , edited = { value | value = muac }
-                                }
-
-                        Nothing ->
-                            Created
-                                { participantId = childId
-                                , sessionId = Just sessionId
-                                , dateMeasured = currentDate
-                                , value = muac
-                                }
-            in
-            mapChildEdits (\edits -> { edits | muac = edit }) childId session
-
-        SaveCounselingSession timing topics ->
-            let
-                backend =
-                    mapMeasurementData .counselingSession .counseling data
-                        |> backendValue
-
-                edit =
-                    case backend of
-                        Just ( id, value ) ->
-                            Edited
-                                { backend = value
-                                , id = id
-                                , edited = { value | value = ( timing, topics ) }
-                                }
-
-                        Nothing ->
-                            Created
-                                { participantId = childId
-                                , sessionId = Just sessionId
-                                , dateMeasured = currentDate
-                                , value = ( timing, topics )
-                                }
-            in
-            mapChildEdits (\edits -> { edits | counseling = edit }) childId session
-
-        SaveChildNutritionSigns nutrition ->
-            let
-                backend =
-                    mapMeasurementData .nutrition .nutrition data
-                        |> backendValue
-
-                edit =
-                    case backend of
-                        Just ( id, value ) ->
-                            Edited
-                                { backend = value
-                                , id = id
-                                , edited = { value | value = nutrition }
-                                }
-
-                        Nothing ->
-                            Created
-                                { participantId = childId
-                                , sessionId = Just sessionId
-                                , dateMeasured = currentDate
-                                , value = nutrition
-                                }
-            in
-            mapChildEdits (\edits -> { edits | nutrition = edit }) childId session
-
-        SavePhoto photo ->
-            let
-                backend =
-                    mapMeasurementData .photo .photo data
-                        |> backendValue
-
-                edit =
-                    case backend of
-                        Just ( id, value ) ->
-                            Edited
-                                { backend = value
-                                , edited = { value | value = photo }
-                                , id = id
-                                }
-
-                        Nothing ->
-                            Created
-                                { participantId = childId
-                                , sessionId = Just sessionId
-                                , dateMeasured = currentDate
-                                , value = photo
-                                }
-            in
-            mapChildEdits (\edits -> { edits | photo = edit }) childId session
-
-
-{-| We reach this when the user hits "Save" upon editing something in the measurement
-form. So, we want to change the appropriate edit ...
--}
-makeMotherEdit : Maybe UserId -> NominalDate -> MotherId -> OutMsgMother -> SessionId -> EditableSession -> EditableSession
-makeMotherEdit user currentDate motherId outMsg sessionId session =
-    let
-        data =
-            getMotherMeasurementData motherId session
-    in
-    case outMsg of
-        SaveFamilyPlanningSigns signs ->
-            let
-                backend =
-                    mapMeasurementData .familyPlanning .familyPlanning data
-                        |> backendValue
-
-                edit =
-                    case backend of
-                        Just ( id, value ) ->
-                            Edited
-                                { backend = value
-                                , id = id
-                                , edited = { value | value = signs }
-                                }
-
-                        Nothing ->
-                            Created
-                                { participantId = motherId
-                                , sessionId = Just sessionId
-                                , dateMeasured = currentDate
-                                , value = signs
-                                }
-            in
-            mapMotherEdits (\edits -> { edits | familyPlanning = edit }) motherId session
-
-        SaveCompletedForm formId language ->
-            -- In this case, so far, we don't allow for updates. So, for the
-            -- moment, the only things we have to do is create things. Also,
-            -- we necessarily will have a current user in this case, though
-            -- we'd need to restructure to convince the compiler of that.
-            case user of
-                Just userId ->
-                    let
-                        edit =
-                            Created
-                                { participantId = motherId
-                                , sessionId = Just sessionId
-                                , dateMeasured = currentDate
-                                , value =
-                                    { witness = userId
-                                    , formId = formId
-                                    , language = language
+                -- If we'd also like to add these people to a group, construct
+                -- a Msg to do that.
+                extraMsgs =
+                    addGroup
+                        |> Maybe.map
+                            (\clinicId ->
+                                PostPmtctParticipant
+                                    { adult = normalized.person
+                                    , child = normalized.relatedTo
+                                    , adultActivities = defaultAdultActivities
+                                    , start = defaultStartDate
+                                    , end = Nothing
+                                    , clinic = clinicId
                                     }
-                                }
-                    in
-                    mapMotherEdits
-                        (\edits -> { edits | consent = edit :: edits.consent })
-                        motherId
-                        session
+                            )
+                        |> Maybe.Extra.toList
 
-                Nothing ->
-                    session
+                -- The start date determines when we start expecting this pair
+                -- to be attending a group encounter. We'll look to see if we
+                -- know the child's birth date. Normally, we will, because
+                -- we've probably just entered it, or we've loaded the child
+                -- for some other reason. We won't try to fetch the child here
+                -- if we don't have the child, at least for now, because it
+                -- would add complexity.  If we don't know the child's
+                -- birthdate, we'll default to 28 days ago. That should be
+                -- enough so that, if we're in the middle of a group encounter,
+                -- the child will be expected at that group encounter.
+                defaultStartDate =
+                    AllDict.get normalized.relatedTo model.people
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.andThen .birthDate
+                        |> Maybe.withDefault (Time.Date.addDays -28 currentDate)
+
+                defaultAdultActivities =
+                    case normalized.relatedBy of
+                        ParentOf ->
+                            MotherActivities
+
+                        CaregiverFor ->
+                            CaregiverActivities
+
+                normalized =
+                    toRelationship personId myRelationship
+
+                -- We want to patch any relationship between these two,
+                -- whether or not reversed.
+                query1 =
+                    sw.select relationshipEndpoint
+                        { person = Just normalized.person
+                        , relatedTo = Just normalized.relatedTo
+                        }
+                        |> toTask
+                        |> Task.map (.items >> EntityUuidDictList.fromList)
+
+                query2 =
+                    sw.select relationshipEndpoint
+                        { person = Just normalized.relatedTo
+                        , relatedTo = Just normalized.person
+                        }
+                        |> toTask
+                        |> Task.map (.items >> EntityUuidDictList.fromList)
+
+                existingRelationship =
+                    Task.map2 AllDictList.union query1 query2
+                        |> Task.map AllDictList.head
+
+                relationshipCmd =
+                    existingRelationship
+                        |> Task.andThen
+                            (\existing ->
+                                case existing of
+                                    Nothing ->
+                                        sw.post relationshipEndpoint normalized
+                                            |> toTask
+                                            |> Task.map (always myRelationship)
+
+                                    Just ( relationshipId, relationship ) ->
+                                        let
+                                            changes =
+                                                encodeRelationshipChanges { old = relationship, new = normalized }
+                                        in
+                                        if List.isEmpty changes then
+                                            -- If no changes, we just report success without posting to the DB
+                                            Task.succeed myRelationship
+
+                                        else
+                                            object changes
+                                                |> sw.patchAny relationshipEndpoint relationshipId
+                                                |> toTask
+                                                |> Task.map (always myRelationship)
+                            )
+                        |> RemoteData.fromTask
+                        |> Task.perform (HandlePostedRelationship personId)
+            in
+            ( { model | postRelationship = AllDict.insert personId Loading model.postRelationship }
+            , relationshipCmd
+            , []
+            )
+                |> sequenceExtra (updateIndexedDb currentDate nurseId) extraMsgs
+
+        HandlePostedRelationship personId data ->
+            let
+                appMsgs =
+                    data
+                        |> RemoteData.map
+                            (\relationship ->
+                                [ Pages.Relationship.Model.Reset
+                                    |> App.Model.MsgPageRelationship personId relationship.relatedTo
+                                    |> App.Model.MsgLoggedIn
+                                ]
+                            )
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postRelationship = AllDict.insert personId data model.postRelationship }
+            , Cmd.none
+            , appMsgs
+            )
+
+        PostPerson relation person ->
+            ( { model | postPerson = Loading }
+            , sw.post personEndpoint person
+                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedPerson relation)
+            , []
+            )
+
+        HandlePostedPerson relation data ->
+            let
+                appMsgs =
+                    -- If we succeed, we reset the form, and go to the page
+                    -- showing the new person.
+                    data
+                        |> RemoteData.map
+                            (\personId ->
+                                let
+                                    nextPage =
+                                        case relation of
+                                            Just id ->
+                                                RelationshipPage id personId
+
+                                            Nothing ->
+                                                PersonPage personId
+                                in
+                                [ Pages.Person.Model.ResetCreateForm
+                                    |> App.Model.MsgPageCreatePerson
+                                    |> App.Model.MsgLoggedIn
+                                , nextPage
+                                    |> UserPage
+                                    |> App.Model.SetActivePage
+                                ]
+                            )
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postPerson = data }
+            , Cmd.none
+            , appMsgs
+            )
 
 
-{-| Subscribe to the answers to our cache requests.
+{-| The extra return value indicates whether we need to recalculate our
+successful EditableSessions. Ideally, we would handle this in a more
+nuanced way.
 -}
-subscriptions : Sub MsgCached
-subscriptions =
-    Sub.batch
-        [ cacheEditableSessionResult CacheEditableSessionResult
-        , cacheEditsResult CacheEditsResult
-        , handleEditableSession HandleEditableSession
-        , Sub.map MsgCacheStorage CacheStorage.Update.subscriptions
-        ]
+handleRevision : Revision -> ( ModelIndexedDb, Bool ) -> ( ModelIndexedDb, Bool )
+handleRevision revision ( model, recalc ) =
+    case revision of
+        AttendanceRevision uuid data ->
+            ( mapMotherMeasurements
+                data.participantId
+                (\measurements -> { measurements | attendances = AllDictList.insert uuid data measurements.attendances })
+                model
+            , True
+            )
+
+        CatchmentAreaRevision uuid data ->
+            ( model
+            , recalc
+            )
+
+        ChildNutritionRevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | nutritions = AllDictList.insert uuid data measurements.nutritions })
+                model
+            , True
+            )
+
+        ClinicRevision uuid data ->
+            let
+                clinics =
+                    RemoteData.map (AllDictList.insert uuid data) model.clinics
+            in
+            ( { model | clinics = clinics }
+            , recalc
+            )
+
+        CounselingScheduleRevision uuid data ->
+            -- Just invalidate our value ... if someone wants it, we'll refetch it.
+            ( { model | everyCounselingSchedule = NotAsked }
+            , True
+            )
+
+        CounselingSessionRevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | counselingSessions = AllDictList.insert uuid data measurements.counselingSessions })
+                model
+            , True
+            )
+
+        CounselingTopicRevision uuid data ->
+            ( { model | everyCounselingSchedule = NotAsked }
+            , True
+            )
+
+        FamilyPlanningRevision uuid data ->
+            ( mapMotherMeasurements
+                data.participantId
+                (\measurements -> { measurements | familyPlannings = AllDictList.insert uuid data measurements.familyPlannings })
+                model
+            , True
+            )
+
+        HealthCenterRevision uuid data ->
+            let
+                healthCenters =
+                    RemoteData.map (AllDictList.insert uuid data) model.healthCenters
+            in
+            ( { model | healthCenters = healthCenters }
+            , recalc
+            )
+
+        HeightRevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | heights = AllDictList.insert uuid data measurements.heights })
+                model
+            , True
+            )
+
+        MuacRevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | muacs = AllDictList.insert uuid data measurements.muacs })
+                model
+            , True
+            )
+
+        NurseRevision uuid data ->
+            -- Nothing to do in ModelIndexedDb yet. App.Update does do something with this one.
+            ( model
+            , recalc
+            )
+
+        ParticipantConsentRevision uuid data ->
+            ( mapMotherMeasurements
+                data.participantId
+                (\measurements -> { measurements | consents = AllDictList.insert uuid data measurements.consents })
+                model
+            , True
+            )
+
+        ParticipantFormRevision uuid data ->
+            ( { model | participantForms = RemoteData.map (AllDictList.insert uuid data) model.participantForms }
+            , True
+            )
+
+        PersonRevision uuid data ->
+            let
+                people =
+                    AllDict.update uuid (Maybe.map (always (Success data))) model.people
+            in
+            ( { model
+                | personSearches = Dict.empty
+                , people = people
+              }
+            , True
+            )
+
+        PhotoRevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | photos = AllDictList.insert uuid data measurements.photos })
+                model
+            , True
+            )
+
+        PmtctParticipantRevision uuid data ->
+            ( { model
+                | expectedSessions =
+                    model.expectedSessions
+                        |> AllDict.remove data.child
+                        |> AllDict.remove data.adult
+                , expectedParticipants =
+                    EntityUuidDict.empty
+                , participantsByPerson =
+                    model.participantsByPerson
+                        |> AllDict.remove data.child
+                        |> AllDict.remove data.adult
+              }
+            , True
+            )
+
+        RelationshipRevision uuid data ->
+            ( { model | relationshipsByPerson = EntityUuidDict.empty }
+            , True
+            )
+
+        SessionRevision uuid data ->
+            let
+                -- First, remove the session from all clinics (it might
+                -- previously have been in any). Then, add it in the right
+                -- place.
+                sessionsByClinic =
+                    model.sessionsByClinic
+                        |> AllDict.map (always (RemoteData.map (AllDictList.remove uuid)))
+                        |> AllDict.update data.clinicId (Maybe.map (RemoteData.map (AllDictList.insert uuid data)))
+            in
+            ( { model
+                | sessionsByClinic = sessionsByClinic
+                , expectedParticipants = AllDict.remove uuid model.expectedParticipants
+                , expectedSessions = EntityUuidDict.empty
+                , sessions = AllDict.insert uuid (Success data) model.sessions
+              }
+            , True
+            )
+
+        WeightRevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | weights = AllDictList.insert uuid data measurements.weights })
+                model
+            , True
+            )
 
 
-{-| Cache an offline session. For now, we've just got one slot ... of course,
-we can do something more sophisticated when necessary. (We'd need to parameterize
-each of the ports via a SessionId.)
+{-| Construct an EditableSession from our data, if we have all the needed data.
 
-The first string is the offlineSession part, and the second string the edits.
-We cache them separately, because we basically treat the offlineSession as
-immutable, so we don't have to save it over and over.
-
-The string is some JSON-encoded data ... so that the Javascript side of this
-just needs to stuff it somewhere.
-
-TODO: It might be nice to have a module that encapsulates some cache-related
-functionality. You could imagine just two ports ... one outgoing and one
-incoming ... with some JSON-encodings that specify the operation and data.
-We could, for instance, cut down on the number of ports that way ...
+This is a convenience, because so many functions work in terms of an
+EditableSession. In future, we might refactor that, or it might prove to
+continue to be convenient. (It's probably not efficient to calculate all of
+this on the fly every time, but it's much easier for now to work within
+existing types).
 
 -}
-port cacheEditableSession : ( String, String ) -> Cmd msg
+makeEditableSession : SessionId -> ModelIndexedDb -> WebData EditableSession
+makeEditableSession sessionId db =
+    let
+        sessionData =
+            AllDict.get sessionId db.sessions
+                |> Maybe.withDefault NotAsked
+
+        allParticipantFormsData =
+            db.participantForms
+
+        everyCounselingScheduleData =
+            db.everyCounselingSchedule
+
+        participantsData =
+            AllDict.get sessionId db.expectedParticipants
+                |> Maybe.withDefault NotAsked
+
+        mothersData =
+            RemoteData.andThen
+                (\participants ->
+                    AllDict.keys participants.byMotherId
+                        |> List.map
+                            (\id ->
+                                AllDict.get id db.people
+                                    |> Maybe.withDefault NotAsked
+                                    |> RemoteData.map (\data -> ( id, data ))
+                            )
+                        |> RemoteData.fromList
+                        |> RemoteData.map (EntityUuidDictList.fromList >> AllDictList.sortBy .name)
+                )
+                participantsData
+
+        childrenData =
+            RemoteData.andThen
+                (\participants ->
+                    AllDict.keys participants.byChildId
+                        |> List.map
+                            (\id ->
+                                AllDict.get id db.people
+                                    |> Maybe.withDefault NotAsked
+                                    |> RemoteData.map (\data -> ( id, data ))
+                            )
+                        |> RemoteData.fromList
+                        |> RemoteData.map EntityUuidDictList.fromList
+                )
+                participantsData
+
+        childMeasurementListData =
+            RemoteData.andThen
+                (\children ->
+                    AllDictList.keys children
+                        |> List.map
+                            (\childId ->
+                                AllDict.get childId db.childMeasurements
+                                    |> Maybe.withDefault NotAsked
+                                    |> RemoteData.map (\data -> ( childId, data ))
+                            )
+                        |> RemoteData.fromList
+                        |> RemoteData.map EntityUuidDict.fromList
+                )
+                childrenData
+
+        adultMeasurementListData =
+            RemoteData.andThen
+                (\mothers ->
+                    AllDictList.keys mothers
+                        |> List.map
+                            (\motherId ->
+                                AllDict.get motherId db.motherMeasurements
+                                    |> Maybe.withDefault NotAsked
+                                    |> RemoteData.map (\data -> ( motherId, data ))
+                            )
+                        |> RemoteData.fromList
+                        |> RemoteData.map EntityUuidDict.fromList
+                )
+                mothersData
+
+        childMeasurementsSplitData =
+            RemoteData.map (\list -> lazy <| \_ -> splitChildMeasurements sessionId list) childMeasurementListData
+
+        adultMeasurementsSplitData =
+            RemoteData.map (\list -> lazy <| \_ -> splitMotherMeasurements sessionId list) adultMeasurementListData
+
+        historicalMeasurementData =
+            RemoteData.map2 HistoricalMeasurements adultMeasurementListData childMeasurementListData
+
+        currentAndPrevious =
+            RemoteData.map2
+                (Lazy.map2
+                    (\childData motherData ->
+                        { current =
+                            { mothers = AllDict.map (always .current) motherData
+                            , children = AllDict.map (always .current) childData
+                            }
+                        , previous =
+                            { mothers = AllDict.map (always .previous) motherData
+                            , children = AllDict.map (always .previous) childData
+                            }
+                        }
+                    )
+                )
+                childMeasurementsSplitData
+                adultMeasurementsSplitData
+
+        currentMeasurementData =
+            RemoteData.map (Lazy.map .current) currentAndPrevious
+
+        previousMeasurementData =
+            RemoteData.map (Lazy.map .previous) currentAndPrevious
+
+        measurementData =
+            RemoteData.map3
+                (\historical ->
+                    Lazy.map2
+                        (\current previous ->
+                            { historical = historical
+                            , current = current
+                            , previous = previous
+                            }
+                        )
+                )
+                historicalMeasurementData
+                currentMeasurementData
+                previousMeasurementData
+
+        offlineSession =
+            RemoteData.map OfflineSession sessionData
+                |> RemoteData.andMap allParticipantFormsData
+                |> RemoteData.andMap everyCounselingScheduleData
+                |> RemoteData.andMap participantsData
+                |> RemoteData.andMap mothersData
+                |> RemoteData.andMap childrenData
+                |> RemoteData.andMap measurementData
+    in
+    RemoteData.map
+        (\offline ->
+            let
+                checkedIn =
+                    lazy <|
+                        \_ -> cacheCheckedIn offline
+
+                summaryByParticipant =
+                    Lazy.map (summarizeByParticipant offline) checkedIn
+
+                summaryByActivity =
+                    Lazy.map (summarizeByActivity offline) checkedIn
+            in
+            { offlineSession = offline
+            , update = NotAsked
+            , checkedIn = checkedIn
+            , summaryByParticipant = summaryByParticipant
+            , summaryByActivity = summaryByActivity
+            }
+        )
+        offlineSession
 
 
-{-| We want to get a possible error code back from `cacheEditableSession`, so
-we need an incoming port.
+{-| Summarize our data for the editable session in a way that is useful
+for our UI, when we're focused on participants. This only considers children &
+mothers who are checked in to the session.
+-}
+summarizeByParticipant : OfflineSession -> CheckedIn -> SummaryByParticipant
+summarizeByParticipant session checkedIn =
+    let
+        children =
+            AllDictList.map
+                (\childId _ -> summarizeChildParticipant childId session)
+                checkedIn.children
 
-TODO: Actually define a type to convert the Value to, and actually catch
-some errors.
+        mothers =
+            AllDictList.map
+                (\motherId _ -> summarizeMotherParticipant motherId session)
+                checkedIn.mothers
+    in
+    { children = children
+    , mothers = mothers
+    }
+
+
+{-| Summarize our data for the editable session in a way that is useful
+for our UI, when we're focused on activities. This only considers children &
+mothers who are checked in to the session.
+-}
+summarizeByActivity : OfflineSession -> CheckedIn -> SummaryByActivity
+summarizeByActivity session checkedIn =
+    let
+        children =
+            getAllChildActivities
+                |> List.map
+                    (\activity ->
+                        ( activity
+                        , summarizeChildActivity activity session checkedIn
+                        )
+                    )
+                |> EveryDict.fromList
+
+        mothers =
+            getAllMotherActivities
+                |> List.map
+                    (\activity ->
+                        ( activity
+                        , summarizeMotherActivity activity session checkedIn
+                        )
+                    )
+                |> EveryDict.fromList
+    in
+    { children = children
+    , mothers = mothers
+    }
+
+
+{-| Who is checked in, considering both explicit check in and anyone who has
+any completed activity?
+
+Don't call this directly ... we store it lazily on EditableSession.checkedIn.
+Ideally, we'd move it there and not expose it, but we'd have to rearrange a
+bunch of stuff to avoid circular imports.
 
 -}
-port cacheEditableSessionResult : (Value -> msg) -> Sub msg
+cacheCheckedIn : OfflineSession -> CheckedIn
+cacheCheckedIn session =
+    let
+        -- A mother is checked in if explicitly checked in or has any completed
+        -- activites.
+        mothers =
+            AllDictList.filter
+                (\motherId _ -> motherIsCheckedIn motherId session)
+                session.mothers
 
-
-{-| Like `cacheEditableSession`, but only caches the edits. This assumes that
-you've got the appropriate editable session cached already (we treat it as
-immutable).
--}
-port cacheEdits : String -> Cmd msg
-
-
-port cacheEditsResult : (Value -> msg) -> Sub msg
-
-
-{-| Fetch an editable session. Again, just one slot.
--}
-port fetchEditableSession : () -> Cmd msg
-
-
-{-| Delete our editable session.
--}
-port deleteEditableSession : () -> Cmd msg
-
-
-{-| Receive an editable session from the cache.
-
-The strings are whatever was provided to `cacheEdtiableSession`.
-
--}
-port handleEditableSession : (( String, String ) -> msg) -> Sub msg
+        -- A child is checked in if the mother is checked in.
+        children =
+            AllDictList.filter
+                (\childId _ ->
+                    getMyMother childId session
+                        |> Maybe.map (\( motherId, _ ) -> AllDictList.member motherId mothers)
+                        |> Maybe.withDefault False
+                )
+                session.children
+    in
+    { mothers = mothers
+    , children = children
+    }

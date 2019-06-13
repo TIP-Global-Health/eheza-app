@@ -1,26 +1,13 @@
-module Backend.Measurement.Utils exposing (applyEdit, applyEdits, backendValue, currentValue, currentValueWithId, currentValues, getChildEdits, getMotherEdits, getPhotoEdits, getPhotosToUpload, mapMeasurementData, muacIndication)
+module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, getCurrentAndPrevious, mapMeasurementData, muacIndication, splitChildMeasurements, splitMotherMeasurements)
 
+import AllDict
+import AllDictList
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import EveryDict exposing (EveryDict)
-
-
-{-| Picks out a particular mother's `MotherEdits`. If not found, makes
-an empty one.
--}
-getMotherEdits : MotherId -> MeasurementEdits -> MotherEdits
-getMotherEdits motherId measurements =
-    EveryDict.get motherId measurements.mothers
-        |> Maybe.withDefault emptyMotherEdits
-
-
-{-| Picks out a particular child's `ChildEdits`. If not found, makes
-an empty one.
--}
-getChildEdits : ChildId -> MeasurementEdits -> ChildEdits
-getChildEdits childId measurements =
-    EveryDict.get childId measurements.children
-        |> Maybe.withDefault emptyChildEdits
+import Restful.Endpoint exposing (EntityUuid)
+import Time.Date
+import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
+import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 {-| Given a MUAC in cm, classify according to the measurement tool shown
@@ -38,69 +25,18 @@ muacIndication (MuacInCm value) =
         MuacGreen
 
 
-{-| Apply an edit to an underlying value.
--}
-applyEdit : Edit id value -> Maybe value -> Maybe value
-applyEdit edit value =
-    case edit of
-        Unedited ->
-            value
-
-        Created new ->
-            Just new
-
-        Edited { edited } ->
-            Just edited
-
-        Deleted _ _ ->
-            Nothing
-
-
-{-| Like `applyEdit`, but for cases where we have multiple entities and edits
-in the same session. (E.g. for participantConsent, but not weight).
--}
-applyEdits : List (Edit id value) -> EveryDict id value -> List ( Maybe id, value )
-applyEdits edits base =
-    let
-        go edit ( existing, new ) =
-            case edit of
-                Unedited ->
-                    ( existing, new )
-
-                Created created ->
-                    ( existing, created :: new )
-
-                Edited edited ->
-                    ( EveryDict.insert edited.id edited.edited existing
-                    , new
-                    )
-
-                Deleted id _ ->
-                    ( EveryDict.remove id existing
-                    , new
-                    )
-
-        ( remaining, created ) =
-            List.foldl go ( base, [] ) edits
-    in
-    List.concat
-        [ List.map (Tuple.mapFirst Just) (EveryDict.toList remaining)
-        , List.map (\n -> ( Nothing, n )) created
-        ]
-
-
 {-| Given the data, do we have a current value? May be the value
 stored in the backend, or an edited value.
 -}
-currentValue : MeasurementData (Maybe ( id, value )) (Edit id value) -> Maybe value
+currentValue : MeasurementData (Maybe ( id, value )) -> Maybe value
 currentValue data =
-    applyEdit data.edits (Maybe.map Tuple.second data.current)
+    Maybe.map Tuple.second data.current
 
 
 {-| Like `currentValue`, but also supplies the ID if we have one
 (i.e. if we're editing a value saved on the backend).
 -}
-currentValueWithId : MeasurementData (Maybe ( id, value )) (Edit id value) -> Maybe ( Maybe id, value )
+currentValueWithId : MeasurementData (Maybe ( id, value )) -> Maybe ( Maybe id, value )
 currentValueWithId data =
     currentValue data
         |> Maybe.map (\value -> ( Maybe.map Tuple.first data.current, value ))
@@ -108,62 +44,122 @@ currentValueWithId data =
 
 {-| Like `currentValue`, but for cases where we have a list of values.
 -}
-currentValues : MeasurementData (EveryDict id value) (List (Edit id value)) -> List ( Maybe id, value )
+currentValues : MeasurementData (EntityUuidDictList id value) -> List ( Maybe id, value )
 currentValues data =
-    applyEdits data.edits data.current
-
-
-{-| Like `currentValue`, but just considers the backend.
--}
-backendValue : MeasurementData (Maybe ( id, value )) (Edit id value) -> Maybe ( id, value )
-backendValue data =
     data.current
+        |> AllDictList.map (\k v -> ( Just k, v ))
+        |> AllDictList.values
 
 
-mapMeasurementData : (d1 -> d2) -> (e1 -> e2) -> MeasurementData d1 e1 -> MeasurementData d2 e2
-mapMeasurementData dataFunc editFunc measurements =
+mapMeasurementData : (a -> b) -> MeasurementData a -> MeasurementData b
+mapMeasurementData dataFunc measurements =
     { previous = dataFunc measurements.previous
     , current = dataFunc measurements.current
-    , edits = editFunc measurements.edits
     , update = measurements.update
     }
 
 
-{-| Get a list of all the photo edits (some will be `Unedited`).
+splitMotherMeasurements : SessionId -> EntityUuidDict PersonId MotherMeasurementList -> EntityUuidDict PersonId { current : MotherMeasurements, previous : MotherMeasurements }
+splitMotherMeasurements sessionId =
+    AllDict.map
+        (\_ list ->
+            let
+                attendance =
+                    getCurrentAndPrevious sessionId list.attendances
+
+                familyPlanning =
+                    getCurrentAndPrevious sessionId list.familyPlannings
+
+                consent =
+                    getCurrentAndPrevious sessionId list.consents
+                        |> .current
+            in
+            { current =
+                { attendance = AllDictList.head attendance.current
+                , familyPlanning = AllDictList.head familyPlanning.current
+                , consent = consent
+                }
+            , previous =
+                -- We don't "compare" consents, so previous doesn't mean
+                -- anything for it.
+                { attendance = attendance.previous
+                , familyPlanning = familyPlanning.previous
+                , consent = EntityUuidDictList.empty
+                }
+            }
+        )
+
+
+splitChildMeasurements : SessionId -> EntityUuidDict PersonId ChildMeasurementList -> EntityUuidDict PersonId { current : ChildMeasurements, previous : ChildMeasurements }
+splitChildMeasurements sessionId =
+    AllDict.map
+        (\_ list ->
+            let
+                height =
+                    getCurrentAndPrevious sessionId list.heights
+
+                weight =
+                    getCurrentAndPrevious sessionId list.weights
+
+                muac =
+                    getCurrentAndPrevious sessionId list.muacs
+
+                nutrition =
+                    getCurrentAndPrevious sessionId list.nutritions
+
+                photo =
+                    getCurrentAndPrevious sessionId list.photos
+
+                counselingSession =
+                    getCurrentAndPrevious sessionId list.counselingSessions
+            in
+            { current =
+                -- We can only have one per session ... we enforce that here.
+                { height = AllDictList.head height.current
+                , weight = AllDictList.head weight.current
+                , muac = AllDictList.head muac.current
+                , nutrition = AllDictList.head nutrition.current
+                , photo = AllDictList.head photo.current
+                , counselingSession = AllDictList.head counselingSession.current
+                }
+            , previous =
+                { height = height.previous
+                , weight = weight.previous
+                , muac = muac.previous
+                , nutrition = nutrition.previous
+                , photo = photo.previous
+                , counselingSession = counselingSession.previous
+                }
+            }
+        )
+
+
+{-| Picks out current and previous values from a list of measurements.
 -}
-getPhotoEdits : MeasurementEdits -> List (Edit PhotoId Photo)
-getPhotoEdits edits =
-    edits.children
-        |> EveryDict.values
-        |> List.map .photo
+getCurrentAndPrevious : SessionId -> EntityUuidDictList (EntityUuid id) (Measurement a b) -> { current : EntityUuidDictList (EntityUuid id) (Measurement a b), previous : Maybe ( EntityUuid id, Measurement a b ) }
+getCurrentAndPrevious sessionId =
+    let
+        -- This is designed to iterate through each list only once, to get both
+        -- the current and previous value
+        go id value acc =
+            if value.sessionId == Just sessionId then
+                -- If it's got our session ID, then it's current
+                { acc | current = AllDictList.cons id value acc.current }
 
+            else
+                case acc.previous of
+                    -- Otherwise, it might be previous
+                    Nothing ->
+                        { acc | previous = Just ( id, value ) }
 
-{-| Given the photo edits, get all the photos for which we don't know the
-file ID ... that is, those which we haven't uploaded to the backend yet.
--}
-getPhotosToUpload : MeasurementEdits -> List Photo
-getPhotosToUpload =
-    getPhotoEdits
-        >> List.filterMap
-            (\edit ->
-                case edit of
-                    Unedited ->
-                        Nothing
-
-                    Created photo ->
-                        if photo.value.fid == Nothing then
-                            Just photo
+                    Just ( _, previousValue ) ->
+                        if Time.Date.compare value.dateMeasured previousValue.dateMeasured == GT then
+                            { acc | previous = Just ( id, value ) }
 
                         else
-                            Nothing
-
-                    Edited { edited } ->
-                        if edited.value.fid == Nothing then
-                            Just edited
-
-                        else
-                            Nothing
-
-                    Deleted _ _ ->
-                        Nothing
-            )
+                            acc
+    in
+    AllDictList.foldl go
+        { current = EntityUuidDictList.empty
+        , previous = Nothing
+        }

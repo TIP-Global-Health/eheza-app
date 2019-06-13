@@ -1,0 +1,73 @@
+<?php
+
+/**
+ * @file
+ * Test functionality related to pairing codes.
+ */
+
+/**
+ * HedleyDevicePairingCode tests.
+ */
+class HedleyDevicePairingCode extends HedleyWebTestBase {
+
+  /**
+   * Activates modules for the tests.
+   *
+   * @inheritdoc
+   */
+  public function setUp() {
+    parent::setUp(['hedley_device']);
+  }
+
+  /**
+   * Info hook.
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'HedleyDevicePairingCode tests',
+      'description' => 'Tests functionality related to pairing codes.',
+      'group' => 'Hedley',
+    ];
+  }
+
+  /**
+   * Test "Device pairing" functionality.
+   */
+  public function testPairingCode() {
+    $device = $this->drupalCreateNode([
+      'type' => 'device',
+      'title' => $this->randomName(),
+    ]);
+
+    $wrapper = entity_metadata_wrapper('node', $device);
+
+    // Newly created device should automatically get a pairing code.
+    $this->assertTrue($wrapper->field_pairing_code->value());
+
+    // We should be able to save it without an exception.
+    $wrapper->save();
+
+    // We should be able to change it.
+    $wrapper->field_pairing_code->set('12345678');
+    $wrapper->save();
+
+    // But we should get an exception if we have a duplicate.
+    $device = $this->drupalCreateNode([
+      'type' => 'device',
+      'title' => $this->randomName(),
+    ]);
+
+    $wrapper = entity_metadata_wrapper('node', $device);
+    $wrapper->field_pairing_code->set('12345678');
+
+    try {
+      $wrapper->save();
+
+      $this->fail('Failed to throw exception for duplicate pairing code');
+    }
+    catch (Exception $e) {
+      $this->assertEqual($e->getMessage(), 'The provided pairing code was not unique.');
+    }
+  }
+
+}

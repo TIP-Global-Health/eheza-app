@@ -1,10 +1,9 @@
 module Pages.Participant.View exposing (viewChild, viewMother)
 
 import Activity.Model exposing (Activity(..), ChildActivity, CompletedAndPending, MotherActivity(..))
-import Activity.Utils exposing (getActivityIcon, getCheckedIn, summarizeChildParticipant, summarizeMotherParticipant)
-import Backend.Child.Model exposing (Child, Gender(..))
+import Activity.Utils exposing (getActivityIcon, summarizeChildParticipant, summarizeMotherParticipant)
 import Backend.Entities exposing (..)
-import Backend.Mother.Model exposing (Mother, Ubudehe(..))
+import Backend.Person.Model exposing (Gender(..), Person, Ubudehe(..))
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getChildren, getMother, getMotherMeasurementData, getMyMother)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
@@ -12,15 +11,17 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
+import Lazy exposing (force)
 import Maybe.Extra
 import Measurement.Model
 import Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getMotherForm)
 import Measurement.View
-import Pages.Page exposing (Page(..), SessionPage(..))
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
+import Pages.Session.Model
 import Participant.Model exposing (Participant)
 import Participant.Utils exposing (childParticipant, motherParticipant)
-import Translate as Trans exposing (Language, translate)
+import Translate exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderDate)
 import ZScore.Model
@@ -33,14 +34,14 @@ thumbnailDimensions =
     }
 
 
-viewChild : Language -> NominalDate -> ZScore.Model.Model -> ChildId -> EditableSession -> Model ChildActivity -> Html (Msg ChildActivity Measurement.Model.MsgChild)
-viewChild language currentDate zscores childId session model =
+viewChild : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model ChildActivity -> Html (Msg ChildActivity Measurement.Model.MsgChild)
+viewChild language currentDate zscores childId ( sessionId, session ) pages model =
     -- It's nice to just pass in the childId. If the session is consistent, we
     -- should always be able to get the child.  But it would be hard to
     -- convince the compiler of that, so we put in a pro-forma error message.
     case getChild childId session.offlineSession of
         Just child ->
-            viewFoundChild language currentDate zscores ( childId, child ) session model
+            viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, session ) pages model
 
         Nothing ->
             -- TODO: Make this error a little nicer, and translatable ... it
@@ -55,33 +56,37 @@ viewChild language currentDate zscores childId session model =
 
 {-| This one needs the `currentDate` in order to calculate ages from dates of birth.
 -}
-viewFoundChild : Language -> NominalDate -> ZScore.Model.Model -> ( ChildId, Child ) -> EditableSession -> Model ChildActivity -> Html (Msg ChildActivity Measurement.Model.MsgChild)
-viewFoundChild language currentDate zscores ( childId, child ) session model =
+viewFoundChild : Language -> NominalDate -> ZScore.Model.Model -> ( PersonId, Person ) -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model ChildActivity -> Html (Msg ChildActivity Measurement.Model.MsgChild)
+viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, session ) pages model =
     let
         maybeMother =
-            child.motherId
-                |> Maybe.andThen (\motherId -> getMother motherId session.offlineSession)
+            getMyMother childId session.offlineSession
+                |> Maybe.map Tuple.second
 
         motherInfo =
             maybeMother
-                |> Maybe.map (\mother -> text <| translate language <| Trans.MotherName mother.name)
+                |> Maybe.map (\mother -> text <| translate language <| Translate.MotherName mother.name)
                 |> Maybe.Extra.toList
 
         dateOfBirth =
-            renderDate language child.birthDate
-                |> Trans.ReportDOB
+            child.birthDate
+                |> Maybe.map (renderDate language)
+                |> Maybe.withDefault (translate language Translate.NotAvailable)
+                |> Translate.ReportDOB
                 |> translate language
                 |> text
 
         age =
-            renderAgeMonthsDays language child.birthDate currentDate
-                |> Trans.ReportAge
+            child.birthDate
+                |> Maybe.map (\birthDate -> renderAgeMonthsDays language birthDate currentDate)
+                |> Maybe.withDefault (translate language Translate.NotAvailable)
+                |> Translate.ReportAge
                 |> translate language
                 |> text
 
         gender =
             child.gender
-                |> Trans.Gender
+                |> Translate.Gender
                 |> translate language
                 |> text
 
@@ -92,7 +97,7 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
             childParticipant
 
         activities =
-            summarizeChildParticipant childId session
+            summarizeChildParticipant childId session.offlineSession
 
         selectedActivity =
             case model.selectedTab of
@@ -132,12 +137,13 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
                     ]
                     [ a
                         [ ProgressReportPage childId
-                            |> SessionPage
+                            |> SessionPage sessionId
+                            |> UserPage
                             |> Redirect
                             |> onClick
                         ]
                         [ span [ class "icon-progress-report" ] []
-                        , text <| translate language Trans.ViewProgressReport
+                        , text <| translate language Translate.ViewProgressReport
                         ]
                     ]
                     |> keyed "progress-report"
@@ -151,9 +157,9 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
                                 getChildMeasurementData childId session
 
                             form =
-                                getChildForm childId session
+                                getChildForm childId pages session
                         in
-                        [ Measurement.View.viewChild language currentDate child activity measurements zscores session form
+                        [ Measurement.View.viewChild language currentDate child activity (force measurements) zscores session form
                             |> Html.map MsgMeasurement
                             |> keyed "content"
                         ]
@@ -163,7 +169,7 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
     in
     divKeyed [ class "wrap" ] <|
         List.concat
-            [ [ viewHeader language |> keyed "header"
+            [ [ viewHeader language sessionId |> keyed "header"
               , div [ class "ui unstackable items participant-page child" ]
                     [ div
                         [ class "item" ]
@@ -178,7 +184,7 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
                             , p [] <|
                                 motherInfo
                                     ++ [ break, dateOfBirth, break, age, break, gender ]
-                            , viewFamilyLinks childParticipant language childId session
+                            , viewFamilyLinks childParticipant language childId ( sessionId, session )
                             ]
                         ]
                     ]
@@ -189,14 +195,14 @@ viewFoundChild language currentDate zscores ( childId, child ) session model =
             ]
 
 
-viewMother : Language -> MotherId -> EditableSession -> Model MotherActivity -> Html (Msg MotherActivity Measurement.Model.MsgMother)
-viewMother language motherId session model =
+viewMother : Language -> PersonId -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model MotherActivity -> Html (Msg MotherActivity Measurement.Model.MsgMother)
+viewMother language motherId ( sessionId, session ) pages model =
     -- It's nice to just pass in the motherId. If the session is consistent, we
     -- should always be able to get the mother.  But it would be hard to
     -- convince the compiler of that, so we put in a pro-forma error message.
     case getMother motherId session.offlineSession of
         Just mother ->
-            viewFoundMother language ( motherId, mother ) session model
+            viewFoundMother language ( motherId, mother ) ( sessionId, session ) pages model
 
         Nothing ->
             -- TODO: Make this error a little nicer, and translatable ... it
@@ -209,8 +215,8 @@ viewMother language motherId session model =
                 ]
 
 
-viewFoundMother : Language -> ( MotherId, Mother ) -> EditableSession -> Model MotherActivity -> Html (Msg MotherActivity Measurement.Model.MsgMother)
-viewFoundMother language ( motherId, mother ) session model =
+viewFoundMother : Language -> ( PersonId, Person ) -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model MotherActivity -> Html (Msg MotherActivity Measurement.Model.MsgMother)
+viewFoundMother language ( motherId, mother ) ( sessionId, session ) pages model =
     let
         break =
             br [] []
@@ -219,12 +225,12 @@ viewFoundMother language ( motherId, mother ) session model =
             getChildren motherId session.offlineSession
                 |> List.indexedMap
                     (\index ( _, child ) ->
-                        text <| translate language Trans.Baby ++ " " ++ toString (index + 1) ++ ": " ++ child.name
+                        text <| translate language Translate.Baby ++ " " ++ toString (index + 1) ++ ": " ++ child.name
                     )
                 |> List.intersperse break
 
         activities =
-            summarizeMotherParticipant motherId session
+            summarizeMotherParticipant motherId session.offlineSession
 
         selectedActivity =
             case model.selectedTab of
@@ -265,9 +271,9 @@ viewFoundMother language ( motherId, mother ) session model =
                             getMotherMeasurementData motherId session
 
                         form =
-                            getMotherForm motherId session
+                            getMotherForm motherId pages session
                     in
-                    [ Measurement.View.viewMother language activity measurements form
+                    [ Measurement.View.viewMother language activity (force measurements) form
                         |> Html.map MsgMeasurement
                         |> keyed "content"
                     ]
@@ -277,7 +283,7 @@ viewFoundMother language ( motherId, mother ) session model =
     in
     divKeyed [ class "wrap" ] <|
         List.concat
-            [ [ viewHeader language |> keyed "header"
+            [ [ viewHeader language sessionId |> keyed "header"
               , div
                     [ class "ui unstackable items participant-page mother" ]
                     [ div
@@ -294,8 +300,8 @@ viewFoundMother language ( motherId, mother ) session model =
                                 Maybe.map
                                     (\educationLevel ->
                                         p [ class "education-level-wrapper" ]
-                                            [ label [] [ text <| translate language Trans.LevelOfEducationLabel ]
-                                            , span [] [ text <| translate language <| Trans.LevelOfEducation educationLevel ]
+                                            [ label [] [ text <| translate language Translate.LevelOfEducationLabel ++ ": " ]
+                                            , span [] [ text <| translate language <| Translate.LevelOfEducation educationLevel ]
                                             ]
                                     )
                                     mother.educationLevel
@@ -303,13 +309,13 @@ viewFoundMother language ( motherId, mother ) session model =
                                 Maybe.map
                                     (\ubudehe ->
                                         p [ class "ubudehe-wrapper" ]
-                                            [ label [] [ text <| translate language Trans.UbudeheLabel ]
+                                            [ label [] [ text <| translate language Translate.UbudeheLabel ]
                                             , span [] [ text <| viewUbudehe ubudehe ]
                                             ]
                                     )
                                     mother.ubudehe
                             , p [] childrenList
-                            , viewFamilyLinks motherParticipant language motherId session
+                            , viewFamilyLinks motherParticipant language motherId ( sessionId, session )
                             ]
                         ]
                     ]
@@ -325,14 +331,14 @@ viewActivityCards config language activities selectedTab selectedActivity =
     let
         pendingActivitiesView =
             if List.isEmpty activities.pending then
-                [ span [] [ text <| translate language Trans.NoActivitiesPendingForThisParticipant ] ]
+                [ span [] [ text <| translate language Translate.NoActivitiesPendingForThisParticipant ] ]
 
             else
                 List.map (viewActivityListItem config language selectedActivity) activities.pending
 
         completedActivitiesView =
             if List.isEmpty activities.completed then
-                [ span [] [ text <| translate language Trans.NoActivitiesCompletedForThisParticipant ] ]
+                [ span [] [ text <| translate language Translate.NoActivitiesCompletedForThisParticipant ] ]
 
             else
                 List.map (viewActivityListItem config language selectedActivity) activities.completed
@@ -352,13 +358,13 @@ viewActivityCards config language activities selectedTab selectedActivity =
                     ]
 
         pendingTabTitle =
-            translate language <| Trans.ActivitiesToComplete <| List.length activities.pending
+            translate language <| Translate.ActivitiesToComplete <| List.length activities.pending
 
         completedTabTitle =
-            translate language <| Trans.ActivitiesCompleted <| List.length activities.completed
+            translate language <| Translate.ActivitiesCompleted <| List.length activities.completed
 
         progressTabTitle =
-            translate language <| Trans.ProgressReport
+            translate language <| Translate.ProgressReport
 
         extraTabs =
             if config.showProgressReportTab then
@@ -390,21 +396,22 @@ viewActivityListItem config language selectedActivity activityItem =
                 ]
             ]
             [ span [ class ("icon-section icon-" ++ getActivityIcon (config.tagActivity activityItem)) ] []
-            , text <| translate language <| Trans.ActivitiesTitle <| config.tagActivity activityItem
+            , text <| translate language <| Translate.ActivitiesTitle <| config.tagActivity activityItem
             ]
         ]
 
 
-viewHeader : Language -> Html (Msg activity any)
-viewHeader language =
+viewHeader : Language -> SessionId -> Html (Msg activity any)
+viewHeader language id =
     div
         [ class "ui basic head segment" ]
         [ h1
             [ class "ui header" ]
-            [ text <| translate language Trans.Assessment ]
+            [ text <| translate language Translate.Assessment ]
         , a
             [ class "link-back"
-            , SessionPage ParticipantsPage
+            , SessionPage id ParticipantsPage
+                |> UserPage
                 |> Redirect
                 |> onClick
             ]
@@ -415,8 +422,8 @@ viewHeader language =
 {-| Given a mother or a child, this figures out who the whole family is, and shows links allowing
 you to switch between any family member.
 -}
-viewFamilyLinks : Participant id value activity msg -> Language -> id -> EditableSession -> Html (Msg activity any)
-viewFamilyLinks config language participantId session =
+viewFamilyLinks : Participant id value activity msg -> Language -> id -> ( SessionId, EditableSession ) -> Html (Msg activity any)
+viewFamilyLinks config language participantId ( sessionId, session ) =
     let
         -- Whether we've looking at a child or a mother, we figure out who the
         -- mother is. This will never be `Nothing` so long as the
@@ -449,7 +456,8 @@ viewFamilyLinks config language participantId session =
 
                     else
                         [ ChildPage childId
-                            |> SessionPage
+                            |> SessionPage sessionId
+                            |> UserPage
                             |> Redirect
                             |> onClick
                         ]
@@ -480,7 +488,8 @@ viewFamilyLinks config language participantId session =
 
                     else
                         [ MotherPage motherId
-                            |> SessionPage
+                            |> SessionPage sessionId
+                            |> UserPage
                             |> Redirect
                             |> onClick
                         ]

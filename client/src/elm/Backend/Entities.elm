@@ -1,4 +1,4 @@
-module Backend.Entities exposing (ChildId, ChildIdType(..), ChildNutritionId, ChildNutritionIdType(..), ClinicId, ClinicIdType(..), CounselingScheduleId, CounselingScheduleIdType(..), CounselingSessionId, CounselingSessionIdType(..), CounselingTopicId, CounselingTopicIdType(..), FamilyPlanningId, FamilyPlanningIdType(..), HeightId, HeightIdType(..), MotherId, MotherIdType(..), MuacId, MuacIdType(..), ParticipantConsentId, ParticipantConsentIdType(..), ParticipantFormId, ParticipantFormIdType(..), PhotoId, PhotoIdType(..), SessionId, SessionIdType(..), UserId, UserIdType(..), WeightId, WeightIdType(..))
+module Backend.Entities exposing (AttendanceId, AttendanceUuidType(..), CatchmentAreaId, CatchmentAreaUuidType(..), ChildNutritionId, ChildNutritionUuidType(..), ClinicId, ClinicUuidType(..), CounselingScheduleId, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicUuidType(..), FamilyPlanningId, FamilyPlanningUuidType(..), HealthCenterId, HealthCenterUuidType(..), HeightId, HeightUuidType(..), MuacId, MuacUuidType(..), NurseId, NurseUuidType(..), ParticipantConsentId, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormUuidType(..), PersonId, PersonUuidType(..), PhotoId, PhotoUuidType(..), PmtctParticipantId, PmtctParticipantUuidType(..), RelationshipId, RelationshipUuidType(..), SessionId, SessionUuidType(..), WeightId, WeightUuidType(..))
 
 {-|
 
@@ -49,7 +49,7 @@ we need it.
 
 -}
 
-import Restful.Endpoint exposing (EntityId(..))
+import Restful.Endpoint exposing (EntityUuid(..))
 
 
 
@@ -64,40 +64,7 @@ import Restful.Endpoint exposing (EntityId(..))
 
     most of the time, rather than the more verbose
 
-        EntityId ChildId
-
-    In fact, here's a simple code-generation process which you can adapt
-    to your preferred code-editor. Here's the list of base types:
-
-        Child
-        ChildNutrition
-        Clinic
-        CounselingSchedule
-        CounselingSession
-        CounselingTopic
-        FamilyPlanning
-        Height
-        Mother
-        Muac
-        Photo
-        Session
-        Weight
-
-    Now, to create a new one, use the following process:
-
-    1. Add it to the list above.
-    2. Delete everything below this comment.
-    3. Copy the list above below this comment.
-    4. Use search-and-replace to generate the code.
-
-    For vim, here's the pattern I use:
-
-    s/ *\(.*\)/type alias \1Id = EntityId \1IdType\rtype \1IdType=\1IdType/
-
-    Then, just save it and let elm-format make it pretty.
-
-    Eventually, you could imagine just having a file with a list
-    of our entity types, and a little script to generate the code below.
+        EntityUuid ChildId
 
     There are some possibly-attractive variations on this.
 
@@ -120,129 +87,161 @@ import Restful.Endpoint exposing (EntityId(..))
 -}
 
 
-type alias UserId =
-    EntityId UserIdType
+type alias CatchmentAreaId =
+    EntityUuid CatchmentAreaUuidType
 
 
-type UserIdType
-    = UserIdType
-
-
-type alias ChildId =
-    EntityId ChildIdType
-
-
-type ChildIdType
-    = ChildIdType
+type CatchmentAreaUuidType
+    = CatchmentAreaUuidType
 
 
 type alias ChildNutritionId =
-    EntityId ChildNutritionIdType
+    EntityUuid ChildNutritionUuidType
 
 
-type ChildNutritionIdType
-    = ChildNutritionIdType
+type ChildNutritionUuidType
+    = ChildNutritionUuidType
 
 
 type alias ClinicId =
-    EntityId ClinicIdType
+    EntityUuid ClinicUuidType
 
 
-type ClinicIdType
-    = ClinicIdType
+type ClinicUuidType
+    = ClinicUuidType
 
 
 type alias CounselingScheduleId =
-    EntityId CounselingScheduleIdType
+    EntityUuid CounselingScheduleUuidType
 
 
-type CounselingScheduleIdType
-    = CounselingScheduleIdType
+type CounselingScheduleUuidType
+    = CounselingScheduleUuidType
 
 
 type alias CounselingSessionId =
-    EntityId CounselingSessionIdType
+    EntityUuid CounselingSessionUuidType
 
 
-type CounselingSessionIdType
-    = CounselingSessionIdType
+type CounselingSessionUuidType
+    = CounselingSessionUuidType
 
 
 type alias CounselingTopicId =
-    EntityId CounselingTopicIdType
+    EntityUuid CounselingTopicUuidType
 
 
-type CounselingTopicIdType
-    = CounselingTopicIdType
+type CounselingTopicUuidType
+    = CounselingTopicUuidType
+
+
+type alias AttendanceId =
+    EntityUuid AttendanceUuidType
+
+
+type AttendanceUuidType
+    = AttendanceUuidType
 
 
 type alias FamilyPlanningId =
-    EntityId FamilyPlanningIdType
+    EntityUuid FamilyPlanningUuidType
 
 
-type FamilyPlanningIdType
-    = FamilyPlanningIdType
+type FamilyPlanningUuidType
+    = FamilyPlanningUuidType
+
+
+type alias HealthCenterId =
+    EntityUuid HealthCenterUuidType
+
+
+type HealthCenterUuidType
+    = HealthCenterUuidType
 
 
 type alias HeightId =
-    EntityId HeightIdType
+    EntityUuid HeightUuidType
 
 
-type HeightIdType
-    = HeightIdType
-
-
-type alias MotherId =
-    EntityId MotherIdType
-
-
-type MotherIdType
-    = MotherIdType
+type HeightUuidType
+    = HeightUuidType
 
 
 type alias MuacId =
-    EntityId MuacIdType
+    EntityUuid MuacUuidType
 
 
-type MuacIdType
-    = MuacIdType
+type MuacUuidType
+    = MuacUuidType
+
+
+type alias NurseId =
+    EntityUuid NurseUuidType
+
+
+type NurseUuidType
+    = NurseUuidType
 
 
 type alias ParticipantConsentId =
-    EntityId ParticipantConsentIdType
+    EntityUuid ParticipantConsentUuidType
 
 
-type ParticipantConsentIdType
-    = ParticipantConsentIdType
+type ParticipantConsentUuidType
+    = ParticipantConsentUuidType
 
 
 type alias ParticipantFormId =
-    EntityId ParticipantFormIdType
+    EntityUuid ParticipantFormUuidType
 
 
-type ParticipantFormIdType
-    = ParticipantFormIdType
+type ParticipantFormUuidType
+    = ParticipantFormUuidType
+
+
+type alias PersonId =
+    EntityUuid PersonUuidType
+
+
+type PersonUuidType
+    = PersonUuidType
 
 
 type alias PhotoId =
-    EntityId PhotoIdType
+    EntityUuid PhotoUuidType
 
 
-type PhotoIdType
-    = PhotoIdType
+type PhotoUuidType
+    = PhotoUuidType
+
+
+type alias PmtctParticipantId =
+    EntityUuid PmtctParticipantUuidType
+
+
+type PmtctParticipantUuidType
+    = PmtctParticipantUuidType
+
+
+type alias RelationshipId =
+    EntityUuid RelationshipUuidType
+
+
+type RelationshipUuidType
+    = RelationshipUuidType
 
 
 type alias SessionId =
-    EntityId SessionIdType
+    EntityUuid SessionUuidType
 
 
-type SessionIdType
-    = SessionIdType
+type SessionUuidType
+    = SessionUuidType
 
 
 type alias WeightId =
-    EntityId WeightIdType
+    EntityUuid WeightUuidType
 
 
-type WeightIdType
-    = WeightIdType
+type WeightUuidType
+    = WeightUuidType

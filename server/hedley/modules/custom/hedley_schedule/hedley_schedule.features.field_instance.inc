@@ -54,6 +54,46 @@ function hedley_schedule_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-clinic-field_uuid'.
+  $field_instances['node-clinic-field_uuid'] = array(
+    'bundle' => 'clinic',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 1,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => -2,
+    ),
+  );
+
   // Exported field_instance: 'node-counseling_schedule-field_timing'.
   $field_instances['node-counseling_schedule-field_timing'] = array(
     'bundle' => 'counseling_schedule',
@@ -135,21 +175,18 @@ function hedley_schedule_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-counseling_session-field_child'.
-  $field_instances['node-counseling_session-field_child'] = array(
-    'bundle' => 'counseling_session',
+  // Exported field_instance: 'node-counseling_schedule-field_uuid'.
+  $field_instances['node-counseling_schedule-field_uuid'] = array(
+    'bundle' => 'counseling_schedule',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'entityreference',
-        'settings' => array(
-          'bypass_access' => FALSE,
-          'link' => FALSE,
-        ),
-        'type' => 'entityreference_label',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
         'weight' => 2,
       ),
       'teaser' => array(
@@ -160,22 +197,21 @@ function hedley_schedule_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_child',
-    'label' => 'Child',
-    'required' => 1,
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
     'settings' => array(
+      'text_processing' => 0,
       'user_register_form' => FALSE,
     ),
     'widget' => array(
       'active' => 1,
-      'module' => 'entityreference',
+      'module' => 'text',
       'settings' => array(
-        'match_operator' => 'CONTAINS',
-        'path' => '',
         'size' => 60,
       ),
-      'type' => 'entityreference_autocomplete',
-      'weight' => 2,
+      'type' => 'text_textfield',
+      'weight' => 1,
     ),
   );
 
@@ -234,6 +270,94 @@ function hedley_schedule_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-counseling_session-field_nurse'.
+  $field_instances['node-counseling_session-field_nurse'] = array(
+    'bundle' => 'counseling_session',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_nurse',
+    'label' => 'Nurse',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 6,
+    ),
+  );
+
+  // Exported field_instance: 'node-counseling_session-field_person'.
+  $field_instances['node-counseling_session-field_person'] = array(
+    'bundle' => 'counseling_session',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_person',
+    'label' => 'Person',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 2,
+    ),
+  );
+
   // Exported field_instance: 'node-counseling_session-field_session'.
   $field_instances['node-counseling_session-field_session'] = array(
     'bundle' => 'counseling_session',
@@ -260,7 +384,7 @@ function hedley_schedule_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_session',
-    'label' => 'Session',
+    'label' => 'Group Encounter',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -275,6 +399,50 @@ function hedley_schedule_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 3,
+    ),
+  );
+
+  // Exported field_instance: 'node-counseling_session-field_shards'.
+  $field_instances['node-counseling_session-field_shards'] = array(
+    'bundle' => 'counseling_session',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'This field will be calculated -- you can leave it blank.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_shards',
+    'label' => 'Shards',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 9,
     ),
   );
 
@@ -311,7 +479,7 @@ function hedley_schedule_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 6,
+      'weight' => 5,
     ),
   );
 
@@ -359,6 +527,46 @@ function hedley_schedule_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-counseling_session-field_uuid'.
+  $field_instances['node-counseling_session-field_uuid'] = array(
+    'bundle' => 'counseling_session',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 7,
+    ),
+  );
+
   // Exported field_instance: 'node-counseling_topic-field_kinyarwanda_title'.
   $field_instances['node-counseling_topic-field_kinyarwanda_title'] = array(
     'bundle' => 'counseling_topic',
@@ -396,6 +604,46 @@ function hedley_schedule_field_default_field_instances() {
       ),
       'type' => 'text_textfield',
       'weight' => 1,
+    ),
+  );
+
+  // Exported field_instance: 'node-counseling_topic-field_uuid'.
+  $field_instances['node-counseling_topic-field_uuid'] = array(
+    'bundle' => 'counseling_topic',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 3,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 3,
     ),
   );
 
@@ -442,12 +690,192 @@ function hedley_schedule_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-health_center-field_catchment_area'.
-  $field_instances['node-health_center-field_catchment_area'] = array(
-    'bundle' => 'health_center',
+  // Exported field_instance: 'node-pmtct_participant-field_adult'.
+  $field_instances['node-pmtct_participant-field_adult'] = array(
+    'bundle' => 'pmtct_participant',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'Which adult is participating in the PMTCT Group with the child?',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 2,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_adult',
+    'label' => 'Adult',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-pmtct_participant-field_adult_activities'.
+  $field_instances['node-pmtct_participant-field_adult_activities'] = array(
+    'bundle' => 'pmtct_participant',
+    'default_value' => array(
+      0 => array(
+        'value' => 'mother',
+      ),
+    ),
+    'deleted' => 0,
+    'description' => 'Will the adult be participating in mother activities, or just the caregiver activities?',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_adult_activities',
+    'label' => 'Adult Activities',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 3,
+    ),
+  );
+
+  // Exported field_instance: 'node-pmtct_participant-field_clinic'.
+  $field_instances['node-pmtct_participant-field_clinic'] = array(
+    'bundle' => 'pmtct_participant',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Which PMTCT Group is this child participating in?',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 1,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_clinic',
+    'label' => 'PMTCT Group',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance: 'node-pmtct_participant-field_expected'.
+  $field_instances['node-pmtct_participant-field_expected'] = array(
+    'bundle' => 'pmtct_participant',
+    'deleted' => 0,
+    'description' => 'Between what dates is the child expected to participate in PMTCT encounters?',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 5,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_expected',
+    'label' => 'Expected',
+    'required' => 1,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 4,
+    ),
+  );
+
+  // Exported field_instance: 'node-pmtct_participant-field_person'.
+  $field_instances['node-pmtct_participant-field_person'] = array(
+    'bundle' => 'pmtct_participant',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'The child who is participating in PMTCT child activities.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -467,8 +895,8 @@ function hedley_schedule_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_catchment_area',
-    'label' => 'Catchment Area',
+    'field_name' => 'field_person',
+    'label' => 'Child',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -482,7 +910,47 @@ function hedley_schedule_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -4,
+      'weight' => 1,
+    ),
+  );
+
+  // Exported field_instance: 'node-pmtct_participant-field_uuid'.
+  $field_instances['node-pmtct_participant-field_uuid'] = array(
+    'bundle' => 'pmtct_participant',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 3,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 6,
     ),
   );
 
@@ -512,7 +980,7 @@ function hedley_schedule_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_clinic',
-    'label' => 'Clinic',
+    'label' => 'Group',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -671,33 +1139,87 @@ This should not be used on the "live" site -- it is only intended for the "sandb
     ),
   );
 
+  // Exported field_instance: 'node-session-field_uuid'.
+  $field_instances['node-session-field_uuid'] = array(
+    'bundle' => 'session',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'You can leave the UUID blank -- it will be automatically generated.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 4,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 2,
+    ),
+  );
+
   // Translatables
   // Included for use with string extractors like potx.
+  t('Adult');
+  t('Adult Activities');
   t('At which point should these topics be addressed?');
-  t('Catchment Area');
+  t('Between what dates is the child expected to participate in PMTCT encounters?');
   t('Child');
-  t('Clinic');
   t('Closed');
   t('Date Measured');
   t('English Title');
   t('Enter the clinic for which data-entry is being scheduled.');
+  t('Expected');
+  t('Group');
+  t('Group Encounter');
   t('Has the session been explicitly closed by the user?');
   t('Health Center');
   t('If checked, indicates that this is a "training" session that should be deleted when deleting all training sessions. (Other sessions in the training site would remain, to populate the progress report).
 
 This should not be used on the "live" site -- it is only intended for the "sandbox" site.');
   t('Kinyarwanda Title');
+  t('Nurse');
   t('Once you have created a "Counseling Topic" and it has been used, make only minor edits -- any edit will affect the historical data of which topics have been discussed with participants. If an edit would represent a different topic, then create a new topic instead. You can remove an unused topic from the relevant "Counseling Schedule" -- but do not delete the unused topic, since that would also affect the historical data.');
+  t('PMTCT Group');
+  t('Person');
   t('Scheduled Date');
-  t('Session');
+  t('Shards');
+  t('The child who is participating in PMTCT child activities.');
   t('The start date is the date on which the data entry is scheduled.
 
 The end date is the last day on which data entry will be allowed for this session through the client app (for editing, or measurements that are taken later). After this date, the session will be considered closed.');
+  t('This field will be calculated -- you can leave it blank.');
   t('Timing');
   t('Topics');
   t('Training');
+  t('UUID');
+  t('Which PMTCT Group is this child participating in?');
+  t('Which adult is participating in the PMTCT Group with the child?');
   t('Which kind of counseling session was this?');
   t('Which topics should be addressed?');
+  t('Will the adult be participating in mother activities, or just the caregiver activities?');
+  t('You can leave the UUID blank -- it will be automatically generated.');
 
   return $field_instances;
 }

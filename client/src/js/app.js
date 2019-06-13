@@ -1,26 +1,3 @@
-/**
- * Wait for selector to appear before invoking related functions.
- */
-function waitForElement(selector, fn, model, tryCount) {
-
-    // Repeat the timeout only maximum 5 times, which sohuld be enough for the
-    // element to appear.
-    tryCount = tryCount || 5;
-    --tryCount;
-    if (tryCount == 0) {
-        return;
-    }
-
-    setTimeout(function() {
-
-        var result = fn.call(null, selector, model, tryCount);
-        if (!result) {
-            // Element still doesn't exist, so wait some more.
-            waitForElement(selector, fn, model, tryCount);
-        }
-    }, 200);
-}
-
 // Normally, you'd want to do this on the server, but there doesn't seem to be
 // a mechanism for it on Pantheon, since the request for the app doesn't hit
 // the PHP code.
@@ -29,81 +6,75 @@ if ((location.hostname.endsWith('pantheonsite.io') || (location.hostname === '**
     location.protocol = 'https:';
 }
 
-// The Elm side of the "credentials" mechanism allows us to distinguish between
-// credentials for multiple backends. However, we can't really make much use of
-// that at the "flags" stage, because on the JS side we don't know what the
-// backendUrl is. So, that' probably fine for the moment ... we can think of
-// something if we really need it. In any event, using local storage will
-// automatically distinguish based on the frontend URL, so that is probably
-// enough.
+
+// Start up our Elm app.
 var elmApp = Elm.Main.fullscreen({
-    credentials: localStorage.getItem('credentials') || '{}',
+    pinCode: localStorage.getItem('pinCode') || '',
     activeServiceWorker: !!navigator.serviceWorker.controller,
     hostname: window.location.hostname,
     activeLanguage : localStorage.getItem('language') || ''
 });
 
-elmApp.ports.cacheCredentials.subscribe(function(params) {
-    // The `backendUrl` isn't actually used, for the moment ... we just save
-    // the credentials without trying to distinguish amongst backends.
-    var backendUrl = params[0];
-    var credentials = params[1];
-
-    localStorage.setItem('credentials', credentials);
+// Request persistent storage, and report whether it was granted.
+navigator.storage.persist().then(function (granted) {
+    elmApp.ports.persistentStorage.send(granted);
 });
 
-elmApp.ports.cacheEditableSession.subscribe(function(json) {
-    // We cache the session and the edits separately, so that we can treat
-    // the session itself as basically immutable, and just keep saving the
-    // edits.
-    var session = json[0];
-    var edits = json[1];
 
-    // For the moment, we'll cache it in the simplest way possible ... we'll
-    // see how much more we need to do. We can probably store the JSON as a
-    // lump, since we treat it as immutable and don't update it frequently.
-    // But we may need to manage quota, or use a different mechanism in order
-    // to get more quota.
-    localStorage.setItem('session', session);
-    localStorage.setItem('edits', edits);
+// Milliseconds for the specified minutes
+function minutesToMillis(minutes) {
+    return minutes * 60 * 1000;
+}
 
-    // TODO: We should catch exceptions ... and report back a real result!
-    elmApp.ports.cacheEditableSessionResult.send({});
+
+// Report our quota status.
+function reportQuota () {
+    navigator.storage.estimate().then(function (quota) {
+        elmApp.ports.storageQuota.send(quota);
+    });
+
+    elmApp.ports.memoryQuota.send(performance.memory);
+}
+
+// Do it right away.
+reportQuota();
+
+// And, then every minute.
+setInterval(reportQuota, minutesToMillis(1));
+
+
+// Kick off a sync. If we're offline, the browser's sync mechanism will wait
+// until we're online.
+function trySyncing() {
+    navigator.serviceWorker.ready.then(function (reg) {
+        return reg.sync.register('sync').catch(function () {
+            // Try a message instead.
+            reg.active.postMessage('sync');
+        });
+    });
+}
+
+// Do it on launch.
+trySyncing();
+
+// And try a sync every 5 minutes. In future, we may react to Pusher messages
+// instead of polling.
+setInterval(trySyncing, minutesToMillis(5));
+
+// And allow a manual attempt.
+elmApp.ports.trySyncing.subscribe(trySyncing);
+
+
+elmApp.ports.cachePinCode.subscribe(function(pinCode) {
+    localStorage.setItem('pinCode', pinCode);
 });
 
-elmApp.ports.fetchEditableSession.subscribe(function () {
-    var session = localStorage.getItem('session') || "";
-    var edits = localStorage.getItem('edits') || "";
-
-    // TODO: Consider exceptions?
-    elmApp.ports.handleEditableSession.send([session, edits]);
-});
-
-elmApp.ports.cacheEdits.subscribe(function (json) {
-    localStorage.setItem('edits', json);
-
-    // TODO: Consider exceptions ...
-    elmApp.ports.cacheEditsResult.send ({});
-});
-
-elmApp.ports.deleteEditableSession.subscribe(function () {
-    // Delete the session and edits in local storage
-    localStorage.setItem('session', "");
-    localStorage.setItem('edits', "");
-});
 
 elmApp.ports.setLanguage.subscribe(function(language) {
     // Set the chosen language in the switcher to the local storage.
     localStorage.setItem('language', language);
 });
 
-Offline.on('down', function() {
-    elmApp.ports.offline.send(true);
-});
-
-Offline.on('up', function() {
-    elmApp.ports.offline.send(false);
-});
 
 // Dropzone.
 
@@ -171,6 +142,11 @@ function makeCustomEvent (eventName, detail) {
     }
 }
 
+// Pass along messages from the service worker
+navigator.serviceWorker.addEventListener('message', function (event) {
+    elmApp.ports.serviceWorkerIn.send(event.data);
+});
+
 navigator.serviceWorker.addEventListener('controllerchange', function () {
     // If we detect a controller change, that means we're being managed
     // by a new service worker. In that case, we need to reload the page,
@@ -194,7 +170,13 @@ navigator.serviceWorker.addEventListener('controllerchange', function () {
 elmApp.ports.serviceWorkerOut.subscribe(function (message) {
   switch (message.tag) {
     case 'Register':
-      navigator.serviceWorker.register('service-worker.js').then(function(reg) {
+      // Disable the browser's cache for both service-worker.js and any
+      // imported scripts.
+      var options = {
+        updateViaCache: 'none'
+      };
+
+      navigator.serviceWorker.register('service-worker.js', options).then(function(reg) {
         elmApp.ports.serviceWorkerIn.send({
           tag: 'RegistrationSucceeded'
         });
@@ -256,59 +238,6 @@ elmApp.ports.serviceWorkerOut.subscribe(function (message) {
           reg.waiting.postMessage('SkipWaiting');
         }
       });
-      break;
-  }
-});
-
-function withPhotos(func) {
-  caches.open("photos").then(func);
-}
-
-function updatePhotos () {
-  withPhotos(function (cache) {
-    cache.keys().then(function (keys) {
-      var urls = keys.map(function (request) {
-        return request.url;
-      });
-
-      elmApp.ports.cacheStorageResponse.send({
-        tag: "SetCachedPhotos",
-        value: urls
-      });
-    });
-  });
-}
-
-elmApp.ports.cacheStorageRequest.subscribe(function (request) {
-  switch (request.tag) {
-    case 'CachePhotos':
-      withPhotos(function (cache) {
-        cache.keys().then(function (keys) {
-          var existing = keys.map(function (request) {
-            return request.url;
-          });
-
-          // We'll cache just the ones we don't have already.  This should be
-          // fine, since Drupal generates new URLs if the picture chagnes.
-          var uncached = request.value.filter(function (url) {
-            return existing.indexOf(url) < 0;
-          });
-
-          cache.addAll(uncached).then(updatePhotos, function (err) {
-            console.log(err);
-          });
-        });
-      });
-      break;
-
-    case 'CheckCachedPhotos':
-      updatePhotos();
-      break;
-
-    case 'ClearCachedPhotos':
-      caches.delete("photos").then(function () {
-        return caches.delete("photos-upload");
-      }).then(updatePhotos);
       break;
   }
 });
