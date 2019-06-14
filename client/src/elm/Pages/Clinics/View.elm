@@ -23,7 +23,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
-import RemoteData exposing (RemoteData(..), WebData)
+import RemoteData exposing (RemoteData(..), WebData, isLoading)
 import Time.Date exposing (delta)
 import Translate exposing (Language, translate)
 import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
@@ -152,18 +152,18 @@ viewClinic language currentDate nurse clinicId db =
                 |> Maybe.withDefault NotAsked
     in
     viewWebData language
-        (viewLoadedClinic language currentDate nurse clinicId)
+        (viewLoadedClinic language currentDate nurse db.postSession clinicId)
         identity
         (RemoteData.append clinic sessions)
 
 
-viewLoadedClinic : Language -> NominalDate -> Nurse -> ClinicId -> ( Maybe Clinic, EntityUuidDictList SessionId Session ) -> Html Msg
-viewLoadedClinic language currentDate nurse clinicId ( clinic, sessions ) =
+viewLoadedClinic : Language -> NominalDate -> Nurse -> WebData SessionId -> ClinicId -> ( Maybe Clinic, EntityUuidDictList SessionId Session ) -> Html Msg
+viewLoadedClinic language currentDate nurse postSession clinicId ( clinic, sessions ) =
     case clinic of
         Just clinic ->
             div
                 [ class "wrap wrap-alt-2" ]
-                (viewFoundClinic language currentDate nurse clinicId clinic sessions)
+                (viewFoundClinic language currentDate nurse postSession clinicId clinic sessions)
 
         Nothing ->
             Pages.PageNotFound.View.viewPage language
@@ -176,8 +176,8 @@ if it is open. (That is, the dates are correct and it's not explicitly closed).
 We'll show anything which was scheduled to start or end within the last week
 or the next week.
 -}
-viewFoundClinic : Language -> NominalDate -> Nurse -> ClinicId -> Clinic -> EntityUuidDictList SessionId Session -> List (Html Msg)
-viewFoundClinic language currentDate nurse clinicId clinic sessions =
+viewFoundClinic : Language -> NominalDate -> Nurse -> WebData SessionId -> ClinicId -> Clinic -> EntityUuidDictList SessionId Session -> List (Html Msg)
+viewFoundClinic language currentDate nurse postSession clinicId clinic sessions =
     let
         daysToShow =
             7
@@ -223,13 +223,24 @@ viewFoundClinic language currentDate nurse clinicId clinic sessions =
         enableCreateSessionButton =
             AllDictList.isEmpty sessionsStartedToday
 
+        defaultSession =
+            { startDate = currentDate
+            , endDate = Nothing
+            , clinicId = clinicId
+            }
+
         createSessionButton =
             button
                 [ classList
                     [ ( "ui button", True )
                     , ( "disabled", not enableCreateSessionButton )
                     , ( "active", enableCreateSessionButton )
+                    , ( "loading", isLoading postSession )
                     ]
+                , defaultSession
+                    |> PostSession
+                    |> App.Model.MsgIndexedDb
+                    |> onClick
                 ]
                 [ text <| translate language Translate.CreateGroupEncounter ]
 
