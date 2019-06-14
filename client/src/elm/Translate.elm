@@ -254,6 +254,7 @@ type TranslationId
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
+    | MedicalHistory
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MiddleName
     | MinutesAgo Int
@@ -290,6 +291,7 @@ type TranslationId
     | NotAvailable
     | NotConnected
     | NumberOfChildrenUnder5
+    | ObstetricHistory
     | OK
     | Old
     | OnceYouEndYourGroupEncounter
@@ -367,6 +369,7 @@ type TranslationId
     | ServiceWorkerRegErr
     | ServiceWorkerRegSuccess
     | ServiceWorkerStatus
+    | SocialHistory
     | GroupEncounterClosed
     | GroupEncounterClosed2 SessionId
     | GroupEncounterLoading SessionId
@@ -1400,6 +1403,11 @@ translationSet trans =
             , kinyarwanda = Just <| "Kwiyongera " ++ toString amount
             }
 
+        MedicalHistory ->
+            { english = "Medical History"
+            , kinyarwanda = Nothing
+            }
+
         MiddleName ->
             { english = "Middle Name"
             , kinyarwanda = Nothing
@@ -1605,6 +1613,11 @@ translationSet trans =
 
         NumberOfChildrenUnder5 ->
             { english = "Number of Children under 5"
+            , kinyarwanda = Nothing
+            }
+
+        ObstetricHistory ->
+            { english = "Obstetric History"
             , kinyarwanda = Nothing
             }
 
@@ -2028,6 +2041,11 @@ translationSet trans =
 
         ServiceWorkerStatus ->
             { english = "Deployment Status"
+            , kinyarwanda = Nothing
+            }
+
+        SocialHistory ->
+            { english = "Social History"
             , kinyarwanda = Nothing
             }
 

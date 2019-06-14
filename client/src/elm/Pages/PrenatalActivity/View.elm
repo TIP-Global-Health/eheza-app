@@ -205,10 +205,34 @@ viewHistoryContent language currentDate motherId data =
             [ Obstetric, Medical, Social ]
 
         viewTask task =
+            let
+                ( labelTranslateId, iconClass ) =
+                    case task of
+                        Obstetric ->
+                            ( Translate.ObstetricHistory, "obstetric" )
+
+                        Medical ->
+                            ( Translate.MedicalHistory, "medical" )
+
+                        Social ->
+                            ( Translate.SocialHistory, "social" )
+
+                isActiveTask =
+                    task == data.activeTask
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActiveTask ) ]
+                        :: (if isActiveTask then
+                                []
+
+                            else
+                                [ onClick <| SetActiveHistoryTask task ]
+                           )
+            in
             div [ class "column" ]
-                [ a [ classList [ ( "link-section", True ), ( "active", task == data.activeTask ) ] ]
-                    [ span [ class "icon-section icon-height" ]
-                        [ text <| toString task ]
+                [ a attributes
+                    [ span [ class <| "icon-history-task icon-" ++ iconClass ] []
+                    , text <| translate language labelTranslateId
                     ]
                 ]
 
@@ -253,7 +277,7 @@ viewHistoryContent language currentDate motherId data =
             List.map viewTask <|
                 tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted 7 ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ viewForm

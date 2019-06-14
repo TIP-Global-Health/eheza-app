@@ -1324,6 +1324,54 @@ input::placeholder {
   }
 }
 
+.icon-history-task {
+  display: block;
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 10px auto;
+
+  &:after {
+    content: " ";
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-position: center center;
+    background-repeat: no-repeat;
+    border: 3px solid #fff;
+    border-radius: 50%;
+  }
+}
+
+.icon-obstetric {
+  .active &:after {
+    background-image: url(#{$img-path}icon-obstetrichistory-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-obstetrichistory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-medical {
+  .active &:after {
+    background-image: url(#{$img-path}icon-medicalhistory-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-medicalhistory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-social {
+  .active &:after {
+    background-image: url(#{$img-path}icon-socialhistory-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-socialhistory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
 
 // Lists
 

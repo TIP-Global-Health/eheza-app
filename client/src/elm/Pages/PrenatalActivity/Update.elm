@@ -87,6 +87,17 @@ update motherId activity db msg model =
             , []
             )
 
+        SetActiveHistoryTask taks ->
+            let
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | activeTask = taks })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetCurrentlyPregnant value ->
             let
                 updatedData =

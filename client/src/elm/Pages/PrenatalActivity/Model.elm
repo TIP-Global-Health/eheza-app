@@ -204,4 +204,5 @@ type Msg
     | SetLmpDateConfident Bool
     | SetLmpRange String
       -- HistoryMsgs
+    | SetActiveHistoryTask HistoryTask
     | SetCurrentlyPregnant Bool
