@@ -6,6 +6,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Maybe.Extra exposing (isJust)
 import Pages.PrenatalActivity.Model exposing (..)
 import PrenatalActivity.Model exposing (PrenatalActivity)
+import Result exposing (Result)
 
 
 update : PersonId -> PrenatalActivity -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -87,6 +88,38 @@ update motherId activity db msg model =
             , []
             )
 
+        SetAbortions value ->
+            let
+                updatedData =
+                    case model.historyData.activeTask of
+                        Obstetric ->
+                            case model.historyData.obstetricForm of
+                                FirstStep form ->
+                                    let
+                                        updatedForm =
+                                            case String.toInt value of
+                                                Ok number ->
+                                                    { form | abortions = Just number }
+
+                                                Err _ ->
+                                                    form
+                                    in
+                                    model.historyData
+                                        |> (\data -> { data | obstetricForm = FirstStep updatedForm })
+
+                                -- We should never get here.
+                                -- Input is set on first step.
+                                SecondStep form ->
+                                    model.historyData
+
+                        _ ->
+                            model.historyData
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetActiveHistoryTask taks ->
             let
                 updatedData =
@@ -108,6 +141,166 @@ update motherId activity db msg model =
                                     let
                                         updatedForm =
                                             { form | currentlyPregnant = Just value }
+                                    in
+                                    model.historyData
+                                        |> (\data -> { data | obstetricForm = FirstStep updatedForm })
+
+                                -- We should never get here.
+                                -- Input is set on first step.
+                                SecondStep form ->
+                                    model.historyData
+
+                        _ ->
+                            model.historyData
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetLiveChildren value ->
+            let
+                updatedData =
+                    case model.historyData.activeTask of
+                        Obstetric ->
+                            case model.historyData.obstetricForm of
+                                FirstStep form ->
+                                    let
+                                        updatedForm =
+                                            case String.toInt value of
+                                                Ok number ->
+                                                    { form | liveChildren = Just number }
+
+                                                Err _ ->
+                                                    form
+                                    in
+                                    model.historyData
+                                        |> (\data -> { data | obstetricForm = FirstStep updatedForm })
+
+                                -- We should never get here.
+                                -- Input is set on first step.
+                                SecondStep form ->
+                                    model.historyData
+
+                        _ ->
+                            model.historyData
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPreTermPregnancy value ->
+            let
+                updatedData =
+                    case model.historyData.activeTask of
+                        Obstetric ->
+                            case model.historyData.obstetricForm of
+                                FirstStep form ->
+                                    let
+                                        updatedForm =
+                                            case String.toInt value of
+                                                Ok number ->
+                                                    { form | preTermPreganancy = Just number }
+
+                                                Err _ ->
+                                                    form
+                                    in
+                                    model.historyData
+                                        |> (\data -> { data | obstetricForm = FirstStep updatedForm })
+
+                                -- We should never get here.
+                                -- Input is set on first step.
+                                SecondStep form ->
+                                    model.historyData
+
+                        _ ->
+                            model.historyData
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetStillbirthsAtTerm value ->
+            let
+                updatedData =
+                    case model.historyData.activeTask of
+                        Obstetric ->
+                            case model.historyData.obstetricForm of
+                                FirstStep form ->
+                                    let
+                                        updatedForm =
+                                            case String.toInt value of
+                                                Ok number ->
+                                                    { form | stillbirthsAtTerm = Just number }
+
+                                                Err _ ->
+                                                    form
+                                    in
+                                    model.historyData
+                                        |> (\data -> { data | obstetricForm = FirstStep updatedForm })
+
+                                -- We should never get here.
+                                -- Input is set on first step.
+                                SecondStep form ->
+                                    model.historyData
+
+                        _ ->
+                            model.historyData
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetStillbirthsPreTerm value ->
+            let
+                updatedData =
+                    case model.historyData.activeTask of
+                        Obstetric ->
+                            case model.historyData.obstetricForm of
+                                FirstStep form ->
+                                    let
+                                        updatedForm =
+                                            case String.toInt value of
+                                                Ok number ->
+                                                    { form | stillbirthsPreTerm = Just number }
+
+                                                Err _ ->
+                                                    form
+                                    in
+                                    model.historyData
+                                        |> (\data -> { data | obstetricForm = FirstStep updatedForm })
+
+                                -- We should never get here.
+                                -- Input is set on first step.
+                                SecondStep form ->
+                                    model.historyData
+
+                        _ ->
+                            model.historyData
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetTermPregnancy value ->
+            let
+                updatedData =
+                    case model.historyData.activeTask of
+                        Obstetric ->
+                            case model.historyData.obstetricForm of
+                                FirstStep form ->
+                                    let
+                                        updatedForm =
+                                            case String.toInt value of
+                                                Ok number ->
+                                                    { form | termPreganancy = Just number }
+
+                                                Err _ ->
+                                                    form
                                     in
                                     model.historyData
                                         |> (\data -> { data | obstetricForm = FirstStep updatedForm })

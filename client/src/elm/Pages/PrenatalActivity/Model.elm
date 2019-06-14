@@ -22,6 +22,24 @@ import Date exposing (Date)
 import Pages.Page exposing (Page)
 
 
+type Msg
+    = SetActivePage Page
+      -- PregnancyDatingMsgs
+    | ToggleDateSelector
+    | SetLmpDate Date
+    | SetLmpDateConfident Bool
+    | SetLmpRange String
+      -- HistoryMsgs
+    | SetAbortions String
+    | SetActiveHistoryTask HistoryTask
+    | SetCurrentlyPregnant Bool
+    | SetLiveChildren String
+    | SetPreTermPregnancy String
+    | SetStillbirthsAtTerm String
+    | SetStillbirthsPreTerm String
+    | SetTermPregnancy String
+
+
 type alias Model =
     { pregnancyDatingData : PregnancyDatingData
     , historyData : HistoryData
@@ -194,15 +212,3 @@ decodeLmpRange s =
 
         _ ->
             Nothing
-
-
-type Msg
-    = SetActivePage Page
-      -- PregnancyDatingMsgs
-    | ToggleDateSelector
-    | SetLmpDate Date
-    | SetLmpDateConfident Bool
-    | SetLmpRange String
-      -- HistoryMsgs
-    | SetActiveHistoryTask HistoryTask
-    | SetCurrentlyPregnant Bool

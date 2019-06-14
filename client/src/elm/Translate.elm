@@ -191,6 +191,7 @@ type TranslationId
     | CounselorSignature
     | CreateGroupEncounter
     | CreateTrainingGroupEncounters
+    | CurrentlyPregnant
     | DeleteTrainingGroupEncounters
     | Dashboard
     | DateOfLastAssessment
@@ -290,7 +291,11 @@ type TranslationId
     | NoParticipantsFound
     | NotAvailable
     | NotConnected
+    | NumberOfAbortions
     | NumberOfChildrenUnder5
+    | NumberOfLiveChildren
+    | NumberOfStillbirthsAtTerm
+    | NumberOfStillbirthsPreTerm
     | ObstetricHistory
     | OK
     | Old
@@ -320,6 +325,7 @@ type TranslationId
     | PreviousFloatMeasurement Float
     | Profession
     | ProgressReport
+    | PreTermPreganancy
     | Province
     | Register
     | RegisterAParticipant
@@ -386,9 +392,10 @@ type TranslationId
     | SubmitPairingCode
     | Success
     | SyncGeneral
-    | TelephoneNumber
     | TakenCareOfBy
     | TasksCompleted Int Int
+    | TelephoneNumber
+    | TermPreganancy
     | ThisActionCannotBeUndone
     | ThisGroupHasNoMothers
     | Training
@@ -945,6 +952,11 @@ translationSet trans =
 
         CreateTrainingGroupEncounters ->
             { english = "Create All Training Group Encounters"
+            , kinyarwanda = Nothing
+            }
+
+        CurrentlyPregnant ->
+            { english = "Currently Pregnant"
             , kinyarwanda = Nothing
             }
 
@@ -1611,8 +1623,28 @@ translationSet trans =
             , kinyarwanda = Just "Ntamurandasi"
             }
 
+        NumberOfAbortions ->
+            { english = "Number of Abortions"
+            , kinyarwanda = Nothing
+            }
+
         NumberOfChildrenUnder5 ->
             { english = "Number of Children under 5"
+            , kinyarwanda = Nothing
+            }
+
+        NumberOfLiveChildren ->
+            { english = "Number of Live Children"
+            , kinyarwanda = Nothing
+            }
+
+        NumberOfStillbirthsAtTerm ->
+            { english = "Number of Stillbirths at Term"
+            , kinyarwanda = Nothing
+            }
+
+        NumberOfStillbirthsPreTerm ->
+            { english = "Number of Stillbirths pre Term"
             , kinyarwanda = Nothing
             }
 
@@ -1792,6 +1824,11 @@ translationSet trans =
         ProgressReport ->
             { english = "Progress Report"
             , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
+            }
+
+        PreTermPreganancy ->
+            { english = "Pre Term Preganancy"
+            , kinyarwanda = Nothing
             }
 
         Province ->
@@ -2141,6 +2178,11 @@ translationSet trans =
 
         TelephoneNumber ->
             { english = "Telephone Number"
+            , kinyarwanda = Nothing
+            }
+
+        TermPreganancy ->
+            { english = "Term Preganancy"
             , kinyarwanda = Nothing
             }
 

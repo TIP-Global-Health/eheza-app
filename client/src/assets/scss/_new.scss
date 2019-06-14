@@ -331,6 +331,60 @@ div.page-prenatal-activity {
             width: 20px;
           }
         }
+
+        &.currently-pregnant {
+          padding-bottom: 30px;
+
+          .label {
+            width: 70%;
+            font-weight: normal;
+            float: left;
+          }
+
+          .yes {
+            float: left;
+            font-size: 30px;
+            margin-left: 10px;
+            width: 20%;
+          }
+
+          .no {
+            float: left;
+            font-size: 30px;
+            margin-left: 10px;
+          }
+
+          input {
+            height: 30px;
+            width: 20px;
+            float:  left;
+          }
+
+
+        }
+
+        &.term-preganancy,
+        &.preterm-preganancy,
+        &.stillbirths-at-term,
+        &.stillbirths-pre-term,
+        &.abortions,
+        &.live-children {
+
+          .label {
+            width: 70%;
+            font-weight: normal;
+            float: left;
+          }
+
+          input {
+            border: 0;
+            background: $color-light-gray;
+            width: 30%;
+            text-align: -webkit-center;
+            font-weight: bold;
+          }
+
+        }
       }
 
       .separator {

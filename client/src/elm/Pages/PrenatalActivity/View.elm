@@ -173,7 +173,7 @@ viewPregnancyDatingContent language currentDate motherId pregnancyDatingData =
                 , div [ class "label" ] [ text <| translate language Translate.LmpDateHeader ]
                 , lmpDateInput
                 , div [ class "label" ] [ text <| translate language Translate.LmpDateConfidentHeader ]
-                , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident"
+                , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
                 , div [ class "separator" ] []
                 , div [ class "results" ]
                     [ div [ class "edd-result" ]
@@ -290,8 +290,13 @@ viewHistoryContent language currentDate motherId data =
 viewObstetricFormFirstStep : Language -> NominalDate -> PersonId -> ObstetricFormFirstStep -> Html Msg
 viewObstetricFormFirstStep language currentDate motherId form =
     div [ class "form history obstetric first" ]
-        [ div [ class "label" ] [ text "First input" ]
-        , viewBoolInput language form.currentlyPregnant SetCurrentlyPregnant "currently-pregnant"
+        [ viewBoolInput language form.currentlyPregnant SetCurrentlyPregnant "currently-pregnant" (Just Translate.CurrentlyPregnant)
+        , viewNumberInput language form.termPreganancy SetTermPregnancy "term-preganancy" Translate.TermPreganancy
+        , viewNumberInput language form.preTermPreganancy SetPreTermPregnancy "preterm-preganancy" Translate.PreTermPreganancy
+        , viewNumberInput language form.stillbirthsAtTerm SetStillbirthsAtTerm "stillbirths-at-term" Translate.NumberOfStillbirthsAtTerm
+        , viewNumberInput language form.stillbirthsPreTerm SetStillbirthsPreTerm "stillbirths-pre-term" Translate.NumberOfStillbirthsPreTerm
+        , viewNumberInput language form.abortions SetAbortions "abortions" Translate.NumberOfAbortions
+        , viewNumberInput language form.liveChildren SetLiveChildren "live-children" Translate.NumberOfLiveChildren
         ]
 
 
@@ -300,9 +305,17 @@ viewObstetricFormSecondStep language currentDate motherId form =
     emptyNode
 
 
-viewBoolInput : Language -> Maybe Bool -> (Bool -> Msg) -> String -> Html Msg
-viewBoolInput language currentValue setFunc inputClass =
+viewBoolInput : Language -> Maybe Bool -> (Bool -> Msg) -> String -> Maybe TranslationId -> Html Msg
+viewBoolInput language currentValue setFunc inputClass labelTranslateId =
     let
+        inputLabel =
+            labelTranslateId
+                |> unwrap
+                    emptyNode
+                    (\translationId ->
+                        div [ class "label" ] [ text <| translate language translationId ]
+                    )
+
         viewInput value currentValue setFunc =
             let
                 isChecked =
@@ -317,10 +330,33 @@ viewBoolInput language currentValue setFunc inputClass =
                 []
     in
     div [ class <| "form-input " ++ inputClass ]
-        [ viewInput True currentValue setFunc
-        , label [] [ text <| translate language Translate.Yes ]
+        [ inputLabel
+        , viewInput True currentValue setFunc
+        , label [ class "yes" ] [ text <| translate language Translate.Yes ]
         , viewInput False currentValue setFunc
-        , label [] [ text <| translate language Translate.No ]
+        , label [ class "no" ] [ text <| translate language Translate.No ]
+        ]
+
+
+viewNumberInput : Language -> Maybe Int -> (String -> Msg) -> String -> TranslationId -> Html Msg
+viewNumberInput language maybeCurrentValue setFunc inputClass labelTranslationId =
+    let
+        currentValue =
+            maybeCurrentValue
+                |> unwrap
+                    ""
+                    toString
+    in
+    div [ class <| "form-input " ++ inputClass ]
+        [ div [ class "label" ] [ text <| (translate language labelTranslationId ++ ":") ]
+        , input
+            [ type_ "number"
+            , Html.Attributes.min "0"
+            , Html.Attributes.max "99"
+            , onInput setFunc
+            , value currentValue
+            ]
+            []
         ]
 
 
