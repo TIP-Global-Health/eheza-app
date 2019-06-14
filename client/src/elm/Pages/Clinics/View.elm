@@ -214,7 +214,6 @@ viewFoundClinic language currentDate nurse clinicId clinic sessions =
                         [ tr []
                             [ th [] [ text <| translate language Translate.StartDate ]
                             , th [] [ text <| translate language Translate.EndDate ]
-                            , th [] [ text <| translate language Translate.Closed ]
                             ]
                         ]
                     , tbody [] recentAndUpcomingSessions
