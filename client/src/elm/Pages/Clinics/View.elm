@@ -202,8 +202,36 @@ viewFoundClinic language currentDate nurse clinicId clinic sessions =
                             || -- Is between start and end date
                                (deltaToStartDate.days <= 0 && deltaToEndDate.days >= 0)
                     )
-                |> AllDictList.map (viewSession language currentDate)
-                |> AllDictList.values
+
+        sessionsStartedToday =
+            recentAndUpcomingSessions
+                |> AllDictList.filter (\_ session -> session.startDate == currentDate)
+
+        -- We allow the creation of a new session if there is no session that
+        -- was started today. So, there are several scenarios:
+        --
+        -- 1. If there are open sessions from the past (not started today), you
+        --    can choose one of them, or start a new session.
+        --
+        -- 2. If there is an open session started today, you can only choose
+        --    that session. You can't start a second open session for today.
+        --
+        -- Note that we can theoretically end up with two sessions started the
+        -- same day if they were created on different devices, and the second
+        -- is created before the first syncs. We could write some code to
+        -- automatically "consolidate" those two sessions.
+        enableCreateSessionButton =
+            AllDictList.isEmpty sessionsStartedToday
+
+        createSessionButton =
+            button
+                [ classList
+                    [ ( "ui button", True )
+                    , ( "disabled", not enableCreateSessionButton )
+                    , ( "active", enableCreateSessionButton )
+                    ]
+                ]
+                [ text <| translate language Translate.CreateGroupEncounter ]
 
         content =
             if assignedToClinic clinicId nurse then
@@ -216,8 +244,12 @@ viewFoundClinic language currentDate nurse clinicId clinic sessions =
                             , th [] [ text <| translate language Translate.EndDate ]
                             ]
                         ]
-                    , tbody [] recentAndUpcomingSessions
+                    , recentAndUpcomingSessions
+                        |> AllDictList.map (viewSession language currentDate)
+                        |> AllDictList.values
+                        |> tbody []
                     ]
+                , createSessionButton
                 ]
 
             else
@@ -251,8 +283,9 @@ viewSession language currentDate sessionId session =
         link =
             button
                 [ classList
-                    [ ( "ui button small", True )
+                    [ ( "ui button", True )
                     , ( "disabled", not enableLink )
+                    , ( "active", enableLink )
                     ]
                 , SessionPage sessionId AttendancePage
                     |> UserPage
