@@ -298,8 +298,8 @@ viewObstetricFormFirstStep language currentDate motherId form =
     in
     div [ class "form history obstetric first" ]
         [ viewBoolInput language form.currentlyPregnant SetCurrentlyPregnant "currently-pregnant" (Just Translate.CurrentlyPregnant)
-        , viewNumberInput language form.termPregnancy SetTermPregnancy "term-Pregnancy" Translate.TermPregnancy
-        , viewNumberInput language form.preTermPregnancy SetPreTermPregnancy "preterm-Pregnancy" Translate.PreTermPregnancy
+        , viewNumberInput language form.termPregnancy SetTermPregnancy "term-pregnancy" Translate.TermPregnancy
+        , viewNumberInput language form.preTermPregnancy SetPreTermPregnancy "preterm-pregnancy" Translate.PreTermPregnancy
         , viewNumberInput language form.stillbirthsAtTerm SetStillbirthsAtTerm "stillbirths-at-term" Translate.NumberOfStillbirthsAtTerm
         , viewNumberInput language form.stillbirthsPreTerm SetStillbirthsPreTerm "stillbirths-pre-term" Translate.NumberOfStillbirthsPreTerm
         , viewNumberInput language form.abortions SetAbortions "abortions" Translate.NumberOfAbortions
