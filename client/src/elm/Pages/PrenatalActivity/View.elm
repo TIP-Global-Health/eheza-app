@@ -289,6 +289,13 @@ viewHistoryContent language currentDate motherId data =
 
 viewObstetricFormFirstStep : Language -> NominalDate -> PersonId -> ObstetricFormFirstStep -> Html Msg
 viewObstetricFormFirstStep language currentDate motherId form =
+    let
+        gravidaResult =
+            span [] [ text "02" ]
+
+        paraResult =
+            span [] [ text "0102" ]
+    in
     div [ class "form history obstetric first" ]
         [ viewBoolInput language form.currentlyPregnant SetCurrentlyPregnant "currently-pregnant" (Just Translate.CurrentlyPregnant)
         , viewNumberInput language form.termPreganancy SetTermPregnancy "term-preganancy" Translate.TermPreganancy
@@ -297,6 +304,17 @@ viewObstetricFormFirstStep language currentDate motherId form =
         , viewNumberInput language form.stillbirthsPreTerm SetStillbirthsPreTerm "stillbirths-pre-term" Translate.NumberOfStillbirthsPreTerm
         , viewNumberInput language form.abortions SetAbortions "abortions" Translate.NumberOfAbortions
         , viewNumberInput language form.liveChildren SetLiveChildren "live-children" Translate.NumberOfLiveChildren
+        , div [ class "separator" ] []
+        , div [ class "results" ]
+            [ div [ class "gravida-result" ]
+                [ span [ class "label" ] [ text <| (translate language Translate.Gravida ++ ":") ]
+                , gravidaResult
+                ]
+            , div [ class "para-result" ]
+                [ span [ class "label" ] [ text <| (translate language Translate.Para ++ ":") ]
+                , paraResult
+                ]
+            ]
         ]
 
 
@@ -313,7 +331,7 @@ viewBoolInput language currentValue setFunc inputClass labelTranslateId =
                 |> unwrap
                     emptyNode
                     (\translationId ->
-                        div [ class "label" ] [ text <| translate language translationId ]
+                        div [ class "label" ] [ text <| (translate language translationId ++ ":") ]
                     )
 
         viewInput value currentValue setFunc =

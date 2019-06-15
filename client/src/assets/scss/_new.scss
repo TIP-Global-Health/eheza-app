@@ -345,7 +345,7 @@ div.page-prenatal-activity {
             float: left;
             font-size: 30px;
             margin-left: 10px;
-            width: 20%;
+            margin-right: 30px;
           }
 
           .no {
@@ -356,8 +356,8 @@ div.page-prenatal-activity {
 
           input {
             height: 30px;
-            width: 20px;
-            float:  left;
+            width: 28px;
+            float: left;
           }
 
 
@@ -412,6 +412,22 @@ div.page-prenatal-activity {
 
         .ega-result {
           float: right;
+        }
+
+
+        .gravida-result,
+        .para-result {
+          font-size: 28px;
+
+          span {
+            margin-right: 10px;
+          }
+        }
+
+        .gravida-result {
+          width: 65%;
+          float: left;
+          text-align: center;
         }
       }
     }
