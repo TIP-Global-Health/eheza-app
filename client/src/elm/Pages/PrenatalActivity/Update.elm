@@ -201,7 +201,7 @@ update motherId activity db msg model =
                                         updatedForm =
                                             case String.toInt value of
                                                 Ok number ->
-                                                    { form | preTermPreganancy = Just number }
+                                                    { form | preTermPregnancy = Just number }
 
                                                 Err _ ->
                                                     form
@@ -297,7 +297,7 @@ update motherId activity db msg model =
                                         updatedForm =
                                             case String.toInt value of
                                                 Ok number ->
-                                                    { form | termPreganancy = Just number }
+                                                    { form | termPregnancy = Just number }
 
                                                 Err _ ->
                                                     form

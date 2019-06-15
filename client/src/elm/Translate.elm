@@ -325,7 +325,7 @@ type TranslationId
     | PreviousFloatMeasurement Float
     | Profession
     | ProgressReport
-    | PreTermPreganancy
+    | PreTermPregnancy
     | Province
     | Register
     | RegisterAParticipant
@@ -395,7 +395,7 @@ type TranslationId
     | TakenCareOfBy
     | TasksCompleted Int Int
     | TelephoneNumber
-    | TermPreganancy
+    | TermPregnancy
     | ThisActionCannotBeUndone
     | ThisGroupHasNoMothers
     | Training
@@ -1826,8 +1826,8 @@ translationSet trans =
             , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
             }
 
-        PreTermPreganancy ->
-            { english = "Pre Term Preganancy"
+        PreTermPregnancy ->
+            { english = "Pre Term Pregnancy"
             , kinyarwanda = Nothing
             }
 
@@ -2181,8 +2181,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        TermPreganancy ->
-            { english = "Term Preganancy"
+        TermPregnancy ->
+            { english = "Term Pregnancy"
             , kinyarwanda = Nothing
             }
 
