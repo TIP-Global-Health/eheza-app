@@ -300,7 +300,7 @@ viewHistoryContent language currentDate motherId data =
                             case data.obstetricForm of
                                 FirstStep _ ->
                                     ( [ button
-                                            [ classList [ ( "ui fluid primary button", True ), ( "disabledTMP", tasksCompleted /= totalTasks ) ]
+                                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
                                             , onClick OBSaveFirstStep
                                             ]
                                             [ text <| translate language Translate.SaveAndNext ]
@@ -310,7 +310,7 @@ viewHistoryContent language currentDate motherId data =
 
                                 SecondStep _ ->
                                     ( [ button [ class "ui fluid primary button" ]
-                                            [ text <| translate language Translate.Back ]
+                                            [ text <| ("< " ++ translate language Translate.Back) ]
                                       , button
                                             [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
                                             , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage motherId
