@@ -296,7 +296,7 @@ viewHistoryContent language currentDate motherId data =
                             , data.medicalForm.diabates
                             , data.medicalForm.cardiacDisease
                             , data.medicalForm.renalDisease
-                            , data.medicalForm.hipertensionBeforePregnancy
+                            , data.medicalForm.hypertensionBeforePregnancy
                             , data.medicalForm.tuberculosisPast
                             , data.medicalForm.tuberculosisPresent
                             , data.medicalForm.asthma
@@ -354,8 +354,25 @@ viewHistoryContent language currentDate motherId data =
                                     , "second"
                                     )
 
-                        _ ->
-                            ( [], "" )
+                        Medical ->
+                            ( [ button
+                                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                    , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage motherId
+                                    ]
+                                    [ text <| translate language Translate.Save ]
+                              ]
+                            , ""
+                            )
+
+                        Social ->
+                            ( [ button
+                                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                    , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage motherId
+                                    ]
+                                    [ text <| translate language Translate.Save ]
+                              ]
+                            , ""
+                            )
             in
             div [ class <| "actions history obstetric " ++ stepIndicatoryClass ]
                 buttons
@@ -584,26 +601,146 @@ viewObstetricFormSecondStep language currentDate motherId form =
 viewMedicalForm : Language -> NominalDate -> PersonId -> MedicalHistoryForm -> Html Msg
 viewMedicalForm language currentDate motherId form =
     let
-        uterineMyomaUpdateFunc uterineMyomaUpdateFunc value form_ =
+        uterineMyomaUpdateFunc value form_ =
             { form_ | uterineMyoma = Just value }
+
+        diabatesUpdateFunc value form_ =
+            { form_ | diabates = Just value }
+
+        cardiacDiseaseUpdateFunc value form_ =
+            { form_ | cardiacDisease = Just value }
+
+        renalDiseaseUpdateFunc value form_ =
+            { form_ | renalDisease = Just value }
+
+        hypertensionBeforePregnancyUpdateFunc value form_ =
+            { form_ | hypertensionBeforePregnancy = Just value }
+
+        tuberculosisPastUpdateFunc value form_ =
+            { form_ | tuberculosisPast = Just value }
+
+        tuberculosisPresentUpdateFunc value form_ =
+            { form_ | tuberculosisPresent = Just value }
+
+        asthmaUpdateFunc value form_ =
+            { form_ | asthma = Just value }
+
+        bowedLegsUpdateFunc value form_ =
+            { form_ | bowedLegs = Just value }
+
+        hivUpdateFunc value form_ =
+            { form_ | hiv = Just value }
     in
-    div [ class "form history obstetric first" ]
+    div [ class "form history medical" ]
         [ div [ class "label" ] [ text <| (translate language Translate.MedicalFormHelper ++ ":") ]
-        , div [ class "label" ]
-            [ text <| (translate language Translate.UterineMyoma ++ ":")
-            , viewBoolInput
-                language
-                form.uterineMyoma
-                (SetMedicalBoolInput uterineMyomaUpdateFunc)
-                "uterine-myoma"
-                Nothing
-            ]
+        , div [ class "label" ] [ text <| (translate language Translate.UterineMyoma ++ ":") ]
+        , viewBoolInput
+            language
+            form.uterineMyoma
+            (SetMedicalBoolInput uterineMyomaUpdateFunc)
+            "uterine-myoma"
+            Nothing
+        , div [ class "label" ] [ text <| (translate language Translate.Diabates ++ ":") ]
+        , viewBoolInput
+            language
+            form.diabates
+            (SetMedicalBoolInput diabatesUpdateFunc)
+            "diabates"
+            Nothing
+        , div [ class "label" ] [ text <| (translate language Translate.CardiacDisease ++ ":") ]
+        , viewBoolInput
+            language
+            form.cardiacDisease
+            (SetMedicalBoolInput cardiacDiseaseUpdateFunc)
+            "cardiac-disease"
+            Nothing
+        , div [ class "label" ] [ text <| (translate language Translate.RenalDisease ++ ":") ]
+        , viewBoolInput
+            language
+            form.renalDisease
+            (SetMedicalBoolInput renalDiseaseUpdateFunc)
+            "renal-disease"
+            Nothing
+        , div [ class "label" ] [ text <| (translate language Translate.HypertensionBeforePregnancy ++ ":") ]
+        , viewBoolInput
+            language
+            form.hypertensionBeforePregnancy
+            (SetMedicalBoolInput hypertensionBeforePregnancyUpdateFunc)
+            "hypertension-before-pregnancy"
+            Nothing
+        , div [ class "label" ] [ text <| (translate language Translate.TuberculosisPast ++ ":") ]
+        , viewBoolInput
+            language
+            form.tuberculosisPast
+            (SetMedicalBoolInput tuberculosisPastUpdateFunc)
+            "tuberculosis-past"
+            Nothing
+        , div [ class "label" ] [ text <| (translate language Translate.TuberculosisPresent ++ ":") ]
+        , viewBoolInput
+            language
+            form.tuberculosisPresent
+            (SetMedicalBoolInput tuberculosisPresentUpdateFunc)
+            "tuberculosis-present"
+            Nothing
+        , div [ class "label" ] [ text <| (translate language Translate.Asthma ++ ":") ]
+        , viewBoolInput
+            language
+            form.asthma
+            (SetMedicalBoolInput asthmaUpdateFunc)
+            "asthma"
+            Nothing
+        , div [ class "label" ] [ text <| (translate language Translate.BowedLegs ++ ":") ]
+        , viewBoolInput
+            language
+            form.bowedLegs
+            (SetMedicalBoolInput bowedLegsUpdateFunc)
+            "bowed-legs"
+            Nothing
+        , div [ class "label" ] [ text <| (translate language Translate.HIV ++ ":") ]
+        , viewBoolInput
+            language
+            form.hiv
+            (SetMedicalBoolInput hivUpdateFunc)
+            "hiv"
+            Nothing
         ]
 
 
 viewSocialForm : Language -> NominalDate -> PersonId -> SocialHistoryForm -> Html Msg
 viewSocialForm language currentDate motherId form =
-    emptyNode
+    let
+        accompaniedByPartnerUpdateFunc value form_ =
+            { form_ | accompaniedByPartner = Just value }
+
+        partnerReceivedCounselingUpdateFunc value form_ =
+            { form_ | partnerReceivedCounseling = Just value }
+
+        mentalHealthHistoryUpdateFunc value form_ =
+            { form_ | mentalHealthHistory = Just value }
+    in
+    div [ class "form history social" ]
+        [ div [ class "label" ] [ text <| (translate language Translate.AccompaniedByPartner ++ "?") ]
+        , viewBoolInput
+            language
+            form.accompaniedByPartner
+            (SetSocialBoolInput accompaniedByPartnerUpdateFunc)
+            "accompanied-by-partner"
+            Nothing
+        , div [ class "label" ] [ text <| (translate language Translate.PartnerReceivedCounseling ++ "?") ]
+        , viewBoolInput
+            language
+            form.partnerReceivedCounseling
+            (SetSocialBoolInput partnerReceivedCounselingUpdateFunc)
+            "partner-received-counseling"
+            Nothing
+        , div [ class "label" ] [ text <| (translate language Translate.MentalHealthHistory ++ ":") ]
+        , viewBoolInput
+            language
+            form.mentalHealthHistory
+            (SetSocialBoolInput mentalHealthHistoryUpdateFunc)
+            "mental-health-history"
+            Nothing
+        ]
 
 
 viewBoolInput : Language -> Maybe Bool -> (Bool -> Msg) -> String -> Maybe TranslationId -> Html Msg

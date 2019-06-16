@@ -184,7 +184,7 @@ type alias MedicalHistoryForm =
     , diabates : Maybe Bool
     , cardiacDisease : Maybe Bool
     , renalDisease : Maybe Bool
-    , hipertensionBeforePregnancy : Maybe Bool
+    , hypertensionBeforePregnancy : Maybe Bool
     , tuberculosisPast : Maybe Bool
     , tuberculosisPresent : Maybe Bool
     , asthma : Maybe Bool
@@ -199,7 +199,7 @@ emptyMedicalHistoryForm =
     , diabates = Nothing
     , cardiacDisease = Nothing
     , renalDisease = Nothing
-    , hipertensionBeforePregnancy = Nothing
+    , hypertensionBeforePregnancy = Nothing
     , tuberculosisPast = Nothing
     , tuberculosisPresent = Nothing
     , asthma = Nothing

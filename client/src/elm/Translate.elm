@@ -806,7 +806,7 @@ translationSet trans =
             }
 
         CardiacDisease ->
-            { english = "CardiacDisease"
+            { english = "Cardiac Disease"
             , kinyarwanda = Nothing
             }
 

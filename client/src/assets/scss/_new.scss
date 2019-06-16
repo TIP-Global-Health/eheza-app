@@ -395,6 +395,7 @@ div.page-prenatal-activity {
 
         }
 
+        // Yes - No inputs
         &.c-section-previous-delivery,
         &.successive-abortions,
         &.successive-primature-deliveries,
@@ -407,7 +408,20 @@ div.page-prenatal-activity {
         &.convulsions-and-unconcious-previous-delivery,
         &.gestatipnal-diabetes-previous-pregnancy,
         &.incomplete-cervix-previous-pregnancy,
-        &.rh-negative {
+        &.rh-negative,
+        &.uterine-myoma,
+        &.diabates,
+        &.cardiac-disease,
+        &.renal-disease,
+        &.hypertension-before-pregnancy,
+        &.tuberculosis-past,
+        &.tuberculosis-present,
+        &.asthma,
+        &.bowed-legs,
+        &.hiv,
+        &.accompanied-by-partner,
+        &.partner-received-counseling,
+        &.mental-health-history {
           padding-bottom: 30px;
 
           .yes {
