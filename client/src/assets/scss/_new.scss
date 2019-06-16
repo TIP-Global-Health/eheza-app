@@ -390,7 +390,19 @@ div.page-prenatal-activity {
 
         }
 
-        &.c-section-previous-delivery {
+        &.c-section-previous-delivery,
+        &.successive-abortions,
+        &.successive-primature-deliveries,
+        &.stillborn-previous-delivery,
+        &.baby-died-on-day-off-birth-previous-delivery,
+        &.partial-placenta-previous-delivery,
+        &.severe-hemorrhaging-previous-delivery,
+        &.preeclampsia-previous-pregnancy,
+        &.convulsions-previous-pelivery,
+        &.convulsions-and-unconcious-previous-delivery,
+        &.gestatipnal-diabetes-previous-pregnancy,
+        &.incomplete-cervix-previous-pregnancy,
+        &.rh-negative {
           padding-bottom: 30px;
 
           .yes {

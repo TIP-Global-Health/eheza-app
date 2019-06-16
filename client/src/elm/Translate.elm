@@ -157,6 +157,7 @@ type TranslationId
     | Assessment
     | Attendance
     | Baby
+    | BabyDiedOnDayOfBirthPreviousDelivery
     | BabyName String
     | Back
     | BackendError
@@ -174,6 +175,8 @@ type TranslationId
     | ChildOf
     | Children
     | ClickTheCheckMark
+    | ConvulsionsAndUnconciousPreviousDelivery
+    | ConvulsionsPreviousDelivery
     | GroupNotFound
     | Group
     | Groups
@@ -232,6 +235,7 @@ type TranslationId
     | FormField String
     | Gender Gender
     | GenderLabel
+    | GestatipnalDiabetesPreviousPregnancy
     | GoHome
     | Gravida
     | HaveYouSynced
@@ -240,6 +244,7 @@ type TranslationId
     | HIVStatusLabel
     | HouseholdSize
     | HttpError Http.Error
+    | IncompleteCervixPreviousPregnancy
     | KilogramShorthand
     | LastChecked
     | LevelOfEducationLabel
@@ -306,6 +311,7 @@ type TranslationId
     | Page404
     | PageNotFoundMsg
     | Para
+    | PartialPlacentaPreviousDelivery
     | ParticipantDirectory
     | Participants
     | ParticipantReviewed
@@ -322,13 +328,16 @@ type TranslationId
     | PlaceholderEnterParticipantName
     | PlaceholderEnterWeight
     | PleaseSelectGroup
+    | PreeclampsiaPreviousPregnancy
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalEncounter
+    | PreviousDelivery
     | PreviousFloatMeasurement Float
     | Profession
     | ProgressReport
     | PreTermPregnancy
     | Province
+    | ReasonForCSection
     | Register
     | RegisterAParticipant
     | RegisterHelper
@@ -350,6 +359,7 @@ type TranslationId
     | ReportCompleted { pending : Int, completed : Int }
     | ResolveMonth Month
     | Retry
+    | RhNegative
     | Save
     | SaveAndNext
     | SaveError
@@ -378,7 +388,11 @@ type TranslationId
     | ServiceWorkerRegErr
     | ServiceWorkerRegSuccess
     | ServiceWorkerStatus
+    | SevereHemorrhagingPreviousDelivery
     | SocialHistory
+    | StillbornPreviousDelivery
+    | SuccessiveAbortions
+    | SuccessivePrimatureDeliveries
     | GroupEncounterClosed
     | GroupEncounterClosed2 SessionId
     | GroupEncounterLoading SessionId
@@ -728,6 +742,11 @@ translationSet trans =
             , kinyarwanda = Just "Umwana"
             }
 
+        BabyDiedOnDayOfBirthPreviousDelivery ->
+            { english = "Live Birth but the baby died the same day in previous delivery."
+            , kinyarwanda = Nothing
+            }
+
         BabyName name ->
             { english = "Baby: " ++ name
             , kinyarwanda = Just <| "Umwana: " ++ name
@@ -873,6 +892,16 @@ translationSet trans =
         ClickTheCheckMark ->
             { english = "Click the check mark if the mother / caregiver is in attendance. The check mark will appear green when a mother / caregiver has been signed in."
             , kinyarwanda = Just "Kanda (kuri) ku kazu niba umubyeyi ahari. Ku kazu harahita hahindura ibara habe icyaytsi niba wemeje ko umubyeyi ahari"
+            }
+
+        ConvulsionsAndUnconciousPreviousDelivery ->
+            { english = "Experienced convulsions and resulted in becoming unconscious after delivery"
+            , kinyarwanda = Nothing
+            }
+
+        ConvulsionsPreviousDelivery ->
+            { english = "Experienced convulsions in previous delivery"
+            , kinyarwanda = Nothing
             }
 
         GroupNotFound ->
@@ -1224,6 +1253,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        GestatipnalDiabetesPreviousPregnancy ->
+            { english = "Gestatipnal Diabetes in previous pregnancy"
+            , kinyarwanda = Nothing
+            }
+
         GoHome ->
             { english = "Go to main page"
             , kinyarwanda = Just "Kujya ahabanza"
@@ -1283,6 +1317,11 @@ translationSet trans =
 
         HttpError error ->
             translateHttpError error
+
+        IncompleteCervixPreviousPregnancy ->
+            { english = "Incomplete Cervix in previous pregnancy"
+            , kinyarwanda = Nothing
+            }
 
         KilogramShorthand ->
             { english = "kg"
@@ -1701,6 +1740,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PartialPlacentaPreviousDelivery ->
+            { english = "Partial Placenta in previous delivery"
+            , kinyarwanda = Nothing
+            }
+
         ParticipantDirectory ->
             { english = "Participant Directory"
             , kinyarwanda = Nothing
@@ -1787,6 +1831,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PreeclampsiaPreviousPregnancy ->
+            { english = "Preeclampsia in previous pregnancy "
+            , kinyarwanda = Nothing
+            }
+
         PrenatalActivitiesTitle activity ->
             case activity of
                 DangerSigns ->
@@ -1824,6 +1873,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PreviousDelivery ->
+            { english = "Previous Delivery"
+            , kinyarwanda = Nothing
+            }
+
         PreviousFloatMeasurement value ->
             { english = "Previous measurement: " ++ toString value
             , kinyarwanda = Just <| "Ibipimo by'ubushize: " ++ toString value
@@ -1846,6 +1900,11 @@ translationSet trans =
 
         Province ->
             { english = "Province"
+            , kinyarwanda = Nothing
+            }
+
+        ReasonForCSection ->
+            { english = "Reason for C-section"
             , kinyarwanda = Nothing
             }
 
@@ -1957,6 +2016,11 @@ translationSet trans =
         Retry ->
             { english = "Retry"
             , kinyarwanda = Just "Kongera kugerageza"
+            }
+
+        RhNegative ->
+            { english = "RH Negative"
+            , kinyarwanda = Nothing
             }
 
         Save ->
@@ -2099,8 +2163,28 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        SevereHemorrhagingPreviousDelivery ->
+            { english = "Severe Hemorrhaging in previous delivery (>500 ml)"
+            , kinyarwanda = Nothing
+            }
+
         SocialHistory ->
             { english = "Social History"
+            , kinyarwanda = Nothing
+            }
+
+        StillbornPreviousDelivery ->
+            { english = "Stillborn in previous delivery"
+            , kinyarwanda = Nothing
+            }
+
+        SuccessiveAbortions ->
+            { english = "Successive Abortions"
+            , kinyarwanda = Nothing
+            }
+
+        SuccessivePrimatureDeliveries ->
+            { english = "Successive Primature Deliveries"
             , kinyarwanda = Nothing
             }
 

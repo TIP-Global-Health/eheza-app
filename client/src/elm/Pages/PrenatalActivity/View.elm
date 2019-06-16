@@ -365,11 +365,141 @@ viewObstetricFormSecondStep language currentDate motherId form =
     let
         cSectionInPreviousDeliveryUpdateFunc value form_ =
             { form_ | cSectionInPreviousDelivery = Just value }
+
+        successiveAbortionsUpdateFunc value form_ =
+            { form_ | successiveAbortions = Just value }
+
+        successivePrimatureDeliveriesUpdateFunc value form_ =
+            { form_ | successivePrimatureDeliveries = Just value }
+
+        stillbornPreviousDeliveryUpdateFunc value form_ =
+            { form_ | stillbornPreviousDelivery = Just value }
+
+        babyDiedOnDayOfBirthPreviousDeliveryUpdateFunc value form_ =
+            { form_ | babyDiedOnDayOfBirthPreviousDelivery = Just value }
+
+        partialPlacentaPreviousDeliveryUpdateFunc value form_ =
+            { form_ | partialPlacentaPreviousDelivery = Just value }
+
+        severeHemorrhagingPreviousDeliveryUpdateFunc value form_ =
+            { form_ | severeHemorrhagingPreviousDelivery = Just value }
+
+        preeclampsiaPreviousPregnancyUpdateFunc value form_ =
+            { form_ | preeclampsiaPreviousPregnancy = Just value }
+
+        convulsionsPreviousDeliveryUpdateFunc value form_ =
+            { form_ | convulsionsPreviousDelivery = Just value }
+
+        convulsionsAndUnconciousPreviousDeliveryUpdateFunc value form_ =
+            { form_ | convulsionsAndUnconciousPreviousDelivery = Just value }
+
+        gestatipnalDiabetesPreviousPregnancyUpdateFunc value form_ =
+            { form_ | gestatipnalDiabetesPreviousPregnancy = Just value }
+
+        incompleteCervixPreviousPregnancyUpdateFunc value form_ =
+            { form_ | incompleteCervixPreviousPregnancy = Just value }
+
+        rhNegativeUpdateFunc value form_ =
+            { form_ | rhNegative = Just value }
     in
     div [ class "form history obstetric second" ]
-        [ viewNumberInput language form.cSections SetNumberOfCSections "c-sections" Translate.NumberOfCSections
+        [ viewNumberInput
+            language
+            form.cSections
+            SetNumberOfCSections
+            "c-sections"
+            Translate.NumberOfCSections
         , div [ class "label normal" ] [ text <| (translate language Translate.CSectionInPreviousDelivery ++ ":") ]
-        , viewBoolInput language form.cSectionInPreviousDelivery (SetOBBoolInput cSectionInPreviousDeliveryUpdateFunc) "c-section-previous-delivery" Nothing
+        , viewBoolInput
+            language
+            form.cSectionInPreviousDelivery
+            (SetOBBoolInput cSectionInPreviousDeliveryUpdateFunc)
+            "c-section-previous-delivery"
+            Nothing
+        , div [ class "label normal" ] [ text <| (translate language Translate.SuccessiveAbortions ++ ":") ]
+        , viewBoolInput
+            language
+            form.successiveAbortions
+            (SetOBBoolInput successiveAbortionsUpdateFunc)
+            "successive-abortions"
+            Nothing
+        , div [ class "label normal" ] [ text <| (translate language Translate.SuccessivePrimatureDeliveries ++ ":") ]
+        , viewBoolInput
+            language
+            form.successivePrimatureDeliveries
+            (SetOBBoolInput successivePrimatureDeliveriesUpdateFunc)
+            "successive-primature-deliveries"
+            Nothing
+        , div [ class "label normal" ] [ text <| (translate language Translate.StillbornPreviousDelivery ++ ":") ]
+        , viewBoolInput
+            language
+            form.stillbornPreviousDelivery
+            (SetOBBoolInput stillbornPreviousDeliveryUpdateFunc)
+            "stillborn-previous-delivery"
+            Nothing
+        , div [ class "label normal" ] [ text <| (translate language Translate.BabyDiedOnDayOfBirthPreviousDelivery ++ ":") ]
+        , viewBoolInput
+            language
+            form.babyDiedOnDayOfBirthPreviousDelivery
+            (SetOBBoolInput babyDiedOnDayOfBirthPreviousDeliveryUpdateFunc)
+            "baby-died-on-day-off-birth-previous-delivery"
+            Nothing
+        , div [ class "label normal" ] [ text <| (translate language Translate.PartialPlacentaPreviousDelivery ++ ":") ]
+        , viewBoolInput
+            language
+            form.partialPlacentaPreviousDelivery
+            (SetOBBoolInput partialPlacentaPreviousDeliveryUpdateFunc)
+            "partial-placenta-previous-delivery"
+            Nothing
+        , div [ class "label normal" ] [ text <| (translate language Translate.SevereHemorrhagingPreviousDelivery ++ ":") ]
+        , viewBoolInput
+            language
+            form.severeHemorrhagingPreviousDelivery
+            (SetOBBoolInput severeHemorrhagingPreviousDeliveryUpdateFunc)
+            "severe-hemorrhaging-previous-delivery"
+            Nothing
+        , div [ class "label normal" ] [ text <| (translate language Translate.PreeclampsiaPreviousPregnancy ++ ":") ]
+        , viewBoolInput
+            language
+            form.preeclampsiaPreviousPregnancy
+            (SetOBBoolInput preeclampsiaPreviousPregnancyUpdateFunc)
+            "preeclampsia-previous-pregnancy"
+            Nothing
+        , div [ class "label normal" ] [ text <| (translate language Translate.ConvulsionsPreviousDelivery ++ ":") ]
+        , viewBoolInput
+            language
+            form.convulsionsPreviousDelivery
+            (SetOBBoolInput convulsionsPreviousDeliveryUpdateFunc)
+            "convulsions-previous-pelivery"
+            Nothing
+        , div [ class "label normal" ] [ text <| (translate language Translate.ConvulsionsAndUnconciousPreviousDelivery ++ ":") ]
+        , viewBoolInput
+            language
+            form.convulsionsAndUnconciousPreviousDelivery
+            (SetOBBoolInput convulsionsAndUnconciousPreviousDeliveryUpdateFunc)
+            "convulsions-and-unconcious-previous-delivery"
+            Nothing
+        , div [ class "label normal" ] [ text <| (translate language Translate.GestatipnalDiabetesPreviousPregnancy ++ ":") ]
+        , viewBoolInput
+            language
+            form.gestatipnalDiabetesPreviousPregnancy
+            (SetOBBoolInput gestatipnalDiabetesPreviousPregnancyUpdateFunc)
+            "gestatipnal-diabetes-previous-pregnancy"
+            Nothing
+        , div [ class "label normal" ] [ text <| (translate language Translate.IncompleteCervixPreviousPregnancy ++ ":") ]
+        , viewBoolInput
+            language
+            form.incompleteCervixPreviousPregnancy
+            (SetOBBoolInput incompleteCervixPreviousPregnancyUpdateFunc)
+            "incomplete-cervix-previous-pregnancy"
+            Nothing
+        , div [ class "label normal" ] [ text <| (translate language Translate.RhNegative ++ ":") ]
+        , viewBoolInput
+            language
+            form.rhNegative
+            (SetOBBoolInput rhNegativeUpdateFunc)
+            "rh-negative"
+            Nothing
         ]
 
 
