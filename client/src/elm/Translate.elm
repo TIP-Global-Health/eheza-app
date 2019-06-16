@@ -126,7 +126,8 @@ type Adherence
 
 
 type TranslationId
-    = AccessDenied
+    = AccompaniedByPartner
+    | AccessDenied
     | Activities
     | ActivitiesCompleted Int
     | ActivitiesHelp Activity
@@ -155,6 +156,7 @@ type TranslationId
     | AppName
     | AreYouSure
     | Assessment
+    | Asthma
     | Attendance
     | Baby
     | BabyDiedOnDayOfBirthPreviousDelivery
@@ -162,7 +164,9 @@ type TranslationId
     | Back
     | BackendError
     | Born
+    | BowedLegs
     | Cancel
+    | CardiacDisease
     | CaregiverName
     | CaregiverNationalId
     | CentimeterShorthand
@@ -210,6 +214,7 @@ type TranslationId
     | Device
     | DeviceNotAuthorized
     | DeviceStatus
+    | Diabates
     | District
     | DOB
     | DropzoneDefaultMessage
@@ -243,10 +248,12 @@ type TranslationId
     | Gravida
     | HaveYouSynced
     | HealthCenter
+    | HIV
     | HIVStatus HIVStatus
     | HIVStatusLabel
     | HouseholdSize
     | HttpError Http.Error
+    | HypertensionBeforePregnancy
     | IncompleteCervixPreviousPregnancy
     | KilogramShorthand
     | LastChecked
@@ -264,8 +271,10 @@ type TranslationId
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
+    | MedicalFormHelper
     | MedicalHistory
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
+    | MentalHealthHistory
     | MiddleName
     | MinutesAgo Int
     | ModeOfDelivery ModeOfDelivery
@@ -322,6 +331,7 @@ type TranslationId
     | ParticipantSummary
     | ParticipantDemographicInformation
     | ParticipantInformation
+    | PartnerReceivedCounseling
     | People
     | PersistentStorage Bool
     | Person
@@ -354,6 +364,7 @@ type TranslationId
     | RelationSuccessful
     | RelationSuccessfulChildWithMother
     | RelationSuccessfulMotherWithChild
+    | RenalDisease
     | ReportAge String
     | ReportDOB String
     | ReportRemaining Int
@@ -423,10 +434,13 @@ type TranslationId
     | TrainingGroupEncounterCreateSuccessMessage
     | TrainingGroupEncounterDeleteSuccessMessage
     | TrySyncing
+    | TuberculosisPast
+    | TuberculosisPresent
     | UbudeheLabel
     | Unknown
     | Update
     | UpdateError
+    | UterineMyoma
     | ValidationErrors
     | Version
     | ViewProgressReport
@@ -447,6 +461,11 @@ type TranslationId
 translationSet : TranslationId -> TranslationSet String
 translationSet trans =
     case trans of
+        AccompaniedByPartner ->
+            { english = "Was the patient accompanied by partner during the assessment"
+            , kinyarwanda = Nothing
+            }
+
         AccessDenied ->
             { english = "Access denied"
             , kinyarwanda = Just "Kwinjira ntibyemera"
@@ -736,6 +755,11 @@ translationSet trans =
             , kinyarwanda = Just "Ipimwa"
             }
 
+        Asthma ->
+            { english = "Asthma"
+            , kinyarwanda = Nothing
+            }
+
         Attendance ->
             { english = "Attendance"
             , kinyarwanda = Just "Ubwitabire"
@@ -771,9 +795,19 @@ translationSet trans =
             , kinyarwanda = Just "Kuvuka/ itariki y'amavuko"
             }
 
+        BowedLegs ->
+            { english = "Bowed Legs"
+            , kinyarwanda = Nothing
+            }
+
         Cancel ->
             { english = "Cancel"
             , kinyarwanda = Just "Guhagarika"
+            }
+
+        CardiacDisease ->
+            { english = "CardiacDisease"
+            , kinyarwanda = Nothing
             }
 
         CaregiverName ->
@@ -1104,6 +1138,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Diabates ->
+            { english = "Diabates"
+            , kinyarwanda = Nothing
+            }
+
         District ->
             { english = "District"
             , kinyarwanda = Nothing
@@ -1319,6 +1358,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        HIV ->
+            { english = "HIV"
+            , kinyarwanda = Nothing
+            }
+
         HIVStatus status ->
             case status of
                 HIVExposedInfant ->
@@ -1358,6 +1402,11 @@ translationSet trans =
 
         HttpError error ->
             translateHttpError error
+
+        HypertensionBeforePregnancy ->
+            { english = "Hypertension before pregnancy"
+            , kinyarwanda = Nothing
+            }
 
         IncompleteCervixPreviousPregnancy ->
             { english = "Incomplete Cervix in previous pregnancy"
@@ -1503,8 +1552,18 @@ translationSet trans =
             , kinyarwanda = Just <| "Kwiyongera " ++ toString amount
             }
 
+        MedicalFormHelper ->
+            { english = "Please recode if the mother was diagnosed with the following medical issues"
+            , kinyarwanda = Nothing
+            }
+
         MedicalHistory ->
             { english = "Medical History"
+            , kinyarwanda = Nothing
+            }
+
+        MentalHealthHistory ->
+            { english = "Mental Health History"
             , kinyarwanda = Nothing
             }
 
@@ -1821,6 +1880,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PartnerReceivedCounseling ->
+            { english = "Did partner recieve HIV Counseling and Testing during this pregnancy"
+            , kinyarwanda = Nothing
+            }
+
         People ->
             { english = "People"
             , kinyarwanda = Nothing
@@ -2023,6 +2087,11 @@ translationSet trans =
 
         RelationSuccessfulMotherWithChild ->
             { english = "Mother succesfully assocoated with child."
+            , kinyarwanda = Nothing
+            }
+
+        RenalDisease ->
+            { english = "Renal Disease"
             , kinyarwanda = Nothing
             }
 
@@ -2376,6 +2445,16 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        TuberculosisPast ->
+            { english = "Tuberculosis in the past"
+            , kinyarwanda = Nothing
+            }
+
+        TuberculosisPresent ->
+            { english = "Tuberculosis in the present"
+            , kinyarwanda = Nothing
+            }
+
         UbudeheLabel ->
             { english = "Ubudehe: "
             , kinyarwanda = Nothing
@@ -2394,6 +2473,11 @@ translationSet trans =
         UpdateError ->
             { english = "Update Error"
             , kinyarwanda = Just "ikosa mwivugurura"
+            }
+
+        UterineMyoma ->
+            { english = "Uterine Myoma"
+            , kinyarwanda = Nothing
             }
 
         ValidationErrors ->

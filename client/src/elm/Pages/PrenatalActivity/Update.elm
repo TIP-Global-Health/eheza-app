@@ -295,3 +295,43 @@ update motherId activity db msg model =
             , Cmd.none
             , []
             )
+
+        SetMedicalBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    case model.historyData.activeTask of
+                        Medical ->
+                            let
+                                updatedForm =
+                                    formUpdateFunc value model.historyData.medicalForm
+                            in
+                            model.historyData
+                                |> (\data -> { data | medicalForm = updatedForm })
+
+                        _ ->
+                            model.historyData
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetSocialBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    case model.historyData.activeTask of
+                        Social ->
+                            let
+                                updatedForm =
+                                    formUpdateFunc value model.historyData.socialForm
+                            in
+                            model.historyData
+                                |> (\data -> { data | socialForm = updatedForm })
+
+                        _ ->
+                            model.historyData
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )

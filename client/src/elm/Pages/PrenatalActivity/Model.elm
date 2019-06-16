@@ -3,6 +3,7 @@ module Pages.PrenatalActivity.Model exposing
     , HistoryData
     , HistoryTask(..)
     , LmpRange(..)
+    , MedicalHistoryForm
     , Model
     , Msg(..)
     , ObstetricFormFirstStep
@@ -11,11 +12,14 @@ module Pages.PrenatalActivity.Model exposing
     , PregnancyDatingData
     , PregnancyDatingForm
     , PreviousDeliveryPeriod(..)
+    , SocialHistoryForm
     , decodeLmpRange
     , emptyHistoryData
+    , emptyMedicalHistoryForm
     , emptyModel
     , emptyObstetricFormSecondStep
     , emptyPregnancyDatingData
+    , emptySocialHistoryForm
     , encodeLmpRange
     )
 
@@ -30,16 +34,20 @@ type Msg
     | SetLmpDate Date
     | SetLmpDateConfident Bool
     | SetLmpRange String
-      -- HistoryMsgs, Step 1
+      -- HistoryMsgs, OB, Step 1
     | OBSaveFirstStep
     | SetActiveHistoryTask HistoryTask
     | SetCurrentlyPregnant Bool
     | SetOBIntInput (Int -> ObstetricFormFirstStep -> ObstetricFormFirstStep) String
-      -- HistoryMsgs, Step 2
+      -- HistoryMsgs, OB, Step 2
     | SetCSectionReason CSectionReason
     | SetNumberOfCSections String
     | SetOBBoolInput (Bool -> ObstetricFormSecondStep -> ObstetricFormSecondStep) Bool
     | SetPreviousDeliveryPeriod PreviousDeliveryPeriod
+      -- HistoryMsgs, Medical
+    | SetMedicalBoolInput (Bool -> MedicalHistoryForm -> MedicalHistoryForm) Bool
+      -- HistoryMsgs, Social
+    | SetSocialBoolInput (Bool -> SocialHistoryForm -> SocialHistoryForm) Bool
 
 
 type alias Model =
@@ -68,6 +76,8 @@ emptyPregnancyDatingData =
 
 type alias HistoryData =
     { obstetricForm : ObstetricHistoryFormType
+    , medicalForm : MedicalHistoryForm
+    , socialForm : SocialHistoryForm
     , activeTask : HistoryTask
     }
 
@@ -75,6 +85,8 @@ type alias HistoryData =
 emptyHistoryData : HistoryData
 emptyHistoryData =
     { obstetricForm = FirstStep emptyObstetricFormFirstStep
+    , medicalForm = emptyMedicalHistoryForm
+    , socialForm = emptySocialHistoryForm
     , activeTask = Obstetric
     }
 
@@ -114,6 +126,18 @@ type alias ObstetricFormFirstStep =
     }
 
 
+emptyObstetricFormFirstStep : ObstetricFormFirstStep
+emptyObstetricFormFirstStep =
+    { currentlyPregnant = Nothing
+    , termPregnancy = Nothing
+    , preTermPregnancy = Nothing
+    , stillbirthsAtTerm = Nothing
+    , stillbirthsPreTerm = Nothing
+    , abortions = Nothing
+    , liveChildren = Nothing
+    }
+
+
 type alias ObstetricFormSecondStep =
     { cSections : Maybe Int
     , cSectionInPreviousDelivery : Maybe Bool
@@ -131,18 +155,6 @@ type alias ObstetricFormSecondStep =
     , gestatipnalDiabetesPreviousPregnancy : Maybe Bool
     , incompleteCervixPreviousPregnancy : Maybe Bool
     , rhNegative : Maybe Bool
-    }
-
-
-emptyObstetricFormFirstStep : ObstetricFormFirstStep
-emptyObstetricFormFirstStep =
-    { currentlyPregnant = Nothing
-    , termPregnancy = Nothing
-    , preTermPregnancy = Nothing
-    , stillbirthsAtTerm = Nothing
-    , stillbirthsPreTerm = Nothing
-    , abortions = Nothing
-    , liveChildren = Nothing
     }
 
 
@@ -165,6 +177,47 @@ emptyObstetricFormSecondStep =
     , incompleteCervixPreviousPregnancy = Nothing
     , rhNegative = Nothing
     }
+
+
+type alias MedicalHistoryForm =
+    { uterineMyoma : Maybe Bool
+    , diabates : Maybe Bool
+    , cardiacDisease : Maybe Bool
+    , renalDisease : Maybe Bool
+    , hipertensionBeforePregnancy : Maybe Bool
+    , tuberculosisPast : Maybe Bool
+    , tuberculosisPresent : Maybe Bool
+    , asthma : Maybe Bool
+    , bowedLegs : Maybe Bool
+    , hiv : Maybe Bool
+    }
+
+
+emptyMedicalHistoryForm : MedicalHistoryForm
+emptyMedicalHistoryForm =
+    { uterineMyoma = Nothing
+    , diabates = Nothing
+    , cardiacDisease = Nothing
+    , renalDisease = Nothing
+    , hipertensionBeforePregnancy = Nothing
+    , tuberculosisPast = Nothing
+    , tuberculosisPresent = Nothing
+    , asthma = Nothing
+    , bowedLegs = Nothing
+    , hiv = Nothing
+    }
+
+
+type alias SocialHistoryForm =
+    { accompaniedByPartner : Maybe Bool
+    , partnerReceivedCounseling : Maybe Bool
+    , mentalHealthHistory : Maybe Bool
+    }
+
+
+emptySocialHistoryForm : SocialHistoryForm
+emptySocialHistoryForm =
+    SocialHistoryForm Nothing Nothing Nothing
 
 
 type CSectionReason

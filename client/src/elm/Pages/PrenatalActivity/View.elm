@@ -289,8 +289,42 @@ viewHistoryContent language currentDate motherId data =
                             , 16
                             )
 
-                _ ->
-                    ( emptyNode, 0, 0 )
+                Medical ->
+                    let
+                        boolInputs =
+                            [ data.medicalForm.uterineMyoma
+                            , data.medicalForm.diabates
+                            , data.medicalForm.cardiacDisease
+                            , data.medicalForm.renalDisease
+                            , data.medicalForm.hipertensionBeforePregnancy
+                            , data.medicalForm.tuberculosisPast
+                            , data.medicalForm.tuberculosisPresent
+                            , data.medicalForm.asthma
+                            , data.medicalForm.bowedLegs
+                            , data.medicalForm.hiv
+                            ]
+                    in
+                    ( viewMedicalForm language currentDate motherId data.medicalForm
+                    , boolInputs
+                        |> List.map taskCompleted
+                        |> List.sum
+                    , 10
+                    )
+
+                Social ->
+                    let
+                        boolInputs =
+                            [ data.socialForm.accompaniedByPartner
+                            , data.socialForm.partnerReceivedCounseling
+                            , data.socialForm.mentalHealthHistory
+                            ]
+                    in
+                    ( viewSocialForm language currentDate motherId data.socialForm
+                    , boolInputs
+                        |> List.map taskCompleted
+                        |> List.sum
+                    , 3
+                    )
 
         actions =
             let
@@ -545,6 +579,31 @@ viewObstetricFormSecondStep language currentDate motherId form =
             "rh-negative"
             Nothing
         ]
+
+
+viewMedicalForm : Language -> NominalDate -> PersonId -> MedicalHistoryForm -> Html Msg
+viewMedicalForm language currentDate motherId form =
+    let
+        uterineMyomaUpdateFunc uterineMyomaUpdateFunc value form_ =
+            { form_ | uterineMyoma = Just value }
+    in
+    div [ class "form history obstetric first" ]
+        [ div [ class "label" ] [ text <| (translate language Translate.MedicalFormHelper ++ ":") ]
+        , div [ class "label" ]
+            [ text <| (translate language Translate.UterineMyoma ++ ":")
+            , viewBoolInput
+                language
+                form.uterineMyoma
+                (SetMedicalBoolInput uterineMyomaUpdateFunc)
+                "uterine-myoma"
+                Nothing
+            ]
+        ]
+
+
+viewSocialForm : Language -> NominalDate -> PersonId -> SocialHistoryForm -> Html Msg
+viewSocialForm language currentDate motherId form =
+    emptyNode
 
 
 viewBoolInput : Language -> Maybe Bool -> (Bool -> Msg) -> String -> Maybe TranslationId -> Html Msg
