@@ -743,7 +743,7 @@ translationSet trans =
             }
 
         BabyDiedOnDayOfBirthPreviousDelivery ->
-            { english = "Live Birth but the baby died the same day in previous delivery."
+            { english = "Live Birth but the baby died the same day in previous delivery"
             , kinyarwanda = Nothing
             }
 

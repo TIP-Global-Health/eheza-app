@@ -241,14 +241,18 @@ viewHistoryContent language currentDate motherId data =
                 Obstetric ->
                     case data.obstetricForm of
                         FirstStep form ->
+                            let
+                                intInputs =
+                                    [ form.termPregnancy
+                                    , form.preTermPregnancy
+                                    , form.stillbirthsAtTerm
+                                    , form.stillbirthsPreTerm
+                                    , form.abortions
+                                    , form.liveChildren
+                                    ]
+                            in
                             ( viewObstetricFormFirstStep language currentDate motherId form
-                            , ([ form.termPregnancy
-                               , form.preTermPregnancy
-                               , form.stillbirthsAtTerm
-                               , form.stillbirthsPreTerm
-                               , form.abortions
-                               , form.liveChildren
-                               ]
+                            , (intInputs
                                 |> List.map taskCompleted
                                 |> List.sum
                               )
@@ -257,7 +261,33 @@ viewHistoryContent language currentDate motherId data =
                             )
 
                         SecondStep form ->
-                            ( viewObstetricFormSecondStep language currentDate motherId form, 0, 16 )
+                            let
+                                boolInputs =
+                                    [ form.cSectionInPreviousDelivery
+                                    , form.successiveAbortions
+                                    , form.successivePrimatureDeliveries
+                                    , form.stillbornPreviousDelivery
+                                    , form.babyDiedOnDayOfBirthPreviousDelivery
+                                    , form.partialPlacentaPreviousDelivery
+                                    , form.severeHemorrhagingPreviousDelivery
+                                    , form.preeclampsiaPreviousPregnancy
+                                    , form.convulsionsPreviousDelivery
+                                    , form.convulsionsAndUnconciousPreviousDelivery
+                                    , form.gestatipnalDiabetesPreviousPregnancy
+                                    , form.incompleteCervixPreviousPregnancy
+                                    , form.rhNegative
+                                    ]
+                            in
+                            ( viewObstetricFormSecondStep language currentDate motherId form
+                            , (boolInputs
+                                |> List.map taskCompleted
+                                |> List.sum
+                              )
+                                + taskCompleted form.cSections
+                                + taskCompleted form.reasonForCSection
+                                + taskCompleted form.previousDeliveryPeriod
+                            , 16
+                            )
 
                 _ ->
                     ( emptyNode, 0, 0 )
