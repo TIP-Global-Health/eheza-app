@@ -36,8 +36,10 @@ type Msg
     | SetCurrentlyPregnant Bool
     | SetOBIntInput (Int -> ObstetricFormFirstStep -> ObstetricFormFirstStep) String
       -- HistoryMsgs, Step 2
+    | SetCSectionReason CSectionReason
     | SetNumberOfCSections String
     | SetOBBoolInput (Bool -> ObstetricFormSecondStep -> ObstetricFormSecondStep) Bool
+    | SetPreviousDeliveryPeriod PreviousDeliveryPeriod
 
 
 type alias Model =

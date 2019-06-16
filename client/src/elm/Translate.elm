@@ -33,7 +33,7 @@ import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
 import Pages.Page exposing (..)
-import Pages.PrenatalActivity.Model exposing (LmpRange(..))
+import Pages.PrenatalActivity.Model exposing (CSectionReason(..), LmpRange(..), PreviousDeliveryPeriod(..))
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
@@ -193,6 +193,8 @@ type TranslationId
     | CounselorReviewed
     | CounselorSignature
     | CSectionInPreviousDelivery
+    | CSectionReason
+    | CSectionReasons CSectionReason
     | CreateGroupEncounter
     | CreateTrainingGroupEncounters
     | CurrentlyPregnant
@@ -222,6 +224,7 @@ type TranslationId
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
     | Estimated
+    | Failure
     | FamilyInformation
     | FamilyMembers
     | FamilyPlanningSignLabel FamilyPlanningSign
@@ -332,6 +335,7 @@ type TranslationId
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalEncounter
     | PreviousDelivery
+    | PreviousDeliveryPeriods PreviousDeliveryPeriod
     | PreviousFloatMeasurement Float
     | Profession
     | ProgressReport
@@ -832,7 +836,7 @@ translationSet trans =
                     , kinyarwanda = Just "Kubyimba"
                     }
 
-                None ->
+                Backend.Measurement.Model.None ->
                     { english = "None of these"
                     , kinyarwanda = Just "Nta bimenyetso "
                     }
@@ -869,7 +873,7 @@ translationSet trans =
                     , kinyarwanda = Just "Kubyimba"
                     }
 
-                None ->
+                Backend.Measurement.Model.None ->
                     { english = "None"
                     , kinyarwanda = Just "Nta bimenyetso"
                     }
@@ -981,6 +985,38 @@ translationSet trans =
             { english = "C-section in previous delivery"
             , kinyarwanda = Nothing
             }
+
+        CSectionReason ->
+            { english = "Reason for C-section"
+            , kinyarwanda = Nothing
+            }
+
+        CSectionReasons reason ->
+            case reason of
+                Breech ->
+                    { english = "Breech"
+                    , kinyarwanda = Nothing
+                    }
+
+                Emergency ->
+                    { english = "Emergency"
+                    , kinyarwanda = Nothing
+                    }
+
+                FailureToProgress ->
+                    { english = "Failure to Progress"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.None ->
+                    { english = "None"
+                    , kinyarwanda = Nothing
+                    }
+
+                Other ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
 
         CreateGroupEncounter ->
             { english = "Create Group Encounter"
@@ -1150,6 +1186,11 @@ translationSet trans =
 
         Estimated ->
             { english = "Estimated"
+            , kinyarwanda = Nothing
+            }
+
+        Failure ->
+            { english = "Failure"
             , kinyarwanda = Nothing
             }
 
@@ -1877,6 +1918,23 @@ translationSet trans =
             { english = "Previous Delivery"
             , kinyarwanda = Nothing
             }
+
+        PreviousDeliveryPeriods period ->
+            case period of
+                LessThan18Month ->
+                    { english = "Less than 18 month ago"
+                    , kinyarwanda = Nothing
+                    }
+
+                MoreThan5Years ->
+                    { english = "More than 5 years ago"
+                    , kinyarwanda = Nothing
+                    }
+
+                Neither ->
+                    { english = "Neither"
+                    , kinyarwanda = Nothing
+                    }
 
         PreviousFloatMeasurement value ->
             { english = "Previous measurement: " ++ toString value

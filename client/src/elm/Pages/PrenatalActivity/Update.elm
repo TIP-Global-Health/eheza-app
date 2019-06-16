@@ -169,6 +169,40 @@ update motherId activity db msg model =
             , []
             )
 
+        SetCSectionReason reason ->
+            let
+                updatedData =
+                    case model.historyData.activeTask of
+                        Obstetric ->
+                            case model.historyData.obstetricForm of
+                                SecondStep form ->
+                                    let
+                                        updatedReason =
+                                            if form.reasonForCSection == Just reason then
+                                                Nothing
+
+                                            else
+                                                Just reason
+
+                                        updatedForm =
+                                            { form | reasonForCSection = updatedReason }
+                                    in
+                                    model.historyData
+                                        |> (\data -> { data | obstetricForm = SecondStep updatedForm })
+
+                                -- We should never get here.
+                                -- Input is set on second step.
+                                FirstStep form ->
+                                    model.historyData
+
+                        _ ->
+                            model.historyData
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetNumberOfCSections value ->
             let
                 updatedData =
@@ -211,6 +245,40 @@ update motherId activity db msg model =
                                     let
                                         updatedForm =
                                             formUpdateFunc value form
+                                    in
+                                    model.historyData
+                                        |> (\data -> { data | obstetricForm = SecondStep updatedForm })
+
+                                -- We should never get here.
+                                -- Input is set on second step.
+                                FirstStep form ->
+                                    model.historyData
+
+                        _ ->
+                            model.historyData
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPreviousDeliveryPeriod period ->
+            let
+                updatedData =
+                    case model.historyData.activeTask of
+                        Obstetric ->
+                            case model.historyData.obstetricForm of
+                                SecondStep form ->
+                                    let
+                                        updatedPeriod =
+                                            if form.previousDeliveryPeriod == Just period then
+                                                Nothing
+
+                                            else
+                                                Just period
+
+                                        updatedForm =
+                                            { form | previousDeliveryPeriod = updatedPeriod }
                                     in
                                     model.historyData
                                         |> (\data -> { data | obstetricForm = SecondStep updatedForm })

@@ -446,6 +446,20 @@ viewObstetricFormSecondStep language currentDate motherId form =
             (SetOBBoolInput cSectionInPreviousDeliveryUpdateFunc)
             "c-section-previous-delivery"
             Nothing
+        , viewCheckBoxSelectInput language
+            [ Breech, Emergency, Other ]
+            [ FailureToProgress, None ]
+            form.reasonForCSection
+            Translate.CSectionReason
+            SetCSectionReason
+            Translate.CSectionReasons
+        , viewCheckBoxSelectInput language
+            [ LessThan18Month, MoreThan5Years ]
+            [ Neither ]
+            form.previousDeliveryPeriod
+            Translate.PreviousDelivery
+            SetPreviousDeliveryPeriod
+            Translate.PreviousDeliveryPeriods
         , div [ class "label normal" ] [ text <| (translate language Translate.SuccessiveAbortions ++ ":") ]
         , viewBoolInput
             language
@@ -534,7 +548,7 @@ viewObstetricFormSecondStep language currentDate motherId form =
 
 
 viewBoolInput : Language -> Maybe Bool -> (Bool -> Msg) -> String -> Maybe TranslationId -> Html Msg
-viewBoolInput language currentValue setFunc inputClass labelTranslateId =
+viewBoolInput language currentValue setMsg inputClass labelTranslateId =
     let
         inputLabel =
             labelTranslateId
@@ -544,7 +558,7 @@ viewBoolInput language currentValue setFunc inputClass labelTranslateId =
                         div [ class "label" ] [ text <| (translate language translationId ++ ":") ]
                     )
 
-        viewInput value currentValue setFunc =
+        viewInput value currentValue setMsg =
             let
                 isChecked =
                     currentValue == Just value
@@ -553,15 +567,15 @@ viewBoolInput language currentValue setFunc inputClass labelTranslateId =
                 [ type_ "radio"
                 , checked isChecked
                 , classList [ ( "checked", isChecked ) ]
-                , onCheck (always (setFunc value))
+                , onCheck (always (setMsg value))
                 ]
                 []
     in
     div [ class <| "form-input " ++ inputClass ]
         [ inputLabel
-        , viewInput True currentValue setFunc
+        , viewInput True currentValue setMsg
         , label [ class "yes" ] [ text <| translate language Translate.Yes ]
-        , viewInput False currentValue setFunc
+        , viewInput False currentValue setMsg
         , label [ class "no" ] [ text <| translate language Translate.No ]
         ]
 
@@ -576,7 +590,7 @@ viewNumberInput :
     -> String
     -> TranslationId
     -> Html Msg
-viewNumberInput language maybeCurrentValue setFunc inputClass labelTranslationId =
+viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId =
     let
         currentValue =
             maybeCurrentValue
@@ -590,10 +604,48 @@ viewNumberInput language maybeCurrentValue setFunc inputClass labelTranslationId
             [ type_ "number"
             , Html.Attributes.min "0"
             , Html.Attributes.max "99"
-            , onInput setFunc
+            , onInput setMsg
             , value currentValue
             ]
             []
+        ]
+
+
+viewCheckBoxSelectInput : Language -> List a -> List a -> Maybe a -> TranslationId -> (a -> Msg) -> (a -> TranslationId) -> Html Msg
+viewCheckBoxSelectInput language leftOptions rightOptions currentValue labelTranslateId setMsg translateFunc =
+    div [ class "ui form" ]
+        [ p [] [ text <| (translate language labelTranslateId ++ ":") ]
+        , div [ class "ui grid" ]
+            [ leftOptions
+                |> List.map (viewCheckBoxSelectInputItem language currentValue setMsg translateFunc)
+                |> div [ class "eight wide column" ]
+            , rightOptions
+                |> List.map (viewCheckBoxSelectInputItem language currentValue setMsg translateFunc)
+                |> div [ class "eight wide column" ]
+            ]
+        ]
+
+
+viewCheckBoxSelectInputItem : Language -> Maybe a -> (a -> Msg) -> (a -> TranslationId) -> a -> Html Msg
+viewCheckBoxSelectInputItem language currentValue setMsg translateFunc option =
+    let
+        isChecked =
+            currentValue == Just option
+    in
+    div
+        [ class "ui checkbox activity"
+        , onClick <| setMsg option
+        ]
+        [ input
+            [ type_ "checkbox"
+
+            -- , onCheck (always (setMsg option))
+            , checked isChecked
+            , classList [ ( "checked", isChecked ) ]
+            ]
+            []
+        , label []
+            [ text <| translate language (translateFunc option) ]
         ]
 
 
