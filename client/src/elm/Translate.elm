@@ -189,6 +189,7 @@ type TranslationId
     | CounselingTopic CounselingTopic
     | CounselorReviewed
     | CounselorSignature
+    | CSectionInPreviousDelivery
     | CreateGroupEncounter
     | CreateTrainingGroupEncounters
     | CurrentlyPregnant
@@ -293,6 +294,7 @@ type TranslationId
     | NotConnected
     | NumberOfAbortions
     | NumberOfChildrenUnder5
+    | NumberOfCSections
     | NumberOfLiveChildren
     | NumberOfStillbirthsAtTerm
     | NumberOfStillbirthsPreTerm
@@ -349,6 +351,7 @@ type TranslationId
     | ResolveMonth Month
     | Retry
     | Save
+    | SaveAndNext
     | SaveError
     | Search
     | SearchByName
@@ -942,6 +945,11 @@ translationSet trans =
 
         CounselorSignature ->
             { english = "Entry Counselor Signature"
+            , kinyarwanda = Nothing
+            }
+
+        CSectionInPreviousDelivery ->
+            { english = "C-section in previous delivery"
             , kinyarwanda = Nothing
             }
 
@@ -1633,6 +1641,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        NumberOfCSections ->
+            { english = "Number of C-Sections"
+            , kinyarwanda = Nothing
+            }
+
         NumberOfLiveChildren ->
             { english = "Number of Live Children"
             , kinyarwanda = Nothing
@@ -1949,6 +1962,11 @@ translationSet trans =
         Save ->
             { english = "Save"
             , kinyarwanda = Just "Kubika"
+            }
+
+        SaveAndNext ->
+            { english = "Save & Next"
+            , kinyarwanda = Nothing
             }
 
         SaveError ->

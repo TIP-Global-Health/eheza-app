@@ -88,6 +88,17 @@ update motherId activity db msg model =
             , []
             )
 
+        OBSaveFirstStep ->
+            let
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | obstetricForm = SecondStep emptyObstetricFormSecondStep })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetActiveHistoryTask taks ->
             let
                 updatedData =
@@ -148,6 +159,65 @@ update motherId activity db msg model =
                                 -- We should never get here.
                                 -- Input is set on first step.
                                 SecondStep form ->
+                                    model.historyData
+
+                        _ ->
+                            model.historyData
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetNumberOfCSections value ->
+            let
+                updatedData =
+                    case model.historyData.activeTask of
+                        Obstetric ->
+                            case model.historyData.obstetricForm of
+                                SecondStep form ->
+                                    let
+                                        updatedForm =
+                                            case String.toInt value of
+                                                Ok number ->
+                                                    { form | cSections = Just number }
+
+                                                Err _ ->
+                                                    form
+                                    in
+                                    model.historyData
+                                        |> (\data -> { data | obstetricForm = SecondStep updatedForm })
+
+                                -- We should never get here.
+                                -- Input is set on first step.
+                                FirstStep form ->
+                                    model.historyData
+
+                        _ ->
+                            model.historyData
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetOBBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    case model.historyData.activeTask of
+                        Obstetric ->
+                            case model.historyData.obstetricForm of
+                                SecondStep form ->
+                                    let
+                                        updatedForm =
+                                            formUpdateFunc value form
+                                    in
+                                    model.historyData
+                                        |> (\data -> { data | obstetricForm = SecondStep updatedForm })
+
+                                -- We should never get here.
+                                -- Input is set on second step.
+                                FirstStep form ->
                                     model.historyData
 
                         _ ->

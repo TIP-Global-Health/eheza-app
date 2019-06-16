@@ -281,11 +281,16 @@ div.page-prenatal-activity {
       .label {
         font-weight: bold;
         margin-bottom: 10px;
+
+        &.normal {
+          font-weight: normal;
+        }
       }
 
       .form-input {
         margin-bottom: 30px;
 
+        // Pregnanacy Dating Inputs
         &.range {
           background: white;
           border: 2px solid $color-light-gray;
@@ -331,6 +336,7 @@ div.page-prenatal-activity {
           }
         }
 
+        // History OB Inputs
         &.currently-pregnant {
           padding-bottom: 30px;
 
@@ -358,7 +364,6 @@ div.page-prenatal-activity {
             width: 28px;
             float: left;
           }
-
         }
 
         &.term-pregnancy,
@@ -366,7 +371,8 @@ div.page-prenatal-activity {
         &.stillbirths-at-term,
         &.stillbirths-pre-term,
         &.abortions,
-        &.live-children {
+        &.live-children,
+        &.c-sections {
 
           .label {
             width: 70%;
@@ -382,6 +388,29 @@ div.page-prenatal-activity {
             font-weight: bold;
           }
 
+        }
+
+        &.c-section-previous-delivery {
+          padding-bottom: 30px;
+
+          .yes {
+            float: left;
+            font-size: 25px;
+            margin-left: 10px;
+            margin-right: 70px;
+          }
+
+          .no {
+            float: left;
+            font-size: 25px;
+            margin-left: 10px;
+          }
+
+          input {
+            height: 28px;
+            width: 25px;
+            float: left;
+          }
         }
       }
 
@@ -426,6 +455,15 @@ div.page-prenatal-activity {
           width: 65%;
           float: left;
           text-align: center;
+        }
+      }
+
+      .actions {
+
+        &.history.obstetric.second button {
+          width: 50%;
+          float: left;
+          margin: 0;
         }
       }
     }

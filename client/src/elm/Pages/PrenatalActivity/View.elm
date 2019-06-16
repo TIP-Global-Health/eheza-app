@@ -262,15 +262,39 @@ viewHistoryContent language currentDate motherId data =
                 _ ->
                     ( emptyNode, 0, 0 )
 
-        actionButton =
-            div [ class "actions" ]
-                [ button
-                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+        actions =
+            let
+                ( buttons, stepIndicatoryClass ) =
+                    case data.activeTask of
+                        Obstetric ->
+                            case data.obstetricForm of
+                                FirstStep _ ->
+                                    ( [ button
+                                            [ classList [ ( "ui fluid primary button", True ), ( "disabledTMP", tasksCompleted /= totalTasks ) ]
+                                            , onClick OBSaveFirstStep
+                                            ]
+                                            [ text <| translate language Translate.SaveAndNext ]
+                                      ]
+                                    , "first"
+                                    )
 
-                    -- , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage motherId
-                    ]
-                    [ text <| translate language Translate.Save ]
-                ]
+                                SecondStep _ ->
+                                    ( [ button [ class "ui fluid primary button" ]
+                                            [ text <| translate language Translate.Back ]
+                                      , button
+                                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                            , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage motherId
+                                            ]
+                                            [ text <| translate language Translate.Save ]
+                                      ]
+                                    , "second"
+                                    )
+
+                        _ ->
+                            ( [], "" )
+            in
+            div [ class <| "actions history obstetric " ++ stepIndicatoryClass ]
+                buttons
     in
     [ div [ class "ui task segment" ]
         [ div [ class "ui five column grid" ] <|
@@ -281,7 +305,7 @@ viewHistoryContent language currentDate motherId data =
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ viewForm
-            , actionButton
+            , actions
             ]
         ]
     ]
@@ -296,7 +320,6 @@ viewObstetricFormFirstStep language currentDate motherId form =
         paraResult =
             span [] [ text "0102" ]
 
-        termPregnancyUpdateFunc : Int -> ObstetricFormFirstStep -> ObstetricFormFirstStep
         termPregnancyUpdateFunc number form_ =
             { form_ | termPregnancy = Just number }
 
@@ -339,7 +362,15 @@ viewObstetricFormFirstStep language currentDate motherId form =
 
 viewObstetricFormSecondStep : Language -> NominalDate -> PersonId -> ObstetricFormSecondStep -> Html Msg
 viewObstetricFormSecondStep language currentDate motherId form =
-    emptyNode
+    let
+        cSectionInPreviousDeliveryUpdateFunc value form_ =
+            { form_ | cSectionInPreviousDelivery = Just value }
+    in
+    div [ class "form history obstetric second" ]
+        [ viewNumberInput language form.cSections SetNumberOfCSections "c-sections" Translate.NumberOfCSections
+        , div [ class "label normal" ] [ text <| (translate language Translate.CSectionInPreviousDelivery ++ ":") ]
+        , viewBoolInput language form.cSectionInPreviousDelivery (SetOBBoolInput cSectionInPreviousDeliveryUpdateFunc) "c-section-previous-delivery" Nothing
+        ]
 
 
 viewBoolInput : Language -> Maybe Bool -> (Bool -> Msg) -> String -> Maybe TranslationId -> Html Msg

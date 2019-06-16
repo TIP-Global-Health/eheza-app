@@ -14,6 +14,7 @@ module Pages.PrenatalActivity.Model exposing
     , decodeLmpRange
     , emptyHistoryData
     , emptyModel
+    , emptyObstetricFormSecondStep
     , emptyPregnancyDatingData
     , encodeLmpRange
     )
@@ -29,11 +30,14 @@ type Msg
     | SetLmpDate Date
     | SetLmpDateConfident Bool
     | SetLmpRange String
-      -- HistoryMsgs
+      -- HistoryMsgs, Step 1
+    | OBSaveFirstStep
     | SetActiveHistoryTask HistoryTask
     | SetCurrentlyPregnant Bool
-      -- | SetOBBoolInput Bool (Bool -> ObstetricFormSecondStep -> ObstetricFormSecondStep)
     | SetOBIntInput (Int -> ObstetricFormFirstStep -> ObstetricFormFirstStep) String
+      -- HistoryMsgs, Step 2
+    | SetNumberOfCSections String
+    | SetOBBoolInput (Bool -> ObstetricFormSecondStep -> ObstetricFormSecondStep) Bool
 
 
 type alias Model =
