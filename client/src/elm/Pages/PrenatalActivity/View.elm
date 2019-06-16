@@ -295,15 +295,34 @@ viewObstetricFormFirstStep language currentDate motherId form =
 
         paraResult =
             span [] [ text "0102" ]
+
+        termPregnancyUpdateFunc : Int -> ObstetricFormFirstStep -> ObstetricFormFirstStep
+        termPregnancyUpdateFunc number form_ =
+            { form_ | termPregnancy = Just number }
+
+        preTermPregnancyUpdateFunc number form_ =
+            { form_ | preTermPregnancy = Just number }
+
+        stillbirthsAtTermUpdateFunc number form_ =
+            { form_ | stillbirthsAtTerm = Just number }
+
+        stillbirthsPreTermUpdateFunc number form_ =
+            { form_ | stillbirthsPreTerm = Just number }
+
+        abortionsUpdateFunc number form_ =
+            { form_ | abortions = Just number }
+
+        liveChildrenUpdateFunc number form_ =
+            { form_ | liveChildren = Just number }
     in
     div [ class "form history obstetric first" ]
         [ viewBoolInput language form.currentlyPregnant SetCurrentlyPregnant "currently-pregnant" (Just Translate.CurrentlyPregnant)
-        , viewNumberInput language form.termPregnancy SetTermPregnancy "term-pregnancy" Translate.TermPregnancy
-        , viewNumberInput language form.preTermPregnancy SetPreTermPregnancy "preterm-pregnancy" Translate.PreTermPregnancy
-        , viewNumberInput language form.stillbirthsAtTerm SetStillbirthsAtTerm "stillbirths-at-term" Translate.NumberOfStillbirthsAtTerm
-        , viewNumberInput language form.stillbirthsPreTerm SetStillbirthsPreTerm "stillbirths-pre-term" Translate.NumberOfStillbirthsPreTerm
-        , viewNumberInput language form.abortions SetAbortions "abortions" Translate.NumberOfAbortions
-        , viewNumberInput language form.liveChildren SetLiveChildren "live-children" Translate.NumberOfLiveChildren
+        , viewNumberInput language form.termPregnancy (SetOBIntInput termPregnancyUpdateFunc) "term-pregnancy" Translate.TermPregnancy
+        , viewNumberInput language form.preTermPregnancy (SetOBIntInput preTermPregnancyUpdateFunc) "preterm-pregnancy" Translate.PreTermPregnancy
+        , viewNumberInput language form.stillbirthsAtTerm (SetOBIntInput stillbirthsAtTermUpdateFunc) "stillbirths-at-term" Translate.NumberOfStillbirthsAtTerm
+        , viewNumberInput language form.stillbirthsPreTerm (SetOBIntInput stillbirthsPreTermUpdateFunc) "stillbirths-pre-term" Translate.NumberOfStillbirthsPreTerm
+        , viewNumberInput language form.abortions (SetOBIntInput abortionsUpdateFunc) "abortions" Translate.NumberOfAbortions
+        , viewNumberInput language form.liveChildren (SetOBIntInput liveChildrenUpdateFunc) "live-children" Translate.NumberOfLiveChildren
         , div [ class "separator" ] []
         , div [ class "results" ]
             [ div [ class "gravida-result" ]
@@ -356,7 +375,16 @@ viewBoolInput language currentValue setFunc inputClass labelTranslateId =
         ]
 
 
-viewNumberInput : Language -> Maybe Int -> (String -> Msg) -> String -> TranslationId -> Html Msg
+viewNumberInput :
+    Language
+    -> Maybe Int
+    ->
+        (String
+         -> Msg
+        )
+    -> String
+    -> TranslationId
+    -> Html Msg
 viewNumberInput language maybeCurrentValue setFunc inputClass labelTranslationId =
     let
         currentValue =

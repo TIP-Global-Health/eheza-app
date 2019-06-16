@@ -30,14 +30,10 @@ type Msg
     | SetLmpDateConfident Bool
     | SetLmpRange String
       -- HistoryMsgs
-    | SetAbortions String
     | SetActiveHistoryTask HistoryTask
     | SetCurrentlyPregnant Bool
-    | SetLiveChildren String
-    | SetPreTermPregnancy String
-    | SetStillbirthsAtTerm String
-    | SetStillbirthsPreTerm String
-    | SetTermPregnancy String
+      -- | SetOBBoolInput Bool (Bool -> ObstetricFormSecondStep -> ObstetricFormSecondStep)
+    | SetOBIntInput (Int -> ObstetricFormFirstStep -> ObstetricFormFirstStep) String
 
 
 type alias Model =
