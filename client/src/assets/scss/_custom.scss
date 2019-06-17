@@ -1326,8 +1326,8 @@ input::placeholder {
 
 .icon-history-task {
   display: block;
-  width: 90px;
-  height: 90px;
+  width: 120px;
+  height: 120px;
   margin: 0 auto 10px auto;
 
   &:after {
@@ -1338,13 +1338,18 @@ input::placeholder {
     background-position: center center;
     background-repeat: no-repeat;
     border: 3px solid #fff;
-    border-radius: 50%;
   }
 }
 
 .icon-obstetric {
   .active &:after {
     background-image: url(#{$img-path}icon-obstetrichistory-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-obstetrichistory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-position: center, 5px;
+    width: 130px;
   }
 
   &:after {
@@ -1357,6 +1362,12 @@ input::placeholder {
     background-image: url(#{$img-path}icon-medicalhistory-white.svg), url(#{$img-path}icon-selected-circle.svg);
   }
 
+  .completed &:after {
+    background-image: url(#{$img-path}icon-medicalhistory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-position: center, 5px;
+    width: 130px;
+  }
+
   &:after {
     background-image: url(#{$img-path}icon-medicalhistory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
@@ -1365,6 +1376,12 @@ input::placeholder {
 .icon-social {
   .active &:after {
     background-image: url(#{$img-path}icon-socialhistory-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-socialhistory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-position: center, 5px;
+    width: 130px;
   }
 
   &:after {

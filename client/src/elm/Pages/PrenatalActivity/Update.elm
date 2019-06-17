@@ -88,7 +88,7 @@ update motherId activity db msg model =
             , []
             )
 
-        OBSaveFirstStep ->
+        SetOBFirstStepCompleted ->
             let
                 updatedData =
                     model.historyData
@@ -99,11 +99,41 @@ update motherId activity db msg model =
             , []
             )
 
-        SetActiveHistoryTask taks ->
+        SetHistoryTaskCompleted ->
+            let
+                updatedData =
+                    if List.member model.historyData.activeTask model.historyData.completedTasks then
+                        model.historyData
+
+                    else
+                        let
+                            completedTasks =
+                                model.historyData.activeTask :: model.historyData.completedTasks
+
+                            activeTask =
+                                case model.historyData.activeTask of
+                                    Obstetric ->
+                                        Medical
+
+                                    Medical ->
+                                        Social
+
+                                    Social ->
+                                        Obstetric
+                        in
+                        model.historyData
+                            |> (\data -> { data | completedTasks = completedTasks, activeTask = activeTask })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetActiveHistoryTask task ->
             let
                 updatedData =
                     model.historyData
-                        |> (\data -> { data | activeTask = taks })
+                        |> (\data -> { data | activeTask = task })
             in
             ( { model | historyData = updatedData }
             , Cmd.none

@@ -217,12 +217,15 @@ viewHistoryContent language currentDate motherId data =
                         Social ->
                             ( Translate.SocialHistory, "social" )
 
-                isActiveTask =
+                isActive =
                     task == data.activeTask
 
+                isCompleted =
+                    List.member task data.completedTasks
+
                 attributes =
-                    classList [ ( "link-section", True ), ( "active", isActiveTask ) ]
-                        :: (if isActiveTask then
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
                                 []
 
                             else
@@ -335,7 +338,7 @@ viewHistoryContent language currentDate motherId data =
                                 FirstStep _ ->
                                     ( [ button
                                             [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                            , onClick OBSaveFirstStep
+                                            , onClick SetOBFirstStepCompleted
                                             ]
                                             [ text <| translate language Translate.SaveAndNext ]
                                       ]
@@ -347,7 +350,7 @@ viewHistoryContent language currentDate motherId data =
                                             [ text <| ("< " ++ translate language Translate.Back) ]
                                       , button
                                             [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                            , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage motherId
+                                            , onClick SetHistoryTaskCompleted
                                             ]
                                             [ text <| translate language Translate.Save ]
                                       ]
@@ -357,7 +360,7 @@ viewHistoryContent language currentDate motherId data =
                         Medical ->
                             ( [ button
                                     [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                    , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage motherId
+                                    , onClick SetHistoryTaskCompleted
                                     ]
                                     [ text <| translate language Translate.Save ]
                               ]
@@ -367,7 +370,7 @@ viewHistoryContent language currentDate motherId data =
                         Social ->
                             ( [ button
                                     [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                    , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage motherId
+                                    , onClick SetHistoryTaskCompleted
                                     ]
                                     [ text <| translate language Translate.Save ]
                               ]
@@ -632,7 +635,7 @@ viewMedicalForm language currentDate motherId form =
             { form_ | hiv = Just value }
     in
     div [ class "form history medical" ]
-        [ div [ class "label" ] [ text <| (translate language Translate.MedicalFormHelper ++ ":") ]
+        [ div [ class "label helper" ] [ text <| (translate language Translate.MedicalFormHelper ++ ":") ]
         , div [ class "label" ] [ text <| (translate language Translate.UterineMyoma ++ ":") ]
         , viewBoolInput
             language

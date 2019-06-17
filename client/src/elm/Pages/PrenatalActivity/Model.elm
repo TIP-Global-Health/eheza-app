@@ -35,8 +35,10 @@ type Msg
     | SetLmpDateConfident Bool
     | SetLmpRange String
       -- HistoryMsgs, OB, Step 1
-    | OBSaveFirstStep
     | SetActiveHistoryTask HistoryTask
+    | SetHistoryTaskCompleted
+      -- HistoryMsgs, OB, Step 1
+    | SetOBFirstStepCompleted
     | SetCurrentlyPregnant Bool
     | SetOBIntInput (Int -> ObstetricFormFirstStep -> ObstetricFormFirstStep) String
       -- HistoryMsgs, OB, Step 2
@@ -79,6 +81,7 @@ type alias HistoryData =
     , medicalForm : MedicalHistoryForm
     , socialForm : SocialHistoryForm
     , activeTask : HistoryTask
+    , completedTasks : List HistoryTask
     }
 
 
@@ -88,6 +91,7 @@ emptyHistoryData =
     , medicalForm = emptyMedicalHistoryForm
     , socialForm = emptySocialHistoryForm
     , activeTask = Obstetric
+    , completedTasks = []
     }
 
 
