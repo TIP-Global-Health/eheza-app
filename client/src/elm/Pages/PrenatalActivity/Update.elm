@@ -102,27 +102,27 @@ update motherId activity db msg model =
         SetHistoryTaskCompleted ->
             let
                 updatedData =
-                    if List.member model.historyData.activeTask model.historyData.completedTasks then
-                        model.historyData
+                    let
+                        activeTask =
+                            case model.historyData.activeTask of
+                                Obstetric ->
+                                    Medical
 
-                    else
-                        let
-                            completedTasks =
+                                Medical ->
+                                    Social
+
+                                Social ->
+                                    Obstetric
+
+                        completedTasks =
+                            if List.member model.historyData.activeTask model.historyData.completedTasks then
+                                model.historyData.completedTasks
+
+                            else
                                 model.historyData.activeTask :: model.historyData.completedTasks
-
-                            activeTask =
-                                case model.historyData.activeTask of
-                                    Obstetric ->
-                                        Medical
-
-                                    Medical ->
-                                        Social
-
-                                    Social ->
-                                        Obstetric
-                        in
-                        model.historyData
-                            |> (\data -> { data | completedTasks = completedTasks, activeTask = activeTask })
+                    in
+                    model.historyData
+                        |> (\data -> { data | activeTask = activeTask, completedTasks = completedTasks })
             in
             ( { model | historyData = updatedData }
             , Cmd.none

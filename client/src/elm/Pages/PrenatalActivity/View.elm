@@ -349,7 +349,11 @@ viewHistoryContent language currentDate motherId data =
                                     ( [ button [ class "ui fluid primary button" ]
                                             [ text <| ("< " ++ translate language Translate.Back) ]
                                       , button
-                                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                                            [ classList
+                                                [ ( "ui fluid primary button", True )
+                                                , ( "disabled", tasksCompleted /= totalTasks )
+                                                , ( "active", tasksCompleted == totalTasks )
+                                                ]
                                             , onClick SetHistoryTaskCompleted
                                             ]
                                             [ text <| translate language Translate.Save ]

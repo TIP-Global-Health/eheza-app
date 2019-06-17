@@ -503,6 +503,10 @@ div.page-prenatal-activity {
           width: 50%;
           float: left;
           margin: 0;
+
+          &.active {
+            border-left: 1px solid white;
+          }
         }
       }
     }
