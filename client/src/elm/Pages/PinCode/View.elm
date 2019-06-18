@@ -31,7 +31,7 @@ viewHeader language nurseData model =
                     div [ class "ui basic head segment" ]
                         [ h1
                             [ class "ui header" ]
-                            [ text <| translate language Translate.DeviceStatus ]
+                            [ text <| translate language Translate.Clinical ]
                         , a
                             [ class "link-back"
                             , onClick <| SetDisplayMenu MainMenu
@@ -133,10 +133,13 @@ viewWhenLoggedIn language nurse model =
             let
                 groupAssessmentButton =
                     button
-                        [ class "ui primary button"
+                        [ class "ui primary button group-assessment"
                         , onClick <| SendOutMsg <| SetActivePage <| UserPage <| ClinicsPage Nothing
                         ]
-                        [ text <| translate language Translate.GroupAssessment ]
+                        [ span [ class "icon-group" ] []
+                        , span [ class "text" ] [ text <| translate language Translate.GroupAssessment ]
+                        , span [ class "icon-back" ] []
+                        ]
             in
             [ p [] [ text <| translate language Translate.WhatDoYouWantToDo ]
             , groupAssessmentButton
