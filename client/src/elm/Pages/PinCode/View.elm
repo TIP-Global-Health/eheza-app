@@ -18,8 +18,8 @@ view language activePage nurseData model =
     div
         [ class "ui basic segment page-pincode" ]
     <|
-        [ viewHeader language nurseData model, viewLogo language ]
-            ++ viewContent language activePage nurseData model
+        viewHeader language nurseData model
+            :: viewContent language activePage nurseData model
 
 
 viewHeader : Language -> WebData ( NurseId, Nurse ) -> Model -> Html Msg
@@ -42,10 +42,10 @@ viewHeader language nurseData model =
                         ]
 
                 MainMenu ->
-                    emptyNode
+                    viewLogo language
 
         _ ->
-            emptyNode
+            viewLogo language
 
 
 viewContent : Language -> Page -> WebData ( NurseId, Nurse ) -> Model -> List (Html Msg)
@@ -174,7 +174,7 @@ viewWhenLoggedIn language nurse model =
 
                 registerParticipantButton =
                     button
-                        [ class "ui fluid primary button"
+                        [ class "ui primary button"
                         , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing
                         ]
                         [ text <| translate language Translate.RegisterAParticipant ]
@@ -184,7 +184,7 @@ viewWhenLoggedIn language nurse model =
                         [ class "ui button logout"
                         , onClick HandleLogoutClicked
                         ]
-                        [ Translate.LoginPhrase Translate.Logout
+                        [ Translate.LoginPhrase Translate.SignOut
                             |> translate language
                             |> text
                         ]
