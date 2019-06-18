@@ -76,6 +76,7 @@ type LoginPhrase
     | PinCode
     | PinCodeRejected
     | SignIn
+    | SignOut
     | Username
     | WorkOffline
     | YouMustLoginBefore
@@ -2071,7 +2072,7 @@ translationSet trans =
             }
 
         WhatDoYouWantToDo ->
-            { english = "What do you want to do"
+            { english = "What do you want to do?"
             , kinyarwanda = Nothing
             }
 
@@ -2469,6 +2470,11 @@ translateLoginPhrase phrase =
         SignIn ->
             { english = "Sign In"
             , kinyarwanda = Just "Kwinjira"
+            }
+
+        SignOut ->
+            { english = "Sign Out"
+            , kinyarwanda = Nothing
             }
 
         Username ->

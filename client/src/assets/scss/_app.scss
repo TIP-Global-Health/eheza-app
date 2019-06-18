@@ -35,7 +35,11 @@ a {
 }
 
 .ui.logout.button {
-  background: $color-dark-background;
+  background: $color-light-background;
+  border: 2px solid white;
+  position: absolute;
+  bottom: 0;
+  width: 89%;
 }
 
 // CSS for an overlay. So, the idea is that we have a structure that looks like
