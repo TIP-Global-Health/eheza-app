@@ -145,7 +145,6 @@ a {
 .ui.tabular.menu .item {
   font-size: 0.85em;
   background: #fff;
-  border: 0;
   padding: 0.6em 0.6em 0.6em 1.2em;
   width: 225px;
   height: 48px;
@@ -178,8 +177,7 @@ a {
 .ui.tabular.menu .active.item {
   background: #FFF;
   color: rgba(0,0,0,.95);
-  border-top-width: 1px;
-  border-color: #D4D4D5;
+  border-color: $color-primary;
   font-weight: 700;
   margin-bottom: -1px;
   box-shadow: none;
@@ -350,6 +348,7 @@ h3.ui.header {
   background-image: url(#{$img-path}icon-photo-active.svg);
   background-size: 76px 54px;
 }
+
 .icon-task-weight {
   background-image: url(#{$img-path}icon-weight-active.svg);
   background-size: 68px 88px;
@@ -381,6 +380,31 @@ h3.ui.header {
 .icon-task-planning {
   background-image: url(#{$img-path}icon-planning-active.svg);
   background-size: 88px 80px;
+}
+
+.icon-task-danger-signs {
+  background-image: url(#{$img-path}icon-task-danger-signs.svg);
+  background-size: 122px 122px;
+}
+
+.icon-task-examination {
+  background-image: url(#{$img-path}icon-task-examination.svg);
+  background-size: 122px 122px;
+}
+
+.icon-task-history {
+  background-image: url(#{$img-path}icon-task-history.svg);
+  background-size: 122px 122px;
+}
+
+.icon-task-patient-provisions {
+  background-image: url(#{$img-path}icon-task-patient-provisions.svg);
+  background-size: 122px 122px;
+}
+
+.icon-task-pregnancy-dating {
+  background-image: url(#{$img-path}icon-pregnancy-dating.svg);
+  background-size: 122px 122px;
 }
 
 // Tasks horizontal scroll
@@ -1297,6 +1321,71 @@ input::placeholder {
   &:after {
     background-image: url(#{$img-path}icon-planning.svg);
     background-size: 64px 60px;
+  }
+}
+
+.icon-history-task {
+  display: block;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 10px auto;
+
+  &:after {
+    content: " ";
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-position: center center;
+    background-repeat: no-repeat;
+    border: 3px solid #fff;
+  }
+}
+
+.icon-obstetric {
+  .active &:after {
+    background-image: url(#{$img-path}icon-obstetrichistory-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-obstetrichistory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-position: center, 5px;
+    width: 130px;
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-obstetrichistory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-medical {
+  .active &:after {
+    background-image: url(#{$img-path}icon-medicalhistory-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-medicalhistory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-position: center, 5px;
+    width: 130px;
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-medicalhistory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-social {
+  .active &:after {
+    background-image: url(#{$img-path}icon-socialhistory-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-socialhistory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-position: center, 5px;
+    width: 130px;
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-socialhistory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 

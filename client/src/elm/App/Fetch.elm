@@ -10,6 +10,7 @@ import Pages.Device.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.People.Fetch
 import Pages.Person.Fetch
+import Pages.PrenatalEncounter.Fetch
 import Pages.Relationship.Fetch
 import Pages.Session.Fetch
 
@@ -66,6 +67,10 @@ fetch model =
 
         UserPage (SessionPage sessionId sessionPage) ->
             Pages.Session.Fetch.fetch sessionId sessionPage model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (PrenatalEncounterPage motherId) ->
+            Pages.PrenatalEncounter.Fetch.fetch motherId
                 |> List.map MsgIndexedDb
 
         _ ->

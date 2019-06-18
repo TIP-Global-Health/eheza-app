@@ -18,6 +18,10 @@ import Pages.PageNotFound.View
 import Pages.People.View
 import Pages.Person.View
 import Pages.PinCode.View
+import Pages.PrenatalActivity.Model
+import Pages.PrenatalActivity.View
+import Pages.PrenatalEncounter.Model
+import Pages.PrenatalEncounter.View
 import Pages.Relationship.Model
 import Pages.Relationship.View
 import Pages.Session.Model
@@ -227,6 +231,26 @@ viewUserPage page model configured =
                         model.indexedDb
                         |> Html.map (MsgLoggedIn << MsgPageSession sessionId)
                         |> oldPageWrapper model
+
+                PrenatalEncounterPage motherId ->
+                    let
+                        page =
+                            EveryDict.get motherId loggedInModel.prenatalEncounterPages
+                                |> Maybe.withDefault Pages.PrenatalEncounter.Model.emptyModel
+                    in
+                    Pages.PrenatalEncounter.View.view model.language currentDate motherId model.indexedDb page
+                        |> Html.map (MsgLoggedIn << MsgPagePrenatalEncounter motherId)
+                        |> flexPageWrapper model
+
+                PrenatalActivityPage motherId activity ->
+                    let
+                        page =
+                            EveryDict.get ( motherId, activity ) loggedInModel.prenatalActivityPages
+                                |> Maybe.withDefault Pages.PrenatalActivity.Model.emptyModel
+                    in
+                    Pages.PrenatalActivity.View.view model.language currentDate motherId activity model.indexedDb page
+                        |> Html.map (MsgLoggedIn << MsgPagePrenatalActivity motherId activity)
+                        |> flexPageWrapper model
 
         Nothing ->
             Pages.PinCode.View.view model.language model.activePage (RemoteData.map .nurse configured.loggedIn) configured.pinCodePage

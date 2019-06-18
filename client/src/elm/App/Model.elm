@@ -14,8 +14,11 @@ import Pages.Page exposing (Page(..))
 import Pages.People.Model
 import Pages.Person.Model
 import Pages.PinCode.Model
+import Pages.PrenatalActivity.Model
+import Pages.PrenatalEncounter.Model
 import Pages.Relationship.Model
 import Pages.Session.Model
+import PrenatalActivity.Model exposing (PrenatalActivity)
 import RemoteData exposing (RemoteData(..), WebData)
 import Rollbar
 import ServiceWorker.Model
@@ -139,6 +142,8 @@ type alias LoggedInModel =
 
     -- A set of pages for every "open" editable session.
     , sessionPages : EntityUuidDict SessionId Pages.Session.Model.Model
+    , prenatalEncounterPages : EveryDict PersonId Pages.PrenatalEncounter.Model.Model
+    , prenatalActivityPages : EveryDict ( PersonId, PrenatalActivity ) Pages.PrenatalActivity.Model.Model
     }
 
 
@@ -149,6 +154,8 @@ emptyLoggedInModel nurse =
     , relationshipPages = EveryDict.empty
     , nurse = nurse
     , sessionPages = EntityUuidDict.empty
+    , prenatalEncounterPages = EveryDict.empty
+    , prenatalActivityPages = EveryDict.empty
     }
 
 
@@ -189,6 +196,8 @@ type MsgLoggedIn
     | MsgPagePersons Pages.People.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
+    | MsgPagePrenatalEncounter PersonId Pages.PrenatalEncounter.Model.Msg
+    | MsgPagePrenatalActivity PersonId PrenatalActivity Pages.PrenatalActivity.Model.Msg
 
 
 type alias Flags =
