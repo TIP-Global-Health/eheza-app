@@ -54,7 +54,7 @@ view language currentDate relation model db =
         , div
             [ class "search-wrapper" ]
             [ div
-                [ class "ui full segment blue" ]
+                [ class "ui full segment" ]
                 [ viewSearchForm language currentDate relation model db ]
             ]
         ]
@@ -226,9 +226,9 @@ viewSearchForm language currentDate relation model db =
                 [ class "register-helper" ]
                 [ text <| translate language Translate.RegisterHelper ]
             , div
-                [ class "actions" ]
+                [ class "register-actions" ]
                 [ button
-                    [ class "ui primary button"
+                    [ class "ui primary button fluid"
                     , onClick <| SetActivePage <| UserPage <| CreatePersonPage relation
                     ]
                     [ text <| translate language Translate.RegisterNewParticipant ]
