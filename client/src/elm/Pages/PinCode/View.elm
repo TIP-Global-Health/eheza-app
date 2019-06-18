@@ -17,14 +17,42 @@ view : Language -> Page -> WebData ( NurseId, Nurse ) -> Model -> Html Msg
 view language activePage nurseData model =
     div
         [ class "ui basic segment page-pincode" ]
-        (viewLogo language :: viewContent language activePage nurseData model)
+    <|
+        [ viewHeader language nurseData model, viewLogo language ]
+            ++ viewContent language activePage nurseData model
+
+
+viewHeader : Language -> WebData ( NurseId, Nurse ) -> Model -> Html Msg
+viewHeader language nurseData model =
+    case nurseData of
+        Success _ ->
+            case model.menu of
+                ClinicalMenu ->
+                    div [ class "ui basic head segment" ]
+                        [ h1
+                            [ class "ui header" ]
+                            [ text <| translate language Translate.DeviceStatus ]
+                        , a
+                            [ class "link-back"
+                            , onClick <| SetDisplayMenu MainMenu
+                            ]
+                            [ span [ class "icon-back" ] []
+                            , span [] []
+                            ]
+                        ]
+
+                MainMenu ->
+                    emptyNode
+
+        _ ->
+            emptyNode
 
 
 viewContent : Language -> Page -> WebData ( NurseId, Nurse ) -> Model -> List (Html Msg)
 viewContent language activePage nurseData model =
     case nurseData of
         Success ( _, nurse ) ->
-            viewWhenLoggedIn language nurse
+            viewWhenLoggedIn language nurse model
 
         _ ->
             let
@@ -98,57 +126,72 @@ viewContent language activePage nurseData model =
             ]
 
 
-viewWhenLoggedIn : Language -> Nurse -> List (Html Msg)
-viewWhenLoggedIn language nurse =
-    let
-        deviceStatusButton =
-            button
-                [ class "ui primary button"
-                , Pages.Page.DevicePage
-                    |> SetActivePage
-                    |> SendOutMsg
-                    |> onClick
-                ]
-                [ Translate.ActivePage DevicePage
-                    |> translate language
-                    |> text
-                ]
+viewWhenLoggedIn : Language -> Nurse -> Model -> List (Html Msg)
+viewWhenLoggedIn language nurse model =
+    case model.menu of
+        ClinicalMenu ->
+            let
+                groupAssessmentButton =
+                    button
+                        [ class "ui primary button"
+                        , onClick <| SendOutMsg <| SetActivePage <| UserPage <| ClinicsPage Nothing
+                        ]
+                        [ text <| translate language Translate.GroupAssessment ]
+            in
+            [ p [] [ text <| translate language Translate.WhatDoYouWantToDo ]
+            , groupAssessmentButton
+            ]
 
-        selectClinicButton =
-            button
-                [ class "ui primary button"
-                , onClick <| SendOutMsg <| SetActivePage <| UserPage <| ClinicsPage Nothing
-                ]
-                [ text <| translate language Translate.SelectYourGroup ]
+        MainMenu ->
+            let
+                loggedInAs =
+                    p []
+                        [ Translate.LoginPhrase Translate.LoggedInAs
+                            |> translate language
+                            |> text
+                        , text <| ": " ++ nurse.name
+                        ]
 
-        registerParticipantButton =
-            button
-                [ class "ui fluid primary button"
-                , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing
-                ]
-                [ text <| translate language Translate.RegisterAParticipant ]
+                deviceStatusButton =
+                    button
+                        [ class "ui primary button"
+                        , Pages.Page.DevicePage
+                            |> SetActivePage
+                            |> SendOutMsg
+                            |> onClick
+                        ]
+                        [ Translate.ActivePage DevicePage
+                            |> translate language
+                            |> text
+                        ]
 
-        logoutButton =
-            button
-                [ class "ui button logout"
-                , onClick HandleLogoutClicked
-                ]
-                [ Translate.LoginPhrase Translate.Logout
-                    |> translate language
-                    |> text
-                ]
+                clinicalButton =
+                    button
+                        [ class "ui primary button"
+                        , onClick <| SetDisplayMenu ClinicalMenu
+                        ]
+                        [ text <| translate language Translate.Clinical ]
 
-        loggedInAs =
-            p []
-                [ Translate.LoginPhrase Translate.LoggedInAs
-                    |> translate language
-                    |> text
-                , text <| ": " ++ nurse.name
-                ]
-    in
-    [ loggedInAs
-    , deviceStatusButton
-    , selectClinicButton
-    , registerParticipantButton
-    , logoutButton
-    ]
+                registerParticipantButton =
+                    button
+                        [ class "ui fluid primary button"
+                        , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing
+                        ]
+                        [ text <| translate language Translate.RegisterAParticipant ]
+
+                logoutButton =
+                    button
+                        [ class "ui button logout"
+                        , onClick HandleLogoutClicked
+                        ]
+                        [ Translate.LoginPhrase Translate.Logout
+                            |> translate language
+                            |> text
+                        ]
+            in
+            [ loggedInAs
+            , clinicalButton
+            , registerParticipantButton
+            , deviceStatusButton
+            , logoutButton
+            ]

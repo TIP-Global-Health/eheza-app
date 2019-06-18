@@ -172,6 +172,7 @@ type TranslationId
     | ChildOf
     | Children
     | ClickTheCheckMark
+    | Clinical
     | GroupNotFound
     | Group
     | Groups
@@ -223,6 +224,7 @@ type TranslationId
     | Gender Gender
     | GenderLabel
     | GoHome
+    | GroupAssessment
     | HaveYouSynced
     | HealthCenter
     | HIVStatus HIVStatus
@@ -383,6 +385,7 @@ type TranslationId
     | ViewProgressReport
     | Village
     | WelcomeUser String
+    | WhatDoYouWantToDo
     | Year
     | Yes
     | YouAreNotAnAdmin
@@ -842,6 +845,11 @@ translationSet trans =
             , kinyarwanda = Just "Kanda (kuri) ku kazu niba umubyeyi ahari. Ku kazu harahita hahindura ibara habe icyaytsi niba wemeje ko umubyeyi ahari"
             }
 
+        Clinical ->
+            { english = "Clinical"
+            , kinyarwanda = Nothing
+            }
+
         GroupNotFound ->
             { english = "Group not found"
             , kinyarwanda = Nothing
@@ -1148,6 +1156,11 @@ translationSet trans =
         GoHome ->
             { english = "Go to main page"
             , kinyarwanda = Just "Kujya ahabanza"
+            }
+
+        GroupAssessment ->
+            { english = "Group Assessment"
+            , kinyarwanda = Nothing
             }
 
         HaveYouSynced ->
@@ -2055,6 +2068,11 @@ translationSet trans =
         WelcomeUser name ->
             { english = "Welcome " ++ name
             , kinyarwanda = Just <| "Murakaza neza " ++ name
+            }
+
+        WhatDoYouWantToDo ->
+            { english = "What do you want to do"
+            , kinyarwanda = Nothing
             }
 
         Year ->
