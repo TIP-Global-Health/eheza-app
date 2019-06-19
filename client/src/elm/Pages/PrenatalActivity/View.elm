@@ -69,6 +69,9 @@ viewContent language currentDate motherId activity model =
         History ->
             viewHistoryContent language currentDate motherId model.historyData
 
+        Examination ->
+            viewExaminationContent language currentDate motherId model.examinationData
+
         _ ->
             []
 
@@ -395,6 +398,62 @@ viewHistoryContent language currentDate motherId data =
             [ viewForm
             , actions
             ]
+        ]
+    ]
+
+
+viewExaminationContent : Language -> NominalDate -> PersonId -> ExaminationData -> List (Html Msg)
+viewExaminationContent language currentDate motherId data =
+    let
+        tasks =
+            [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricExam, BreastExam ]
+
+        viewTask task =
+            let
+                ( labelTranslateId, iconClass ) =
+                    case task of
+                        Vitals ->
+                            ( Translate.ObstetricHistory, "vitals" )
+
+                        NutritionAssessment ->
+                            ( Translate.MedicalHistory, "nutrition-assessment" )
+
+                        CorePhysicalExam ->
+                            ( Translate.SocialHistory, "core-physical-exam" )
+
+                        ObstetricExam ->
+                            ( Translate.SocialHistory, "core-physical-exam" )
+
+                        BreastExam ->
+                            ( Translate.SocialHistory, "breast-exam" )
+
+                isActive =
+                    task == data.activeTask
+
+                isCompleted =
+                    List.member task data.completedTasks
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [-- onClick <| SetActiveHistoryTask task
+                                ]
+                           )
+            in
+            div [ class "column" ]
+                [ a attributes
+                    [ span [ class <| "icon-examination-task icon-" ++ iconClass ] []
+                    , text <| translate language labelTranslateId
+                    ]
+                ]
+    in
+    [ div [ class "ui task segment blue" ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask <|
+                tasks
         ]
     ]
 

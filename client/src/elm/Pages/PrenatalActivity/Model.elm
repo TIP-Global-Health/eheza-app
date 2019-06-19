@@ -3,6 +3,7 @@ module Pages.PrenatalActivity.Model exposing
     , BreastExamForm
     , CSectionReason(..)
     , CorePhysicalExamForm
+    , ExaminationData
     , ExaminationTask(..)
     , HandsCPEOption(..)
     , HistoryData
@@ -62,6 +63,7 @@ type Msg
 type alias Model =
     { pregnancyDatingData : PregnancyDatingData
     , historyData : HistoryData
+    , examinationData : ExaminationData
     }
 
 
@@ -69,6 +71,7 @@ emptyModel : Model
 emptyModel =
     { pregnancyDatingData = emptyPregnancyDatingData
     , historyData = emptyHistoryData
+    , examinationData = emptyExaminationData
     }
 
 
