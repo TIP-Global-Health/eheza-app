@@ -1438,19 +1438,19 @@ input::placeholder {
   }
 }
 
-.icon-obstetric-exam {
+.icon-obstetrical-exam {
   .active &:after {
-    background-image: url(#{$img-path}icon-obstetricexam-white.svg), url(#{$img-path}icon-selected-circle.svg);
+    background-image: url(#{$img-path}icon-obstetricalexam-white.svg), url(#{$img-path}icon-selected-circle.svg);
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-obstetricexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-obstetricalexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
     background-position: center, 5px;
     width: 130px;
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-obstetricexam-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-obstetricalexam-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 
@@ -1460,13 +1460,13 @@ input::placeholder {
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-icon-breastexam-white-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-breastexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
     background-position: center, 5px;
     width: 130px;
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-icon-breastexam-white-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-breastexam-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 

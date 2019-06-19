@@ -16,10 +16,10 @@ module Pages.PrenatalActivity.Model exposing
     , Msg(..)
     , NeckCPEOption(..)
     , NutritionAssessmentForm
-    , ObstetricExamForm
     , ObstetricFormFirstStep
     , ObstetricFormSecondStep
     , ObstetricHistoryFormType(..)
+    , ObstetricalExamForm
     , PregnancyDatingData
     , PregnancyDatingForm
     , PreviousDeliveryPeriod(..)
@@ -42,7 +42,7 @@ type Msg
     | SetLmpDate Date
     | SetLmpDateConfident Bool
     | SetLmpRange String
-      -- HistoryMsgs, OB, Step 1
+      -- HistoryMsgs
     | SetActiveHistoryTask HistoryTask
     | SetHistoryTaskCompleted
       -- HistoryMsgs, OB, Step 1
@@ -58,6 +58,9 @@ type Msg
     | SetMedicalBoolInput (Bool -> MedicalHistoryForm -> MedicalHistoryForm) Bool
       -- HistoryMsgs, Social
     | SetSocialBoolInput (Bool -> SocialHistoryForm -> SocialHistoryForm) Bool
+      -- ExaminationMsgs
+    | SetActiveExaminationTask ExaminationTask
+    | SetExaminationTaskCompleted
 
 
 type alias Model =
@@ -109,7 +112,7 @@ type alias ExaminationData =
     { vitalsForm : VitalsForm
     , nutritionAssessmentForm : NutritionAssessmentForm
     , corePhysicalExamForm : CorePhysicalExamForm
-    , obstetricExamForm : ObstetricExamForm
+    , obstetricExamForm : ObstetricalExamForm
     , breastExamForm : BreastExamForm
     , activeTask : ExaminationTask
     , completedTasks : List ExaminationTask
@@ -121,7 +124,7 @@ emptyExaminationData =
     { vitalsForm = emptyVitalsForm
     , nutritionAssessmentForm = emptyNutritionAssessmentForm
     , corePhysicalExamForm = emptyCorePhysicalExamForm
-    , obstetricExamForm = emptyObstetricExamForm
+    , obstetricExamForm = emptyObstetricalExamForm
     , breastExamForm = emptyBreastExamForm
     , activeTask = Vitals
     , completedTasks = []
@@ -310,7 +313,7 @@ type ExaminationTask
     = BreastExam
     | CorePhysicalExam
     | NutritionAssessment
-    | ObstetricExam
+    | ObstetricalExam
     | Vitals
 
 
@@ -408,12 +411,12 @@ type LegsCPEOption
     | NormalLegs
 
 
-type alias ObstetricExamForm =
+type alias ObstetricalExamForm =
     {}
 
 
-emptyObstetricExamForm : ObstetricExamForm
-emptyObstetricExamForm =
+emptyObstetricalExamForm : ObstetricalExamForm
+emptyObstetricalExamForm =
     {}
 
 

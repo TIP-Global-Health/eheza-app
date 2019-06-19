@@ -406,7 +406,7 @@ viewExaminationContent : Language -> NominalDate -> PersonId -> ExaminationData 
 viewExaminationContent language currentDate motherId data =
     let
         tasks =
-            [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricExam, BreastExam ]
+            [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricalExam, BreastExam ]
 
         viewTask task =
             let
@@ -421,8 +421,8 @@ viewExaminationContent language currentDate motherId data =
                         CorePhysicalExam ->
                             ( Translate.SocialHistory, "core-physical-exam" )
 
-                        ObstetricExam ->
-                            ( Translate.SocialHistory, "obstetric-exam" )
+                        ObstetricalExam ->
+                            ( Translate.SocialHistory, "obstetrical-exam" )
 
                         BreastExam ->
                             ( Translate.SocialHistory, "breast-exam" )
@@ -439,8 +439,7 @@ viewExaminationContent language currentDate motherId data =
                                 []
 
                             else
-                                [-- onClick <| SetActiveHistoryTask task
-                                ]
+                                [ onClick <| SetActiveExaminationTask task ]
                            )
             in
             div [ class "column" ]

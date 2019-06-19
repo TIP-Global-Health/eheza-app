@@ -365,3 +365,50 @@ update motherId activity db msg model =
             , Cmd.none
             , []
             )
+
+        SetExaminationTaskCompleted ->
+            let
+                updatedData =
+                    let
+                        activeTask =
+                            case model.examinationData.activeTask of
+                                Vitals ->
+                                    NutritionAssessment
+
+                                NutritionAssessment ->
+                                    CorePhysicalExam
+
+                                CorePhysicalExam ->
+                                    ObstetricalExam
+
+                                ObstetricalExam ->
+                                    BreastExam
+
+                                BreastExam ->
+                                    Vitals
+
+                        completedTasks =
+                            if List.member model.examinationData.activeTask model.examinationData.completedTasks then
+                                model.examinationData.completedTasks
+
+                            else
+                                model.examinationData.activeTask :: model.examinationData.completedTasks
+                    in
+                    model.examinationData
+                        |> (\data -> { data | activeTask = activeTask, completedTasks = completedTasks })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetActiveExaminationTask task ->
+            let
+                updatedData =
+                    model.examinationData
+                        |> (\data -> { data | activeTask = task })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
