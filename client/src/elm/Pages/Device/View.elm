@@ -1,12 +1,12 @@
 module Pages.Device.View exposing (view)
 
-import AllDictList
 import App.Model
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.SyncData.Model exposing (SyncData)
 import Device.Model exposing (..)
+import EveryDictList
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -103,7 +103,7 @@ viewNodes language db =
     case db.syncData of
         Success syncData ->
             syncData
-                |> AllDictList.get nodesUuid
+                |> EveryDictList.get nodesUuid
                 |> Maybe.map
                     (\data ->
                         div [ class "general-sync" ]
@@ -134,9 +134,9 @@ viewHealthCenters language db =
         |> RemoteData.map
             (\data ->
                 data
-                    |> AllDictList.sortBy .name
-                    |> AllDictList.map (viewHealthCenter language db)
-                    |> AllDictList.values
+                    |> EveryDictList.sortBy .name
+                    |> EveryDictList.map (viewHealthCenter language db)
+                    |> EveryDictList.values
                     |> div [ class "health-centers" ]
             )
         |> RemoteData.withDefault spinner
@@ -149,7 +149,7 @@ viewHealthCenter language db uuid model =
             db.syncData
                 |> RemoteData.map
                     (\syncData ->
-                        case AllDictList.get uuid syncData of
+                        case EveryDictList.get uuid syncData of
                             Just data ->
                                 div [ class "health-center-info" ]
                                     [ text <| toString data

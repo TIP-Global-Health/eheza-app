@@ -7,11 +7,11 @@ at a session.
 
 -}
 
-import AllDictList
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildren, getMotherMeasurementData)
+import EveryDictList
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
@@ -39,7 +39,7 @@ view language ( sessionId, session ) model =
                 matchMotherAndHerChildren filter session.offlineSession
 
         mothers =
-            if AllDictList.isEmpty session.offlineSession.mothers then
+            if EveryDictList.isEmpty session.offlineSession.mothers then
                 [ div
                     [ class "ui message warning" ]
                     [ text <| translate language Translate.ThisGroupHasNoMothers ]
@@ -48,15 +48,15 @@ view language ( sessionId, session ) model =
             else
                 let
                     matching =
-                        AllDictList.filter matches session.offlineSession.mothers
+                        EveryDictList.filter matches session.offlineSession.mothers
                 in
-                if AllDictList.isEmpty matching then
+                if EveryDictList.isEmpty matching then
                     [ span [] [ text <| translate language Translate.NoMatchesFound ] ]
 
                 else
                     matching
-                        |> AllDictList.map (viewMother session)
-                        |> AllDictList.values
+                        |> EveryDictList.map (viewMother session)
+                        |> EveryDictList.values
     in
     div [ class "wrap wrap-alt-2 page-attendance" ]
         [ div
@@ -116,7 +116,7 @@ viewMother session motherId mother =
             force session.checkedIn
 
         isCheckedIn =
-            AllDictList.member motherId checkedIn.mothers
+            EveryDictList.member motherId checkedIn.mothers
 
         checkIn =
             if isCheckedIn then

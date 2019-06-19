@@ -24,7 +24,6 @@ import Rollbar
 import ServiceWorker.Model
 import Time exposing (Time)
 import Translate.Model exposing (Language(..))
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
 import Uuid exposing (Uuid)
 import ZScore.Model
 
@@ -66,7 +65,7 @@ type alias Model =
     , zscores : ZScore.Model.Model
 
     -- What data did we want last time we checked? We track this so we can
-    -- forget data we don't want any longer. Using an EntityUuidDict relies on the
+    -- forget data we don't want any longer. Using an EveryDict relies on the
     -- relevant `Msg` values behaving well for `toString`, which should
     -- typically be fine. The time reflects the last time the data was wanted,
     -- permitting us to keep recently wanted data around for a little while
@@ -141,9 +140,9 @@ type alias LoggedInModel =
     , nurse : ( NurseId, Nurse )
 
     -- A set of pages for every "open" editable session.
-    , sessionPages : EntityUuidDict SessionId Pages.Session.Model.Model
     , prenatalEncounterPages : EveryDict PersonId Pages.PrenatalEncounter.Model.Model
     , prenatalActivityPages : EveryDict ( PersonId, PrenatalActivity ) Pages.PrenatalActivity.Model.Model
+    , sessionPages : EveryDict SessionId Pages.Session.Model.Model
     }
 
 
@@ -153,9 +152,9 @@ emptyLoggedInModel nurse =
     , personsPage = Pages.People.Model.emptyModel
     , relationshipPages = EveryDict.empty
     , nurse = nurse
-    , sessionPages = EntityUuidDict.empty
     , prenatalEncounterPages = EveryDict.empty
     , prenatalActivityPages = EveryDict.empty
+    , sessionPages = EveryDict.empty
     }
 
 

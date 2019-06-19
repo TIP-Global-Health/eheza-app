@@ -8,10 +8,10 @@ import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.ParticipantConsent.Model exposing (..)
+import EveryDict exposing (EveryDict)
+import EveryDictList exposing (EveryDictList)
 import EverySet exposing (EverySet)
 import Translate.Model exposing (Language)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 {-| The strategy here, at least for now, is this:
@@ -63,17 +63,17 @@ type alias ModelMother =
 
 -}
 type alias ParticipantFormUI =
-    { expected : EntityUuidDictList ParticipantFormId ParticipantForm
+    { expected : EveryDictList ParticipantFormId ParticipantForm
     , view : Maybe ParticipantFormId
-    , progress : EntityUuidDict ParticipantFormId ParticipantFormProgress
+    , progress : EveryDict ParticipantFormId ParticipantFormProgress
     }
 
 
 emptyParticipantFormUI : ParticipantFormUI
 emptyParticipantFormUI =
-    { expected = EntityUuidDictList.empty
+    { expected = EveryDictList.empty
     , view = Nothing
-    , progress = EntityUuidDict.empty
+    , progress = EveryDict.empty
     }
 
 
