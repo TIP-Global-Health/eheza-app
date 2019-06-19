@@ -422,7 +422,7 @@ viewExaminationContent language currentDate motherId data =
                             ( Translate.SocialHistory, "core-physical-exam" )
 
                         ObstetricExam ->
-                            ( Translate.SocialHistory, "core-physical-exam" )
+                            ( Translate.SocialHistory, "obstetric-exam" )
 
                         BreastExam ->
                             ( Translate.SocialHistory, "breast-exam" )

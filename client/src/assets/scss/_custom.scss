@@ -1324,7 +1324,8 @@ input::placeholder {
   }
 }
 
-.icon-history-task {
+.icon-history-task,
+.icon-examination-task {
   display: block;
   width: 120px;
   height: 120px;
@@ -1389,6 +1390,85 @@ input::placeholder {
   }
 }
 
+.icon-vitals {
+  .active &:after {
+    background-image: url(#{$img-path}icon-vitals-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-vitals-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-position: center, 5px;
+    width: 130px;
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-vitals-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-nutrition-assessment {
+  .active &:after {
+    background-image: url(#{$img-path}icon-nutritionassessment-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-nutritionassessment-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-position: center, 5px;
+    width: 130px;
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-nutritionassessment-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-core-physical-exam {
+  .active &:after {
+    background-image: url(#{$img-path}icon-corephysicalexam-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-corephysicalexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-position: center, 5px;
+    width: 130px;
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-corephysicalexam-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-obstetric-exam {
+  .active &:after {
+    background-image: url(#{$img-path}icon-obstetricexam-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-obstetricexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-position: center, 5px;
+    width: 130px;
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-obstetricexam-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-breast-exam {
+  .active &:after {
+    background-image: url(#{$img-path}icon-breastexam-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-icon-breastexam-white-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-position: center, 5px;
+    width: 130px;
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-icon-breastexam-white-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
 
 // Lists
 
