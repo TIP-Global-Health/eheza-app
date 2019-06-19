@@ -209,16 +209,16 @@ viewHistoryContent language currentDate motherId data =
 
         viewTask task =
             let
-                ( labelTranslateId, iconClass ) =
+                iconClass =
                     case task of
                         Obstetric ->
-                            ( Translate.ObstetricHistory, "obstetric" )
+                            "obstetric"
 
                         Medical ->
-                            ( Translate.MedicalHistory, "medical" )
+                            "medical"
 
                         Social ->
-                            ( Translate.SocialHistory, "social" )
+                            "social"
 
                 isActive =
                     task == data.activeTask
@@ -238,7 +238,7 @@ viewHistoryContent language currentDate motherId data =
             div [ class "column" ]
                 [ a attributes
                     [ span [ class <| "icon-history-task icon-" ++ iconClass ] []
-                    , text <| translate language labelTranslateId
+                    , text <| translate language (Translate.HistoryTask task)
                     ]
                 ]
 
@@ -410,22 +410,22 @@ viewExaminationContent language currentDate motherId data =
 
         viewTask task =
             let
-                ( labelTranslateId, iconClass ) =
+                iconClass =
                     case task of
                         Vitals ->
-                            ( Translate.ObstetricHistory, "vitals" )
+                            "vitals"
 
                         NutritionAssessment ->
-                            ( Translate.MedicalHistory, "nutrition-assessment" )
+                            "nutrition-assessment"
 
                         CorePhysicalExam ->
-                            ( Translate.SocialHistory, "core-physical-exam" )
+                            "core-physical-exam"
 
                         ObstetricalExam ->
-                            ( Translate.SocialHistory, "obstetrical-exam" )
+                            "obstetrical-exam"
 
                         BreastExam ->
-                            ( Translate.SocialHistory, "breast-exam" )
+                            "breast-exam"
 
                 isActive =
                     task == data.activeTask
@@ -445,7 +445,7 @@ viewExaminationContent language currentDate motherId data =
             div [ class "column" ]
                 [ a attributes
                     [ span [ class <| "icon-examination-task icon-" ++ iconClass ] []
-                    , text <| translate language labelTranslateId
+                    , text <| translate language (Translate.ExaminationTask task)
                     ]
                 ]
     in

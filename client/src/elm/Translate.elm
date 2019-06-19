@@ -33,7 +33,7 @@ import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
 import Pages.Page exposing (..)
-import Pages.PrenatalActivity.Model exposing (CSectionReason(..), LmpRange(..), PreviousDeliveryPeriod(..))
+import Pages.PrenatalActivity.Model exposing (CSectionReason(..), ExaminationTask(..), HistoryTask(..), LmpRange(..), PreviousDeliveryPeriod(..))
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
@@ -229,6 +229,7 @@ type TranslationId
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
     | Estimated
+    | ExaminationTask ExaminationTask
     | Failure
     | FamilyInformation
     | FamilyMembers
@@ -248,6 +249,7 @@ type TranslationId
     | Gravida
     | HaveYouSynced
     | HealthCenter
+    | HistoryTask HistoryTask
     | HIV
     | HIVStatus HIVStatus
     | HIVStatusLabel
@@ -272,7 +274,6 @@ type TranslationId
     | MeasurementGained Float
     | MeasurementLost Float
     | MedicalFormHelper
-    | MedicalHistory
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MentalHealthHistory
     | MiddleName
@@ -315,7 +316,6 @@ type TranslationId
     | NumberOfLiveChildren
     | NumberOfStillbirthsAtTerm
     | NumberOfStillbirthsPreTerm
-    | ObstetricHistory
     | OK
     | Old
     | OnceYouEndYourGroupEncounter
@@ -404,7 +404,6 @@ type TranslationId
     | ServiceWorkerRegSuccess
     | ServiceWorkerStatus
     | SevereHemorrhagingPreviousDelivery
-    | SocialHistory
     | StillbornPreviousDelivery
     | SuccessiveAbortions
     | SuccessivePrimatureDeliveries
@@ -1228,6 +1227,33 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        ExaminationTask task ->
+            case task of
+                Vitals ->
+                    { english = "Vitals"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionAssessment ->
+                    { english = "Nutrition Assessment"
+                    , kinyarwanda = Nothing
+                    }
+
+                CorePhysicalExam ->
+                    { english = "Core Physical Exam"
+                    , kinyarwanda = Nothing
+                    }
+
+                ObstetricalExam ->
+                    { english = "Obstetrical Exam"
+                    , kinyarwanda = Nothing
+                    }
+
+                BreastExam ->
+                    { english = "Breast Exam"
+                    , kinyarwanda = Nothing
+                    }
+
         Failure ->
             { english = "Failure"
             , kinyarwanda = Nothing
@@ -1357,6 +1383,23 @@ translationSet trans =
             { english = "Health Center"
             , kinyarwanda = Nothing
             }
+
+        HistoryTask task ->
+            case task of
+                Obstetric ->
+                    { english = "Obstetric History"
+                    , kinyarwanda = Nothing
+                    }
+
+                Medical ->
+                    { english = "Medical History"
+                    , kinyarwanda = Nothing
+                    }
+
+                Social ->
+                    { english = "Social History"
+                    , kinyarwanda = Nothing
+                    }
 
         HIV ->
             { english = "HIV"
@@ -1554,11 +1597,6 @@ translationSet trans =
 
         MedicalFormHelper ->
             { english = "Please recode if the mother was diagnosed with the following medical issues"
-            , kinyarwanda = Nothing
-            }
-
-        MedicalHistory ->
-            { english = "Medical History"
             , kinyarwanda = Nothing
             }
 
@@ -1797,11 +1835,6 @@ translationSet trans =
 
         NumberOfStillbirthsPreTerm ->
             { english = "Number of Stillbirths pre Term"
-            , kinyarwanda = Nothing
-            }
-
-        ObstetricHistory ->
-            { english = "Obstetric History"
             , kinyarwanda = Nothing
             }
 
@@ -2292,11 +2325,6 @@ translationSet trans =
 
         SevereHemorrhagingPreviousDelivery ->
             { english = "Severe Hemorrhaging in previous delivery (>500 ml)"
-            , kinyarwanda = Nothing
-            }
-
-        SocialHistory ->
-            { english = "Social History"
             , kinyarwanda = Nothing
             }
 
