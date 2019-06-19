@@ -63,6 +63,8 @@ type Msg
     | SetExaminationTaskCompleted
       -- ExaminationMsgs, Vitals
     | SetVitalsMeasurement (Maybe Float -> VitalsForm -> VitalsForm) String
+      -- ExaminationMsgs, Nutrition Assessment
+    | SetNutritionAssessmentMeasurement (Maybe Float -> NutritionAssessmentForm -> NutritionAssessmentForm) String
 
 
 type alias Model =
@@ -339,10 +341,10 @@ emptyVitalsForm =
 
 
 type alias NutritionAssessmentForm =
-    { height : Maybe Int
-    , weight : Maybe Int
-    , bmi : Maybe Int
-    , muac : Maybe Int
+    { height : Maybe Float
+    , weight : Maybe Float
+    , bmi : Maybe Float
+    , muac : Maybe Float
     }
 
 

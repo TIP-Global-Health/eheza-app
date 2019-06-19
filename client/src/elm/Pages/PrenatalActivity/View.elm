@@ -467,9 +467,16 @@ viewExaminationContent language currentDate motherId data =
                     )
 
                 NutritionAssessment ->
-                    ( viewNutritionAssessmentForm language currentDate motherId data.nutritionAssessmentForm
-                    , 0
-                    , 0
+                    let
+                        form =
+                            data.nutritionAssessmentForm
+                    in
+                    ( viewNutritionAssessmentForm language currentDate motherId form
+                    , [ form.height, form.weight, form.bmi, form.muac ]
+                        |> List.map
+                            taskCompleted
+                        |> List.sum
+                    , 4
                     )
 
                 CorePhysicalExam ->
@@ -991,8 +998,91 @@ viewPreviousMeasurement language maybePreviousValue unitTranslationId =
 
 viewNutritionAssessmentForm : Language -> NominalDate -> PersonId -> NutritionAssessmentForm -> Html Msg
 viewNutritionAssessmentForm language currentDate motherId form =
-    div [ class "form examination nutrition-assessment" ]
-        [ div [ class "label" ] [ text <| (translate language Translate.BloodPressure ++ ":") ]
+    let
+        heightUpdateFunc value form_ =
+            { form_ | height = value }
+
+        weightUpdateFunc value form_ =
+            { form_ | weight = value }
+
+        bmiUpdateFunc value form_ =
+            { form_ | bmi = value }
+
+        muacUpdateFunc value form_ =
+            { form_ | muac = value }
+
+        heightPreviousValue =
+            Nothing
+
+        weightPreviousValue =
+            Just 76
+
+        bmiPreviousValue =
+            Nothing
+
+        muacPreviousValue =
+            Just 18
+    in
+    div [ class "ui form examination nutrition-assessment" ]
+        [ div [ class "label" ] [ text <| (translate language Translate.Height ++ ":") ]
+        , div [ class "ui grid" ]
+            [ div [ class "eleven wide column" ]
+                [ viewMeasurementInput
+                    language
+                    form.height
+                    (SetNutritionAssessmentMeasurement heightUpdateFunc)
+                    "height"
+                    Translate.CentimeterShorthand
+                , viewPreviousMeasurement language heightPreviousValue Translate.CentimeterShorthand
+                ]
+            , div [ class "five wide column" ]
+                [ text "Warning" ]
+            ]
+        , div [ class "separator" ] []
+        , div [ class "label" ] [ text <| (translate language Translate.Weight ++ ":") ]
+        , div [ class "ui grid" ]
+            [ div [ class "eleven wide column" ]
+                [ viewMeasurementInput
+                    language
+                    form.weight
+                    (SetNutritionAssessmentMeasurement weightUpdateFunc)
+                    "weight"
+                    Translate.KilogramShorthand
+                , viewPreviousMeasurement language weightPreviousValue Translate.KilogramShorthand
+                ]
+            , div [ class "five wide column" ]
+                [ text "Warning" ]
+            ]
+        , div [ class "separator" ] []
+        , div [ class "label" ] [ text <| (translate language Translate.BMI ++ ":") ]
+        , div [ class "ui grid" ]
+            [ div [ class "eleven wide column" ]
+                [ viewMeasurementInput
+                    language
+                    form.bmi
+                    (SetNutritionAssessmentMeasurement bmiUpdateFunc)
+                    "bmi disabled"
+                    Translate.EmptyString
+                , viewPreviousMeasurement language bmiPreviousValue Translate.EmptyString
+                ]
+            , div [ class "five wide column" ]
+                [ text "Warning" ]
+            ]
+        , div [ class "separator" ] []
+        , div [ class "label" ] [ text <| (translate language Translate.MUAC ++ ":") ]
+        , div [ class "ui grid" ]
+            [ div [ class "eleven wide column" ]
+                [ viewMeasurementInput
+                    language
+                    form.muac
+                    (SetNutritionAssessmentMeasurement muacUpdateFunc)
+                    "muac"
+                    Translate.CentimeterShorthand
+                , viewPreviousMeasurement language muacPreviousValue Translate.CentimeterShorthand
+                ]
+            , div [ class "five wide column" ]
+                [ text "Warning" ]
+            ]
         ]
 
 

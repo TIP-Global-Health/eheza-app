@@ -166,6 +166,8 @@ type TranslationId
     | BloodPressure
     | BloodPressureDiaLabel
     | BloodPressureSysLabel
+    | BMI
+    | BMIHelper
     | BodyTemperature
     | Born
     | BowedLegs
@@ -229,6 +231,7 @@ type TranslationId
     | EditRelationship
     | Ega
     | EgaHeader
+    | EmptyString
     | EndEncounter
     | EndGroupEncounter
     | EnterPairingCode
@@ -256,6 +259,7 @@ type TranslationId
     | HaveYouSynced
     | HealthCenter
     | HeartRate
+    | Height
     | HistoryTask HistoryTask
     | HIV
     | HIVStatus HIVStatus
@@ -297,6 +301,7 @@ type TranslationId
     | MotherNameLabel
     | MotherNationalId
     | Mothers
+    | MUAC
     | MuacIndication MuacIndication
     | MyAccount
     | MyRelatedBy MyRelatedBy
@@ -455,6 +460,7 @@ type TranslationId
     | ViewProgressReport
     | Village
     | WeekSinglePlural Int
+    | Weight
     | WelcomeUser String
     | Year
     | YearsOld Int
@@ -547,27 +553,27 @@ translationSet trans =
                        , kinyarwanda = Just "Kurikiza iyi lisiti mu gihe utanga ubujyanama, witondere kureba ko buri gikorwa cyakozwe."
                        }
                 -}
-                ChildActivity Height ->
+                ChildActivity Activity.Model.Height ->
                     { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight."
                     , kinyarwanda = Just "Saba Umubyeyi guhagarara inyuma y’umwana we agaramye, afata umutwe ku gice cy’amatwi. Sunikira akabaho ku buryo gakora mu bworo by’ibirenge byombi."
                     }
 
-                ChildActivity Muac ->
+                ChildActivity Activity.Model.Muac ->
                     { english = "Make sure to measure at the center of the baby’s upper arm."
                     , kinyarwanda = Just "Ibuka gupima icya kabiri cy'akaboko ko hejuru kugira bigufashe guoima ikizigira cy'akaboko"
                     }
 
-                ChildActivity NutritionSigns ->
+                ChildActivity Activity.Model.NutritionSigns ->
                     { english = "Explain to the mother how to check the malnutrition signs for their own child."
                     , kinyarwanda = Just "Sobanurira umubyeyi gupima ibimenyetso by'imirire mibi ku giti cye"
                     }
 
-                ChildActivity ChildPicture ->
+                ChildActivity Activity.Model.ChildPicture ->
                     { english = "Take each baby’s photo at each health assessment. Photos should show the entire body of each child."
                     , kinyarwanda = Just "Fata ifoto ya buri mwana kuri buri bikorwa by'ipimwa Ifoto igomba kwerekana ibice by'umubiri wose by'umwana"
                     }
 
-                ChildActivity Weight ->
+                ChildActivity Activity.Model.Weight ->
                     { english = "Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on."
                     , kinyarwanda = Just "Ibuka kuregera umunzani mbere yo gupima ibiro by'umwana wa mbere. Ambika umwana ikariso y'ibiro wabanje kumukuramo imyenda iremereye"
                     }
@@ -589,27 +595,27 @@ translationSet trans =
                        , kinyarwanda = Just "Kurikiza iyi lisiti mu gihe utanga ubujyanama, witondere kureba ko buri gikorwa cyakozwe."
                        }
                 -}
-                ChildActivity Height ->
+                ChildActivity Activity.Model.Height ->
                     { english = "Height:"
                     , kinyarwanda = Just "Uburere:"
                     }
 
-                ChildActivity Muac ->
+                ChildActivity Activity.Model.Muac ->
                     { english = "MUAC:"
                     , kinyarwanda = Just "Ikizigira cy'akaboko:"
                     }
 
-                ChildActivity NutritionSigns ->
+                ChildActivity Activity.Model.NutritionSigns ->
                     { english = "Select all signs that are present:"
                     , kinyarwanda = Just "Hitamo ibimenyetso by'imirire byose bishoboka umwana afite:"
                     }
 
-                ChildActivity ChildPicture ->
+                ChildActivity Activity.Model.ChildPicture ->
                     { english = "Photo:"
                     , kinyarwanda = Just "Ifoto"
                     }
 
-                ChildActivity Weight ->
+                ChildActivity Activity.Model.Weight ->
                     { english = "Weight:"
                     , kinyarwanda = Just "Ibiro:"
                     }
@@ -631,27 +637,27 @@ translationSet trans =
                        , kinyarwanda = Just "Ubujyanama"
                        }
                 -}
-                ChildActivity Height ->
+                ChildActivity Activity.Model.Height ->
                     { english = "Height"
                     , kinyarwanda = Just "Uburebure"
                     }
 
-                ChildActivity Muac ->
+                ChildActivity Activity.Model.Muac ->
                     { english = "MUAC"
                     , kinyarwanda = Just "Ikizigira cy'akaboko"
                     }
 
-                ChildActivity NutritionSigns ->
+                ChildActivity Activity.Model.NutritionSigns ->
                     { english = "Nutrition"
                     , kinyarwanda = Just "Imirire"
                     }
 
-                ChildActivity ChildPicture ->
+                ChildActivity Activity.Model.ChildPicture ->
                     { english = "Photo"
                     , kinyarwanda = Just "Ifoto"
                     }
 
-                ChildActivity Weight ->
+                ChildActivity Activity.Model.Weight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
                     }
@@ -673,27 +679,27 @@ translationSet trans =
                        , kinyarwanda = Nothing
                        }
                 -}
-                ChildActivity Height ->
+                ChildActivity Activity.Model.Height ->
                     { english = "Height"
                     , kinyarwanda = Just "Uburebure"
                     }
 
-                ChildActivity Muac ->
+                ChildActivity Activity.Model.Muac ->
                     { english = "MUAC"
                     , kinyarwanda = Just "Ikizigira cy'akaboko"
                     }
 
-                ChildActivity NutritionSigns ->
+                ChildActivity Activity.Model.NutritionSigns ->
                     { english = "Nutrition Signs"
                     , kinyarwanda = Just "Ibimenyetso by'imirire"
                     }
 
-                ChildActivity ChildPicture ->
+                ChildActivity Activity.Model.ChildPicture ->
                     { english = "Photo"
                     , kinyarwanda = Just "Ifoto"
                     }
 
-                ChildActivity Weight ->
+                ChildActivity Activity.Model.Weight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
                     }
@@ -811,6 +817,16 @@ translationSet trans =
 
         BloodPressureSysLabel ->
             { english = "SYS"
+            , kinyarwanda = Nothing
+            }
+
+        BMI ->
+            { english = "BMI"
+            , kinyarwanda = Nothing
+            }
+
+        BMIHelper ->
+            { english = "Calculated based on Height and Weight"
             , kinyarwanda = Nothing
             }
 
@@ -1222,6 +1238,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        EmptyString ->
+            { english = ""
+            , kinyarwanda = Just ""
+            }
+
         EndEncounter ->
             { english = "End Encounter"
             , kinyarwanda = Nothing
@@ -1427,6 +1448,11 @@ translationSet trans =
         HeartRate ->
             { english = "Heart Rate"
             , kinyarwanda = Nothing
+            }
+
+        Height ->
+            { english = "Height"
+            , kinyarwanda = Just "Uburebure"
             }
 
         HistoryTask task ->
@@ -1743,6 +1769,11 @@ translationSet trans =
         Mothers ->
             { english = "Mothers"
             , kinyarwanda = Just "Ababyeyi"
+            }
+
+        MUAC ->
+            { english = "MUAC"
+            , kinyarwanda = Just "Ikizigira"
             }
 
         MuacIndication indication ->
@@ -2599,6 +2630,11 @@ translationSet trans =
                 { english = toString value ++ " Weeks"
                 , kinyarwanda = Nothing
                 }
+
+        Weight ->
+            { english = "Weight"
+            , kinyarwanda = Just "Ibiro"
+            }
 
         WelcomeUser name ->
             { english = "Welcome " ++ name

@@ -3,7 +3,7 @@ module Pages.PrenatalActivity.Update exposing (update)
 import App.Model
 import Backend.Entities exposing (PersonId)
 import Backend.Model exposing (ModelIndexedDb)
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra exposing (isJust, isNothing)
 import Pages.PrenatalActivity.Model exposing (..)
 import PrenatalActivity.Model exposing (PrenatalActivity)
 import Result exposing (Result)
@@ -437,3 +437,49 @@ update motherId activity db msg model =
             , Cmd.none
             , []
             )
+
+        SetNutritionAssessmentMeasurement formUpdateFunc value ->
+            let
+                updatedData =
+                    case model.examinationData.activeTask of
+                        NutritionAssessment ->
+                            let
+                                updatedForm =
+                                    case String.toFloat value of
+                                        Ok number ->
+                                            formUpdateFunc (Just number) model.examinationData.nutritionAssessmentForm
+                                                |> calculateBmi
+
+                                        Err _ ->
+                                            formUpdateFunc Nothing model.examinationData.nutritionAssessmentForm
+                                                |> calculateBmi
+                            in
+                            model.examinationData
+                                |> (\data -> { data | nutritionAssessmentForm = updatedForm })
+
+                        _ ->
+                            model.examinationData
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+
+calculateBmi : NutritionAssessmentForm -> NutritionAssessmentForm
+calculateBmi form =
+    if isNothing form.weight || isNothing form.height then
+        { form | bmi = Nothing }
+
+    else
+        let
+            height =
+                form.height |> Maybe.withDefault 0
+
+            weight =
+                form.weight |> Maybe.withDefault 0
+
+            bmi =
+                weight / ((height / 100) ^ 2)
+        in
+        { form | bmi = Just bmi }
