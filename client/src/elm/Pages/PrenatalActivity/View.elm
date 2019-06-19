@@ -334,7 +334,7 @@ viewHistoryContent language currentDate motherId data =
 
         actions =
             let
-                ( buttons, stepIndicatoryClass ) =
+                ( buttons, stepIndicationClass ) =
                     case data.activeTask of
                         Obstetric ->
                             case data.obstetricForm of
@@ -384,7 +384,7 @@ viewHistoryContent language currentDate motherId data =
                             , ""
                             )
             in
-            div [ class <| "actions history obstetric " ++ stepIndicatoryClass ]
+            div [ class <| "actions history obstetric " ++ stepIndicationClass ]
                 buttons
     in
     [ div [ class "ui task segment" ]
@@ -448,11 +448,68 @@ viewExaminationContent language currentDate motherId data =
                     , text <| translate language (Translate.ExaminationTask task)
                     ]
                 ]
+
+        ( viewForm, tasksCompleted, totalTasks ) =
+            case data.activeTask of
+                Vitals ->
+                    let
+                        form =
+                            data.vitalsForm
+                    in
+                    ( viewVitalsForm language currentDate motherId form
+                    , taskListCompleted [ form.sysBloodPressure, form.diaBloodPressure ]
+                        + ([ form.heartRate, form.respiratoryRate, form.bodyTemperature ]
+                            |> List.map
+                                taskCompleted
+                            |> List.sum
+                          )
+                    , 4
+                    )
+
+                NutritionAssessment ->
+                    ( viewNutritionAssessmentForm language currentDate motherId data.nutritionAssessmentForm
+                    , 0
+                    , 0
+                    )
+
+                CorePhysicalExam ->
+                    ( viewCorePhysicalExamForm language currentDate motherId data.corePhysicalExamForm
+                    , 0
+                    , 0
+                    )
+
+                ObstetricalExam ->
+                    ( viewObstetricalExamForm language currentDate motherId data.obstetricExamForm
+                    , 0
+                    , 0
+                    )
+
+                BreastExam ->
+                    ( viewBreastExamForm language currentDate motherId data.breastExamForm
+                    , 0
+                    , 0
+                    )
+
+        actions =
+            div [ class "actions examination" ]
+                [ button
+                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                    , onClick SetExaminationTaskCompleted
+                    ]
+                    [ text <| translate language Translate.Save ]
+                ]
     in
     [ div [ class "ui task segment blue" ]
         [ div [ class "ui five column grid" ] <|
             List.map viewTask <|
                 tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
+            ]
         ]
     ]
 
@@ -466,23 +523,23 @@ viewObstetricFormFirstStep language currentDate motherId form =
         paraResult =
             span [] [ text "0102" ]
 
-        termPregnancyUpdateFunc number form_ =
-            { form_ | termPregnancy = Just number }
+        termPregnancyUpdateFunc value form_ =
+            { form_ | termPregnancy = value }
 
-        preTermPregnancyUpdateFunc number form_ =
-            { form_ | preTermPregnancy = Just number }
+        preTermPregnancyUpdateFunc value form_ =
+            { form_ | preTermPregnancy = value }
 
-        stillbirthsAtTermUpdateFunc number form_ =
-            { form_ | stillbirthsAtTerm = Just number }
+        stillbirthsAtTermUpdateFunc value form_ =
+            { form_ | stillbirthsAtTerm = value }
 
-        stillbirthsPreTermUpdateFunc number form_ =
-            { form_ | stillbirthsPreTerm = Just number }
+        stillbirthsPreTermUpdateFunc value form_ =
+            { form_ | stillbirthsPreTerm = value }
 
-        abortionsUpdateFunc number form_ =
-            { form_ | abortions = Just number }
+        abortionsUpdateFunc value form_ =
+            { form_ | abortions = value }
 
-        liveChildrenUpdateFunc number form_ =
-            { form_ | liveChildren = Just number }
+        liveChildrenUpdateFunc value form_ =
+            { form_ | liveChildren = value }
     in
     div [ class "form history obstetric first" ]
         [ viewBoolInput language form.currentlyPregnant SetCurrentlyPregnant "currently-pregnant" (Just Translate.CurrentlyPregnant)
@@ -808,6 +865,158 @@ viewSocialForm language currentDate motherId form =
         ]
 
 
+viewVitalsForm : Language -> NominalDate -> PersonId -> VitalsForm -> Html Msg
+viewVitalsForm language currentDate motherId form =
+    let
+        sysBloodPressureUpdateFunc value form_ =
+            { form_ | sysBloodPressure = value }
+
+        diaBloodPressureUpdateFunc value form_ =
+            { form_ | diaBloodPressure = value }
+
+        heartRateUpdateFunc value form_ =
+            { form_ | heartRate = value }
+
+        respiratoryRateUpdateFunc value form_ =
+            { form_ | respiratoryRate = value }
+
+        bodyTemperatureUpdateFunc value form_ =
+            { form_ | bodyTemperature = value }
+
+        sysBloodPressurePreviousValue =
+            Nothing
+
+        diaBloodPressurePreviousValue =
+            Just 110
+
+        heartRatePreviousValue =
+            Nothing
+
+        respiratoryRatePreviousValue =
+            Just 21
+
+        bodyTemperaturePreviousValue =
+            Just 36.9
+    in
+    div [ class "ui form examination vitals" ]
+        [ div [ class "label" ] [ text <| (translate language Translate.BloodPressure ++ ":") ]
+        , div [ class "ui grid" ]
+            [ div [ class "eleven wide column" ]
+                [ div [ class "title" ] [ text <| translate language Translate.BloodPressureSysLabel ]
+                , viewMeasurementInput
+                    language
+                    form.sysBloodPressure
+                    (SetVitalsMeasurement sysBloodPressureUpdateFunc)
+                    "sys-blood-pressure"
+                    Translate.MMHGUnit
+                , div [ class "title" ] [ text <| translate language Translate.BloodPressureDiaLabel ]
+                , viewPreviousMeasurement language sysBloodPressurePreviousValue Translate.MMHGUnit
+                , viewMeasurementInput
+                    language
+                    form.diaBloodPressure
+                    (SetVitalsMeasurement diaBloodPressureUpdateFunc)
+                    "dia-blood-pressure"
+                    Translate.MMHGUnit
+                , viewPreviousMeasurement language diaBloodPressurePreviousValue Translate.MMHGUnit
+                ]
+            , div [ class "five wide column" ]
+                [ text "Warning" ]
+            ]
+        , div [ class "separator" ] []
+        , div [ class "label" ] [ text <| (translate language Translate.HeartRate ++ ":") ]
+        , div [ class "ui grid" ]
+            [ div [ class "eleven wide column" ]
+                [ viewMeasurementInput
+                    language
+                    form.heartRate
+                    (SetVitalsMeasurement heartRateUpdateFunc)
+                    "heart-rate"
+                    Translate.BpmUnit
+                , viewPreviousMeasurement language heartRatePreviousValue Translate.BpmUnit
+                ]
+            , div [ class "five wide column" ]
+                [ text "Warning" ]
+            ]
+        , div [ class "separator" ] []
+        , div [ class "label" ] [ text <| (translate language Translate.RespiratoryRate ++ ":") ]
+        , div [ class "ui grid" ]
+            [ div [ class "eleven wide column" ]
+                [ viewMeasurementInput
+                    language
+                    form.respiratoryRate
+                    (SetVitalsMeasurement respiratoryRateUpdateFunc)
+                    "respiratory-rate"
+                    Translate.BpmUnit
+                , viewPreviousMeasurement language respiratoryRatePreviousValue Translate.BpmUnit
+                ]
+            , div [ class "five wide column" ]
+                [ text "Warning" ]
+            ]
+        , div [ class "separator" ] []
+        , div [ class "label" ] [ text <| (translate language Translate.BodyTemperature ++ ":") ]
+        , div [ class "ui grid" ]
+            [ div [ class "eleven wide column" ]
+                [ viewMeasurementInput
+                    language
+                    form.bodyTemperature
+                    (SetVitalsMeasurement bodyTemperatureUpdateFunc)
+                    "body-temperature"
+                    Translate.Celcius
+                , viewPreviousMeasurement language bodyTemperaturePreviousValue Translate.Celcius
+                ]
+            , div [ class "five wide column" ]
+                [ text "Warning" ]
+            ]
+        ]
+
+
+viewPreviousMeasurement : Language -> Maybe Float -> TranslationId -> Html any
+viewPreviousMeasurement language maybePreviousValue unitTranslationId =
+    let
+        message =
+            maybePreviousValue
+                |> unwrap
+                    (translate language Translate.PreviousMeasurementNotFound)
+                    (\previousValue ->
+                        (previousValue
+                            |> Translate.PreviousFloatMeasurement
+                            |> translate language
+                        )
+                            ++ " "
+                            ++ translate language unitTranslationId
+                    )
+    in
+    div [ class "previous-value" ] [ text message ]
+
+
+viewNutritionAssessmentForm : Language -> NominalDate -> PersonId -> NutritionAssessmentForm -> Html Msg
+viewNutritionAssessmentForm language currentDate motherId form =
+    div [ class "form examination nutrition-assessment" ]
+        [ div [ class "label" ] [ text <| (translate language Translate.BloodPressure ++ ":") ]
+        ]
+
+
+viewCorePhysicalExamForm : Language -> NominalDate -> PersonId -> CorePhysicalExamForm -> Html Msg
+viewCorePhysicalExamForm language currentDate motherId form =
+    div [ class "form examination core-physical-exam" ]
+        [ div [ class "label" ] [ text <| (translate language Translate.BloodPressure ++ ":") ]
+        ]
+
+
+viewObstetricalExamForm : Language -> NominalDate -> PersonId -> ObstetricalExamForm -> Html Msg
+viewObstetricalExamForm language currentDate motherId form =
+    div [ class "form examination obstetrical-exam" ]
+        [ div [ class "label" ] [ text <| (translate language Translate.BloodPressure ++ ":") ]
+        ]
+
+
+viewBreastExamForm : Language -> NominalDate -> PersonId -> BreastExamForm -> Html Msg
+viewBreastExamForm language currentDate motherId form =
+    div [ class "form examination breast-exam" ]
+        [ div [ class "label" ] [ text <| (translate language Translate.BloodPressure ++ ":") ]
+        ]
+
+
 viewBoolInput : Language -> Maybe Bool -> (Bool -> Msg) -> String -> Maybe TranslationId -> Html Msg
 viewBoolInput language currentValue setMsg inputClass labelTranslateId =
     let
@@ -899,8 +1108,6 @@ viewCheckBoxSelectInputItem language currentValue setMsg translateFunc option =
         ]
         [ input
             [ type_ "checkbox"
-
-            -- , onCheck (always (setMsg option))
             , checked isChecked
             , classList [ ( "checked", isChecked ) ]
             ]
@@ -910,9 +1117,42 @@ viewCheckBoxSelectInputItem language currentValue setMsg translateFunc option =
         ]
 
 
+viewMeasurementInput : Language -> Maybe Float -> (String -> Msg) -> String -> TranslationId -> Html Msg
+viewMeasurementInput language maybeCurrentValue setMsg inputClass unitTranslationId =
+    let
+        currentValue =
+            maybeCurrentValue
+                |> unwrap
+                    ""
+                    toString
+
+        inputAttrs =
+            [ type_ "number"
+            , Html.Attributes.min "0"
+            , onInput setMsg
+            , value currentValue
+            ]
+    in
+    div [ class "ui right labeled input" ]
+        [ input inputAttrs []
+        , div
+            [ class "ui basic label" ]
+            [ text <| translate language unitTranslationId ]
+        ]
+
+
 taskCompleted : Maybe a -> Int
 taskCompleted maybe =
     if isJust maybe then
+        1
+
+    else
+        0
+
+
+taskListCompleted : List (Maybe a) -> Int
+taskListCompleted list =
+    if List.all isJust list then
         1
 
     else

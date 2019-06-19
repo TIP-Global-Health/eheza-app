@@ -163,13 +163,19 @@ type TranslationId
     | BabyName String
     | Back
     | BackendError
+    | BloodPressure
+    | BloodPressureDiaLabel
+    | BloodPressureSysLabel
+    | BodyTemperature
     | Born
     | BowedLegs
+    | BpmUnit
     | Cancel
     | CardiacDisease
     | CaregiverName
     | CaregiverNationalId
     | CentimeterShorthand
+    | Celcius
     | Cell
     | ChartPhrase ChartPhrase
     | CheckIn
@@ -249,6 +255,7 @@ type TranslationId
     | Gravida
     | HaveYouSynced
     | HealthCenter
+    | HeartRate
     | HistoryTask HistoryTask
     | HIV
     | HIVStatus HIVStatus
@@ -275,6 +282,7 @@ type TranslationId
     | MeasurementLost Float
     | MedicalFormHelper
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
+    | MMHGUnit
     | MentalHealthHistory
     | MiddleName
     | MinutesAgo Int
@@ -347,6 +355,7 @@ type TranslationId
     | PreviousDelivery
     | PreviousDeliveryPeriods PreviousDeliveryPeriod
     | PreviousFloatMeasurement Float
+    | PreviousMeasurementNotFound
     | Profession
     | ProgressReport
     | PreTermPregnancy
@@ -373,6 +382,7 @@ type TranslationId
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
     | ResolveMonth Month
+    | RespiratoryRate
     | Retry
     | RhNegative
     | Save
@@ -789,6 +799,26 @@ translationSet trans =
             , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
             }
 
+        BloodPressure ->
+            { english = "Blood Pressure"
+            , kinyarwanda = Nothing
+            }
+
+        BloodPressureDiaLabel ->
+            { english = "DIA"
+            , kinyarwanda = Nothing
+            }
+
+        BloodPressureSysLabel ->
+            { english = "SYS"
+            , kinyarwanda = Nothing
+            }
+
+        BodyTemperature ->
+            { english = "Body Temperature"
+            , kinyarwanda = Nothing
+            }
+
         Born ->
             { english = "Born"
             , kinyarwanda = Just "Kuvuka/ itariki y'amavuko"
@@ -796,6 +826,11 @@ translationSet trans =
 
         BowedLegs ->
             { english = "Bowed Legs"
+            , kinyarwanda = Nothing
+            }
+
+        BpmUnit ->
+            { english = "bpm"
             , kinyarwanda = Nothing
             }
 
@@ -827,6 +862,11 @@ translationSet trans =
         CentimeterShorthand ->
             { english = "cm"
             , kinyarwanda = Just "cm"
+            }
+
+        Celcius ->
+            { english = "Celcius"
+            , kinyarwanda = Nothing
             }
 
         ChartPhrase phrase ->
@@ -1384,6 +1424,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        HeartRate ->
+            { english = "Heart Rate"
+            , kinyarwanda = Nothing
+            }
+
         HistoryTask task ->
             case task of
                 Obstetric ->
@@ -1597,6 +1642,11 @@ translationSet trans =
 
         MedicalFormHelper ->
             { english = "Please recode if the mother was diagnosed with the following medical issues"
+            , kinyarwanda = Nothing
+            }
+
+        MMHGUnit ->
+            { english = "mmHG"
             , kinyarwanda = Nothing
             }
 
@@ -2038,6 +2088,11 @@ translationSet trans =
             , kinyarwanda = Just <| "Ibipimo by'ubushize: " ++ toString value
             }
 
+        PreviousMeasurementNotFound ->
+            { english = "No previous measurement on record"
+            , kinyarwanda = Nothing
+            }
+
         Profession ->
             { english = "Profession"
             , kinyarwanda = Nothing
@@ -2172,6 +2227,11 @@ translationSet trans =
 
         ResolveMonth month ->
             translateMonth month
+
+        RespiratoryRate ->
+            { english = "Respiratory Rate"
+            , kinyarwanda = Nothing
+            }
 
         Retry ->
             { english = "Retry"

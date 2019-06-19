@@ -48,7 +48,7 @@ type Msg
       -- HistoryMsgs, OB, Step 1
     | SetOBFirstStepCompleted
     | SetCurrentlyPregnant Bool
-    | SetOBIntInput (Int -> ObstetricFormFirstStep -> ObstetricFormFirstStep) String
+    | SetOBIntInput (Maybe Int -> ObstetricFormFirstStep -> ObstetricFormFirstStep) String
       -- HistoryMsgs, OB, Step 2
     | SetCSectionReason CSectionReason
     | SetNumberOfCSections String
@@ -61,6 +61,8 @@ type Msg
       -- ExaminationMsgs
     | SetActiveExaminationTask ExaminationTask
     | SetExaminationTaskCompleted
+      -- ExaminationMsgs, Vitals
+    | SetVitalsMeasurement (Maybe Float -> VitalsForm -> VitalsForm) String
 
 
 type alias Model =
@@ -318,18 +320,20 @@ type ExaminationTask
 
 
 type alias VitalsForm =
-    { sysBloodPreasure : Maybe Int
-    , diaBloodPreasure : Maybe Int
-    , heartRate : Maybe Int
-    , bodyTemperature : Maybe Int
+    { sysBloodPressure : Maybe Float
+    , diaBloodPressure : Maybe Float
+    , heartRate : Maybe Float
+    , respiratoryRate : Maybe Float
+    , bodyTemperature : Maybe Float
     }
 
 
 emptyVitalsForm : VitalsForm
 emptyVitalsForm =
-    { sysBloodPreasure = Nothing
-    , diaBloodPreasure = Nothing
+    { sysBloodPressure = Nothing
+    , diaBloodPressure = Nothing
     , heartRate = Nothing
+    , respiratoryRate = Nothing
     , bodyTemperature = Nothing
     }
 

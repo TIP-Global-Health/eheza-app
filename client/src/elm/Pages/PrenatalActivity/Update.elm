@@ -178,10 +178,10 @@ update motherId activity db msg model =
                                         updatedForm =
                                             case String.toInt value of
                                                 Ok number ->
-                                                    formUpdateFunc number form
+                                                    formUpdateFunc (Just number) form
 
                                                 Err _ ->
-                                                    form
+                                                    formUpdateFunc Nothing form
                                     in
                                     model.historyData
                                         |> (\data -> { data | obstetricForm = FirstStep updatedForm })
@@ -407,6 +407,31 @@ update motherId activity db msg model =
                 updatedData =
                     model.examinationData
                         |> (\data -> { data | activeTask = task })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetVitalsMeasurement formUpdateFunc value ->
+            let
+                updatedData =
+                    case model.examinationData.activeTask of
+                        Vitals ->
+                            let
+                                updatedForm =
+                                    case String.toFloat value of
+                                        Ok number ->
+                                            formUpdateFunc (Just number) model.examinationData.vitalsForm
+
+                                        Err _ ->
+                                            formUpdateFunc Nothing model.examinationData.vitalsForm
+                            in
+                            model.examinationData
+                                |> (\data -> { data | vitalsForm = updatedForm })
+
+                        _ ->
+                            model.examinationData
             in
             ( { model | examinationData = updatedData }
             , Cmd.none
