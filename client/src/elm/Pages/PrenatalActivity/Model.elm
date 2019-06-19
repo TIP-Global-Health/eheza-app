@@ -1,11 +1,21 @@
 module Pages.PrenatalActivity.Model exposing
-    ( CSectionReason(..)
+    ( AbdomenCPEOption(..)
+    , BreastExamForm
+    , CSectionReason(..)
+    , CorePhysicalExamForm
+    , ExaminationTask(..)
+    , HandsCPEOption(..)
     , HistoryData
     , HistoryTask(..)
+    , LegsCPEOption(..)
     , LmpRange(..)
+    , LungsCPEOption(..)
     , MedicalHistoryForm
     , Model
     , Msg(..)
+    , NeckCPEOption(..)
+    , NutritionAssessmentForm
+    , ObstetricExamForm
     , ObstetricFormFirstStep
     , ObstetricFormSecondStep
     , ObstetricHistoryFormType(..)
@@ -13,13 +23,10 @@ module Pages.PrenatalActivity.Model exposing
     , PregnancyDatingForm
     , PreviousDeliveryPeriod(..)
     , SocialHistoryForm
+    , VitalsForm
     , decodeLmpRange
-    , emptyHistoryData
-    , emptyMedicalHistoryForm
     , emptyModel
     , emptyObstetricFormSecondStep
-    , emptyPregnancyDatingData
-    , emptySocialHistoryForm
     , encodeLmpRange
     )
 
@@ -91,6 +98,29 @@ emptyHistoryData =
     , medicalForm = emptyMedicalHistoryForm
     , socialForm = emptySocialHistoryForm
     , activeTask = Obstetric
+    , completedTasks = []
+    }
+
+
+type alias ExaminationData =
+    { vitalsForm : VitalsForm
+    , nutritionAssessmentForm : NutritionAssessmentForm
+    , corePhysicalExamForm : CorePhysicalExamForm
+    , obstetricExamForm : ObstetricExamForm
+    , breastExamForm : BreastExamForm
+    , activeTask : ExaminationTask
+    , completedTasks : List ExaminationTask
+    }
+
+
+emptyExaminationData : ExaminationData
+emptyExaminationData =
+    { vitalsForm = emptyVitalsForm
+    , nutritionAssessmentForm = emptyNutritionAssessmentForm
+    , corePhysicalExamForm = emptyCorePhysicalExamForm
+    , obstetricExamForm = emptyObstetricExamForm
+    , breastExamForm = emptyBreastExamForm
+    , activeTask = Vitals
     , completedTasks = []
     }
 
@@ -271,3 +301,123 @@ decodeLmpRange s =
 
         _ ->
             Nothing
+
+
+type ExaminationTask
+    = BreastExam
+    | CorePhysicalExam
+    | NutritionAssessment
+    | ObstetricExam
+    | Vitals
+
+
+type alias VitalsForm =
+    { sysBloodPreasure : Maybe Int
+    , diaBloodPreasure : Maybe Int
+    , heartRate : Maybe Int
+    , bodyTemperature : Maybe Int
+    }
+
+
+emptyVitalsForm : VitalsForm
+emptyVitalsForm =
+    { sysBloodPreasure = Nothing
+    , diaBloodPreasure = Nothing
+    , heartRate = Nothing
+    , bodyTemperature = Nothing
+    }
+
+
+type alias NutritionAssessmentForm =
+    { height : Maybe Int
+    , weight : Maybe Int
+    , bmi : Maybe Int
+    , muac : Maybe Int
+    }
+
+
+emptyNutritionAssessmentForm : NutritionAssessmentForm
+emptyNutritionAssessmentForm =
+    { height = Nothing
+    , weight = Nothing
+    , bmi = Nothing
+    , muac = Nothing
+    }
+
+
+type alias CorePhysicalExamForm =
+    { brittleHair : Maybe Bool
+    , paleConjuctiva : Maybe Bool
+    , neck : Maybe NeckCPEOption
+    , abnormalHeart : Maybe Bool
+    , lungs : Maybe LungsCPEOption
+    , abdomen : Maybe AbdomenCPEOption
+    , hands : Maybe HandsCPEOption
+    , legs : Maybe LegsCPEOption
+    }
+
+
+emptyCorePhysicalExamForm : CorePhysicalExamForm
+emptyCorePhysicalExamForm =
+    { brittleHair = Nothing
+    , paleConjuctiva = Nothing
+    , neck = Nothing
+    , abnormalHeart = Nothing
+    , lungs = Nothing
+    , abdomen = Nothing
+    , hands = Nothing
+    , legs = Nothing
+    }
+
+
+type NeckCPEOption
+    = EnlargedThyroid
+    | EnlargedLymphNodes
+    | Normal
+
+
+type LungsCPEOption
+    = Wheezes
+    | Crackles
+    | NormalLungs
+
+
+type AbdomenCPEOption
+    = Heptomegaly
+    | Splenomegaly
+    | TPRightUpper
+    | TPRightLower
+    | TPLeftUpper
+    | TPLeftLower
+    | Hernia
+    | NormalAbdomen
+
+
+type HandsCPEOption
+    = PallorHands
+    | EdemaHands
+    | NormalHands
+
+
+type LegsCPEOption
+    = PallorLegs
+    | EdemaLegs
+    | NormalLegs
+
+
+type alias ObstetricExamForm =
+    {}
+
+
+emptyObstetricExamForm : ObstetricExamForm
+emptyObstetricExamForm =
+    {}
+
+
+type alias BreastExamForm =
+    {}
+
+
+emptyBreastExamForm : BreastExamForm
+emptyBreastExamForm =
+    {}
