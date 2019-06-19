@@ -12,9 +12,25 @@
  */
 abstract class HedleyMigrateMissing extends Migration {
 
+  /**
+   * The entity type.
+   *
+   * @var string
+   */
   protected $entityType = 'node';
+
+  /**
+   * The bundle.
+   *
+   * @var string
+   */
   protected $bundle = NULL;
 
+  /**
+   * The CSV columns.
+   *
+   * @var array
+   */
   protected $csvColumns = [
     'id',
     'field_session',
@@ -25,8 +41,18 @@ abstract class HedleyMigrateMissing extends Migration {
     'field_muac',
   ];
 
+  /**
+   * Fields which we can map in a standard way.
+   *
+   * @var array
+   */
   protected $simpleMappings = [];
 
+  /**
+   * Fields with multi-values that we can map in a standard way.
+   *
+   * @var array
+   */
   protected $simpleMultipleMappings = [];
 
   /**
