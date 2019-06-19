@@ -10,10 +10,24 @@
  */
 class HedleyMigrateClinics201904 extends HedleyMigrateBase {
 
+  /**
+   * {@inheritdoc}
+   */
   public $entityType = 'node';
+
+  /**
+   * {@inheritdoc}
+   */
   public $bundle = 'clinic';
+
+  /**
+   * {@inheritdoc}
+   */
   public $csvPrefix = '2019-04/';
 
+  /**
+   * {@inheritdoc}
+   */
   protected $csvColumns = [
     'id',
     'title',

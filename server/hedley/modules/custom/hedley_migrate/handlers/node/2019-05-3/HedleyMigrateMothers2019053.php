@@ -10,10 +10,24 @@
  */
 class HedleyMigrateMothers2019053 extends HedleyMigrateBase {
 
+  /**
+   * {@inheritdoc}
+   */
   public $entityType = 'node';
+
+  /**
+   * {@inheritdoc}
+   */
   public $bundle = 'mother';
+
+  /**
+   * {@inheritdoc}
+   */
   public $csvPrefix = '2019-05-3/';
 
+  /**
+   * {@inheritdoc}
+   */
   public $columns = [
     0 => ['id', 'id'],
     1 => ['first_name', 'first_name'],
@@ -26,6 +40,9 @@ class HedleyMigrateMothers2019053 extends HedleyMigrateBase {
     21 => ['health_center', 'health_center'],
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   public $fields = [
     'title' => 'title',
     'clinic' => 'clinic',

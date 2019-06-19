@@ -10,6 +10,9 @@
  */
 class HedleyMigrateUsers extends HedleyMigrateBase {
 
+  /**
+   * {@inheritdoc}
+   */
   public $entityType = 'user';
 
   /**

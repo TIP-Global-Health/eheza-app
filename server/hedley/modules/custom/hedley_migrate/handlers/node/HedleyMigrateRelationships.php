@@ -10,9 +10,19 @@
  */
 class HedleyMigrateRelationships extends HedleyMigrateBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected $entityType = 'node';
+
+  /**
+   * {@inheritdoc}
+   */
   protected $bundle = 'relationship';
 
+  /**
+   * {@inheritdoc}
+   */
   protected $csvColumns = [
     'id',
     'field_person',
@@ -20,6 +30,9 @@ class HedleyMigrateRelationships extends HedleyMigrateBase {
     'field_related_to',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   protected $simpleMappings = [
     'field_related_by',
   ];
