@@ -10,8 +10,14 @@
  */
 class HedleyMigrateMissingMuacs extends HedleyMigrateMissing {
 
+  /**
+   * {@inheritdoc}
+   */
   protected $bundle = 'muac';
 
+  /**
+   * {@inheritdoc}
+   */
   protected $simpleMappings = [
     'field_muac',
   ];

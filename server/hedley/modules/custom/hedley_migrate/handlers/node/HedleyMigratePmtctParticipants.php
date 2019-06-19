@@ -10,9 +10,19 @@
  */
 class HedleyMigratePmtctParticipants extends HedleyMigrateBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected $entityType = 'node';
+
+  /**
+   * {@inheritdoc}
+   */
   protected $bundle = 'pmtct_participant';
 
+  /**
+   * {@inheritdoc}
+   */
   protected $csvColumns = [
     'id',
     'field_person',
@@ -22,6 +32,9 @@ class HedleyMigratePmtctParticipants extends HedleyMigrateBase {
     'field_clinic',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   protected $simpleMappings = [
     'field_adult_activities',
   ];
