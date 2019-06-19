@@ -1,10 +1,9 @@
-module Backend.Session.Utils exposing (emptyMotherMeasurementData, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother, isAuthorized, isClosed)
+module Backend.Session.Utils exposing (emptyMotherMeasurementData, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother, isClosed)
 
 import AllDict
 import AllDictList
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Nurse.Model exposing (Nurse)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
@@ -151,8 +150,3 @@ isClosed currentDate session =
             Time.Date.compare currentDate session.scheduledDate.end == GT
     in
     session.closed || pastEnd
-
-
-isAuthorized : Nurse -> Session -> Bool
-isAuthorized nurse session =
-    List.member session.clinicId nurse.clinics

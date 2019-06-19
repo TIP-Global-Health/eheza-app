@@ -12,7 +12,7 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse)
-import Backend.Nurse.Utils exposing (assignedToClinic)
+import Backend.Nurse.Utils exposing (assignedToHealthCenter)
 import Backend.Session.Model exposing (Session)
 import Backend.SyncData.Model exposing (SyncData)
 import Gizra.Html exposing (emptyNode)
@@ -124,7 +124,7 @@ viewClinicButton : Nurse -> ( ClinicId, Clinic ) -> Html Msg
 viewClinicButton user ( clinicId, clinic ) =
     let
         classAttr =
-            if assignedToClinic clinicId user then
+            if assignedToHealthCenter clinic.healthCenterId user then
                 class "ui fluid primary button"
 
             else
@@ -203,7 +203,7 @@ viewFoundClinic language currentDate nurse clinicId clinic sessions =
                 |> AllDictList.values
 
         content =
-            if assignedToClinic clinicId nurse then
+            if assignedToHealthCenter clinic.healthCenterId nurse then
                 [ h1 [] [ text <| translate language Translate.RecentAndUpcomingGroupEncounters ]
                 , table
                     [ class "ui table session-list" ]

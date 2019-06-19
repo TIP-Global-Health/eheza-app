@@ -11,7 +11,7 @@ decodeNurse : Decoder Nurse
 decodeNurse =
     decode Nurse
         |> required "label" string
-        |> optional "clinics" (list decodeEntityUuid) []
+        |> optional "health_centers" (map EverySet.fromList (list decodeEntityUuid)) EverySet.empty
         |> optional "role" (map EverySet.fromList (list decodeRole)) EverySet.empty
         |> optional "email" (map Just string) Nothing
 
