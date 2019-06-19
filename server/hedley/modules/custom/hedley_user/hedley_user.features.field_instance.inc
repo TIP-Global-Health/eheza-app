@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * hedley_user.features.field_instance.inc
@@ -15,7 +16,7 @@ function hedley_user_field_default_field_instances() {
     'bundle' => 'nurse',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => 'Which clinics is this user authorized to work with?',
+    'description' => 'Which clinics is this user authorized to work with? Deprecated -- use `Health Centers` instead.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -46,7 +47,7 @@ function hedley_user_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 0,
+      'weight' => 2,
     ),
   );
 
@@ -86,7 +87,51 @@ function hedley_user_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 2,
+      'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance: 'node-nurse-field_health_centers'.
+  $field_instances['node-nurse-field_health_centers'] = array(
+    'bundle' => 'nurse',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Which health centers is this nurse authorized to work with?',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_health_centers',
+    'label' => 'Health centers',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 3,
     ),
   );
 
@@ -126,7 +171,7 @@ function hedley_user_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => -2,
+      'weight' => 1,
     ),
   );
 
@@ -163,7 +208,7 @@ function hedley_user_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 1,
+      'weight' => 4,
     ),
   );
 
@@ -203,7 +248,7 @@ function hedley_user_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 4,
+      'weight' => 6,
     ),
   );
 
@@ -359,13 +404,15 @@ function hedley_user_field_default_field_instances() {
   t('Code which this nurse can use to login on the frontend, whether online or offline. When creating a new nurse, you can leave this blank -- a PIN code will be randomly generated.');
   t('Email');
   t('Groups');
+  t('Health centers');
   t('PIN code');
   t('Phone');
   t('Profile photo');
   t('Role');
   t('UUID');
   t('Which clinics is this user allowed to participate in?');
-  t('Which clinics is this user authorized to work with?');
+  t('Which clinics is this user authorized to work with? Deprecated -- use `Health Centers` instead.');
+  t('Which health centers is this nurse authorized to work with?');
   t('You can leave the UUID blank -- it will be automatically generated.');
 
   return $field_instances;
