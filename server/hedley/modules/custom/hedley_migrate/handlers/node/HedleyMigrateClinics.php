@@ -10,9 +10,19 @@
  */
 class HedleyMigrateClinics extends HedleyMigrateBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected $entityType = 'node';
+
+  /**
+   * {@inheritdoc}
+   */
   protected $bundle = 'clinic';
 
+  /**
+   * {@inheritdoc}
+   */
   protected $csvColumns = [
     'id',
     'title',

@@ -122,6 +122,9 @@ a {
   }
 }
 
+.actions {
+  margin: 2.5rem -3rem -2.5rem -3rem;
+}
 
 // Menu
 
@@ -635,6 +638,10 @@ h3.ui.header {
     .register-helper {
       margin-bottom: 10px;
     }
+
+    .register-actions button {
+      margin-top: 24px;
+    }
   }
 
   &.view {
@@ -831,12 +838,6 @@ h3.ui.header {
         margin-left: -20px;
         padding-right: 10px;
       }
-    }
-
-    .actions button {
-      float: left;
-      margin: 0;
-      width: 50%;
     }
   }
 }
