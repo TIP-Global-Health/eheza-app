@@ -10,14 +10,29 @@
  */
 class HedleyMigrateCounselingSessions extends HedleyMigrateBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected $entityType = 'node';
+
+  /**
+   * {@inheritdoc}
+   */
   protected $bundle = 'counseling_session';
+
+  /**
+   * {@inheritdoc}
+   */
   protected $csvColumns = [
     'id',
     'field_date_measured',
     'field_timing',
     'field_topics',
   ];
+
+  /**
+   * {@inheritdoc}
+   */
   protected $simpleMappings = [
     'field_date_measured',
     'field_timing',

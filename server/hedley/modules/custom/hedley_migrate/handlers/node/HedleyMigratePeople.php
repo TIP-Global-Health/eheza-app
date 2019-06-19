@@ -10,9 +10,19 @@
  */
 class HedleyMigratePeople extends HedleyMigrateBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected $entityType = 'node';
+
+  /**
+   * {@inheritdoc}
+   */
   protected $bundle = 'person';
 
+  /**
+   * {@inheritdoc}
+   */
   protected $csvColumns = [
     'id',
     'title',
@@ -21,6 +31,9 @@ class HedleyMigratePeople extends HedleyMigrateBase {
     'field_clinic',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   protected $simpleMappings = [
     'field_gender',
   ];
