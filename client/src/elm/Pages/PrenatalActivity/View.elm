@@ -24,7 +24,7 @@ view : Language -> NominalDate -> PersonId -> PrenatalActivity -> ModelIndexedDb
 view language currentDate id activity db model =
     let
         content =
-            AllDict.get id db.people
+            EveryDict.get id db.people
                 |> unwrap
                     []
                     (RemoteData.toMaybe
@@ -384,7 +384,7 @@ viewHistoryContent language currentDate motherId data =
             div [ class <| "actions history obstetric " ++ stepIndicatoryClass ]
                 buttons
     in
-    [ div [ class "ui task segment" ]
+    [ div [ class "ui task segment blue" ]
         [ div [ class "ui five column grid" ] <|
             List.map viewTask <|
                 tasks

@@ -32,7 +32,7 @@ view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Model -> Html Ms
 view language currentDate id db model =
     let
         content =
-            AllDict.get id db.people
+            EveryDict.get id db.people
                 |> unwrap
                     []
                     (RemoteData.toMaybe
