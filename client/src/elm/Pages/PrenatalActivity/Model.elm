@@ -65,6 +65,13 @@ type Msg
     | SetVitalsMeasurement (Maybe Float -> VitalsForm -> VitalsForm) String
       -- ExaminationMsgs, Nutrition Assessment
     | SetNutritionAssessmentMeasurement (Maybe Float -> NutritionAssessmentForm -> NutritionAssessmentForm) String
+      -- ExaminationMsgs, Core Physical Exam
+    | SetCorePhysicalExamBoolInput (Bool -> CorePhysicalExamForm -> CorePhysicalExamForm) Bool
+    | SetCorePhysicalExamNeck NeckCPEOption
+    | SetCorePhysicalExamLungs LungsCPEOption
+    | SetCorePhysicalExamAbdomen AbdomenCPEOption
+    | SetCorePhysicalExamHands HandsCPEOption
+    | SetCorePhysicalExamLegs LegsCPEOption
 
 
 type alias Model =
@@ -385,7 +392,7 @@ emptyCorePhysicalExamForm =
 type NeckCPEOption
     = EnlargedThyroid
     | EnlargedLymphNodes
-    | Normal
+    | NormalNeck
 
 
 type LungsCPEOption

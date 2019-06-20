@@ -465,6 +465,131 @@ update motherId activity db msg model =
             , []
             )
 
+        SetCorePhysicalExamBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    case model.examinationData.activeTask of
+                        CorePhysicalExam ->
+                            let
+                                updatedForm =
+                                    formUpdateFunc value model.examinationData.corePhysicalExamForm
+                            in
+                            model.examinationData
+                                |> (\data -> { data | corePhysicalExamForm = updatedForm })
+
+                        _ ->
+                            model.examinationData
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetCorePhysicalExamNeck value ->
+            let
+                updatedData =
+                    case model.examinationData.activeTask of
+                        CorePhysicalExam ->
+                            let
+                                updatedForm =
+                                    model.examinationData.corePhysicalExamForm
+                                        |> (\form -> { form | neck = Just value })
+                            in
+                            model.examinationData
+                                |> (\data -> { data | corePhysicalExamForm = updatedForm })
+
+                        _ ->
+                            model.examinationData
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetCorePhysicalExamLungs value ->
+            let
+                updatedData =
+                    case model.examinationData.activeTask of
+                        CorePhysicalExam ->
+                            let
+                                updatedForm =
+                                    model.examinationData.corePhysicalExamForm
+                                        |> (\form -> { form | lungs = Just value })
+                            in
+                            model.examinationData
+                                |> (\data -> { data | corePhysicalExamForm = updatedForm })
+
+                        _ ->
+                            model.examinationData
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetCorePhysicalExamAbdomen value ->
+            let
+                updatedData =
+                    case model.examinationData.activeTask of
+                        CorePhysicalExam ->
+                            let
+                                updatedForm =
+                                    model.examinationData.corePhysicalExamForm
+                                        |> (\form -> { form | abdomen = Just value })
+                            in
+                            model.examinationData
+                                |> (\data -> { data | corePhysicalExamForm = updatedForm })
+
+                        _ ->
+                            model.examinationData
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetCorePhysicalExamHands value ->
+            let
+                updatedData =
+                    case model.examinationData.activeTask of
+                        CorePhysicalExam ->
+                            let
+                                updatedForm =
+                                    model.examinationData.corePhysicalExamForm
+                                        |> (\form -> { form | hands = Just value })
+                            in
+                            model.examinationData
+                                |> (\data -> { data | corePhysicalExamForm = updatedForm })
+
+                        _ ->
+                            model.examinationData
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetCorePhysicalExamLegs value ->
+            let
+                updatedData =
+                    case model.examinationData.activeTask of
+                        CorePhysicalExam ->
+                            let
+                                updatedForm =
+                                    model.examinationData.corePhysicalExamForm
+                                        |> (\form -> { form | legs = Just value })
+                            in
+                            model.examinationData
+                                |> (\data -> { data | corePhysicalExamForm = updatedForm })
+
+                        _ ->
+                            model.examinationData
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
 
 calculateBmi : NutritionAssessmentForm -> NutritionAssessmentForm
 calculateBmi form =

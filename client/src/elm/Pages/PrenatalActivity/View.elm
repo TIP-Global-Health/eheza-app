@@ -176,7 +176,7 @@ viewPregnancyDatingContent language currentDate motherId pregnancyDatingData =
                 , div [ class "label" ] [ text <| translate language Translate.LmpDateHeader ]
                 , lmpDateInput
                 , div [ class "label" ] [ text <| translate language Translate.LmpDateConfidentHeader ]
-                , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
+                , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing Nothing
                 , div [ class "separator" ] []
                 , div [ class "results" ]
                     [ div [ class "edd-result" ]
@@ -473,16 +473,36 @@ viewExaminationContent language currentDate motherId data =
                     in
                     ( viewNutritionAssessmentForm language currentDate motherId form
                     , [ form.height, form.weight, form.bmi, form.muac ]
-                        |> List.map
-                            taskCompleted
+                        |> List.map taskCompleted
                         |> List.sum
                     , 4
                     )
 
                 CorePhysicalExam ->
-                    ( viewCorePhysicalExamForm language currentDate motherId data.corePhysicalExamForm
-                    , 0
-                    , 0
+                    let
+                        form =
+                            data.corePhysicalExamForm
+
+                        extremitiesTaskCompleted =
+                            if (taskCompleted form.hands + taskCompleted form.legs) == 2 then
+                                1
+
+                            else
+                                0
+                    in
+                    ( viewCorePhysicalExamForm language currentDate motherId form
+                    , extremitiesTaskCompleted
+                        + taskCompleted form.neck
+                        + taskCompleted form.lungs
+                        + taskCompleted form.abdomen
+                        + ([ form.brittleHair
+                           , form.paleConjuctiva
+                           , form.abnormalHeart
+                           ]
+                            |> List.map taskCompleted
+                            |> List.sum
+                          )
+                    , 7
                     )
 
                 ObstetricalExam ->
@@ -549,7 +569,7 @@ viewObstetricFormFirstStep language currentDate motherId form =
             { form_ | liveChildren = value }
     in
     div [ class "form history obstetric first" ]
-        [ viewBoolInput language form.currentlyPregnant SetCurrentlyPregnant "currently-pregnant" (Just Translate.CurrentlyPregnant)
+        [ viewBoolInput language form.currentlyPregnant SetCurrentlyPregnant "currently-pregnant" (Just Translate.CurrentlyPregnant) Nothing
         , viewNumberInput language form.termPregnancy (SetOBIntInput termPregnancyUpdateFunc) "term-pregnancy" Translate.TermPregnancy
         , viewNumberInput language form.preTermPregnancy (SetOBIntInput preTermPregnancyUpdateFunc) "preterm-pregnancy" Translate.PreTermPregnancy
         , viewNumberInput language form.stillbirthsAtTerm (SetOBIntInput stillbirthsAtTermUpdateFunc) "stillbirths-at-term" Translate.NumberOfStillbirthsAtTerm
@@ -626,6 +646,7 @@ viewObstetricFormSecondStep language currentDate motherId form =
             (SetOBBoolInput cSectionInPreviousDeliveryUpdateFunc)
             "c-section-previous-delivery"
             Nothing
+            Nothing
         , viewCheckBoxSelectInput language
             [ Breech, Emergency, Other ]
             [ FailureToProgress, None ]
@@ -647,12 +668,14 @@ viewObstetricFormSecondStep language currentDate motherId form =
             (SetOBBoolInput successiveAbortionsUpdateFunc)
             "successive-abortions"
             Nothing
+            Nothing
         , div [ class "label normal" ] [ text <| (translate language Translate.SuccessivePrimatureDeliveries ++ ":") ]
         , viewBoolInput
             language
             form.successivePrimatureDeliveries
             (SetOBBoolInput successivePrimatureDeliveriesUpdateFunc)
             "successive-primature-deliveries"
+            Nothing
             Nothing
         , div [ class "label normal" ] [ text <| (translate language Translate.StillbornPreviousDelivery ++ ":") ]
         , viewBoolInput
@@ -661,12 +684,14 @@ viewObstetricFormSecondStep language currentDate motherId form =
             (SetOBBoolInput stillbornPreviousDeliveryUpdateFunc)
             "stillborn-previous-delivery"
             Nothing
+            Nothing
         , div [ class "label normal" ] [ text <| (translate language Translate.BabyDiedOnDayOfBirthPreviousDelivery ++ ":") ]
         , viewBoolInput
             language
             form.babyDiedOnDayOfBirthPreviousDelivery
             (SetOBBoolInput babyDiedOnDayOfBirthPreviousDeliveryUpdateFunc)
             "baby-died-on-day-off-birth-previous-delivery"
+            Nothing
             Nothing
         , div [ class "label normal" ] [ text <| (translate language Translate.PartialPlacentaPreviousDelivery ++ ":") ]
         , viewBoolInput
@@ -675,12 +700,14 @@ viewObstetricFormSecondStep language currentDate motherId form =
             (SetOBBoolInput partialPlacentaPreviousDeliveryUpdateFunc)
             "partial-placenta-previous-delivery"
             Nothing
+            Nothing
         , div [ class "label normal" ] [ text <| (translate language Translate.SevereHemorrhagingPreviousDelivery ++ ":") ]
         , viewBoolInput
             language
             form.severeHemorrhagingPreviousDelivery
             (SetOBBoolInput severeHemorrhagingPreviousDeliveryUpdateFunc)
             "severe-hemorrhaging-previous-delivery"
+            Nothing
             Nothing
         , div [ class "label normal" ] [ text <| (translate language Translate.PreeclampsiaPreviousPregnancy ++ ":") ]
         , viewBoolInput
@@ -689,12 +716,14 @@ viewObstetricFormSecondStep language currentDate motherId form =
             (SetOBBoolInput preeclampsiaPreviousPregnancyUpdateFunc)
             "preeclampsia-previous-pregnancy"
             Nothing
+            Nothing
         , div [ class "label normal" ] [ text <| (translate language Translate.ConvulsionsPreviousDelivery ++ ":") ]
         , viewBoolInput
             language
             form.convulsionsPreviousDelivery
             (SetOBBoolInput convulsionsPreviousDeliveryUpdateFunc)
             "convulsions-previous-pelivery"
+            Nothing
             Nothing
         , div [ class "label normal" ] [ text <| (translate language Translate.ConvulsionsAndUnconciousPreviousDelivery ++ ":") ]
         , viewBoolInput
@@ -703,12 +732,14 @@ viewObstetricFormSecondStep language currentDate motherId form =
             (SetOBBoolInput convulsionsAndUnconciousPreviousDeliveryUpdateFunc)
             "convulsions-and-unconcious-previous-delivery"
             Nothing
+            Nothing
         , div [ class "label normal" ] [ text <| (translate language Translate.GestatipnalDiabetesPreviousPregnancy ++ ":") ]
         , viewBoolInput
             language
             form.gestatipnalDiabetesPreviousPregnancy
             (SetOBBoolInput gestatipnalDiabetesPreviousPregnancyUpdateFunc)
             "gestatipnal-diabetes-previous-pregnancy"
+            Nothing
             Nothing
         , div [ class "label normal" ] [ text <| (translate language Translate.IncompleteCervixPreviousPregnancy ++ ":") ]
         , viewBoolInput
@@ -717,12 +748,14 @@ viewObstetricFormSecondStep language currentDate motherId form =
             (SetOBBoolInput incompleteCervixPreviousPregnancyUpdateFunc)
             "incomplete-cervix-previous-pregnancy"
             Nothing
+            Nothing
         , div [ class "label normal" ] [ text <| (translate language Translate.RhNegative ++ ":") ]
         , viewBoolInput
             language
             form.rhNegative
             (SetOBBoolInput rhNegativeUpdateFunc)
             "rh-negative"
+            Nothing
             Nothing
         ]
 
@@ -769,12 +802,14 @@ viewMedicalForm language currentDate motherId form =
             (SetMedicalBoolInput uterineMyomaUpdateFunc)
             "uterine-myoma"
             Nothing
+            Nothing
         , div [ class "label" ] [ text <| (translate language Translate.Diabates ++ ":") ]
         , viewBoolInput
             language
             form.diabates
             (SetMedicalBoolInput diabatesUpdateFunc)
             "diabates"
+            Nothing
             Nothing
         , div [ class "label" ] [ text <| (translate language Translate.CardiacDisease ++ ":") ]
         , viewBoolInput
@@ -783,12 +818,14 @@ viewMedicalForm language currentDate motherId form =
             (SetMedicalBoolInput cardiacDiseaseUpdateFunc)
             "cardiac-disease"
             Nothing
+            Nothing
         , div [ class "label" ] [ text <| (translate language Translate.RenalDisease ++ ":") ]
         , viewBoolInput
             language
             form.renalDisease
             (SetMedicalBoolInput renalDiseaseUpdateFunc)
             "renal-disease"
+            Nothing
             Nothing
         , div [ class "label" ] [ text <| (translate language Translate.HypertensionBeforePregnancy ++ ":") ]
         , viewBoolInput
@@ -797,12 +834,14 @@ viewMedicalForm language currentDate motherId form =
             (SetMedicalBoolInput hypertensionBeforePregnancyUpdateFunc)
             "hypertension-before-pregnancy"
             Nothing
+            Nothing
         , div [ class "label" ] [ text <| (translate language Translate.TuberculosisPast ++ ":") ]
         , viewBoolInput
             language
             form.tuberculosisPast
             (SetMedicalBoolInput tuberculosisPastUpdateFunc)
             "tuberculosis-past"
+            Nothing
             Nothing
         , div [ class "label" ] [ text <| (translate language Translate.TuberculosisPresent ++ ":") ]
         , viewBoolInput
@@ -811,12 +850,14 @@ viewMedicalForm language currentDate motherId form =
             (SetMedicalBoolInput tuberculosisPresentUpdateFunc)
             "tuberculosis-present"
             Nothing
+            Nothing
         , div [ class "label" ] [ text <| (translate language Translate.Asthma ++ ":") ]
         , viewBoolInput
             language
             form.asthma
             (SetMedicalBoolInput asthmaUpdateFunc)
             "asthma"
+            Nothing
             Nothing
         , div [ class "label" ] [ text <| (translate language Translate.BowedLegs ++ ":") ]
         , viewBoolInput
@@ -825,12 +866,14 @@ viewMedicalForm language currentDate motherId form =
             (SetMedicalBoolInput bowedLegsUpdateFunc)
             "bowed-legs"
             Nothing
+            Nothing
         , div [ class "label" ] [ text <| (translate language Translate.HIV ++ ":") ]
         , viewBoolInput
             language
             form.hiv
             (SetMedicalBoolInput hivUpdateFunc)
             "hiv"
+            Nothing
             Nothing
         ]
 
@@ -855,6 +898,7 @@ viewSocialForm language currentDate motherId form =
             (SetSocialBoolInput accompaniedByPartnerUpdateFunc)
             "accompanied-by-partner"
             Nothing
+            Nothing
         , div [ class "label" ] [ text <| (translate language Translate.PartnerReceivedCounseling ++ "?") ]
         , viewBoolInput
             language
@@ -862,12 +906,14 @@ viewSocialForm language currentDate motherId form =
             (SetSocialBoolInput partnerReceivedCounselingUpdateFunc)
             "partner-received-counseling"
             Nothing
+            Nothing
         , div [ class "label" ] [ text <| (translate language Translate.MentalHealthHistory ++ ":") ]
         , viewBoolInput
             language
             form.mentalHealthHistory
             (SetSocialBoolInput mentalHealthHistoryUpdateFunc)
             "mental-health-history"
+            Nothing
             Nothing
         ]
 
@@ -1088,8 +1134,83 @@ viewNutritionAssessmentForm language currentDate motherId form =
 
 viewCorePhysicalExamForm : Language -> NominalDate -> PersonId -> CorePhysicalExamForm -> Html Msg
 viewCorePhysicalExamForm language currentDate motherId form =
-    div [ class "form examination core-physical-exam" ]
-        [ div [ class "label" ] [ text <| (translate language Translate.BloodPressure ++ ":") ]
+    let
+        brittleHairUpdateFunc value form_ =
+            { form_ | brittleHair = Just value }
+
+        paleConjuctivaUpdateFunc value form_ =
+            { form_ | paleConjuctiva = Just value }
+
+        abnormalHeartUpdateFunc value form_ =
+            { form_ | abnormalHeart = Just value }
+    in
+    div [ class "ui form examination core-physical-exam" ]
+        [ div [ class "label" ] [ text <| (translate language Translate.HeadHair ++ ":") ]
+        , viewBoolInput
+            language
+            form.brittleHair
+            (SetCorePhysicalExamBoolInput brittleHairUpdateFunc)
+            "head-hair"
+            Nothing
+            (Just ( Translate.BrittleHair, Translate.Normal ))
+        , div [ class "separator" ] []
+        , div [ class "label" ] [ text <| (translate language Translate.Eyes ++ ":") ]
+        , viewBoolInput
+            language
+            form.paleConjuctiva
+            (SetCorePhysicalExamBoolInput paleConjuctivaUpdateFunc)
+            "eyes"
+            Nothing
+            (Just ( Translate.PaleConjuctiva, Translate.Normal ))
+        , div [ class "separator" ] []
+        , viewCheckBoxSelectInput language
+            [ EnlargedThyroid, EnlargedLymphNodes ]
+            [ NormalNeck ]
+            form.neck
+            Translate.Neck
+            SetCorePhysicalExamNeck
+            Translate.NeckCPEOption
+        , div [ class "separator" ] []
+        , div [ class "label" ] [ text <| (translate language Translate.Heart ++ ":") ]
+        , viewBoolInput
+            language
+            form.abnormalHeart
+            (SetCorePhysicalExamBoolInput abnormalHeartUpdateFunc)
+            "abnormal-heart"
+            Nothing
+            (Just ( Translate.Abnormal, Translate.Normal ))
+        , div [ class "separator" ] []
+        , viewCheckBoxSelectInput language
+            [ Wheezes, Crackles ]
+            [ NormalLungs ]
+            form.lungs
+            Translate.Lungs
+            SetCorePhysicalExamLungs
+            Translate.LungsCPEOption
+        , div [ class "separator" ] []
+        , viewCheckBoxSelectInput language
+            [ Heptomegaly, Splenomegaly, TPRightUpper, TPLeftUpper ]
+            [ NormalAbdomen, Hernia, TPRightLower, TPLeftLower ]
+            form.abdomen
+            Translate.Abdomen
+            SetCorePhysicalExamAbdomen
+            Translate.AbdomenCPEOption
+        , div [ class "separator" ] []
+        , div [ class "label" ] [ text <| (translate language Translate.Extremities ++ ":") ]
+        , viewCheckBoxSelectInput language
+            [ PallorHands, EdemaHands ]
+            [ NormalHands ]
+            form.hands
+            Translate.Hands
+            SetCorePhysicalExamHands
+            Translate.HandsCPEOption
+        , viewCheckBoxSelectInput language
+            [ PallorLegs, EdemaLegs ]
+            [ NormalLegs ]
+            form.legs
+            Translate.Legs
+            SetCorePhysicalExamLegs
+            Translate.LegsCPEOption
         ]
 
 
@@ -1107,8 +1228,15 @@ viewBreastExamForm language currentDate motherId form =
         ]
 
 
-viewBoolInput : Language -> Maybe Bool -> (Bool -> Msg) -> String -> Maybe TranslationId -> Html Msg
-viewBoolInput language currentValue setMsg inputClass labelTranslateId =
+viewBoolInput :
+    Language
+    -> Maybe Bool
+    -> (Bool -> Msg)
+    -> String
+    -> Maybe TranslationId
+    -> Maybe ( TranslationId, TranslationId )
+    -> Html Msg
+viewBoolInput language currentValue setMsg inputClass labelTranslateId optionsTranslationIds =
     let
         inputLabel =
             labelTranslateId
@@ -1117,6 +1245,9 @@ viewBoolInput language currentValue setMsg inputClass labelTranslateId =
                     (\translationId ->
                         div [ class "label" ] [ text <| (translate language translationId ++ ":") ]
                     )
+
+        ( yesTransId, noTransId ) =
+            optionsTranslationIds |> Maybe.withDefault ( Translate.Yes, Translate.No )
 
         viewInput value currentValue setMsg =
             let
@@ -1134,9 +1265,9 @@ viewBoolInput language currentValue setMsg inputClass labelTranslateId =
     div [ class <| "form-input " ++ inputClass ]
         [ inputLabel
         , viewInput True currentValue setMsg
-        , label [ class "yes" ] [ text <| translate language Translate.Yes ]
+        , label [ class "yes" ] [ text <| translate language yesTransId ]
         , viewInput False currentValue setMsg
-        , label [ class "no" ] [ text <| translate language Translate.No ]
+        , label [ class "no" ] [ text <| translate language noTransId ]
         ]
 
 
