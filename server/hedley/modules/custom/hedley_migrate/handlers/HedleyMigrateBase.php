@@ -10,14 +10,67 @@
  */
 abstract class HedleyMigrateBase extends Migration {
 
+  /**
+   * The entity type.
+   *
+   * @var string
+   */
   protected $entityType = NULL;
+
+  /**
+   * The bundle.
+   *
+   * @var string
+   */
   protected $bundle = NULL;
+
+  /**
+   * The CSV columns.
+   *
+   * @var array
+   */
   protected $csvColumns = [];
+
+  /**
+   * Additional columns not in the CSV.
+   *
+   * @var array
+   */
   protected $columns = [];
+
+  /**
+   * The fields.
+   *
+   * @var array
+   */
   protected $fields = [];
+
+  /**
+   * Fields which we can map in a standard way.
+   *
+   * @var array
+   */
   protected $simpleMappings = [];
+
+  /**
+   * Fields with multi-values that we can map in a standard way.
+   *
+   * @var array
+   */
   protected $simpleMultipleMappings = [];
+
+  /**
+   * A sub-directory where we can find the CSV for this migration.
+   *
+   * @var string
+   */
   protected $csvPrefix = '';
+
+  /**
+   * The name of our key field.
+   *
+   * @var string
+   */
   protected $keyName = 'id';
 
   /**
