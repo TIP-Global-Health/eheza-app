@@ -67,11 +67,8 @@ while (TRUE) {
     }
 
     $keys = array_keys($health_centers);
-
-    if ($nurse->field_health_centers->value() !== $keys) {
-      $nurse->field_health_centers->set($keys);
-      $nurse->save();
-    }
+    $nurse->field_health_centers->set($keys);
+    $nurse->save();
 
     drush_print(format_string('Migrated Id @id.', $params));
   }
