@@ -25,7 +25,7 @@ function hedley_admin_menu_default_menu_links() {
     'external' => 0,
     'has_children' => 0,
     'expanded' => 0,
-    'weight' => -47,
+    'weight' => -44,
     'customized' => 1,
   );
   // Exported menu link: main-menu_group-encounters:admin/content/sessions.
@@ -42,7 +42,7 @@ function hedley_admin_menu_default_menu_links() {
     'external' => 0,
     'has_children' => 0,
     'expanded' => 0,
-    'weight' => -46,
+    'weight' => -43,
     'customized' => 1,
   );
   // Exported menu link: main-menu_groups:admin/content/clinics.
@@ -59,7 +59,7 @@ function hedley_admin_menu_default_menu_links() {
     'external' => 0,
     'has_children' => 0,
     'expanded' => 0,
-    'weight' => -49,
+    'weight' => -48,
     'customized' => 1,
   );
   // Exported menu link: main-menu_historical-child:admin/measurement-historical-child.
@@ -76,7 +76,7 @@ function hedley_admin_menu_default_menu_links() {
     'external' => 0,
     'has_children' => 0,
     'expanded' => 0,
-    'weight' => -43,
+    'weight' => -39,
     'customized' => 1,
   );
   // Exported menu link: main-menu_historical-mother:admin/measurement-historical-mother.
@@ -93,7 +93,7 @@ function hedley_admin_menu_default_menu_links() {
     'external' => 0,
     'has_children' => 0,
     'expanded' => 0,
-    'weight' => -44,
+    'weight' => -40,
     'customized' => 1,
   );
   // Exported menu link: main-menu_home:<front>.
@@ -127,7 +127,7 @@ function hedley_admin_menu_default_menu_links() {
     'external' => 0,
     'has_children' => 0,
     'expanded' => 0,
-    'weight' => -45,
+    'weight' => -41,
     'customized' => 1,
   );
   // Exported menu link: main-menu_mothers--caregivers:admin/content/mothers.
@@ -144,7 +144,7 @@ function hedley_admin_menu_default_menu_links() {
     'external' => 0,
     'has_children' => 0,
     'expanded' => 0,
-    'weight' => -48,
+    'weight' => -46,
     'customized' => 1,
   );
   // Exported menu link: menu-ihangane-admin-menu_content-list:admin/content.
@@ -164,7 +164,27 @@ function hedley_admin_menu_default_menu_links() {
     'external' => 0,
     'has_children' => 0,
     'expanded' => 0,
-    'weight' => -44,
+    'weight' => -43,
+    'customized' => 1,
+  );
+  // Exported menu link: menu-ihangane-admin-menu_create-device:node/add/device.
+  $menu_links['menu-ihangane-admin-menu_create-device:node/add/device'] = array(
+    'menu_name' => 'menu-ihangane-admin-menu',
+    'link_path' => 'node/add/device',
+    'router_path' => 'node/add/device',
+    'link_title' => 'Create Device',
+    'options' => array(
+      'attributes' => array(
+        'title' => '',
+      ),
+      'identifier' => 'menu-ihangane-admin-menu_create-device:node/add/device',
+    ),
+    'module' => 'menu',
+    'hidden' => 0,
+    'external' => 0,
+    'has_children' => 0,
+    'expanded' => 0,
+    'weight' => -50,
     'customized' => 1,
   );
   // Exported menu link: menu-ihangane-admin-menu_create-group-encounter:node/add/session.
@@ -184,7 +204,7 @@ function hedley_admin_menu_default_menu_links() {
     'external' => 0,
     'has_children' => 0,
     'expanded' => 0,
-    'weight' => -45,
+    'weight' => -44,
     'customized' => 1,
   );
   // Exported menu link: menu-ihangane-admin-menu_create-group:node/add/clinic.
@@ -204,7 +224,87 @@ function hedley_admin_menu_default_menu_links() {
     'external' => 0,
     'has_children' => 0,
     'expanded' => 0,
-    'weight' => -50,
+    'weight' => -45,
+    'customized' => 1,
+  );
+  // Exported menu link: menu-ihangane-admin-menu_create-nurse:node/add/nurse.
+  $menu_links['menu-ihangane-admin-menu_create-nurse:node/add/nurse'] = array(
+    'menu_name' => 'menu-ihangane-admin-menu',
+    'link_path' => 'node/add/nurse',
+    'router_path' => 'node/add/nurse',
+    'link_title' => 'Create Nurse',
+    'options' => array(
+      'attributes' => array(
+        'title' => '',
+      ),
+      'identifier' => 'menu-ihangane-admin-menu_create-nurse:node/add/nurse',
+    ),
+    'module' => 'menu',
+    'hidden' => 0,
+    'external' => 0,
+    'has_children' => 0,
+    'expanded' => 0,
+    'weight' => -49,
+    'customized' => 1,
+  );
+  // Exported menu link: menu-ihangane-admin-menu_create-person:node/add/person.
+  $menu_links['menu-ihangane-admin-menu_create-person:node/add/person'] = array(
+    'menu_name' => 'menu-ihangane-admin-menu',
+    'link_path' => 'node/add/person',
+    'router_path' => 'node/add/person',
+    'link_title' => 'Create Person',
+    'options' => array(
+      'attributes' => array(
+        'title' => '',
+      ),
+      'identifier' => 'menu-ihangane-admin-menu_create-person:node/add/person',
+    ),
+    'module' => 'menu',
+    'hidden' => 0,
+    'external' => 0,
+    'has_children' => 0,
+    'expanded' => 0,
+    'weight' => -48,
+    'customized' => 1,
+  );
+  // Exported menu link: menu-ihangane-admin-menu_create-pmtct-participation:node/add/pmtct-paticipation.
+  $menu_links['menu-ihangane-admin-menu_create-pmtct-participation:node/add/pmtct-paticipation'] = array(
+    'menu_name' => 'menu-ihangane-admin-menu',
+    'link_path' => 'node/add/pmtct-paticipation',
+    'router_path' => 'node/add',
+    'link_title' => 'Create PMTCT Participation',
+    'options' => array(
+      'attributes' => array(
+        'title' => '',
+      ),
+      'identifier' => 'menu-ihangane-admin-menu_create-pmtct-participation:node/add/pmtct-paticipation',
+    ),
+    'module' => 'menu',
+    'hidden' => 0,
+    'external' => 0,
+    'has_children' => 0,
+    'expanded' => 0,
+    'weight' => -46,
+    'customized' => 1,
+  );
+  // Exported menu link: menu-ihangane-admin-menu_create-relationship:node/add/relationship.
+  $menu_links['menu-ihangane-admin-menu_create-relationship:node/add/relationship'] = array(
+    'menu_name' => 'menu-ihangane-admin-menu',
+    'link_path' => 'node/add/relationship',
+    'router_path' => 'node/add/relationship',
+    'link_title' => 'Create Relationship',
+    'options' => array(
+      'attributes' => array(
+        'title' => '',
+      ),
+      'identifier' => 'menu-ihangane-admin-menu_create-relationship:node/add/relationship',
+    ),
+    'module' => 'menu',
+    'hidden' => 0,
+    'external' => 0,
+    'has_children' => 0,
+    'expanded' => 0,
+    'weight' => -47,
     'customized' => 1,
   );
 
@@ -212,6 +312,11 @@ function hedley_admin_menu_default_menu_links() {
   // Included for use with string extractors like potx.
   t('Children');
   t('Content list');
+  t('Create Device');
+  t('Create Nurse');
+  t('Create PMTCT Participation');
+  t('Create Person');
+  t('Create Relationship');
   t('Create group');
   t('Create group encounter');
   t('Group Encounters');
