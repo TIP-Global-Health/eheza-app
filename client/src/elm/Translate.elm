@@ -38,6 +38,7 @@ import Pages.PrenatalActivity.Model
         ( AbdomenCPEOption(..)
         , CSectionReason(..)
         , ExaminationTask(..)
+        , FetalPresentation(..)
         , HandsCPEOption(..)
         , HistoryTask(..)
         , LegsCPEOption(..)
@@ -263,6 +264,10 @@ type TranslationId
     | FamilyMembers
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
+    | FetalHeartRate
+    | FetalMovement
+    | FetalPresentationLabel
+    | FetalPresentation FetalPresentation
     | Fetch
     | FatherName
     | FatherNationalId
@@ -270,6 +275,7 @@ type TranslationId
     | FirstName
     | FormError (ErrorValue ValidationError)
     | FormField String
+    | FundalHeight
     | Gender Gender
     | GenderLabel
     | GestatipnalDiabetesPreviousPregnancy
@@ -389,6 +395,7 @@ type TranslationId
     | PreeclampsiaPreviousPregnancy
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalEncounter
+    | PreviousCSectionScar
     | PreviousDelivery
     | PreviousDeliveryPeriods PreviousDeliveryPeriod
     | PreviousFloatMeasurement Float
@@ -1476,6 +1483,38 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        FetalHeartRate ->
+            { english = "Fetal Heart Rate"
+            , kinyarwanda = Nothing
+            }
+
+        FetalMovement ->
+            { english = "Fetal Movement"
+            , kinyarwanda = Nothing
+            }
+
+        FetalPresentationLabel ->
+            { english = "Fetal Presentation"
+            , kinyarwanda = Nothing
+            }
+
+        FetalPresentation option ->
+            case option of
+                Breach ->
+                    { english = "Breach"
+                    , kinyarwanda = Nothing
+                    }
+
+                Cephalic ->
+                    { english = "Cephalic"
+                    , kinyarwanda = Nothing
+                    }
+
+                Transverse ->
+                    { english = "Transverse"
+                    , kinyarwanda = Nothing
+                    }
+
         Fetch ->
             { english = "Fetch"
             , kinyarwanda = Just "Gushakisha"
@@ -1496,6 +1535,11 @@ translationSet trans =
 
         FormField field ->
             translateFormField field
+
+        FundalHeight ->
+            { english = "Fundal Height"
+            , kinyarwanda = Nothing
+            }
 
         Gender gender ->
             case gender of
@@ -2280,6 +2324,11 @@ translationSet trans =
 
         PrenatalEncounter ->
             { english = "Prenatal Encounter"
+            , kinyarwanda = Nothing
+            }
+
+        PreviousCSectionScar ->
+            { english = "Presence of previous C-section scar"
             , kinyarwanda = Nothing
             }
 

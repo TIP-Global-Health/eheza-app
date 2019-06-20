@@ -590,6 +590,72 @@ update motherId activity db msg model =
             , []
             )
 
+        SetObstetricalExamBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    case model.examinationData.activeTask of
+                        ObstetricalExam ->
+                            let
+                                updatedForm =
+                                    formUpdateFunc value model.examinationData.obstetricalExamForm
+                            in
+                            model.examinationData
+                                |> (\data -> { data | obstetricalExamForm = updatedForm })
+
+                        _ ->
+                            model.examinationData
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetObstetricalExamMeasurement formUpdateFunc value ->
+            let
+                updatedData =
+                    case model.examinationData.activeTask of
+                        ObstetricalExam ->
+                            let
+                                updatedForm =
+                                    case String.toFloat value of
+                                        Ok number ->
+                                            formUpdateFunc (Just number) model.examinationData.obstetricalExamForm
+
+                                        Err _ ->
+                                            formUpdateFunc Nothing model.examinationData.obstetricalExamForm
+                            in
+                            model.examinationData
+                                |> (\data -> { data | obstetricalExamForm = updatedForm })
+
+                        _ ->
+                            model.examinationData
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetObstetricalExamFetalPresentation value ->
+            let
+                updatedData =
+                    case model.examinationData.activeTask of
+                        ObstetricalExam ->
+                            let
+                                updatedForm =
+                                    model.examinationData.obstetricalExamForm
+                                        |> (\form -> { form | fetalPresentation = Just value })
+                            in
+                            model.examinationData
+                                |> (\data -> { data | obstetricalExamForm = updatedForm })
+
+                        _ ->
+                            model.examinationData
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
 
 calculateBmi : NutritionAssessmentForm -> NutritionAssessmentForm
 calculateBmi form =

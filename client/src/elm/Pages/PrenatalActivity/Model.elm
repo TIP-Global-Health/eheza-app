@@ -5,6 +5,7 @@ module Pages.PrenatalActivity.Model exposing
     , CorePhysicalExamForm
     , ExaminationData
     , ExaminationTask(..)
+    , FetalPresentation(..)
     , HandsCPEOption(..)
     , HistoryData
     , HistoryTask(..)
@@ -72,6 +73,10 @@ type Msg
     | SetCorePhysicalExamAbdomen AbdomenCPEOption
     | SetCorePhysicalExamHands HandsCPEOption
     | SetCorePhysicalExamLegs LegsCPEOption
+      -- ExaminationMsgs, Obstetrical Exam
+    | SetObstetricalExamBoolInput (Bool -> ObstetricalExamForm -> ObstetricalExamForm) Bool
+    | SetObstetricalExamMeasurement (Maybe Float -> ObstetricalExamForm -> ObstetricalExamForm) String
+    | SetObstetricalExamFetalPresentation FetalPresentation
 
 
 type alias Model =
@@ -123,7 +128,7 @@ type alias ExaminationData =
     { vitalsForm : VitalsForm
     , nutritionAssessmentForm : NutritionAssessmentForm
     , corePhysicalExamForm : CorePhysicalExamForm
-    , obstetricExamForm : ObstetricalExamForm
+    , obstetricalExamForm : ObstetricalExamForm
     , breastExamForm : BreastExamForm
     , activeTask : ExaminationTask
     , completedTasks : List ExaminationTask
@@ -135,7 +140,7 @@ emptyExaminationData =
     { vitalsForm = emptyVitalsForm
     , nutritionAssessmentForm = emptyNutritionAssessmentForm
     , corePhysicalExamForm = emptyCorePhysicalExamForm
-    , obstetricExamForm = emptyObstetricalExamForm
+    , obstetricalExamForm = emptyObstetricalExamForm
     , breastExamForm = emptyBreastExamForm
     , activeTask = Vitals
     , completedTasks = []
@@ -425,12 +430,28 @@ type LegsCPEOption
 
 
 type alias ObstetricalExamForm =
-    {}
+    { fundalHeight : Maybe Float
+    , fetalPresentation : Maybe FetalPresentation
+    , fetalMovement : Maybe Bool
+    , fetalHeartRate : Maybe Float
+    , cSectionScar : Maybe Bool
+    }
 
 
 emptyObstetricalExamForm : ObstetricalExamForm
 emptyObstetricalExamForm =
-    {}
+    { fundalHeight = Nothing
+    , fetalPresentation = Nothing
+    , fetalMovement = Nothing
+    , fetalHeartRate = Nothing
+    , cSectionScar = Nothing
+    }
+
+
+type FetalPresentation
+    = Transverse
+    | Breach
+    | Cephalic
 
 
 type alias BreastExamForm =

@@ -506,9 +506,21 @@ viewExaminationContent language currentDate motherId data =
                     )
 
                 ObstetricalExam ->
-                    ( viewObstetricalExamForm language currentDate motherId data.obstetricExamForm
-                    , 0
-                    , 0
+                    let
+                        form =
+                            data.obstetricalExamForm
+                    in
+                    ( viewObstetricalExamForm language currentDate motherId data.obstetricalExamForm
+                    , taskCompleted form.fetalPresentation
+                        + ([ form.fundalHeight, form.fetalHeartRate ]
+                            |> List.map taskCompleted
+                            |> List.sum
+                          )
+                        + ([ form.fetalMovement, form.cSectionScar ]
+                            |> List.map taskCompleted
+                            |> List.sum
+                          )
+                    , 5
                     )
 
                 BreastExam ->
@@ -1216,8 +1228,81 @@ viewCorePhysicalExamForm language currentDate motherId form =
 
 viewObstetricalExamForm : Language -> NominalDate -> PersonId -> ObstetricalExamForm -> Html Msg
 viewObstetricalExamForm language currentDate motherId form =
-    div [ class "form examination obstetrical-exam" ]
-        [ div [ class "label" ] [ text <| (translate language Translate.BloodPressure ++ ":") ]
+    let
+        fundalHeightUpdateFunc value form_ =
+            { form_ | fundalHeight = value }
+
+        fetalHeartRateUpdateFunc value form_ =
+            { form_ | fetalHeartRate = value }
+
+        fetalMovementUpdateFunc value form_ =
+            { form_ | fetalMovement = Just value }
+
+        cSectionScarUpdateFunc value form_ =
+            { form_ | cSectionScar = Just value }
+
+        fetalHeartRatePreviousValue =
+            Just 170
+
+        fundalHeightPreviousValue =
+            Nothing
+    in
+    div [ class "ui form examination obstetrical-exam" ]
+        [ div [ class "label" ] [ text <| (translate language Translate.FundalHeight ++ ":") ]
+        , div [ class "ui grid" ]
+            [ div [ class "eleven wide column" ]
+                [ viewMeasurementInput
+                    language
+                    form.fundalHeight
+                    (SetObstetricalExamMeasurement fundalHeightUpdateFunc)
+                    "fundal-height"
+                    Translate.CentimeterShorthand
+                , viewPreviousMeasurement language fundalHeightPreviousValue Translate.CentimeterShorthand
+                ]
+            , div [ class "five wide column" ]
+                [ text "Warning" ]
+            ]
+        , div [ class "separator" ] []
+        , viewCheckBoxSelectInput language
+            [ Transverse, Cephalic ]
+            [ Breach ]
+            form.fetalPresentation
+            Translate.FetalPresentationLabel
+            SetObstetricalExamFetalPresentation
+            Translate.FetalPresentation
+        , div [ class "separator" ] []
+        , div [ class "label" ] [ text <| (translate language Translate.FetalMovement ++ ":") ]
+        , viewBoolInput
+            language
+            form.fetalMovement
+            (SetObstetricalExamBoolInput fetalMovementUpdateFunc)
+            "fetal-movement"
+            Nothing
+            Nothing
+        , div [ class "separator" ] []
+        , div [ class "label" ] [ text <| (translate language Translate.FetalHeartRate ++ ":") ]
+        , div [ class "ui grid" ]
+            [ div [ class "eleven wide column" ]
+                [ viewMeasurementInput
+                    language
+                    form.fetalHeartRate
+                    (SetObstetricalExamMeasurement fetalHeartRateUpdateFunc)
+                    "fetal-heart-rate"
+                    Translate.BpmUnit
+                , viewPreviousMeasurement language fetalHeartRatePreviousValue Translate.BpmUnit
+                ]
+            , div [ class "five wide column" ]
+                [ text "Warning" ]
+            ]
+        , div [ class "separator" ] []
+        , div [ class "label" ] [ text <| (translate language Translate.PreviousCSectionScar ++ ":") ]
+        , viewBoolInput
+            language
+            form.cSectionScar
+            (SetObstetricalExamBoolInput cSectionScarUpdateFunc)
+            "c-section-scar"
+            Nothing
+            Nothing
         ]
 
 
@@ -1265,9 +1350,17 @@ viewBoolInput language currentValue setMsg inputClass labelTranslateId optionsTr
     div [ class <| "form-input " ++ inputClass ]
         [ inputLabel
         , viewInput True currentValue setMsg
-        , label [ class "yes" ] [ text <| translate language yesTransId ]
+        , label
+            [ class "yes"
+            , onClick (setMsg True)
+            ]
+            [ text <| translate language yesTransId ]
         , viewInput False currentValue setMsg
-        , label [ class "no" ] [ text <| translate language noTransId ]
+        , label
+            [ class "no"
+            , onClick (setMsg False)
+            ]
+            [ text <| translate language noTransId ]
         ]
 
 
