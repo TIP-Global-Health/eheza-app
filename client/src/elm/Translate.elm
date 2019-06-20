@@ -36,6 +36,7 @@ import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
     exposing
         ( AbdomenCPEOption(..)
+        , BreastBEOption(..)
         , CSectionReason(..)
         , ExaminationTask(..)
         , FetalPresentation(..)
@@ -188,6 +189,9 @@ type TranslationId
     | Born
     | BowedLegs
     | BpmUnit
+    | BreastExam
+    | BreastBEOption BreastBEOption
+    | BreastExamQuestion
     | BrittleHair
     | Cancel
     | CardiacDisease
@@ -939,6 +943,36 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        BreastExam ->
+            { english = "Breast Exam"
+            , kinyarwanda = Nothing
+            }
+
+        BreastExamQuestion ->
+            { english = "Dis you show the patient how to perform a self breast exam?"
+            , kinyarwanda = Nothing
+            }
+
+        BreastBEOption option ->
+            case option of
+                Mass ->
+                    { english = "Mass"
+                    , kinyarwanda = Nothing
+                    }
+
+                Discharge ->
+                    { english = "Discharge"
+                    , kinyarwanda = Nothing
+                    }
+
+                Infection ->
+                    { english = "Infection"
+                    , kinyarwanda = Nothing
+                    }
+
+                NormalBreast ->
+                    translationSet Normal
+
         BrittleHair ->
             { english = "Brittle Hair"
             , kinyarwanda = Just "Gucurama no guhindura ibara ku misatsi"
@@ -1401,10 +1435,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                BreastExam ->
-                    { english = "Breast Exam"
-                    , kinyarwanda = Nothing
-                    }
+                Pages.PrenatalActivity.Model.BreastExam ->
+                    translationSet BreastExam
 
         Failure ->
             { english = "Failure"

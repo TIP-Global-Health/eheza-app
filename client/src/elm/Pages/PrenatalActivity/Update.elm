@@ -656,6 +656,47 @@ update motherId activity db msg model =
             , []
             )
 
+        SetBreastExamBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    case model.examinationData.activeTask of
+                        BreastExam ->
+                            let
+                                updatedForm =
+                                    formUpdateFunc value model.examinationData.breastExamForm
+                            in
+                            model.examinationData
+                                |> (\data -> { data | breastExamForm = updatedForm })
+
+                        _ ->
+                            model.examinationData
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetBreastExamBreast value ->
+            let
+                updatedData =
+                    case model.examinationData.activeTask of
+                        BreastExam ->
+                            let
+                                updatedForm =
+                                    model.examinationData.breastExamForm
+                                        |> (\form -> { form | breast = Just value })
+                            in
+                            model.examinationData
+                                |> (\data -> { data | breastExamForm = updatedForm })
+
+                        _ ->
+                            model.examinationData
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
 
 calculateBmi : NutritionAssessmentForm -> NutritionAssessmentForm
 calculateBmi form =

@@ -1,5 +1,6 @@
 module Pages.PrenatalActivity.Model exposing
     ( AbdomenCPEOption(..)
+    , BreastBEOption(..)
     , BreastExamForm
     , CSectionReason(..)
     , CorePhysicalExamForm
@@ -77,6 +78,9 @@ type Msg
     | SetObstetricalExamBoolInput (Bool -> ObstetricalExamForm -> ObstetricalExamForm) Bool
     | SetObstetricalExamMeasurement (Maybe Float -> ObstetricalExamForm -> ObstetricalExamForm) String
     | SetObstetricalExamFetalPresentation FetalPresentation
+      -- ExaminationMsgs, Breast Exam
+    | SetBreastExamBoolInput (Bool -> BreastExamForm -> BreastExamForm) Bool
+    | SetBreastExamBreast BreastBEOption
 
 
 type alias Model =
@@ -455,9 +459,18 @@ type FetalPresentation
 
 
 type alias BreastExamForm =
-    {}
+    { breast : Maybe BreastBEOption
+    , selfGuidance : Maybe Bool
+    }
 
 
 emptyBreastExamForm : BreastExamForm
 emptyBreastExamForm =
-    {}
+    BreastExamForm Nothing Nothing
+
+
+type BreastBEOption
+    = Mass
+    | Discharge
+    | Infection
+    | NormalBreast

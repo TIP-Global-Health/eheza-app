@@ -484,7 +484,7 @@ viewExaminationContent language currentDate motherId data =
                             data.corePhysicalExamForm
 
                         extremitiesTaskCompleted =
-                            if (taskCompleted form.hands + taskCompleted form.legs) == 2 then
+                            if isJust form.hands && isJust form.legs then
                                 1
 
                             else
@@ -524,9 +524,13 @@ viewExaminationContent language currentDate motherId data =
                     )
 
                 BreastExam ->
-                    ( viewBreastExamForm language currentDate motherId data.breastExamForm
-                    , 0
-                    , 0
+                    let
+                        form =
+                            data.breastExamForm
+                    in
+                    ( viewBreastExamForm language currentDate motherId form
+                    , taskCompleted form.breast + taskCompleted form.selfGuidance
+                    , 2
                     )
 
         actions =
@@ -1308,8 +1312,27 @@ viewObstetricalExamForm language currentDate motherId form =
 
 viewBreastExamForm : Language -> NominalDate -> PersonId -> BreastExamForm -> Html Msg
 viewBreastExamForm language currentDate motherId form =
-    div [ class "form examination breast-exam" ]
-        [ div [ class "label" ] [ text <| (translate language Translate.BloodPressure ++ ":") ]
+    let
+        selfGuidanceUpdateFunc value form_ =
+            { form_ | selfGuidance = Just value }
+    in
+    div [ class "ui form examination breast-exam" ]
+        [ viewCheckBoxSelectInput language
+            [ Mass, Discharge ]
+            [ Infection, NormalBreast ]
+            form.breast
+            Translate.BreastExam
+            SetBreastExamBreast
+            Translate.BreastBEOption
+        , div [ class "separator" ] []
+        , div [ class "label" ] [ text <| translate language Translate.BreastExamQuestion ]
+        , viewBoolInput
+            language
+            form.selfGuidance
+            (SetBreastExamBoolInput selfGuidanceUpdateFunc)
+            "self-guidance"
+            Nothing
+            Nothing
         ]
 
 
