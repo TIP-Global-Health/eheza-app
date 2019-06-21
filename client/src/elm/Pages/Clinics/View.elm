@@ -12,8 +12,9 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse)
-import Backend.Nurse.Utils exposing (assignedToClinic)
+import Backend.Nurse.Utils exposing (assignedToHealthCenter)
 import Backend.Session.Model exposing (Session)
+import Backend.Session.Utils exposing (isClosed)
 import Backend.SyncData.Model exposing (SyncData)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
@@ -22,7 +23,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
-import RemoteData exposing (RemoteData(..), WebData)
+import RemoteData exposing (RemoteData(..), WebData, isLoading)
 import Time.Date exposing (delta)
 import Translate exposing (Language, translate)
 import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
@@ -124,7 +125,7 @@ viewClinicButton : Nurse -> ( ClinicId, Clinic ) -> Html Msg
 viewClinicButton user ( clinicId, clinic ) =
     let
         classAttr =
-            if assignedToClinic clinicId user then
+            if assignedToHealthCenter clinic.healthCenterId user then
                 class "ui fluid primary button"
 
             else
@@ -151,18 +152,18 @@ viewClinic language currentDate nurse clinicId db =
                 |> Maybe.withDefault NotAsked
     in
     viewWebData language
-        (viewLoadedClinic language currentDate nurse clinicId)
+        (viewLoadedClinic language currentDate nurse db.postSession clinicId)
         identity
         (RemoteData.append clinic sessions)
 
 
-viewLoadedClinic : Language -> NominalDate -> Nurse -> ClinicId -> ( Maybe Clinic, EntityUuidDictList SessionId Session ) -> Html Msg
-viewLoadedClinic language currentDate nurse clinicId ( clinic, sessions ) =
+viewLoadedClinic : Language -> NominalDate -> Nurse -> WebData SessionId -> ClinicId -> ( Maybe Clinic, EntityUuidDictList SessionId Session ) -> Html Msg
+viewLoadedClinic language currentDate nurse postSession clinicId ( clinic, sessions ) =
     case clinic of
         Just clinic ->
             div
                 [ class "wrap wrap-alt-2" ]
-                (viewFoundClinic language currentDate nurse clinicId clinic sessions)
+                (viewFoundClinic language currentDate nurse postSession clinicId clinic sessions)
 
         Nothing ->
             Pages.PageNotFound.View.viewPage language
@@ -175,8 +176,8 @@ if it is open. (That is, the dates are correct and it's not explicitly closed).
 We'll show anything which was scheduled to start or end within the last week
 or the next week.
 -}
-viewFoundClinic : Language -> NominalDate -> Nurse -> ClinicId -> Clinic -> EntityUuidDictList SessionId Session -> List (Html Msg)
-viewFoundClinic language currentDate nurse clinicId clinic sessions =
+viewFoundClinic : Language -> NominalDate -> Nurse -> WebData SessionId -> ClinicId -> Clinic -> EntityUuidDictList SessionId Session -> List (Html Msg)
+viewFoundClinic language currentDate nurse postSession clinicId clinic sessions =
     let
         daysToShow =
             7
@@ -187,10 +188,12 @@ viewFoundClinic language currentDate nurse clinicId clinic sessions =
                     (\sessionId session ->
                         let
                             deltaToEndDate =
-                                delta session.scheduledDate.end currentDate
+                                session.endDate
+                                    |> Maybe.withDefault currentDate
+                                    |> (\endDate -> delta endDate currentDate)
 
                             deltaToStartDate =
-                                delta session.scheduledDate.start currentDate
+                                delta session.startDate currentDate
                         in
                         -- Ends last week or next week
                         (abs deltaToEndDate.days <= daysToShow)
@@ -199,11 +202,50 @@ viewFoundClinic language currentDate nurse clinicId clinic sessions =
                             || -- Is between start and end date
                                (deltaToStartDate.days <= 0 && deltaToEndDate.days >= 0)
                     )
-                |> AllDictList.map (viewSession language currentDate)
-                |> AllDictList.values
+
+        sessionsStartedToday =
+            recentAndUpcomingSessions
+                |> AllDictList.filter (\_ session -> session.startDate == currentDate)
+
+        -- We allow the creation of a new session if there is no session that
+        -- was started today. So, there are several scenarios:
+        --
+        -- 1. If there are open sessions from the past (not started today), you
+        --    can choose one of them, or start a new session.
+        --
+        -- 2. If there is an open session started today, you can only choose
+        --    that session. You can't start a second open session for today.
+        --
+        -- Note that we can theoretically end up with two sessions started the
+        -- same day if they were created on different devices, and the second
+        -- is created before the first syncs. We could write some code to
+        -- automatically "consolidate" those two sessions.
+        enableCreateSessionButton =
+            AllDictList.isEmpty sessionsStartedToday
+
+        defaultSession =
+            { startDate = currentDate
+            , endDate = Nothing
+            , clinicId = clinicId
+            }
+
+        createSessionButton =
+            button
+                [ classList
+                    [ ( "ui button", True )
+                    , ( "disabled", not enableCreateSessionButton )
+                    , ( "active", enableCreateSessionButton )
+                    , ( "loading", isLoading postSession )
+                    ]
+                , defaultSession
+                    |> PostSession
+                    |> App.Model.MsgIndexedDb
+                    |> onClick
+                ]
+                [ text <| translate language Translate.CreateGroupEncounter ]
 
         content =
-            if assignedToClinic clinicId nurse then
+            if assignedToHealthCenter clinic.healthCenterId nurse then
                 [ h1 [] [ text <| translate language Translate.RecentAndUpcomingGroupEncounters ]
                 , table
                     [ class "ui table session-list" ]
@@ -211,11 +253,14 @@ viewFoundClinic language currentDate nurse clinicId clinic sessions =
                         [ tr []
                             [ th [] [ text <| translate language Translate.StartDate ]
                             , th [] [ text <| translate language Translate.EndDate ]
-                            , th [] [ text <| translate language Translate.Closed ]
                             ]
                         ]
-                    , tbody [] recentAndUpcomingSessions
+                    , recentAndUpcomingSessions
+                        |> AllDictList.map (viewSession language currentDate)
+                        |> AllDictList.values
+                        |> tbody []
                     ]
+                , createSessionButton
                 ]
 
             else
@@ -244,15 +289,14 @@ viewSession : Language -> NominalDate -> SessionId -> Session -> Html Msg
 viewSession language currentDate sessionId session =
     let
         enableLink =
-            ((delta session.scheduledDate.start currentDate).days <= 0)
-                && ((delta session.scheduledDate.end currentDate).days >= 0)
-                && not session.closed
+            not (isClosed currentDate session)
 
         link =
             button
                 [ classList
-                    [ ( "ui button small", True )
+                    [ ( "ui button", True )
                     , ( "disabled", not enableLink )
+                    , ( "active", enableLink )
                     ]
                 , SessionPage sessionId AttendancePage
                     |> UserPage
@@ -260,17 +304,9 @@ viewSession language currentDate sessionId session =
                     |> onClick
                 ]
                 [ text <| translate language Translate.Attendance ]
-
-        closed =
-            if session.closed then
-                [ i [ class "check icon" ] [] ]
-
-            else
-                []
     in
     tr []
-        [ td [] [ text <| formatYYYYMMDD session.scheduledDate.start ]
-        , td [] [ text <| formatYYYYMMDD session.scheduledDate.end ]
-        , td [] closed
+        [ td [] [ text <| formatYYYYMMDD session.startDate ]
+        , td [] [ text <| Maybe.withDefault "" <| Maybe.map formatYYYYMMDD session.endDate ]
         , td [] [ link ]
         ]
