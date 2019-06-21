@@ -6,7 +6,7 @@ import EverySet exposing (EverySet)
 
 type alias Nurse =
     { name : String
-    , clinics : List ClinicId
+    , healthCenters : EverySet HealthCenterId
     , roles : EverySet Role
     , email : Maybe String
     }

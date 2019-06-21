@@ -16,8 +16,8 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $public_fields['clinics'] = [
-      'property' => 'field_clinics',
+    $public_fields['health_centers'] = [
+      'property' => 'field_health_centers',
       'sub_property' => 'field_uuid',
     ];
 

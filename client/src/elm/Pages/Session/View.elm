@@ -6,8 +6,9 @@ import AllDictList
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (assignedToHealthCenter)
 import Backend.Session.Model exposing (EditableSession, Session)
-import Backend.Session.Utils exposing (isAuthorized, isClosed)
+import Backend.Session.Utils exposing (isClosed)
 import EveryDict
 import Gizra.Html exposing (showMaybe)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
@@ -67,22 +68,33 @@ wrapError language sessionId errorHtml =
 
 viewFoundSession : Language -> NominalDate -> ZScore.Model.Model -> Nurse -> ( SessionId, Session ) -> SessionPage -> Model -> ModelIndexedDb -> Html Msg
 viewFoundSession language currentDate zscores nurse ( sessionId, session ) page model db =
+    let
+        editableSession =
+            AllDict.get sessionId db.editableSessions
+                |> Maybe.withDefault NotAsked
+
+        healthCenterId =
+            db.clinics
+                |> RemoteData.toMaybe
+                |> Maybe.andThen (AllDictList.get session.clinicId)
+                |> Maybe.map .healthCenterId
+
+        authorized =
+            healthCenterId
+                |> Maybe.map (\id -> assignedToHealthCenter id nurse)
+                |> Maybe.withDefault False
+    in
     if isClosed currentDate session then
         viewClosedSession language sessionId session db
 
-    else if not (isAuthorized nurse session) then
-        viewUnauthorizedSession language sessionId session db
-
-    else
-        let
-            editableSession =
-                AllDict.get sessionId db.editableSessions
-                    |> Maybe.withDefault NotAsked
-        in
+    else if authorized then
         viewWebData language
             (viewEditableSession language currentDate zscores nurse sessionId page model db)
             (wrapError language sessionId)
             editableSession
+
+    else
+        viewUnauthorizedSession language sessionId session db
 
 
 viewEditableSession : Language -> NominalDate -> ZScore.Model.Model -> Nurse -> SessionId -> SessionPage -> Model -> ModelIndexedDb -> EditableSession -> Html Msg
