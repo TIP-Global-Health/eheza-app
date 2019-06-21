@@ -557,6 +557,19 @@ updateIndexedDb currentDate nurseId msg model =
             , appMsgs
             )
 
+        PostSession session ->
+            ( { model | postSession = Loading }
+            , sw.post sessionEndpoint session
+                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedSession)
+            , []
+            )
+
+        HandlePostedSession data ->
+            ( { model | postSession = data }
+            , Cmd.none
+            , []
+            )
+
 
 {-| The extra return value indicates whether we need to recalculate our
 successful EditableSessions. Ideally, we would handle this in a more

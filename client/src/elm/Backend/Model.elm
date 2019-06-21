@@ -103,6 +103,7 @@ type alias ModelIndexedDb =
     , postPerson : WebData PersonId
     , postPmtctParticipant : EntityUuidDict PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
     , postRelationship : EntityUuidDict PersonId (WebData MyRelationship)
+    , postSession : WebData SessionId
     }
 
 
@@ -124,6 +125,7 @@ emptyModelIndexedDb =
     , postPerson = NotAsked
     , postPmtctParticipant = EntityUuidDict.empty
     , postRelationship = EntityUuidDict.empty
+    , postSession = NotAsked
     , relationshipsByPerson = EntityUuidDict.empty
     , saveSyncDataRequests = EntityUuidDict.empty
     , sessionRequests = EntityUuidDict.empty
@@ -173,10 +175,12 @@ type MsgIndexedDb
     | PostPerson (Maybe PersonId) Person -- The first person is a person we ought to offer setting a relationship to.
     | PostRelationship PersonId MyRelationship (Maybe ClinicId)
     | PostPmtctParticipant PmtctParticipant
+    | PostSession Session
       -- Messages which handle responses to mutating data
     | HandlePostedPerson (Maybe PersonId) (WebData PersonId)
     | HandlePostedRelationship PersonId (WebData MyRelationship)
     | HandlePostedPmtctParticipant PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
+    | HandlePostedSession (WebData SessionId)
       -- Process some revisions we've received from the backend. In some cases,
       -- we can update our in-memory structures appropriately. In other cases, we
       -- can set them to `NotAsked` and let the "fetch" mechanism re-fetch them.

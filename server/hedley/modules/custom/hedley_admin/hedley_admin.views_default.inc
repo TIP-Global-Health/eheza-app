@@ -511,12 +511,6 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title']['relationship'] = 'field_clinic_target_id';
   $handler->display->display_options['fields']['title']['label'] = 'Group';
   $handler->display->display_options['fields']['title']['link_to_node'] = FALSE;
-  /* Field: Content: Closed */
-  $handler->display->display_options['fields']['field_closed']['id'] = 'field_closed';
-  $handler->display->display_options['fields']['field_closed']['table'] = 'field_data_field_closed';
-  $handler->display->display_options['fields']['field_closed']['field'] = 'field_closed';
-  $handler->display->display_options['fields']['field_closed']['label'] = 'Status';
-  $handler->display->display_options['fields']['field_closed']['type'] = 'list_key';
   /* Field: Content: Post date */
   $handler->display->display_options['fields']['created']['id'] = 'created';
   $handler->display->display_options['fields']['created']['table'] = 'node';
@@ -1066,12 +1060,6 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_1']['relationship'] = 'field_clinic_target_id';
   $handler->display->display_options['fields']['title_1']['label'] = 'Group';
   $handler->display->display_options['fields']['title_1']['link_to_node'] = FALSE;
-  /* Field: Content: Closed */
-  $handler->display->display_options['fields']['field_closed']['id'] = 'field_closed';
-  $handler->display->display_options['fields']['field_closed']['table'] = 'field_data_field_closed';
-  $handler->display->display_options['fields']['field_closed']['field'] = 'field_closed';
-  $handler->display->display_options['fields']['field_closed']['label'] = 'Status';
-  $handler->display->display_options['fields']['field_closed']['type'] = 'list_key';
   /* Field: Content: Post date */
   $handler->display->display_options['fields']['created']['id'] = 'created';
   $handler->display->display_options['fields']['created']['table'] = 'node';
