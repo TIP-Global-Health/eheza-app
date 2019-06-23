@@ -8,16 +8,15 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Encoder exposing (encodeEducationLevel, encodeHivStatus, encodeMaritalStatus, encodeModeOfDelivery, encodeUbudehe)
 import Backend.Person.Form exposing (ExpectedAge(..), PersonForm, expectedAgeFromForm, validatePerson)
 import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allHivStatuses, allMaritalStatuses, allModesOfDelivery, allUbudehes)
-import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
+import Backend.Person.Utils exposing (isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
-import Date.Extra as Date exposing (Interval(..))
 import DateSelector.SelectorDropdown
 import Form exposing (Form)
 import Form.Field
 import Form.Input
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime, toLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, toLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -29,10 +28,9 @@ import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Set
-import Time.Iso8601
 import Translate exposing (Language, TranslationId, translate)
 import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
-import Utils.Form exposing (dateInput, getValueAsInt, isFormFieldSet, viewFormError)
+import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
 import Utils.GeoLocation exposing (GeoInfo, geoInfo, getGeoLocation)
 import Utils.Html exposing (script, thumbnailImage, viewLoading)
 import Utils.NominalDate exposing (renderDate)
@@ -307,10 +305,10 @@ applyDefaultValues maybeRelatedPerson currentDate form =
                 |> Maybe.andThen (getGeoLocation defaultCellId)
                 |> Maybe.map Tuple.first
 
-        applyDefaultLocation fieldName maybeDefault form =
+        applyDefaultLocation fieldName maybeDefault form_ =
             case maybeDefault of
                 Just defaultId ->
-                    Form.getFieldAsString fieldName form
+                    Form.getFieldAsString fieldName form_
                         |> .value
                         |> Maybe.map String.isEmpty
                         |> Maybe.withDefault True
@@ -318,38 +316,38 @@ applyDefaultValues maybeRelatedPerson currentDate form =
                                 if useDefault then
                                     Form.update
                                         (validatePerson maybeRelatedPerson (Just currentDate))
-                                        (Form.Input fieldName Form.Select (Form.Field.String (toString <| fromEntityId defaultId)))
-                                        form
+                                        (Form.Input fieldName Form.Select (Form.Field.String (Debug.toString <| fromEntityId defaultId)))
+                                        form_
 
                                 else
-                                    form
+                                    form_
                            )
 
                 Nothing ->
-                    form
+                    form_
 
-        applyDefaultUbudehe form =
+        applyDefaultUbudehe form_ =
             maybeRelatedPerson
                 |> Maybe.andThen .ubudehe
                 |> unwrap
-                    form
+                    form_
                     (\ubudehe ->
                         Form.update
                             (validatePerson maybeRelatedPerson (Just currentDate))
-                            (Form.Input Backend.Person.Form.ubudehe Form.Select (Form.Field.String (toString <| encodeUbudehe ubudehe)))
-                            form
+                            (Form.Input Backend.Person.Form.ubudehe Form.Select (Form.Field.String (Debug.toString <| encodeUbudehe ubudehe)))
+                            form_
                     )
 
-        applyDefaultHealthCenter form =
+        applyDefaultHealthCenter form_ =
             maybeRelatedPerson
                 |> Maybe.andThen .healthCenterId
                 |> unwrap
-                    form
+                    form_
                     (\healthCenterId ->
                         Form.update
                             (validatePerson maybeRelatedPerson (Just currentDate))
                             (Form.Input Backend.Person.Form.healthCenter Form.Select (Form.Field.String (fromEntityUuid healthCenterId)))
-                            form
+                            form_
                     )
     in
     form
@@ -456,11 +454,12 @@ viewCreateForm language currentDate relationId model db =
                 today =
                     toLocalDateTime currentDate 0 0 0 0
 
-                selectedDate =
-                    Form.getFieldAsString Backend.Person.Form.birthDate personForm
-                        |> .value
-                        |> Maybe.andThen (Time.Iso8601.toDate >> Result.toMaybe)
-                        |> Maybe.map (\date -> toLocalDateTime date 12 0 0 0)
+                -- @todo
+                --                selectedDate =
+                --                    Form.getFieldAsString Backend.Person.Form.birthDate personForm
+                --                        |> .value
+                --                        |> Maybe.andThen (Time.Iso8601.toDate >> Result.toMaybe)
+                --                        |> Maybe.map (\date -> toLocalDateTime date 12 0 0 0)
             in
             div [ class "ui grid" ]
                 [ div
@@ -470,13 +469,15 @@ viewCreateForm language currentDate relationId model db =
                     [ class "seven wide column required" ]
                     [ text <| translate language Translate.DateOfBirth ++ ":"
                     , br [] []
-                    , DateSelector.SelectorDropdown.view
-                        ToggleDateSelector
-                        (DateSelected relationId)
-                        model.isDateSelectorOpen
-                        (Date.add Year -60 today)
-                        today
-                        selectedDate
+
+                    -- @todo
+                    --                    , DateSelector.SelectorDropdown.view
+                    --                        ToggleDateSelector
+                    --                        (DateSelected relationId)
+                    --                        model.isDateSelectorOpen
+                    --                        (Date.add Year -60 today)
+                    --                        today
+                    --                        selectedDate
                     ]
                 , div
                     [ class "three wide column" ]
@@ -518,7 +519,7 @@ viewCreateForm language currentDate relationId model db =
             allEducationLevels
                 |> List.map
                     (\level ->
-                        ( toString (encodeEducationLevel level)
+                        ( Debug.toString (encodeEducationLevel level)
                         , translate language (Translate.LevelOfEducation level)
                         )
                     )
@@ -604,7 +605,7 @@ viewCreateForm language currentDate relationId model db =
                 options =
                     emptyOption
                         :: (List.repeat 5 "."
-                                |> List.indexedMap (\index _ -> ( toString index, toString index ))
+                                |> List.indexedMap (\index _ -> ( Debug.toString index, Debug.toString index ))
                            )
             in
             viewSelectInput language Translate.NumberOfChildrenUnder5 options Backend.Person.Form.numberOfChildren "ten" "select-input" False personForm
@@ -648,8 +649,8 @@ viewCreateForm language currentDate relationId model db =
             allUbudehes
                 |> List.map
                     (\ubudehe ->
-                        ( toString (encodeUbudehe ubudehe)
-                        , toString (encodeUbudehe ubudehe)
+                        ( Debug.toString (encodeUbudehe ubudehe)
+                        , Debug.toString (encodeUbudehe ubudehe)
                         )
                     )
                 |> (::) emptyOption
@@ -663,7 +664,7 @@ viewCreateForm language currentDate relationId model db =
                 |> Dict.toList
                 |> List.map
                     (\( id, geoLocation ) ->
-                        ( toString <| fromEntityId id, geoLocation.name )
+                        ( Debug.toString <| fromEntityId id, geoLocation.name )
                     )
 
         filterGeoLocationDictByParent parentId dict =

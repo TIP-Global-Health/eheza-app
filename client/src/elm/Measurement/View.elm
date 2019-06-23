@@ -174,8 +174,8 @@ viewFloatForm config language currentDate child measurements zscores model =
             [ type_ "number"
             , placeholder <| translate language config.placeholderText
             , name config.blockName
-            , Attr.min <| toString config.constraints.minVal
-            , Attr.max <| toString config.constraints.maxVal
+            , Attr.min <| Debug.toString config.constraints.minVal
+            , Attr.max <| Debug.toString config.constraints.maxVal
             , onInput config.updateMsg
             , value inputValue
             ]

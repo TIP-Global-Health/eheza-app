@@ -37,7 +37,7 @@ decodeEmptyArrayAsEmptyDict =
                     succeed Dict.empty
 
                 else
-                    fail <| "Expected an empty array, not an array with length: " ++ toString length
+                    fail <| "Expected an empty array, not an array with length: " ++ Debug.toString length
             )
 
 
@@ -48,7 +48,7 @@ decodeError =
 
 decodeListAsDict : Decoder a -> Decoder (Dict String a)
 decodeListAsDict decoder =
-    decodeListAsDictByProperty "id" decodeInt decoder toString
+    decodeListAsDictByProperty "id" decodeInt decoder Debug.toString
 
 
 decodeListAsIntDict : Decoder a -> Decoder (Dict Int a)
@@ -88,7 +88,7 @@ decodeNullAsEmptyArray =
                         succeed []
 
                     Just res ->
-                        fail <| "Expected Null, not an array with length: " ++ (toString <| List.length res)
+                        fail <| "Expected Null, not an array with length: " ++ (Debug.toString <| List.length res)
             )
 
 

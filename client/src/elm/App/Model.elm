@@ -64,7 +64,7 @@ type alias Model =
 
     -- What data did we want last time we checked? We track this so we can
     -- forget data we don't want any longer. Using an EntityUuidDict relies on the
-    -- relevant `Msg` values behaving well for `toString`, which should
+    -- relevant `Msg` values behaving well for `Debug.toString`, which should
     -- typically be fine. The time reflects the last time the data was wanted,
     -- permitting us to keep recently wanted data around for a little while
     -- after it is not wanted. (Often, it may be wanted again soon).

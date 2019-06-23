@@ -206,7 +206,7 @@ makeChildMeasurementList test =
 
         makeCounselingSessionWithId ( daysOld, timing ) =
             -- We need a locally unique ID, but it doesn't need to be real.
-            ( toEntityUuid (toString ( daysOld, timing ))
+            ( toEntityUuid (Debug.toString ( daysOld, timing ))
             , makeCounselingSession (addDays (daysOld - test.daysOld) sessionDate) timing
             )
     in

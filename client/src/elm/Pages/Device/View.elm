@@ -125,7 +125,7 @@ viewNodes language db =
 
 viewSyncData : Language -> SyncData -> Html Msg
 viewSyncData language data =
-    div [ class "general-status" ] [ text <| toString data ]
+    div [ class "general-status" ] [ text <| Debug.toString data ]
 
 
 viewHealthCenters : Language -> ModelIndexedDb -> Html Msg
@@ -152,7 +152,7 @@ viewHealthCenter language db uuid model =
                         case Dict.get uuid syncData of
                             Just data ->
                                 div [ class "health-center-info" ]
-                                    [ text <| toString data
+                                    [ text <| Debug.toString data
                                     , button
                                         [ class "ui button"
                                         , onClick (SetSyncing uuid False)

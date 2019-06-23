@@ -5,6 +5,7 @@ module Gizra.NominalDate exposing
     , fromLocalDateTime, toLocalDateTime
     , diffDays, diffCalendarMonthsAndDays
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
+    , emptyNominalDate
     )
 
 {-| Some utilities for dealing with "pure" dates that have no time or
@@ -65,7 +66,7 @@ type alias NominalDateRange =
 formatMMDDYYYY : NominalDate -> String
 formatMMDDYYYY date =
     -- @todo
-    -- addLeadingZero (toString (month date)) ++ "/" ++ addLeadingZero (toString (day date)) ++ "/" ++ addLeadingZeroes 4 (toString (year date))
+    -- addLeadingZero (Debug.toString (month date)) ++ "/" ++ addLeadingZero (Debug.toString (day date)) ++ "/" ++ addLeadingZeroes 4 (Debug.toString (year date))
     "@todo"
 
 
@@ -77,7 +78,7 @@ formatMMDDYYYY date =
 formatYYYYMMDD : NominalDate -> String
 formatYYYYMMDD date =
     -- @todo
-    -- addLeadingZeroes 4 (toString (year date)) ++ "-" ++ addLeadingZero (toString (month date)) ++ "-" ++ addLeadingZero (toString (day date))
+    -- addLeadingZeroes 4 (Debug.toString (year date)) ++ "-" ++ addLeadingZero (Debug.toString (month date)) ++ "-" ++ addLeadingZero (Debug.toString (day date))
     "@todo"
 
 

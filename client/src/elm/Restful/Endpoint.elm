@@ -424,7 +424,7 @@ withParamsEncoder encodeParams (EndPoint endpoint_) =
 
 
 {-| Use the supplied function to convert your `key` type to a string we can append
-to the URL for a `get` request. By default, we just use `Debug.toString`, but you may need
+to the URL for a `get` request. By default, we just use `Debug.Debug.toString`, but you may need
 to something else, depending on your `key` type.
 -}
 withKeyEncoder : (key -> String) -> EndPoint w e key v c p -> EndPoint w e key v c p

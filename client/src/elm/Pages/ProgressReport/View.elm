@@ -286,7 +286,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                                     (\((MuacInCm cm) as muac) ->
                                                         span
                                                             [ class <| classForIndication <| muacIndicationToIndication <| muacIndication muac ]
-                                                            [ text <| toString cm ++ translate language Translate.CentimeterShorthand ]
+                                                            [ text <| Debug.toString cm ++ translate language Translate.CentimeterShorthand ]
                                                     )
                                                 |> Maybe.withDefault (text "--")
                                                 |> List.singleton
@@ -315,7 +315,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                             |> Maybe.Extra.toList
 
                                     value =
-                                        toString cm ++ translate language Translate.CentimeterShorthand
+                                        Debug.toString cm ++ translate language Translate.CentimeterShorthand
                                 in
                                 span indication [ text value ]
 
@@ -339,7 +339,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                             |> Maybe.Extra.toList
 
                                     value =
-                                        toString kg ++ translate language Translate.KilogramShorthand
+                                        Debug.toString kg ++ translate language Translate.KilogramShorthand
                                 in
                                 span indication [ text value ]
 

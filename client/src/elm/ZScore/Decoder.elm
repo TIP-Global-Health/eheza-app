@@ -45,7 +45,7 @@ decodeGender =
                     succeed Female
 
                 _ ->
-                    fail <| "Not a recognized code for a gender: " ++ toString gender
+                    fail <| "Not a recognized code for a gender: " ++ Debug.toString gender
         )
         int
 

@@ -7,7 +7,6 @@ module DateSelector.Selector exposing (view)
 -}
 
 import Date exposing (Date, Month(..), day, month, year)
-import Date.Extra as Date exposing (Interval(..), numberToMonth)
 import Html exposing (Html, div, li, ol, table, tbody, td, text, th, thead, tr)
 import Html.Attributes exposing (class, classList, property)
 import Html.Events exposing (on)
@@ -235,7 +234,7 @@ viewYearList minimum maximum maybeSelected =
                             else
                                 Json.Encode.null
                         ]
-                        [ text (toString y) ]
+                        [ text (Debug.toString y) ]
                 )
         )
 
@@ -380,7 +379,7 @@ viewDateTable minimum maximum selected =
                                                 else
                                                     Json.Encode.null
                                             ]
-                                            [ text (day date |> toString) ]
+                                            [ text (day date |> Debug.toString) ]
                                     )
                             )
                     )
@@ -409,7 +408,7 @@ viewDateTableDisabled date =
                                     (\date ->
                                         td
                                             [ class disabled ]
-                                            [ text (day date |> toString) ]
+                                            [ text (day date |> Debug.toString) ]
                                     )
                             )
                     )

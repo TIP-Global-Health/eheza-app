@@ -2596,10 +2596,10 @@ expectNear expected actual =
             Expect.pass
 
         ( Nothing, a ) ->
-            Expect.fail <| "Expected Nothing, got " ++ toString a
+            Expect.fail <| "Expected Nothing, got " ++ Debug.toString a
 
         ( e, Nothing ) ->
-            Expect.fail <| "Expected " ++ toString e ++ ", got Nothing"
+            Expect.fail <| "Expected " ++ Debug.toString e ++ ", got Nothing"
 
 
 {-| This makes a test for each of the data points above. Again, this isn't
@@ -2623,7 +2623,7 @@ calculateZScoreTest =
             (\index ( func, scale, gender, measurement, expected ) ->
                 let
                     testName =
-                        String.join " " [ toString index, func, toString scale, toString gender, toString measurement, toString expected ]
+                        String.join " " [ Debug.toString index, func, Debug.toString scale, Debug.toString gender, Debug.toString measurement, Debug.toString expected ]
                 in
                 case func of
                     "lfa" ->

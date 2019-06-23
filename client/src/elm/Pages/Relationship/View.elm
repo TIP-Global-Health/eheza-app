@@ -230,7 +230,7 @@ viewFetchedContent language currentDate id1 id2 model request data =
                     viewedRelationship == Just possible
 
                 inputId =
-                    "input-relationship-" ++ toString index
+                    "input-relationship-" ++ Debug.toString index
             in
             div
                 [ class "field" ]

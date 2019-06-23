@@ -19,10 +19,9 @@ clicked.
 -}
 
 import Date exposing (Date)
-import Date.Extra as Date
 import DateSelector.Dropdown
 import DateSelector.Selector
-import Html exposing (Html, input)
+import Html exposing (Html, div, input, text)
 import Html.Attributes exposing (class, readonly, value)
 import Html.Events exposing (onClick)
 
@@ -85,9 +84,11 @@ viewWithButton viewButton close toSelect isOpen minimum maximum selected =
 
 defaultViewButton : msg -> Bool -> Maybe Date -> Html msg
 defaultViewButton toggle isOpen maybeDate =
-    input
-        [ value (maybeDate |> Maybe.map (Date.toFormattedString "MM-dd-yyyy") |> Maybe.withDefault "")
-        , readonly True
-        , onClick toggle
-        ]
-        []
+    -- @todo
+    --    input
+    --        [ value (maybeDate |> Maybe.map (Date.toFormattedString "MM-dd-yyyy") |> Maybe.withDefault "")
+    --        , readonly True
+    --        , onClick toggle
+    --        ]
+    --        []
+    div [] [ text "@todo defaultViewButton" ]

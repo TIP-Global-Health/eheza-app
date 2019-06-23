@@ -4,13 +4,11 @@ module Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, e
 Gizra.NominalDate.
 -}
 
-import Date.Extra exposing (Interval(..), diff, fromParts, numberToMonth)
 import Form.Field exposing (Field)
 import Form.Init exposing (setGroup, setString)
 import Form.Validate as Validate exposing (Validation, field)
-import Gizra.NominalDate exposing (NominalDate, NominalDateRange, diffCalendarMonthsAndDays, formatYYYYMMDD, fromLocalDateTime, toLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, NominalDateRange, diffCalendarMonthsAndDays, emptyNominalDate, formatYYYYMMDD, fromLocalDateTime)
 import Html exposing (Html)
-import Time.Date exposing (date, day, daysInMonth, delta, month, year)
 import Translate exposing (Language, translate)
 
 
@@ -48,9 +46,11 @@ diffDays low high =
 -}
 diffMonths : NominalDate -> NominalDate -> Months
 diffMonths low high =
-    delta high low
-        |> .months
-        |> Months
+    -- @todo
+    --    delta high low
+    --        |> .months
+    --        |> Months
+    Months 1
 
 
 {-| Shows the difference between the first date (the birthdate)
@@ -116,7 +116,7 @@ renderAgeMonthsDaysAbbrev language birthDate now =
 
             else
                 Just <|
-                    toString days
+                    Debug.toString days
                         ++ " "
                         ++ translate language Translate.Days
 
@@ -126,7 +126,7 @@ renderAgeMonthsDaysAbbrev language birthDate now =
 
             else
                 Just <|
-                    toString months
+                    Debug.toString months
                         ++ " "
                         ++ translate language Translate.MonthAbbrev
     in
@@ -158,7 +158,7 @@ renderAgeMonthsDaysHtml language birthDate now =
 
             else
                 Just <|
-                    toString days
+                    Debug.toString days
                         ++ " "
                         ++ translate language Translate.Days
 
@@ -168,7 +168,7 @@ renderAgeMonthsDaysHtml language birthDate now =
 
             else
                 Just <|
-                    toString months
+                    Debug.toString months
                         ++ " "
                         ++ translate language Translate.MonthAbbrev
     in
@@ -180,29 +180,31 @@ renderAgeMonthsDaysHtml language birthDate now =
 
 renderDate : Language -> NominalDate -> String
 renderDate language date =
-    let
-        day =
-            Time.Date.day date
-
-        month =
-            Time.Date.month date
-                |> numberToMonth
-                |> Translate.ResolveMonth
-                |> translate language
-
-        year =
-            Time.Date.year date
-    in
-    (if day < 10 then
-        "0" ++ toString day
-
-     else
-        toString day
-    )
-        ++ " "
-        ++ month
-        ++ " "
-        ++ toString year
+    -- @todo
+    --    let
+    --        day =
+    --            Time.Date.day date
+    --
+    --        month =
+    --            Time.Date.month date
+    --                |> numberToMonth
+    --                |> Translate.ResolveMonth
+    --                |> translate language
+    --
+    --        year =
+    --            Time.Date.year date
+    --    in
+    --    (if day < 10 then
+    --        "0" ++ Debug.toString day
+    --
+    --     else
+    --        Debug.toString day
+    --    )
+    --        ++ " "
+    --        ++ month
+    --        ++ " "
+    --        ++ Debug.toString year
+    "@todo"
 
 
 {-| Validates a NominalDate.
@@ -211,7 +213,9 @@ validateNominalDate : Validation e NominalDate
 validateNominalDate =
     -- It might be nice to do something more predictable than what `date` does,
     -- but it's certainly convenient.
-    Validate.map fromLocalDateTime Validate.date
+    -- @todo
+    -- Validate.map fromLocalDateTime Validate.date
+    Validate.succeed emptyNominalDate
 
 
 {-| Validates a `NominalDateRange`, on the assumption that it is represented

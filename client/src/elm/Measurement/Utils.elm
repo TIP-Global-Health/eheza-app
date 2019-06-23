@@ -46,13 +46,13 @@ fromChildMeasurementData data =
         data
             |> mapMeasurementData .height
             |> currentValue
-            |> Maybe.map (.value >> (\(HeightInCm cm) -> toString cm))
+            |> Maybe.map (.value >> (\(HeightInCm cm) -> Debug.toString cm))
             |> Maybe.withDefault ""
     , muac =
         data
             |> mapMeasurementData .muac
             |> currentValue
-            |> Maybe.map (.value >> (\(MuacInCm cm) -> toString cm))
+            |> Maybe.map (.value >> (\(MuacInCm cm) -> Debug.toString cm))
             |> Maybe.withDefault ""
     , nutritionSigns =
         data
@@ -74,7 +74,7 @@ fromChildMeasurementData data =
         data
             |> mapMeasurementData .weight
             |> currentValue
-            |> Maybe.map (.value >> (\(WeightInKg kg) -> toString kg))
+            |> Maybe.map (.value >> (\(WeightInKg kg) -> Debug.toString kg))
             |> Maybe.withDefault ""
     }
 
