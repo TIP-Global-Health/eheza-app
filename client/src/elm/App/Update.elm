@@ -1,16 +1,16 @@
 port module App.Update exposing (init, subscriptions, updateAndThenFetch)
 
-import AnimationFrame
 import App.Fetch
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInModel)
-import AssocList as Dict
+import AssocList
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.Update
 import Config
 import Device.Decoder
 import Device.Encoder
+import Dict
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Http exposing (Error(..))
 import HttpBuilder
@@ -93,8 +93,10 @@ init flags =
                                      , Pusher.Model.eventNames
                                      )
                                   -}
-                                  Task.perform Tick Time.now
-                                , fetchCachedDevice
+                                  -- @todo
+                                  --   Task.perform Tick Time.now
+                                  -- ,
+                                  fetchCachedDevice
                                 ]
 
                         configuredModel =
@@ -141,7 +143,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
         currentDate =
-            fromLocalDateTime <| Date.fromTime model.currentTime
+            fromLocalDateTime model.currentTime
 
         nurseId =
             getLoggedInModel model
@@ -196,11 +198,11 @@ update msg model =
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.relationshipPages
-                                        |> Dict.get ( id1, id2 )
+                                        |> AssocList.get ( id1, id2 )
                                         |> Maybe.withDefault Pages.Relationship.Model.emptyModel
                                         |> Pages.Relationship.Update.update id1 id2 subMsg
                             in
-                            ( { data | relationshipPages = Dict.insert ( id1, id2 ) subModel data.relationshipPages }
+                            ( { data | relationshipPages = AssocList.insert ( id1, id2 ) subModel data.relationshipPages }
                             , Cmd.map (MsgLoggedIn << MsgPageRelationship id1 id2) subCmd
                             , extraMsgs
                             )
@@ -209,11 +211,11 @@ update msg model =
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.sessionPages
-                                        |> Dict.get sessionId
+                                        |> AssocList.get sessionId
                                         |> Maybe.withDefault Pages.Session.Model.emptyModel
                                         |> Pages.Session.Update.update sessionId model.indexedDb subMsg
                             in
-                            ( { data | sessionPages = Dict.insert sessionId subModel data.sessionPages }
+                            ( { data | sessionPages = AssocList.insert sessionId subModel data.sessionPages }
                             , Cmd.map (MsgLoggedIn << MsgPageSession sessionId) subCmd
                             , extraMsgs
                             )
@@ -239,7 +241,7 @@ update msg model =
                 (\configured ->
                     let
                         postCode =
-                            HttpBuilder.get (configured.config.backendUrl </> "api/pairing-code" </> code)
+                            HttpBuilder.get (configured.config.backendUrl ++ "api/pairing-code/" ++ code)
                                 |> HttpBuilder.withExpectJson (Json.Decode.field "data" (Device.Decoder.decode configured.config.backendUrl))
                                 |> HttpBuilder.toTask
 
@@ -333,21 +335,23 @@ update msg model =
             updateConfigured
                 (\configured ->
                     let
-                        version =
-                            Version.version
-                                |> .build
-                                |> Json.Encode.string
-
+                        -- @todo
+                        --                        version =
+                        --                            Version.version
+                        --                                |> .build
+                        --                                |> Json.Encode.string
                         cmd =
-                            Rollbar.send
-                                configured.config.rollbarToken
-                                (Rollbar.scope "user")
-                                (Rollbar.environment configured.config.name)
-                                0
-                                level
-                                message
-                                (Dict.insert "build" version data)
-                                |> Task.attempt HandleRollbar
+                            -- @todo
+                            --                            Rollbar.send
+                            --                                configured.config.rollbarToken
+                            --                                (Rollbar.scope "user")
+                            --                                (Rollbar.environment configured.config.name)
+                            --                                0
+                            --                                level
+                            --                                message
+                            --                                (Dict.insert "build" version data)
+                            --                                |> Task.attempt HandleRollbar
+                            Cmd.none
                     in
                     ( configured
                     , cmd
@@ -554,14 +558,18 @@ subscriptions model =
     let
         checkDataWanted =
             if model.scheduleDataWantedCheck then
-                [ AnimationFrame.times (always CheckDataWanted) ]
+                [-- @todo
+                 -- AnimationFrame.times (always CheckDataWanted)
+                ]
 
             else
                 []
     in
     Sub.batch
-        ([ Time.every minute Tick
-         , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
+        ([ -- @todo
+           -- Time.every minute Tick
+           -- ,
+           Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
          , persistentStorage SetPersistentStorage
          , storageQuota SetStorageQuota
          , memoryQuota SetMemoryQuota
