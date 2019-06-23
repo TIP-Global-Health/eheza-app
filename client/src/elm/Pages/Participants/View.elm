@@ -1,7 +1,7 @@
 module Pages.Participants.View exposing (view)
 
 import Activity.Utils exposing (getActivityCountForMother)
-import AllDictList
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
@@ -32,13 +32,13 @@ view language ( sessionId, session ) model =
         mothersInAttendance =
             force session.checkedIn
                 |> .mothers
-                |> AllDictList.filter (matchMotherAndHerChildren filter session.offlineSession)
+                |> Dict.filter (matchMotherAndHerChildren filter session.offlineSession)
 
         summary =
             force session.summaryByParticipant
 
         ( mothersWithPendingActivity, mothersWithoutPendingActivity ) =
-            AllDictList.partition
+            Dict.partition
                 (\motherId mother ->
                     getActivityCountForMother session motherId mother summary
                         |> (\count -> count.pending > 0)
@@ -48,12 +48,12 @@ view language ( sessionId, session ) model =
         tabs =
             let
                 pendingTabTitle =
-                    AllDictList.size mothersWithPendingActivity
+                    Dict.size mothersWithPendingActivity
                         |> Trans.ActivitiesToComplete
                         |> translate language
 
                 completedTabTitle =
-                    AllDictList.size mothersWithoutPendingActivity
+                    Dict.size mothersWithoutPendingActivity
                         |> Trans.ActivitiesCompleted
                         |> translate language
             in
@@ -94,12 +94,12 @@ view language ( sessionId, session ) model =
                         ]
 
                 mothersCards =
-                    if AllDictList.size selectedMothers == 0 then
+                    if Dict.size selectedMothers == 0 then
                         [ span [] [ text emptySectionMessage ] ]
 
                     else
                         selectedMothers
-                            |> AllDictList.toList
+                            |> Dict.toList
                             |> List.sortBy (\( _, mother ) -> mother.name)
                             |> List.map viewMotherCard
             in

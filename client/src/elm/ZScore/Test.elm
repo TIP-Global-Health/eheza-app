@@ -1,6 +1,6 @@
 module ZScore.Test exposing (all)
 
-import AllDict exposing (AllDict)
+import AssocList as Dict exposing (Dict)
 import Backend.Person.Model exposing (Gender(..))
 import Expect exposing (Expectation, FloatingPointTolerance(..))
 import Http
@@ -67,12 +67,12 @@ fetchForAge wrapper tables =
         (decodeFixture (decodeForAge Months (\(Months x) -> x) wrapper) tables.months)
 
 
-fetchForHeight : String -> WebData (MaleAndFemale (AllDict Height (ZScoreEntry Kilograms) Int))
+fetchForHeight : String -> WebData (MaleAndFemale (Dict.Height (ZScoreEntry Kilograms) Int))
 fetchForHeight table =
     decodeFixture (decodeForCentimetres "height" Height (\(Height x) -> x)) table
 
 
-fetchForLength : String -> WebData (MaleAndFemale (AllDict Length (ZScoreEntry Kilograms) Int))
+fetchForLength : String -> WebData (MaleAndFemale (Dict.Length (ZScoreEntry Kilograms) Int))
 fetchForLength table =
     decodeFixture (decodeForCentimetres "length" Length (\(Length x) -> x)) table
 

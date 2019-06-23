@@ -1,7 +1,6 @@
 module Pages.People.View exposing (view)
 
-import AllDict
-import AllDictList
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form exposing (ExpectedAge(..))
@@ -40,7 +39,7 @@ view language currentDate relation model db =
         title =
             case relation of
                 Just relationId ->
-                    AllDict.get relationId db.people
+                    Dict.get relationId db.people
                         |> Maybe.withDefault NotAsked
                         |> RemoteData.map .name
                         |> RemoteData.withDefault (fromEntityUuid relationId)
@@ -100,7 +99,7 @@ viewSearchForm language currentDate relation model db =
 
         relatedPerson =
             relation
-                |> Maybe.andThen (\id -> AllDict.get id db.people)
+                |> Maybe.andThen (\id -> Dict.get id db.people)
                 |> Maybe.andThen RemoteData.toMaybe
 
         expectedAge =
@@ -154,13 +153,13 @@ viewSearchForm language currentDate relation model db =
                                 True
 
                             Just personId ->
-                                AllDict.get personId db.relationshipsByPerson
+                                Dict.get personId db.relationshipsByPerson
                                     |> Maybe.andThen RemoteData.toMaybe
                                     |> unwrap
                                         True
                                         (\relatedPersionRelationships ->
                                             relatedPersionRelationships
-                                                |> AllDictList.values
+                                                |> Dict.values
                                                 |> List.all
                                                     (\relationship ->
                                                         relationship.relatedTo /= filteredPersonId
@@ -170,7 +169,7 @@ viewSearchForm language currentDate relation model db =
                 Dict.get searchValue db.personSearches
                     |> Maybe.withDefault NotAsked
                     |> RemoteData.map
-                        (AllDictList.filter
+                        (Dict.filter
                             (\k v ->
                                 -- Applying 3 conditionms explained above
                                 not (relation == Just k) && personTypeCondition v && personRelationCondition k
@@ -184,7 +183,7 @@ viewSearchForm language currentDate relation model db =
                 |> Maybe.withDefault emptyNode
 
         viewSummary data =
-            AllDictList.length data
+            Dict.length data
                 |> Translate.ReportResultsOfSearch
                 |> translate language
                 |> text
@@ -193,8 +192,8 @@ viewSearchForm language currentDate relation model db =
             results
                 |> Maybe.withDefault (Success EntityUuidDictList.empty)
                 |> RemoteData.withDefault EntityUuidDictList.empty
-                |> AllDictList.map (viewParticipant language currentDate relation db)
-                |> AllDictList.values
+                |> Dict.map (viewParticipant language currentDate relation db)
+                |> Dict.values
 
         searchHelper =
             case relation of

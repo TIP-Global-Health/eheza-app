@@ -1,7 +1,6 @@
 module Backend.Counseling.Decoder exposing (combineCounselingSchedules, decodeCounselingSchedule, decodeCounselingTiming, decodeCounselingTopic)
 
-import AllDict
-import AllDictList
+import AssocList as Dict
 import Backend.Counseling.Model exposing (..)
 import Backend.Entities exposing (..)
 import EveryDict
@@ -68,7 +67,7 @@ combineCounselingSchedules allTopics =
                     schedule.topics
                         |> List.filterMap
                             (\id ->
-                                AllDict.get id allTopics
+                                Dict.get id allTopics
                                     |> Maybe.map (\value -> ( id, value ))
                             )
                         |> EntityUuidDictList.fromList
@@ -81,7 +80,7 @@ combineCounselingSchedules allTopics =
                             -- where we have more than one schedule for a
                             -- timing.
                             Just <|
-                                AllDictList.union existing newTopics
+                                Dict.union existing newTopics
 
                         Nothing ->
                             Just newTopics

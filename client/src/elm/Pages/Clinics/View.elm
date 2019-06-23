@@ -5,9 +5,8 @@ user to click on clinics the user is assigned to, to see the sessions which are
 available for data-entry.
 -}
 
-import AllDict
-import AllDictList
 import App.Model exposing (Msg(..), MsgLoggedIn(..))
+import AssocList as Dict
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
@@ -94,16 +93,16 @@ viewLoadedClinicList language user ( clinics, sync ) =
 
         synced =
             clinics
-                |> AllDictList.filter (\_ clinic -> AllDictList.member clinic.healthCenterId sync)
-                |> AllDictList.sortBy .name
+                |> Dict.filter (\_ clinic -> Dict.member clinic.healthCenterId sync)
+                |> Dict.sortBy .name
 
         clinicView =
             synced
-                |> AllDictList.toList
+                |> Dict.toList
                 |> List.map (viewClinicButton user)
 
         message =
-            if AllDictList.isEmpty synced then
+            if Dict.isEmpty synced then
                 div
                     [ class "ui message warning" ]
                     [ div [ class "header" ] [ text <| translate language Translate.NoGroupsFound ]
@@ -143,11 +142,11 @@ viewClinic : Language -> NominalDate -> Nurse -> ClinicId -> ModelIndexedDb -> H
 viewClinic language currentDate nurse clinicId db =
     let
         clinic =
-            RemoteData.map (AllDictList.get clinicId) db.clinics
+            RemoteData.map (Dict.get clinicId) db.clinics
 
         sessions =
             db.sessionsByClinic
-                |> AllDict.get clinicId
+                |> Dict.get clinicId
                 |> Maybe.withDefault NotAsked
     in
     viewWebData language
@@ -183,7 +182,7 @@ viewFoundClinic language currentDate nurse clinicId clinic sessions =
 
         recentAndUpcomingSessions =
             sessions
-                |> AllDictList.filter
+                |> Dict.filter
                     (\sessionId session ->
                         let
                             deltaToEndDate =
@@ -199,8 +198,8 @@ viewFoundClinic language currentDate nurse clinicId clinic sessions =
                             || -- Is between start and end date
                                (deltaToStartDate.days <= 0 && deltaToEndDate.days >= 0)
                     )
-                |> AllDictList.map (viewSession language currentDate)
-                |> AllDictList.values
+                |> Dict.map (viewSession language currentDate)
+                |> Dict.values
 
         content =
             if assignedToClinic clinicId nurse then

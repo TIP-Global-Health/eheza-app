@@ -1,7 +1,6 @@
 module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, getCurrentAndPrevious, mapMeasurementData, muacIndication, splitChildMeasurements, splitMotherMeasurements)
 
-import AllDict
-import AllDictList
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Restful.Endpoint exposing (EntityUuid)
@@ -47,8 +46,8 @@ currentValueWithId data =
 currentValues : MeasurementData (EntityUuidDictList id value) -> List ( Maybe id, value )
 currentValues data =
     data.current
-        |> AllDictList.map (\k v -> ( Just k, v ))
-        |> AllDictList.values
+        |> Dict.map (\k v -> ( Just k, v ))
+        |> Dict.values
 
 
 mapMeasurementData : (a -> b) -> MeasurementData a -> MeasurementData b
@@ -61,7 +60,7 @@ mapMeasurementData dataFunc measurements =
 
 splitMotherMeasurements : SessionId -> EntityUuidDict PersonId MotherMeasurementList -> EntityUuidDict PersonId { current : MotherMeasurements, previous : MotherMeasurements }
 splitMotherMeasurements sessionId =
-    AllDict.map
+    Dict.map
         (\_ list ->
             let
                 attendance =
@@ -75,8 +74,8 @@ splitMotherMeasurements sessionId =
                         |> .current
             in
             { current =
-                { attendance = AllDictList.head attendance.current
-                , familyPlanning = AllDictList.head familyPlanning.current
+                { attendance = Dict.head attendance.current
+                , familyPlanning = Dict.head familyPlanning.current
                 , consent = consent
                 }
             , previous =
@@ -92,7 +91,7 @@ splitMotherMeasurements sessionId =
 
 splitChildMeasurements : SessionId -> EntityUuidDict PersonId ChildMeasurementList -> EntityUuidDict PersonId { current : ChildMeasurements, previous : ChildMeasurements }
 splitChildMeasurements sessionId =
-    AllDict.map
+    Dict.map
         (\_ list ->
             let
                 height =
@@ -115,12 +114,12 @@ splitChildMeasurements sessionId =
             in
             { current =
                 -- We can only have one per session ... we enforce that here.
-                { height = AllDictList.head height.current
-                , weight = AllDictList.head weight.current
-                , muac = AllDictList.head muac.current
-                , nutrition = AllDictList.head nutrition.current
-                , photo = AllDictList.head photo.current
-                , counselingSession = AllDictList.head counselingSession.current
+                { height = Dict.head height.current
+                , weight = Dict.head weight.current
+                , muac = Dict.head muac.current
+                , nutrition = Dict.head nutrition.current
+                , photo = Dict.head photo.current
+                , counselingSession = Dict.head counselingSession.current
                 }
             , previous =
                 { height = height.previous
@@ -144,7 +143,7 @@ getCurrentAndPrevious sessionId =
         go id value acc =
             if value.sessionId == Just sessionId then
                 -- If it's got our session ID, then it's current
-                { acc | current = AllDictList.cons id value acc.current }
+                { acc | current = Dict.cons id value acc.current }
 
             else
                 case acc.previous of
@@ -159,7 +158,7 @@ getCurrentAndPrevious sessionId =
                         else
                             acc
     in
-    AllDictList.foldl go
+    Dict.foldl go
         { current = EntityUuidDictList.empty
         , previous = Nothing
         }

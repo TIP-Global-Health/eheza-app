@@ -1,6 +1,6 @@
 module ZScore.Decoder exposing (decodeForAge, decodeForCentimetres)
 
-import AllDict exposing (AllDict)
+import AssocList as Dict exposing (Dict)
 import Backend.Person.Model exposing (Gender(..))
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
@@ -74,12 +74,12 @@ decodeJsonKgByCm label tagKey =
 
 {-| Decodes a JSON table organized by age.
 -}
-decodeForAge : (Int -> key) -> (key -> Int) -> (Float -> value) -> Decoder (MaleAndFemale (AllDict key (ZScoreEntry value) Int))
+decodeForAge : (Int -> key) -> (key -> Int) -> (Float -> value) -> Decoder (MaleAndFemale (Dict.key (ZScoreEntry value) Int))
 decodeForAge tagKey untagKey tagValue =
     let
         initial =
-            { male = AllDict.empty untagKey
-            , female = AllDict.empty untagKey
+            { male = Dict.empty untagKey
+            , female = Dict.empty untagKey
             }
 
         eachEntry entry accum =
@@ -92,17 +92,17 @@ decodeForAge tagKey untagKey tagValue =
             in
             case entry.gender of
                 Male ->
-                    { accum | male = AllDict.insert entry.age value accum.male }
+                    { accum | male = Dict.insert entry.age value accum.male }
 
                 Female ->
-                    { accum | female = AllDict.insert entry.age value accum.female }
+                    { accum | female = Dict.insert entry.age value accum.female }
     in
     decodeJsonByAge tagKey tagValue
         |> list
         |> map (List.foldl eachEntry initial)
 
 
-decodeForCentimetres : String -> (Float -> key) -> (key -> Float) -> Decoder (MaleAndFemale (AllDict key (ZScoreEntry Kilograms) Int))
+decodeForCentimetres : String -> (Float -> key) -> (key -> Float) -> Decoder (MaleAndFemale (Dict.key (ZScoreEntry Kilograms) Int))
 decodeForCentimetres label tagKey untagKey =
     let
         -- We index by the millimetre, so we multiple the centimetres by 10 and
@@ -113,8 +113,8 @@ decodeForCentimetres label tagKey untagKey =
             round <| untagKey key * 10
 
         initial =
-            { male = AllDict.empty ord
-            , female = AllDict.empty ord
+            { male = Dict.empty ord
+            , female = Dict.empty ord
             }
 
         eachEntry entry accum =
@@ -127,10 +127,10 @@ decodeForCentimetres label tagKey untagKey =
             in
             case entry.gender of
                 Male ->
-                    { accum | male = AllDict.insert entry.centimetres value accum.male }
+                    { accum | male = Dict.insert entry.centimetres value accum.male }
 
                 Female ->
-                    { accum | female = AllDict.insert entry.centimetres value accum.female }
+                    { accum | female = Dict.insert entry.centimetres value accum.female }
     in
     decodeJsonKgByCm label tagKey
         |> list

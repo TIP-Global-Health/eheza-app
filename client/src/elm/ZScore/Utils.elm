@@ -12,7 +12,7 @@ module ZScore.Utils exposing
 {-| This module determines a ZScore for various measurements.
 -}
 
-import AllDict exposing (AllDict)
+import AssocList as Dict exposing (Dict)
 import Backend.Person.Model exposing (Gender(..))
 import Maybe.Extra exposing (orElseLazy)
 import RemoteData
@@ -87,14 +87,14 @@ zScoreForAge clamp unwrapValue wrapValue days gender value tables =
         |> orElseLazy (\_ -> zScoreForMonths clamp unwrapValue wrapValue days value table.byMonth)
 
 
-zScoreForDays : Clamp -> (value -> Float) -> Days -> value -> AllDict Days (ZScoreEntry value) Int -> Maybe ZScore
+zScoreForDays : Clamp -> (value -> Float) -> Days -> value -> Dict.Days (ZScoreEntry value) Int -> Maybe ZScore
 zScoreForDays clamp unwrapValue days value table =
     Maybe.map
         (calculateZScore clamp unwrapValue value)
-        (AllDict.get days table)
+        (Dict.get days table)
 
 
-zScoreForMonths : Clamp -> (value -> Float) -> (Float -> value) -> Days -> value -> AllDict Months (ZScoreEntry value) Int -> Maybe ZScore
+zScoreForMonths : Clamp -> (value -> Float) -> (Float -> value) -> Days -> value -> Dict.Months (ZScoreEntry value) Int -> Maybe ZScore
 zScoreForMonths clamp unwrapValue wrapValue (Days days) value table =
     let
         fractionalMonths =
@@ -121,8 +121,8 @@ zScoreForMonths clamp unwrapValue wrapValue (Days days) value table =
             in
             calculateZScore clamp unwrapValue value entry
         )
-        (AllDict.get (Months lowMonths) table)
-        (AllDict.get (Months highMonths) table)
+        (Dict.get (Months lowMonths) table)
+        (Dict.get (Months highMonths) table)
 
 
 calculateZScore : Clamp -> (value -> Float) -> value -> ZScoreEntry value -> ZScore
@@ -200,7 +200,7 @@ zScoreWeightForLength model length gender kg =
         |> Maybe.andThen (zScoreForCm length gender kg)
 
 
-zScoreForCm : key -> Gender -> Kilograms -> MaleAndFemale (AllDict key (ZScoreEntry Kilograms) Int) -> Maybe ZScore
+zScoreForCm : key -> Gender -> Kilograms -> MaleAndFemale (Dict.key (ZScoreEntry Kilograms) Int) -> Maybe ZScore
 zScoreForCm key gender kg tables =
     let
         table =
@@ -208,7 +208,7 @@ zScoreForCm key gender kg tables =
     in
     Maybe.map
         (calculateZScore Clamp (\(Kilograms x) -> x) kg)
-        (AllDict.get key table)
+        (Dict.get key table)
 
 
 {-| Convert the ZScore to a string for display purposes.

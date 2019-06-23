@@ -1,8 +1,7 @@
 module Pages.Person.View exposing (view, viewCreateForm)
 
-import AllDict
-import AllDictList
 import App.Model
+import AssocList as Dict
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
@@ -44,7 +43,7 @@ view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Html App.Model.M
 view language currentDate id db =
     let
         person =
-            AllDict.get id db.people
+            Dict.get id db.people
                 |> Maybe.withDefault NotAsked
 
         headerName =
@@ -83,7 +82,7 @@ viewRelationship : Language -> NominalDate -> ModelIndexedDb -> MyRelationship -
 viewRelationship language currentDate db relationship =
     let
         relatedTo =
-            AllDict.get relationship.relatedTo db.people
+            Dict.get relationship.relatedTo db.people
                 |> Maybe.withDefault NotAsked
     in
     div
@@ -95,7 +94,7 @@ viewPmtctParticipant : Language -> EntityUuidDictList ClinicId Clinic -> PmtctPa
 viewPmtctParticipant language clinics participant =
     let
         content =
-            AllDictList.get participant.clinic clinics
+            Dict.get participant.clinic clinics
                 |> Maybe.map
                     (\clinic ->
                         p [] [ text <| clinic.name ]
@@ -116,23 +115,23 @@ viewParticipantDetailsForm language currentDate db id person =
     let
         viewFamilyMembers relationships =
             relationships
-                |> AllDictList.map (always (viewRelationship language currentDate db))
-                |> AllDictList.values
+                |> Dict.map (always (viewRelationship language currentDate db))
+                |> Dict.values
                 |> div []
 
         familyMembers =
-            AllDict.get id db.relationshipsByPerson
+            Dict.get id db.relationshipsByPerson
                 |> Maybe.withDefault NotAsked
                 |> viewWebData language viewFamilyMembers identity
 
         viewGroups ( clinics, groups ) =
             groups
-                |> AllDict.map (always (viewPmtctParticipant language clinics))
-                |> AllDict.values
+                |> Dict.map (always (viewPmtctParticipant language clinics))
+                |> Dict.values
                 |> div [ class "ui unstackable items participants-list" ]
 
         groups =
-            AllDict.get id db.participantsByPerson
+            Dict.get id db.participantsByPerson
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.append db.clinics
                 |> viewWebData language viewGroups identity
@@ -377,7 +376,7 @@ viewCreateForm language currentDate relationId model db =
 
         maybeRelatedPerson =
             relationId
-                |> Maybe.andThen (\id -> AllDict.get id db.people)
+                |> Maybe.andThen (\id -> Dict.get id db.people)
                 |> Maybe.andThen RemoteData.toMaybe
 
         emptyOption =
@@ -661,7 +660,7 @@ viewCreateForm language currentDate relationId model db =
 
         geoLocationDictToOptions dict =
             dict
-                |> AllDict.toList
+                |> Dict.toList
                 |> List.map
                     (\( id, geoLocation ) ->
                         ( toString <| fromEntityId id, geoLocation.name )
@@ -669,7 +668,7 @@ viewCreateForm language currentDate relationId model db =
 
         filterGeoLocationDictByParent parentId dict =
             dict
-                |> AllDict.filter
+                |> Dict.filter
                     (\_ geoLocation ->
                         (Just <| toEntityId parentId) == geoLocation.parent
                     )
@@ -846,7 +845,7 @@ viewCreateForm language currentDate relationId model db =
                                 |> RemoteData.map
                                     (\dict ->
                                         dict
-                                            |> AllDictList.toList
+                                            |> Dict.toList
                                             |> List.map
                                                 (\( id, healthCenter ) ->
                                                     ( fromEntityUuid id

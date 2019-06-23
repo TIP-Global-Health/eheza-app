@@ -1,7 +1,7 @@
 module Pages.Person.Update exposing (update)
 
-import AllDict
 import App.Model
+import AssocList as Dict
 import Backend.Entities exposing (PersonId)
 import Backend.Model
 import Backend.Person.Form exposing (ExpectedAge(..), birthDate, validatePerson)
@@ -21,7 +21,7 @@ update currentDate msg people model =
             let
                 related =
                     relation
-                        |> Maybe.andThen (\personId -> AllDict.get personId people)
+                        |> Maybe.andThen (\personId -> Dict.get personId people)
                         |> Maybe.andThen RemoteData.toMaybe
 
                 newForm =

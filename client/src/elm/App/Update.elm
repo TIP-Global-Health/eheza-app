@@ -1,10 +1,10 @@
 port module App.Update exposing (init, subscriptions, updateAndThenFetch)
 
-import AllDict
 import AnimationFrame
 import App.Fetch
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInModel)
+import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.Update
@@ -214,11 +214,11 @@ update msg model =
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.sessionPages
-                                        |> AllDict.get sessionId
+                                        |> Dict.get sessionId
                                         |> Maybe.withDefault Pages.Session.Model.emptyModel
                                         |> Pages.Session.Update.update sessionId model.indexedDb subMsg
                             in
-                            ( { data | sessionPages = AllDict.insert sessionId subModel data.sessionPages }
+                            ( { data | sessionPages = Dict.insert sessionId subModel data.sessionPages }
                             , Cmd.map (MsgLoggedIn << MsgPageSession sessionId) subCmd
                             , extraMsgs
                             )

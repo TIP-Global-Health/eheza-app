@@ -1,7 +1,7 @@
 module Pages.Device.View exposing (view)
 
-import AllDictList
 import App.Model
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Model exposing (ModelIndexedDb)
@@ -103,7 +103,7 @@ viewNodes language db =
     case db.syncData of
         Success syncData ->
             syncData
-                |> AllDictList.get nodesUuid
+                |> Dict.get nodesUuid
                 |> Maybe.map
                     (\data ->
                         div [ class "general-sync" ]
@@ -134,9 +134,9 @@ viewHealthCenters language db =
         |> RemoteData.map
             (\data ->
                 data
-                    |> AllDictList.sortBy .name
-                    |> AllDictList.map (viewHealthCenter language db)
-                    |> AllDictList.values
+                    |> Dict.sortBy .name
+                    |> Dict.map (viewHealthCenter language db)
+                    |> Dict.values
                     |> div [ class "health-centers" ]
             )
         |> RemoteData.withDefault spinner
@@ -149,7 +149,7 @@ viewHealthCenter language db uuid model =
             db.syncData
                 |> RemoteData.map
                     (\syncData ->
-                        case AllDictList.get uuid syncData of
+                        case Dict.get uuid syncData of
                             Just data ->
                                 div [ class "health-center-info" ]
                                     [ text <| toString data

@@ -14,7 +14,7 @@ far it doesn't seem to be a performance problem, so no premature optimization!
 
 -}
 
-import AllDict exposing (AllDict)
+import AssocList as Dict exposing (Dict)
 import Html exposing (Html)
 import RemoteData
 import Round
@@ -71,7 +71,7 @@ viewHeightForAgeBoys language model data =
         , ageLines language
         , zScoreLabelsHeightForAgeBoys
         , model.lengthHeightForAge
-            |> RemoteData.map (.male >> .byDay >> AllDict.toList)
+            |> RemoteData.map (.male >> .byDay >> Dict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData heightForAgeConfig
         , plotChildData heightForAgeConfig data
@@ -318,7 +318,7 @@ viewWeightForAgeBoys language model data =
         , ageLines language
         , zScoreLabelsWeightForAgeBoys
         , model.weightForAge
-            |> RemoteData.map (.male >> .byDay >> AllDict.toList)
+            |> RemoteData.map (.male >> .byDay >> Dict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData weightForAgeConfig
         , plotChildData weightForAgeConfig data
@@ -339,7 +339,7 @@ viewWeightForHeightBoys language model data =
         , heightLines
         , zScoreLabelsWeightForHeightBoys
         , model.weightForLength
-            |> RemoteData.map (.male >> AllDict.toList)
+            |> RemoteData.map (.male >> Dict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData weightForHeightConfig
         , plotChildData weightForHeightConfig data
@@ -360,7 +360,7 @@ viewWeightForHeightGirls language model data =
         , heightLines
         , zScoreLabelsWeightForHeightGirls
         , model.weightForLength
-            |> RemoteData.map (.female >> AllDict.toList)
+            |> RemoteData.map (.female >> Dict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData weightForHeightConfig
         , plotChildData weightForHeightConfig data
@@ -381,7 +381,7 @@ viewHeightForAgeGirls language model data =
         , ageLines language
         , zScoreLabelsHeightForAgeGirls
         , model.lengthHeightForAge
-            |> RemoteData.map (.female >> .byDay >> AllDict.toList)
+            |> RemoteData.map (.female >> .byDay >> Dict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData heightForAgeConfig
         , plotChildData heightForAgeConfig data
@@ -402,7 +402,7 @@ viewWeightForAgeGirls language model data =
         , ageLines language
         , zScoreLabelsWeightForAgeGirls
         , model.weightForAge
-            |> RemoteData.map (.female >> .byDay >> AllDict.toList)
+            |> RemoteData.map (.female >> .byDay >> Dict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData weightForAgeConfig
         , plotChildData weightForAgeConfig data

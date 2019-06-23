@@ -1,7 +1,6 @@
 module Pages.Relationship.View exposing (view)
 
-import AllDict
-import AllDictList
+import AssocList as Dict
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
@@ -62,23 +61,23 @@ viewContent : Language -> NominalDate -> PersonId -> PersonId -> ModelIndexedDb 
 viewContent language currentDate id1 id2 db model =
     let
         person1 =
-            AllDict.get id1 db.people
+            Dict.get id1 db.people
                 |> Maybe.withDefault NotAsked
 
         relationships =
-            AllDict.get id1 db.relationshipsByPerson
+            Dict.get id1 db.relationshipsByPerson
                 |> Maybe.withDefault NotAsked
 
         person2 =
-            AllDict.get id2 db.people
+            Dict.get id2 db.people
                 |> Maybe.withDefault NotAsked
 
         request =
-            AllDict.get id1 db.postRelationship
+            Dict.get id1 db.postRelationship
                 |> Maybe.withDefault NotAsked
 
         participants =
-            AllDict.get id1 db.participantsByPerson
+            Dict.get id1 db.participantsByPerson
                 |> Maybe.withDefault NotAsked
 
         clinics =
@@ -108,7 +107,7 @@ viewFetchedContent language currentDate id1 id2 model request data =
     let
         participants =
             data.participants
-                |> AllDict.filter
+                |> Dict.filter
                     (\_ participant ->
                         (participant.child == id1 && participant.adult == id2)
                             || (participant.adult == id1 && participant.child == id2)
@@ -116,10 +115,10 @@ viewFetchedContent language currentDate id1 id2 model request data =
 
         viewCurrentGroups =
             participants
-                |> AllDict.values
+                |> Dict.values
                 |> List.map
                     (\participant ->
-                        AllDictList.get participant.clinic data.clinics
+                        Dict.get participant.clinic data.clinics
                             |> Maybe.map
                                 (\clinic ->
                                     p [] [ text <| clinic.name ]
@@ -129,7 +128,7 @@ viewFetchedContent language currentDate id1 id2 model request data =
                 |> div []
 
         viewGroupSelector =
-            if AllDict.isEmpty participants then
+            if Dict.isEmpty participants then
                 let
                     emptyOption =
                         option
@@ -140,7 +139,7 @@ viewFetchedContent language currentDate id1 id2 model request data =
 
                     selector =
                         data.clinics
-                            |> AllDictList.filter
+                            |> Dict.filter
                                 (\_ clinic ->
                                     -- If both persons are assigned to a health
                                     -- center, show the clinic if it is
@@ -158,7 +157,7 @@ viewFetchedContent language currentDate id1 id2 model request data =
                                         data.person2.healthCenterId
                                         |> Maybe.withDefault True
                                 )
-                            |> AllDictList.map
+                            |> Dict.map
                                 (\clinicId clinic ->
                                     option
                                         [ value (fromEntityUuid clinicId)
@@ -166,7 +165,7 @@ viewFetchedContent language currentDate id1 id2 model request data =
                                         ]
                                         [ text clinic.name ]
                                 )
-                            |> AllDictList.values
+                            |> Dict.values
                             |> (::) emptyOption
                             |> select [ onInput AssignToClinicId ]
                 in
@@ -183,8 +182,8 @@ viewFetchedContent language currentDate id1 id2 model request data =
 
         savedRelationship =
             data.relationships
-                |> AllDictList.filter (\_ relationship -> relationship.relatedTo == id2)
-                |> AllDictList.head
+                |> Dict.filter (\_ relationship -> relationship.relatedTo == id2)
+                |> Dict.head
                 |> Maybe.map (Tuple.second >> .relatedBy)
 
         viewedRelationship =

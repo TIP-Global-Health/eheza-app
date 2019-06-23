@@ -1,6 +1,6 @@
 module ZScore.Update exposing (update)
 
-import AllDict exposing (AllDict)
+import AssocList as Dict exposing (Dict)
 import Http exposing (Error, expectJson)
 import HttpBuilder exposing (get, toTask, withExpect)
 import RemoteData exposing (RemoteData(..), WebData, isNotAsked)
@@ -168,7 +168,7 @@ fetchForAge paths wrapper tagger =
 
 {-| Fetch JSON data keyed by a "length" field which is in centimetres
 -}
-fetchForLength : String -> (WebData (MaleAndFemale (AllDict Length (ZScoreEntry Kilograms) Int)) -> Msg) -> Cmd Msg
+fetchForLength : String -> (WebData (MaleAndFemale (Dict.Length (ZScoreEntry Kilograms) Int)) -> Msg) -> Cmd Msg
 fetchForLength path tagCmd =
     get path
         |> withExpect (expectJson (decodeForCentimetres "length" Length (\(Length x) -> x)))
@@ -179,7 +179,7 @@ fetchForLength path tagCmd =
 
 {-| Fetch JSON data keyed by a "height" field which is in centimetres
 -}
-fetchForHeight : String -> (WebData (MaleAndFemale (AllDict Height (ZScoreEntry Kilograms) Int)) -> Msg) -> Cmd Msg
+fetchForHeight : String -> (WebData (MaleAndFemale (Dict.Height (ZScoreEntry Kilograms) Int)) -> Msg) -> Cmd Msg
 fetchForHeight path tagCmd =
     get path
         |> withExpect (expectJson (decodeForCentimetres "height" Height (\(Height x) -> x)))

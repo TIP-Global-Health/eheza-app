@@ -1,6 +1,6 @@
 module Backend.Session.Fetch exposing (fetchEditableSession)
 
-import AllDict
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import RemoteData exposing (RemoteData(..))
@@ -13,17 +13,17 @@ fetchEditableSession : SessionId -> ModelIndexedDb -> List MsgIndexedDb
 fetchEditableSession sessionId db =
     let
         participantData =
-            AllDict.get sessionId db.expectedParticipants
+            Dict.get sessionId db.expectedParticipants
                 |> Maybe.withDefault NotAsked
 
         childrenIdData =
             RemoteData.map
-                (.byChildId >> AllDict.keys)
+                (.byChildId >> Dict.keys)
                 participantData
 
         motherIdData =
             RemoteData.map
-                (.byMotherId >> AllDict.keys)
+                (.byMotherId >> Dict.keys)
                 participantData
 
         -- It would be more efficient here to have messages that could fetch a

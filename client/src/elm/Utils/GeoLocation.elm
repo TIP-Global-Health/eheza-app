@@ -1,6 +1,6 @@
 module Utils.GeoLocation exposing (GeoInfo, ReverseGeoInfo, geoInfo, getGeoLocation, reverseGeoInfo)
 
-import AllDict
+import AssocList as Dict
 import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
 import Restful.Endpoint exposing (EntityId, toEntityId)
@@ -69,7 +69,7 @@ reverseGeoInfo =
             EveryDict.update loc.parent (merge id loc) accum
 
         handleSource source accum =
-            AllDict.foldl addGeo accum source
+            Dict.foldl addGeo accum source
     in
     List.foldl handleSource
         EveryDict.empty
