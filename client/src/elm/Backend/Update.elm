@@ -817,48 +817,56 @@ makeEditableSession sessionId db =
                 mothersData
 
         childMeasurementsSplitData =
-            RemoteData.map (\list -> lazy <| \_ -> splitChildMeasurements sessionId list) childMeasurementListData
+            -- @todo: Keep lazy?
+            -- RemoteData.map (\list -> lazy <| \_ -> splitChildMeasurements sessionId list) childMeasurementListData
+            RemoteData.map (\list -> splitChildMeasurements sessionId list) childMeasurementListData
 
         adultMeasurementsSplitData =
-            RemoteData.map (\list -> lazy <| \_ -> splitMotherMeasurements sessionId list) adultMeasurementListData
+            -- @todo: Keep lazy?
+            -- RemoteData.map (\list -> lazy <| \_ -> splitMotherMeasurements sessionId list) adultMeasurementListData
+            RemoteData.map (\list -> splitMotherMeasurements sessionId list) adultMeasurementListData
 
         historicalMeasurementData =
             RemoteData.map2 HistoricalMeasurements adultMeasurementListData childMeasurementListData
 
         currentAndPrevious =
             RemoteData.map2
-                (Lazy.map2
-                    (\childData motherData ->
-                        { current =
-                            { mothers = Dict.map (always .current) motherData
-                            , children = Dict.map (always .current) childData
-                            }
-                        , previous =
-                            { mothers = Dict.map (always .previous) motherData
-                            , children = Dict.map (always .previous) childData
-                            }
+                -- @todo: Keep lazy?
+                -- Lazy.map2
+                (\childData motherData ->
+                    { current =
+                        { mothers = Dict.map (always .current) motherData
+                        , children = Dict.map (always .current) childData
                         }
-                    )
+                    , previous =
+                        { mothers = Dict.map (always .previous) motherData
+                        , children = Dict.map (always .previous) childData
+                        }
+                    }
                 )
                 childMeasurementsSplitData
                 adultMeasurementsSplitData
 
         currentMeasurementData =
-            RemoteData.map (Lazy.map .current) currentAndPrevious
+            -- @todo: Keep lazy?
+            -- RemoteData.map (Lazy.map .current) currentAndPrevious
+            RemoteData.map .current currentAndPrevious
 
         previousMeasurementData =
-            RemoteData.map (Lazy.map .previous) currentAndPrevious
+            -- @todo: Keep lazy?
+            -- RemoteData.map (Lazy.map .previous) currentAndPrevious
+            RemoteData.map .previous currentAndPrevious
 
         measurementData =
             RemoteData.map3
                 (\historical ->
-                    Lazy.map2
-                        (\current previous ->
-                            { historical = historical
-                            , current = current
-                            , previous = previous
-                            }
-                        )
+                    -- @todo: Keep lazy?
+                    -- Lazy.map2
+                    \current previous ->
+                        { historical = historical
+                        , current = current
+                        , previous = previous
+                        }
                 )
                 historicalMeasurementData
                 currentMeasurementData
@@ -877,14 +885,21 @@ makeEditableSession sessionId db =
         (\offline ->
             let
                 checkedIn =
-                    lazy <|
-                        \_ -> cacheCheckedIn offline
+                    -- @todo
+                    -- lazy <|
+                    \_ -> cacheCheckedIn offline
 
                 summaryByParticipant =
-                    Lazy.map (summarizeByParticipant offline) checkedIn
+                    -- @todo: Keep lazy?
+                    -- Lazy.map (summarizeByParticipant offline) checkedIn
+                    summarizeByParticipant offline
+                        |> checkedIn
 
                 summaryByActivity =
-                    Lazy.map (summarizeByActivity offline) checkedIn
+                    -- @todo: Keep lazy?
+                    -- Lazy.map (summarizeByActivity offline) checkedIn
+                    summarizeByActivity offline
+                        |> checkedIn
             in
             { offlineSession = offline
             , update = NotAsked
