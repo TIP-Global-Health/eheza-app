@@ -73,6 +73,9 @@ viewContent language currentDate motherId activity model =
         Examination ->
             viewExaminationContent language currentDate motherId model.examinationData
 
+        PatientProvisions ->
+            viewPatientProvisionsContent language currentDate motherId model.patientProvisionsData
+
         _ ->
             []
 
@@ -554,6 +557,51 @@ viewExaminationContent language currentDate motherId data =
             [ viewForm
             , actions
             ]
+        ]
+    ]
+
+
+viewPatientProvisionsContent : Language -> NominalDate -> PersonId -> PatientProvisionsData -> List (Html Msg)
+viewPatientProvisionsContent language currentDate motherId data =
+    let
+        tasks =
+            [ Medication, Resources ]
+
+        viewTask task =
+            let
+                iconClass =
+                    case task of
+                        Medication ->
+                            "medication"
+
+                        Resources ->
+                            "resources"
+
+                isActive =
+                    task == data.activeTask
+
+                isCompleted =
+                    List.member task data.completedTasks
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActivePatientProvisionsTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ a attributes
+                    [ span [ class <| "icon-patient-provisions-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.PatientProvisionsTask task)
+                    ]
+                ]
+    in
+    [ div [ class "ui task segment blue" ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask tasks
         ]
     ]
 

@@ -46,6 +46,7 @@ import Pages.PrenatalActivity.Model
         , LmpRange(..)
         , LungsCPEOption(..)
         , NeckCPEOption(..)
+        , PatientProvisionsTask(..)
         , PreviousDeliveryPeriod(..)
         )
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
@@ -387,6 +388,7 @@ type TranslationId
     | ParticipantDemographicInformation
     | ParticipantInformation
     | PartnerReceivedCounseling
+    | PatientProvisionsTask PatientProvisionsTask
     | People
     | PersistentStorage Bool
     | Person
@@ -2265,6 +2267,18 @@ translationSet trans =
             { english = "Did partner recieve HIV Counseling and Testing during this pregnancy"
             , kinyarwanda = Nothing
             }
+
+        PatientProvisionsTask task ->
+            case task of
+                Medication ->
+                    { english = "Medication"
+                    , kinyarwanda = Nothing
+                    }
+
+                Resources ->
+                    { english = "Resources"
+                    , kinyarwanda = Nothing
+                    }
 
         People ->
             { english = "People"

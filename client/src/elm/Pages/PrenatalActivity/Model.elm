@@ -14,6 +14,7 @@ module Pages.PrenatalActivity.Model exposing
     , LmpRange(..)
     , LungsCPEOption(..)
     , MedicalHistoryForm
+    , MedicationForm
     , Model
     , Msg(..)
     , NeckCPEOption(..)
@@ -22,9 +23,12 @@ module Pages.PrenatalActivity.Model exposing
     , ObstetricFormSecondStep
     , ObstetricHistoryFormType(..)
     , ObstetricalExamForm
+    , PatientProvisionsData
+    , PatientProvisionsTask(..)
     , PregnancyDatingData
     , PregnancyDatingForm
     , PreviousDeliveryPeriod(..)
+    , ResourcesForm
     , SocialHistoryForm
     , VitalsForm
     , decodeLmpRange
@@ -81,6 +85,9 @@ type Msg
       -- ExaminationMsgs, Breast Exam
     | SetBreastExamBoolInput (Bool -> BreastExamForm -> BreastExamForm) Bool
     | SetBreastExamBreast BreastBEOption
+      -- PatientProvisionsMsgs
+    | SetActivePatientProvisionsTask PatientProvisionsTask
+    | SetPatientProvisionsTaskCompleted
 
 
 type alias Model =

@@ -1325,7 +1325,8 @@ input::placeholder {
 }
 
 .icon-history-task,
-.icon-examination-task {
+.icon-examination-task,
+.icon-patient-provisions-task {
   display: block;
   width: 120px;
   height: 120px;
@@ -1467,6 +1468,38 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-breastexam-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-medication {
+  .active &:after {
+    background-image: url(#{$img-path}icon-medication-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-medication-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-position: center, 5px;
+    width: 130px;
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-medication-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-resources {
+  .active &:after {
+    background-image: url(#{$img-path}icon-resources-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-resources-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-position: center, 5px;
+    width: 130px;
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-resources-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 

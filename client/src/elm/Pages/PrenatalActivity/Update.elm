@@ -697,6 +697,44 @@ update motherId activity db msg model =
             , []
             )
 
+        SetActivePatientProvisionsTask task ->
+            let
+                updatedData =
+                    model.patientProvisionsData
+                        |> (\data -> { data | activeTask = task })
+            in
+            ( { model | patientProvisionsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetPatientProvisionsTaskCompleted ->
+            let
+                updatedData =
+                    let
+                        activeTask =
+                            case model.patientProvisionsData.activeTask of
+                                Medication ->
+                                    Resources
+
+                                Resources ->
+                                    Medication
+
+                        completedTasks =
+                            if List.member model.patientProvisionsData.activeTask model.patientProvisionsData.completedTasks then
+                                model.patientProvisionsData.completedTasks
+
+                            else
+                                model.patientProvisionsData.activeTask :: model.patientProvisionsData.completedTasks
+                    in
+                    model.patientProvisionsData
+                        |> (\data -> { data | activeTask = activeTask, completedTasks = completedTasks })
+            in
+            ( { model | patientProvisionsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
 
 calculateBmi : NutritionAssessmentForm -> NutritionAssessmentForm
 calculateBmi form =
