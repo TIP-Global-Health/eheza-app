@@ -20,7 +20,7 @@ import RemoteData
 import Round
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Translate exposing (ChartPhrase(..), Language, TranslationId(ChartPhrase), translate)
+import Translate exposing (ChartPhrase(..), Language, TranslationId(..), translate)
 import Utils.NominalDate exposing (Days(..))
 import ZScore.Model exposing (..)
 import ZScore.Utils exposing (valueForZScore)

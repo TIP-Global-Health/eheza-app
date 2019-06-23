@@ -53,39 +53,39 @@ decodeSavedMeasurement =
                 case s of
                     "attendance" ->
                         decodeWithEntityUuid decodeAttendance
-                            |> map (uncurry SavedAttendance)
+                            |> map (\( a, b ) -> SavedAttendance a b)
 
                     "family_planning" ->
                         decodeWithEntityUuid decodeFamilyPlanning
-                            |> map (uncurry SavedFamilyPlanning)
+                            |> map (\( a, b ) -> SavedFamilyPlanning a b)
 
                     "participant_consent" ->
                         decodeWithEntityUuid decodeParticipantConsent
-                            |> map (uncurry SavedParticipantConsent)
+                            |> map (\( a, b ) -> SavedParticipantConsent a b)
 
                     "height" ->
                         decodeWithEntityUuid decodeHeight
-                            |> map (uncurry SavedHeight)
+                            |> map (\( a, b ) -> SavedHeight a b)
 
                     "muac" ->
                         decodeWithEntityUuid decodeMuac
-                            |> map (uncurry SavedMuac)
+                            |> map (\( a, b ) -> SavedMuac a b)
 
                     "nutrition" ->
                         decodeWithEntityUuid decodeNutrition
-                            |> map (uncurry SavedChildNutrition)
+                            |> map (\( a, b ) -> SavedChildNutrition a b)
 
                     "photo" ->
                         decodeWithEntityUuid decodePhoto
-                            |> map (uncurry SavedPhoto)
+                            |> map (\( a, b ) -> SavedPhoto a b)
 
                     "weight" ->
                         decodeWithEntityUuid decodeWeight
-                            |> map (uncurry SavedWeight)
+                            |> map (\( a, b ) -> SavedWeight a b)
 
                     "counseling_session" ->
                         decodeWithEntityUuid decodeCounselingSession
-                            |> map (uncurry SavedCounselingSession)
+                            |> map (\( a, b ) -> SavedCounselingSession a b)
 
                     _ ->
                         fail <|
@@ -122,7 +122,7 @@ toEntityUuidDict =
 
 decodeWithEntityUuid : Decoder a -> Decoder ( EntityUuid b, a )
 decodeWithEntityUuid decoder =
-    map2 (,)
+    map2 (\a b -> ( a, b ))
         (field "uuid" decodeEntityUuid)
         decoder
 
@@ -209,7 +209,7 @@ decodeNutrition =
 decodeCounselingSession : Decoder CounselingSession
 decodeCounselingSession =
     decodeChildMeasurement <|
-        map2 (,)
+        map2 (\a b -> ( a, b ))
             (field "timing" decodeCounselingTiming)
             (field "topics" (decodeEverySet decodeEntityUuid))
 

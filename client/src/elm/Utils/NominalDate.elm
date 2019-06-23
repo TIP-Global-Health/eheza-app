@@ -4,7 +4,7 @@ module Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, e
 Gizra.NominalDate.
 -}
 
-import Date.Extra exposing (Interval(Day), diff, fromParts, numberToMonth)
+import Date.Extra exposing (Interval(..), diff, fromParts, numberToMonth)
 import Form.Field exposing (Field)
 import Form.Init exposing (setGroup, setString)
 import Form.Validate as Validate exposing (Validation, field)

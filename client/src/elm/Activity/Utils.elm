@@ -639,7 +639,7 @@ hasAnyCompletedMotherActivity session motherId measurements =
 hasAnyCompletedChildActivity : MeasurementData ChildMeasurements -> Bool
 hasAnyCompletedChildActivity measurements =
     getAllChildActivities
-        |> List.any (flip hasCompletedChildActivity measurements)
+        |> List.any (\a -> hasCompletedChildActivity a measurements)
 
 
 {-| See whether either the mother, or any of her children, has any completed activity.

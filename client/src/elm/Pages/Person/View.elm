@@ -12,7 +12,7 @@ import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, al
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
-import Date.Extra as Date exposing (Interval(Year))
+import Date.Extra as Date exposing (Interval(..))
 import DateSelector.SelectorDropdown
 import Form exposing (Form)
 import Form.Field
@@ -159,10 +159,8 @@ viewParticipantDetailsForm language currentDate db id person =
                         [ class "ui image" ]
                         [ span
                             [ class ("icon-participant add " ++ typeForAddFamilyMember)
-                            , style
-                                [ ( "height", "120px" )
-                                , ( "width", "120px" )
-                                ]
+                            , style "height" "120px"
+                            , style "width" "120px"
                             ]
                             []
                         ]

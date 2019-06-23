@@ -68,7 +68,7 @@ dateWithMonth date m =
 
 isLeapYear : Int -> Bool
 isLeapYear y =
-    y % 4 == 0 && y % 100 /= 0 || y % 400 == 0
+    modBy 4 y == 0 && modBy 100 y /= 0 || modBy 400 y == 0
 
 
 daysInMonth : Int -> Month -> Int

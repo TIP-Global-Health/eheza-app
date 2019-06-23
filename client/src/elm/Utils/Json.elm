@@ -58,7 +58,7 @@ decodeListAsIntDict decoder =
 
 decodeListAsDictByProperty : String -> Decoder a -> Decoder v -> (a -> comparable) -> Decoder (Dict String v)
 decodeListAsDictByProperty property keyDecoder valDecoder stringFunc =
-    list (map2 (,) (field property keyDecoder) valDecoder)
+    list (map2 (\a b -> ( a, b )) (field property keyDecoder) valDecoder)
         |> andThen
             (\valList ->
                 List.map (\( id, value ) -> ( stringFunc id, value )) valList
@@ -69,7 +69,7 @@ decodeListAsDictByProperty property keyDecoder valDecoder stringFunc =
 
 decodeListAsIntDictByProperty : String -> Decoder a -> Decoder v -> (a -> comparable) -> Decoder (Dict Int v)
 decodeListAsIntDictByProperty property keyDecoder valDecoder stringFunc =
-    list (map2 (,) (field property keyDecoder) valDecoder)
+    list (map2 (\a b -> ( a, b )) (field property keyDecoder) valDecoder)
         |> andThen
             (\valList ->
                 List.map (\( id, value ) -> ( stringFunc id, value )) valList
