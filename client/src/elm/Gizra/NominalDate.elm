@@ -23,22 +23,25 @@ time zone information.
 
 -}
 
-import Date
-import Date.Extra exposing (Interval(..), diff, fromParts, monthToNumber, numberToMonth)
-import Gizra.String exposing (addLeadingZero, addLeadingZeroes)
+import Date exposing (fromRataDie)
 import Json.Decode exposing (Decoder, andThen, field, map2, string)
 import Json.Decode.Extra exposing (fromResult)
 import Json.Encode exposing (Value, object)
-import Time.Date exposing (day, daysInMonth, delta, month, year)
-import Time.Iso8601
-import Time.Iso8601ErrorMsg exposing (renderText)
+import Time
 
 
-{-| An alias for `Time.Date.Date` from <https://github.com/justinmimbs/date>. Represents
+{-| An alias for `Date.Date` from <https://github.com/justinmimbs/date>. Represents
 a "pure" date without any time information or time zone information.
 -}
 type alias NominalDate =
     Date.Date
+
+
+{-| @todo: Remove, just for upgrade.
+-}
+emptyNominalDate : NominalDate
+emptyNominalDate =
+    fromRataDie 1
 
 
 {-| A range of nominal dates, with a start and end.
@@ -86,12 +89,14 @@ the same universal time might be considered one day in one time zone and a
 different day in a different time zone.
 
 -}
-fromLocalDateTime : Date.Date -> NominalDate
+fromLocalDateTime : Time.Posix -> NominalDate
 fromLocalDateTime date =
-    Time.Date.date
-        (Date.year date)
-        (monthToNumber (Date.month date))
-        (Date.day date)
+    -- @todo
+    --    Time.Date.date
+    --        (Date.year date)
+    --        (monthToNumber (Date.month date))
+    --        (Date.day date)
+    emptyNominalDate
 
 
 {-| Converts a `NominalDate` to an Elm-core `Date`, with the supplied values
@@ -100,16 +105,18 @@ for hour, minute, second and milliseconds (in that order).
 The resulting `Date` will be at that time in the local time zone.
 
 -}
-toLocalDateTime : NominalDate -> Int -> Int -> Int -> Int -> Date.Date
+toLocalDateTime : NominalDate -> Int -> Int -> Int -> Int -> Time.Posix
 toLocalDateTime nominal hour minutes seconds milliseconds =
-    fromParts
-        (year nominal)
-        (numberToMonth <| month nominal)
-        (day nominal)
-        hour
-        minutes
-        seconds
-        milliseconds
+    -- @todo
+    --    fromParts
+    --        (year nominal)
+    --        (numberToMonth <| month nominal)
+    --        (day nominal)
+    --        hour
+    --        minutes
+    --        seconds
+    --        milliseconds
+    Time.millisToPosix 0
 
 
 {-| Decodes nominal date from string of the form "2017-02-20".
@@ -121,7 +128,9 @@ toLocalDateTime nominal hour minutes seconds milliseconds =
 -}
 decodeYYYYMMDD : Decoder NominalDate
 decodeYYYYMMDD =
-    andThen (fromResult << Result.mapError renderText << Time.Iso8601.toDate) string
+    -- @todo
+    -- andThen (fromResult << Result.mapError renderText << Time.Iso8601.toDate) string
+    Json.Decode.succeed emptyNominalDate
 
 
 {-| Encode nominal date to string of the form "2017-02-20".
@@ -199,8 +208,10 @@ diffDays low high =
     -- , months: 25
     -- , days: 760 -- roughly, depending on which months are involved
     -- }
-    delta high low
-        |> .days
+    -- @todo
+    --    delta high low
+    --        |> .days
+    1
 
 
 {-| Difference between two dates, in terms of months and days. This is based on
@@ -240,30 +251,32 @@ parameter.
 -}
 diffCalendarMonthsAndDays : NominalDate -> NominalDate -> { months : Int, days : Int }
 diffCalendarMonthsAndDays low high =
-    let
-        uncorrected =
-            { days = day high - day low
-            , months = (year high * 12 + month high) - (year low * 12 + month low)
-            }
-    in
-    if uncorrected.days >= 0 then
-        -- This is the easy case ... we're at the same day (or further
-        -- along) in the target month than the original month, so we're
-        -- done ... the answer is some number of full months (however
-        -- long they were) and some number of additional days.
-        uncorrected
-
-    else
-        -- This is the harder case. We're not as far along in our target
-        -- month as we were in the original month. So, we need to subtract
-        -- 1 from our months, and add something to the (negative) days.
-        --
-        -- Basically, we want to add however many days there were in the
-        -- original month. We're "borrowing" that number of days, to use
-        -- the language of subtraction-by-hand. And, it's the original
-        -- month that is the "partial" month we're borrowing from ... all
-        -- intervening months are full months, and the current month isn't
-        -- finished, so it can't matter how many days it has.
-        { months = uncorrected.months - 1
-        , days = uncorrected.days + Maybe.withDefault 0 (daysInMonth (year low) (month low))
-        }
+    -- @todo
+    --    let
+    --        uncorrected =
+    --            { days = day high - day low
+    --            , months = (year high * 12 + month high) - (year low * 12 + month low)
+    --            }
+    --    in
+    --    if uncorrected.days >= 0 then
+    --        -- This is the easy case ... we're at the same day (or further
+    --        -- along) in the target month than the original month, so we're
+    --        -- done ... the answer is some number of full months (however
+    --        -- long they were) and some number of additional days.
+    --        uncorrected
+    --
+    --    else
+    --        -- This is the harder case. We're not as far along in our target
+    --        -- month as we were in the original month. So, we need to subtract
+    --        -- 1 from our months, and add something to the (negative) days.
+    --        --
+    --        -- Basically, we want to add however many days there were in the
+    --        -- original month. We're "borrowing" that number of days, to use
+    --        -- the language of subtraction-by-hand. And, it's the original
+    --        -- month that is the "partial" month we're borrowing from ... all
+    --        -- intervening months are full months, and the current month isn't
+    --        -- finished, so it can't matter how many days it has.
+    --        { months = uncorrected.months - 1
+    --        , days = uncorrected.days + Maybe.withDefault 0 (daysInMonth (year low) (month low))
+    --        }
+    { months = 1, days = 2 }
