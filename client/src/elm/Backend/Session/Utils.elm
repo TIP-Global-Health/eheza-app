@@ -7,9 +7,7 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
-import Lazy exposing (Lazy, lazy)
 import RemoteData exposing (RemoteData(..))
-import Time.Date
 
 
 {-| Given a mother's id, get all her children from the offline session.
