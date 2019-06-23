@@ -209,10 +209,7 @@ diffDays low high =
     -- , months: 25
     -- , days: 760 -- roughly, depending on which months are involved
     -- }
-    -- @todo
-    --    delta high low
-    --        |> .days
-    1
+    Date.diff Date.Days high low
 
 
 {-| Difference between two dates, in terms of months and days. This is based on
