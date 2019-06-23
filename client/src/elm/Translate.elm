@@ -949,7 +949,7 @@ translationSet trans =
             }
 
         BreastExamQuestion ->
-            { english = "Dis you show the patient how to perform a self breast exam?"
+            { english = "Did you show the patient how to perform a self breast exam"
             , kinyarwanda = Nothing
             }
 
@@ -1009,7 +1009,7 @@ translationSet trans =
             }
 
         Celcius ->
-            { english = "Celcius"
+            { english = "celcius"
             , kinyarwanda = Nothing
             }
 
@@ -1339,7 +1339,7 @@ translationSet trans =
             }
 
         EddHeader ->
-            { english = "Estimated Date of Delivery:"
+            { english = "Estimated Date of Delivery"
             , kinyarwanda = Nothing
             }
 
@@ -1359,7 +1359,7 @@ translationSet trans =
             }
 
         EgaHeader ->
-            { english = "Estimated Gestational Age:"
+            { english = "Estimated Gestational Age"
             , kinyarwanda = Nothing
             }
 
@@ -1797,17 +1797,17 @@ translationSet trans =
             }
 
         LmpDateConfidentHeader ->
-            { english = "Is the Patient confident of LMP Date?"
+            { english = "Is the Patient confident of LMP Date"
             , kinyarwanda = Nothing
             }
 
         LmpDateHeader ->
-            { english = "Last Menstrual Period Date:"
+            { english = "Last Menstrual Period Date"
             , kinyarwanda = Nothing
             }
 
         LmpRangeHeader ->
-            { english = "When was the Patient's Last Menstrual Period?"
+            { english = "When was the Patient's Last Menstrual Period"
             , kinyarwanda = Nothing
             }
 
