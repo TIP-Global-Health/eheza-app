@@ -111,7 +111,7 @@ validatePerson maybeRelated maybeCurrentDate =
                 |> field birthDate
                 |> andThen (withNamesAndBirthDate firstNameValue secondNameValue)
 
-        withNamesAndBirthDate firstNameValue secondNameValue birthDate =
+        withNamesAndBirthDate firstNameValue secondNameValue birthDate_ =
             let
                 expectedAge =
                     case externalExpectedAge of
@@ -125,7 +125,7 @@ validatePerson maybeRelated maybeCurrentDate =
                             -- If we could accept either, then see what birthdate
                             -- has actually been entered, if any.
                             maybeCurrentDate
-                                |> Maybe.andThen (\currentDate -> isAdult currentDate birthDate)
+                                |> Maybe.andThen (\currentDate -> isAdult currentDate birthDate_)
                                 |> (\isAdult ->
                                         case isAdult of
                                             Just True ->
@@ -144,7 +144,7 @@ validatePerson maybeRelated maybeCurrentDate =
                 |> andMap (succeed <| String.trim secondNameValue)
                 |> andMap (field nationalIdNumber validateNationalIdNumber)
                 |> andMap (field photo <| nullable string)
-                |> andMap (succeed birthDate)
+                |> andMap (succeed birthDate_)
                 |> andMap (field birthDateEstimated bool)
                 |> andMap (field gender validateGender)
                 |> andMap (field hivStatus validateHivStatus)
@@ -283,7 +283,7 @@ validateBirthDate expectedAge maybeCurrentDate =
                             let
                                 -- Convert to NominalDate.
                                 maybeBirthDate =
-                                    Time.Iso8601.toDate s
+                                    Date.fromIsoString s
                                         |> Result.toMaybe
                             in
                             maybeBirthDate
