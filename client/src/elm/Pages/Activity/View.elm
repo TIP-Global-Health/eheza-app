@@ -9,7 +9,6 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Lazy exposing (force)
 import List as List
 import Maybe.Extra
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
@@ -18,6 +17,7 @@ import Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, norma
 import Participant.Model exposing (Participant)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage)
+import Utils.Upgrade exposing (force)
 import ZScore.Model
 
 

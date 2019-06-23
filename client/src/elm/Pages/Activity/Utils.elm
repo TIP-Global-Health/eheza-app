@@ -7,13 +7,13 @@ import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getMot
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html)
-import Lazy exposing (force)
 import Measurement.Model
 import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Measurement.View
 import Pages.Activity.Model exposing (..)
 import Pages.Session.Model
 import Translate exposing (Language)
+import Utils.Upgrade exposing (force)
 import ZScore.Model
 
 

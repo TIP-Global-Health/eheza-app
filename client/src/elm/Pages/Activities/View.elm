@@ -6,12 +6,12 @@ import Backend.Session.Model exposing (EditableSession)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Lazy exposing (force)
 import List as List
 import Pages.Activities.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, viewModal)
+import Utils.Upgrade exposing (force)
 
 
 view : Language -> ( SessionId, EditableSession ) -> Model -> Html Msg

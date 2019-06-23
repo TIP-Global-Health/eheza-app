@@ -8,9 +8,9 @@ import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasu
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData)
 import EverySet
-import Lazy exposing (force)
 import Measurement.Model exposing (..)
 import Pages.Session.Model
+import Utils.Upgrade exposing (force)
 
 
 getInputConstraintsHeight : FloatInputConstraints

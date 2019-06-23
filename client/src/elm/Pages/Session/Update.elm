@@ -6,7 +6,6 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (emptyMotherMeasurementData, getMotherMeasurementData)
-import Lazy exposing (force)
 import Maybe.Extra
 import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Pages.Activities.Update
@@ -18,6 +17,7 @@ import Pages.Participant.Update
 import Pages.Participants.Update
 import Pages.Session.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
+import Utils.Upgrade exposing (force)
 
 
 update : SessionId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

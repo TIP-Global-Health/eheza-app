@@ -15,12 +15,12 @@ import Backend.Session.Utils exposing (getChildren, getMotherMeasurementData)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
-import Lazy exposing (force)
 import Pages.Attendance.Model exposing (..)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
+import Utils.Upgrade exposing (force)
 
 
 view : Language -> ( SessionId, EditableSession ) -> Model -> Html Msg

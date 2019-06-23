@@ -11,7 +11,6 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
-import Lazy exposing (force)
 import Maybe.Extra
 import Measurement.Model
 import Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getMotherForm)
@@ -24,6 +23,7 @@ import Participant.Utils exposing (childParticipant, motherParticipant)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderDate)
+import Utils.Upgrade exposing (force)
 import ZScore.Model
 
 
