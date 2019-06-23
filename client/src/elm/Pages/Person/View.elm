@@ -87,7 +87,7 @@ viewRelationship language currentDate db relationship =
         [ viewWebData language (viewParticipant language currentDate (Just relationship) relationship.relatedTo) identity relatedTo ]
 
 
-viewPmtctParticipant : Language -> EntityUuidDictList ClinicId Clinic -> PmtctParticipant -> Html App.Model.Msg
+viewPmtctParticipant : Language -> Dict ClinicId Clinic -> PmtctParticipant -> Html App.Model.Msg
 viewPmtctParticipant language clinics participant =
     let
         content =

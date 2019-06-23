@@ -41,7 +41,7 @@ currentValueWithId data =
 
 {-| Like `currentValue`, but for cases where we have a list of values.
 -}
-currentValues : MeasurementData (EntityUuidDictList id value) -> List ( Maybe id, value )
+currentValues : MeasurementData (Dict id value) -> List ( Maybe id, value )
 currentValues data =
     data.current
         |> Dict.map (\k v -> ( Just k, v ))
@@ -56,7 +56,7 @@ mapMeasurementData dataFunc measurements =
     }
 
 
-splitMotherMeasurements : SessionId -> EntityUuidDict PersonId MotherMeasurementList -> EntityUuidDict PersonId { current : MotherMeasurements, previous : MotherMeasurements }
+splitMotherMeasurements : SessionId -> Dict PersonId MotherMeasurementList -> Dict PersonId { current : MotherMeasurements, previous : MotherMeasurements }
 splitMotherMeasurements sessionId =
     Dict.map
         (\_ list ->
@@ -87,7 +87,7 @@ splitMotherMeasurements sessionId =
         )
 
 
-splitChildMeasurements : SessionId -> EntityUuidDict PersonId ChildMeasurementList -> EntityUuidDict PersonId { current : ChildMeasurements, previous : ChildMeasurements }
+splitChildMeasurements : SessionId -> Dict PersonId ChildMeasurementList -> Dict PersonId { current : ChildMeasurements, previous : ChildMeasurements }
 splitChildMeasurements sessionId =
     Dict.map
         (\_ list ->
@@ -133,7 +133,7 @@ splitChildMeasurements sessionId =
 
 {-| Picks out current and previous values from a list of measurements.
 -}
-getCurrentAndPrevious : SessionId -> EntityUuidDictList (EntityUuid id) (Measurement a b) -> { current : EntityUuidDictList (EntityUuid id) (Measurement a b), previous : Maybe ( EntityUuid id, Measurement a b ) }
+getCurrentAndPrevious : SessionId -> Dict (EntityUuid id) (Measurement a b) -> { current : Dict (EntityUuid id) (Measurement a b), previous : Maybe ( EntityUuid id, Measurement a b ) }
 getCurrentAndPrevious sessionId =
     let
         -- This is designed to iterate through each list only once, to get both

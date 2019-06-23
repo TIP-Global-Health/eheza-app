@@ -51,15 +51,15 @@ overkill for now.
 
 -}
 type alias ExpectedParticipants =
-    { byId : EntityUuidDict PmtctParticipantId PmtctParticipant
-    , byChildId : EntityUuidDict PersonId (List PmtctParticipant)
-    , byMotherId : EntityUuidDict PersonId (List PmtctParticipant)
+    { byId : Dict PmtctParticipantId PmtctParticipant
+    , byChildId : Dict PersonId (List PmtctParticipant)
+    , byMotherId : Dict PersonId (List PmtctParticipant)
     }
 
 
 type alias CheckedIn =
-    { mothers : EntityUuidDictList PersonId Person
-    , children : EntityUuidDictList PersonId Person
+    { mothers : Dict PersonId Person
+    , children : Dict PersonId Person
     }
 
 
@@ -74,7 +74,7 @@ type alias OfflineSession =
     { session : Session
 
     -- Some configuration data.
-    , allParticipantForms : EntityUuidDictList ParticipantFormId ParticipantForm
+    , allParticipantForms : Dict ParticipantFormId ParticipantForm
     , everyCounselingSchedule : EveryCounselingSchedule
 
     -- This reflects everyone who is expected at the session, given the
@@ -83,8 +83,8 @@ type alias OfflineSession =
 
     -- These reflect the `Person` record for each person included in
     -- `participants`.
-    , mothers : EntityUuidDictList PersonId Person
-    , children : EntityUuidDictList PersonId Person
+    , mothers : Dict PersonId Person
+    , children : Dict PersonId Person
 
     -- This is lazy because it requires some significant calculation, and we
     -- don't always need it.
@@ -113,7 +113,7 @@ type alias EditableSession =
     { offlineSession : OfflineSession
     , update : WebData ()
     , checkedIn :
-        Lazy { mothers : EntityUuidDictList PersonId Person, children : EntityUuidDictList PersonId Person }
+        Lazy { mothers : Dict PersonId Person, children : Dict PersonId Person }
     , summaryByParticipant : Lazy SummaryByParticipant
     , summaryByActivity : Lazy SummaryByActivity
     }
@@ -124,15 +124,15 @@ to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
     { closeSessionRequest : WebData ()
-    , saveAttendanceRequest : EntityUuidDict PersonId (WebData ())
-    , saveCounselingSessionRequest : EntityUuidDict PersonId (WebData ())
-    , saveFamilyPlanningRequest : EntityUuidDict PersonId (WebData ())
-    , saveHeightRequest : EntityUuidDict PersonId (WebData ())
-    , saveMuacRequest : EntityUuidDict PersonId (WebData ())
-    , saveNutritionRequest : EntityUuidDict PersonId (WebData ())
-    , saveParticipantConsentRequest : EntityUuidDict PersonId (WebData ())
-    , savePhotoRequest : EntityUuidDict PersonId (WebData ())
-    , saveWeightRequest : EntityUuidDict PersonId (WebData ())
+    , saveAttendanceRequest : Dict PersonId (WebData ())
+    , saveCounselingSessionRequest : Dict PersonId (WebData ())
+    , saveFamilyPlanningRequest : Dict PersonId (WebData ())
+    , saveHeightRequest : Dict PersonId (WebData ())
+    , saveMuacRequest : Dict PersonId (WebData ())
+    , saveNutritionRequest : Dict PersonId (WebData ())
+    , saveParticipantConsentRequest : Dict PersonId (WebData ())
+    , savePhotoRequest : Dict PersonId (WebData ())
+    , saveWeightRequest : Dict PersonId (WebData ())
     }
 
 

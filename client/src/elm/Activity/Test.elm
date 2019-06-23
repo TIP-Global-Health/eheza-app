@@ -237,7 +237,7 @@ childId =
     toEntityUuid "1"
 
 
-makeChildren : TestCase -> EntityUuidDictList PersonId Person
+makeChildren : TestCase -> Dict PersonId Person
 makeChildren test =
     Dict.fromList
         [ ( childId, makeChild test )

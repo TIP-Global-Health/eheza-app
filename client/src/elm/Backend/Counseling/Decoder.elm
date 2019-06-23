@@ -54,7 +54,7 @@ decodeCounselingSchedule =
 {-| Combines multiple counseling schedule entities into a dictionary keyed by
 the timing. Multiple entities with the same timing are combined.
 -}
-combineCounselingSchedules : EntityUuidDict CounselingTopicId CounselingTopic -> List CounselingSchedule -> EveryCounselingSchedule
+combineCounselingSchedules : Dict CounselingTopicId CounselingTopic -> List CounselingSchedule -> EveryCounselingSchedule
 combineCounselingSchedules allTopics =
     let
         go schedule =

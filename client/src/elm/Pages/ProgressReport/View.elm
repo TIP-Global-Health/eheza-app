@@ -65,7 +65,7 @@ view language zscores childId ( sessionId, session ) db =
 {-| This function is more complex than one would like ... when reviewing the
 data model in future, it might be nice to take this function into account.
 -}
-viewFoundChild : Language -> ZScore.Model.Model -> ( PersonId, Person ) -> ( SessionId, EditableSession ) -> ( EntityUuidDictList SessionId Session, ChildMeasurementList ) -> Html Pages.Session.Model.Msg
+viewFoundChild : Language -> ZScore.Model.Model -> ( PersonId, Person ) -> ( SessionId, EditableSession ) -> ( Dict SessionId Session, ChildMeasurementList ) -> Html Pages.Session.Model.Msg
 viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expectedSessions, historical ) =
     let
         backIcon =

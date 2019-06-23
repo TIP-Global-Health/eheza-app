@@ -420,7 +420,7 @@ expectMotherActivity session motherId activity =
 
 {-| Which participant forms would we expect this mother to consent to in this session?
 -}
-expectParticipantConsent : EditableSession -> PersonId -> EntityUuidDictList ParticipantFormId ParticipantForm
+expectParticipantConsent : EditableSession -> PersonId -> Dict ParticipantFormId ParticipantForm
 expectParticipantConsent session motherId =
     let
         previouslyConsented =
@@ -440,7 +440,7 @@ the activity and have the activity pending. (This may not add up to all the
 children, because we only consider a child "pending" if they are checked in and
 the activity is expected.
 -}
-summarizeChildActivity : ChildActivity -> OfflineSession -> CheckedIn -> CompletedAndPending (EntityUuidDictList PersonId Person)
+summarizeChildActivity : ChildActivity -> OfflineSession -> CheckedIn -> CompletedAndPending (Dict PersonId Person)
 summarizeChildActivity activity session checkedIn =
     checkedIn.children
         |> Dict.filter (\childId _ -> expectChildActivity session childId activity)
@@ -453,7 +453,7 @@ the activity and have the activity pending. (This may not add up to all the
 mothers, because we only consider a mother "pending" if they are checked in and
 the activity is expected.
 -}
-summarizeMotherActivity : MotherActivity -> OfflineSession -> CheckedIn -> CompletedAndPending (EntityUuidDictList PersonId Person)
+summarizeMotherActivity : MotherActivity -> OfflineSession -> CheckedIn -> CompletedAndPending (Dict PersonId Person)
 summarizeMotherActivity activity session checkedIn =
     -- For participant consent, we only consider the activity to be completed once
     -- all expected consents have been saved.

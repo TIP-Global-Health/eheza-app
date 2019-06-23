@@ -62,7 +62,7 @@ type alias Model =
     , zscores : ZScore.Model.Model
 
     -- What data did we want last time we checked? We track this so we can
-    -- forget data we don't want any longer. Using an EntityUuidDict relies on the
+    -- forget data we don't want any longer. Using an Dict relies on the
     -- relevant `Msg` values behaving well for `Debug.toString`, which should
     -- typically be fine. The time reflects the last time the data was wanted,
     -- permitting us to keep recently wanted data around for a little while
@@ -137,7 +137,7 @@ type alias LoggedInModel =
     , nurse : ( NurseId, Nurse )
 
     -- A set of pages for every "open" editable session.
-    , sessionPages : EntityUuidDict SessionId Pages.Session.Model.Model
+    , sessionPages : Dict SessionId Pages.Session.Model.Model
     }
 
 

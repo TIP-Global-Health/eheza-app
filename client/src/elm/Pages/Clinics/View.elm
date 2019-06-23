@@ -22,7 +22,6 @@ import Html.Events exposing (..)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import RemoteData exposing (RemoteData(..), WebData)
-import Time.Date exposing (delta)
 import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewError, viewWebData)
 
@@ -80,7 +79,7 @@ we could show something about the sync status here ... might want to know how
 up-to-date things are.
 
 -}
-viewLoadedClinicList : Language -> Nurse -> ( EntityUuidDictList ClinicId Clinic, EntityUuidDictList HealthCenterId SyncData ) -> Html Msg
+viewLoadedClinicList : Language -> Nurse -> ( Dict ClinicId Clinic, Dict HealthCenterId SyncData ) -> Html Msg
 viewLoadedClinicList language user ( clinics, sync ) =
     let
         title =
@@ -93,7 +92,9 @@ viewLoadedClinicList language user ( clinics, sync ) =
         synced =
             clinics
                 |> Dict.filter (\_ clinic -> Dict.member clinic.healthCenterId sync)
-                |> Dict.sortBy .name
+                |> Dict.toList
+                |> List.sortBy (Tuple.second >> .name)
+                |> Dict.fromList
 
         clinicView =
             synced
@@ -154,13 +155,13 @@ viewClinic language currentDate nurse clinicId db =
         (RemoteData.append clinic sessions)
 
 
-viewLoadedClinic : Language -> NominalDate -> Nurse -> ClinicId -> ( Maybe Clinic, EntityUuidDictList SessionId Session ) -> Html Msg
+viewLoadedClinic : Language -> NominalDate -> Nurse -> ClinicId -> ( Maybe Clinic, Dict SessionId Session ) -> Html Msg
 viewLoadedClinic language currentDate nurse clinicId ( clinic, sessions ) =
     case clinic of
-        Just clinic ->
+        Just clinic_ ->
             div
                 [ class "wrap wrap-alt-2" ]
-                (viewFoundClinic language currentDate nurse clinicId clinic sessions)
+                (viewFoundClinic language currentDate nurse clinicId clinic_ sessions)
 
         Nothing ->
             Pages.PageNotFound.View.viewPage language
@@ -173,7 +174,7 @@ if it is open. (That is, the dates are correct and it's not explicitly closed).
 We'll show anything which was scheduled to start or end within the last week
 or the next week.
 -}
-viewFoundClinic : Language -> NominalDate -> Nurse -> ClinicId -> Clinic -> EntityUuidDictList SessionId Session -> List (Html Msg)
+viewFoundClinic : Language -> NominalDate -> Nurse -> ClinicId -> Clinic -> Dict SessionId Session -> List (Html Msg)
 viewFoundClinic language currentDate nurse clinicId clinic sessions =
     let
         daysToShow =
@@ -182,7 +183,7 @@ viewFoundClinic language currentDate nurse clinicId clinic sessions =
         recentAndUpcomingSessions =
             sessions
                 |> Dict.filter
-                    (\sessionId session ->
+                    (\_ session ->
                         let
                             deltaToEndDate =
                                 delta session.scheduledDate.end currentDate

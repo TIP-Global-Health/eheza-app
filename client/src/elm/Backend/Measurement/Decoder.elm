@@ -1,4 +1,4 @@
-module Backend.Measurement.Decoder exposing (decodeAttendance, decodeChildMeasurement, decodeChildMeasurementList, decodeChildNutritionSign, decodeCounselingSession, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeHeight, decodeHistoricalMeasurements, decodeMeasurement, decodeMotherMeasurement, decodeMotherMeasurementList, decodeMuac, decodeNutrition, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodeSavedMeasurement, decodeWeight, decodeWithEntityUuid, toEntityUuidDict)
+module Backend.Measurement.Decoder exposing (decodeAttendance, decodeChildMeasurement, decodeChildMeasurementList, decodeChildNutritionSign, decodeCounselingSession, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeHeight, decodeHistoricalMeasurements, decodeMeasurement, decodeMotherMeasurement, decodeMotherMeasurementList, decodeMuac, decodeNutrition, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodeSavedMeasurement, decodeWeight, decodeWithEntityUuid, toDict)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
@@ -100,21 +100,21 @@ decodeHistoricalMeasurements =
         |> requiredAt [ "participants", "mother_activity" ]
             (oneOf
                 [ decodeEmptyArrayAs Dict.empty
-                , map toEntityUuidDict (dict decodeMotherMeasurementList)
+                , map toDict (dict decodeMotherMeasurementList)
                 ]
             )
         |> requiredAt [ "participants", "child_activity" ]
             (oneOf
                 [ decodeEmptyArrayAs Dict.empty
-                , map toEntityUuidDict (dict decodeChildMeasurementList)
+                , map toDict (dict decodeChildMeasurementList)
                 ]
             )
 
 
 {-| TODO: Put in elm-essentials.
 -}
-toEntityUuidDict : Dict String v -> EntityUuidDict (EntityUuid k) v
-toEntityUuidDict =
+toDict : Dict String v -> Dict (EntityUuid k) v
+toDict =
     Dict.foldl (\key value acc -> Dict.insert (toEntityUuid key) value acc) Dict.empty
 
 

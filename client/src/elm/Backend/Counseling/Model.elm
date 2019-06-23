@@ -61,4 +61,4 @@ them on the client.
 
 -}
 type alias EveryCounselingSchedule =
-    EveryDict CounselingTiming (EntityUuidDictList CounselingTopicId CounselingTopic)
+    EveryDict CounselingTiming (Dict CounselingTopicId CounselingTopic)

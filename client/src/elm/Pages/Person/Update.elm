@@ -13,7 +13,7 @@ import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
-update : NominalDate -> Msg -> EntityUuidDict PersonId (WebData Person) -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update : NominalDate -> Msg -> Dict PersonId (WebData Person) -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate msg people model =
     case msg of
         MsgForm relation subMsg ->

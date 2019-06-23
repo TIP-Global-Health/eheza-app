@@ -62,9 +62,9 @@ type alias ModelMother =
 
 -}
 type alias ParticipantFormUI =
-    { expected : EntityUuidDictList ParticipantFormId ParticipantForm
+    { expected : Dict ParticipantFormId ParticipantForm
     , view : Maybe ParticipantFormId
-    , progress : EntityUuidDict ParticipantFormId ParticipantFormProgress
+    , progress : Dict ParticipantFormId ParticipantFormProgress
     }
 
 

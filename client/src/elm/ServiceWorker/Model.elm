@@ -62,7 +62,7 @@ type IncomingMsg
     = RegistrationSucceeded
     | RegistrationFailed String
     | SetNewWorker NewWorker
-    | SetSyncData (EntityUuidDictList HealthCenterId SyncData)
+    | SetSyncData (Dict HealthCenterId SyncData)
     | NewRevisions (List Revision)
 
 

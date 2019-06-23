@@ -704,7 +704,7 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
 -}
 
 
-viewCounselingTopics : Language -> Bool -> EntityUuidDictList CounselingTopicId CounselingTopic -> EverySet CounselingTopicId -> List (Html MsgChild)
+viewCounselingTopics : Language -> Bool -> Dict CounselingTopicId CounselingTopic -> EverySet CounselingTopicId -> List (Html MsgChild)
 viewCounselingTopics language completed expectedTopics selectedTopics =
     expectedTopics
         |> Dict.map
@@ -754,7 +754,7 @@ viewMother language activity measurements model =
 -- ParticipantConsent ->
 --    viewParticipantConsent language (mapMeasurementData .consent measurements) model.participantConsent
 {-
-   viewParticipantConsent : Language -> MeasurementData (EntityUuidDictList ParticipantConsentId ParticipantConsent) -> ParticipantFormUI -> Html MsgMother
+   viewParticipantConsent : Language -> MeasurementData (Dict ParticipantConsentId ParticipantConsent) -> ParticipantFormUI -> Html MsgMother
    viewParticipantConsent language measurement ui =
        let
            activity =

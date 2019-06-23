@@ -14,7 +14,7 @@ in a way that is suitable for the UI we want to present.
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
-import Utils.EntityUuidDictList exposing (EntityUuidDictList)
+import Utils.Dict exposing (Dict)
 
 
 type Activity
@@ -64,8 +64,8 @@ this converts from our "basic" facts to facts that are organized in
 a way that is more useful for the UI we present.
 -}
 type alias SummaryByActivity =
-    { children : EveryDict ChildActivity (CompletedAndPending (EntityUuidDictList PersonId Person))
-    , mothers : EveryDict MotherActivity (CompletedAndPending (EntityUuidDictList PersonId Person))
+    { children : EveryDict ChildActivity (CompletedAndPending (Dict PersonId Person))
+    , mothers : EveryDict MotherActivity (CompletedAndPending (Dict PersonId Person))
     }
 
 
@@ -74,6 +74,6 @@ So, for each participant, what activities have been completed,
 and what activities are still pending?
 -}
 type alias SummaryByParticipant =
-    { children : EntityUuidDictList PersonId (CompletedAndPending (List ChildActivity))
-    , mothers : EntityUuidDictList PersonId (CompletedAndPending (List MotherActivity))
+    { children : Dict PersonId (CompletedAndPending (List ChildActivity))
+    , mothers : Dict PersonId (CompletedAndPending (List MotherActivity))
     }

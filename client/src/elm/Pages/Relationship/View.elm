@@ -94,9 +94,9 @@ viewContent language currentDate id1 id2 db model =
 type alias FetchedData =
     { person1 : Person
     , person2 : Person
-    , relationships : EntityUuidDictList RelationshipId MyRelationship
-    , participants : EntityUuidDict PmtctParticipantId PmtctParticipant
-    , clinics : EntityUuidDictList ClinicId Clinic
+    , relationships : Dict RelationshipId MyRelationship
+    , participants : Dict PmtctParticipantId PmtctParticipant
+    , clinics : Dict ClinicId Clinic
     }
 
 

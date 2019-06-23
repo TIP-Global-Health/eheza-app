@@ -38,13 +38,13 @@ type alias Model =
     -- ... we could just keep a single state here if we wanted the selectedTab
     -- and selectedActivity to stay the same when you switch from one
     -- participant to another.
-    , childPages : EntityUuidDict PersonId (Pages.Participant.Model.Model ChildActivity)
-    , motherPages : EntityUuidDict PersonId (Pages.Participant.Model.Model MotherActivity)
+    , childPages : Dict PersonId (Pages.Participant.Model.Model ChildActivity)
+    , motherPages : Dict PersonId (Pages.Participant.Model.Model MotherActivity)
 
     -- These forms appear on multiple pages, and we want to show the same state
     -- on each page. So, we keep them out here, and supply them as arguments.
-    , childForms : EntityUuidDict PersonId Measurement.Model.ModelChild
-    , motherForms : EntityUuidDict PersonId Measurement.Model.ModelMother
+    , childForms : Dict PersonId Measurement.Model.ModelChild
+    , motherForms : Dict PersonId Measurement.Model.ModelMother
     }
 
 

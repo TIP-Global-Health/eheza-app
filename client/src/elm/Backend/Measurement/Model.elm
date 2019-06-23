@@ -154,9 +154,9 @@ type SavedMeasurement
 
 
 type alias MotherMeasurementList =
-    { attendances : EntityUuidDictList AttendanceId Attendance
-    , familyPlannings : EntityUuidDictList FamilyPlanningId FamilyPlanning
-    , consents : EntityUuidDictList ParticipantConsentId ParticipantConsent
+    { attendances : Dict AttendanceId Attendance
+    , familyPlannings : Dict FamilyPlanningId FamilyPlanning
+    , consents : Dict ParticipantConsentId ParticipantConsent
     }
 
 
@@ -177,12 +177,12 @@ simple with a `List` and see how that goes.
 
 -}
 type alias ChildMeasurementList =
-    { heights : EntityUuidDictList HeightId Height
-    , muacs : EntityUuidDictList MuacId Muac
-    , nutritions : EntityUuidDictList ChildNutritionId ChildNutrition
-    , photos : EntityUuidDictList PhotoId Photo
-    , weights : EntityUuidDictList WeightId Weight
-    , counselingSessions : EntityUuidDictList CounselingSessionId CounselingSession
+    { heights : Dict HeightId Height
+    , muacs : Dict MuacId Muac
+    , nutritions : Dict ChildNutritionId ChildNutrition
+    , photos : Dict PhotoId Photo
+    , weights : Dict WeightId Weight
+    , counselingSessions : Dict CounselingSessionId CounselingSession
     }
 
 
@@ -201,8 +201,8 @@ emptyChildMeasurementList =
 our convenience.
 -}
 type alias HistoricalMeasurements =
-    { mothers : EntityUuidDict PersonId MotherMeasurementList
-    , children : EntityUuidDict PersonId ChildMeasurementList
+    { mothers : Dict PersonId MotherMeasurementList
+    , children : Dict PersonId ChildMeasurementList
     }
 
 
@@ -254,7 +254,7 @@ So, it is a `List` (possibly empty) rather than a `Maybe`.
 type alias MotherMeasurements =
     { attendance : Maybe ( AttendanceId, Attendance )
     , familyPlanning : Maybe ( FamilyPlanningId, FamilyPlanning )
-    , consent : EntityUuidDictList ParticipantConsentId ParticipantConsent
+    , consent : Dict ParticipantConsentId ParticipantConsent
     }
 
 
@@ -267,8 +267,8 @@ emptyMotherMeasurements =
 
 
 type alias Measurements =
-    { mothers : EntityUuidDict PersonId MotherMeasurements
-    , children : EntityUuidDict PersonId ChildMeasurements
+    { mothers : Dict PersonId MotherMeasurements
+    , children : Dict PersonId ChildMeasurements
     }
 
 
