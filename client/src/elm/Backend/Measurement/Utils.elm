@@ -4,7 +4,6 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Restful.Endpoint exposing (EntityUuid)
-import Time.Date
 
 
 {-| Given a MUAC in cm, classify according to the measurement tool shown
@@ -72,8 +71,14 @@ splitMotherMeasurements sessionId =
                         |> .current
             in
             { current =
-                { attendance = Dict.head attendance.current
-                , familyPlanning = Dict.head familyPlanning.current
+                { attendance =
+                    attendance.current
+                        |> Dict.toList
+                        |> List.head
+                , familyPlanning =
+                    familyPlanning.current
+                        |> Dict.toList
+                        |> List.head
                 , consent = consent
                 }
             , previous =
@@ -112,12 +117,30 @@ splitChildMeasurements sessionId =
             in
             { current =
                 -- We can only have one per session ... we enforce that here.
-                { height = Dict.head height.current
-                , weight = Dict.head weight.current
-                , muac = Dict.head muac.current
-                , nutrition = Dict.head nutrition.current
-                , photo = Dict.head photo.current
-                , counselingSession = Dict.head counselingSession.current
+                { height =
+                    height.current
+                        |> Dict.toList
+                        |> List.head
+                , weight =
+                    weight.current
+                        |> Dict.toList
+                        |> List.head
+                , muac =
+                    muac.current
+                        |> Dict.toList
+                        |> List.head
+                , nutrition =
+                    nutrition.current
+                        |> Dict.toList
+                        |> List.head
+                , photo =
+                    photo.current
+                        |> Dict.toList
+                        |> List.head
+                , counselingSession =
+                    counselingSession.current
+                        |> Dict.toList
+                        |> List.head
                 }
             , previous =
                 { height = height.previous

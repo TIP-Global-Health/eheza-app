@@ -378,12 +378,14 @@ validateHealthCenterId related =
 
 allLettersPattern : Regex
 allLettersPattern =
-    Regex.regex "^[a-zA-Z]*$"
+    Regex.fromString "^[a-zA-Z]*$"
+        |> Maybe.withDefault Regex.never
 
 
 allDigitsPattern : Regex
 allDigitsPattern =
-    Regex.regex "^[0-9]*$"
+    Regex.fromString "^[0-9]*$"
+        |> Maybe.withDefault Regex.never
 
 
 
