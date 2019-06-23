@@ -18,20 +18,16 @@ import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSessio
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getMyMother)
 import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements)
-import Dict
-import EveryDict
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
-import Lazy exposing (lazy)
 import Maybe.Extra
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model
 import Pages.Relationship.Model
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityUuid, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityUuid, endpoint, fromEntityUuid, toCmd, toEntityUuid, toTask, withKeyEncoder, withParamsEncoder, withValueEncoder, withoutDecoder)
+import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyBackendUrl, toCmd, toTask, withoutDecoder)
 import Task
-import Time.Date
 import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
 import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
@@ -937,7 +933,7 @@ summarizeByActivity session checkedIn =
                         , summarizeChildActivity activity session checkedIn
                         )
                     )
-                |> EveryDict.fromList
+                |> Dict.fromList
 
         mothers =
             getAllMotherActivities
@@ -947,7 +943,7 @@ summarizeByActivity session checkedIn =
                         , summarizeMotherActivity activity session checkedIn
                         )
                     )
-                |> EveryDict.fromList
+                |> Dict.fromList
     in
     { children = children
     , mothers = mothers

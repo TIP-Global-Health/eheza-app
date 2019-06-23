@@ -11,9 +11,9 @@ in a way that is suitable for the UI we want to present.
 
 -}
 
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
-import EveryDict exposing (EveryDict)
 import Utils.EntityUuidDictList exposing (EntityUuidDictList)
 
 

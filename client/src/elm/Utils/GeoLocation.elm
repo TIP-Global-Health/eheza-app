@@ -2,12 +2,11 @@ module Utils.GeoLocation exposing (GeoInfo, ReverseGeoInfo, geoInfo, getGeoLocat
 
 import AssocList as Dict
 import Dict exposing (Dict)
-import EveryDict exposing (EveryDict)
 import Restful.Endpoint exposing (EntityId, toEntityId)
 import Utils.EntityIdDict as EntityIdDict exposing (EntityIdDict)
 
 
-{-| This is here to have a partially type-safe key for the EveryDict.
+{-| This is here to have a partially type-safe key for the Dict.
 We're not actually storing these on the backend at the moment, and if
 we did, they would need to be an EntityUuid rather than an EntityId.
 -}
@@ -66,13 +65,13 @@ reverseGeoInfo =
                 |> Just
 
         addGeo id loc accum =
-            EveryDict.update loc.parent (merge id loc) accum
+            Dict.update loc.parent (merge id loc) accum
 
         handleSource source accum =
             Dict.foldl addGeo accum source
     in
     List.foldl handleSource
-        EveryDict.empty
+        Dict.empty
         [ geoInfo.provinces
         , geoInfo.districts
         , geoInfo.sectors
@@ -83,7 +82,7 @@ reverseGeoInfo =
 
 getGeoLocation : Maybe ParentId -> Name -> Maybe ( GeoLocationId, GeoLocation )
 getGeoLocation parent name =
-    EveryDict.get parent reverseGeoInfo
+    Dict.get parent reverseGeoInfo
         |> Maybe.andThen (Dict.get name)
 
 

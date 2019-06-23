@@ -1,9 +1,9 @@
 module Pages.Session.Model exposing (Model, Msg(..), emptyModel)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity)
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Session.Model
-import EveryDict exposing (EveryDict)
 import Measurement.Model
 import Pages.Activities.Model
 import Pages.Activity.Model
@@ -53,8 +53,8 @@ emptyModel : Model
 emptyModel =
     { activitiesPage = Pages.Activities.Model.emptyModel
     , attendancePage = Pages.Attendance.Model.emptyModel
-    , childActivityPages = EveryDict.empty
-    , motherActivityPages = EveryDict.empty
+    , childActivityPages = Dict.empty
+    , motherActivityPages = Dict.empty
     , childPages = EntityUuidDict.empty
     , motherPages = EntityUuidDict.empty
     , childForms = EntityUuidDict.empty

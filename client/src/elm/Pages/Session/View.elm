@@ -7,7 +7,6 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Session.Model exposing (EditableSession, Session)
 import Backend.Session.Utils exposing (isAuthorized, isClosed)
-import EveryDict
 import Gizra.Html exposing (showMaybe)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
@@ -95,13 +94,13 @@ viewEditableSession language currentDate zscores nurse sessionId page model db s
         ActivityPage activityType ->
             case activityType of
                 ChildActivity activity ->
-                    EveryDict.get activity model.childActivityPages
+                    Dict.get activity model.childActivityPages
                         |> Maybe.withDefault Pages.Activity.Model.emptyModel
                         |> Pages.Activity.View.view childParticipant language currentDate zscores activity ( sessionId, session ) model
                         |> (\( html, maybeChildId ) -> Html.map (MsgChildActivity activity maybeChildId) html)
 
                 MotherActivity activity ->
-                    EveryDict.get activity model.motherActivityPages
+                    Dict.get activity model.motherActivityPages
                         |> Maybe.withDefault Pages.Activity.Model.emptyModel
                         |> Pages.Activity.View.view motherParticipant language currentDate zscores activity ( sessionId, session ) model
                         |> (\( html, maybeMotherId ) -> Html.map (MsgMotherActivity activity maybeMotherId) html)

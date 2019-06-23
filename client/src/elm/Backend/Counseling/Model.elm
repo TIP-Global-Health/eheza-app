@@ -10,8 +10,8 @@ with the other measurements.
 
 -}
 
+import AssocList as Dict
 import Backend.Entities exposing (..)
-import EveryDict exposing (EveryDict)
 import Translate.Model exposing (TranslationSet)
 import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 

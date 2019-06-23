@@ -1,12 +1,12 @@
 module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, MemoryQuota, Model, Msg(..), MsgLoggedIn(..), StorageQuota, Version, emptyLoggedInModel, emptyModel)
 
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model
 import Backend.Nurse.Model exposing (Nurse)
 import Config.Model
 import Device.Model exposing (Device)
 import Dict exposing (Dict)
-import EveryDict exposing (EveryDict)
 import Http
 import Json.Encode exposing (Value)
 import Pages.Device.Model
@@ -146,7 +146,7 @@ emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
 emptyLoggedInModel nurse =
     { createPersonPage = Pages.Person.Model.emptyModel
     , personsPage = Pages.People.Model.emptyModel
-    , relationshipPages = EveryDict.empty
+    , relationshipPages = Dict.empty
     , nurse = nurse
     , sessionPages = EntityUuidDict.empty
     }
@@ -204,7 +204,7 @@ emptyModel flags =
     { activePage = PinCodePage
     , configuration = NotAsked
     , currentTime = 0
-    , dataWanted = EveryDict.empty
+    , dataWanted = Dict.empty
     , indexedDb = Backend.Model.emptyModelIndexedDb
     , language = English
     , memoryQuota = Nothing

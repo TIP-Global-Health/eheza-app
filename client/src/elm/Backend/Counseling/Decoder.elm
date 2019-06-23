@@ -3,7 +3,6 @@ module Backend.Counseling.Decoder exposing (combineCounselingSchedules, decodeCo
 import AssocList as Dict
 import Backend.Counseling.Model exposing (..)
 import Backend.Entities exposing (..)
-import EveryDict
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Restful.Endpoint exposing (decodeEntityUuid)
@@ -72,7 +71,7 @@ combineCounselingSchedules allTopics =
                             )
                         |> EntityUuidDictList.fromList
             in
-            EveryDict.update schedule.timing
+            Dict.update schedule.timing
                 (\existingTopics ->
                     case existingTopics of
                         Just existing ->
@@ -86,4 +85,4 @@ combineCounselingSchedules allTopics =
                             Just newTopics
                 )
     in
-    List.foldl go EveryDict.empty
+    List.foldl go Dict.empty

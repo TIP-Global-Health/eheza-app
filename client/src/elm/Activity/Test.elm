@@ -2,12 +2,12 @@ module Activity.Test exposing (all)
 
 import Activity.Model exposing (..)
 import Activity.Utils exposing (..)
+import AssocList as Dict
 import Backend.Counseling.Model exposing (..)
 import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model exposing (Gender(..), Person)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
-import EveryDict
 import EverySet
 import Expect
 import Fixtures exposing (..)
@@ -175,7 +175,7 @@ makeCounselingSession when timing =
    makeOfflineSession test =
        { session = session sessionDate
        , allParticipantForms = EntityUuidDictList.empty -- not relevant
-       , everyCounselingSchedule = EveryDict.empty -- not relevant
+       , everyCounselingSchedule = Dict.empty -- not relevant
        , participants =
            { byId = EntityUuidDict.empty
            , byChildId = EntityUuidDict.empty

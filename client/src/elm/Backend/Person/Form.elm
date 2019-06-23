@@ -8,13 +8,11 @@ import Backend.Person.Utils exposing (isAdult, isPersonAnAdult)
 import Form exposing (..)
 import Form.Init exposing (..)
 import Form.Validate exposing (..)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, fromLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, emptyNominalDate)
 import Json.Decode
-import Maybe.Extra exposing (join, unwrap)
+import Maybe.Extra exposing (unwrap)
 import Regex exposing (Regex)
 import Restful.Endpoint exposing (decodeEntityUuid, toEntityId)
-import Time.Date
-import Time.Iso8601
 import Translate exposing (ValidationError(..))
 import Utils.Form exposing (fromDecoder, nullable)
 import Utils.GeoLocation exposing (geoInfo)
@@ -47,7 +45,9 @@ expectedAgeFromForm currentDate form =
     -- doesn't handle correctly. So, we use Time.Iso8601 instead.
     Form.getFieldAsString birthDate form
         |> .value
-        |> Maybe.andThen (Time.Iso8601.toDate >> Result.toMaybe)
+        -- @todo
+        -- |> Maybe.andThen (Time.Iso8601.toDate >> Result.toMaybe)
+        |> Maybe.andThen (\_ -> Just emptyNominalDate)
         |> isAdult currentDate
         |> (\adult ->
                 case adult of

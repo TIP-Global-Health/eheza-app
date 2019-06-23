@@ -13,7 +13,6 @@ import Date
 import Device.Decoder
 import Device.Encoder
 import Dict
-import EveryDict
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Http exposing (Error(..))
 import HttpBuilder
@@ -201,11 +200,11 @@ update msg model =
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.relationshipPages
-                                        |> EveryDict.get ( id1, id2 )
+                                        |> Dict.get ( id1, id2 )
                                         |> Maybe.withDefault Pages.Relationship.Model.emptyModel
                                         |> Pages.Relationship.Update.update id1 id2 subMsg
                             in
-                            ( { data | relationshipPages = EveryDict.insert ( id1, id2 ) subModel data.relationshipPages }
+                            ( { data | relationshipPages = Dict.insert ( id1, id2 ) subModel data.relationshipPages }
                             , Cmd.map (MsgLoggedIn << MsgPageRelationship id1 id2) subCmd
                             , extraMsgs
                             )
@@ -464,20 +463,20 @@ update msg model =
                 -- Update our existing dataWanted to indicate that the data now wanted
                 -- was last wanted now.
                 dataWanted =
-                    List.foldl (\msg -> EveryDict.insert msg model.currentTime) model.dataWanted dataNowWanted
+                    List.foldl (\msg -> Dict.insert msg model.currentTime) model.dataWanted dataNowWanted
 
                 fiveMinutes =
                     5 * 1000 * 60
 
                 -- Figure out what to remember and what to forget.
                 ( dataToForget, dataToRemember ) =
-                    EveryDict.partition (\_ lastWanted -> model.currentTime - lastWanted > fiveMinutes) dataWanted
+                    Dict.partition (\_ lastWanted -> model.currentTime - lastWanted > fiveMinutes) dataWanted
 
                 -- Our new base model, remembering the desired data, and forgetting
                 -- the data to forget.
                 newModel =
                     dataToForget
-                        |> EveryDict.keys
+                        |> Dict.keys
                         |> List.foldl App.Fetch.forget
                             { model
                                 | dataWanted = dataToRemember

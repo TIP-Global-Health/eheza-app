@@ -38,7 +38,6 @@ import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (..)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
-import EveryDict
 import EverySet
 import Gizra.NominalDate exposing (diffDays)
 import Lazy exposing (force)
@@ -473,7 +472,7 @@ getParticipantCountForActivity summary activity =
     case activity of
         ChildActivity childActivity ->
             summary.children
-                |> EveryDict.get childActivity
+                |> Dict.get childActivity
                 |> Maybe.map
                     (\{ completed, pending } ->
                         { completed = Dict.size completed
@@ -487,7 +486,7 @@ getParticipantCountForActivity summary activity =
 
         MotherActivity motherActivity ->
             summary.mothers
-                |> EveryDict.get motherActivity
+                |> Dict.get motherActivity
                 |> Maybe.map
                     (\{ completed, pending } ->
                         { completed = Dict.size completed

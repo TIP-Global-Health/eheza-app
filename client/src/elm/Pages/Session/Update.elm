@@ -6,7 +6,6 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (emptyMotherMeasurementData, getMotherMeasurementData)
-import EveryDict
 import Lazy exposing (force)
 import Maybe.Extra
 import Measurement.Utils exposing (getChildForm, getMotherForm)
@@ -69,7 +68,7 @@ updateFoundSession sessionId session msg model =
         MsgChildActivity activityType maybeChildId subMsg ->
             let
                 activityPage =
-                    EveryDict.get activityType model.childActivityPages
+                    Dict.get activityType model.childActivityPages
                         |> Maybe.withDefault Pages.Activity.Model.emptyModel
 
                 childForm =
@@ -103,7 +102,7 @@ updateFoundSession sessionId session msg model =
             -- - we turn the redirect page into a message, if provided
             -- - we send a message to implement the OutMsg, if provided
             ( { model
-                | childActivityPages = EveryDict.insert activityType subModel model.childActivityPages
+                | childActivityPages = Dict.insert activityType subModel model.childActivityPages
                 , childForms = childForms
               }
             , Cmd.map (MsgChildActivity activityType maybeChildId) subCmd
@@ -114,7 +113,7 @@ updateFoundSession sessionId session msg model =
         MsgMotherActivity activityType maybeMotherId subMsg ->
             let
                 activityPage =
-                    EveryDict.get activityType model.motherActivityPages
+                    Dict.get activityType model.motherActivityPages
                         |> Maybe.withDefault Pages.Activity.Model.emptyModel
 
                 motherForm =
@@ -154,7 +153,7 @@ updateFoundSession sessionId session msg model =
             -- - we turn the redirect page into a message, if provided
             -- - we send a message to implement the OutMsg, if provided
             ( { model
-                | motherActivityPages = EveryDict.insert activityType subModel model.motherActivityPages
+                | motherActivityPages = Dict.insert activityType subModel model.motherActivityPages
                 , motherForms = motherForms
               }
             , Cmd.map (MsgMotherActivity activityType maybeMotherId) subCmd

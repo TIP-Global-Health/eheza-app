@@ -5,7 +5,6 @@ import App.Utils exposing (getLoggedInModel)
 import AssocList as Dict
 import Config.View
 import Date
-import EveryDict
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
@@ -203,7 +202,7 @@ viewUserPage page model configured =
                 RelationshipPage id1 id2 ->
                     let
                         page =
-                            EveryDict.get ( id1, id2 ) loggedInModel.relationshipPages
+                            Dict.get ( id1, id2 ) loggedInModel.relationshipPages
                                 |> Maybe.withDefault Pages.Relationship.Model.emptyModel
                     in
                     Pages.Relationship.View.view model.language currentDate id1 id2 model.indexedDb page
