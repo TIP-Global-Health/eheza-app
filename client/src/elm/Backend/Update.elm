@@ -18,10 +18,10 @@ import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSessio
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getMyMother)
 import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, emptyNominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
-import Maybe.Extra
+import Maybe.Extra exposing (isJust)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model
 import Pages.Relationship.Model
@@ -53,7 +53,7 @@ updateIndexedDb currentDate nurseId msg model =
         FetchClinics ->
             ( { model | clinics = Loading }
             , sw.select clinicEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList >> Dict.sortBy .name) >> HandleFetchedClinics)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> List.sortBy (Tuple.second >> .name) >> Dict.fromList) >> HandleFetchedClinics)
             , []
             )
 
@@ -181,13 +181,26 @@ updateIndexedDb currentDate nurseId msg model =
                 query1 =
                     sw.select relationshipEndpoint { person = Just personId, relatedTo = Nothing }
                         |> toTask
-                        |> Task.map (.items >> Dict.fromList >> Dict.filterMap (always (toMyRelationship personId)))
+                        -- @todo: List.filterMap didn't work?
+                        -- |> Task.map (.items >> Dict.fromList >> Dict.filterMap (always (toMyRelationship personId)))
+                        |> Task.map
+                            (\val ->
+                                val.items
+                                    |> List.filter (\( _, relationship ) -> isJust <| toMyRelationship personId relationship)
+                                    |> Dict.fromList
+                            )
                         |> RemoteData.fromTask
 
                 query2 =
                     sw.select relationshipEndpoint { person = Nothing, relatedTo = Just personId }
                         |> toTask
-                        |> Task.map (.items >> Dict.fromList >> Dict.filterMap (always (toMyRelationship personId)))
+                        -- @todo: List.filterMap didn't work?
+                        |> Task.map
+                            (\val ->
+                                val.items
+                                    |> List.filter (\( _, relationship ) -> isJust <| toMyRelationship personId relationship)
+                                    |> Dict.fromList
+                            )
                         |> RemoteData.fromTask
             in
             ( { model | relationshipsByPerson = Dict.insert personId Loading model.relationshipsByPerson }
@@ -424,7 +437,9 @@ updateIndexedDb currentDate nurseId msg model =
                         |> Maybe.withDefault NotAsked
                         |> RemoteData.toMaybe
                         |> Maybe.andThen .birthDate
-                        |> Maybe.withDefault (Time.Date.addDays -28 currentDate)
+                        -- @todo
+                        -- |> Maybe.withDefault (Time.Date.addDays -28 currentDate)
+                        |> Maybe.withDefault emptyNominalDate
 
                 defaultAdultActivities =
                     case normalized.relatedBy of
@@ -457,7 +472,7 @@ updateIndexedDb currentDate nurseId msg model =
 
                 existingRelationship =
                     Task.map2 Dict.union query1 query2
-                        |> Task.map Dict.head
+                        |> Task.map (Dict.toList >> List.head)
 
                 relationshipCmd =
                     existingRelationship
@@ -765,7 +780,7 @@ makeEditableSession sessionId db =
                                     |> RemoteData.map (\data -> ( id, data ))
                             )
                         |> RemoteData.fromList
-                        |> RemoteData.map (Dict.fromList >> Dict.sortBy .name)
+                        |> RemoteData.map (List.sortBy (Tuple.second >> .name) >> Dict.fromList)
                 )
                 participantsData
 

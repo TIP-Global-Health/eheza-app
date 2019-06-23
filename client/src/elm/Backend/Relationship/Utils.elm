@@ -4,7 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.Relationship.Model exposing (..)
 
 
-{-| Consier a `Relationship` from the point of view of the specified person.
+{-| Consider a `Relationship` from the point of view of the specified person.
 -}
 toMyRelationship : PersonId -> Relationship -> Maybe MyRelationship
 toMyRelationship id relationship =
