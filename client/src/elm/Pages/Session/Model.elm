@@ -26,8 +26,8 @@ type alias Model =
 
     -- Shows a page for a single activity. We keep separate UI state for
     -- each activity.
-    , childActivityPages : EveryDict ChildActivity (Pages.Activity.Model.Model PersonId)
-    , motherActivityPages : EveryDict MotherActivity (Pages.Activity.Model.Model PersonId)
+    , childActivityPages : Dict ChildActivity (Pages.Activity.Model.Model PersonId)
+    , motherActivityPages : Dict MotherActivity (Pages.Activity.Model.Model PersonId)
 
     -- Shows a list of participants ... user can select one.
     , participantsPage : Pages.Participants.Model.Model

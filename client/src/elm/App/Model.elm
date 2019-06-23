@@ -6,7 +6,6 @@ import Backend.Model
 import Backend.Nurse.Model exposing (Nurse)
 import Config.Model
 import Device.Model exposing (Device)
-import Dict exposing (Dict)
 import Http
 import Json.Encode exposing (Value)
 import Pages.Device.Model
@@ -19,7 +18,7 @@ import Pages.Session.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Rollbar
 import ServiceWorker.Model
-import Time exposing (Time)
+import Time
 import Translate.Model exposing (Language(..))
 import Uuid exposing (Uuid)
 import ZScore.Model
@@ -56,7 +55,7 @@ type alias Model =
     , storageQuota : Maybe StorageQuota
     , memoryQuota : Maybe MemoryQuota
     , configuration : RemoteData String ConfiguredModel
-    , currentTime : Time
+    , currentTime : Time.Posix
     , language : Language
     , serviceWorker : ServiceWorker.Model.Model
     , zscores : ZScore.Model.Model
@@ -67,7 +66,7 @@ type alias Model =
     -- typically be fine. The time reflects the last time the data was wanted,
     -- permitting us to keep recently wanted data around for a little while
     -- after it is not wanted. (Often, it may be wanted again soon).
-    , dataWanted : EveryDict Msg Time
+    , dataWanted : Dict Msg Time.Posix
 
     -- Should we check what data is needed? We set this at the end of every
     -- update, and clear it when we do the checking. Our subscriptions turn on
@@ -130,7 +129,7 @@ it at the appropriate moment.
 -}
 type alias LoggedInModel =
     { createPersonPage : Pages.Person.Model.Model
-    , relationshipPages : EveryDict ( PersonId, PersonId ) Pages.Relationship.Model.Model
+    , relationshipPages : Dict ( PersonId, PersonId ) Pages.Relationship.Model.Model
     , personsPage : Pages.People.Model.Model
 
     -- The nurse who has logged in.
@@ -177,7 +176,7 @@ type Msg
     | SetPersistentStorage Bool
     | SetStorageQuota StorageQuota
     | SetMemoryQuota MemoryQuota
-    | Tick Time
+    | Tick Time.Posix
     | CheckDataWanted
 
 
@@ -202,7 +201,7 @@ emptyModel : Flags -> Model
 emptyModel flags =
     { activePage = PinCodePage
     , configuration = NotAsked
-    , currentTime = 0
+    , currentTime = Time.millisToPosix 0
     , dataWanted = Dict.empty
     , indexedDb = Backend.Model.emptyModelIndexedDb
     , language = English

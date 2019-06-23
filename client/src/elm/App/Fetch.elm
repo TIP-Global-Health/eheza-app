@@ -12,6 +12,7 @@ import Pages.People.Fetch
 import Pages.Person.Fetch
 import Pages.Relationship.Fetch
 import Pages.Session.Fetch
+import Time
 
 
 {-| Basically, we're following down the `view` hierarchy to determine, given
@@ -33,7 +34,7 @@ fetch : Model -> List Msg
 fetch model =
     let
         currentDate =
-            fromLocalDateTime (Date.fromTime model.currentTime)
+            fromLocalDateTime model.currentTime
     in
     case model.activePage of
         DevicePage ->

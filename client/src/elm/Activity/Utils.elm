@@ -40,7 +40,6 @@ import Backend.Session.Model exposing (..)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
 import EverySet
 import Gizra.NominalDate exposing (diffDays)
-import Lazy exposing (force)
 import Maybe.Extra exposing (isJust, isNothing)
 
 
@@ -215,7 +214,8 @@ expectCounselingActivity session childId =
         -- that one, and not switch to something else.
         cachedTiming =
             getChildMeasurementData childId session
-                |> force
+                -- @todo: `force` belonged to Lazy package.
+                -- |> force
                 |> mapMeasurementData .counselingSession
                 |> currentValue
                 |> Maybe.map (.value >> Tuple.first)
@@ -223,20 +223,23 @@ expectCounselingActivity session childId =
         -- All the counseling session records from the past
         historical =
             getChildHistoricalMeasurements childId session.offlineSession
-                |> force
+                -- @todo: `force` belonged to Lazy package.
+                -- |> force
                 |> .counselingSessions
 
         -- Have we ever completed a counseling session of the specified type?
         completed timing =
-            Dict.any
-                (\_ counseling -> Tuple.first counseling.value == timing)
-                historical
+            historical
+                |> Dict.toList
+                |> List.any
+                    (\( _, counseling ) -> Tuple.first counseling.value == timing)
 
         -- How long ago did we complete a session of the specified type?
         completedDaysAgo timing =
             historical
                 |> Dict.filter (\_ counseling -> Tuple.first counseling.value == timing)
-                |> Dict.head
+                |> Dict.toList
+                |> List.head
                 |> Maybe.map (\( _, counseling ) -> diffDays counseling.dateMeasured session.offlineSession.session.scheduledDate.start)
 
         -- How old will the child be as of the scheduled date of the session?
@@ -425,7 +428,8 @@ expectParticipantConsent session motherId =
     let
         previouslyConsented =
             getMotherHistoricalMeasurements motherId session.offlineSession
-                |> force
+                -- @todo: `force` belonged to Lazy package.
+                -- |> force
                 |> .consents
                 |> Dict.map (\_ consent -> consent.value.formId)
                 |> Dict.values
@@ -584,7 +588,8 @@ hasCompletedChildActivity activityType measurements =
 childHasCompletedActivity : PersonId -> ChildActivity -> OfflineSession -> Bool
 childHasCompletedActivity childId activityType session =
     getChildMeasurementData2 childId session
-        |> force
+        -- @todo: `force` belonged to Lazy package.
+        -- |> force
         |> hasCompletedChildActivity activityType
 
 
@@ -615,7 +620,8 @@ hasCompletedMotherActivity session motherId activityType measurements =
 motherHasCompletedActivity : PersonId -> MotherActivity -> OfflineSession -> Bool
 motherHasCompletedActivity motherId activityType session =
     getMotherMeasurementData2 motherId session
-        |> force
+        -- @todo: `force` belonged to Lazy package.
+        -- |> force
         |> hasCompletedMotherActivity session motherId activityType
 
 
@@ -669,7 +675,8 @@ motherIsCheckedIn motherId session =
     let
         explicitlyCheckedIn =
             getMotherMeasurementData2 motherId session
-                |> force
+                -- @todo: `force` belonged to Lazy package.
+                -- |> force
                 |> (.current >> .attendance >> Maybe.map (Tuple.second >> .value) >> (==) (Just True))
 
         hasCompletedActivity =
@@ -691,7 +698,8 @@ childIsCheckedIn childId session =
 motherHasAnyCompletedActivity : PersonId -> OfflineSession -> Bool
 motherHasAnyCompletedActivity motherId session =
     getMotherMeasurementData2 motherId session
-        |> force
+        -- @todo: `force` belonged to Lazy package.
+        -- |> force
         |> hasAnyCompletedMotherActivity session motherId
 
 
@@ -700,5 +708,6 @@ motherHasAnyCompletedActivity motherId session =
 childHasAnyCompletedActivity : PersonId -> OfflineSession -> Bool
 childHasAnyCompletedActivity childId session =
     getChildMeasurementData2 childId session
-        |> force
+        -- @todo: `force` belonged to Lazy package.
+        -- |> force
         |> hasAnyCompletedChildActivity

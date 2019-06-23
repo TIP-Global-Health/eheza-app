@@ -9,10 +9,8 @@ import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.Update
 import Config
-import Date
 import Device.Decoder
 import Device.Encoder
-import Dict
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Http exposing (Error(..))
 import HttpBuilder
@@ -29,16 +27,14 @@ import Pages.Relationship.Update
 import Pages.Session.Model
 import Pages.Session.Update
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, fromEntityId, select, toCmd, toEntityId)
+import Restful.Endpoint exposing (decodeSingleDrupalEntity, fromEntityId, select, toCmd, toEntityId)
 import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
 import Task
-import Time exposing (minute)
 import Translate.Model exposing (Language(..))
 import Translate.Utils exposing (languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
-import Version
 import ZScore.Model
 import ZScore.Update
 
