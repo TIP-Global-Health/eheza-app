@@ -26,7 +26,7 @@ time zone information.
 import Date
 import Date.Extra exposing (Interval(..), diff, fromParts, monthToNumber, numberToMonth)
 import Gizra.String exposing (addLeadingZero, addLeadingZeroes)
-import Json.Decode exposing (Decoder, andThen, string, map2, field)
+import Json.Decode exposing (Decoder, andThen, field, map2, string)
 import Json.Decode.Extra exposing (fromResult)
 import Json.Encode exposing (Value, object)
 import Time.Date exposing (day, daysInMonth, delta, month, year)
@@ -34,15 +34,11 @@ import Time.Iso8601
 import Time.Iso8601ErrorMsg exposing (renderText)
 
 
-{-| An alias for `Time.Date.Date` from elm-community/elm-time. Represents
+{-| An alias for `Time.Date.Date` from <https://github.com/justinmimbs/date>. Represents
 a "pure" date without any time information or time zone information.
-
-This is basically to avoid confusion between `Time.Date.Date` and the
-`Date.Date` in elm-lang/core.
-
 -}
 type alias NominalDate =
-    Time.Date.Date
+    Date.Date
 
 
 {-| A range of nominal dates, with a start and end.
@@ -65,7 +61,9 @@ type alias NominalDateRange =
 -}
 formatMMDDYYYY : NominalDate -> String
 formatMMDDYYYY date =
-    addLeadingZero (toString (month date)) ++ "/" ++ addLeadingZero (toString (day date)) ++ "/" ++ addLeadingZeroes 4 (toString (year date))
+    -- @todo
+    -- addLeadingZero (toString (month date)) ++ "/" ++ addLeadingZero (toString (day date)) ++ "/" ++ addLeadingZeroes 4 (toString (year date))
+    "@todo"
 
 
 {-| Convert nominal date to a formatted string..
@@ -75,7 +73,9 @@ formatMMDDYYYY date =
 -}
 formatYYYYMMDD : NominalDate -> String
 formatYYYYMMDD date =
-    addLeadingZeroes 4 (toString (year date)) ++ "-" ++ addLeadingZero (toString (month date)) ++ "-" ++ addLeadingZero (toString (day date))
+    -- @todo
+    -- addLeadingZeroes 4 (toString (year date)) ++ "-" ++ addLeadingZero (toString (month date)) ++ "-" ++ addLeadingZero (toString (day date))
+    "@todo"
 
 
 {-| Converts an `elm-lang/core` `Date` to a `NominalDate`.
