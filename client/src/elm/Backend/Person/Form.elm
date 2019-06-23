@@ -5,6 +5,7 @@ import Backend.Entities exposing (HealthCenterId)
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeHivStatus, decodeMaritalStatus, decodeModeOfDelivery, decodeUbudehe)
 import Backend.Person.Model exposing (..)
 import Backend.Person.Utils exposing (isAdult, isPersonAnAdult)
+import Date
 import Form exposing (..)
 import Form.Init exposing (..)
 import Form.Validate exposing (..)
@@ -286,9 +287,9 @@ validateBirthDate expectedAge maybeCurrentDate =
                                         |> Result.toMaybe
                             in
                             maybeBirthDate
-                                -- Calculate difference of years between input birt
+                                -- Calculate difference of years between input birth
                                 -- date and current date.
-                                |> Maybe.map (Time.Date.delta currentDate >> .years)
+                                |> Maybe.map (\date_ -> Date.diff Date.Years currentDate date_)
                                 |> unwrap
                                     -- Conversion to NominalDate failed.
                                     (fail <| customError InvalidBirthDate)
