@@ -87,6 +87,7 @@ type alias Model =
     { pregnancyDatingData : PregnancyDatingData
     , historyData : HistoryData
     , examinationData : ExaminationData
+    , patientProvisionsData : PatientProvisionsData
     }
 
 
@@ -95,6 +96,7 @@ emptyModel =
     { pregnancyDatingData = emptyPregnancyDatingData
     , historyData = emptyHistoryData
     , examinationData = emptyExaminationData
+    , patientProvisionsData = emptyPatientProvisionsData
     }
 
 
@@ -147,6 +149,23 @@ emptyExaminationData =
     , obstetricalExamForm = emptyObstetricalExamForm
     , breastExamForm = emptyBreastExamForm
     , activeTask = Vitals
+    , completedTasks = []
+    }
+
+
+type alias PatientProvisionsData =
+    { medicationForm : MedicationForm
+    , resourcesForm : ResourcesForm
+    , activeTask : PatientProvisionsTask
+    , completedTasks : List PatientProvisionsTask
+    }
+
+
+emptyPatientProvisionsData : PatientProvisionsData
+emptyPatientProvisionsData =
+    { medicationForm = emptyMedicationForm
+    , resourcesForm = emptyResourcesForm
+    , activeTask = Medication
     , completedTasks = []
     }
 
@@ -474,3 +493,29 @@ type BreastBEOption
     | Discharge
     | Infection
     | NormalBreast
+
+
+type PatientProvisionsTask
+    = Medication
+    | Resources
+
+
+type alias MedicationForm =
+    { recievedIronFolicAcid : Maybe Bool
+    , recievedDewormingPill : Maybe Bool
+    }
+
+
+emptyMedicationForm : MedicationForm
+emptyMedicationForm =
+    MedicationForm Nothing Nothing
+
+
+type alias ResourcesForm =
+    { recievedMosquitoNet : Maybe Bool
+    }
+
+
+emptyResourcesForm : ResourcesForm
+emptyResourcesForm =
+    ResourcesForm Nothing
