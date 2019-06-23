@@ -3,7 +3,7 @@ module Backend.Update exposing (updateIndexedDb)
 import Activity.Model exposing (SummaryByActivity, SummaryByParticipant)
 import Activity.Utils exposing (getAllChildActivities, getAllMotherActivities, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
 import App.Model
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
@@ -28,8 +28,6 @@ import Pages.Relationship.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyBackendUrl, toCmd, toTask, withoutDecoder)
 import Task
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 updateIndexedDb : NominalDate -> Maybe NurseId -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
@@ -55,7 +53,7 @@ updateIndexedDb currentDate nurseId msg model =
         FetchClinics ->
             ( { model | clinics = Loading }
             , sw.select clinicEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList >> Dict.sortBy .name) >> HandleFetchedClinics)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList >> Dict.sortBy .name) >> HandleFetchedClinics)
             , []
             )
 
@@ -79,7 +77,7 @@ updateIndexedDb currentDate nurseId msg model =
                 topicTask =
                     sw.select counselingTopicEndpoint ()
                         |> toTask
-                        |> Task.map (.items >> EntityUuidDict.fromList)
+                        |> Task.map (.items >> Dict.fromList)
                         |> RemoteData.fromTask
 
                 scheduleTask =
@@ -113,13 +111,13 @@ updateIndexedDb currentDate nurseId msg model =
 
                 processIndex byId =
                     { byId = byId
-                    , byChildId = Dict.foldl (indexBy .child) EntityUuidDict.empty byId
-                    , byMotherId = Dict.foldl (indexBy .adult) EntityUuidDict.empty byId
+                    , byChildId = Dict.foldl (indexBy .child) Dict.empty byId
+                    , byMotherId = Dict.foldl (indexBy .adult) Dict.empty byId
                     }
             in
             ( { model | expectedParticipants = Dict.insert sessionId Loading model.expectedParticipants }
             , sw.select pmtctParticipantEndpoint (ParticipantsForSession sessionId)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDict.fromList >> processIndex) >> HandleFetchedExpectedParticipants sessionId)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList >> processIndex) >> HandleFetchedExpectedParticipants sessionId)
             , []
             )
 
@@ -138,7 +136,7 @@ updateIndexedDb currentDate nurseId msg model =
             -- just to avoid truly pathological cases.
             ( { model | personSearches = Dict.insert trimmed Loading model.personSearches }
             , sw.selectRange personEndpoint { nameContains = Just trimmed } 0 (Just 100)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedPeopleByName trimmed)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleByName trimmed)
             , []
             )
 
@@ -153,13 +151,13 @@ updateIndexedDb currentDate nurseId msg model =
                 query1 =
                     sw.select pmtctParticipantEndpoint (ParticipantsForChild personId)
                         |> toTask
-                        |> Task.map (.items >> EntityUuidDict.fromList)
+                        |> Task.map (.items >> Dict.fromList)
                         |> RemoteData.fromTask
 
                 query2 =
                     sw.select pmtctParticipantEndpoint (ParticipantsForAdult personId)
                         |> toTask
-                        |> Task.map (.items >> EntityUuidDict.fromList)
+                        |> Task.map (.items >> Dict.fromList)
                         |> RemoteData.fromTask
             in
             ( { model | participantsByPerson = Dict.insert personId Loading model.participantsByPerson }
@@ -183,13 +181,13 @@ updateIndexedDb currentDate nurseId msg model =
                 query1 =
                     sw.select relationshipEndpoint { person = Just personId, relatedTo = Nothing }
                         |> toTask
-                        |> Task.map (.items >> EntityUuidDictList.fromList >> Dict.filterMap (always (toMyRelationship personId)))
+                        |> Task.map (.items >> Dict.fromList >> Dict.filterMap (always (toMyRelationship personId)))
                         |> RemoteData.fromTask
 
                 query2 =
                     sw.select relationshipEndpoint { person = Nothing, relatedTo = Just personId }
                         |> toTask
-                        |> Task.map (.items >> EntityUuidDictList.fromList >> Dict.filterMap (always (toMyRelationship personId)))
+                        |> Task.map (.items >> Dict.fromList >> Dict.filterMap (always (toMyRelationship personId)))
                         |> RemoteData.fromTask
             in
             ( { model | relationshipsByPerson = Dict.insert personId Loading model.relationshipsByPerson }
@@ -207,7 +205,7 @@ updateIndexedDb currentDate nurseId msg model =
         FetchExpectedSessions childId ->
             ( { model | expectedSessions = Dict.insert childId Loading model.expectedSessions }
             , sw.select sessionEndpoint (ForChild childId)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedExpectedSessions childId)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedExpectedSessions childId)
             , []
             )
 
@@ -220,7 +218,7 @@ updateIndexedDb currentDate nurseId msg model =
         FetchHealthCenters ->
             ( { model | healthCenters = Loading }
             , sw.select healthCenterEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedHealthCenters)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedHealthCenters)
             , []
             )
 
@@ -246,7 +244,7 @@ updateIndexedDb currentDate nurseId msg model =
         FetchParticipantForms ->
             ( { model | participantForms = Loading }
             , sw.select participantFormEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedParticipantForms)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedParticipantForms)
             , []
             )
 
@@ -285,7 +283,7 @@ updateIndexedDb currentDate nurseId msg model =
         FetchSessionsByClinic clinicId ->
             ( { model | sessionsByClinic = Dict.insert clinicId Loading model.sessionsByClinic }
             , sw.select sessionEndpoint (ForClinic clinicId)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedSessionsByClinic clinicId)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedSessionsByClinic clinicId)
             , []
             )
 
@@ -298,7 +296,7 @@ updateIndexedDb currentDate nurseId msg model =
         FetchSyncData ->
             ( { model | syncData = Loading }
             , sw.select syncDataEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedSyncData)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedSyncData)
             , []
             )
 
@@ -447,7 +445,7 @@ updateIndexedDb currentDate nurseId msg model =
                         , relatedTo = Just normalized.relatedTo
                         }
                         |> toTask
-                        |> Task.map (.items >> EntityUuidDictList.fromList)
+                        |> Task.map (.items >> Dict.fromList)
 
                 query2 =
                     sw.select relationshipEndpoint
@@ -455,7 +453,7 @@ updateIndexedDb currentDate nurseId msg model =
                         , relatedTo = Just normalized.person
                         }
                         |> toTask
-                        |> Task.map (.items >> EntityUuidDictList.fromList)
+                        |> Task.map (.items >> Dict.fromList)
 
                 existingRelationship =
                     Task.map2 Dict.union query1 query2
@@ -688,7 +686,7 @@ handleRevision revision ( model, recalc ) =
                         |> Dict.remove data.child
                         |> Dict.remove data.adult
                 , expectedParticipants =
-                    EntityUuidDict.empty
+                    Dict.empty
                 , participantsByPerson =
                     model.participantsByPerson
                         |> Dict.remove data.child
@@ -698,7 +696,7 @@ handleRevision revision ( model, recalc ) =
             )
 
         RelationshipRevision uuid data ->
-            ( { model | relationshipsByPerson = EntityUuidDict.empty }
+            ( { model | relationshipsByPerson = Dict.empty }
             , True
             )
 
@@ -715,7 +713,7 @@ handleRevision revision ( model, recalc ) =
             ( { model
                 | sessionsByClinic = sessionsByClinic
                 , expectedParticipants = Dict.remove uuid model.expectedParticipants
-                , expectedSessions = EntityUuidDict.empty
+                , expectedSessions = Dict.empty
                 , sessions = Dict.insert uuid (Success data) model.sessions
               }
             , True
@@ -767,7 +765,7 @@ makeEditableSession sessionId db =
                                     |> RemoteData.map (\data -> ( id, data ))
                             )
                         |> RemoteData.fromList
-                        |> RemoteData.map (EntityUuidDictList.fromList >> Dict.sortBy .name)
+                        |> RemoteData.map (Dict.fromList >> Dict.sortBy .name)
                 )
                 participantsData
 
@@ -782,7 +780,7 @@ makeEditableSession sessionId db =
                                     |> RemoteData.map (\data -> ( id, data ))
                             )
                         |> RemoteData.fromList
-                        |> RemoteData.map EntityUuidDictList.fromList
+                        |> RemoteData.map Dict.fromList
                 )
                 participantsData
 
@@ -797,7 +795,7 @@ makeEditableSession sessionId db =
                                     |> RemoteData.map (\data -> ( childId, data ))
                             )
                         |> RemoteData.fromList
-                        |> RemoteData.map EntityUuidDict.fromList
+                        |> RemoteData.map Dict.fromList
                 )
                 childrenData
 
@@ -812,7 +810,7 @@ makeEditableSession sessionId db =
                                     |> RemoteData.map (\data -> ( motherId, data ))
                             )
                         |> RemoteData.fromList
-                        |> RemoteData.map EntityUuidDict.fromList
+                        |> RemoteData.map Dict.fromList
                 )
                 mothersData
 

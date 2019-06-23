@@ -13,6 +13,7 @@ because there was so much code written in terms of an `EditableSession`.
 -}
 
 import Activity.Model exposing (SummaryByActivity, SummaryByParticipant)
+import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -23,8 +24,6 @@ import Gizra.NominalDate exposing (NominalDateRange)
 import Lazy exposing (Lazy)
 import Measurement.Model
 import RemoteData exposing (RemoteData(..), WebData)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 {-| This is the basic `Session` data ... essentially, for scheduling purposes.
@@ -140,15 +139,15 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { closeSessionRequest = NotAsked
-    , saveAttendanceRequest = EntityUuidDict.empty
-    , saveCounselingSessionRequest = EntityUuidDict.empty
-    , saveFamilyPlanningRequest = EntityUuidDict.empty
-    , saveHeightRequest = EntityUuidDict.empty
-    , saveMuacRequest = EntityUuidDict.empty
-    , saveNutritionRequest = EntityUuidDict.empty
-    , saveParticipantConsentRequest = EntityUuidDict.empty
-    , savePhotoRequest = EntityUuidDict.empty
-    , saveWeightRequest = EntityUuidDict.empty
+    , saveAttendanceRequest = Dict.empty
+    , saveCounselingSessionRequest = Dict.empty
+    , saveFamilyPlanningRequest = Dict.empty
+    , saveHeightRequest = Dict.empty
+    , saveMuacRequest = Dict.empty
+    , saveNutritionRequest = Dict.empty
+    , saveParticipantConsentRequest = Dict.empty
+    , savePhotoRequest = Dict.empty
+    , saveWeightRequest = Dict.empty
     }
 
 

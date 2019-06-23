@@ -10,10 +10,9 @@ with the other measurements.
 
 -}
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Translate.Model exposing (TranslationSet)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 {-| For the moment, the only information we track about the topic itself

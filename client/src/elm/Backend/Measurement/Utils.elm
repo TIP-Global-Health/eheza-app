@@ -1,12 +1,10 @@
 module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, getCurrentAndPrevious, mapMeasurementData, muacIndication, splitChildMeasurements, splitMotherMeasurements)
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Restful.Endpoint exposing (EntityUuid)
 import Time.Date
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 {-| Given a MUAC in cm, classify according to the measurement tool shown
@@ -83,7 +81,7 @@ splitMotherMeasurements sessionId =
                 -- anything for it.
                 { attendance = attendance.previous
                 , familyPlanning = familyPlanning.previous
-                , consent = EntityUuidDictList.empty
+                , consent = Dict.empty
                 }
             }
         )
@@ -159,6 +157,6 @@ getCurrentAndPrevious sessionId =
                             acc
     in
     Dict.foldl go
-        { current = EntityUuidDictList.empty
+        { current = Dict.empty
         , previous = Nothing
         }

@@ -1,7 +1,7 @@
 module Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getMotherForm)
 
 import Activity.Utils exposing (expectCounselingActivity, expectParticipantConsent)
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
@@ -11,8 +11,6 @@ import EverySet
 import Lazy exposing (force)
 import Measurement.Model exposing (..)
 import Pages.Session.Model
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 getInputConstraintsHeight : FloatInputConstraints
@@ -91,7 +89,7 @@ fromMotherMeasurementData data =
                 |> currentValues
                 |> List.map (Tuple.second >> .value >> .formId)
                 |> List.map (\formId -> ( formId, completedParticipantFormProgress ))
-                |> EntityUuidDict.fromList
+                |> Dict.fromList
     in
     { familyPlanningSigns =
         data
@@ -100,7 +98,7 @@ fromMotherMeasurementData data =
             |> Maybe.map .value
             |> Maybe.withDefault EverySet.empty
     , participantConsent =
-        { expected = EntityUuidDictList.empty
+        { expected = Dict.empty
         , view = Nothing
         , progress = progress
         }

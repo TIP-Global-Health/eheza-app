@@ -1,14 +1,12 @@
 module Backend.Counseling.Decoder exposing (combineCounselingSchedules, decodeCounselingSchedule, decodeCounselingTiming, decodeCounselingTopic)
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (..)
 import Backend.Entities exposing (..)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Restful.Endpoint exposing (decodeEntityUuid)
 import Translate.Model exposing (TranslationSet)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 decodeCounselingTopic : Decoder CounselingTopic
@@ -69,7 +67,7 @@ combineCounselingSchedules allTopics =
                                 Dict.get id allTopics
                                     |> Maybe.map (\value -> ( id, value ))
                             )
-                        |> EntityUuidDictList.fromList
+                        |> Dict.fromList
             in
             Dict.update schedule.timing
                 (\existingTopics ->

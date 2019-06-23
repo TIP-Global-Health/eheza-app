@@ -4,14 +4,13 @@ module Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, Chi
 and cached in local storage.
 -}
 
+import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate.Model exposing (Language)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 
@@ -163,9 +162,9 @@ type alias MotherMeasurementList =
 
 emptyMotherMeasurementList : MotherMeasurementList
 emptyMotherMeasurementList =
-    { attendances = EntityUuidDictList.empty
-    , familyPlannings = EntityUuidDictList.empty
-    , consents = EntityUuidDictList.empty
+    { attendances = Dict.empty
+    , familyPlannings = Dict.empty
+    , consents = Dict.empty
     }
 
 
@@ -189,12 +188,12 @@ type alias ChildMeasurementList =
 
 emptyChildMeasurementList : ChildMeasurementList
 emptyChildMeasurementList =
-    { heights = EntityUuidDictList.empty
-    , muacs = EntityUuidDictList.empty
-    , nutritions = EntityUuidDictList.empty
-    , photos = EntityUuidDictList.empty
-    , weights = EntityUuidDictList.empty
-    , counselingSessions = EntityUuidDictList.empty
+    { heights = Dict.empty
+    , muacs = Dict.empty
+    , nutritions = Dict.empty
+    , photos = Dict.empty
+    , weights = Dict.empty
+    , counselingSessions = Dict.empty
     }
 
 
@@ -209,8 +208,8 @@ type alias HistoricalMeasurements =
 
 emptyHistoricalMeasurements : HistoricalMeasurements
 emptyHistoricalMeasurements =
-    { mothers = EntityUuidDict.empty
-    , children = EntityUuidDict.empty
+    { mothers = Dict.empty
+    , children = Dict.empty
     }
 
 
@@ -263,7 +262,7 @@ emptyMotherMeasurements : MotherMeasurements
 emptyMotherMeasurements =
     { attendance = Nothing
     , familyPlanning = Nothing
-    , consent = EntityUuidDictList.empty
+    , consent = Dict.empty
     }
 
 
@@ -275,8 +274,8 @@ type alias Measurements =
 
 emptyMeasurements : Measurements
 emptyMeasurements =
-    { mothers = EntityUuidDict.empty
-    , children = EntityUuidDict.empty
+    { mothers = Dict.empty
+    , children = Dict.empty
     }
 
 

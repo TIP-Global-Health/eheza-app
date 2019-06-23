@@ -11,6 +11,7 @@ with Child and ChildActivity.
 -}
 
 import Activity.Model exposing (Activity, CompletedAndPending)
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession)
@@ -20,7 +21,6 @@ import Pages.Activity.Model
 import Pages.Session.Model
 import RemoteData exposing (WebData)
 import Translate exposing (Language)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 import ZScore.Model
 
 

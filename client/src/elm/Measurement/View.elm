@@ -4,7 +4,7 @@ module Measurement.View exposing (viewChild, viewMother, viewMuacIndication)
 -}
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
@@ -27,7 +27,6 @@ import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
 import Translate as Trans exposing (Language, TranslationId, translate)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 import Utils.Html exposing (script, viewModal)
 import Utils.NominalDate exposing (Days(..), diffDays)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
@@ -678,7 +677,7 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
                    expected =
                        session.offlineSession.everyCounselingSchedule
                            |> Dict.get timing
-                           |> Maybe.withDefault EntityUuidDictList.empty
+                           |> Maybe.withDefault Dict.empty
                in
                div
                    [ class "ui full segment counseling"

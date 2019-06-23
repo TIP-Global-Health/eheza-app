@@ -6,7 +6,7 @@ available for data-entry.
 -}
 
 import App.Model exposing (Msg(..), MsgLoggedIn(..))
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
@@ -24,7 +24,6 @@ import Pages.PageNotFound.View
 import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date exposing (delta)
 import Translate exposing (Language, translate)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 import Utils.WebData exposing (viewError, viewWebData)
 
 

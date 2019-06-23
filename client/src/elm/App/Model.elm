@@ -1,6 +1,6 @@
 module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, MemoryQuota, Model, Msg(..), MsgLoggedIn(..), StorageQuota, Version, emptyLoggedInModel, emptyModel)
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model
 import Backend.Nurse.Model exposing (Nurse)
@@ -21,7 +21,6 @@ import Rollbar
 import ServiceWorker.Model
 import Time exposing (Time)
 import Translate.Model exposing (Language(..))
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
 import Uuid exposing (Uuid)
 import ZScore.Model
 
@@ -148,7 +147,7 @@ emptyLoggedInModel nurse =
     , personsPage = Pages.People.Model.emptyModel
     , relationshipPages = Dict.empty
     , nurse = nurse
-    , sessionPages = EntityUuidDict.empty
+    , sessionPages = Dict.empty
     }
 
 

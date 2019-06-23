@@ -1,7 +1,7 @@
 module Pages.ProgressReport.View exposing (view)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildMeasurementList, Height, HeightInCm(..), MuacInCm(..), MuacIndication(..), PhotoUrl(..), Weight, WeightInKg(..))
 import Backend.Measurement.Utils exposing (currentValue, currentValueWithId, mapMeasurementData, muacIndication)
@@ -23,8 +23,6 @@ import Pages.PageNotFound.View
 import Pages.Session.Model
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate)
 import Utils.WebData exposing (viewWebData)
@@ -457,7 +455,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                             Nothing ->
                                 Nothing
                     )
-                |> EntityUuidDict.fromList
+                |> Dict.fromList
 
         heightValuesBySession =
             indexBySession heightValues

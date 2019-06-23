@@ -1,6 +1,6 @@
 module Pages.People.View exposing (view)
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form exposing (ExpectedAge(..))
@@ -18,7 +18,6 @@ import Pages.People.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, translate)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewWebData)
@@ -190,8 +189,8 @@ viewSearchForm language currentDate relation model db =
 
         searchResultsParticipants =
             results
-                |> Maybe.withDefault (Success EntityUuidDictList.empty)
-                |> RemoteData.withDefault EntityUuidDictList.empty
+                |> Maybe.withDefault (Success Dict.empty)
+                |> RemoteData.withDefault Dict.empty
                 |> Dict.map (viewParticipant language currentDate relation db)
                 |> Dict.values
 

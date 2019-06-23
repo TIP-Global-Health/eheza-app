@@ -1,6 +1,6 @@
 module Pages.Relationship.View exposing (view)
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
@@ -19,8 +19,6 @@ import Pages.Relationship.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)

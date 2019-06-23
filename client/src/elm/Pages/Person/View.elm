@@ -1,7 +1,7 @@
 module Pages.Person.View exposing (view, viewCreateForm)
 
 import App.Model
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
@@ -29,7 +29,6 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Set
 import Translate exposing (Language, TranslationId, translate)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
 import Utils.GeoLocation exposing (GeoInfo, geoInfo, getGeoLocation)
 import Utils.Html exposing (script, thumbnailImage, viewLoading)

@@ -1,6 +1,6 @@
 module Backend.Measurement.Decoder exposing (decodeAttendance, decodeChildMeasurement, decodeChildMeasurementList, decodeChildNutritionSign, decodeCounselingSession, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeHeight, decodeHistoricalMeasurements, decodeMeasurement, decodeMotherMeasurement, decodeMotherMeasurementList, decodeMuac, decodeNutrition, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodeSavedMeasurement, decodeWeight, decodeWithEntityUuid, toEntityUuidDict)
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -11,8 +11,6 @@ import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid, toEntityUuid)
 import Translate.Utils exposing (decodeLanguage)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 import Utils.Json exposing (decodeEverySet)
 
 
@@ -101,13 +99,13 @@ decodeHistoricalMeasurements =
     decode HistoricalMeasurements
         |> requiredAt [ "participants", "mother_activity" ]
             (oneOf
-                [ decodeEmptyArrayAs EntityUuidDict.empty
+                [ decodeEmptyArrayAs Dict.empty
                 , map toEntityUuidDict (dict decodeMotherMeasurementList)
                 ]
             )
         |> requiredAt [ "participants", "child_activity" ]
             (oneOf
-                [ decodeEmptyArrayAs EntityUuidDict.empty
+                [ decodeEmptyArrayAs Dict.empty
                 , map toEntityUuidDict (dict decodeChildMeasurementList)
                 ]
             )
@@ -117,7 +115,7 @@ decodeHistoricalMeasurements =
 -}
 toEntityUuidDict : Dict String v -> EntityUuidDict (EntityUuid k) v
 toEntityUuidDict =
-    Dict.foldl (\key value acc -> Dict.insert (toEntityUuid key) value acc) EntityUuidDict.empty
+    Dict.foldl (\key value acc -> Dict.insert (toEntityUuid key) value acc) Dict.empty
 
 
 decodeWithEntityUuid : Decoder a -> Decoder ( EntityUuid b, a )
@@ -130,20 +128,20 @@ decodeWithEntityUuid decoder =
 decodeMotherMeasurementList : Decoder MotherMeasurementList
 decodeMotherMeasurementList =
     decode MotherMeasurementList
-        |> optional "attendance" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeAttendance)) EntityUuidDictList.empty
-        |> optional "family_planning" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeFamilyPlanning)) EntityUuidDictList.empty
-        |> optional "participant_consent" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeParticipantConsent)) EntityUuidDictList.empty
+        |> optional "attendance" (map Dict.fromList <| list (decodeWithEntityUuid decodeAttendance)) Dict.empty
+        |> optional "family_planning" (map Dict.fromList <| list (decodeWithEntityUuid decodeFamilyPlanning)) Dict.empty
+        |> optional "participant_consent" (map Dict.fromList <| list (decodeWithEntityUuid decodeParticipantConsent)) Dict.empty
 
 
 decodeChildMeasurementList : Decoder ChildMeasurementList
 decodeChildMeasurementList =
     decode ChildMeasurementList
-        |> optional "height" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeHeight)) EntityUuidDictList.empty
-        |> optional "muac" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeMuac)) EntityUuidDictList.empty
-        |> optional "nutrition" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeNutrition)) EntityUuidDictList.empty
-        |> optional "photo" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodePhoto)) EntityUuidDictList.empty
-        |> optional "weight" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeWeight)) EntityUuidDictList.empty
-        |> optional "counseling_session" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeCounselingSession)) EntityUuidDictList.empty
+        |> optional "height" (map Dict.fromList <| list (decodeWithEntityUuid decodeHeight)) Dict.empty
+        |> optional "muac" (map Dict.fromList <| list (decodeWithEntityUuid decodeMuac)) Dict.empty
+        |> optional "nutrition" (map Dict.fromList <| list (decodeWithEntityUuid decodeNutrition)) Dict.empty
+        |> optional "photo" (map Dict.fromList <| list (decodeWithEntityUuid decodePhoto)) Dict.empty
+        |> optional "weight" (map Dict.fromList <| list (decodeWithEntityUuid decodeWeight)) Dict.empty
+        |> optional "counseling_session" (map Dict.fromList <| list (decodeWithEntityUuid decodeCounselingSession)) Dict.empty
 
 
 decodePhoto : Decoder Photo

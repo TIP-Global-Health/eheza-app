@@ -4,14 +4,13 @@ module Measurement.Model exposing (DropZoneFile, FileId, FloatInputConstraints, 
 participant.
 -}
 
+import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.ParticipantConsent.Model exposing (..)
 import EverySet exposing (EverySet)
 import Translate.Model exposing (Language)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 {-| The strategy here, at least for now, is this:
@@ -71,9 +70,9 @@ type alias ParticipantFormUI =
 
 emptyParticipantFormUI : ParticipantFormUI
 emptyParticipantFormUI =
-    { expected = EntityUuidDictList.empty
+    { expected = Dict.empty
     , view = Nothing
-    , progress = EntityUuidDict.empty
+    , progress = Dict.empty
     }
 
 

@@ -1,7 +1,7 @@
 module Pages.Session.Model exposing (Model, Msg(..), emptyModel)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity)
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Session.Model
 import Measurement.Model
@@ -11,7 +11,6 @@ import Pages.Attendance.Model
 import Pages.Page exposing (Page)
 import Pages.Participant.Model
 import Pages.Participants.Model
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
 
 
 {-| This is where we track all the UI state that relates to an EditableSession
@@ -55,10 +54,10 @@ emptyModel =
     , attendancePage = Pages.Attendance.Model.emptyModel
     , childActivityPages = Dict.empty
     , motherActivityPages = Dict.empty
-    , childPages = EntityUuidDict.empty
-    , motherPages = EntityUuidDict.empty
-    , childForms = EntityUuidDict.empty
-    , motherForms = EntityUuidDict.empty
+    , childPages = Dict.empty
+    , motherPages = Dict.empty
+    , childForms = Dict.empty
+    , motherForms = Dict.empty
     , participantsPage = Pages.Participants.Model.emptyModel
     }
 

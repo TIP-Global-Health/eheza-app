@@ -1,7 +1,7 @@
 module Pages.Person.Update exposing (update)
 
 import App.Model
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PersonId)
 import Backend.Model
 import Backend.Person.Form exposing (ExpectedAge(..), birthDate, validatePerson)
@@ -11,7 +11,6 @@ import Form.Field
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD, fromLocalDateTime)
 import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
 
 
 update : NominalDate -> Msg -> EntityUuidDict PersonId (WebData Person) -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

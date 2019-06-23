@@ -28,7 +28,7 @@ expected (and not completed).
 -}
 
 import Activity.Model exposing (..)
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -42,7 +42,6 @@ import EverySet
 import Gizra.NominalDate exposing (diffDays)
 import Lazy exposing (force)
 import Maybe.Extra exposing (isJust, isNothing)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 {-| Used for URL etc., not for display in the normal UI (since we'd translate

@@ -3,13 +3,13 @@ module ServiceWorker.Model exposing (IncomingMsg(..), Model, Msg(..), NewWorker(
 {-| Some state we maintain relating to service workers.
 -}
 
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (Revision)
 import Backend.SyncData.Model exposing (SyncData)
 import Json.Encode exposing (Value)
 import RemoteData exposing (RemoteData(..))
 import Time exposing (Time)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 {-| The state of the service worker system.

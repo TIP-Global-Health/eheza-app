@@ -17,6 +17,7 @@ in the UI.
 
 -}
 
+import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, EveryCounselingSchedule)
 import Backend.Entities exposing (..)
@@ -31,8 +32,6 @@ import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, Of
 import Backend.SyncData.Model exposing (SyncData)
 import Dict exposing (Dict)
 import RemoteData exposing (RemoteData(..), WebData)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 {-| This tracks data we fetch from IndexedDB via the service worker. Gradually, we'll
@@ -108,27 +107,27 @@ type alias ModelIndexedDb =
 
 emptyModelIndexedDb : ModelIndexedDb
 emptyModelIndexedDb =
-    { childMeasurements = EntityUuidDict.empty
+    { childMeasurements = Dict.empty
     , clinics = NotAsked
-    , deleteSyncDataRequests = EntityUuidDict.empty
-    , editableSessions = EntityUuidDict.empty
+    , deleteSyncDataRequests = Dict.empty
+    , editableSessions = Dict.empty
     , everyCounselingSchedule = NotAsked
-    , expectedParticipants = EntityUuidDict.empty
-    , expectedSessions = EntityUuidDict.empty
+    , expectedParticipants = Dict.empty
+    , expectedSessions = Dict.empty
     , healthCenters = NotAsked
-    , motherMeasurements = EntityUuidDict.empty
+    , motherMeasurements = Dict.empty
     , participantForms = NotAsked
-    , participantsByPerson = EntityUuidDict.empty
-    , people = EntityUuidDict.empty
+    , participantsByPerson = Dict.empty
+    , people = Dict.empty
     , personSearches = Dict.empty
     , postPerson = NotAsked
-    , postPmtctParticipant = EntityUuidDict.empty
-    , postRelationship = EntityUuidDict.empty
-    , relationshipsByPerson = EntityUuidDict.empty
-    , saveSyncDataRequests = EntityUuidDict.empty
-    , sessionRequests = EntityUuidDict.empty
-    , sessions = EntityUuidDict.empty
-    , sessionsByClinic = EntityUuidDict.empty
+    , postPmtctParticipant = Dict.empty
+    , postRelationship = Dict.empty
+    , relationshipsByPerson = Dict.empty
+    , saveSyncDataRequests = Dict.empty
+    , sessionRequests = Dict.empty
+    , sessions = Dict.empty
+    , sessionsByClinic = Dict.empty
     , syncData = NotAsked
     }
 
