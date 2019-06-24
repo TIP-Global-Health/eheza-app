@@ -23,6 +23,12 @@ import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Decoder exposing (decodePmtctParticipant)
 import Backend.PmtctParticipant.Encoder exposing (encodePmtctParticipant)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
+import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalEncounter)
+import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalEncounter)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
+import Backend.PrenatalParticipant.Decoder exposing (decodePrenatalParticipant)
+import Backend.PrenatalParticipant.Encoder exposing (encodePrenatalParticipant)
+import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import Backend.Relationship.Decoder exposing (decodeRelationship)
 import Backend.Relationship.Encoder exposing (encodeRelationship)
 import Backend.Relationship.Model exposing (Relationship)
@@ -260,3 +266,15 @@ pmtctParticipantEndpoint =
     swEndpoint "nodes/pmtct_participant" decodePmtctParticipant
         |> withValueEncoder encodePmtctParticipant
         |> withParamsEncoder encodePmtctParticipantParams
+
+
+prenatalEncounterEndpoint : ReadWriteEndPoint Error PrenatalEncounterId PrenatalEncounter PrenatalEncounter ()
+prenatalEncounterEndpoint =
+    swEndpoint "nodes/prenatal_encounter" decodePrenatalEncounter
+        |> withValueEncoder (object << encodePrenatalEncounter)
+
+
+prenatalParticipantEndpoint : ReadWriteEndPoint Error PrenatalParticipantId PrenatalParticipant PrenatalParticipant ()
+prenatalParticipantEndpoint =
+    swEndpoint "nodes/prenatal_participant" decodePrenatalParticipant
+        |> withValueEncoder encodePrenatalParticipant
