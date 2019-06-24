@@ -5,8 +5,10 @@ module Pages.PrenatalActivity.Model exposing
     , CSectionReason(..)
     , CorePhysicalExamForm
     , DangerSign(..)
+    , DangerSignsData
     , ExaminationData
     , ExaminationTask(..)
+    , FamilyPlanningData
     , FetalPresentation(..)
     , HandsCPEOption(..)
     , HistoryData
@@ -87,6 +89,8 @@ type Msg
       -- ExaminationMsgs, Breast Exam
     | SetBreastExamBoolInput (Bool -> BreastExamForm -> BreastExamForm) Bool
     | SetBreastExamBreast BreastBEOption
+      -- FamilyPlanningMsgs
+    | SetFamilyPlanningSign FamilyPlanningSign
       -- PatientProvisionsMsgs
     | SetActivePatientProvisionsTask PatientProvisionsTask
     | SetPatientProvisionsTaskCompleted
@@ -94,6 +98,8 @@ type Msg
     | SetMedicationBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
       -- PatientProvisionsMsgs, Resources
     | SetResourcesBoolInput (Bool -> ResourcesForm -> ResourcesForm) Bool
+      -- DangerSignsMsgs
+    | SetDangerSign DangerSign
 
 
 type alias Model =
@@ -588,3 +594,4 @@ type DangerSign
     | DificultyBreathing
     | Fever
     | ExtremeWeakness
+    | NoDangerSign

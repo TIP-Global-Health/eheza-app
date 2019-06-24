@@ -233,7 +233,7 @@ type TranslationId
     | CreateGroupEncounter
     | CreateTrainingGroupEncounters
     | CurrentlyPregnant
-    | DangerSigns DangerSign
+    | DangerSign DangerSign
     | Dashboard
     | DateOfLastAssessment
     | Day
@@ -269,6 +269,7 @@ type TranslationId
     | Failure
     | FamilyInformation
     | FamilyMembers
+    | FamilyPlanningInFutureQuestion
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
     | FetalHeartRate
@@ -449,6 +450,7 @@ type TranslationId
     | SearchHelperFamilyMember
     | SecondName
     | Sector
+    | SelectDangerSigns
     | SelectGroup
     | SelectLanguage
     | SelectYourGroup
@@ -1254,7 +1256,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        DangerSigns sign ->
+        DangerSign sign ->
             case sign of
                 VaginalBleeding ->
                     { english = "Vaginal bleeding"
@@ -1288,6 +1290,11 @@ translationSet trans =
 
                 ExtremeWeakness ->
                     { english = "Extreme weakness"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoDangerSign ->
+                    { english = "None of these"
                     , kinyarwanda = Nothing
                     }
 
@@ -1504,6 +1511,11 @@ translationSet trans =
 
         FamilyMembers ->
             { english = "Family Members"
+            , kinyarwanda = Nothing
+            }
+
+        FamilyPlanningInFutureQuestion ->
+            { english = "Which, if any, of these methods will you use after your pregnancy"
             , kinyarwanda = Nothing
             }
 
@@ -2659,6 +2671,11 @@ translationSet trans =
 
         Sector ->
             { english = "Sector"
+            , kinyarwanda = Nothing
+            }
+
+        SelectDangerSigns ->
+            { english = "Please select one or more of the danger signs the patient is experiencing"
             , kinyarwanda = Nothing
             }
 

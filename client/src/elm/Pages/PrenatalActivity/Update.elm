@@ -697,6 +697,12 @@ update motherId activity db msg model =
             , []
             )
 
+        SetFamilyPlanningSign sign ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
         SetActivePatientProvisionsTask task ->
             let
                 updatedData =
@@ -771,6 +777,12 @@ update motherId activity db msg model =
                             model.patientProvisionsData
             in
             ( { model | patientProvisionsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetDangerSign sign ->
+            ( model
             , Cmd.none
             , []
             )

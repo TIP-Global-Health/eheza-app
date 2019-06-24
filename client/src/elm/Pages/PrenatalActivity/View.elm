@@ -2,6 +2,7 @@ module Pages.PrenatalActivity.View exposing (view)
 
 import AllDict
 import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Date.Extra as Date exposing (Interval(Day, Month))
 import DateSelector.SelectorDropdown
@@ -73,18 +74,24 @@ viewContent language currentDate motherId activity model =
         Examination ->
             viewExaminationContent language currentDate motherId model.examinationData
 
+        FamilyPlanning ->
+            viewFamilyPlanningContent language currentDate motherId model.familyPlanningData
+
         PatientProvisions ->
             viewPatientProvisionsContent language currentDate motherId model.patientProvisionsData
+
+        DangerSigns ->
+            viewDangerSignsContent language currentDate motherId model.dangerSignsData
 
         _ ->
             []
 
 
 viewPregnancyDatingContent : Language -> NominalDate -> PersonId -> PregnancyDatingData -> List (Html Msg)
-viewPregnancyDatingContent language currentDate motherId pregnancyDatingData =
+viewPregnancyDatingContent language currentDate motherId data =
     let
         form =
-            pregnancyDatingData.form
+            data.form
 
         lmpRangeInput =
             option
@@ -561,6 +568,43 @@ viewExaminationContent language currentDate motherId data =
     ]
 
 
+viewFamilyPlanningContent : Language -> NominalDate -> PersonId -> FamilyPlanningData -> List (Html Msg)
+viewFamilyPlanningContent language currentDate motherId data =
+    let
+        form =
+            data.form
+
+        totalTasks =
+            1
+
+        tasksCompleted =
+            taskCompleted form.signs
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form family-planning" ]
+                [ viewQuestionLabel language Translate.FamilyPlanningInFutureQuestion
+                , viewCheckBoxSelectInput language
+                    [ Pill, Condoms, IUD ]
+                    [ Injection, Necklace, Implant ]
+                    form.signs
+                    (Just NoFamilyPlanning)
+                    SetFamilyPlanningSign
+                    Translate.FamilyPlanningSignLabel
+                ]
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage motherId
+                ]
+                [ text <| translate language Translate.Save ]
+            ]
+        ]
+    ]
+
+
 viewPatientProvisionsContent : Language -> NominalDate -> PersonId -> PatientProvisionsData -> List (Html Msg)
 viewPatientProvisionsContent language currentDate motherId data =
     let
@@ -641,6 +685,43 @@ viewPatientProvisionsContent language currentDate motherId data =
         [ div [ class "full content" ]
             [ viewForm
             , actions
+            ]
+        ]
+    ]
+
+
+viewDangerSignsContent : Language -> NominalDate -> PersonId -> DangerSignsData -> List (Html Msg)
+viewDangerSignsContent language currentDate motherId data =
+    let
+        form =
+            data.form
+
+        totalTasks =
+            1
+
+        tasksCompleted =
+            taskCompleted form.signs
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form danger-signs" ]
+                [ viewQuestionLabel language Translate.SelectDangerSigns
+                , viewCheckBoxSelectInput language
+                    [ VaginalBleeding, HeadacheBlurredVision, Convulsions, AbdominalPain ]
+                    [ DificultyBreathing, Fever, ExtremeWeakness ]
+                    form.signs
+                    (Just NoDangerSign)
+                    SetDangerSign
+                    Translate.DangerSign
+                ]
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage motherId
+                ]
+                [ text <| translate language Translate.Save ]
             ]
         ]
     ]
@@ -793,6 +874,7 @@ viewObstetricFormSecondStep language currentDate motherId form =
             [ Breech, Emergency, Other ]
             [ FailureToProgress, None ]
             form.reasonForCSection
+            Nothing
             SetCSectionReason
             Translate.CSectionReasons
         , div [ class "ui grid" ]
@@ -804,6 +886,7 @@ viewObstetricFormSecondStep language currentDate motherId form =
             [ LessThan18Month, MoreThan5Years ]
             [ Neither ]
             form.previousDeliveryPeriod
+            Nothing
             SetPreviousDeliveryPeriod
             Translate.PreviousDeliveryPeriods
         , viewCustomLabel language Translate.SuccessiveAbortions "?" "label successive-abortions"
@@ -1265,6 +1348,7 @@ viewCorePhysicalExamForm language currentDate motherId form =
             [ EnlargedThyroid, EnlargedLymphNodes ]
             [ NormalNeck ]
             form.neck
+            Nothing
             SetCorePhysicalExamNeck
             Translate.NeckCPEOption
         , div [ class "separator" ] []
@@ -1289,6 +1373,7 @@ viewCorePhysicalExamForm language currentDate motherId form =
             [ Wheezes, Crackles ]
             [ NormalLungs ]
             form.lungs
+            Nothing
             SetCorePhysicalExamLungs
             Translate.LungsCPEOption
         , div [ class "separator" ] []
@@ -1301,6 +1386,7 @@ viewCorePhysicalExamForm language currentDate motherId form =
             [ Heptomegaly, Splenomegaly, TPRightUpper, TPLeftUpper ]
             [ NormalAbdomen, Hernia, TPRightLower, TPLeftLower ]
             form.abdomen
+            Nothing
             SetCorePhysicalExamAbdomen
             Translate.AbdomenCPEOption
         , div [ class "separator" ] []
@@ -1314,6 +1400,7 @@ viewCorePhysicalExamForm language currentDate motherId form =
             [ PallorHands, EdemaHands ]
             [ NormalHands ]
             form.hands
+            Nothing
             SetCorePhysicalExamHands
             Translate.HandsCPEOption
         , div [ class "title legs" ] [ text <| (translate language Translate.Legs ++ ":") ]
@@ -1321,6 +1408,7 @@ viewCorePhysicalExamForm language currentDate motherId form =
             [ PallorLegs, EdemaLegs ]
             [ NormalLegs ]
             form.legs
+            Nothing
             SetCorePhysicalExamLegs
             Translate.LegsCPEOption
         ]
@@ -1370,6 +1458,7 @@ viewObstetricalExamForm language currentDate motherId form =
             [ Transverse, Cephalic ]
             [ Breach ]
             form.fetalPresentation
+            Nothing
             SetObstetricalExamFetalPresentation
             Translate.FetalPresentation
         , div [ class "separator" ] []
@@ -1424,6 +1513,7 @@ viewBreastExamForm language currentDate motherId form =
             [ Mass, Discharge ]
             [ Infection, NormalBreast ]
             form.breast
+            Nothing
             SetBreastExamBreast
             Translate.BreastBEOption
         , div [ class "separator double" ] []
@@ -1569,9 +1659,20 @@ viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId 
         ]
 
 
-viewCheckBoxSelectInput : Language -> List a -> List a -> Maybe a -> (a -> Msg) -> (a -> TranslationId) -> Html Msg
-viewCheckBoxSelectInput language leftOptions rightOptions currentValue setMsg translateFunc =
-    div [ class "ui grid" ]
+viewCheckBoxSelectInput : Language -> List a -> List a -> Maybe a -> Maybe a -> (a -> Msg) -> (a -> TranslationId) -> Html Msg
+viewCheckBoxSelectInput language leftOptions rightOptions currentValue noneOption setMsg translateFunc =
+    let
+        noneSection =
+            noneOption
+                |> unwrap
+                    []
+                    (\option ->
+                        [ div [ class "ui divider" ] []
+                        , viewCheckBoxSelectInputItem language currentValue setMsg translateFunc option
+                        ]
+                    )
+    in
+    div [ class "ui grid" ] <|
         [ leftOptions
             |> List.map (viewCheckBoxSelectInputItem language currentValue setMsg translateFunc)
             |> div [ class "eight wide column" ]
@@ -1579,6 +1680,7 @@ viewCheckBoxSelectInput language leftOptions rightOptions currentValue setMsg tr
             |> List.map (viewCheckBoxSelectInputItem language currentValue setMsg translateFunc)
             |> div [ class "eight wide column" ]
         ]
+            ++ noneSection
 
 
 viewCheckBoxSelectInputItem : Language -> Maybe a -> (a -> Msg) -> (a -> TranslationId) -> a -> Html Msg
