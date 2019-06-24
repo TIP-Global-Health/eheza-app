@@ -4,6 +4,7 @@ module Pages.PrenatalActivity.Model exposing
     , BreastExamForm
     , CSectionReason(..)
     , CorePhysicalExamForm
+    , DangerSign(..)
     , ExaminationData
     , ExaminationTask(..)
     , FetalPresentation(..)
@@ -37,6 +38,7 @@ module Pages.PrenatalActivity.Model exposing
     , encodeLmpRange
     )
 
+import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Date exposing (Date)
 import Pages.Page exposing (Page)
 
@@ -98,7 +100,9 @@ type alias Model =
     { pregnancyDatingData : PregnancyDatingData
     , historyData : HistoryData
     , examinationData : ExaminationData
+    , familyPlanningData : FamilyPlanningData
     , patientProvisionsData : PatientProvisionsData
+    , dangerSignsData : DangerSignsData
     }
 
 
@@ -107,7 +111,9 @@ emptyModel =
     { pregnancyDatingData = emptyPregnancyDatingData
     , historyData = emptyHistoryData
     , examinationData = emptyExaminationData
+    , familyPlanningData = emptyFamilyPlanningData
     , patientProvisionsData = emptyPatientProvisionsData
+    , dangerSignsData = emptyDangerSignsData
     }
 
 
@@ -164,6 +170,17 @@ emptyExaminationData =
     }
 
 
+type alias FamilyPlanningData =
+    { form : FamilyPlanningForm
+    }
+
+
+emptyFamilyPlanningData : FamilyPlanningData
+emptyFamilyPlanningData =
+    { form = emptyFamilyPlanningForm
+    }
+
+
 type alias PatientProvisionsData =
     { medicationForm : MedicationForm
     , resourcesForm : ResourcesForm
@@ -178,6 +195,17 @@ emptyPatientProvisionsData =
     , resourcesForm = emptyResourcesForm
     , activeTask = Medication
     , completedTasks = []
+    }
+
+
+type alias DangerSignsData =
+    { form : DangerSignsForm
+    }
+
+
+emptyDangerSignsData : DangerSignsData
+emptyDangerSignsData =
+    { form = emptyDangerSignsForm
     }
 
 
@@ -506,6 +534,16 @@ type BreastBEOption
     | NormalBreast
 
 
+type alias FamilyPlanningForm =
+    { signs : Maybe (List FamilyPlanningSign)
+    }
+
+
+emptyFamilyPlanningForm : FamilyPlanningForm
+emptyFamilyPlanningForm =
+    FamilyPlanningForm Nothing
+
+
 type PatientProvisionsTask
     = Medication
     | Resources
@@ -530,3 +568,23 @@ type alias ResourcesForm =
 emptyResourcesForm : ResourcesForm
 emptyResourcesForm =
     ResourcesForm Nothing
+
+
+type alias DangerSignsForm =
+    { signs : Maybe (List FamilyPlanningSign)
+    }
+
+
+emptyDangerSignsForm : DangerSignsForm
+emptyDangerSignsForm =
+    DangerSignsForm Nothing
+
+
+type DangerSign
+    = VaginalBleeding
+    | HeadacheBlurredVision
+    | Convulsions
+    | AbdominalPain
+    | DificultyBreathing
+    | Fever
+    | ExtremeWeakness

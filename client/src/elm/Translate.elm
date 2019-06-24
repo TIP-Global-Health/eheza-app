@@ -38,6 +38,7 @@ import Pages.PrenatalActivity.Model
         ( AbdomenCPEOption(..)
         , BreastBEOption(..)
         , CSectionReason(..)
+        , DangerSign(..)
         , ExaminationTask(..)
         , FetalPresentation(..)
         , HandsCPEOption(..)
@@ -232,7 +233,7 @@ type TranslationId
     | CreateGroupEncounter
     | CreateTrainingGroupEncounters
     | CurrentlyPregnant
-    | DeleteTrainingGroupEncounters
+    | DangerSigns DangerSign
     | Dashboard
     | DateOfLastAssessment
     | Day
@@ -240,6 +241,7 @@ type TranslationId
     | DateOfBirth
     | Days
     | Delete
+    | DeleteTrainingGroupEncounters
     | DemographicInformation
     | Device
     | DeviceNotAuthorized
@@ -1251,6 +1253,43 @@ translationSet trans =
             { english = "Delete All Training Group Encounters"
             , kinyarwanda = Nothing
             }
+
+        DangerSigns sign ->
+            case sign of
+                VaginalBleeding ->
+                    { english = "Vaginal bleeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                HeadacheBlurredVision ->
+                    { english = "Severe headaches with blurred vision"
+                    , kinyarwanda = Nothing
+                    }
+
+                Convulsions ->
+                    { english = "Convulsions"
+                    , kinyarwanda = Nothing
+                    }
+
+                AbdominalPain ->
+                    { english = "Abdominal pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                DificultyBreathing ->
+                    { english = "Dificulty breathing"
+                    , kinyarwanda = Nothing
+                    }
+
+                Fever ->
+                    { english = "Fever"
+                    , kinyarwanda = Nothing
+                    }
+
+                ExtremeWeakness ->
+                    { english = "Extreme weakness"
+                    , kinyarwanda = Nothing
+                    }
 
         Dashboard ->
             { english = "Dashboard"
