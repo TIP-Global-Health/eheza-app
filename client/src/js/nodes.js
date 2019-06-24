@@ -92,6 +92,8 @@
         person: 'nodes',
         photo: 'shards',
         pmtct_participant: 'nodes',
+        prenatal_participant: 'nodes',
+        prenatal_encounter: 'nodes',
         relationship: 'nodes',
         session: 'nodes',
         syncmetadata: 'syncMetadata',
