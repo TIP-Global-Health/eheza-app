@@ -84,8 +84,6 @@ viewContent language currentDate motherId activity model =
             viewDangerSignsContent language currentDate motherId model.dangerSignsData
 
 
-
-
 viewPregnancyDatingContent : Language -> NominalDate -> PersonId -> PregnancyDatingData -> List (Html Msg)
 viewPregnancyDatingContent language currentDate motherId data =
     let
@@ -1671,15 +1669,16 @@ viewCheckBoxMultipleSelectInput language leftOptions rightOptions checkedOptions
                         ]
                     )
     in
-    div [ class "ui grid" ] <|
-        [ leftOptions
-            |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc)
-            |> div [ class "eight wide column" ]
-        , rightOptions
-            |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc)
-            |> div [ class "eight wide column" ]
-        ]
-            ++ noneSection
+    div [ class "checkbox-select-input" ] <|
+        div [ class "ui grid" ]
+            [ leftOptions
+                |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc)
+                |> div [ class "eight wide column" ]
+            , rightOptions
+                |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc)
+                |> div [ class "eight wide column" ]
+            ]
+            :: noneSection
 
 
 viewCheckBoxSelectInputItem : Language -> List a -> (a -> Msg) -> (a -> TranslationId) -> a -> Html Msg

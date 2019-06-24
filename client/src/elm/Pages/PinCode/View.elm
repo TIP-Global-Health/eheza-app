@@ -132,7 +132,7 @@ viewWhenLoggedIn language nurse =
         prenatalEncounterButton =
             let
                 uuid =
-                    toEntityUuid "614d3636-4b75-5b74-9d7d-d8e02e2969bf"
+                    toEntityUuid "0eca8ae5-f016-5fca-8214-c202e5acbe1c"
             in
             button
                 [ class "ui fluid primary button"

@@ -2,6 +2,7 @@ module Pages.PrenatalActivity.Update exposing (update)
 
 import App.Model
 import Backend.Entities exposing (PersonId)
+import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.PrenatalActivity.Model exposing (..)
@@ -698,7 +699,49 @@ update motherId activity db msg model =
             )
 
         SetFamilyPlanningSign sign ->
-            ( model
+            let
+                form =
+                    model.familyPlanningData.form
+
+                updatedForm =
+                    case form.signs of
+                        Just signs ->
+                            if List.member sign signs then
+                                let
+                                    updatedSigns =
+                                        if List.length signs == 1 then
+                                            Nothing
+
+                                        else
+                                            signs |> List.filter ((/=) sign) |> Just
+                                in
+                                { form | signs = updatedSigns }
+
+                            else
+                                case sign of
+                                    NoFamilyPlanning ->
+                                        { form | signs = Just [ sign ] }
+
+                                    _ ->
+                                        let
+                                            updatedSigns =
+                                                case signs of
+                                                    [ NoFamilyPlanning ] ->
+                                                        Just [ sign ]
+
+                                                    _ ->
+                                                        Just (sign :: signs)
+                                        in
+                                        { form | signs = updatedSigns }
+
+                        Nothing ->
+                            { form | signs = Just [ sign ] }
+
+                updatedData =
+                    model.familyPlanningData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | familyPlanningData = updatedData }
             , Cmd.none
             , []
             )
@@ -782,7 +825,49 @@ update motherId activity db msg model =
             )
 
         SetDangerSign sign ->
-            ( model
+            let
+                form =
+                    model.dangerSignsData.form
+
+                updatedForm =
+                    case form.signs of
+                        Just signs ->
+                            if List.member sign signs then
+                                let
+                                    updatedSigns =
+                                        if List.length signs == 1 then
+                                            Nothing
+
+                                        else
+                                            signs |> List.filter ((/=) sign) |> Just
+                                in
+                                { form | signs = updatedSigns }
+
+                            else
+                                case sign of
+                                    NoDangerSign ->
+                                        { form | signs = Just [ sign ] }
+
+                                    _ ->
+                                        let
+                                            updatedSigns =
+                                                case signs of
+                                                    [ NoDangerSign ] ->
+                                                        Just [ sign ]
+
+                                                    _ ->
+                                                        Just (sign :: signs)
+                                        in
+                                        { form | signs = updatedSigns }
+
+                        Nothing ->
+                            { form | signs = Just [ sign ] }
+
+                updatedData =
+                    model.dangerSignsData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | dangerSignsData = updatedData }
             , Cmd.none
             , []
             )
