@@ -88,6 +88,10 @@ type Msg
       -- PatientProvisionsMsgs
     | SetActivePatientProvisionsTask PatientProvisionsTask
     | SetPatientProvisionsTaskCompleted
+      -- PatientProvisionsMsgs, Medication
+    | SetMedicationBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
+      -- PatientProvisionsMsgs, Resources
+    | SetResourcesBoolInput (Bool -> ResourcesForm -> ResourcesForm) Bool
 
 
 type alias Model =

@@ -63,10 +63,10 @@ update motherId activity db msg model =
             , []
             )
 
-        SetLmpRange s ->
+        SetLmpRange value ->
             let
                 range =
-                    decodeLmpRange s
+                    decodeLmpRange value
 
                 ( lmpDate, isDateSelectorOpen ) =
                     if isJust range then
@@ -729,6 +729,46 @@ update motherId activity db msg model =
                     in
                     model.patientProvisionsData
                         |> (\data -> { data | activeTask = activeTask, completedTasks = completedTasks })
+            in
+            ( { model | patientProvisionsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicationBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    case model.patientProvisionsData.activeTask of
+                        Medication ->
+                            let
+                                updatedForm =
+                                    formUpdateFunc value model.patientProvisionsData.medicationForm
+                            in
+                            model.patientProvisionsData
+                                |> (\data -> { data | medicationForm = updatedForm })
+
+                        _ ->
+                            model.patientProvisionsData
+            in
+            ( { model | patientProvisionsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetResourcesBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    case model.patientProvisionsData.activeTask of
+                        Resources ->
+                            let
+                                updatedForm =
+                                    formUpdateFunc value model.patientProvisionsData.resourcesForm
+                            in
+                            model.patientProvisionsData
+                                |> (\data -> { data | resourcesForm = updatedForm })
+
+                        _ ->
+                            model.patientProvisionsData
             in
             ( { model | patientProvisionsData = updatedData }
             , Cmd.none

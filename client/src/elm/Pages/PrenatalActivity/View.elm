@@ -598,10 +598,50 @@ viewPatientProvisionsContent language currentDate motherId data =
                     , text <| translate language (Translate.PatientProvisionsTask task)
                     ]
                 ]
+
+        ( viewForm, tasksCompleted, totalTasks ) =
+            case data.activeTask of
+                Medication ->
+                    let
+                        form =
+                            data.medicationForm
+                    in
+                    ( viewMedicationForm language currentDate motherId form
+                    , [ form.recievedIronFolicAcid, form.recievedDewormingPill ]
+                        |> List.map taskCompleted
+                        |> List.sum
+                    , 2
+                    )
+
+                Resources ->
+                    let
+                        form =
+                            data.resourcesForm
+                    in
+                    ( viewResourcesForm language currentDate motherId form
+                    , taskCompleted form.recievedMosquitoNet
+                    , 1
+                    )
+
+        actions =
+            div [ class "actions examination" ]
+                [ button
+                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                    , onClick SetPatientProvisionsTaskCompleted
+                    ]
+                    [ text <| translate language Translate.Save ]
+                ]
     in
     [ div [ class "ui task segment blue" ]
         [ div [ class "ui five column grid" ] <|
             List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
+            ]
         ]
     ]
 
@@ -1466,6 +1506,53 @@ viewBreastExamForm language currentDate motherId form =
             form.selfGuidance
             (SetBreastExamBoolInput selfGuidanceUpdateFunc)
             "self-guidance"
+            Nothing
+            Nothing
+        ]
+
+
+viewMedicationForm : Language -> NominalDate -> PersonId -> MedicationForm -> Html Msg
+viewMedicationForm language currentDate motherId form =
+    let
+        recievedIronFolicAcidUpdateFunc value form_ =
+            { form_ | recievedIronFolicAcid = Just value }
+
+        recievedDewormingPillUpdateFunc value form_ =
+            { form_ | recievedDewormingPill = Just value }
+    in
+    div [ class "ui form patient-provisions medication" ]
+        [ viewQuestionLabel language Translate.RecievedIronFolicAcid
+        , viewBoolInput
+            language
+            form.recievedIronFolicAcid
+            (SetMedicationBoolInput recievedIronFolicAcidUpdateFunc)
+            "iron-folic-acid"
+            Nothing
+            Nothing
+        , viewQuestionLabel language Translate.RecievedDewormingPill
+        , viewBoolInput
+            language
+            form.recievedDewormingPill
+            (SetMedicationBoolInput recievedDewormingPillUpdateFunc)
+            "deworming-pill"
+            Nothing
+            Nothing
+        ]
+
+
+viewResourcesForm : Language -> NominalDate -> PersonId -> ResourcesForm -> Html Msg
+viewResourcesForm language currentDate motherId form =
+    let
+        recievedMosquitoNetUpdateFunc value form_ =
+            { form_ | recievedMosquitoNet = Just value }
+    in
+    div [ class "ui form patient-provisions resources" ]
+        [ viewQuestionLabel language Translate.RecievedMosquitoNet
+        , viewBoolInput
+            language
+            form.recievedMosquitoNet
+            (SetResourcesBoolInput recievedMosquitoNetUpdateFunc)
+            "mosquito-net"
             Nothing
             Nothing
         ]

@@ -411,6 +411,9 @@ type TranslationId
     | PreTermPregnancy
     | Province
     | ReasonForCSection
+    | RecievedDewormingPill
+    | RecievedIronFolicAcid
+    | RecievedMosquitoNet
     | Register
     | RegisterAParticipant
     | RegisterHelper
@@ -2432,6 +2435,21 @@ translationSet trans =
 
         ReasonForCSection ->
             { english = "Reason for C-section"
+            , kinyarwanda = Nothing
+            }
+
+        RecievedDewormingPill ->
+            { english = "Has the mother recieved deworming pill"
+            , kinyarwanda = Nothing
+            }
+
+        RecievedIronFolicAcid ->
+            { english = "Has the mother recieved iron and folic acid supplement"
+            , kinyarwanda = Nothing
+            }
+
+        RecievedMosquitoNet ->
+            { english = "Has the mother recieved a mosquito net"
             , kinyarwanda = Nothing
             }
 
