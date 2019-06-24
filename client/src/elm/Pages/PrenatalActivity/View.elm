@@ -180,7 +180,7 @@ viewPregnancyDatingContent language currentDate motherId pregnancyDatingData =
                 , viewLabel language Translate.LmpDateHeader
                 , lmpDateInput
                 , viewQuestionLabel language Translate.LmpDateConfidentHeader
-                , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing Nothing
+                , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
                 , div [ class "separator" ] []
                 , div [ class "results" ]
                     [ div [ class "edd-result" ]
@@ -646,6 +646,10 @@ viewPatientProvisionsContent language currentDate motherId data =
     ]
 
 
+
+-- Forms
+
+
 viewObstetricFormFirstStep : Language -> NominalDate -> PersonId -> ObstetricFormFirstStep -> Html Msg
 viewObstetricFormFirstStep language currentDate motherId form =
     let
@@ -679,7 +683,6 @@ viewObstetricFormFirstStep language currentDate motherId form =
             form.currentlyPregnant
             SetCurrentlyPregnant
             "currently-pregnant"
-            Nothing
             Nothing
         , viewNumberInput language
             form.termPregnancy
@@ -781,7 +784,6 @@ viewObstetricFormSecondStep language currentDate motherId form =
             (SetOBBoolInput cSectionInPreviousDeliveryUpdateFunc)
             "c-section-previous-delivery"
             Nothing
-            Nothing
         , div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
                 [ viewLabel language Translate.CSectionReason ]
@@ -811,14 +813,12 @@ viewObstetricFormSecondStep language currentDate motherId form =
             (SetOBBoolInput successiveAbortionsUpdateFunc)
             "successive-abortions"
             Nothing
-            Nothing
         , viewLabel language Translate.SuccessivePrimatureDeliveries
         , viewBoolInput
             language
             form.successivePrimatureDeliveries
             (SetOBBoolInput successivePrimatureDeliveriesUpdateFunc)
             "successive-primature-deliveries"
-            Nothing
             Nothing
         , viewLabel language Translate.StillbornPreviousDelivery
         , viewBoolInput
@@ -827,14 +827,12 @@ viewObstetricFormSecondStep language currentDate motherId form =
             (SetOBBoolInput stillbornPreviousDeliveryUpdateFunc)
             "stillborn-previous-delivery"
             Nothing
-            Nothing
         , viewLabel language Translate.BabyDiedOnDayOfBirthPreviousDelivery
         , viewBoolInput
             language
             form.babyDiedOnDayOfBirthPreviousDelivery
             (SetOBBoolInput babyDiedOnDayOfBirthPreviousDeliveryUpdateFunc)
             "baby-died-on-day-off-birth-previous-delivery"
-            Nothing
             Nothing
         , viewLabel language Translate.PartialPlacentaPreviousDelivery
         , viewBoolInput
@@ -843,14 +841,12 @@ viewObstetricFormSecondStep language currentDate motherId form =
             (SetOBBoolInput partialPlacentaPreviousDeliveryUpdateFunc)
             "partial-placenta-previous-delivery"
             Nothing
-            Nothing
         , viewLabel language Translate.SevereHemorrhagingPreviousDelivery
         , viewBoolInput
             language
             form.severeHemorrhagingPreviousDelivery
             (SetOBBoolInput severeHemorrhagingPreviousDeliveryUpdateFunc)
             "severe-hemorrhaging-previous-delivery"
-            Nothing
             Nothing
         , viewLabel language Translate.PreeclampsiaPreviousPregnancy
         , viewBoolInput
@@ -859,14 +855,12 @@ viewObstetricFormSecondStep language currentDate motherId form =
             (SetOBBoolInput preeclampsiaPreviousPregnancyUpdateFunc)
             "preeclampsia-previous-pregnancy"
             Nothing
-            Nothing
         , viewLabel language Translate.ConvulsionsPreviousDelivery
         , viewBoolInput
             language
             form.convulsionsPreviousDelivery
             (SetOBBoolInput convulsionsPreviousDeliveryUpdateFunc)
             "convulsions-previous-pelivery"
-            Nothing
             Nothing
         , viewLabel language Translate.ConvulsionsAndUnconciousPreviousDelivery
         , viewBoolInput
@@ -875,14 +869,12 @@ viewObstetricFormSecondStep language currentDate motherId form =
             (SetOBBoolInput convulsionsAndUnconciousPreviousDeliveryUpdateFunc)
             "convulsions-and-unconcious-previous-delivery"
             Nothing
-            Nothing
         , viewLabel language Translate.GestatipnalDiabetesPreviousPregnancy
         , viewBoolInput
             language
             form.gestatipnalDiabetesPreviousPregnancy
             (SetOBBoolInput gestatipnalDiabetesPreviousPregnancyUpdateFunc)
             "gestatipnal-diabetes-previous-pregnancy"
-            Nothing
             Nothing
         , viewLabel language Translate.IncompleteCervixPreviousPregnancy
         , viewBoolInput
@@ -891,14 +883,12 @@ viewObstetricFormSecondStep language currentDate motherId form =
             (SetOBBoolInput incompleteCervixPreviousPregnancyUpdateFunc)
             "incomplete-cervix-previous-pregnancy"
             Nothing
-            Nothing
         , viewLabel language Translate.RhNegative
         , viewBoolInput
             language
             form.rhNegative
             (SetOBBoolInput rhNegativeUpdateFunc)
             "rh-negative"
-            Nothing
             Nothing
         ]
 
@@ -945,14 +935,12 @@ viewMedicalForm language currentDate motherId form =
             (SetMedicalBoolInput uterineMyomaUpdateFunc)
             "uterine-myoma"
             Nothing
-            Nothing
         , viewLabel language Translate.Diabates
         , viewBoolInput
             language
             form.diabates
             (SetMedicalBoolInput diabatesUpdateFunc)
             "diabates"
-            Nothing
             Nothing
         , viewLabel language Translate.CardiacDisease
         , viewBoolInput
@@ -961,14 +949,12 @@ viewMedicalForm language currentDate motherId form =
             (SetMedicalBoolInput cardiacDiseaseUpdateFunc)
             "cardiac-disease"
             Nothing
-            Nothing
         , viewLabel language Translate.RenalDisease
         , viewBoolInput
             language
             form.renalDisease
             (SetMedicalBoolInput renalDiseaseUpdateFunc)
             "renal-disease"
-            Nothing
             Nothing
         , viewLabel language Translate.HypertensionBeforePregnancy
         , viewBoolInput
@@ -977,14 +963,12 @@ viewMedicalForm language currentDate motherId form =
             (SetMedicalBoolInput hypertensionBeforePregnancyUpdateFunc)
             "hypertension-before-pregnancy"
             Nothing
-            Nothing
         , viewLabel language Translate.TuberculosisPast
         , viewBoolInput
             language
             form.tuberculosisPast
             (SetMedicalBoolInput tuberculosisPastUpdateFunc)
             "tuberculosis-past"
-            Nothing
             Nothing
         , viewLabel language Translate.TuberculosisPresent
         , viewBoolInput
@@ -993,14 +977,12 @@ viewMedicalForm language currentDate motherId form =
             (SetMedicalBoolInput tuberculosisPresentUpdateFunc)
             "tuberculosis-present"
             Nothing
-            Nothing
         , viewLabel language Translate.Asthma
         , viewBoolInput
             language
             form.asthma
             (SetMedicalBoolInput asthmaUpdateFunc)
             "asthma"
-            Nothing
             Nothing
         , viewLabel language Translate.BowedLegs
         , viewBoolInput
@@ -1009,14 +991,12 @@ viewMedicalForm language currentDate motherId form =
             (SetMedicalBoolInput bowedLegsUpdateFunc)
             "bowed-legs"
             Nothing
-            Nothing
         , viewLabel language Translate.HIV
         , viewBoolInput
             language
             form.hiv
             (SetMedicalBoolInput hivUpdateFunc)
             "hiv"
-            Nothing
             Nothing
         ]
 
@@ -1041,7 +1021,6 @@ viewSocialForm language currentDate motherId form =
             (SetSocialBoolInput accompaniedByPartnerUpdateFunc)
             "accompanied-by-partner"
             Nothing
-            Nothing
         , viewQuestionLabel language Translate.PartnerReceivedCounseling
         , viewBoolInput
             language
@@ -1049,14 +1028,12 @@ viewSocialForm language currentDate motherId form =
             (SetSocialBoolInput partnerReceivedCounselingUpdateFunc)
             "partner-received-counseling"
             Nothing
-            Nothing
         , viewLabel language Translate.MentalHealthHistory
         , viewBoolInput
             language
             form.mentalHealthHistory
             (SetSocialBoolInput mentalHealthHistoryUpdateFunc)
             "mental-health-history"
-            Nothing
             Nothing
         ]
 
@@ -1156,51 +1133,6 @@ viewVitalsForm language currentDate motherId form =
             Translate.Celcius
         , viewPreviousMeasurement language bodyTemperaturePreviousValue Translate.Celcius
         ]
-
-
-viewLabel : Language -> TranslationId -> Html any
-viewLabel language translationId =
-    viewCustomLabel language translationId ":" "label"
-
-
-viewQuestionLabel : Language -> TranslationId -> Html any
-viewQuestionLabel language translationId =
-    viewCustomLabel language translationId "?" "label"
-
-
-viewCustomLabel : Language -> TranslationId -> String -> String -> Html any
-viewCustomLabel language translationId suffix class_ =
-    div [ class class_ ] [ text <| (translate language translationId ++ suffix) ]
-
-
-viewPreviousMeasurement : Language -> Maybe Float -> TranslationId -> Html any
-viewPreviousMeasurement language maybePreviousValue unitTranslationId =
-    let
-        message =
-            maybePreviousValue
-                |> unwrap
-                    (translate language Translate.PreviousMeasurementNotFound)
-                    (\previousValue ->
-                        (previousValue
-                            |> Translate.PreviousFloatMeasurement
-                            |> translate language
-                        )
-                            ++ " "
-                            ++ translate language unitTranslationId
-                    )
-    in
-    div [ class "previous-value" ] [ text message ]
-
-
-viewWarning : Language -> Maybe String -> Html any
-viewWarning language maybeMessage =
-    maybeMessage
-        |> unwrap
-            emptyNode
-            (\message ->
-                div [ class "five wide column" ]
-                    [ text message ]
-            )
 
 
 viewNutritionAssessmentForm : Language -> NominalDate -> PersonId -> NutritionAssessmentForm -> Html Msg
@@ -1310,7 +1242,6 @@ viewCorePhysicalExamForm language currentDate motherId form =
             form.brittleHair
             (SetCorePhysicalExamBoolInput brittleHairUpdateFunc)
             "head-hair"
-            Nothing
             (Just ( Translate.BrittleHair, Translate.Normal ))
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
@@ -1323,7 +1254,6 @@ viewCorePhysicalExamForm language currentDate motherId form =
             form.paleConjuctiva
             (SetCorePhysicalExamBoolInput paleConjuctivaUpdateFunc)
             "eyes"
-            Nothing
             (Just ( Translate.PaleConjuctiva, Translate.Normal ))
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
@@ -1348,7 +1278,6 @@ viewCorePhysicalExamForm language currentDate motherId form =
             form.abnormalHeart
             (SetCorePhysicalExamBoolInput abnormalHeartUpdateFunc)
             "abnormal-heart"
-            Nothing
             (Just ( Translate.Abnormal, Translate.Normal ))
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
@@ -1455,7 +1384,6 @@ viewObstetricalExamForm language currentDate motherId form =
             (SetObstetricalExamBoolInput fetalMovementUpdateFunc)
             "fetal-movement"
             Nothing
-            Nothing
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
@@ -1476,7 +1404,6 @@ viewObstetricalExamForm language currentDate motherId form =
             form.cSectionScar
             (SetObstetricalExamBoolInput cSectionScarUpdateFunc)
             "c-section-scar"
-            Nothing
             Nothing
         ]
 
@@ -1507,7 +1434,6 @@ viewBreastExamForm language currentDate motherId form =
             (SetBreastExamBoolInput selfGuidanceUpdateFunc)
             "self-guidance"
             Nothing
-            Nothing
         ]
 
 
@@ -1528,14 +1454,12 @@ viewMedicationForm language currentDate motherId form =
             (SetMedicationBoolInput recievedIronFolicAcidUpdateFunc)
             "iron-folic-acid"
             Nothing
-            Nothing
         , viewQuestionLabel language Translate.RecievedDewormingPill
         , viewBoolInput
             language
             form.recievedDewormingPill
             (SetMedicationBoolInput recievedDewormingPillUpdateFunc)
             "deworming-pill"
-            Nothing
             Nothing
         ]
 
@@ -1554,8 +1478,11 @@ viewResourcesForm language currentDate motherId form =
             (SetResourcesBoolInput recievedMosquitoNetUpdateFunc)
             "mosquito-net"
             Nothing
-            Nothing
         ]
+
+
+
+-- Inputs
 
 
 viewBoolInput :
@@ -1563,19 +1490,10 @@ viewBoolInput :
     -> Maybe Bool
     -> (Bool -> Msg)
     -> String
-    -> Maybe TranslationId
     -> Maybe ( TranslationId, TranslationId )
     -> Html Msg
-viewBoolInput language currentValue setMsg inputClass labelTranslateId optionsTranslationIds =
+viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
     let
-        inputLabel =
-            labelTranslateId
-                |> unwrap
-                    emptyNode
-                    (\translationId ->
-                        viewLabel language translationId
-                    )
-
         ( yesTransId, noTransId ) =
             optionsTranslationIds |> Maybe.withDefault ( Translate.Yes, Translate.No )
 
@@ -1600,8 +1518,7 @@ viewBoolInput language currentValue setMsg inputClass labelTranslateId optionsTr
                 []
     in
     div [ class <| "form-input yes-no " ++ inputClass ]
-        [ inputLabel
-        , div [ class "ui grid" ]
+        [ div [ class "ui grid" ]
             [ div [ class <| inputWidth ++ " wide column" ]
                 [ viewInput True currentValue setMsg
                 , label [ onClick <| setMsg True ]
@@ -1716,6 +1633,59 @@ viewMeasurementInputAndRound language maybeCurrentValue setMsg inputClass unitTr
         , div [ class "unit" ]
             [ text <| translate language unitTranslationId ]
         ]
+
+
+
+-- Components
+
+
+viewLabel : Language -> TranslationId -> Html any
+viewLabel language translationId =
+    viewCustomLabel language translationId ":" "label"
+
+
+viewQuestionLabel : Language -> TranslationId -> Html any
+viewQuestionLabel language translationId =
+    viewCustomLabel language translationId "?" "label"
+
+
+viewCustomLabel : Language -> TranslationId -> String -> String -> Html any
+viewCustomLabel language translationId suffix class_ =
+    div [ class class_ ] [ text <| (translate language translationId ++ suffix) ]
+
+
+viewPreviousMeasurement : Language -> Maybe Float -> TranslationId -> Html any
+viewPreviousMeasurement language maybePreviousValue unitTranslationId =
+    let
+        message =
+            maybePreviousValue
+                |> unwrap
+                    (translate language Translate.PreviousMeasurementNotFound)
+                    (\previousValue ->
+                        (previousValue
+                            |> Translate.PreviousFloatMeasurement
+                            |> translate language
+                        )
+                            ++ " "
+                            ++ translate language unitTranslationId
+                    )
+    in
+    div [ class "previous-value" ] [ text message ]
+
+
+viewWarning : Language -> Maybe String -> Html any
+viewWarning language maybeMessage =
+    maybeMessage
+        |> unwrap
+            emptyNode
+            (\message ->
+                div [ class "five wide column" ]
+                    [ text message ]
+            )
+
+
+
+-- Helper functions
 
 
 taskCompleted : Maybe a -> Int
