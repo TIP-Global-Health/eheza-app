@@ -577,7 +577,7 @@ emptyResourcesForm =
 
 
 type alias DangerSignsForm =
-    { signs : Maybe (List FamilyPlanningSign)
+    { signs : Maybe (List DangerSign)
     }
 
 

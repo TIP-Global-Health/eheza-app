@@ -83,8 +83,7 @@ viewContent language currentDate motherId activity model =
         DangerSigns ->
             viewDangerSignsContent language currentDate motherId model.dangerSignsData
 
-        _ ->
-            []
+
 
 
 viewPregnancyDatingContent : Language -> NominalDate -> PersonId -> PregnancyDatingData -> List (Html Msg)
@@ -585,10 +584,10 @@ viewFamilyPlanningContent language currentDate motherId data =
         [ div [ class "full content" ]
             [ div [ class "ui form family-planning" ]
                 [ viewQuestionLabel language Translate.FamilyPlanningInFutureQuestion
-                , viewCheckBoxSelectInput language
+                , viewCheckBoxMultipleSelectInput language
                     [ Pill, Condoms, IUD ]
                     [ Injection, Necklace, Implant ]
-                    form.signs
+                    (form.signs |> Maybe.withDefault [])
                     (Just NoFamilyPlanning)
                     SetFamilyPlanningSign
                     Translate.FamilyPlanningSignLabel
@@ -707,10 +706,10 @@ viewDangerSignsContent language currentDate motherId data =
         [ div [ class "full content" ]
             [ div [ class "ui form danger-signs" ]
                 [ viewQuestionLabel language Translate.SelectDangerSigns
-                , viewCheckBoxSelectInput language
+                , viewCheckBoxMultipleSelectInput language
                     [ VaginalBleeding, HeadacheBlurredVision, Convulsions, AbdominalPain ]
                     [ DificultyBreathing, Fever, ExtremeWeakness ]
-                    form.signs
+                    (form.signs |> Maybe.withDefault [])
                     (Just NoDangerSign)
                     SetDangerSign
                     Translate.DangerSign
@@ -874,7 +873,6 @@ viewObstetricFormSecondStep language currentDate motherId form =
             [ Breech, Emergency, Other ]
             [ FailureToProgress, None ]
             form.reasonForCSection
-            Nothing
             SetCSectionReason
             Translate.CSectionReasons
         , div [ class "ui grid" ]
@@ -886,7 +884,6 @@ viewObstetricFormSecondStep language currentDate motherId form =
             [ LessThan18Month, MoreThan5Years ]
             [ Neither ]
             form.previousDeliveryPeriod
-            Nothing
             SetPreviousDeliveryPeriod
             Translate.PreviousDeliveryPeriods
         , viewCustomLabel language Translate.SuccessiveAbortions "?" "label successive-abortions"
@@ -1348,7 +1345,6 @@ viewCorePhysicalExamForm language currentDate motherId form =
             [ EnlargedThyroid, EnlargedLymphNodes ]
             [ NormalNeck ]
             form.neck
-            Nothing
             SetCorePhysicalExamNeck
             Translate.NeckCPEOption
         , div [ class "separator" ] []
@@ -1373,7 +1369,6 @@ viewCorePhysicalExamForm language currentDate motherId form =
             [ Wheezes, Crackles ]
             [ NormalLungs ]
             form.lungs
-            Nothing
             SetCorePhysicalExamLungs
             Translate.LungsCPEOption
         , div [ class "separator" ] []
@@ -1386,7 +1381,6 @@ viewCorePhysicalExamForm language currentDate motherId form =
             [ Heptomegaly, Splenomegaly, TPRightUpper, TPLeftUpper ]
             [ NormalAbdomen, Hernia, TPRightLower, TPLeftLower ]
             form.abdomen
-            Nothing
             SetCorePhysicalExamAbdomen
             Translate.AbdomenCPEOption
         , div [ class "separator" ] []
@@ -1400,7 +1394,6 @@ viewCorePhysicalExamForm language currentDate motherId form =
             [ PallorHands, EdemaHands ]
             [ NormalHands ]
             form.hands
-            Nothing
             SetCorePhysicalExamHands
             Translate.HandsCPEOption
         , div [ class "title legs" ] [ text <| (translate language Translate.Legs ++ ":") ]
@@ -1408,7 +1401,6 @@ viewCorePhysicalExamForm language currentDate motherId form =
             [ PallorLegs, EdemaLegs ]
             [ NormalLegs ]
             form.legs
-            Nothing
             SetCorePhysicalExamLegs
             Translate.LegsCPEOption
         ]
@@ -1458,7 +1450,6 @@ viewObstetricalExamForm language currentDate motherId form =
             [ Transverse, Cephalic ]
             [ Breach ]
             form.fetalPresentation
-            Nothing
             SetObstetricalExamFetalPresentation
             Translate.FetalPresentation
         , div [ class "separator" ] []
@@ -1513,7 +1504,6 @@ viewBreastExamForm language currentDate motherId form =
             [ Mass, Discharge ]
             [ Infection, NormalBreast ]
             form.breast
-            Nothing
             SetBreastExamBreast
             Translate.BreastBEOption
         , div [ class "separator double" ] []
@@ -1659,8 +1649,17 @@ viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId 
         ]
 
 
-viewCheckBoxSelectInput : Language -> List a -> List a -> Maybe a -> Maybe a -> (a -> Msg) -> (a -> TranslationId) -> Html Msg
-viewCheckBoxSelectInput language leftOptions rightOptions currentValue noneOption setMsg translateFunc =
+viewCheckBoxSelectInput : Language -> List a -> List a -> Maybe a -> (a -> Msg) -> (a -> TranslationId) -> Html Msg
+viewCheckBoxSelectInput language leftOptions rightOptions currentValue setMsg translateFunc =
+    let
+        checkedOptions =
+            currentValue |> Maybe.map List.singleton |> Maybe.withDefault []
+    in
+    viewCheckBoxMultipleSelectInput language leftOptions rightOptions checkedOptions Nothing setMsg translateFunc
+
+
+viewCheckBoxMultipleSelectInput : Language -> List a -> List a -> List a -> Maybe a -> (a -> Msg) -> (a -> TranslationId) -> Html Msg
+viewCheckBoxMultipleSelectInput language leftOptions rightOptions checkedOptions noneOption setMsg translateFunc =
     let
         noneSection =
             noneOption
@@ -1668,26 +1667,26 @@ viewCheckBoxSelectInput language leftOptions rightOptions currentValue noneOptio
                     []
                     (\option ->
                         [ div [ class "ui divider" ] []
-                        , viewCheckBoxSelectInputItem language currentValue setMsg translateFunc option
+                        , viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc option
                         ]
                     )
     in
     div [ class "ui grid" ] <|
         [ leftOptions
-            |> List.map (viewCheckBoxSelectInputItem language currentValue setMsg translateFunc)
+            |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc)
             |> div [ class "eight wide column" ]
         , rightOptions
-            |> List.map (viewCheckBoxSelectInputItem language currentValue setMsg translateFunc)
+            |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc)
             |> div [ class "eight wide column" ]
         ]
             ++ noneSection
 
 
-viewCheckBoxSelectInputItem : Language -> Maybe a -> (a -> Msg) -> (a -> TranslationId) -> a -> Html Msg
-viewCheckBoxSelectInputItem language currentValue setMsg translateFunc option =
+viewCheckBoxSelectInputItem : Language -> List a -> (a -> Msg) -> (a -> TranslationId) -> a -> Html Msg
+viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc option =
     let
         isChecked =
-            currentValue == Just option
+            List.member option checkedOptions
     in
     div
         [ class "ui checkbox activity"
