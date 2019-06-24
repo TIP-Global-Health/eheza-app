@@ -52,6 +52,7 @@ features[field_instance][] = node-pmtct_participant-field_uuid
 features[field_instance][] = node-prenatal_encounter-field_prenatal_participant
 features[field_instance][] = node-prenatal_encounter-field_scheduled_date
 features[field_instance][] = node-prenatal_encounter-field_uuid
+features[field_instance][] = node-prenatal_participant-field_expected
 features[field_instance][] = node-prenatal_participant-field_person
 features[field_instance][] = node-prenatal_participant-field_uuid
 features[field_instance][] = node-session-field_clinic

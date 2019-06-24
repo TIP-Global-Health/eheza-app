@@ -71,7 +71,7 @@ function hedley_schedule_strongarm() {
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_pattern_node_prenatal_participant';
-  $strongarm->value = 'Prenatal participant - [node:field_person]';
+  $strongarm->value = '[node:content-type] - [node:field-person:title] - [node:field-expected:value:custom:Y-m-d]';
   $export['auto_entitylabel_pattern_node_prenatal_participant'] = $strongarm;
 
   $strongarm = new stdClass();
@@ -227,7 +227,7 @@ function hedley_schedule_strongarm() {
     'extra_fields' => array(
       'form' => array(
         'title' => array(
-          'weight' => '-5',
+          'weight' => '0',
         ),
       ),
       'display' => array(),
