@@ -23,7 +23,7 @@ class HedleyRestfulPrenatalEncounters extends HedleyRestfulSyncBase {
       ],
     ];
 
-    $public_fields['prental_participant'] = [
+    $public_fields['prenatal_participant'] = [
       'property' => 'field_prenatal_participant',
       'sub_property' => 'field_uuid',
     ];
