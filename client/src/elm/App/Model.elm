@@ -17,6 +17,7 @@ import Pages.PinCode.Model
 import Pages.Relationship.Model
 import Pages.Session.Model
 import RemoteData exposing (RemoteData(..), WebData)
+import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, fromEntityId, select, toCmd, toEntityId, toEntityUuid)
 import Rollbar
 import ServiceWorker.Model
 import Time exposing (Time)
@@ -75,6 +76,9 @@ type alias Model =
     -- animation frame events when this is on. So, as long as we keep getting
     -- updates, we'll keep checking at animation frame intervals.
     , scheduleDataWantedCheck : Bool
+
+    -- Which health center a nurse is working at.
+    , healthCenterId : HealthCenterId
     }
 
 
@@ -117,7 +121,6 @@ type alias ConfiguredModel =
     -- LoggedInModel tracks data which we only have if we are logged in.
     , loggedIn : WebData LoggedInModel
     , pinCodePage : Pages.PinCode.Model.Model
-    , healthCenterId : HealthCenterId
     }
 
 
@@ -179,6 +182,7 @@ type Msg
     | SetPersistentStorage Bool
     | SetStorageQuota StorageQuota
     | SetMemoryQuota MemoryQuota
+    | SetHealthCenter HealthCenterId
     | Tick Time
     | CheckDataWanted
 
@@ -215,4 +219,5 @@ emptyModel flags =
     , serviceWorker = ServiceWorker.Model.emptyModel flags.activeServiceWorker
     , storageQuota = Nothing
     , zscores = ZScore.Model.emptyModel
+    , healthCenterId = toEntityUuid flags.healthCenterId
     }

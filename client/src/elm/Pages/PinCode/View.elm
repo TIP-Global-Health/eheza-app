@@ -9,6 +9,7 @@ import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
+import Maybe.Extra exposing (unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PinCode.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -171,12 +172,23 @@ viewWhenLoggedIn language nurse healthCenterId model db =
             MainMenu ->
                 let
                     loggedInAs =
-                        p []
+                        p [ class "logged-in-as" ]
                             [ Translate.LoginPhrase Translate.LoggedInAs
                                 |> translate language
                                 |> text
                             , text <| ": " ++ nurse.name
                             ]
+
+                    healthCenterName =
+                        db.healthCenters
+                            |> RemoteData.toMaybe
+                            |> unwrap
+                                emptyNode
+                                (EveryDictList.get healthCenterId
+                                    >> unwrap
+                                        emptyNode
+                                        (\healthCenter -> p [ class "health-center-name" ] [ text healthCenter.name ])
+                                )
 
                     deviceStatusButton =
                         button
@@ -206,6 +218,7 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                             [ text <| translate language Translate.RegisterAParticipant ]
                 in
                 [ loggedInAs
+                , healthCenterName
                 , clinicalButton
                 , registerParticipantButton
                 , deviceStatusButton
@@ -225,9 +238,14 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                         []
 
             selectHealthCenterButton ( healthCenterId, healthCenter ) =
-                button [ class "ui primary button" ]
+                button
+                    [ class "ui primary button"
+                    , onClick <| SendOutMsg <| SetHealthCenter healthCenterId
+                    ]
                     [ text healthCenter.name ]
         in
-        filteredHealthCenters
-            |> List.map selectHealthCenterButton
-            |> List.append [ logoutButton ]
+        p [ class "select-health-center" ] [ text <| (translate language Translate.SelectYourHealthCenter ++ ":") ]
+            :: (filteredHealthCenters
+                    |> List.map selectHealthCenterButton
+                    |> List.append [ logoutButton ]
+               )

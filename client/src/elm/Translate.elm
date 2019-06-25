@@ -337,6 +337,7 @@ type TranslationId
     | SelectGroup
     | SelectLanguage
     | SelectYourGroup
+    | SelectYourHealthCenter
     | ServiceWorkerActive
     | ServiceWorkerCurrent
     | ServiceWorkerCheckForUpdates
@@ -1822,6 +1823,11 @@ translationSet trans =
 
         SelectYourGroup ->
             { english = "Select your Group"
+            , kinyarwanda = Nothing
+            }
+
+        SelectYourHealthCenter ->
+            { english = "Select your Health Center"
             , kinyarwanda = Nothing
             }
 

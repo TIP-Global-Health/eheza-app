@@ -79,7 +79,6 @@ testConfigModel =
     , devicePage = Pages.Device.Model.emptyModel
     , loggedIn = NotAsked
     , pinCodePage = Pages.PinCode.Model.emptyModel
-    , healthCenterId = toEntityUuid ""
     }
 
 

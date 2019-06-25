@@ -31,7 +31,7 @@ import Pages.Relationship.Update
 import Pages.Session.Model
 import Pages.Session.Update
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, fromEntityId, select, toCmd, toEntityId, toEntityUuid)
+import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, fromEntityId, fromEntityUuid, select, toCmd, toEntityId, toEntityUuid)
 import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
@@ -103,16 +103,12 @@ init flags =
                                 , fetchCachedDevice
                                 ]
 
-                        healthCenterId =
-                            toEntityUuid flags.healthCenterId
-
                         configuredModel =
                             { config = config
                             , device = Loading
                             , devicePage = Pages.Device.Model.emptyModel
                             , loggedIn = NotAsked
                             , pinCodePage = Pages.PinCode.Model.emptyModel
-                            , healthCenterId = healthCenterId
                             }
 
                         tryPinCode =
@@ -301,10 +297,15 @@ update msg model =
                                                 ( [ TryPinCode code ], [] )
 
                                             Pages.PinCode.Model.Logout ->
-                                                ( [ SetLoggedIn NotAsked ], [ cachePinCode "" ] )
+                                                ( [ SetLoggedIn NotAsked, SetHealthCenter (toEntityUuid "") ]
+                                                , [ cachePinCode "", cacheHealthCenter "" ]
+                                                )
 
                                             Pages.PinCode.Model.SetActivePage page ->
                                                 ( [ SetActivePage page ], [] )
+
+                                            Pages.PinCode.Model.SetHealthCenter healthCenterId ->
+                                                ( [ SetHealthCenter healthCenterId ], [] )
                                     )
                                 |> Maybe.withDefault ( [], [] )
                     in
@@ -388,6 +389,11 @@ update msg model =
         SetStorageQuota quota ->
             ( { model | storageQuota = Just quota }
             , Cmd.none
+            )
+
+        SetHealthCenter healthCenterId ->
+            ( { model | healthCenterId = healthCenterId }
+            , cacheHealthCenter (fromEntityUuid healthCenterId)
             )
 
         Tick time ->
@@ -615,3 +621,9 @@ port memoryQuota : (MemoryQuota -> msg) -> Sub msg
 {-| Let the Javascript tell us about our storage quota.
 -}
 port storageQuota : (StorageQuota -> msg) -> Sub msg
+
+
+{-| Saves Health center ID selected by user, so that we can use it again if
+the browser is reloaded.
+-}
+port cacheHealthCenter : String -> Cmd msg

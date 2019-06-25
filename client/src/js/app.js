@@ -71,6 +71,9 @@ elmApp.ports.cachePinCode.subscribe(function(pinCode) {
   localStorage.setItem('pinCode', pinCode);
 });
 
+elmApp.ports.cacheHealthCenter.subscribe(function(healthCenterId) {
+  localStorage.setItem('healthCenterId', healthCenterId);
+});
 
 elmApp.ports.setLanguage.subscribe(function(language) {
   // Set the chosen language in the switcher to the local storage.

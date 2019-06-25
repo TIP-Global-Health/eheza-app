@@ -125,6 +125,25 @@ div.page-pincode {
       margin-left: -40px;
     }
 
+    p.logged-in-as {
+      font-size: 1.6rem;
+      font-weight: bold;
+      margin-bottom: 0;
+      margin-top: -3rem;
+    }
+
+    p.health-center-name {
+      font-size: 1.6rem;
+      font-weight: bold;
+      margin-bottom: 3rem;
+    }
+
+    p.select-health-center {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 3rem;
+    }
+
     button.ui.logout.button {
       background: $color-light-background;
       border: 2px solid white;
