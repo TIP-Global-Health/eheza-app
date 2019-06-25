@@ -1328,8 +1328,8 @@ input::placeholder {
 .icon-examination-task,
 .icon-patient-provisions-task {
   display: block;
-  width: 120px;
-  height: 120px;
+  width: 90px;
+  height: 90px;
   margin: 0 auto 10px auto;
 
   &:after {
@@ -1350,8 +1350,6 @@ input::placeholder {
 
   .completed &:after {
     background-image: url(#{$img-path}icon-obstetrichistory-white.svg), url(#{$img-path}icon-completed-circle.svg);
-    background-position: center, 5px;
-    width: 130px;
   }
 
   &:after {
@@ -1366,8 +1364,6 @@ input::placeholder {
 
   .completed &:after {
     background-image: url(#{$img-path}icon-medicalhistory-white.svg), url(#{$img-path}icon-completed-circle.svg);
-    background-position: center, 5px;
-    width: 130px;
   }
 
   &:after {
@@ -1382,8 +1378,6 @@ input::placeholder {
 
   .completed &:after {
     background-image: url(#{$img-path}icon-socialhistory-white.svg), url(#{$img-path}icon-completed-circle.svg);
-    background-position: center, 5px;
-    width: 130px;
   }
 
   &:after {
@@ -1398,8 +1392,6 @@ input::placeholder {
 
   .completed &:after {
     background-image: url(#{$img-path}icon-vitals-white.svg), url(#{$img-path}icon-completed-circle.svg);
-    background-position: center, 5px;
-    width: 130px;
   }
 
   &:after {
@@ -1414,8 +1406,6 @@ input::placeholder {
 
   .completed &:after {
     background-image: url(#{$img-path}icon-nutritionassessment-white.svg), url(#{$img-path}icon-completed-circle.svg);
-    background-position: center, 5px;
-    width: 130px;
   }
 
   &:after {
@@ -1430,8 +1420,6 @@ input::placeholder {
 
   .completed &:after {
     background-image: url(#{$img-path}icon-corephysicalexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
-    background-position: center, 5px;
-    width: 130px;
   }
 
   &:after {
@@ -1446,8 +1434,6 @@ input::placeholder {
 
   .completed &:after {
     background-image: url(#{$img-path}icon-obstetricalexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
-    background-position: center, 5px;
-    width: 130px;
   }
 
   &:after {
@@ -1462,8 +1448,6 @@ input::placeholder {
 
   .completed &:after {
     background-image: url(#{$img-path}icon-breastexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
-    background-position: center, 5px;
-    width: 130px;
   }
 
   &:after {
@@ -1478,8 +1462,6 @@ input::placeholder {
 
   .completed &:after {
     background-image: url(#{$img-path}icon-medication-white.svg), url(#{$img-path}icon-completed-circle.svg);
-    background-position: center, 5px;
-    width: 130px;
   }
 
   &:after {
@@ -1494,8 +1476,6 @@ input::placeholder {
 
   .completed &:after {
     background-image: url(#{$img-path}icon-resources-white.svg), url(#{$img-path}icon-completed-circle.svg);
-    background-position: center, 5px;
-    width: 130px;
   }
 
   &:after {

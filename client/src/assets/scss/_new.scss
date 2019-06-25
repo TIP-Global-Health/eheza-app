@@ -269,6 +269,17 @@ div.page-prenatal-encounter {
 // Prenatal Activity page
 div.page-prenatal-activity {
 
+    .ui.task.segment {
+
+      .column.core-physical-exam {
+        width: 25%;
+
+        a {
+          width: 131px;
+        }
+      }
+    }
+
     .tasks-count {
       background: $color-primary;
       padding: 5px 15px;
@@ -370,6 +381,22 @@ div.page-prenatal-activity {
             height: 28px;
             width: 25px;
             float: left;
+          }
+        }
+      }
+
+      .checkbox-select-input {
+
+        .ui.checkbox.activity {
+          margin-bottom: 10px;
+
+          label {
+            font-size: 24px;
+
+            &:before {
+              height: 24px;
+              width: 24px;
+            }
           }
         }
       }

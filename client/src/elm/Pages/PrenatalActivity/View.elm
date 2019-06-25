@@ -450,7 +450,7 @@ viewExaminationContent language currentDate motherId data =
                                 [ onClick <| SetActiveExaminationTask task ]
                            )
             in
-            div [ class "column" ]
+            div [ class <| "column " ++ iconClass ]
                 [ a attributes
                     [ span [ class <| "icon-examination-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.ExaminationTask task)
