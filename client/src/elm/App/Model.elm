@@ -117,6 +117,7 @@ type alias ConfiguredModel =
     -- LoggedInModel tracks data which we only have if we are logged in.
     , loggedIn : WebData LoggedInModel
     , pinCodePage : Pages.PinCode.Model.Model
+    , healthCenterId : HealthCenterId
     }
 
 
@@ -196,6 +197,7 @@ type alias Flags =
     , activeServiceWorker : Bool
     , hostname : String
     , pinCode : String
+    , healthCenterId : String
     }
 
 

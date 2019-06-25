@@ -6,6 +6,7 @@ import App.Fetch
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInModel)
 import Backend.Endpoints exposing (nurseEndpoint)
+import Backend.Entities exposing (HealthCenterId)
 import Backend.Model
 import Backend.Update
 import Config
@@ -30,7 +31,7 @@ import Pages.Relationship.Update
 import Pages.Session.Model
 import Pages.Session.Update
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, fromEntityId, select, toCmd, toEntityId)
+import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, fromEntityId, select, toCmd, toEntityId, toEntityUuid)
 import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
@@ -102,12 +103,16 @@ init flags =
                                 , fetchCachedDevice
                                 ]
 
+                        healthCenterId =
+                            toEntityUuid flags.healthCenterId
+
                         configuredModel =
                             { config = config
                             , device = Loading
                             , devicePage = Pages.Device.Model.emptyModel
                             , loggedIn = NotAsked
                             , pinCodePage = Pages.PinCode.Model.emptyModel
+                            , healthCenterId = healthCenterId
                             }
 
                         tryPinCode =
