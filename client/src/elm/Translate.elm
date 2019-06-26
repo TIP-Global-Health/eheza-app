@@ -414,9 +414,9 @@ type TranslationId
     | PreTermPregnancy
     | Province
     | ReasonForCSection
-    | RecievedDewormingPill
-    | RecievedIronFolicAcid
-    | RecievedMosquitoNet
+    | ReceivedDewormingPill
+    | ReceivedIronFolicAcid
+    | ReceivedMosquitoNet
     | Register
     | RegisterAParticipant
     | RegisterHelper
@@ -2318,7 +2318,7 @@ translationSet trans =
             }
 
         PartnerReceivedCounseling ->
-            { english = "Did partner recieve HIV Counseling and Testing during this pregnancy"
+            { english = "Did partner receive HIV Counseling and Testing during this pregnancy"
             , kinyarwanda = Nothing
             }
 
@@ -2489,18 +2489,18 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        RecievedDewormingPill ->
-            { english = "Has the mother recieved deworming pill"
+        ReceivedDewormingPill ->
+            { english = "Has the mother received deworming pill"
             , kinyarwanda = Nothing
             }
 
-        RecievedIronFolicAcid ->
-            { english = "Has the mother recieved iron and folic acid supplement"
+        ReceivedIronFolicAcid ->
+            { english = "Has the mother received iron and folic acid supplement"
             , kinyarwanda = Nothing
             }
 
-        RecievedMosquitoNet ->
-            { english = "Has the mother recieved a mosquito net"
+        ReceivedMosquitoNet ->
+            { english = "Has the mother received a mosquito net"
             , kinyarwanda = Nothing
             }
 

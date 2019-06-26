@@ -648,7 +648,7 @@ viewPatientProvisionsContent language currentDate motherId data =
                             data.medicationForm
                     in
                     ( viewMedicationForm language currentDate motherId form
-                    , [ form.recievedIronFolicAcid, form.recievedDewormingPill ]
+                    , [ form.receivedIronFolicAcid, form.receivedDewormingPill ]
                         |> List.map taskCompleted
                         |> List.sum
                     , 2
@@ -660,7 +660,7 @@ viewPatientProvisionsContent language currentDate motherId data =
                             data.resourcesForm
                     in
                     ( viewResourcesForm language currentDate motherId form
-                    , taskCompleted form.recievedMosquitoNet
+                    , taskCompleted form.receivedMosquitoNet
                     , 1
                     )
 
@@ -1518,25 +1518,25 @@ viewBreastExamForm language currentDate motherId form =
 viewMedicationForm : Language -> NominalDate -> PersonId -> MedicationForm -> Html Msg
 viewMedicationForm language currentDate motherId form =
     let
-        recievedIronFolicAcidUpdateFunc value form_ =
-            { form_ | recievedIronFolicAcid = Just value }
+        receivedIronFolicAcidUpdateFunc value form_ =
+            { form_ | receivedIronFolicAcid = Just value }
 
-        recievedDewormingPillUpdateFunc value form_ =
-            { form_ | recievedDewormingPill = Just value }
+        receivedDewormingPillUpdateFunc value form_ =
+            { form_ | receivedDewormingPill = Just value }
     in
     div [ class "ui form patient-provisions medication" ]
-        [ viewQuestionLabel language Translate.RecievedIronFolicAcid
+        [ viewQuestionLabel language Translate.ReceivedIronFolicAcid
         , viewBoolInput
             language
-            form.recievedIronFolicAcid
-            (SetMedicationBoolInput recievedIronFolicAcidUpdateFunc)
+            form.receivedIronFolicAcid
+            (SetMedicationBoolInput receivedIronFolicAcidUpdateFunc)
             "iron-folic-acid"
             Nothing
-        , viewQuestionLabel language Translate.RecievedDewormingPill
+        , viewQuestionLabel language Translate.ReceivedDewormingPill
         , viewBoolInput
             language
-            form.recievedDewormingPill
-            (SetMedicationBoolInput recievedDewormingPillUpdateFunc)
+            form.receivedDewormingPill
+            (SetMedicationBoolInput receivedDewormingPillUpdateFunc)
             "deworming-pill"
             Nothing
         ]
@@ -1545,15 +1545,15 @@ viewMedicationForm language currentDate motherId form =
 viewResourcesForm : Language -> NominalDate -> PersonId -> ResourcesForm -> Html Msg
 viewResourcesForm language currentDate motherId form =
     let
-        recievedMosquitoNetUpdateFunc value form_ =
-            { form_ | recievedMosquitoNet = Just value }
+        receivedMosquitoNetUpdateFunc value form_ =
+            { form_ | receivedMosquitoNet = Just value }
     in
     div [ class "ui form patient-provisions resources" ]
-        [ viewQuestionLabel language Translate.RecievedMosquitoNet
+        [ viewQuestionLabel language Translate.ReceivedMosquitoNet
         , viewBoolInput
             language
-            form.recievedMosquitoNet
-            (SetResourcesBoolInput recievedMosquitoNetUpdateFunc)
+            form.receivedMosquitoNet
+            (SetResourcesBoolInput receivedMosquitoNetUpdateFunc)
             "mosquito-net"
             Nothing
         ]

@@ -556,8 +556,8 @@ type PatientProvisionsTask
 
 
 type alias MedicationForm =
-    { recievedIronFolicAcid : Maybe Bool
-    , recievedDewormingPill : Maybe Bool
+    { receivedIronFolicAcid : Maybe Bool
+    , receivedDewormingPill : Maybe Bool
     }
 
 
@@ -567,7 +567,7 @@ emptyMedicationForm =
 
 
 type alias ResourcesForm =
-    { recievedMosquitoNet : Maybe Bool
+    { receivedMosquitoNet : Maybe Bool
     }
 
 
