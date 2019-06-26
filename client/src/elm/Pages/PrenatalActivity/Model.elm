@@ -1,28 +1,46 @@
 module Pages.PrenatalActivity.Model exposing
-    ( CSectionReason(..)
+    ( AbdomenCPEOption(..)
+    , BreastBEOption(..)
+    , BreastExamForm
+    , CSectionReason(..)
+    , CorePhysicalExamForm
+    , DangerSign(..)
+    , DangerSignsData
+    , ExaminationData
+    , ExaminationTask(..)
+    , FamilyPlanningData
+    , FetalPresentation(..)
+    , HandsCPEOption(..)
     , HistoryData
     , HistoryTask(..)
+    , LegsCPEOption(..)
     , LmpRange(..)
+    , LungsCPEOption(..)
     , MedicalHistoryForm
+    , MedicationForm
     , Model
     , Msg(..)
+    , NeckCPEOption(..)
+    , NutritionAssessmentForm
     , ObstetricFormFirstStep
     , ObstetricFormSecondStep
     , ObstetricHistoryFormType(..)
+    , ObstetricalExamForm
+    , PatientProvisionsData
+    , PatientProvisionsTask(..)
     , PregnancyDatingData
     , PregnancyDatingForm
     , PreviousDeliveryPeriod(..)
+    , ResourcesForm
     , SocialHistoryForm
+    , VitalsForm
     , decodeLmpRange
-    , emptyHistoryData
-    , emptyMedicalHistoryForm
     , emptyModel
     , emptyObstetricFormSecondStep
-    , emptyPregnancyDatingData
-    , emptySocialHistoryForm
     , encodeLmpRange
     )
 
+import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Date exposing (Date)
 import Pages.Page exposing (Page)
 
@@ -34,13 +52,13 @@ type Msg
     | SetLmpDate Date
     | SetLmpDateConfident Bool
     | SetLmpRange String
-      -- HistoryMsgs, OB, Step 1
+      -- HistoryMsgs
     | SetActiveHistoryTask HistoryTask
     | SetHistoryTaskCompleted
       -- HistoryMsgs, OB, Step 1
     | SetOBFirstStepCompleted
     | SetCurrentlyPregnant Bool
-    | SetOBIntInput (Int -> ObstetricFormFirstStep -> ObstetricFormFirstStep) String
+    | SetOBIntInput (Maybe Int -> ObstetricFormFirstStep -> ObstetricFormFirstStep) String
       -- HistoryMsgs, OB, Step 2
     | SetCSectionReason CSectionReason
     | SetNumberOfCSections String
@@ -50,11 +68,47 @@ type Msg
     | SetMedicalBoolInput (Bool -> MedicalHistoryForm -> MedicalHistoryForm) Bool
       -- HistoryMsgs, Social
     | SetSocialBoolInput (Bool -> SocialHistoryForm -> SocialHistoryForm) Bool
+      -- ExaminationMsgs
+    | SetActiveExaminationTask ExaminationTask
+    | SetExaminationTaskCompleted
+      -- ExaminationMsgs, Vitals
+    | SetVitalsMeasurement (Maybe Float -> VitalsForm -> VitalsForm) String
+      -- ExaminationMsgs, Nutrition Assessment
+    | SetNutritionAssessmentMeasurement (Maybe Float -> NutritionAssessmentForm -> NutritionAssessmentForm) String
+      -- ExaminationMsgs, Core Physical Exam
+    | SetCorePhysicalExamBoolInput (Bool -> CorePhysicalExamForm -> CorePhysicalExamForm) Bool
+    | SetCorePhysicalExamNeck NeckCPEOption
+    | SetCorePhysicalExamLungs LungsCPEOption
+    | SetCorePhysicalExamAbdomen AbdomenCPEOption
+    | SetCorePhysicalExamHands HandsCPEOption
+    | SetCorePhysicalExamLegs LegsCPEOption
+      -- ExaminationMsgs, Obstetrical Exam
+    | SetObstetricalExamBoolInput (Bool -> ObstetricalExamForm -> ObstetricalExamForm) Bool
+    | SetObstetricalExamMeasurement (Maybe Float -> ObstetricalExamForm -> ObstetricalExamForm) String
+    | SetObstetricalExamFetalPresentation FetalPresentation
+      -- ExaminationMsgs, Breast Exam
+    | SetBreastExamBoolInput (Bool -> BreastExamForm -> BreastExamForm) Bool
+    | SetBreastExamBreast BreastBEOption
+      -- FamilyPlanningMsgs
+    | SetFamilyPlanningSign FamilyPlanningSign
+      -- PatientProvisionsMsgs
+    | SetActivePatientProvisionsTask PatientProvisionsTask
+    | SetPatientProvisionsTaskCompleted
+      -- PatientProvisionsMsgs, Medication
+    | SetMedicationBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
+      -- PatientProvisionsMsgs, Resources
+    | SetResourcesBoolInput (Bool -> ResourcesForm -> ResourcesForm) Bool
+      -- DangerSignsMsgs
+    | SetDangerSign DangerSign
 
 
 type alias Model =
     { pregnancyDatingData : PregnancyDatingData
     , historyData : HistoryData
+    , examinationData : ExaminationData
+    , familyPlanningData : FamilyPlanningData
+    , patientProvisionsData : PatientProvisionsData
+    , dangerSignsData : DangerSignsData
     }
 
 
@@ -62,6 +116,10 @@ emptyModel : Model
 emptyModel =
     { pregnancyDatingData = emptyPregnancyDatingData
     , historyData = emptyHistoryData
+    , examinationData = emptyExaminationData
+    , familyPlanningData = emptyFamilyPlanningData
+    , patientProvisionsData = emptyPatientProvisionsData
+    , dangerSignsData = emptyDangerSignsData
     }
 
 
@@ -92,6 +150,68 @@ emptyHistoryData =
     , socialForm = emptySocialHistoryForm
     , activeTask = Obstetric
     , completedTasks = []
+    }
+
+
+type alias ExaminationData =
+    { vitalsForm : VitalsForm
+    , nutritionAssessmentForm : NutritionAssessmentForm
+    , corePhysicalExamForm : CorePhysicalExamForm
+    , obstetricalExamForm : ObstetricalExamForm
+    , breastExamForm : BreastExamForm
+    , activeTask : ExaminationTask
+    , completedTasks : List ExaminationTask
+    }
+
+
+emptyExaminationData : ExaminationData
+emptyExaminationData =
+    { vitalsForm = emptyVitalsForm
+    , nutritionAssessmentForm = emptyNutritionAssessmentForm
+    , corePhysicalExamForm = emptyCorePhysicalExamForm
+    , obstetricalExamForm = emptyObstetricalExamForm
+    , breastExamForm = emptyBreastExamForm
+    , activeTask = Vitals
+    , completedTasks = []
+    }
+
+
+type alias FamilyPlanningData =
+    { form : FamilyPlanningForm
+    }
+
+
+emptyFamilyPlanningData : FamilyPlanningData
+emptyFamilyPlanningData =
+    { form = emptyFamilyPlanningForm
+    }
+
+
+type alias PatientProvisionsData =
+    { medicationForm : MedicationForm
+    , resourcesForm : ResourcesForm
+    , activeTask : PatientProvisionsTask
+    , completedTasks : List PatientProvisionsTask
+    }
+
+
+emptyPatientProvisionsData : PatientProvisionsData
+emptyPatientProvisionsData =
+    { medicationForm = emptyMedicationForm
+    , resourcesForm = emptyResourcesForm
+    , activeTask = Medication
+    , completedTasks = []
+    }
+
+
+type alias DangerSignsData =
+    { form : DangerSignsForm
+    }
+
+
+emptyDangerSignsData : DangerSignsData
+emptyDangerSignsData =
+    { form = emptyDangerSignsForm
     }
 
 
@@ -271,3 +391,207 @@ decodeLmpRange s =
 
         _ ->
             Nothing
+
+
+type ExaminationTask
+    = BreastExam
+    | CorePhysicalExam
+    | NutritionAssessment
+    | ObstetricalExam
+    | Vitals
+
+
+type alias VitalsForm =
+    { sysBloodPressure : Maybe Float
+    , diaBloodPressure : Maybe Float
+    , heartRate : Maybe Float
+    , respiratoryRate : Maybe Float
+    , bodyTemperature : Maybe Float
+    }
+
+
+emptyVitalsForm : VitalsForm
+emptyVitalsForm =
+    { sysBloodPressure = Nothing
+    , diaBloodPressure = Nothing
+    , heartRate = Nothing
+    , respiratoryRate = Nothing
+    , bodyTemperature = Nothing
+    }
+
+
+type alias NutritionAssessmentForm =
+    { height : Maybe Float
+    , weight : Maybe Float
+    , bmi : Maybe Float
+    , muac : Maybe Float
+    }
+
+
+emptyNutritionAssessmentForm : NutritionAssessmentForm
+emptyNutritionAssessmentForm =
+    { height = Nothing
+    , weight = Nothing
+    , bmi = Nothing
+    , muac = Nothing
+    }
+
+
+type alias CorePhysicalExamForm =
+    { brittleHair : Maybe Bool
+    , paleConjuctiva : Maybe Bool
+    , neck : Maybe NeckCPEOption
+    , abnormalHeart : Maybe Bool
+    , lungs : Maybe LungsCPEOption
+    , abdomen : Maybe AbdomenCPEOption
+    , hands : Maybe HandsCPEOption
+    , legs : Maybe LegsCPEOption
+    }
+
+
+emptyCorePhysicalExamForm : CorePhysicalExamForm
+emptyCorePhysicalExamForm =
+    { brittleHair = Nothing
+    , paleConjuctiva = Nothing
+    , neck = Nothing
+    , abnormalHeart = Nothing
+    , lungs = Nothing
+    , abdomen = Nothing
+    , hands = Nothing
+    , legs = Nothing
+    }
+
+
+type NeckCPEOption
+    = EnlargedThyroid
+    | EnlargedLymphNodes
+    | NormalNeck
+
+
+type LungsCPEOption
+    = Wheezes
+    | Crackles
+    | NormalLungs
+
+
+type AbdomenCPEOption
+    = Heptomegaly
+    | Splenomegaly
+    | TPRightUpper
+    | TPRightLower
+    | TPLeftUpper
+    | TPLeftLower
+    | Hernia
+    | NormalAbdomen
+
+
+type HandsCPEOption
+    = PallorHands
+    | EdemaHands
+    | NormalHands
+
+
+type LegsCPEOption
+    = PallorLegs
+    | EdemaLegs
+    | NormalLegs
+
+
+type alias ObstetricalExamForm =
+    { fundalHeight : Maybe Float
+    , fetalPresentation : Maybe FetalPresentation
+    , fetalMovement : Maybe Bool
+    , fetalHeartRate : Maybe Float
+    , cSectionScar : Maybe Bool
+    }
+
+
+emptyObstetricalExamForm : ObstetricalExamForm
+emptyObstetricalExamForm =
+    { fundalHeight = Nothing
+    , fetalPresentation = Nothing
+    , fetalMovement = Nothing
+    , fetalHeartRate = Nothing
+    , cSectionScar = Nothing
+    }
+
+
+type FetalPresentation
+    = Transverse
+    | Breach
+    | Cephalic
+
+
+type alias BreastExamForm =
+    { breast : Maybe BreastBEOption
+    , selfGuidance : Maybe Bool
+    }
+
+
+emptyBreastExamForm : BreastExamForm
+emptyBreastExamForm =
+    BreastExamForm Nothing Nothing
+
+
+type BreastBEOption
+    = Mass
+    | Discharge
+    | Infection
+    | NormalBreast
+
+
+type alias FamilyPlanningForm =
+    { signs : Maybe (List FamilyPlanningSign)
+    }
+
+
+emptyFamilyPlanningForm : FamilyPlanningForm
+emptyFamilyPlanningForm =
+    FamilyPlanningForm Nothing
+
+
+type PatientProvisionsTask
+    = Medication
+    | Resources
+
+
+type alias MedicationForm =
+    { receivedIronFolicAcid : Maybe Bool
+    , receivedDewormingPill : Maybe Bool
+    }
+
+
+emptyMedicationForm : MedicationForm
+emptyMedicationForm =
+    MedicationForm Nothing Nothing
+
+
+type alias ResourcesForm =
+    { receivedMosquitoNet : Maybe Bool
+    }
+
+
+emptyResourcesForm : ResourcesForm
+emptyResourcesForm =
+    ResourcesForm Nothing
+
+
+type alias DangerSignsForm =
+    { signs : Maybe (List DangerSign)
+    }
+
+
+emptyDangerSignsForm : DangerSignsForm
+emptyDangerSignsForm =
+    DangerSignsForm Nothing
+
+
+type DangerSign
+    = VaginalBleeding
+    | HeadacheBlurredVision
+    | Convulsions
+    | AbdominalPain
+    | DificultyBreathing
+    | Fever
+    | ExtremeWeakness
+    | NoDangerSign

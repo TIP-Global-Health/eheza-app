@@ -33,7 +33,23 @@ import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
 import Pages.Page exposing (..)
-import Pages.PrenatalActivity.Model exposing (CSectionReason(..), LmpRange(..), PreviousDeliveryPeriod(..))
+import Pages.PrenatalActivity.Model
+    exposing
+        ( AbdomenCPEOption(..)
+        , BreastBEOption(..)
+        , CSectionReason(..)
+        , DangerSign(..)
+        , ExaminationTask(..)
+        , FetalPresentation(..)
+        , HandsCPEOption(..)
+        , HistoryTask(..)
+        , LegsCPEOption(..)
+        , LmpRange(..)
+        , LungsCPEOption(..)
+        , NeckCPEOption(..)
+        , PatientProvisionsTask(..)
+        , PreviousDeliveryPeriod(..)
+        )
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
@@ -126,7 +142,10 @@ type Adherence
 
 
 type TranslationId
-    = AccompaniedByPartner
+    = Abdomen
+    | AbdomenCPEOption AbdomenCPEOption
+    | Abnormal
+    | AccompaniedByPartner
     | AccessDenied
     | Activities
     | ActivitiesCompleted Int
@@ -163,13 +182,25 @@ type TranslationId
     | BabyName String
     | Back
     | BackendError
+    | BloodPressure
+    | BloodPressureDiaLabel
+    | BloodPressureSysLabel
+    | BMI
+    | BMIHelper
+    | BodyTemperature
     | Born
     | BowedLegs
+    | BpmUnit
+    | BreastExam
+    | BreastBEOption BreastBEOption
+    | BreastExamQuestion
+    | BrittleHair
     | Cancel
     | CardiacDisease
     | CaregiverName
     | CaregiverNationalId
     | CentimeterShorthand
+    | Celcius
     | Cell
     | ChartPhrase ChartPhrase
     | CheckIn
@@ -202,7 +233,7 @@ type TranslationId
     | CreateGroupEncounter
     | CreateTrainingGroupEncounters
     | CurrentlyPregnant
-    | DeleteTrainingGroupEncounters
+    | DangerSign DangerSign
     | Dashboard
     | DateOfLastAssessment
     | Day
@@ -210,6 +241,7 @@ type TranslationId
     | DateOfBirth
     | Days
     | Delete
+    | DeleteTrainingGroupEncounters
     | DemographicInformation
     | Device
     | DeviceNotAuthorized
@@ -220,20 +252,30 @@ type TranslationId
     | DropzoneDefaultMessage
     | Edd
     | EddHeader
+    | Edema
     | EditRelationship
     | Ega
     | EgaHeader
+    | EmptyString
     | EndEncounter
     | EndGroupEncounter
     | EnterPairingCode
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
     | Estimated
+    | ExaminationTask ExaminationTask
+    | Extremities
+    | Eyes
     | Failure
     | FamilyInformation
     | FamilyMembers
+    | FamilyPlanningInFutureQuestion
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
+    | FetalHeartRate
+    | FetalMovement
+    | FetalPresentationLabel
+    | FetalPresentation FetalPresentation
     | Fetch
     | FatherName
     | FatherNationalId
@@ -241,13 +283,21 @@ type TranslationId
     | FirstName
     | FormError (ErrorValue ValidationError)
     | FormField String
+    | FundalHeight
     | Gender Gender
     | GenderLabel
     | GestatipnalDiabetesPreviousPregnancy
     | GoHome
     | Gravida
+    | Hands
+    | HandsCPEOption HandsCPEOption
     | HaveYouSynced
+    | HeadHair
     | HealthCenter
+    | Heart
+    | HeartRate
+    | Height
+    | HistoryTask HistoryTask
     | HIV
     | HIVStatus HIVStatus
     | HIVStatusLabel
@@ -257,6 +307,8 @@ type TranslationId
     | IncompleteCervixPreviousPregnancy
     | KilogramShorthand
     | LastChecked
+    | Legs
+    | LegsCPEOption LegsCPEOption
     | LevelOfEducationLabel
     | LevelOfEducation EducationLevel
     | LinkToMother
@@ -265,6 +317,8 @@ type TranslationId
     | LmpRangeHeader
     | LmpRange LmpRange
     | LoginPhrase LoginPhrase
+    | Lungs
+    | LungsCPEOption LungsCPEOption
     | MakeSureYouAreConnected
     | MaritalStatusLabel
     | MaritalStatus MaritalStatus
@@ -272,8 +326,8 @@ type TranslationId
     | MeasurementGained Float
     | MeasurementLost Float
     | MedicalFormHelper
-    | MedicalHistory
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
+    | MMHGUnit
     | MentalHealthHistory
     | MiddleName
     | MinutesAgo Int
@@ -288,11 +342,14 @@ type TranslationId
     | MotherNameLabel
     | MotherNationalId
     | Mothers
+    | MUAC
     | MuacIndication MuacIndication
     | MyAccount
     | MyRelatedBy MyRelatedBy
     | MyRelatedByQuestion MyRelatedBy
     | NationalIdNumber
+    | Neck
+    | NeckCPEOption NeckCPEOption
     | Next
     | No
     | NoActivitiesCompleted
@@ -305,6 +362,7 @@ type TranslationId
     | NoParticipantsPendingForThisActivity
     | NoParticipantsCompleted
     | NoParticipantsCompletedForThisActivity
+    | Normal
     | NoChildrenRegisteredInTheSystem
     | NoParticipantsFound
     | NotAvailable
@@ -315,13 +373,14 @@ type TranslationId
     | NumberOfLiveChildren
     | NumberOfStillbirthsAtTerm
     | NumberOfStillbirthsPreTerm
-    | ObstetricHistory
     | OK
     | Old
     | OnceYouEndYourGroupEncounter
     | Page
     | Page404
     | PageNotFoundMsg
+    | PaleConjuctiva
+    | Pallor
     | Para
     | PartialPlacentaPreviousDelivery
     | ParticipantDirectory
@@ -332,6 +391,7 @@ type TranslationId
     | ParticipantDemographicInformation
     | ParticipantInformation
     | PartnerReceivedCounseling
+    | PatientProvisionsTask PatientProvisionsTask
     | People
     | PersistentStorage Bool
     | Person
@@ -344,14 +404,19 @@ type TranslationId
     | PreeclampsiaPreviousPregnancy
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalEncounter
+    | PreviousCSectionScar
     | PreviousDelivery
     | PreviousDeliveryPeriods PreviousDeliveryPeriod
     | PreviousFloatMeasurement Float
+    | PreviousMeasurementNotFound
     | Profession
     | ProgressReport
     | PreTermPregnancy
     | Province
     | ReasonForCSection
+    | ReceivedDewormingPill
+    | ReceivedIronFolicAcid
+    | ReceivedMosquitoNet
     | Register
     | RegisterAParticipant
     | RegisterHelper
@@ -373,6 +438,7 @@ type TranslationId
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
     | ResolveMonth Month
+    | RespiratoryRate
     | Retry
     | RhNegative
     | Save
@@ -384,6 +450,7 @@ type TranslationId
     | SearchHelperFamilyMember
     | SecondName
     | Sector
+    | SelectDangerSigns
     | SelectGroup
     | SelectLanguage
     | SelectYourGroup
@@ -404,7 +471,6 @@ type TranslationId
     | ServiceWorkerRegSuccess
     | ServiceWorkerStatus
     | SevereHemorrhagingPreviousDelivery
-    | SocialHistory
     | StillbornPreviousDelivery
     | SuccessiveAbortions
     | SuccessivePrimatureDeliveries
@@ -446,6 +512,7 @@ type TranslationId
     | ViewProgressReport
     | Village
     | WeekSinglePlural Int
+    | Weight
     | WelcomeUser String
     | Year
     | YearsOld Int
@@ -461,6 +528,56 @@ type TranslationId
 translationSet : TranslationId -> TranslationSet String
 translationSet trans =
     case trans of
+        Abdomen ->
+            { english = "Abdomen"
+            , kinyarwanda = Nothing
+            }
+
+        AbdomenCPEOption option ->
+            case option of
+                Heptomegaly ->
+                    { english = "Heptomegaly"
+                    , kinyarwanda = Nothing
+                    }
+
+                Splenomegaly ->
+                    { english = "Splenomegaly"
+                    , kinyarwanda = Nothing
+                    }
+
+                TPRightUpper ->
+                    { english = "Tender to Palpation right upper"
+                    , kinyarwanda = Nothing
+                    }
+
+                TPRightLower ->
+                    { english = "Tender to Palpation right lower"
+                    , kinyarwanda = Nothing
+                    }
+
+                TPLeftUpper ->
+                    { english = "Tender to Palpation left upper"
+                    , kinyarwanda = Nothing
+                    }
+
+                TPLeftLower ->
+                    { english = "Tender to Palpation left lower"
+                    , kinyarwanda = Nothing
+                    }
+
+                Hernia ->
+                    { english = "Hernia"
+                    , kinyarwanda = Nothing
+                    }
+
+                NormalAbdomen ->
+                    translationSet Normal
+
+        Abnormal ->
+            { english = "Abnormal"
+            , kinyarwanda = Nothing
+            }
+
         AccompaniedByPartner ->
             { english = "Was the patient accompanied by partner during the assessment"
             , kinyarwanda = Nothing
@@ -538,27 +655,27 @@ translationSet trans =
                        , kinyarwanda = Just "Kurikiza iyi lisiti mu gihe utanga ubujyanama, witondere kureba ko buri gikorwa cyakozwe."
                        }
                 -}
-                ChildActivity Height ->
+                ChildActivity Activity.Model.Height ->
                     { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight."
                     , kinyarwanda = Just "Saba Umubyeyi guhagarara inyuma y’umwana we agaramye, afata umutwe ku gice cy’amatwi. Sunikira akabaho ku buryo gakora mu bworo by’ibirenge byombi."
                     }
 
-                ChildActivity Muac ->
+                ChildActivity Activity.Model.Muac ->
                     { english = "Make sure to measure at the center of the baby’s upper arm."
                     , kinyarwanda = Just "Ibuka gupima icya kabiri cy'akaboko ko hejuru kugira bigufashe guoima ikizigira cy'akaboko"
                     }
 
-                ChildActivity NutritionSigns ->
+                ChildActivity Activity.Model.NutritionSigns ->
                     { english = "Explain to the mother how to check the malnutrition signs for their own child."
                     , kinyarwanda = Just "Sobanurira umubyeyi gupima ibimenyetso by'imirire mibi ku giti cye"
                     }
 
-                ChildActivity ChildPicture ->
+                ChildActivity Activity.Model.ChildPicture ->
                     { english = "Take each baby’s photo at each health assessment. Photos should show the entire body of each child."
                     , kinyarwanda = Just "Fata ifoto ya buri mwana kuri buri bikorwa by'ipimwa Ifoto igomba kwerekana ibice by'umubiri wose by'umwana"
                     }
 
-                ChildActivity Weight ->
+                ChildActivity Activity.Model.Weight ->
                     { english = "Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on."
                     , kinyarwanda = Just "Ibuka kuregera umunzani mbere yo gupima ibiro by'umwana wa mbere. Ambika umwana ikariso y'ibiro wabanje kumukuramo imyenda iremereye"
                     }
@@ -580,27 +697,27 @@ translationSet trans =
                        , kinyarwanda = Just "Kurikiza iyi lisiti mu gihe utanga ubujyanama, witondere kureba ko buri gikorwa cyakozwe."
                        }
                 -}
-                ChildActivity Height ->
+                ChildActivity Activity.Model.Height ->
                     { english = "Height:"
                     , kinyarwanda = Just "Uburere:"
                     }
 
-                ChildActivity Muac ->
+                ChildActivity Activity.Model.Muac ->
                     { english = "MUAC:"
                     , kinyarwanda = Just "Ikizigira cy'akaboko:"
                     }
 
-                ChildActivity NutritionSigns ->
+                ChildActivity Activity.Model.NutritionSigns ->
                     { english = "Select all signs that are present:"
                     , kinyarwanda = Just "Hitamo ibimenyetso by'imirire byose bishoboka umwana afite:"
                     }
 
-                ChildActivity ChildPicture ->
+                ChildActivity Activity.Model.ChildPicture ->
                     { english = "Photo:"
                     , kinyarwanda = Just "Ifoto"
                     }
 
-                ChildActivity Weight ->
+                ChildActivity Activity.Model.Weight ->
                     { english = "Weight:"
                     , kinyarwanda = Just "Ibiro:"
                     }
@@ -622,27 +739,27 @@ translationSet trans =
                        , kinyarwanda = Just "Ubujyanama"
                        }
                 -}
-                ChildActivity Height ->
+                ChildActivity Activity.Model.Height ->
                     { english = "Height"
                     , kinyarwanda = Just "Uburebure"
                     }
 
-                ChildActivity Muac ->
+                ChildActivity Activity.Model.Muac ->
                     { english = "MUAC"
                     , kinyarwanda = Just "Ikizigira cy'akaboko"
                     }
 
-                ChildActivity NutritionSigns ->
+                ChildActivity Activity.Model.NutritionSigns ->
                     { english = "Nutrition"
                     , kinyarwanda = Just "Imirire"
                     }
 
-                ChildActivity ChildPicture ->
+                ChildActivity Activity.Model.ChildPicture ->
                     { english = "Photo"
                     , kinyarwanda = Just "Ifoto"
                     }
 
-                ChildActivity Weight ->
+                ChildActivity Activity.Model.Weight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
                     }
@@ -664,27 +781,27 @@ translationSet trans =
                        , kinyarwanda = Nothing
                        }
                 -}
-                ChildActivity Height ->
+                ChildActivity Activity.Model.Height ->
                     { english = "Height"
                     , kinyarwanda = Just "Uburebure"
                     }
 
-                ChildActivity Muac ->
+                ChildActivity Activity.Model.Muac ->
                     { english = "MUAC"
                     , kinyarwanda = Just "Ikizigira cy'akaboko"
                     }
 
-                ChildActivity NutritionSigns ->
+                ChildActivity Activity.Model.NutritionSigns ->
                     { english = "Nutrition Signs"
                     , kinyarwanda = Just "Ibimenyetso by'imirire"
                     }
 
-                ChildActivity ChildPicture ->
+                ChildActivity Activity.Model.ChildPicture ->
                     { english = "Photo"
                     , kinyarwanda = Just "Ifoto"
                     }
 
-                ChildActivity Weight ->
+                ChildActivity Activity.Model.Weight ->
                     { english = "Weight"
                     , kinyarwanda = Just "Ibiro"
                     }
@@ -790,6 +907,36 @@ translationSet trans =
             , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
             }
 
+        BloodPressure ->
+            { english = "Blood Pressure"
+            , kinyarwanda = Nothing
+            }
+
+        BloodPressureDiaLabel ->
+            { english = "DIA"
+            , kinyarwanda = Nothing
+            }
+
+        BloodPressureSysLabel ->
+            { english = "SYS"
+            , kinyarwanda = Nothing
+            }
+
+        BMI ->
+            { english = "BMI"
+            , kinyarwanda = Nothing
+            }
+
+        BMIHelper ->
+            { english = "Calculated based on Height and Weight"
+            , kinyarwanda = Nothing
+            }
+
+        BodyTemperature ->
+            { english = "Body Temperature"
+            , kinyarwanda = Nothing
+            }
+
         Born ->
             { english = "Born"
             , kinyarwanda = Just "Kuvuka/ itariki y'amavuko"
@@ -798,6 +945,46 @@ translationSet trans =
         BowedLegs ->
             { english = "Bowed Legs"
             , kinyarwanda = Nothing
+            }
+
+        BpmUnit ->
+            { english = "bpm"
+            , kinyarwanda = Nothing
+            }
+
+        BreastExam ->
+            { english = "Breast Exam"
+            , kinyarwanda = Nothing
+            }
+
+        BreastExamQuestion ->
+            { english = "Did you show the patient how to perform a self breast exam"
+            , kinyarwanda = Nothing
+            }
+
+        BreastBEOption option ->
+            case option of
+                Mass ->
+                    { english = "Mass"
+                    , kinyarwanda = Nothing
+                    }
+
+                Discharge ->
+                    { english = "Discharge"
+                    , kinyarwanda = Nothing
+                    }
+
+                Infection ->
+                    { english = "Infection"
+                    , kinyarwanda = Nothing
+                    }
+
+                NormalBreast ->
+                    translationSet Normal
+
+        BrittleHair ->
+            { english = "Brittle Hair"
+            , kinyarwanda = Just "Gucurama no guhindura ibara ku misatsi"
             }
 
         Cancel ->
@@ -830,6 +1017,11 @@ translationSet trans =
             , kinyarwanda = Just "cm"
             }
 
+        Celcius ->
+            { english = "celcius"
+            , kinyarwanda = Nothing
+            }
+
         ChartPhrase phrase ->
             translateChartPhrase phrase
 
@@ -855,20 +1047,16 @@ translationSet trans =
                     , kinyarwanda = Just "Kwigunga"
                     }
 
-                BrittleHair ->
-                    { english = "Brittle Hair"
-                    , kinyarwanda = Just "Gucurama no guhindura ibara ku misatsi"
-                    }
+                Backend.Measurement.Model.BrittleHair ->
+                    translationSet BrittleHair
 
                 DrySkin ->
                     { english = "Dry Skin"
                     , kinyarwanda = Just "Uruhu ryumye"
                     }
 
-                Edema ->
-                    { english = "Edema"
-                    , kinyarwanda = Just "Kubyimba"
-                    }
+                Backend.Measurement.Model.Edema ->
+                    translationSet Edema
 
                 Backend.Measurement.Model.None ->
                     { english = "None of these"
@@ -892,20 +1080,16 @@ translationSet trans =
                     , kinyarwanda = Just "Kwigunga"
                     }
 
-                BrittleHair ->
-                    { english = "Brittle Hair"
-                    , kinyarwanda = Just "Gucurama umusatsi"
-                    }
+                Backend.Measurement.Model.BrittleHair ->
+                    translationSet BrittleHair
 
                 DrySkin ->
                     { english = "Dry Skin"
                     , kinyarwanda = Just "Uruhu ryumye"
                     }
 
-                Edema ->
-                    { english = "Edema"
-                    , kinyarwanda = Just "Kubyimba"
-                    }
+                Backend.Measurement.Model.Edema ->
+                    translationSet Edema
 
                 Backend.Measurement.Model.None ->
                     { english = "None"
@@ -1072,6 +1256,48 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        DangerSign sign ->
+            case sign of
+                VaginalBleeding ->
+                    { english = "Vaginal bleeding"
+                    , kinyarwanda = Nothing
+                    }
+
+                HeadacheBlurredVision ->
+                    { english = "Severe headaches with blurred vision"
+                    , kinyarwanda = Nothing
+                    }
+
+                Convulsions ->
+                    { english = "Convulsions"
+                    , kinyarwanda = Nothing
+                    }
+
+                AbdominalPain ->
+                    { english = "Abdominal pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                DificultyBreathing ->
+                    { english = "Dificulty breathing"
+                    , kinyarwanda = Nothing
+                    }
+
+                Fever ->
+                    { english = "Fever"
+                    , kinyarwanda = Nothing
+                    }
+
+                ExtremeWeakness ->
+                    { english = "Extreme weakness"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoDangerSign ->
+                    { english = "None of these"
+                    , kinyarwanda = Nothing
+                    }
+
         Dashboard ->
             { english = "Dashboard"
             , kinyarwanda = Just "Tabeau de bord"
@@ -1164,8 +1390,13 @@ translationSet trans =
             }
 
         EddHeader ->
-            { english = "Estimated Date of Delivery:"
+            { english = "Estimated Date of Delivery"
             , kinyarwanda = Nothing
+            }
+
+        Edema ->
+            { english = "Edema"
+            , kinyarwanda = Just "Kubyimba"
             }
 
         EditRelationship ->
@@ -1179,8 +1410,13 @@ translationSet trans =
             }
 
         EgaHeader ->
-            { english = "Estimated Gestational Age:"
+            { english = "Estimated Gestational Age"
             , kinyarwanda = Nothing
+            }
+
+        EmptyString ->
+            { english = ""
+            , kinyarwanda = Just ""
             }
 
         EndEncounter ->
@@ -1228,8 +1464,43 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        ExaminationTask task ->
+            case task of
+                Vitals ->
+                    { english = "Vitals"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionAssessment ->
+                    { english = "Nutrition Assessment"
+                    , kinyarwanda = Nothing
+                    }
+
+                CorePhysicalExam ->
+                    { english = "Core Physical Exam"
+                    , kinyarwanda = Nothing
+                    }
+
+                ObstetricalExam ->
+                    { english = "Obstetrical Exam"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pages.PrenatalActivity.Model.BreastExam ->
+                    translationSet BreastExam
+
         Failure ->
             { english = "Failure"
+            , kinyarwanda = Nothing
+            }
+
+        Extremities ->
+            { english = "Extremities"
+            , kinyarwanda = Nothing
+            }
+
+        Eyes ->
+            { english = "Eyes"
             , kinyarwanda = Nothing
             }
 
@@ -1240,6 +1511,11 @@ translationSet trans =
 
         FamilyMembers ->
             { english = "Family Members"
+            , kinyarwanda = Nothing
+            }
+
+        FamilyPlanningInFutureQuestion ->
+            { english = "Which, if any, of these methods will you use after your pregnancy"
             , kinyarwanda = Nothing
             }
 
@@ -1295,6 +1571,38 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        FetalHeartRate ->
+            { english = "Fetal Heart Rate"
+            , kinyarwanda = Nothing
+            }
+
+        FetalMovement ->
+            { english = "Fetal Movement"
+            , kinyarwanda = Nothing
+            }
+
+        FetalPresentationLabel ->
+            { english = "Fetal Presentation"
+            , kinyarwanda = Nothing
+            }
+
+        FetalPresentation option ->
+            case option of
+                Breach ->
+                    { english = "Breach"
+                    , kinyarwanda = Nothing
+                    }
+
+                Cephalic ->
+                    { english = "Cephalic"
+                    , kinyarwanda = Nothing
+                    }
+
+                Transverse ->
+                    { english = "Transverse"
+                    , kinyarwanda = Nothing
+                    }
+
         Fetch ->
             { english = "Fetch"
             , kinyarwanda = Just "Gushakisha"
@@ -1315,6 +1623,11 @@ translationSet trans =
 
         FormField field ->
             translateFormField field
+
+        FundalHeight ->
+            { english = "Fundal Height"
+            , kinyarwanda = Nothing
+            }
 
         Gender gender ->
             case gender of
@@ -1348,8 +1661,29 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Hands ->
+            { english = "Hands"
+            , kinyarwanda = Nothing
+            }
+
+        HandsCPEOption option ->
+            case option of
+                PallorHands ->
+                    translationSet Pallor
+
+                EdemaHands ->
+                    translationSet Edema
+
+                NormalHands ->
+                    translationSet Normal
+
         HaveYouSynced ->
             { english = "Have you synced data for the health center you are working with?"
+            , kinyarwanda = Nothing
+            }
+
+        HeadHair ->
+            { english = "Head/Hair"
             , kinyarwanda = Nothing
             }
 
@@ -1357,6 +1691,38 @@ translationSet trans =
             { english = "Health Center"
             , kinyarwanda = Nothing
             }
+
+        Heart ->
+            { english = "Heart"
+            , kinyarwanda = Nothing
+            }
+
+        HeartRate ->
+            { english = "Heart Rate"
+            , kinyarwanda = Nothing
+            }
+
+        Height ->
+            { english = "Height"
+            , kinyarwanda = Just "Uburebure"
+            }
+
+        HistoryTask task ->
+            case task of
+                Obstetric ->
+                    { english = "Obstetric History"
+                    , kinyarwanda = Nothing
+                    }
+
+                Medical ->
+                    { english = "Medical History"
+                    , kinyarwanda = Nothing
+                    }
+
+                Social ->
+                    { english = "Social History"
+                    , kinyarwanda = Nothing
+                    }
 
         HIV ->
             { english = "HIV"
@@ -1423,6 +1789,22 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Legs ->
+            { english = "Legs"
+            , kinyarwanda = Nothing
+            }
+
+        LegsCPEOption option ->
+            case option of
+                PallorLegs ->
+                    translationSet Pallor
+
+                EdemaLegs ->
+                    translationSet Edema
+
+                NormalLegs ->
+                    translationSet Normal
+
         LevelOfEducationLabel ->
             { english = "Level of Education"
             , kinyarwanda = Just <| "Amashuri wize"
@@ -1471,17 +1853,17 @@ translationSet trans =
             }
 
         LmpDateConfidentHeader ->
-            { english = "Is the Patient confident of LMP Date?"
+            { english = "Is the Patient confident of LMP Date"
             , kinyarwanda = Nothing
             }
 
         LmpDateHeader ->
-            { english = "Last Menstrual Period Date:"
+            { english = "Last Menstrual Period Date"
             , kinyarwanda = Nothing
             }
 
         LmpRangeHeader ->
-            { english = "When was the Patient's Last Menstrual Period?"
+            { english = "When was the Patient's Last Menstrual Period"
             , kinyarwanda = Nothing
             }
 
@@ -1504,6 +1886,26 @@ translationSet trans =
 
         LoginPhrase phrase ->
             translateLoginPhrase phrase
+
+        Lungs ->
+            { english = "Lungs"
+            , kinyarwanda = Nothing
+            }
+
+        LungsCPEOption option ->
+            case option of
+                Wheezes ->
+                    { english = "Wheezes"
+                    , kinyarwanda = Nothing
+                    }
+
+                Crackles ->
+                    { english = "Crackles"
+                    , kinyarwanda = Nothing
+                    }
+
+                NormalLungs ->
+                    translationSet Normal
 
         MakeSureYouAreConnected ->
             { english = "Make sure you are connected to the internet. If the issue continues, call The Ihangane Project at +250 788 817 542."
@@ -1557,8 +1959,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        MedicalHistory ->
-            { english = "Medical History"
+        MMHGUnit ->
+            { english = "mmHG"
             , kinyarwanda = Nothing
             }
 
@@ -1657,6 +2059,11 @@ translationSet trans =
             , kinyarwanda = Just "Ababyeyi"
             }
 
+        MUAC ->
+            { english = "MUAC"
+            , kinyarwanda = Just "Ikizigira"
+            }
+
         MuacIndication indication ->
             case indication of
                 MuacRed ->
@@ -1689,6 +2096,26 @@ translationSet trans =
             { english = "National ID Number"
             , kinyarwanda = Nothing
             }
+
+        Neck ->
+            { english = "Neck"
+            , kinyarwanda = Nothing
+            }
+
+        NeckCPEOption option ->
+            case option of
+                EnlargedThyroid ->
+                    { english = "Enlarged Thyroid"
+                    , kinyarwanda = Nothing
+                    }
+
+                EnlargedLymphNodes ->
+                    { english = "Enlarged Lymph Nodes"
+                    , kinyarwanda = Nothing
+                    }
+
+                NormalNeck ->
+                    translationSet Normal
 
         Next ->
             { english = "Next"
@@ -1750,6 +2177,11 @@ translationSet trans =
             , kinyarwanda = Just "Ababje bose barangirijwe."
             }
 
+        Normal ->
+            { english = "Normal"
+            , kinyarwanda = Nothing
+            }
+
         NoChildrenRegisteredInTheSystem ->
             { english = "No children registered in the system"
             , kinyarwanda = Just "Ntamwana wanditswe muriyi sisiteme"
@@ -1800,11 +2232,6 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        ObstetricHistory ->
-            { english = "Obstetric History"
-            , kinyarwanda = Nothing
-            }
-
         OK ->
             { english = "OK"
             , kinyarwanda = Just "Nibyo, yego"
@@ -1835,8 +2262,18 @@ translationSet trans =
             , kinyarwanda = Just "Mutwihanganire ntabwo ubufasha mwasabye mubashije kuboneka."
             }
 
+        Pallor ->
+            { english = "Pallor"
+            , kinyarwanda = Nothing
+            }
+
         Para ->
             { english = "Para"
+            , kinyarwanda = Nothing
+            }
+
+        PaleConjuctiva ->
+            { english = "Pale Conjuctiva"
             , kinyarwanda = Nothing
             }
 
@@ -1881,9 +2318,21 @@ translationSet trans =
             }
 
         PartnerReceivedCounseling ->
-            { english = "Did partner recieve HIV Counseling and Testing during this pregnancy"
+            { english = "Did partner receive HIV Counseling and Testing during this pregnancy"
             , kinyarwanda = Nothing
             }
+
+        PatientProvisionsTask task ->
+            case task of
+                Medication ->
+                    { english = "Medication"
+                    , kinyarwanda = Nothing
+                    }
+
+                Resources ->
+                    { english = "Resources"
+                    , kinyarwanda = Nothing
+                    }
 
         People ->
             { english = "People"
@@ -1978,6 +2427,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PreviousCSectionScar ->
+            { english = "Presence of previous C-section scar"
+            , kinyarwanda = Nothing
+            }
+
         PreviousDelivery ->
             { english = "Previous Delivery"
             , kinyarwanda = Nothing
@@ -2005,6 +2459,11 @@ translationSet trans =
             , kinyarwanda = Just <| "Ibipimo by'ubushize: " ++ toString value
             }
 
+        PreviousMeasurementNotFound ->
+            { english = "No previous measurement on record"
+            , kinyarwanda = Nothing
+            }
+
         Profession ->
             { english = "Profession"
             , kinyarwanda = Nothing
@@ -2027,6 +2486,21 @@ translationSet trans =
 
         ReasonForCSection ->
             { english = "Reason for C-section"
+            , kinyarwanda = Nothing
+            }
+
+        ReceivedDewormingPill ->
+            { english = "Has the mother received deworming pill"
+            , kinyarwanda = Nothing
+            }
+
+        ReceivedIronFolicAcid ->
+            { english = "Has the mother received iron and folic acid supplement"
+            , kinyarwanda = Nothing
+            }
+
+        ReceivedMosquitoNet ->
+            { english = "Has the mother received a mosquito net"
             , kinyarwanda = Nothing
             }
 
@@ -2140,6 +2614,11 @@ translationSet trans =
         ResolveMonth month ->
             translateMonth month
 
+        RespiratoryRate ->
+            { english = "Respiratory Rate"
+            , kinyarwanda = Nothing
+            }
+
         Retry ->
             { english = "Retry"
             , kinyarwanda = Just "Kongera kugerageza"
@@ -2192,6 +2671,11 @@ translationSet trans =
 
         Sector ->
             { english = "Sector"
+            , kinyarwanda = Nothing
+            }
+
+        SelectDangerSigns ->
+            { english = "Please select one or more of the danger signs the patient is experiencing"
             , kinyarwanda = Nothing
             }
 
@@ -2295,11 +2779,6 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        SocialHistory ->
-            { english = "Social History"
-            , kinyarwanda = Nothing
-            }
-
         StillbornPreviousDelivery ->
             { english = "Stillborn in previous delivery"
             , kinyarwanda = Nothing
@@ -2326,8 +2805,8 @@ translationSet trans =
                     [ "Group Encounter"
                     , fromEntityUuid sessionId
                     , """is closed. If you need to make further modifications
-                    to it, please contact an administrator to have it
-                    re-opened."""
+            to it, please contact an administrator to have it
+            re-opened."""
                     ]
             , kinyarwanda = Nothing
             }
@@ -2345,8 +2824,8 @@ translationSet trans =
         GroupEncounterUnauthorized2 ->
             { english =
                 """You are not authorized to view this health assessment.
-                Please contact the Ihangane project for further
-                instructions."""
+        Please contact the Ihangane project for further
+        instructions."""
             , kinyarwanda = Nothing
             }
 
@@ -2511,6 +2990,11 @@ translationSet trans =
                 { english = toString value ++ " Weeks"
                 , kinyarwanda = Nothing
                 }
+
+        Weight ->
+            { english = "Weight"
+            , kinyarwanda = Just "Ibiro"
+            }
 
         WelcomeUser name ->
             { english = "Welcome " ++ name
