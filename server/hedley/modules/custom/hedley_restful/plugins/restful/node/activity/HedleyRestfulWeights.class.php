@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulWeights.
  */
-class HedleyRestfulWeights extends HedleyRestfulChildActivityBase {
+class HedleyRestfulWeights extends HedleyRestfulActivityBase {
 
   /**
    * {@inheritdoc}
