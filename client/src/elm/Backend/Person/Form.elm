@@ -221,8 +221,8 @@ validateNationalIdNumber =
                     trimmed =
                         String.trim s
                 in
-                if String.length trimmed /= 18 then
-                    fail <| customError (LengthError 18)
+                if String.length trimmed /= 16 then
+                    fail <| customError (LengthError 16)
 
                 else
                     format allDigitsPattern trimmed
