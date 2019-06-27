@@ -6,7 +6,6 @@ import App.Fetch
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInModel)
 import Backend.Endpoints exposing (nurseEndpoint)
-import Backend.Entities exposing (HealthCenterId)
 import Backend.Model
 import Backend.Update
 import Config
