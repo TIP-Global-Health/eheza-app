@@ -167,6 +167,7 @@ type TranslationId
     | Cell
     | ChartPhrase ChartPhrase
     | CheckIn
+    | ChildBirthOrder
     | ChildDemographicInformation
     | ChildNutritionSignLabel ChildNutritionSign
     | ChildNutritionSignReport ChildNutritionSign
@@ -752,6 +753,11 @@ translationSet trans =
         CheckIn ->
             { english = "Check in:"
             , kinyarwanda = Just "Kureba abaje"
+            }
+
+        ChildBirthOrder ->
+            { english = "Child Birth Order"
+            , kinyarwanda = Nothing
             }
 
         ChildDemographicInformation ->

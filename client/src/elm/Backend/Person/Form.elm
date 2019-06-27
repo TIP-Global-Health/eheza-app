@@ -1,4 +1,48 @@
-module Backend.Person.Form exposing (ExpectedAge(..), PersonForm, allDigitsPattern, birthDate, birthDateEstimated, cell, district, educationLevel, emptyForm, expectedAgeFromForm, firstName, gender, healthCenter, hivStatus, maritalStatus, modeOfDelivery, nationalIdNumber, numberOfChildren, phoneNumber, photo, province, secondName, sector, ubudehe, validateBirthDate, validateCell, validateDigitsOnly, validateDistrict, validateEducationLevel, validateGender, validateHealthCenterId, validateHivStatus, validateMaritalStatus, validateModeOfDelivery, validateNationalIdNumber, validatePerson, validateProvince, validateSector, validateUbudehe, validateVillage, village, withDefault)
+module Backend.Person.Form exposing
+    ( ExpectedAge(..)
+    , PersonForm
+    , allDigitsPattern
+    , birthDate
+    , birthDateEstimated
+    , cell
+    , childBirthOrder
+    , district
+    , educationLevel
+    , emptyForm
+    , expectedAgeFromForm
+    , firstName
+    , gender
+    , healthCenter
+    , hivStatus
+    , maritalStatus
+    , modeOfDelivery
+    , nationalIdNumber
+    , numberOfChildren
+    , phoneNumber
+    , photo
+    , province
+    , secondName
+    , sector
+    , ubudehe
+    , validateBirthDate
+    , validateCell
+    , validateDigitsOnly
+    , validateDistrict
+    , validateEducationLevel
+    , validateGender
+    , validateHealthCenterId
+    , validateHivStatus
+    , validateMaritalStatus
+    , validateModeOfDelivery
+    , validateNationalIdNumber
+    , validatePerson
+    , validateProvince
+    , validateSector
+    , validateUbudehe
+    , validateVillage
+    , village
+    , withDefault
+    )
 
 import AllDict
 import Backend.Entities exposing (HealthCenterId)
@@ -146,6 +190,7 @@ validatePerson maybeRelated maybeCurrentDate =
                 |> andMap (succeed <| String.trim firstNameValue)
                 |> andMap (succeed <| String.trim secondNameValue)
                 |> andMap (field nationalIdNumber validateNationalIdNumber)
+                |> andMap (field childBirthOrder <| nullable string)
                 |> andMap (field photo <| nullable string)
                 |> andMap (succeed birthDate)
                 |> andMap (field birthDateEstimated bool)
@@ -390,6 +435,11 @@ secondName =
 nationalIdNumber : String
 nationalIdNumber =
     "national_id_number"
+
+
+childBirthOrder : String
+childBirthOrder =
+    "child_birth_order"
 
 
 photo : String

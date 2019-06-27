@@ -651,6 +651,25 @@ viewCreateForm language currentDate relationId model db =
                     )
                 |> (::) emptyOption
 
+        childBirthOrderOptions =
+            List.repeat 15 ""
+                |> List.indexedMap
+                    (\index _ ->
+                        let
+                            order =
+                                index + 1
+
+                            orderAsString =
+                                if order < 10 then
+                                    "0" ++ toString order
+
+                                else
+                                    toString order
+                        in
+                        ( orderAsString, orderAsString )
+                    )
+                |> (::) emptyOption
+
         photoUrl =
             Form.getFieldAsString Backend.Person.Form.photo personForm
                 |> .value
@@ -706,19 +725,25 @@ viewCreateForm language currentDate relationId model db =
             in
             viewSelectInput language Translate.NumberOfChildrenUnder5 options Backend.Person.Form.numberOfChildren "ten" "select-input" False personForm
 
+        childBirthOrderInput =
+            viewSelectInput language Translate.ChildBirthOrder childBirthOrderOptions Backend.Person.Form.childBirthOrder "ten" "select-input" False personForm
+
+        nationalIdInput =
+            viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
+
         demographicFields =
             viewPhoto
                 :: (List.map (Html.map (MsgForm relationId)) <|
                         [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName False personForm
                         , viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
-                        , viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
                         ]
                    )
                 ++ [ birthDateInput ]
                 ++ (List.map (Html.map (MsgForm relationId)) <|
                         case expectedAge of
                             ExpectAdult ->
-                                [ genderInput
+                                [ nationalIdInput
+                                , genderInput
                                 , hivStatusInput
                                 , levelOfEducationInput
                                 , maritalStatusInput
@@ -726,13 +751,16 @@ viewCreateForm language currentDate relationId model db =
                                 ]
 
                             ExpectChild ->
-                                [ genderInput
+                                [ childBirthOrderInput
+                                , genderInput
                                 , hivStatusInput
                                 , modeOfDeliveryInput
                                 ]
 
                             ExpectAdultOrChild ->
-                                [ genderInput
+                                [ nationalIdInput
+                                , childBirthOrderInput
+                                , genderInput
                                 , hivStatusInput
                                 , levelOfEducationInput
                                 , maritalStatusInput
