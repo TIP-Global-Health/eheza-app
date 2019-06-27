@@ -10,6 +10,7 @@ import Pages.Device.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.People.Fetch
 import Pages.Person.Fetch
+import Pages.PinCode.Fetch
 import Pages.Relationship.Fetch
 import Pages.Session.Fetch
 
@@ -38,6 +39,9 @@ fetch model =
     case model.activePage of
         DevicePage ->
             List.map MsgIndexedDb Pages.Device.Fetch.fetch
+
+        PinCodePage ->
+            List.map MsgIndexedDb Pages.PinCode.Fetch.fetch
 
         UserPage (ClinicsPage clinicId) ->
             Pages.Clinics.Fetch.fetch clinicId
