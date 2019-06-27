@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * hedley_activity.features.user_permission.inc
@@ -38,6 +39,16 @@ function hedley_activity_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create last_menstrual_period content'.
+  $permissions['create last_menstrual_period content'] = array(
+    'name' => 'create last_menstrual_period content',
+    'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -114,6 +125,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any last_menstrual_period content'.
+  $permissions['delete any last_menstrual_period content'] = array(
+    'name' => 'delete any last_menstrual_period content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any muac content'.
   $permissions['delete any muac content'] = array(
     'name' => 'delete any muac content',
@@ -171,6 +191,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own height content'.
   $permissions['delete own height content'] = array(
     'name' => 'delete own height content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own last_menstrual_period content'.
+  $permissions['delete own last_menstrual_period content'] = array(
+    'name' => 'delete own last_menstrual_period content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -241,6 +270,16 @@ function hedley_activity_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any last_menstrual_period content'.
+  $permissions['edit any last_menstrual_period content'] = array(
+    'name' => 'edit any last_menstrual_period content',
+    'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -318,6 +357,16 @@ function hedley_activity_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own last_menstrual_period content'.
+  $permissions['edit own last_menstrual_period content'] = array(
+    'name' => 'edit own last_menstrual_period content',
+    'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',
