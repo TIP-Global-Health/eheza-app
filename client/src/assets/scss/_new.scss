@@ -117,6 +117,73 @@ div.page-pincode {
         margin-left: auto;
         margin-right: auto;
     }
+
+    div.ui.basic.head.segment {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      margin-left: -40px;
+    }
+
+    p.logged-in-as {
+      font-size: 1.6rem;
+      font-weight: bold;
+      margin-bottom: 0;
+      margin-top: -3rem;
+    }
+
+    p.health-center-name {
+      font-size: 1.6rem;
+      font-weight: bold;
+      margin-bottom: 3rem;
+    }
+
+    p.select-health-center {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 3rem;
+    }
+
+    button.ui.logout.button {
+      background: $color-light-background;
+      border: 2px solid white;
+      position: absolute;
+      bottom: 0;
+      width: 89%;
+    }
+
+    button.ui.primary.button.group-assessment {
+      padding: 0;
+      height: 60px;
+      margin-left: auto;
+      margin-right: auto;
+      width: 80%;
+
+      .icon-group {
+        background-image: url(#{$img-path}icon-group-encounter.svg);
+        background-size: 50px 50px;
+        display: block;
+        height: 50px;
+        width: 50px;
+        float: left;
+        line-height: 60px;
+        margin-top: 5px;
+        margin-left: 50px;
+      }
+
+      .text {
+        line-height: 60px;
+        float: left;
+        margin-left: 60px;
+      }
+
+      .icon-back {
+        float: left;
+        margin-top: 17px;
+        margin-left: 90px;
+        transform: rotate(180deg);
+      }
+    }
 }
 
 div.page-person-create {
