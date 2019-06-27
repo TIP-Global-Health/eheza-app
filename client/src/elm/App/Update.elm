@@ -34,7 +34,7 @@ import Pages.Relationship.Update
 import Pages.Session.Model
 import Pages.Session.Update
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, fromEntityId, select, toCmd, toEntityId)
+import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, fromEntityId, fromEntityUuid, select, toCmd, toEntityId, toEntityUuid)
 import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
@@ -326,10 +326,15 @@ update msg model =
                                                 ( [ TryPinCode code ], [] )
 
                                             Pages.PinCode.Model.Logout ->
-                                                ( [ SetLoggedIn NotAsked ], [ cachePinCode "" ] )
+                                                ( [ SetLoggedIn NotAsked, SetHealthCenter Nothing ]
+                                                , [ cachePinCode "", cacheHealthCenter "" ]
+                                                )
 
                                             Pages.PinCode.Model.SetActivePage page ->
                                                 ( [ SetActivePage page ], [] )
+
+                                            Pages.PinCode.Model.SetHealthCenter healthCenterId ->
+                                                ( [ SetHealthCenter (Just healthCenterId) ], [] )
                                     )
                                 |> Maybe.withDefault ( [], [] )
                     in
@@ -413,6 +418,14 @@ update msg model =
         SetStorageQuota quota ->
             ( { model | storageQuota = Just quota }
             , Cmd.none
+            )
+
+        SetHealthCenter healthCenterId ->
+            ( { model | healthCenterId = healthCenterId }
+            , healthCenterId
+                |> Maybe.map fromEntityUuid
+                |> Maybe.withDefault ""
+                |> cacheHealthCenter
             )
 
         Tick time ->
@@ -640,3 +653,9 @@ port memoryQuota : (MemoryQuota -> msg) -> Sub msg
 {-| Let the Javascript tell us about our storage quota.
 -}
 port storageQuota : (StorageQuota -> msg) -> Sub msg
+
+
+{-| Saves Health center ID selected by user, so that we can use it again if
+the browser is reloaded.
+-}
+port cacheHealthCenter : String -> Cmd msg

@@ -24,6 +24,12 @@ update msg model =
             , Just Logout
             )
 
+        SetDisplayMenu menu ->
+            ( { model | menu = menu }
+            , Cmd.none
+            , Nothing
+            )
+
         SendOutMsg outMsg ->
             ( model
             , Cmd.none
