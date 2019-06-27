@@ -1,4 +1,4 @@
-module Backend.Measurement.Decoder exposing (decodeAttendance, decodeChildMeasurement, decodeChildMeasurementList, decodeChildNutritionSign, decodeCounselingSession, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeHeight, decodeHistoricalMeasurements, decodeMeasurement, decodeMotherMeasurement, decodeMotherMeasurementList, decodeMuac, decodeNutrition, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodeSavedMeasurement, decodeWeight, decodeWithEntityUuid, toEntityUuidDict)
+module Backend.Measurement.Decoder exposing (decodeAttendance, decodeChildMeasurement, decodeChildMeasurementList, decodeChildNutritionSign, decodeCounselingSession, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeHeight, decodeHistoricalMeasurements, decodeMeasurement, decodeMotherMeasurement, decodeMotherMeasurementList, decodeMuac, decodeNutrition, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodeWeight, decodeWithEntityUuid, toEntityUuidDict)
 
 import AllDict
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
@@ -38,60 +38,6 @@ decodeMeasurement participantDecoder valueDecoder =
         |> custom participantDecoder
         |> required "session" (nullable decodeEntityUuid)
         |> custom valueDecoder
-
-
-{-| Decodes a measurement that has an ID ... that is, a saved measurement.
-
-Tye `type` field controls which decoder we apply.
-
--}
-decodeSavedMeasurement : Decoder SavedMeasurement
-decodeSavedMeasurement =
-    field "type" string
-        |> andThen
-            (\s ->
-                case s of
-                    "attendance" ->
-                        decodeWithEntityUuid decodeAttendance
-                            |> map (uncurry SavedAttendance)
-
-                    "family_planning" ->
-                        decodeWithEntityUuid decodeFamilyPlanning
-                            |> map (uncurry SavedFamilyPlanning)
-
-                    "participant_consent" ->
-                        decodeWithEntityUuid decodeParticipantConsent
-                            |> map (uncurry SavedParticipantConsent)
-
-                    "height" ->
-                        decodeWithEntityUuid decodeHeight
-                            |> map (uncurry SavedHeight)
-
-                    "muac" ->
-                        decodeWithEntityUuid decodeMuac
-                            |> map (uncurry SavedMuac)
-
-                    "nutrition" ->
-                        decodeWithEntityUuid decodeNutrition
-                            |> map (uncurry SavedChildNutrition)
-
-                    "photo" ->
-                        decodeWithEntityUuid decodePhoto
-                            |> map (uncurry SavedPhoto)
-
-                    "weight" ->
-                        decodeWithEntityUuid decodeWeight
-                            |> map (uncurry SavedWeight)
-
-                    "counseling_session" ->
-                        decodeWithEntityUuid decodeCounselingSession
-                            |> map (uncurry SavedCounselingSession)
-
-                    _ ->
-                        fail <|
-                            s
-                                ++ " is not a recognized measurement type"
-            )
 
 
 {-| Decodes `HistoricalMeasurements` as sent by `/api/offline_sessions/`

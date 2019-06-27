@@ -1,4 +1,4 @@
-module Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, ChildMeasurements, ChildNutrition, ChildNutritionSign(..), CounselingSession, FamilyPlanning, FamilyPlanningSign(..), Height, HeightInCm(..), HistoricalMeasurements, Measurement, MeasurementData, Measurements, MotherMeasurementList, MotherMeasurements, Muac, MuacInCm(..), MuacIndication(..), ParticipantConsent, ParticipantConsentValue, Photo, PhotoUrl(..), SavedMeasurement(..), Weight, WeightInKg(..), emptyChildMeasurementList, emptyChildMeasurements, emptyHistoricalMeasurements, emptyMeasurements, emptyMotherMeasurementList, emptyMotherMeasurements)
+module Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, ChildMeasurements, ChildNutrition, ChildNutritionSign(..), CounselingSession, FamilyPlanning, FamilyPlanningSign(..), Height, HeightInCm(..), HistoricalMeasurements, Measurement, MeasurementData, Measurements, MotherMeasurementList, MotherMeasurements, Muac, MuacInCm(..), MuacIndication(..), ParticipantConsent, ParticipantConsentValue, Photo, PhotoUrl(..), Weight, WeightInKg(..), emptyChildMeasurementList, emptyChildMeasurements, emptyHistoricalMeasurements, emptyMeasurements, emptyMotherMeasurementList, emptyMotherMeasurements)
 
 {-| This module represents various measurements to be stored on the backend,
 and cached in local storage.
@@ -133,24 +133,6 @@ type alias CounselingSession =
 
 
 -- UNIFIED MEASUREMENT TYPE
-
-
-{-| A type which handles any kind of measurement along with its ID.
-(Thus, it is a "saved" measurement that has been assigned an ID.)
--}
-type SavedMeasurement
-    = SavedAttendance AttendanceId Attendance
-    | SavedFamilyPlanning FamilyPlanningId FamilyPlanning
-    | SavedParticipantConsent ParticipantConsentId ParticipantConsent
-    | SavedHeight HeightId Height
-    | SavedMuac MuacId Muac
-    | SavedChildNutrition ChildNutritionId ChildNutrition
-    | SavedPhoto PhotoId Photo
-    | SavedWeight WeightId Weight
-    | SavedCounselingSession CounselingSessionId CounselingSession
-
-
-
 -- LISTS OF MEASUREMENTS
 
 
