@@ -9,7 +9,6 @@ import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
-import Maybe.Extra exposing (unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PinCode.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -17,7 +16,7 @@ import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner, viewLogo)
 
 
-view : Language -> Page -> WebData ( NurseId, Nurse ) -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
+view : Language -> Page -> WebData ( NurseId, Nurse ) -> Maybe HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
 view language activePage nurseData healthCenterId model db =
     div
         [ class "ui basic segment page-pincode" ]
@@ -26,11 +25,17 @@ view language activePage nurseData healthCenterId model db =
             :: viewContent language activePage nurseData healthCenterId model db
 
 
-viewHeader : Language -> WebData ( NurseId, Nurse ) -> HealthCenterId -> Model -> Html Msg
+viewHeader : Language -> WebData ( NurseId, Nurse ) -> Maybe HealthCenterId -> Model -> Html Msg
 viewHeader language nurseData healthCenterId model =
     case nurseData of
         Success ( _, nurse ) ->
-            if EverySet.member healthCenterId nurse.healthCenters then
+            let
+                selectedAuthorizedHealthCenter =
+                    healthCenterId
+                        |> Maybe.map (\id -> EverySet.member id nurse.healthCenters)
+                        |> Maybe.withDefault False
+            in
+            if selectedAuthorizedHealthCenter then
                 case model.menu of
                     ClinicalMenu ->
                         div [ class "ui basic head segment" ]
@@ -60,7 +65,7 @@ viewHeader language nurseData healthCenterId model =
             viewLogo language
 
 
-viewContent : Language -> Page -> WebData ( NurseId, Nurse ) -> HealthCenterId -> Model -> ModelIndexedDb -> List (Html Msg)
+viewContent : Language -> Page -> WebData ( NurseId, Nurse ) -> Maybe HealthCenterId -> Model -> ModelIndexedDb -> List (Html Msg)
 viewContent language activePage nurseData healthCenterId model db =
     case nurseData of
         Success ( _, nurse ) ->
@@ -138,7 +143,7 @@ viewContent language activePage nurseData healthCenterId model db =
             ]
 
 
-viewWhenLoggedIn : Language -> Nurse -> HealthCenterId -> Model -> ModelIndexedDb -> List (Html Msg)
+viewWhenLoggedIn : Language -> Nurse -> Maybe HealthCenterId -> Model -> ModelIndexedDb -> List (Html Msg)
 viewWhenLoggedIn language nurse healthCenterId model db =
     let
         logoutButton =
@@ -150,8 +155,13 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                     |> translate language
                     |> text
                 ]
+
+        selectedAuthorizedHealthCenter =
+            healthCenterId
+                |> Maybe.map (\id -> EverySet.member id nurse.healthCenters)
+                |> Maybe.withDefault False
     in
-    if EverySet.member healthCenterId nurse.healthCenters then
+    if selectedAuthorizedHealthCenter then
         case model.menu of
             ClinicalMenu ->
                 let
@@ -180,15 +190,19 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                             ]
 
                     healthCenterName =
-                        db.healthCenters
-                            |> RemoteData.toMaybe
-                            |> unwrap
-                                emptyNode
-                                (EveryDictList.get healthCenterId
-                                    >> unwrap
-                                        emptyNode
-                                        (\healthCenter -> p [ class "health-center-name" ] [ text healthCenter.name ])
+                        healthCenterId
+                            |> Maybe.andThen
+                                (\id ->
+                                    RemoteData.toMaybe db.healthCenters
+                                        |> Maybe.andThen (EveryDictList.get id)
                                 )
+                            |> Maybe.map
+                                (\healthCenter ->
+                                    p
+                                        [ class "health-center-name" ]
+                                        [ text healthCenter.name ]
+                                )
+                            |> Maybe.withDefault emptyNode
 
                     deviceStatusButton =
                         button

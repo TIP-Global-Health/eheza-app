@@ -297,7 +297,7 @@ update msg model =
                                                 ( [ TryPinCode code ], [] )
 
                                             Pages.PinCode.Model.Logout ->
-                                                ( [ SetLoggedIn NotAsked, SetHealthCenter (toEntityUuid "") ]
+                                                ( [ SetLoggedIn NotAsked, SetHealthCenter Nothing ]
                                                 , [ cachePinCode "", cacheHealthCenter "" ]
                                                 )
 
@@ -305,7 +305,7 @@ update msg model =
                                                 ( [ SetActivePage page ], [] )
 
                                             Pages.PinCode.Model.SetHealthCenter healthCenterId ->
-                                                ( [ SetHealthCenter healthCenterId ], [] )
+                                                ( [ SetHealthCenter (Just healthCenterId) ], [] )
                                     )
                                 |> Maybe.withDefault ( [], [] )
                     in
@@ -393,7 +393,10 @@ update msg model =
 
         SetHealthCenter healthCenterId ->
             ( { model | healthCenterId = healthCenterId }
-            , cacheHealthCenter (fromEntityUuid healthCenterId)
+            , healthCenterId
+                |> Maybe.map fromEntityUuid
+                |> Maybe.withDefault ""
+                |> cacheHealthCenter
             )
 
         Tick time ->

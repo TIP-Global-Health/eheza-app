@@ -78,7 +78,7 @@ type alias Model =
     , scheduleDataWantedCheck : Bool
 
     -- Which health center a nurse is working at.
-    , healthCenterId : HealthCenterId
+    , healthCenterId : Maybe HealthCenterId
     }
 
 
@@ -182,7 +182,7 @@ type Msg
     | SetPersistentStorage Bool
     | SetStorageQuota StorageQuota
     | SetMemoryQuota MemoryQuota
-    | SetHealthCenter HealthCenterId
+    | SetHealthCenter (Maybe HealthCenterId)
     | Tick Time
     | CheckDataWanted
 
@@ -207,6 +207,14 @@ type alias Flags =
 
 emptyModel : Flags -> Model
 emptyModel flags =
+    let
+        healthCenterId =
+            if flags.healthCenterId == "" then
+                Nothing
+
+            else
+                Just (toEntityUuid flags.healthCenterId)
+    in
     { activePage = PinCodePage
     , configuration = NotAsked
     , currentTime = 0
@@ -219,5 +227,5 @@ emptyModel flags =
     , serviceWorker = ServiceWorker.Model.emptyModel flags.activeServiceWorker
     , storageQuota = Nothing
     , zscores = ZScore.Model.emptyModel
-    , healthCenterId = toEntityUuid flags.healthCenterId
+    , healthCenterId = healthCenterId
     }
