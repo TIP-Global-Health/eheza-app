@@ -105,6 +105,7 @@ type ValidationError
     | InvalidBirthDate
     | InvalidBirthDateForAdult
     | InvalidBirthDateForChild
+    | InvalidChildBirthOrder
     | LengthError Int
     | LettersOnly
     | RequiredField
@@ -2624,6 +2625,11 @@ translateValidationError id =
 
         InvalidBirthDateForChild ->
             { english = "is invalid - child should be below the age of 13"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidChildBirthOrder ->
+            { english = "is invalid - child should be between 1 and 15"
             , kinyarwanda = Nothing
             }
 

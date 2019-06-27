@@ -190,7 +190,7 @@ validatePerson maybeRelated maybeCurrentDate =
                 |> andMap (succeed <| String.trim firstNameValue)
                 |> andMap (succeed <| String.trim secondNameValue)
                 |> andMap (field nationalIdNumber validateNationalIdNumber)
-                |> andMap (field childBirthOrder <| nullable string)
+                |> andMap (field childBirthOrder validateChildBirthOrder)
                 |> andMap (field photo <| nullable string)
                 |> andMap (succeed birthDate)
                 |> andMap (field birthDateEstimated bool)
@@ -227,6 +227,33 @@ validateNationalIdNumber =
                 else
                     format allDigitsPattern trimmed
                         |> mapError (\_ -> customError DigitsOnly)
+            )
+        |> nullable
+
+
+validateChildBirthOrder : Validation ValidationError (Maybe String)
+validateChildBirthOrder =
+    string
+        |> andThen
+            (\s ->
+                let
+                    trimmed =
+                        String.trim s
+
+                    error =
+                        customError InvalidChildBirthOrder
+                in
+                String.toInt s
+                    |> Result.toMaybe
+                    |> Maybe.map
+                        (\number ->
+                            if number > 0 && number < 16 then
+                                succeed trimmed
+
+                            else
+                                fail error
+                        )
+                    |> Maybe.withDefault (fail error)
             )
         |> nullable
 
