@@ -32,6 +32,7 @@ const HEDLEY_RESTFUL_ALL_DEVICES = [
 const HEDLEY_RESTFUL_SHARDED = [
   'attendance' => 'attendances',
   'counseling_session' => 'counseling-sessions',
+  'core_physical_exam' => 'core-physical-exams',
   'family_planning' => 'family-plannings',
   'height' => 'heights',
   'last_menstrual_period' => 'last-menstrual-periods',

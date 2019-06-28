@@ -11,6 +11,37 @@
 function hedley_activity_field_default_field_bases() {
   $field_bases = array();
 
+  // Exported field_base: 'field_abdomen'.
+  $field_bases['field_abdomen'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_abdomen',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'heptomegaly' => 'Heptomegaly',
+        'splenomegaly' => 'Splenomegaly',
+        'tender-to-palpitation-right-upper' => 'Tender to Palpitation right upper',
+        'tender-to-palpitation-left-upper' => 'Tender to Palpitation left upper',
+        'tender-to-palpitation-right-lower' => 'Tender to Palpitation right lower',
+        'tender-to-palpitation-left-lower' => 'Tender to Palpitation left lower',
+        'normal' => 'Normal',
+        'hernia' => 'Hernia',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_abortions'.
   $field_bases['field_abortions'] = array(
     'active' => 1,
@@ -203,6 +234,31 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'number_float',
   );
 
+  // Exported field_base: 'field_eyes'.
+  $field_bases['field_eyes'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_eyes',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'pale-conjuctiva' => 'Pale Conjuctiva',
+        'normal' => 'Normal',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_family_planning_signs'.
   $field_bases['field_family_planning_signs'] = array(
     'active' => 1,
@@ -226,6 +282,82 @@ function hedley_activity_field_default_field_bases() {
         'necklace' => 'Necklace',
         'implant' => 'Implant',
         'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_hands'.
+  $field_bases['field_hands'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_hands',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'pallor' => 'Pallor',
+        'edema' => 'Edema',
+        'normal' => 'Normal',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_head_hair'.
+  $field_bases['field_head_hair'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_head_hair',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'brittle-hair' => 'Brittle Hair',
+        'normal' => 'Normal',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_heart'.
+  $field_bases['field_heart'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_heart',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'abnormal' => 'Abnormal',
+        'normal' => 'Normal',
       ),
       'allowed_values_function' => '',
     ),
@@ -294,6 +426,32 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'datetime',
   );
 
+  // Exported field_base: 'field_legs'.
+  $field_bases['field_legs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_legs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'pallor' => 'Pallor',
+        'edema' => 'Edema',
+        'normal' => 'Normal',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_live_children'.
   $field_bases['field_live_children'] = array(
     'active' => 1,
@@ -307,6 +465,32 @@ function hedley_activity_field_default_field_bases() {
     'settings' => array(),
     'translatable' => 0,
     'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_lungs'.
+  $field_bases['field_lungs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_lungs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'wheezes' => 'Wheezes',
+        'crackles' => 'Crackles',
+        'normal' => 'Normal',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_medical_history'.
@@ -382,6 +566,32 @@ function hedley_activity_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'number_float',
+  );
+
+  // Exported field_base: 'field_neck'.
+  $field_bases['field_neck'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_neck',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'enlarged-thyroid' => 'Enlarged Thyroid',
+        'enlarged-lymph-nodes' => 'Enlarged Lymph Nodes',
+        'normal' => 'Normal',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_nurse'.
