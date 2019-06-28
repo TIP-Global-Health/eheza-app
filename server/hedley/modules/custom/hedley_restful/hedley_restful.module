@@ -6,6 +6,8 @@
  */
 
 /**
+ * Nodes synced to all devices.
+ *
  * The content types and their restful handler for nodes that
  * we sync to all devices.
  */
@@ -26,6 +28,8 @@ const HEDLEY_RESTFUL_ALL_DEVICES = [
 ];
 
 /**
+ * Nodes synced to just some devices.
+ *
  * The content types and their restful handlers for nodes that
  * we sync to just some devices.
  */
