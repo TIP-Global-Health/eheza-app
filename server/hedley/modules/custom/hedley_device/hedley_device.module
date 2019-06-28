@@ -24,6 +24,7 @@ const HEDLEY_DEVICE_SHARDED_NODES = [
   'last_menstrual_period',
   'muac',
   'nutrition',
+  'obstetric_history',
   'participant_consent',
   'photo',
   'weight',
