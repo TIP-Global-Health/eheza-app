@@ -16,7 +16,7 @@ include_once 'hedley_device.features.inc';
 // there doesn't seem to be any disadvantage to just making it a constant.
 define('HEDLEY_DEVICE_BACKEND_UUID', 'c700aec4-92c1-46b2-8894-8f4f82869c79');
 
-define('HEDLEY_DEVICE_SHARDED_NODES', [
+const HEDLEY_DEVICE_SHARDED_NODES = [
   'attendance',
   'counseling_session',
   'family_planning',
@@ -27,7 +27,7 @@ define('HEDLEY_DEVICE_SHARDED_NODES', [
   'participant_consent',
   'photo',
   'weight',
-]);
+];
 
 /**
  * Implements hook_node_presave().
