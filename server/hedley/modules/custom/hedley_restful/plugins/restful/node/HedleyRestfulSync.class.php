@@ -61,21 +61,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    *   machine names for the restful handler to use when syncing.
    */
   public function entitiesForAllDevices() {
-    return [
-      'catchment_area' => 'catchment_areas',
-      'clinic' => 'clinics',
-      'counseling_schedule' => 'counseling-schedule',
-      'counseling_topic' => 'counseling-topics',
-      'health_center' => 'health_centers',
-      'nurse' => 'nurses',
-      'participant_form' => 'participants-form',
-      'person' => 'people',
-      'pmtct_participant' => 'pmtct-participants',
-      'prenatal_participant' => 'prenatal-participants',
-      'prenatal_encounter' => 'prenatal-encounters',
-      'relationship' => 'relationships',
-      'session' => 'sessions',
-    ];
+    return HEDLEY_RESTFUL_ALL_DEVICES;
   }
 
   /**
@@ -88,22 +74,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    *   machine names for the restful handler to use when syncing.
    */
   public function entitiesForHealthCenters() {
-    return [
-      'attendance' => 'attendances',
-      'counseling_session' => 'counseling-sessions',
-      'family_planning' => 'family-plannings',
-      'height' => 'heights',
-      'last_menstrual_period' => 'last-menstrual-periods',
-      'medical_history' => 'medical-histories',
-      'muac' => 'muacs',
-      'nutrition' => 'nutritions',
-      'obstetric_history' => 'obstetric-histories',
-      'participant_consent' => 'participants-consent',
-      'social_history' => 'social-histories',
-      'photo' => 'photos',
-      'vitals' => 'vitals',
-      'weight' => 'weights',
-    ];
+    return HEDLEY_RESTFUL_SHARDED;
   }
 
   /**

@@ -5,6 +5,48 @@
  * Code for the RESTful integration.
  */
 
+/**
+ * The content types and their restful handler for nodes that
+ * we sync to all devices.
+ */
+const HEDLEY_RESTFUL_ALL_DEVICES = [
+  'catchment_area' => 'catchment_areas',
+  'clinic' => 'clinics',
+  'counseling_schedule' => 'counseling-schedule',
+  'counseling_topic' => 'counseling-topics',
+  'health_center' => 'health_centers',
+  'nurse' => 'nurses',
+  'participant_form' => 'participants-form',
+  'person' => 'people',
+  'pmtct_participant' => 'pmtct-participants',
+  'prenatal_participant' => 'prenatal-participants',
+  'prenatal_encounter' => 'prenatal-encounters',
+  'relationship' => 'relationships',
+  'session' => 'sessions',
+];
+
+/**
+ * The content types and their restful handlers for nodes that
+ * we sync to just some devices.
+ */
+const HEDLEY_RESTFUL_SHARDED = [
+  'attendance' => 'attendances',
+  'counseling_session' => 'counseling-sessions',
+  'family_planning' => 'family-plannings',
+  'height' => 'heights',
+  'last_menstrual_period' => 'last-menstrual-periods',
+  'medical_history' => 'medical-histories',
+  'muac' => 'muacs',
+  'nutrition' => 'nutritions',
+  'obstetric_history' => 'obstetric-histories',
+  'participant_consent' => 'participants-consent',
+  'social_history' => 'social-histories',
+  'photo' => 'photos',
+  'vitals' => 'vitals',
+  'weight' => 'weights',
+];
+
+// Make sure that some headers get set.
 if (!drupal_is_cli()) {
   header('Access-Control-Allow-Origin: *');
   header('Access-Control-Allow-Credentials: true');
