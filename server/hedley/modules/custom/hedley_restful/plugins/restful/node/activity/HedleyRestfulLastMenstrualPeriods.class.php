@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Contains HedleyRestfulHeights.
+ * Contains HedleyRestfulLastMenstrualPeriods.
  */
 
 /**
- * Class HedleyRestfulHeights.
+ * Class HedleyRestfulLastMenstrualPeriods.
  */
-class HedleyRestfulHeights extends HedleyRestfulPrenatalActivityBase {
+class HedleyRestfulLastMenstrualPeriods extends HedleyRestfulPrenatalActivityBase {
 
   /**
    * {@inheritdoc}
