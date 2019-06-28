@@ -107,6 +107,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create prenatal_nutrition content'.
+  $permissions['create prenatal_nutrition content'] = array(
+    'name' => 'create prenatal_nutrition content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create social_history content'.
   $permissions['create social_history content'] = array(
     'name' => 'create social_history content',
@@ -219,6 +229,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any prenatal_nutrition content'.
+  $permissions['delete any prenatal_nutrition content'] = array(
+    'name' => 'delete any prenatal_nutrition content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any social_history content'.
   $permissions['delete any social_history content'] = array(
     'name' => 'delete any social_history content',
@@ -321,6 +340,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own photo content'.
   $permissions['delete own photo content'] = array(
     'name' => 'delete own photo content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own prenatal_nutrition content'.
+  $permissions['delete own prenatal_nutrition content'] = array(
+    'name' => 'delete own prenatal_nutrition content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -450,6 +478,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any prenatal_nutrition content'.
+  $permissions['edit any prenatal_nutrition content'] = array(
+    'name' => 'edit any prenatal_nutrition content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any social_history content'.
   $permissions['edit any social_history content'] = array(
     'name' => 'edit any social_history content',
@@ -572,6 +610,16 @@ function hedley_activity_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own prenatal_nutrition content'.
+  $permissions['edit own prenatal_nutrition content'] = array(
+    'name' => 'edit own prenatal_nutrition content',
+    'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',
