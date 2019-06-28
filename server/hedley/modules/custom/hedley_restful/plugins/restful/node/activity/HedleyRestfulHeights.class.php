@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulHeights.
  */
-class HedleyRestfulHeights extends HedleyRestfulGrouppActivityBase {
+class HedleyRestfulHeights extends HedleyRestfulGroupActivityBase {
 
   /**
    * {@inheritdoc}
