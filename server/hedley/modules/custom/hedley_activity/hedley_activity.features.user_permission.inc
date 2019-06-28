@@ -22,6 +22,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create breast_exam content'.
+  $permissions['create breast_exam content'] = array(
+    'name' => 'create breast_exam content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create core_physical_exam content'.
   $permissions['create core_physical_exam content'] = array(
     'name' => 'create core_physical_exam content',
@@ -177,6 +187,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any breast_exam content'.
+  $permissions['delete any breast_exam content'] = array(
+    'name' => 'delete any breast_exam content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any core_physical_exam content'.
   $permissions['delete any core_physical_exam content'] = array(
     'name' => 'delete any core_physical_exam content',
@@ -306,6 +325,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own attendance content'.
   $permissions['delete own attendance content'] = array(
     'name' => 'delete own attendance content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own breast_exam content'.
+  $permissions['delete own breast_exam content'] = array(
+    'name' => 'delete own breast_exam content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -444,6 +472,16 @@ function hedley_activity_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any breast_exam content'.
+  $permissions['edit any breast_exam content'] = array(
+    'name' => 'edit any breast_exam content',
+    'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -601,6 +639,16 @@ function hedley_activity_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own breast_exam content'.
+  $permissions['edit own breast_exam content'] = array(
+    'name' => 'edit own breast_exam content',
+    'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',

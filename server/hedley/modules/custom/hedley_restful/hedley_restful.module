@@ -31,6 +31,7 @@ const HEDLEY_RESTFUL_ALL_DEVICES = [
  */
 const HEDLEY_RESTFUL_SHARDED = [
   'attendance' => 'attendances',
+  'breast_exam' => 'breast-exams',
   'counseling_session' => 'counseling-sessions',
   'core_physical_exam' => 'core-physical-exams',
   'family_planning' => 'family-plannings',
