@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Contains HedleyRestfulSocialHistories.
+ * Contains HedleyRestfulObstetricalExams.
  */
 
 /**
- * Class HedleyRestfulSocialHistories.
+ * Class HedleyRestfulObstetricalExams.
  */
-class HedleyRestfulSocialHistories extends HedleyRestfulPrenatalActivityBase {
+class HedleyRestfulObstetricalExams extends HedleyRestfulPrenatalActivityBase {
 
   /**
    * {@inheritdoc}
@@ -17,9 +17,11 @@ class HedleyRestfulSocialHistories extends HedleyRestfulPrenatalActivityBase {
     $public_fields = parent::publicFieldsInfo();
 
     $standard_fields_names = [
-      'field_accompanied_by_partner',
-      'field_partner_hiv_counseling',
-      'field_mental_health_history',
+      'field_fundal_height',
+      'field_fetal_presentation',
+      'field_fetal_movement',
+      'field_fetal_heart_rate',
+      'field_c_section_scar',
     ];
 
     foreach ($standard_fields_names as $field_name) {
