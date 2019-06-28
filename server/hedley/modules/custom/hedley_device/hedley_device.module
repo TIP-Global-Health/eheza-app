@@ -22,6 +22,7 @@ const HEDLEY_DEVICE_SHARDED_NODES = [
   'family_planning',
   'height',
   'last_menstrual_period',
+  'medical_history',
   'muac',
   'nutrition',
   'obstetric_history',
