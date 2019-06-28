@@ -51,6 +51,14 @@ function hedley_activity_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'medical_history' => array(
+      'name' => t('Medical History'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'muac' => array(
       'name' => t('MUAC'),
       'base' => 'node_content',
