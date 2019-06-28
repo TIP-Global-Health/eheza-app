@@ -28,6 +28,7 @@ const HEDLEY_DEVICE_SHARDED_NODES = [
   'obstetric_history',
   'participant_consent',
   'photo',
+  'social_history',
   'weight',
 ];
 

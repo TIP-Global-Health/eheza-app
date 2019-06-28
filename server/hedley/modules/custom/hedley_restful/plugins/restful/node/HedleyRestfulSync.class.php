@@ -99,6 +99,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'nutrition' => 'nutritions',
       'obstetric_history' => 'obstetric-histories',
       'participant_consent' => 'participants-consent',
+      'social_history' => 'social-histories',
       'photo' => 'photos',
       'weight' => 'weights',
     ];
