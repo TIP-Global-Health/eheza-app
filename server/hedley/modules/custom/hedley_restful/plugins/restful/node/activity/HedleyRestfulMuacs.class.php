@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulMuacs.
  */
-class HedleyRestfulMuacs extends HedleyRestfulActivityBase {
+class HedleyRestfulMuacs extends HedleyRestfulGroupActivityBase {
 
   /**
    * {@inheritdoc}

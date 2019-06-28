@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulParticipantsConsent.
  */
-class HedleyRestfulParticipantsConsent extends HedleyRestfulActivityBase {
+class HedleyRestfulParticipantsConsent extends HedleyRestfulGroupActivityBase {
 
   /**
    * {@inheritdoc}

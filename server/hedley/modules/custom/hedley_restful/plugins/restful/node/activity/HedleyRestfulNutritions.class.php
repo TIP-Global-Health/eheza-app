@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulNutritions.
  */
-class HedleyRestfulNutritions extends HedleyRestfulActivityBase {
+class HedleyRestfulNutritions extends HedleyRestfulGroupActivityBase {
 
   /**
    * {@inheritdoc}

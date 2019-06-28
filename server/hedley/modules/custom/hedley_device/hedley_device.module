@@ -16,6 +16,19 @@ include_once 'hedley_device.features.inc';
 // there doesn't seem to be any disadvantage to just making it a constant.
 define('HEDLEY_DEVICE_BACKEND_UUID', 'c700aec4-92c1-46b2-8894-8f4f82869c79');
 
+define('HEDLEY_DEVICE_SHARDED_NODES', [
+  'attendance',
+  'counseling_session',
+  'family_planning',
+  'height',
+  'last_menstrual_period',
+  'muac',
+  'nutrition',
+  'participant_consent',
+  'photo',
+  'weight',
+]);
+
 /**
  * Implements hook_node_presave().
  */
@@ -263,17 +276,7 @@ function hedley_recalculate_shards_for_person($nid) {
   $query->condition('p.field_person_target_id', $nid);
 
   // Limit to sharded nodes.
-  $query->condition('n.type', [
-    'attendance',
-    'counseling_session',
-    'family_planning',
-    'height',
-    'muac',
-    'nutrition',
-    'participant_consent',
-    'photo',
-    'weight',
-  ]);
+  $query->condition('n.type', HEDLEY_DEVICE_SHARDED_NODES);
 
   $query->fields('n', ['nid']);
   $query->fields('s', ['field_shards_target_id']);

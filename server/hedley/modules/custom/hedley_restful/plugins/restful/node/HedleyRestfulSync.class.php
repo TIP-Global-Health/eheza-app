@@ -93,6 +93,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'counseling_session' => 'counseling-sessions',
       'family_planning' => 'family-plannings',
       'height' => 'heights',
+      'last_menstrual_period' => 'last-menstrual-periods',
       'muac' => 'muacs',
       'nutrition' => 'nutritions',
       'participant_consent' => 'participants-consent',
