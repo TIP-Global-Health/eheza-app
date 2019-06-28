@@ -249,7 +249,16 @@ function hedley_device_shards_for_person($nid) {
   $query->fields('hc', ['field_health_center_target_id']);
   $query->distinct();
 
-  return $query->execute()->fetchCol();
+  $shards = $query->execute()->fetchCol();
+
+  $person = entity_metadata_wrapper($nid);
+  $shard = $person->field_health_center->getIdentifier();
+
+  if (isset($shard) && !in_array($shard, $shards)) {
+    $shards[] = $shard;
+  }
+
+  return $shards;
 }
 
 /**
