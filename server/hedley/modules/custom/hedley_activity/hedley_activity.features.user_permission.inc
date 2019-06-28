@@ -117,6 +117,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create vitals content'.
+  $permissions['create vitals content'] = array(
+    'name' => 'create vitals content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create weight content'.
   $permissions['create weight content'] = array(
     'name' => 'create weight content',
@@ -218,6 +228,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any vitals content'.
+  $permissions['delete any vitals content'] = array(
+    'name' => 'delete any vitals content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any weight content'.
   $permissions['delete any weight content'] = array(
     'name' => 'delete any weight content',
@@ -311,6 +330,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own social_history content'.
   $permissions['delete own social_history content'] = array(
     'name' => 'delete own social_history content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own vitals content'.
+  $permissions['delete own vitals content'] = array(
+    'name' => 'delete own vitals content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -432,6 +460,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any vitals content'.
+  $permissions['edit any vitals content'] = array(
+    'name' => 'edit any vitals content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any weight content'.
   $permissions['edit any weight content'] = array(
     'name' => 'edit any weight content',
@@ -542,6 +580,16 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit own social_history content'.
   $permissions['edit own social_history content'] = array(
     'name' => 'edit own social_history content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own vitals content'.
+  $permissions['edit own vitals content'] = array(
+    'name' => 'edit own vitals content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

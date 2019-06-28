@@ -29,6 +29,7 @@ const HEDLEY_DEVICE_SHARDED_NODES = [
   'participant_consent',
   'photo',
   'social_history',
+  'vitals',
   'weight',
 ];
 
