@@ -248,7 +248,7 @@ type TranslationId
     | Device
     | DeviceNotAuthorized
     | DeviceStatus
-    | Diabates
+    | Diabetes
     | District
     | DOB
     | DropzoneDefaultMessage
@@ -1374,8 +1374,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        Diabates ->
-            { english = "Diabates"
+        Diabetes ->
+            { english = "Diabetes"
             , kinyarwanda = Nothing
             }
 

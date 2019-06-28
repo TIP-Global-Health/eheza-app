@@ -305,7 +305,7 @@ emptyObstetricFormSecondStep =
 
 type alias MedicalHistoryForm =
     { uterineMyoma : Maybe Bool
-    , diabates : Maybe Bool
+    , diabetes : Maybe Bool
     , cardiacDisease : Maybe Bool
     , renalDisease : Maybe Bool
     , hypertensionBeforePregnancy : Maybe Bool
@@ -320,7 +320,7 @@ type alias MedicalHistoryForm =
 emptyMedicalHistoryForm : MedicalHistoryForm
 emptyMedicalHistoryForm =
     { uterineMyoma = Nothing
-    , diabates = Nothing
+    , diabetes = Nothing
     , cardiacDisease = Nothing
     , renalDisease = Nothing
     , hypertensionBeforePregnancy = Nothing

@@ -306,7 +306,7 @@ viewHistoryContent language currentDate motherId data =
                     let
                         boolInputs =
                             [ data.medicalForm.uterineMyoma
-                            , data.medicalForm.diabates
+                            , data.medicalForm.diabetes
                             , data.medicalForm.cardiacDisease
                             , data.medicalForm.renalDisease
                             , data.medicalForm.hypertensionBeforePregnancy
@@ -976,8 +976,8 @@ viewMedicalForm language currentDate motherId form =
         uterineMyomaUpdateFunc value form_ =
             { form_ | uterineMyoma = Just value }
 
-        diabatesUpdateFunc value form_ =
-            { form_ | diabates = Just value }
+        diabetesUpdateFunc value form_ =
+            { form_ | diabetes = Just value }
 
         cardiacDiseaseUpdateFunc value form_ =
             { form_ | cardiacDisease = Just value }
@@ -1012,12 +1012,12 @@ viewMedicalForm language currentDate motherId form =
             (SetMedicalBoolInput uterineMyomaUpdateFunc)
             "uterine-myoma"
             Nothing
-        , viewLabel language Translate.Diabates
+        , viewLabel language Translate.Diabetes
         , viewBoolInput
             language
-            form.diabates
-            (SetMedicalBoolInput diabatesUpdateFunc)
-            "diabates"
+            form.diabetes
+            (SetMedicalBoolInput diabetesUpdateFunc)
+            "diabetes"
             Nothing
         , viewLabel language Translate.CardiacDisease
         , viewBoolInput
