@@ -49,6 +49,8 @@ module Backend.Measurement.Model exposing
     , PrenatalNutritionValue
     , Resource
     , ResourceSign
+    , SocialHistory
+    , SocialHistorySign(..)
     , Weight
     , WeightInKg(..)
     , emptyChildMeasurementList
@@ -395,6 +397,17 @@ type ResourceSign
 
 type alias Resource =
     PrenatalMeasurement (EverySet ResourceSign)
+
+
+type SocialHistorySign
+    = AccompaniedByPartner
+    | PartnerHivCounseling
+    | MentalHealthHistory
+    | NoSocialHistorySign
+
+
+type alias SocialHistory =
+    PrenatalMeasurement (EverySet SocialHistorySign)
 
 
 

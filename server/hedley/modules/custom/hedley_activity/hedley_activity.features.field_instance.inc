@@ -6490,44 +6490,6 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance:
-  // 'node-social_history-field_accompanied_by_partner'.
-  $field_instances['node-social_history-field_accompanied_by_partner'] = array(
-    'bundle' => 'social_history',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 1,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_accompanied_by_partner',
-    'label' => 'Accompanied by partner',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_buttons',
-      'weight' => -2,
-    ),
-  );
-
   // Exported field_instance: 'node-social_history-field_date_measured'.
   $field_instances['node-social_history-field_date_measured'] = array(
     'bundle' => 'social_history',
@@ -6579,44 +6541,7 @@ function hedley_activity_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 2,
-    ),
-  );
-
-  // Exported field_instance: 'node-social_history-field_mental_health_history'.
-  $field_instances['node-social_history-field_mental_health_history'] = array(
-    'bundle' => 'social_history',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 3,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_mental_health_history',
-    'label' => 'Mental Health History',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_buttons',
-      'weight' => 0,
+      'weight' => 3,
     ),
   );
 
@@ -6664,44 +6589,6 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance:
-  // 'node-social_history-field_partner_hiv_counseling'.
-  $field_instances['node-social_history-field_partner_hiv_counseling'] = array(
-    'bundle' => 'social_history',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 2,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_partner_hiv_counseling',
-    'label' => 'Partner HIV counseling',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_buttons',
-      'weight' => -1,
-    ),
-  );
-
   // Exported field_instance: 'node-social_history-field_person'.
   $field_instances['node-social_history-field_person'] = array(
     'bundle' => 'social_history',
@@ -6742,7 +6629,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -6786,7 +6673,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 6,
+      'weight' => 5,
     ),
   );
 
@@ -6830,7 +6717,44 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 10,
+      'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance: 'node-social_history-field_social_history'.
+  $field_instances['node-social_history-field_social_history'] = array(
+    'bundle' => 'social_history',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_social_history',
+    'label' => 'Social History',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 2,
     ),
   );
 
@@ -6870,7 +6794,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 8,
+      'weight' => 6,
     ),
   );
 
@@ -7923,7 +7847,6 @@ function hedley_activity_field_default_field_instances() {
   // Included for use with string extractors like potx.
   t('Abdomen');
   t('Abortions');
-  t('Accompanied by partner');
   t('Attended');
   t('BMI');
   t('Body temperature');
@@ -7960,12 +7883,10 @@ function hedley_activity_field_default_field_instances() {
   t('MUAC');
   t('Medical History');
   t('Medication');
-  t('Mental Health History');
   t('Mother');
   t('Neck');
   t('Nurse');
   t('Nutrition Signs');
-  t('Partner HIV counseling');
   t('Person');
   t('Photo');
   t('PreTerm Pregnancy');
@@ -7975,6 +7896,7 @@ function hedley_activity_field_default_field_instances() {
   t('Resources');
   t('Respiratory rate');
   t('Shards');
+  t('Social History');
   t('Stillbirths PreTerm');
   t('Stillbirths at Term');
   t('Sys');
