@@ -969,6 +969,7 @@ function hedley_activity_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'mosquito-net' => 'Mosquito net',
+        'none' => 'None',
       ),
       'allowed_values_function' => '',
     ),

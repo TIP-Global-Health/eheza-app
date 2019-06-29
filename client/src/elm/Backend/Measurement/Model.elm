@@ -47,6 +47,8 @@ module Backend.Measurement.Model exposing
     , PrenatalMeasurement
     , PrenatalNutrition
     , PrenatalNutritionValue
+    , Resource
+    , ResourceSign
     , Weight
     , WeightInKg(..)
     , emptyChildMeasurementList
@@ -384,6 +386,15 @@ type alias PrenatalNutritionValue =
 
 type alias PrenatalNutrition =
     PrenatalMeasurement PrenatalNutritionValue
+
+
+type ResourceSign
+    = MosquitoNet
+    | NoResource
+
+
+type alias Resource =
+    PrenatalMeasurement (EverySet ResourceSign)
 
 
 
