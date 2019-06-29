@@ -1,4 +1,4 @@
-module Backend.Measurement.Encoder exposing (encodeAttendance, encodeAttendanceValue, encodeChildMeasurement, encodeChildMeasurementList, encodeCounselingSession, encodeCounselingSessionValue, encodeEntity, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeHeight, encodeHeightValue, encodeMeasurement, encodeMotherMeasurement, encodeMotherMeasurementList, encodeMuac, encodeMuacValue, encodeNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodeWeight, encodeWeightValue)
+module Backend.Measurement.Encoder exposing (encodeAttendance, encodeAttendanceValue, encodeChildMeasurementList, encodeCounselingSession, encodeCounselingSessionValue, encodeEntity, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeHeight, encodeHeightValue, encodeMeasurement, encodeMotherMeasurementList, encodeMuac, encodeMuacValue, encodeNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodeWeight, encodeWeightValue)
 
 import AllDictList
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
@@ -15,7 +15,7 @@ import Translate.Utils exposing (encodeLanguage)
 
 encodeHeight : Height -> List ( String, Value )
 encodeHeight =
-    encodeChildMeasurement encodeHeightValue
+    encodeMeasurement encodeHeightValue
 
 
 encodeHeightValue : HeightInCm -> List ( String, Value )
@@ -25,7 +25,7 @@ encodeHeightValue (HeightInCm height) =
 
 encodeMuac : Muac -> List ( String, Value )
 encodeMuac =
-    encodeChildMeasurement encodeMuacValue
+    encodeMeasurement encodeMuacValue
 
 
 encodeMuacValue : MuacInCm -> List ( String, Value )
@@ -35,7 +35,7 @@ encodeMuacValue (MuacInCm muac) =
 
 encodeWeight : Weight -> List ( String, Value )
 encodeWeight =
-    encodeChildMeasurement encodeWeightValue
+    encodeMeasurement encodeWeightValue
 
 
 encodeWeightValue : WeightInKg -> List ( String, Value )
@@ -45,7 +45,7 @@ encodeWeightValue (WeightInKg weight) =
 
 encodePhoto : Photo -> List ( String, Value )
 encodePhoto =
-    encodeChildMeasurement encodePhotoUrl
+    encodeMeasurement encodePhotoUrl
 
 
 encodePhotoUrl : PhotoUrl -> List ( String, Value )
@@ -55,7 +55,7 @@ encodePhotoUrl (PhotoUrl url) =
 
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
-    encodeChildMeasurement encodeNutritionValue
+    encodeMeasurement encodeNutritionValue
 
 
 encodeNutritionValue : EverySet ChildNutritionSign -> List ( String, Value )
@@ -77,12 +77,12 @@ encodeParticipantConsentValue consent =
 
 encodeParticipantConsent : ParticipantConsent -> List ( String, Value )
 encodeParticipantConsent =
-    encodeMotherMeasurement encodeParticipantConsentValue
+    encodeMeasurement encodeParticipantConsentValue
 
 
 encodeCounselingSession : CounselingSession -> List ( String, Value )
 encodeCounselingSession =
-    encodeChildMeasurement encodeCounselingSessionValue
+    encodeMeasurement encodeCounselingSessionValue
 
 
 encodeCounselingSessionValue : ( CounselingTiming, EverySet CounselingTopicId ) -> List ( String, Value )
@@ -105,7 +105,7 @@ encodeAttendanceValue attended =
 
 encodeAttendance : Attendance -> List ( String, Value )
 encodeAttendance =
-    encodeMotherMeasurement encodeAttendanceValue
+    encodeMeasurement encodeAttendanceValue
 
 
 encodeFamilyPlanningValue : EverySet FamilyPlanningSign -> List ( String, Value )
@@ -120,23 +120,13 @@ encodeFamilyPlanningValue familyPlannings =
 
 encodeFamilyPlanning : FamilyPlanning -> List ( String, Value )
 encodeFamilyPlanning =
-    encodeMotherMeasurement encodeFamilyPlanningValue
+    encodeMeasurement encodeFamilyPlanningValue
 
 
-encodeChildMeasurement : (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
-encodeChildMeasurement =
-    encodeMeasurement "person"
-
-
-encodeMotherMeasurement : (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
-encodeMotherMeasurement =
-    encodeMeasurement "person"
-
-
-encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
-encodeMeasurement participantField encoder measurement =
+encodeMeasurement : (value -> List ( String, Value )) -> Measurement value -> List ( String, Value )
+encodeMeasurement encoder measurement =
     List.concat
-        [ [ ( participantField, encodeEntityUuid measurement.participantId )
+        [ [ ( "person", encodeEntityUuid measurement.participantId )
           , ( "session", maybe encodeEntityUuid measurement.sessionId )
           , ( "date_measured", Gizra.NominalDate.encodeYYYYMMDD measurement.dateMeasured )
           , ( "nurse", maybe encodeEntityUuid measurement.nurse )
