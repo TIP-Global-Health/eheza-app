@@ -17,6 +17,8 @@ module Backend.Measurement.Model exposing
     , Height
     , HeightInCm(..)
     , HistoricalMeasurements
+    , LastMenstrualPeriod
+    , LastMenstrualPeriodValue
     , LegsCPESign(..)
     , LungsCPESign(..)
     , Measurement
@@ -283,6 +285,16 @@ type DangerSign
 
 type alias DangerSigns =
     PrenatalMeasurement (EverySet DangerSign)
+
+
+type alias LastMenstrualPeriodValue =
+    { date : NominalDate
+    , confident : Bool
+    }
+
+
+type alias LastMenstrualPeriod =
+    PrenatalMeasurement LastMenstrualPeriodValue
 
 
 
