@@ -45,6 +45,8 @@ module Backend.Measurement.Model exposing
     , PhotoUrl(..)
     , PrenatalFamilyPlanning
     , PrenatalMeasurement
+    , PrenatalNutrition
+    , PrenatalNutritionValue
     , Weight
     , WeightInKg(..)
     , emptyChildMeasurementList
@@ -371,6 +373,17 @@ type alias ObstetricHistory =
 
 type alias PrenatalFamilyPlanning =
     PrenatalMeasurement (EverySet FamilyPlanningSign)
+
+
+type alias PrenatalNutritionValue =
+    { height : HeightInCm
+    , weight : WeightInKg
+    , muac : MuacInCm
+    }
+
+
+type alias PrenatalNutrition =
+    PrenatalMeasurement PrenatalNutritionValue
 
 
 
