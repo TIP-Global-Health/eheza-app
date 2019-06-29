@@ -710,6 +710,7 @@ function hedley_activity_field_default_field_bases() {
         'asthma' => 'Asthma',
         'bowed-legs' => 'Bowed Legs',
         'hiv' => 'HIV',
+        'none' => 'None of these',
       ),
       'allowed_values_function' => '',
     ),

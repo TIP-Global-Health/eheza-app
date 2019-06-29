@@ -24,6 +24,8 @@ module Backend.Measurement.Model exposing
     , Measurement
     , MeasurementData
     , Measurements
+    , MedicalHistory
+    , MedicalHistorySign(..)
     , MotherMeasurementList
     , MotherMeasurements
     , Muac
@@ -295,6 +297,24 @@ type alias LastMenstrualPeriodValue =
 
 type alias LastMenstrualPeriod =
     PrenatalMeasurement LastMenstrualPeriodValue
+
+
+type MedicalHistorySign
+    = UterineMyoma
+    | Diabetes
+    | CardiacDisease
+    | RenalDisease
+    | HypertensionBeforePregnancy
+    | TuberculosisPast
+    | TuberculosisPresent
+    | Asthma
+    | BowedLegs
+    | HIV
+    | NoMedicalHistorySigns
+
+
+type alias MedicalHistory =
+    PrenatalMeasurement (EverySet MedicalHistorySign)
 
 
 
