@@ -35,6 +35,8 @@ module Backend.Measurement.Model exposing
     , MuacInCm(..)
     , MuacIndication(..)
     , NeckCPESign(..)
+    , ObstetricHistory
+    , ObstetricHistoryValue
     , ObstetricalExam
     , ObstetricalExamValue
     , ParticipantConsent
@@ -349,6 +351,21 @@ type FetalPresentation
     = Transverse
     | Breach
     | Cephalic
+
+
+type alias ObstetricHistoryValue =
+    { currentlyPregnant : Bool
+    , termPregnancy : Int
+    , pretermPregnancy : Int
+    , stillBirthsAtTerm : Int
+    , stillBirthsPreTerm : Int
+    , abortions : Int
+    , liveChildren : Int
+    }
+
+
+type alias ObstetricHistory =
+    PrenatalMeasurement ObstetricHistoryValue
 
 
 
