@@ -38,6 +38,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'breast_exam' => 'breast-exams',
   'counseling_session' => 'counseling-sessions',
   'core_physical_exam' => 'core-physical-exams',
+  'danger_signs' => 'danger-signs',
   'family_planning' => 'family-plannings',
   'height' => 'heights',
   'last_menstrual_period' => 'last-menstrual-periods',

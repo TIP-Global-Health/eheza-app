@@ -43,6 +43,14 @@ function hedley_activity_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'danger_signs' => array(
+      'name' => t('Danger Signs'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'family_planning' => array(
       'name' => t('Family Planning'),
       'base' => 'node_content',

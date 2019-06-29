@@ -265,6 +265,37 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_boolean',
   );
 
+  // Exported field_base: 'field_danger_signs'.
+  $field_bases['field_danger_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_danger_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'vaginal-bleeding' => 'Vaginal bleeding',
+        'sever-headaches-with-blurred-vision' => 'Severe headaches with blurred vision',
+        'convulsions' => 'Convulsions',
+        'abdominal-pain' => 'Abdominal pain',
+        'difficulty-breathing' => 'Difficulty breathing',
+        'fever' => 'Fever',
+        'extreme-weakness' => 'Extreme weakness',
+        'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_date_measured'.
   $field_bases['field_date_measured'] = array(
     'active' => 1,

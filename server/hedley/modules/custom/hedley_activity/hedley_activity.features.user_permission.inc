@@ -42,6 +42,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create danger_signs content'.
+  $permissions['create danger_signs content'] = array(
+    'name' => 'create danger_signs content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create family_planning content'.
   $permissions['create family_planning content'] = array(
     'name' => 'create family_planning content',
@@ -235,6 +245,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any danger_signs content'.
+  $permissions['delete any danger_signs content'] = array(
+    'name' => 'delete any danger_signs content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any family_planning content'.
   $permissions['delete any family_planning content'] = array(
     'name' => 'delete any family_planning content',
@@ -400,6 +419,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own core_physical_exam content'.
   $permissions['delete own core_physical_exam content'] = array(
     'name' => 'delete own core_physical_exam content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own danger_signs content'.
+  $permissions['delete own danger_signs content'] = array(
+    'name' => 'delete own danger_signs content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -574,6 +602,16 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit any core_physical_exam content'.
   $permissions['edit any core_physical_exam content'] = array(
     'name' => 'edit any core_physical_exam content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any danger_signs content'.
+  $permissions['edit any danger_signs content'] = array(
+    'name' => 'edit any danger_signs content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -771,6 +809,16 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit own core_physical_exam content'.
   $permissions['edit own core_physical_exam content'] = array(
     'name' => 'edit own core_physical_exam content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own danger_signs content'.
+  $permissions['edit own danger_signs content'] = array(
+    'name' => 'edit own danger_signs content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
