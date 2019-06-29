@@ -84,6 +84,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create medication content'.
+  $permissions['create medication content'] = array(
+    'name' => 'create medication content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create muac content'.
   $permissions['create muac content'] = array(
     'name' => 'create muac content',
@@ -251,6 +261,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any medication content'.
+  $permissions['delete any medication content'] = array(
+    'name' => 'delete any medication content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any muac content'.
   $permissions['delete any muac content'] = array(
     'name' => 'delete any muac content',
@@ -398,6 +417,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own medical_history content'.
   $permissions['delete own medical_history content'] = array(
     'name' => 'delete own medical_history content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own medication content'.
+  $permissions['delete own medication content'] = array(
+    'name' => 'delete own medication content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -560,6 +588,16 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit any medical_history content'.
   $permissions['edit any medical_history content'] = array(
     'name' => 'edit any medical_history content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any medication content'.
+  $permissions['edit any medication content'] = array(
+    'name' => 'edit any medication content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -737,6 +775,16 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit own medical_history content'.
   $permissions['edit own medical_history content'] = array(
     'name' => 'edit own medical_history content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own medication content'.
+  $permissions['edit own medication content'] = array(
+    'name' => 'edit own medication content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

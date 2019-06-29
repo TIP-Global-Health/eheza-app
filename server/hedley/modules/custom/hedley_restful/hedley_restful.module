@@ -42,6 +42,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'height' => 'heights',
   'last_menstrual_period' => 'last-menstrual-periods',
   'medical_history' => 'medical-histories',
+  'medication' => 'medications',
   'muac' => 'muacs',
   'nutrition' => 'nutritions',
   'obstetrical_exam' => 'obstetrical-exams',
