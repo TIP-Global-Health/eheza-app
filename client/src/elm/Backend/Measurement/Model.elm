@@ -26,6 +26,8 @@ module Backend.Measurement.Model exposing
     , Measurements
     , MedicalHistory
     , MedicalHistorySign(..)
+    , Medication
+    , MedicationSign(..)
     , MotherMeasurementList
     , MotherMeasurements
     , Muac
@@ -315,6 +317,16 @@ type MedicalHistorySign
 
 type alias MedicalHistory =
     PrenatalMeasurement (EverySet MedicalHistorySign)
+
+
+type MedicationSign
+    = IronAndFolicAcidSupplement
+    | DewormingPill
+    | NoMedication
+
+
+type Medication
+    = PrenatalMeasurement MedicationSign
 
 
 
