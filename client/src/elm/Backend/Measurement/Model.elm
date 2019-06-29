@@ -11,6 +11,7 @@ module Backend.Measurement.Model exposing
     , DangerSigns
     , FamilyPlanning
     , FamilyPlanningSign(..)
+    , FetalPresentation(..)
     , GroupMeasurement
     , HairHeadCPESign(..)
     , HandsCPESign(..)
@@ -34,6 +35,8 @@ module Backend.Measurement.Model exposing
     , MuacInCm(..)
     , MuacIndication(..)
     , NeckCPESign(..)
+    , ObstetricalExam
+    , ObstetricalExamValue
     , ParticipantConsent
     , ParticipantConsentValue
     , Photo
@@ -327,6 +330,25 @@ type MedicationSign
 
 type Medication
     = PrenatalMeasurement MedicationSign
+
+
+type alias ObstetricalExamValue =
+    { fundalHeight : HeightInCm
+    , fetalPresentation : FetalPresentation
+    , fetalMovement : Bool
+    , fetalHeartRate : Int
+    , cSectionScar : Bool
+    }
+
+
+type alias ObstetricalExam =
+    PrenatalMeasurement ObstetricalExamValue
+
+
+type FetalPresentation
+    = Transverse
+    | Breach
+    | Cephalic
 
 
 

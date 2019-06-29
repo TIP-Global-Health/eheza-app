@@ -6,7 +6,6 @@ module Pages.PrenatalActivity.Model exposing
     , ExaminationData
     , ExaminationTask(..)
     , FamilyPlanningData
-    , FetalPresentation(..)
     , HistoryData
     , HistoryTask(..)
     , LmpRange(..)
@@ -472,12 +471,6 @@ emptyObstetricalExamForm =
     , fetalHeartRate = Nothing
     , cSectionScar = Nothing
     }
-
-
-type FetalPresentation
-    = Transverse
-    | Breach
-    | Cephalic
 
 
 type alias BreastExamForm =
