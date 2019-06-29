@@ -43,6 +43,7 @@ module Backend.Measurement.Model exposing
     , ParticipantConsentValue
     , Photo
     , PhotoUrl(..)
+    , PrenatalFamilyPlanning
     , PrenatalMeasurement
     , Weight
     , WeightInKg(..)
@@ -366,6 +367,10 @@ type alias ObstetricHistoryValue =
 
 type alias ObstetricHistory =
     PrenatalMeasurement ObstetricHistoryValue
+
+
+type alias PrenatalFamilyPlanning =
+    PrenatalMeasurement (EverySet FamilyPlanningSign)
 
 
 
