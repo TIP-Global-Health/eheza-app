@@ -1,4 +1,38 @@
-module Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, ChildMeasurements, ChildNutrition, ChildNutritionSign(..), CounselingSession, FamilyPlanning, FamilyPlanningSign(..), Height, HeightInCm(..), HistoricalMeasurements, Measurement, MeasurementData, Measurements, MotherMeasurementList, MotherMeasurements, Muac, MuacInCm(..), MuacIndication(..), ParticipantConsent, ParticipantConsentValue, Photo, PhotoUrl(..), Weight, WeightInKg(..), emptyChildMeasurementList, emptyChildMeasurements, emptyHistoricalMeasurements, emptyMeasurements, emptyMotherMeasurementList, emptyMotherMeasurements)
+module Backend.Measurement.Model exposing
+    ( Attendance
+    , ChildMeasurementList
+    , ChildMeasurements
+    , ChildNutrition
+    , ChildNutritionSign(..)
+    , CounselingSession
+    , FamilyPlanning
+    , FamilyPlanningSign(..)
+    , GroupMeasurement
+    , Height
+    , HeightInCm(..)
+    , HistoricalMeasurements
+    , Measurement
+    , MeasurementData
+    , Measurements
+    , MotherMeasurementList
+    , MotherMeasurements
+    , Muac
+    , MuacInCm(..)
+    , MuacIndication(..)
+    , ParticipantConsent
+    , ParticipantConsentValue
+    , Photo
+    , PhotoUrl(..)
+    , PrenatalMeasurement
+    , Weight
+    , WeightInKg(..)
+    , emptyChildMeasurementList
+    , emptyChildMeasurements
+    , emptyHistoricalMeasurements
+    , emptyMeasurements
+    , emptyMotherMeasurementList
+    , emptyMotherMeasurements
+    )
 
 {-| This module represents various measurements to be stored on the backend,
 and cached in local storage.
@@ -21,17 +55,26 @@ import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictLi
 {-| A base that expresses some things all the measurements
 have in common, plus two things whose type varies:
 
-  - the type if the ID for the participant
+  - the type of the ID for the encounter this measurement
+    takes place in
   - the type of the value for this measurement
 
 -}
-type alias Measurement value =
+type alias Measurement encounter value =
     { dateMeasured : NominalDate
     , nurse : Maybe NurseId
     , participantId : PersonId
-    , sessionId : Maybe SessionId
+    , encounterId : Maybe encounter
     , value : value
     }
+
+
+type alias GroupMeasurement value =
+    Measurement SessionId value
+
+
+type alias PrenatalMeasurement value =
+    Measurement PrenatalEncounterId value
 
 
 
@@ -46,7 +89,7 @@ type PhotoUrl
 
 
 type alias Photo =
-    Measurement PhotoUrl
+    GroupMeasurement PhotoUrl
 
 
 {-| For the various measurements that are floats, we wrap them in a type to
@@ -57,7 +100,7 @@ type MuacInCm
 
 
 type alias Muac =
-    Measurement MuacInCm
+    GroupMeasurement MuacInCm
 
 
 {-| An interpretation of a MUAC, according to the measurement
@@ -74,7 +117,7 @@ type HeightInCm
 
 
 type alias Height =
-    Measurement HeightInCm
+    GroupMeasurement HeightInCm
 
 
 type WeightInKg
@@ -82,7 +125,7 @@ type WeightInKg
 
 
 type alias Weight =
-    Measurement WeightInKg
+    GroupMeasurement WeightInKg
 
 
 type FamilyPlanningSign
@@ -96,11 +139,11 @@ type FamilyPlanningSign
 
 
 type alias FamilyPlanning =
-    Measurement (EverySet FamilyPlanningSign)
+    GroupMeasurement (EverySet FamilyPlanningSign)
 
 
 type alias ParticipantConsent =
-    Measurement ParticipantConsentValue
+    GroupMeasurement ParticipantConsentValue
 
 
 type alias ParticipantConsentValue =
@@ -110,7 +153,7 @@ type alias ParticipantConsentValue =
 
 
 type alias Attendance =
-    Measurement Bool
+    GroupMeasurement Bool
 
 
 type ChildNutritionSign
@@ -124,11 +167,11 @@ type ChildNutritionSign
 
 
 type alias ChildNutrition =
-    Measurement (EverySet ChildNutritionSign)
+    GroupMeasurement (EverySet ChildNutritionSign)
 
 
 type alias CounselingSession =
-    Measurement ( CounselingTiming, EverySet CounselingTopicId )
+    GroupMeasurement ( CounselingTiming, EverySet CounselingTopicId )
 
 
 

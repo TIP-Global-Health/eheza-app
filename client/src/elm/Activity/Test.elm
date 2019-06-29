@@ -162,7 +162,7 @@ runTestCase testCase =
 makeCounselingSession : NominalDate -> CounselingTiming -> CounselingSession
 makeCounselingSession when timing =
     { participantId = childId
-    , sessionId = Nothing -- not needed
+    , encounterId = Nothing -- not needed
     , dateMeasured = when
     , value = ( timing, EverySet.empty )
     , nurse = Nothing

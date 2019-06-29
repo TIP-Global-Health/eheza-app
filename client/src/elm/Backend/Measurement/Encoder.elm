@@ -1,4 +1,25 @@
-module Backend.Measurement.Encoder exposing (encodeAttendance, encodeAttendanceValue, encodeChildMeasurementList, encodeCounselingSession, encodeCounselingSessionValue, encodeEntity, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeHeight, encodeHeightValue, encodeMeasurement, encodeMotherMeasurementList, encodeMuac, encodeMuacValue, encodeNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodeWeight, encodeWeightValue)
+module Backend.Measurement.Encoder exposing
+    ( encodeAttendance
+    , encodeAttendanceValue
+    , encodeCounselingSession
+    , encodeCounselingSessionValue
+    , encodeFamilyPlanning
+    , encodeFamilyPlanningSignAsString
+    , encodeFamilyPlanningValue
+    , encodeHeight
+    , encodeHeightValue
+    , encodeMuac
+    , encodeMuacValue
+    , encodeNutrition
+    , encodeNutritionSignAsString
+    , encodeNutritionValue
+    , encodeParticipantConsent
+    , encodeParticipantConsentValue
+    , encodePhoto
+    , encodePhotoUrl
+    , encodeWeight
+    , encodeWeightValue
+    )
 
 import AllDictList
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
@@ -15,7 +36,7 @@ import Translate.Utils exposing (encodeLanguage)
 
 encodeHeight : Height -> List ( String, Value )
 encodeHeight =
-    encodeMeasurement encodeHeightValue
+    encodeGroupMeasurement encodeHeightValue
 
 
 encodeHeightValue : HeightInCm -> List ( String, Value )
@@ -25,7 +46,7 @@ encodeHeightValue (HeightInCm height) =
 
 encodeMuac : Muac -> List ( String, Value )
 encodeMuac =
-    encodeMeasurement encodeMuacValue
+    encodeGroupMeasurement encodeMuacValue
 
 
 encodeMuacValue : MuacInCm -> List ( String, Value )
@@ -35,7 +56,7 @@ encodeMuacValue (MuacInCm muac) =
 
 encodeWeight : Weight -> List ( String, Value )
 encodeWeight =
-    encodeMeasurement encodeWeightValue
+    encodeGroupMeasurement encodeWeightValue
 
 
 encodeWeightValue : WeightInKg -> List ( String, Value )
@@ -45,7 +66,7 @@ encodeWeightValue (WeightInKg weight) =
 
 encodePhoto : Photo -> List ( String, Value )
 encodePhoto =
-    encodeMeasurement encodePhotoUrl
+    encodeGroupMeasurement encodePhotoUrl
 
 
 encodePhotoUrl : PhotoUrl -> List ( String, Value )
@@ -55,7 +76,7 @@ encodePhotoUrl (PhotoUrl url) =
 
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
-    encodeMeasurement encodeNutritionValue
+    encodeGroupMeasurement encodeNutritionValue
 
 
 encodeNutritionValue : EverySet ChildNutritionSign -> List ( String, Value )
@@ -77,12 +98,12 @@ encodeParticipantConsentValue consent =
 
 encodeParticipantConsent : ParticipantConsent -> List ( String, Value )
 encodeParticipantConsent =
-    encodeMeasurement encodeParticipantConsentValue
+    encodeGroupMeasurement encodeParticipantConsentValue
 
 
 encodeCounselingSession : CounselingSession -> List ( String, Value )
 encodeCounselingSession =
-    encodeMeasurement encodeCounselingSessionValue
+    encodeGroupMeasurement encodeCounselingSessionValue
 
 
 encodeCounselingSessionValue : ( CounselingTiming, EverySet CounselingTopicId ) -> List ( String, Value )
@@ -105,7 +126,7 @@ encodeAttendanceValue attended =
 
 encodeAttendance : Attendance -> List ( String, Value )
 encodeAttendance =
-    encodeMeasurement encodeAttendanceValue
+    encodeGroupMeasurement encodeAttendanceValue
 
 
 encodeFamilyPlanningValue : EverySet FamilyPlanningSign -> List ( String, Value )
@@ -120,14 +141,24 @@ encodeFamilyPlanningValue familyPlannings =
 
 encodeFamilyPlanning : FamilyPlanning -> List ( String, Value )
 encodeFamilyPlanning =
-    encodeMeasurement encodeFamilyPlanningValue
+    encodeGroupMeasurement encodeFamilyPlanningValue
 
 
-encodeMeasurement : (value -> List ( String, Value )) -> Measurement value -> List ( String, Value )
-encodeMeasurement encoder measurement =
+encodeGroupMeasurement : (value -> List ( String, Value )) -> GroupMeasurement value -> List ( String, Value )
+encodeGroupMeasurement =
+    encodeMeasurement "session"
+
+
+encodePrenatalMeasurement : (value -> List ( String, Value )) -> PrenatalMeasurement value -> List ( String, Value )
+encodePrenatalMeasurement =
+    encodeMeasurement "prenatal_encounter"
+
+
+encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
+encodeMeasurement encounterTag encoder measurement =
     List.concat
         [ [ ( "person", encodeEntityUuid measurement.participantId )
-          , ( "session", maybe encodeEntityUuid measurement.sessionId )
+          , ( encounterTag, maybe encodeEntityUuid measurement.encounterId )
           , ( "date_measured", Gizra.NominalDate.encodeYYYYMMDD measurement.dateMeasured )
           , ( "nurse", maybe encodeEntityUuid measurement.nurse )
           ]

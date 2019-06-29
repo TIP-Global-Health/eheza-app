@@ -1,7 +1,20 @@
-module Backend.Measurement.Decoder exposing (decodeAttendance, decodeChildMeasurementList, decodeChildNutritionSign, decodeCounselingSession, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeHeight, decodeHistoricalMeasurements, decodeMeasurement, decodeMotherMeasurementList, decodeMuac, decodeNutrition, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodeWeight, decodeWithEntityUuid, toEntityUuidDict)
+module Backend.Measurement.Decoder exposing
+    ( decodeAttendance
+    , decodeChildMeasurementList
+    , decodeCounselingSession
+    , decodeFamilyPlanning
+    , decodeHeight
+    , decodeMotherMeasurementList
+    , decodeMuac
+    , decodeNutrition
+    , decodeParticipantConsent
+    , decodePhoto
+    , decodeWeight
+    )
 
 import AllDict
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
+import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Dict exposing (Dict)
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict)
@@ -15,13 +28,23 @@ import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictLi
 import Utils.Json exposing (decodeEverySet)
 
 
-decodeMeasurement : Decoder value -> Decoder (Measurement value)
-decodeMeasurement valueDecoder =
+decodeGroupMeasurement : Decoder value -> Decoder (Measurement SessionId value)
+decodeGroupMeasurement =
+    decodeMeasurement "session"
+
+
+decodePrenatalMeasurement : Decoder value -> Decoder (Measurement PrenatalEncounterId value)
+decodePrenatalMeasurement =
+    decodeMeasurement "prenatal_encounter"
+
+
+decodeMeasurement : String -> Decoder value -> Decoder (Measurement (EntityUuid a) value)
+decodeMeasurement encounterTag valueDecoder =
     decode Measurement
         |> required "date_measured" Gizra.NominalDate.decodeYYYYMMDD
-        |> required "nurse" (nullable decodeEntityUuid)
+        |> optional "nurse" (nullable decodeEntityUuid) Nothing
         |> required "person" decodeEntityUuid
-        |> required "session" (nullable decodeEntityUuid)
+        |> optional encounterTag (nullable decodeEntityUuid) Nothing
         |> custom valueDecoder
 
 
@@ -81,46 +104,46 @@ decodePhoto : Decoder Photo
 decodePhoto =
     field "photo" string
         |> map PhotoUrl
-        |> decodeMeasurement
+        |> decodeGroupMeasurement
 
 
 decodeHeight : Decoder Height
 decodeHeight =
     field "height" decodeFloat
         |> map HeightInCm
-        |> decodeMeasurement
+        |> decodeGroupMeasurement
 
 
 decodeWeight : Decoder Weight
 decodeWeight =
     field "weight" decodeFloat
         |> map WeightInKg
-        |> decodeMeasurement
+        |> decodeGroupMeasurement
 
 
 decodeMuac : Decoder Muac
 decodeMuac =
     field "muac" decodeFloat
         |> map MuacInCm
-        |> decodeMeasurement
+        |> decodeGroupMeasurement
 
 
 decodeFamilyPlanning : Decoder FamilyPlanning
 decodeFamilyPlanning =
     decodeEverySet decodeFamilyPlanningSign
         |> field "family_planning_signs"
-        |> decodeMeasurement
+        |> decodeGroupMeasurement
 
 
 decodeAttendance : Decoder Attendance
 decodeAttendance =
     field "attended" bool
-        |> decodeMeasurement
+        |> decodeGroupMeasurement
 
 
 decodeParticipantConsent : Decoder ParticipantConsent
 decodeParticipantConsent =
-    decodeMeasurement decodeParticipantConsentValue
+    decodeGroupMeasurement decodeParticipantConsentValue
 
 
 decodeParticipantConsentValue : Decoder ParticipantConsentValue
@@ -134,12 +157,12 @@ decodeNutrition : Decoder ChildNutrition
 decodeNutrition =
     decodeEverySet decodeChildNutritionSign
         |> field "nutrition_signs"
-        |> decodeMeasurement
+        |> decodeGroupMeasurement
 
 
 decodeCounselingSession : Decoder CounselingSession
 decodeCounselingSession =
-    decodeMeasurement <|
+    decodeGroupMeasurement <|
         map2 (,)
             (field "timing" decodeCounselingTiming)
             (field "topics" (decodeEverySet decodeEntityUuid))
