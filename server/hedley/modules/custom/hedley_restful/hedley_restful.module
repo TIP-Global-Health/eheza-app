@@ -47,6 +47,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'obstetrical_exam' => 'obstetrical-exams',
   'obstetric_history' => 'obstetric-histories',
   'participant_consent' => 'participants-consent',
+  'prenatal_family_planning' => 'prenatal-family-plannings',
   'prenatal_nutrition' => 'prenatal-nutritions',
   'social_history' => 'social-histories',
   'photo' => 'photos',
