@@ -1,8 +1,7 @@
-module Backend.Measurement.Decoder exposing (decodeAttendance, decodeChildMeasurement, decodeChildMeasurementList, decodeChildNutritionSign, decodeCounselingSession, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeHeight, decodeHistoricalMeasurements, decodeMeasurement, decodeMotherMeasurement, decodeMotherMeasurementList, decodeMuac, decodeNutrition, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodeSavedMeasurement, decodeWeight, decodeWithEntityUuid, toEntityUuidDict)
+module Backend.Measurement.Decoder exposing (decodeAttendance, decodeChildMeasurementList, decodeChildNutritionSign, decodeCounselingSession, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeHeight, decodeHistoricalMeasurements, decodeMeasurement, decodeMotherMeasurementList, decodeMuac, decodeNutrition, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodeSavedMeasurement, decodeWeight, decodeWithEntityUuid, toEntityUuidDict)
 
 import AllDict
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
-import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Dict exposing (Dict)
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict)
@@ -16,26 +15,12 @@ import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictLi
 import Utils.Json exposing (decodeEverySet)
 
 
-{-| Given a decoder for a value, produces a decoder for our `Measurement` type.
--}
-decodeChildMeasurement : Decoder value -> Decoder (Measurement PersonId value)
-decodeChildMeasurement =
-    decodeMeasurement (field "person" decodeEntityUuid)
-
-
-{-| Given a decoder for a value, produces a decoder for our `Measurement` type.
--}
-decodeMotherMeasurement : Decoder value -> Decoder (Measurement PersonId value)
-decodeMotherMeasurement =
-    decodeMeasurement (field "person" decodeEntityUuid)
-
-
-decodeMeasurement : Decoder participantId -> Decoder value -> Decoder (Measurement participantId value)
-decodeMeasurement participantDecoder valueDecoder =
+decodeMeasurement : Decoder value -> Decoder (Measurement value)
+decodeMeasurement valueDecoder =
     decode Measurement
         |> required "date_measured" Gizra.NominalDate.decodeYYYYMMDD
         |> required "nurse" (nullable decodeEntityUuid)
-        |> custom participantDecoder
+        |> required "person" decodeEntityUuid
         |> required "session" (nullable decodeEntityUuid)
         |> custom valueDecoder
 
@@ -150,46 +135,46 @@ decodePhoto : Decoder Photo
 decodePhoto =
     field "photo" string
         |> map PhotoUrl
-        |> decodeChildMeasurement
+        |> decodeMeasurement
 
 
 decodeHeight : Decoder Height
 decodeHeight =
     field "height" decodeFloat
         |> map HeightInCm
-        |> decodeChildMeasurement
+        |> decodeMeasurement
 
 
 decodeWeight : Decoder Weight
 decodeWeight =
     field "weight" decodeFloat
         |> map WeightInKg
-        |> decodeChildMeasurement
+        |> decodeMeasurement
 
 
 decodeMuac : Decoder Muac
 decodeMuac =
     field "muac" decodeFloat
         |> map MuacInCm
-        |> decodeChildMeasurement
+        |> decodeMeasurement
 
 
 decodeFamilyPlanning : Decoder FamilyPlanning
 decodeFamilyPlanning =
     decodeEverySet decodeFamilyPlanningSign
         |> field "family_planning_signs"
-        |> decodeMotherMeasurement
+        |> decodeMeasurement
 
 
 decodeAttendance : Decoder Attendance
 decodeAttendance =
     field "attended" bool
-        |> decodeMotherMeasurement
+        |> decodeMeasurement
 
 
 decodeParticipantConsent : Decoder ParticipantConsent
 decodeParticipantConsent =
-    decodeMotherMeasurement decodeParticipantConsentValue
+    decodeMeasurement decodeParticipantConsentValue
 
 
 decodeParticipantConsentValue : Decoder ParticipantConsentValue
@@ -203,12 +188,12 @@ decodeNutrition : Decoder ChildNutrition
 decodeNutrition =
     decodeEverySet decodeChildNutritionSign
         |> field "nutrition_signs"
-        |> decodeChildMeasurement
+        |> decodeMeasurement
 
 
 decodeCounselingSession : Decoder CounselingSession
 decodeCounselingSession =
-    decodeChildMeasurement <|
+    decodeMeasurement <|
         map2 (,)
             (field "timing" decodeCounselingTiming)
             (field "topics" (decodeEverySet decodeEntityUuid))
