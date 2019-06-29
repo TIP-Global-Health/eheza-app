@@ -189,7 +189,7 @@ encodeNutritionSignAsString sign =
         Edema ->
             "edema"
 
-        None ->
+        NormalChildNutrition ->
             "none"
 
         PoorAppetite ->

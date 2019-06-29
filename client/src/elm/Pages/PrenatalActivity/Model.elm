@@ -1,7 +1,5 @@
 module Pages.PrenatalActivity.Model exposing
-    ( AbdomenCPEOption(..)
-    , BreastBEOption(..)
-    , BreastExamForm
+    ( BreastExamForm
     , CSectionReason(..)
     , CorePhysicalExamForm
     , DangerSign(..)
@@ -10,17 +8,13 @@ module Pages.PrenatalActivity.Model exposing
     , ExaminationTask(..)
     , FamilyPlanningData
     , FetalPresentation(..)
-    , HandsCPEOption(..)
     , HistoryData
     , HistoryTask(..)
-    , LegsCPEOption(..)
     , LmpRange(..)
-    , LungsCPEOption(..)
     , MedicalHistoryForm
     , MedicationForm
     , Model
     , Msg(..)
-    , NeckCPEOption(..)
     , NutritionAssessmentForm
     , ObstetricFormFirstStep
     , ObstetricFormSecondStep
@@ -40,7 +34,7 @@ module Pages.PrenatalActivity.Model exposing
     , encodeLmpRange
     )
 
-import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
+import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
 import Pages.Page exposing (Page)
 
@@ -77,18 +71,18 @@ type Msg
     | SetNutritionAssessmentMeasurement (Maybe Float -> NutritionAssessmentForm -> NutritionAssessmentForm) String
       -- ExaminationMsgs, Core Physical Exam
     | SetCorePhysicalExamBoolInput (Bool -> CorePhysicalExamForm -> CorePhysicalExamForm) Bool
-    | SetCorePhysicalExamNeck NeckCPEOption
-    | SetCorePhysicalExamLungs LungsCPEOption
-    | SetCorePhysicalExamAbdomen AbdomenCPEOption
-    | SetCorePhysicalExamHands HandsCPEOption
-    | SetCorePhysicalExamLegs LegsCPEOption
+    | SetCorePhysicalExamNeck NeckCPESign
+    | SetCorePhysicalExamLungs LungsCPESign
+    | SetCorePhysicalExamAbdomen AbdomenCPESign
+    | SetCorePhysicalExamHands HandsCPESign
+    | SetCorePhysicalExamLegs LegsCPESign
       -- ExaminationMsgs, Obstetrical Exam
     | SetObstetricalExamBoolInput (Bool -> ObstetricalExamForm -> ObstetricalExamForm) Bool
     | SetObstetricalExamMeasurement (Maybe Float -> ObstetricalExamForm -> ObstetricalExamForm) String
     | SetObstetricalExamFetalPresentation FetalPresentation
       -- ExaminationMsgs, Breast Exam
     | SetBreastExamBoolInput (Bool -> BreastExamForm -> BreastExamForm) Bool
-    | SetBreastExamBreast BreastBEOption
+    | SetBreastExamBreast BreastExamSign
       -- FamilyPlanningMsgs
     | SetFamilyPlanningSign FamilyPlanningSign
       -- PatientProvisionsMsgs
@@ -440,12 +434,12 @@ emptyNutritionAssessmentForm =
 type alias CorePhysicalExamForm =
     { brittleHair : Maybe Bool
     , paleConjuctiva : Maybe Bool
-    , neck : Maybe NeckCPEOption
+    , neck : Maybe NeckCPESign
     , abnormalHeart : Maybe Bool
-    , lungs : Maybe LungsCPEOption
-    , abdomen : Maybe AbdomenCPEOption
-    , hands : Maybe HandsCPEOption
-    , legs : Maybe LegsCPEOption
+    , lungs : Maybe LungsCPESign
+    , abdomen : Maybe AbdomenCPESign
+    , hands : Maybe HandsCPESign
+    , legs : Maybe LegsCPESign
     }
 
 
@@ -460,41 +454,6 @@ emptyCorePhysicalExamForm =
     , hands = Nothing
     , legs = Nothing
     }
-
-
-type NeckCPEOption
-    = EnlargedThyroid
-    | EnlargedLymphNodes
-    | NormalNeck
-
-
-type LungsCPEOption
-    = Wheezes
-    | Crackles
-    | NormalLungs
-
-
-type AbdomenCPEOption
-    = Heptomegaly
-    | Splenomegaly
-    | TPRightUpper
-    | TPRightLower
-    | TPLeftUpper
-    | TPLeftLower
-    | Hernia
-    | NormalAbdomen
-
-
-type HandsCPEOption
-    = PallorHands
-    | EdemaHands
-    | NormalHands
-
-
-type LegsCPEOption
-    = PallorLegs
-    | EdemaLegs
-    | NormalLegs
 
 
 type alias ObstetricalExamForm =
@@ -523,7 +482,7 @@ type FetalPresentation
 
 
 type alias BreastExamForm =
-    { breast : Maybe BreastBEOption
+    { breast : Maybe BreastExamSign
     , selfGuidance : Maybe Bool
     }
 
@@ -531,13 +490,6 @@ type alias BreastExamForm =
 emptyBreastExamForm : BreastExamForm
 emptyBreastExamForm =
     BreastExamForm Nothing Nothing
-
-
-type BreastBEOption
-    = Mass
-    | Discharge
-    | Infection
-    | NormalBreast
 
 
 type alias FamilyPlanningForm =

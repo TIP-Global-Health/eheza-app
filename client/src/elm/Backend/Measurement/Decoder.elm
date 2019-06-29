@@ -202,7 +202,7 @@ decodeChildNutritionSign =
                         succeed Edema
 
                     "none" ->
-                        succeed None
+                        succeed NormalChildNutrition
 
                     "poor-appetite" ->
                         succeed PoorAppetite

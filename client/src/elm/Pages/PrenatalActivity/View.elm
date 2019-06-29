@@ -2,7 +2,7 @@ module Pages.PrenatalActivity.View exposing (view)
 
 import AllDict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
+import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Date.Extra as Date exposing (Interval(Day, Month))
 import DateSelector.SelectorDropdown
@@ -1343,7 +1343,7 @@ viewCorePhysicalExamForm language currentDate motherId form =
             [ NormalNeck ]
             form.neck
             SetCorePhysicalExamNeck
-            Translate.NeckCPEOption
+            Translate.NeckCPESign
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
@@ -1367,7 +1367,7 @@ viewCorePhysicalExamForm language currentDate motherId form =
             [ NormalLungs ]
             form.lungs
             SetCorePhysicalExamLungs
-            Translate.LungsCPEOption
+            Translate.LungsCPESign
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
@@ -1379,7 +1379,7 @@ viewCorePhysicalExamForm language currentDate motherId form =
             [ NormalAbdomen, Hernia, TPRightLower, TPLeftLower ]
             form.abdomen
             SetCorePhysicalExamAbdomen
-            Translate.AbdomenCPEOption
+            Translate.AbdomenCPESign
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
@@ -1392,14 +1392,14 @@ viewCorePhysicalExamForm language currentDate motherId form =
             [ NormalHands ]
             form.hands
             SetCorePhysicalExamHands
-            Translate.HandsCPEOption
+            Translate.HandsCPESign
         , div [ class "title legs" ] [ text <| (translate language Translate.Legs ++ ":") ]
         , viewCheckBoxSelectInput language
             [ PallorLegs, EdemaLegs ]
             [ NormalLegs ]
             form.legs
             SetCorePhysicalExamLegs
-            Translate.LegsCPEOption
+            Translate.LegsCPESign
         ]
 
 
@@ -1502,7 +1502,7 @@ viewBreastExamForm language currentDate motherId form =
             [ Infection, NormalBreast ]
             form.breast
             SetBreastExamBreast
-            Translate.BreastBEOption
+            Translate.BreastExamSign
         , div [ class "separator double" ] []
         , viewCustomLabel language Translate.BreastExamQuestion "?" "label self-guidance"
         , viewBoolInput

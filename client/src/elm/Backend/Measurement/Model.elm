@@ -1,5 +1,7 @@
 module Backend.Measurement.Model exposing
-    ( Attendance
+    ( AbdomenCPESign(..)
+    , Attendance
+    , BreastExamSign(..)
     , ChildMeasurementList
     , ChildMeasurements
     , ChildNutrition
@@ -8,9 +10,13 @@ module Backend.Measurement.Model exposing
     , FamilyPlanning
     , FamilyPlanningSign(..)
     , GroupMeasurement
+    , HairHeadCPESign(..)
+    , HandsCPESign(..)
     , Height
     , HeightInCm(..)
     , HistoricalMeasurements
+    , LegsCPESign(..)
+    , LungsCPESign(..)
     , Measurement
     , MeasurementData
     , Measurements
@@ -19,6 +25,7 @@ module Backend.Measurement.Model exposing
     , Muac
     , MuacInCm(..)
     , MuacIndication(..)
+    , NeckCPESign(..)
     , ParticipantConsent
     , ParticipantConsentValue
     , Photo
@@ -78,7 +85,7 @@ type alias PrenatalMeasurement value =
 
 
 
--- SPECIFIC MEASUREMENT TYPES
+-- GROUP MEASUREMENT TYPES
 
 
 {-| The string represents the URL of the photo -- that is, the URL which
@@ -162,8 +169,8 @@ type ChildNutritionSign
     | BrittleHair
     | DrySkin
     | Edema
-    | None
     | PoorAppetite
+    | NormalChildNutrition
 
 
 type alias ChildNutrition =
@@ -175,7 +182,93 @@ type alias CounselingSession =
 
 
 
--- UNIFIED MEASUREMENT TYPE
+-- PRENATAL MEASUREMENTS
+
+
+type alias BreastExamValue =
+    { exam : EverySet BreastExamSign
+    , selfGuidance : Bool
+    }
+
+
+type BreastExamSign
+    = Mass
+    | Discharge
+    | Infection
+    | NormalBreast
+
+
+type alias BreastExam =
+    PrenatalMeasurement BreastExamValue
+
+
+type alias CorePhysicalExam =
+    PrenatalMeasurement CorePhysicalExamValue
+
+
+type alias CorePhysicalExamValue =
+    { hairHead : EverySet HairHeadCPESign
+    , eyes : EverySet EyesCPESign
+    , heart : EverySet HeartCPESign
+    , neck : EverySet NeckCPESign
+    , lungs : EverySet LungsCPESign
+    , abdomen : EverySet AbdomenCPESign
+    , hands : EverySet HandsCPESign
+    , legs : EverySet LegsCPESign
+    }
+
+
+type HairHeadCPESign
+    = BrittleHairCPE
+    | NormalHairHead
+
+
+type EyesCPESign
+    = PaleConjuctiva
+    | NormalEyes
+
+
+type HeartCPESign
+    = AbnormalHeart
+    | NormalHeart
+
+
+type NeckCPESign
+    = EnlargedThyroid
+    | EnlargedLymphNodes
+    | NormalNeck
+
+
+type LungsCPESign
+    = Wheezes
+    | Crackles
+    | NormalLungs
+
+
+type AbdomenCPESign
+    = Heptomegaly
+    | Splenomegaly
+    | TPRightUpper
+    | TPRightLower
+    | TPLeftUpper
+    | TPLeftLower
+    | Hernia
+    | NormalAbdomen
+
+
+type HandsCPESign
+    = PallorHands
+    | EdemaHands
+    | NormalHands
+
+
+type LegsCPESign
+    = PallorLegs
+    | EdemaLegs
+    | NormalLegs
+
+
+
 -- LISTS OF MEASUREMENTS
 
 
