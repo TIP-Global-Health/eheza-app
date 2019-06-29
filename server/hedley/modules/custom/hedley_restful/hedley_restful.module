@@ -50,6 +50,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'participant_consent' => 'participants-consent',
   'prenatal_family_planning' => 'prenatal-family-plannings',
   'prenatal_nutrition' => 'prenatal-nutritions',
+  'resource' => 'resources',
   'social_history' => 'social-histories',
   'photo' => 'photos',
   'vitals' => 'vitals',
