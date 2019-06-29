@@ -2,7 +2,7 @@ module Pages.PrenatalActivity.Update exposing (update)
 
 import App.Model
 import Backend.Entities exposing (PersonId)
-import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
+import Backend.Measurement.Model exposing (DangerSign(..), FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.PrenatalActivity.Model exposing (..)

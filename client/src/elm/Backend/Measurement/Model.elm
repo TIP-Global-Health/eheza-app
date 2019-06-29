@@ -7,6 +7,8 @@ module Backend.Measurement.Model exposing
     , ChildNutrition
     , ChildNutritionSign(..)
     , CounselingSession
+    , DangerSign(..)
+    , DangerSigns
     , FamilyPlanning
     , FamilyPlanningSign(..)
     , GroupMeasurement
@@ -266,6 +268,21 @@ type LegsCPESign
     = PallorLegs
     | EdemaLegs
     | NormalLegs
+
+
+type DangerSign
+    = VaginalBleeding
+    | HeadacheBlurredVision
+    | Convulsions
+    | AbdominalPain
+    | DificultyBreathing
+    | Fever
+    | ExtremeWeakness
+    | NoDangerSign
+
+
+type alias DangerSigns =
+    PrenatalMeasurement (EverySet DangerSign)
 
 
 

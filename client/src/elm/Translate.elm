@@ -33,7 +33,7 @@ import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
 import Pages.Page exposing (..)
-import Pages.PrenatalActivity.Model exposing (CSectionReason(..), DangerSign(..), ExaminationTask(..), FetalPresentation(..), HistoryTask(..), LmpRange(..), PatientProvisionsTask(..), PreviousDeliveryPeriod(..))
+import Pages.PrenatalActivity.Model exposing (CSectionReason(..), ExaminationTask(..), FetalPresentation(..), HistoryTask(..), LmpRange(..), PatientProvisionsTask(..), PreviousDeliveryPeriod(..))
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))

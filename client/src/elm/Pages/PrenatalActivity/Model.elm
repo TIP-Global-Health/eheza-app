@@ -2,7 +2,6 @@ module Pages.PrenatalActivity.Model exposing
     ( BreastExamForm
     , CSectionReason(..)
     , CorePhysicalExamForm
-    , DangerSign(..)
     , DangerSignsData
     , ExaminationData
     , ExaminationTask(..)
@@ -536,14 +535,3 @@ type alias DangerSignsForm =
 emptyDangerSignsForm : DangerSignsForm
 emptyDangerSignsForm =
     DangerSignsForm Nothing
-
-
-type DangerSign
-    = VaginalBleeding
-    | HeadacheBlurredVision
-    | Convulsions
-    | AbdominalPain
-    | DificultyBreathing
-    | Fever
-    | ExtremeWeakness
-    | NoDangerSign
