@@ -51,6 +51,8 @@ module Backend.Measurement.Model exposing
     , ResourceSign
     , SocialHistory
     , SocialHistorySign(..)
+    , Vitals
+    , VitalsValue
     , Weight
     , WeightInKg(..)
     , emptyChildMeasurementList
@@ -337,8 +339,8 @@ type MedicationSign
     | NoMedication
 
 
-type Medication
-    = PrenatalMeasurement MedicationSign
+type alias Medication =
+    PrenatalMeasurement MedicationSign
 
 
 type alias ObstetricalExamValue =
@@ -408,6 +410,19 @@ type SocialHistorySign
 
 type alias SocialHistory =
     PrenatalMeasurement (EverySet SocialHistorySign)
+
+
+type alias VitalsValue =
+    { sys : Float
+    , dia : Float
+    , heartRate : Int
+    , respiratoryRate : Int
+    , bodyTemperature : Float
+    }
+
+
+type alias Vitals =
+    PrenatalMeasurement VitalsValue
 
 
 
