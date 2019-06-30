@@ -5,7 +5,7 @@ import Activity.Utils exposing (decodeActivityFromString, defaultActivity, encod
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (EntityUuid, fromEntityUuid, toEntityUuid)
 import RouteUrl exposing (HistoryEntry(..), UrlChange)
-import UrlParser exposing ((</>), Parser, custom, int, map, oneOf, parseHash, s, string, top)
+import Url.Parser exposing ((</>), Parser, custom, int, map, oneOf, parseHash, s, string, top)
 
 
 {-| For now, we're given just the previous and current page ...if

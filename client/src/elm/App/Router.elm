@@ -5,7 +5,6 @@ import Navigation exposing (Location)
 import Pages.Page exposing (Page(..))
 import Pages.Router
 import RouteUrl exposing (HistoryEntry(..), UrlChange)
-import UrlParser exposing ((</>), Parser, int, map, oneOf, parseHash, s, string, top)
 
 
 {-| For now, we just pass the current `activePage` and previous `activePage`
