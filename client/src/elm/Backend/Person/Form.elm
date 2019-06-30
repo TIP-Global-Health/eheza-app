@@ -1,4 +1,4 @@
-module Backend.Person.Form exposing (ExpectedAge(..), PersonForm, allDigitsPattern, allLettersPattern, birthDate, birthDateEstimated, cell, district, educationLevel, emptyForm, expectedAgeFromForm, firstName, gender, healthCenter, hivStatus, maritalStatus, modeOfDelivery, nationalIdNumber, numberOfChildren, phoneNumber, photo, province, secondName, sector, ubudehe, validateBirthDate, validateCell, validateDigitsOnly, validateDistrict, validateEducationLevel, validateGender, validateHealthCenterId, validateHivStatus, validateLettersOnly, validateMaritalStatus, validateModeOfDelivery, validateNationalIdNumber, validatePerson, validateProvince, validateSector, validateUbudehe, validateVillage, village, withDefault)
+module Backend.Person.Form exposing (ExpectedAge(..), PersonForm, allDigitsPattern, birthDate, birthDateEstimated, cell, district, educationLevel, emptyForm, expectedAgeFromForm, firstName, gender, healthCenter, hivStatus, maritalStatus, modeOfDelivery, nationalIdNumber, numberOfChildren, phoneNumber, photo, province, secondName, sector, ubudehe, validateBirthDate, validateCell, validateDigitsOnly, validateDistrict, validateEducationLevel, validateGender, validateHealthCenterId, validateHivStatus, validateMaritalStatus, validateModeOfDelivery, validateNationalIdNumber, validatePerson, validateProvince, validateSector, validateUbudehe, validateVillage, village, withDefault)
 
 import AllDict
 import Backend.Entities exposing (HealthCenterId)
@@ -97,13 +97,17 @@ validatePerson maybeRelated maybeCurrentDate =
                 |> Maybe.withDefault ExpectAdultOrChild
 
         withFirstName firstNameValue =
-            andThen (withAllNames firstNameValue) (field secondName validateLettersOnly)
+            andThen (withAllNames firstNameValue) (field secondName string)
 
         combineNames first second =
-            [ String.trim second
-            , String.trim first
-            ]
-                |> String.join " "
+            if String.trim first == "" then
+                String.trim second
+
+            else
+                [ String.trim second
+                , String.trim first
+                ]
+                    |> String.join " "
 
         withAllNames firstNameValue secondNameValue =
             validateBirthDate externalExpectedAge maybeCurrentDate
@@ -160,7 +164,7 @@ validatePerson maybeRelated maybeCurrentDate =
                 |> andMap (field phoneNumber <| nullable validateDigitsOnly)
                 |> andMap (field healthCenter (validateHealthCenterId maybeRelated))
     in
-    andThen withFirstName (field firstName validateLettersOnly)
+    andThen withFirstName (field firstName (oneOf [ string, emptyString ]))
 
 
 validateNationalIdNumber : Validation ValidationError (Maybe String)
@@ -354,17 +358,6 @@ validateDigitsOnly =
             )
 
 
-validateLettersOnly : Validation ValidationError String
-validateLettersOnly =
-    string
-        |> andThen
-            (\s ->
-                String.trim s
-                    |> format allLettersPattern
-                    |> mapError (\_ -> customError LettersOnly)
-            )
-
-
 validateHealthCenterId : Maybe Person -> Validation ValidationError (Maybe HealthCenterId)
 validateHealthCenterId related =
     fromDecoder DecoderError (Just RequiredField) (Json.Decode.nullable decodeEntityUuid)
@@ -373,11 +366,6 @@ validateHealthCenterId related =
 
 
 -- Regex patterns
-
-
-allLettersPattern : Regex
-allLettersPattern =
-    Regex.regex "^[a-zA-Z]*$"
 
 
 allDigitsPattern : Regex
