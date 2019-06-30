@@ -757,7 +757,7 @@ translationSet trans =
             }
 
         ChildBirthOrder ->
-            { english = "Child Birth Order"
+            { english = "Child HMIS Number"
             , kinyarwanda = Nothing
             }
 
