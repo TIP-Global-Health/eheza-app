@@ -21,7 +21,7 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
-import Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, ChildNutrition, CounselingSession, FamilyPlanning, Height, MotherMeasurementList, Muac, ParticipantConsent, Photo, Weight)
+import Backend.Measurement.Model exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
@@ -200,24 +200,37 @@ type MsgIndexedDb
 -}
 type Revision
     = AttendanceRevision AttendanceId Attendance
+    | BreastExamRevision BreastExamId BreastExam
     | CatchmentAreaRevision CatchmentAreaId CatchmentArea
     | ChildNutritionRevision ChildNutritionId ChildNutrition
     | ClinicRevision ClinicId Clinic
+    | CorePhysicalExamRevision CorePhysicalExamId CorePhysicalExam
     | CounselingScheduleRevision CounselingScheduleId CounselingSchedule
     | CounselingSessionRevision CounselingSessionId CounselingSession
     | CounselingTopicRevision CounselingTopicId CounselingTopic
+    | DangerSignsRevision DangerSignsId DangerSigns
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
     | HealthCenterRevision HealthCenterId HealthCenter
     | HeightRevision HeightId Height
+    | LastMenstrualPeriodRevision LastMenstrualPeriodId LastMenstrualPeriod
+    | MedicalHistoryRevision MedicalHistoryId MedicalHistory
+    | MedicationRevision MedicationId Medication
     | MuacRevision MuacId Muac
     | NurseRevision NurseId Nurse
+    | ObstetricalExamRevision ObstetricalExamId ObstetricalExam
+    | ObstetricHistoryRevision ObstetricHistoryId ObstetricHistory
     | ParticipantConsentRevision ParticipantConsentId ParticipantConsent
     | ParticipantFormRevision ParticipantFormId ParticipantForm
     | PersonRevision PersonId Person
     | PhotoRevision PhotoId Photo
     | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
+    | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
+    | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
     | PrenatalParticipantRevision PrenatalParticipantId PrenatalParticipant
     | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
     | RelationshipRevision RelationshipId Relationship
+    | ResourceRevision ResourceId Resource
     | SessionRevision SessionId Session
+    | SocialHistoryRevision SocialHistoryId SocialHistory
+    | VitalsRevision VitalsId Vitals
     | WeightRevision WeightId Weight
