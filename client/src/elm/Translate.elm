@@ -14,7 +14,6 @@ module Translate exposing
     , translateFormField
     , translateHttpError
     , translateLoginPhrase
-    , translateMonth
     , translateValidationError
     , translationSet
     )
@@ -29,7 +28,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
 import Backend.Person.Model exposing (EducationLevel(..), Gender(..), HIVStatus(..), MaritalStatus(..), ModeOfDelivery(..), VaginalDelivery(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
-import Date exposing (Month(..))
+import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Http
 import Pages.Page exposing (..)
@@ -321,7 +320,8 @@ type TranslationId
     | ReportResultsOfSearch Int
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
-    | ResolveMonth Month
+      -- @todo
+      --| ResolveMonth Month
     | Retry
     | Save
     | SaveError
@@ -1748,9 +1748,9 @@ translationSet trans =
             , kinyarwanda = Just <| Debug.toString completed ++ " / " ++ Debug.toString (pending + completed) ++ " Raporo irarangiye"
             }
 
-        ResolveMonth month ->
-            translateMonth month
-
+        -- @todo
+        -- ResolveMonth month ->
+        --     translateMonth month
         Retry ->
             { english = "Retry"
             , kinyarwanda = Just "Kongera kugerageza"
@@ -2469,68 +2469,70 @@ translateLoginPhrase phrase =
             }
 
 
-translateMonth : Month -> TranslationSet String
-translateMonth month =
-    case month of
-        Jan ->
-            { english = "January"
-            , kinyarwanda = Just "Mutarama"
-            }
 
-        Feb ->
-            { english = "February"
-            , kinyarwanda = Just "Gashyantare"
-            }
-
-        Mar ->
-            { english = "March"
-            , kinyarwanda = Just "Werurwe"
-            }
-
-        Apr ->
-            { english = "April"
-            , kinyarwanda = Just "Mata"
-            }
-
-        May ->
-            { english = "May"
-            , kinyarwanda = Just "Gicurasi"
-            }
-
-        Jun ->
-            { english = "June"
-            , kinyarwanda = Just "Kamena"
-            }
-
-        Jul ->
-            { english = "July"
-            , kinyarwanda = Just "Nyakanga"
-            }
-
-        Aug ->
-            { english = "August"
-            , kinyarwanda = Just "Kanama"
-            }
-
-        Sep ->
-            { english = "September"
-            , kinyarwanda = Just "Nzeri"
-            }
-
-        Oct ->
-            { english = "October"
-            , kinyarwanda = Just "Ukwakira"
-            }
-
-        Nov ->
-            { english = "November"
-            , kinyarwanda = Just "Ugushyingo"
-            }
-
-        Dec ->
-            { english = "December"
-            , kinyarwanda = Just "Ukuboza"
-            }
+-- @todo
+-- translateMonth : Month -> TranslationSet String
+-- translateMonth month =
+--     case month of
+--         Jan ->
+--             { english = "January"
+--             , kinyarwanda = Just "Mutarama"
+--             }
+--
+--         Feb ->
+--             { english = "February"
+--             , kinyarwanda = Just "Gashyantare"
+--             }
+--
+--         Mar ->
+--             { english = "March"
+--             , kinyarwanda = Just "Werurwe"
+--             }
+--
+--         Apr ->
+--             { english = "April"
+--             , kinyarwanda = Just "Mata"
+--             }
+--
+--         May ->
+--             { english = "May"
+--             , kinyarwanda = Just "Gicurasi"
+--             }
+--
+--         Jun ->
+--             { english = "June"
+--             , kinyarwanda = Just "Kamena"
+--             }
+--
+--         Jul ->
+--             { english = "July"
+--             , kinyarwanda = Just "Nyakanga"
+--             }
+--
+--         Aug ->
+--             { english = "August"
+--             , kinyarwanda = Just "Kanama"
+--             }
+--
+--         Sep ->
+--             { english = "September"
+--             , kinyarwanda = Just "Nzeri"
+--             }
+--
+--         Oct ->
+--             { english = "October"
+--             , kinyarwanda = Just "Ukwakira"
+--             }
+--
+--         Nov ->
+--             { english = "November"
+--             , kinyarwanda = Just "Ugushyingo"
+--             }
+--
+--         Date.Dec ->
+--             { english = "December"
+--             , kinyarwanda = Just "Ukuboza"
+--             }
 
 
 translateHttpError : Http.Error -> TranslationSet String
@@ -2671,11 +2673,6 @@ translateFormError error =
 
         InvalidBool ->
             { english = "is not a valid boolean"
-            , kinyarwanda = Nothing
-            }
-
-        InvalidDate ->
-            { english = "is not a valid date"
             , kinyarwanda = Nothing
             }
 

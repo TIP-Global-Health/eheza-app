@@ -4,6 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model
 import Backend.Nurse.Model exposing (Nurse)
+import Browser
 import Config.Model
 import Device.Model exposing (Device)
 import Http
@@ -20,6 +21,7 @@ import Rollbar
 import ServiceWorker.Model
 import Time
 import Translate.Model exposing (Language(..))
+import Url exposing (Url)
 import Uuid exposing (Uuid)
 import ZScore.Model
 
@@ -178,6 +180,8 @@ type Msg
     | SetMemoryQuota MemoryQuota
     | Tick Time.Posix
     | CheckDataWanted
+    | UrlRequested Browser.UrlRequest
+    | UrlChanged Url.Url
 
 
 {-| Messages we can only handle if we're logged in.

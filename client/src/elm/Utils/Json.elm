@@ -1,12 +1,7 @@
 module Utils.Json exposing
-    ( decodeDate
-    , decodeEmptyArrayAsEmptyDict
+    ( decodeEmptyArrayAsEmptyDict
     , decodeError
     , decodeEverySet
-    , decodeListAsDict
-    , decodeListAsDictByProperty
-    , decodeListAsIntDict
-    , decodeListAsIntDictByProperty
     , decodeNullAsEmptyArray
     )
 
@@ -14,14 +9,7 @@ import Date exposing (Date)
 import Dict exposing (Dict)
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
-import Json.Decode exposing (Decoder, andThen, dict, fail, field, float, index, int, list, map, map2, nullable, oneOf, string, succeed, value)
-import Json.Decode.Extra exposing (date)
-
-
-decodeDate : Decoder Date
-decodeDate =
-    string
-        |> andThen (\val -> date)
+import Json.Decode exposing (Decoder, andThen, decodeString, dict, fail, field, float, index, int, list, map, map2, nullable, oneOf, string, succeed, value)
 
 
 decodeEmptyArrayAsEmptyDict : Decoder (Dict.Dict k v)
@@ -44,38 +32,6 @@ decodeEmptyArrayAsEmptyDict =
 decodeError : Decoder String
 decodeError =
     field "title" string
-
-
-decodeListAsDict : Decoder a -> Decoder (Dict String a)
-decodeListAsDict decoder =
-    decodeListAsDictByProperty "id" decodeInt decoder Debug.toString
-
-
-decodeListAsIntDict : Decoder a -> Decoder (Dict Int a)
-decodeListAsIntDict decoder =
-    decodeListAsIntDictByProperty "id" decodeInt decoder identity
-
-
-decodeListAsDictByProperty : String -> Decoder a -> Decoder v -> (a -> comparable) -> Decoder (Dict String v)
-decodeListAsDictByProperty property keyDecoder valDecoder stringFunc =
-    list (map2 (\a b -> ( a, b )) (field property keyDecoder) valDecoder)
-        |> andThen
-            (\valList ->
-                List.map (\( id, value ) -> ( stringFunc id, value )) valList
-                    |> Dict.fromList
-                    |> succeed
-            )
-
-
-decodeListAsIntDictByProperty : String -> Decoder a -> Decoder v -> (a -> comparable) -> Decoder (Dict Int v)
-decodeListAsIntDictByProperty property keyDecoder valDecoder stringFunc =
-    list (map2 (\a b -> ( a, b )) (field property keyDecoder) valDecoder)
-        |> andThen
-            (\valList ->
-                List.map (\( id, value ) -> ( stringFunc id, value )) valList
-                    |> Dict.fromList
-                    |> succeed
-            )
 
 
 decodeNullAsEmptyArray : Decoder (List a)

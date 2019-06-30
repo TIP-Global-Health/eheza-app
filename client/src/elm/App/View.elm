@@ -26,7 +26,6 @@ import ServiceWorker.View
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (spinner, wrapPage)
-import Version
 
 
 view : Model -> Html Msg

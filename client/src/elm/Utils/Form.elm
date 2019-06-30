@@ -127,4 +127,4 @@ dateInput =
 
 getValueAsInt : Form.FieldState e String -> Maybe Int
 getValueAsInt field =
-    Maybe.andThen (String.toInt >> Result.toMaybe) field.value
+    Maybe.andThen String.toInt field.value
