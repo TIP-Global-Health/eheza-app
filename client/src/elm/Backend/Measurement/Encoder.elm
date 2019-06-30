@@ -21,7 +21,6 @@ module Backend.Measurement.Encoder exposing
     , encodeWeightValue
     )
 
-import AllDictList
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
@@ -636,76 +635,3 @@ encodeVitals =
             , ( "respiratory_rate", int value.respiratoryRate )
             , ( "body_temperature", float value.bodyTemperature )
             ]
-
-
-encodeChildMeasurementList : ChildMeasurementList -> Value
-encodeChildMeasurementList measurements =
-    object
-        [ ( "height"
-          , measurements.heights
-                |> AllDictList.toList
-                |> List.map (encodeEntity encodeHeight)
-                |> list
-          )
-        , ( "muac"
-          , measurements.muacs
-                |> AllDictList.toList
-                |> List.map (encodeEntity encodeMuac)
-                |> list
-          )
-        , ( "nutrition"
-          , measurements.nutritions
-                |> AllDictList.toList
-                |> List.map (encodeEntity encodeNutrition)
-                |> list
-          )
-        , ( "counseling_session"
-          , measurements.counselingSessions
-                |> AllDictList.toList
-                |> List.map (encodeEntity encodeCounselingSession)
-                |> list
-          )
-        , ( "photo"
-          , measurements.photos
-                |> AllDictList.toList
-                |> List.map (encodeEntity encodePhoto)
-                |> list
-          )
-        , ( "weight"
-          , measurements.weights
-                |> AllDictList.toList
-                |> List.map (encodeEntity encodeWeight)
-                |> list
-          )
-        ]
-
-
-encodeMotherMeasurementList : MotherMeasurementList -> Value
-encodeMotherMeasurementList measurements =
-    object
-        [ ( "attendance"
-          , measurements.attendances
-                |> AllDictList.toList
-                |> List.map (encodeEntity encodeAttendance)
-                |> list
-          )
-        , ( "family_planning"
-          , measurements.familyPlannings
-                |> AllDictList.toList
-                |> List.map (encodeEntity encodeFamilyPlanning)
-                |> list
-          )
-        , ( "participant_consent"
-          , measurements.consents
-                |> AllDictList.toList
-                |> List.map (encodeEntity encodeParticipantConsent)
-                |> list
-          )
-        ]
-
-
-encodeEntity : (b -> List ( String, Value )) -> ( EntityUuid a, b ) -> Value
-encodeEntity encoder ( id, value ) =
-    object <|
-        ( "id", encodeEntityUuid id )
-            :: encoder value
