@@ -265,4 +265,5 @@ makeChild test =
     , ubudehe = Nothing
     , village = Nothing
     , healthCenterId = Nothing
+    , childBirthOrder = Nothing
     }
