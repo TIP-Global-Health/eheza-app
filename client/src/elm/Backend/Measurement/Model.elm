@@ -1,20 +1,26 @@
 module Backend.Measurement.Model exposing
     ( AbdomenCPESign(..)
     , Attendance
+    , BreastExam
     , BreastExamSign(..)
+    , BreastExamValue
     , ChildMeasurementList
     , ChildMeasurements
     , ChildNutrition
     , ChildNutritionSign(..)
+    , CorePhysicalExam
+    , CorePhysicalExamValue
     , CounselingSession
     , DangerSign(..)
     , DangerSigns
+    , EyesCPESign(..)
     , FamilyPlanning
     , FamilyPlanningSign(..)
     , FetalPresentation(..)
     , GroupMeasurement
     , HairHeadCPESign(..)
     , HandsCPESign(..)
+    , HeartCPESign(..)
     , Height
     , HeightInCm(..)
     , HistoricalMeasurements
@@ -48,7 +54,7 @@ module Backend.Measurement.Model exposing
     , PrenatalNutrition
     , PrenatalNutritionValue
     , Resource
-    , ResourceSign
+    , ResourceSign(..)
     , SocialHistory
     , SocialHistorySign(..)
     , Vitals
@@ -295,7 +301,7 @@ type DangerSign
     | HeadacheBlurredVision
     | Convulsions
     | AbdominalPain
-    | DificultyBreathing
+    | DifficultyBreathing
     | Fever
     | ExtremeWeakness
     | NoDangerSign
@@ -340,7 +346,7 @@ type MedicationSign
 
 
 type alias Medication =
-    PrenatalMeasurement MedicationSign
+    PrenatalMeasurement (EverySet MedicationSign)
 
 
 type alias ObstetricalExamValue =

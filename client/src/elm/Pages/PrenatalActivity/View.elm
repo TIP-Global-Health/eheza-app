@@ -705,7 +705,7 @@ viewDangerSignsContent language currentDate motherId data =
                 [ viewQuestionLabel language Translate.SelectDangerSigns
                 , viewCheckBoxMultipleSelectInput language
                     [ VaginalBleeding, HeadacheBlurredVision, Convulsions, AbdominalPain ]
-                    [ DificultyBreathing, Fever, ExtremeWeakness ]
+                    [ DifficultyBreathing, Fever, ExtremeWeakness ]
                     (form.signs |> Maybe.withDefault [])
                     (Just NoDangerSign)
                     SetDangerSign

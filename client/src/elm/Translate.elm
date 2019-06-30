@@ -1272,8 +1272,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DificultyBreathing ->
-                    { english = "Dificulty breathing"
+                DifficultyBreathing ->
+                    { english = "Difficulty breathing"
                     , kinyarwanda = Nothing
                     }
 
