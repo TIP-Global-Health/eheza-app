@@ -1,22 +1,35 @@
 module Backend.Measurement.Encoder exposing
     ( encodeAttendance
     , encodeAttendanceValue
+    , encodeBreastExam
+    , encodeCorePhysicalExam
     , encodeCounselingSession
     , encodeCounselingSessionValue
+    , encodeDangerSigns
     , encodeFamilyPlanning
     , encodeFamilyPlanningSignAsString
     , encodeFamilyPlanningValue
     , encodeHeight
     , encodeHeightValue
+    , encodeLastMenstrualPeriod
+    , encodeMedicalHistory
+    , encodeMedication
     , encodeMuac
     , encodeMuacValue
     , encodeNutrition
     , encodeNutritionSignAsString
     , encodeNutritionValue
+    , encodeObstetricHistory
+    , encodeObstetricalExam
     , encodeParticipantConsent
     , encodeParticipantConsentValue
     , encodePhoto
     , encodePhotoUrl
+    , encodePrenatalFamilyPlanning
+    , encodePrenatalNutrition
+    , encodeResource
+    , encodeSocialHistory
+    , encodeVitals
     , encodeWeight
     , encodeWeightValue
     )

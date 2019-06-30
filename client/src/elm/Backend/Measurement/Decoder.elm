@@ -2,14 +2,26 @@ module Backend.Measurement.Decoder exposing
     ( decodeAttendance
     , decodeBreastExam
     , decodeChildMeasurementList
+    , decodeCorePhysicalExam
     , decodeCounselingSession
+    , decodeDangerSigns
     , decodeFamilyPlanning
     , decodeHeight
+    , decodeLastMenstrualPeriod
+    , decodeMedicalHistory
+    , decodeMedication
     , decodeMotherMeasurementList
     , decodeMuac
     , decodeNutrition
+    , decodeObstetricHistory
+    , decodeObstetricalExam
     , decodeParticipantConsent
     , decodePhoto
+    , decodePrenatalFamilyPlanning
+    , decodePrenatalNutrition
+    , decodeResource
+    , decodeSocialHistory
+    , decodeVitals
     , decodeWeight
     )
 
