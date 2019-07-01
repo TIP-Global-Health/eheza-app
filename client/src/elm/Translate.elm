@@ -190,6 +190,7 @@ type TranslationId
     | CounselorReviewed
     | CounselorSignature
     | CreateGroupEncounter
+    | CreateRelationship
     | CreateTrainingGroupEncounters
     | DeleteTrainingGroupEncounters
     | Dashboard
@@ -928,6 +929,11 @@ translationSet trans =
         CreateGroupEncounter ->
             { english = "Create Group Encounter"
             , kinyarwanda = Just "Tangira igikorwa"
+            }
+
+        CreateRelationship ->
+            { english = "Create Relationship"
+            , kinyarwanda = Nothing
             }
 
         CreateTrainingGroupEncounters ->

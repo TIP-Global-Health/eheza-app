@@ -127,7 +127,7 @@ viewRelationship language currentDate id db relationship =
                             |> AllDict.values
                     )
     in
-    viewWebData language (viewParticipant language currentDate (Just ( relationship, relationshipGroups )) relationship.relatedTo) identity relatedTo
+    viewWebData language (viewParticipant language currentDate (Just ( id, relationship, relationshipGroups )) relationship.relatedTo) identity relatedTo
 
 
 viewParticipantDetailsForm : Language -> NominalDate -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
@@ -209,7 +209,7 @@ viewParticipantDetailsForm language currentDate db id person =
         ]
 
 
-viewParticipant : Language -> NominalDate -> Maybe ( MyRelationship, List String ) -> PersonId -> Person -> Html App.Model.Msg
+viewParticipant : Language -> NominalDate -> Maybe ( PersonId, MyRelationship, List String ) -> PersonId -> Person -> Html App.Model.Msg
 viewParticipant language currentDate myRelationshipData id person =
     let
         typeForThumbnail =
@@ -226,7 +226,7 @@ viewParticipant language currentDate myRelationshipData id person =
         ( relationshipLabel, groups, action ) =
             myRelationshipData
                 |> Maybe.map
-                    (\( relationship, relationshipGroups ) ->
+                    (\( relationMainId, relationship, relationshipGroups ) ->
                         ( span
                             [ class "relationship" ]
                             [ text " ("
@@ -241,8 +241,7 @@ viewParticipant language currentDate myRelationshipData id person =
                             [ div [ class "action-icon-wrapper" ]
                                 [ span
                                     [ class "action-icon forward"
-
-                                    -- , onClick <| SetActivePage <| UserPage <| nextPage
+                                    , onClick <| App.Model.SetActivePage <| UserPage <| RelationshipPage relationMainId id
                                     ]
                                     []
                                 ]

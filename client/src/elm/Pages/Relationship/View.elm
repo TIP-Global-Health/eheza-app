@@ -14,7 +14,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra
+import Maybe.Extra exposing (isNothing)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Relationship.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -47,7 +47,7 @@ viewHeader language =
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text <| translate language Translate.EditRelationship ]
+            [ text <| translate language Translate.CreateRelationship ]
         , a
             [ class "link-back"
             , onClick <| SetActivePage PinCodePage
@@ -114,72 +114,75 @@ viewFetchedContent language currentDate id1 id2 model request data =
                             || (participant.adult == id1 && participant.child == id2)
                     )
 
-        viewCurrentGroups =
+        currentGroupsIds =
             participants
                 |> AllDict.values
+                |> List.map .clinic
+
+        viewCurrentGroups =
+            currentGroupsIds
                 |> List.map
-                    (\participant ->
-                        AllDictList.get participant.clinic data.clinics
-                            |> Maybe.map
-                                (\clinic ->
-                                    p [] [ text <| clinic.name ]
-                                )
-                            |> Maybe.withDefault (div [] [])
+                    (\clinicId ->
+                        AllDictList.get clinicId data.clinics
+                            |> Maybe.map .name
+                            |> Maybe.withDefault ""
                     )
-                |> div []
+                |> String.join ", "
+                |> text
+                |> List.singleton
+                |> div [ class "current-groups" ]
 
         viewGroupSelector =
-            if AllDict.isEmpty participants then
-                let
-                    emptyOption =
-                        option
-                            [ value ""
-                            , selected (model.assignToGroup == Nothing)
-                            ]
-                            [ text "" ]
-
-                    selector =
-                        data.clinics
-                            |> AllDictList.filter
-                                (\_ clinic ->
-                                    -- If both persons are assigned to a health
-                                    -- center, show the clinic if it is
-                                    -- assigned to one or the other.  If one of
-                                    -- the persons has no health center, show
-                                    -- all clinics.
-                                    Maybe.map2
-                                        (\hc1 hc2 ->
-                                            clinic.healthCenterId
-                                                == hc1
-                                                || clinic.healthCenterId
-                                                == hc2
-                                        )
-                                        data.person1.healthCenterId
-                                        data.person2.healthCenterId
-                                        |> Maybe.withDefault True
-                                )
-                            |> AllDictList.map
-                                (\clinicId clinic ->
-                                    option
-                                        [ value (fromEntityUuid clinicId)
-                                        , selected (model.assignToGroup == Just clinicId)
-                                        ]
-                                        [ text clinic.name ]
-                                )
-                            |> AllDictList.values
-                            |> (::) emptyOption
-                            |> select [ onInput AssignToClinicId ]
-                in
-                div [ class "ui form" ]
-                    [ div
-                        [ class "inline field" ]
-                        [ label [] [ text <| translate language Translate.AddToGroup ]
-                        , selector
+            let
+                emptyOption =
+                    option
+                        [ value ""
+                        , selected (model.assignToGroup == Nothing)
                         ]
-                    ]
+                        [ text "" ]
 
-            else
-                emptyNode
+                selector =
+                    data.clinics
+                        |> AllDictList.filter
+                            (\clinicId clinic ->
+                                -- Clinic is not already selected.
+                                (not <| List.member clinicId currentGroupsIds)
+                                    && -- If both persons are assigned to a health
+                                       -- center, show the clinic if it is
+                                       -- assigned to one or the other.  If one of
+                                       -- the persons has no health center, show
+                                       -- all clinics.
+                                       (Maybe.map2
+                                            (\hc1 hc2 ->
+                                                clinic.healthCenterId
+                                                    == hc1
+                                                    || clinic.healthCenterId
+                                                    == hc2
+                                            )
+                                            data.person1.healthCenterId
+                                            data.person2.healthCenterId
+                                            |> Maybe.withDefault True
+                                       )
+                            )
+                        |> AllDictList.map
+                            (\clinicId clinic ->
+                                option
+                                    [ value (fromEntityUuid clinicId)
+                                    , selected (model.assignToGroup == Just clinicId)
+                                    ]
+                                    [ text clinic.name ]
+                            )
+                        |> AllDictList.values
+                        |> (::) emptyOption
+                        |> select [ onInput AssignToClinicId ]
+            in
+            div [ class "ui form" ]
+                [ div
+                    [ class "inline field" ]
+                    [ label [] [ text <| translate language Translate.AddToGroup ]
+                    , selector
+                    ]
+                ]
 
         savedRelationship =
             data.relationships
@@ -204,18 +207,25 @@ viewFetchedContent language currentDate id1 id2 model request data =
                         Nothing ->
                             [ MyChild, MyCaregiven, MyParent, MyCaregiver ]
             in
-            -- Always add the currently set relationship, if there is one, even
-            -- if it's not expected.
-            case viewedRelationship of
-                Just viewed ->
-                    if List.member viewed expected then
-                        expected
-
-                    else
-                        viewed :: expected
+            case savedRelationship of
+                -- In case we got relationship already,
+                -- we do not allow to set another relationship type.
+                Just saved ->
+                    [ saved ]
 
                 Nothing ->
-                    expected
+                    -- Always add the currently set relationship, if there is one, even
+                    -- if it's not expected.
+                    case viewedRelationship of
+                        Just viewed ->
+                            if List.member viewed expected then
+                                expected
+
+                            else
+                                viewed :: expected
+
+                        Nothing ->
+                            expected
 
         relationshipSelector =
             div
@@ -277,9 +287,9 @@ viewFetchedContent language currentDate id1 id2 model request data =
                         [ classList
                             [ ( "ui button primary fluid", True )
                             , ( "loading", RemoteData.isLoading request )
-                            , ( "disabled", RemoteData.isLoading request )
+                            , ( "disabled", RemoteData.isLoading request || isNothing model.assignToGroup || isNothing viewedRelationship )
                             ]
-                        , onClick Save
+                        , onClick <| Save viewedRelationship
                         ]
                         [ text <| translate language Translate.Save ]
                     ]
