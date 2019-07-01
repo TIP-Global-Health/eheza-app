@@ -715,6 +715,12 @@ handleRevision revision ( model, recalc ) =
             , True
             )
 
+        PrenatalParticipantRevision uuid data ->
+            ( model, False )
+
+        PrenatalEncounterRevision uuid data ->
+            ( model, False )
+
         RelationshipRevision uuid data ->
             ( { model | relationshipsByPerson = EntityUuidDict.empty }
             , True

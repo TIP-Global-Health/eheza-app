@@ -59,6 +59,22 @@ function hedley_schedule_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'prenatal_encounter' => array(
+      'name' => t('Prenatal Encounter'),
+      'base' => 'node_content',
+      'description' => t('Tracks a visit by a mother in which prenatal activities are performed.'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'prenatal_participant' => array(
+      'name' => t('Prenatal Participant'),
+      'base' => 'node_content',
+      'description' => t('Identifies a person as a participant in prenatal activities on the occasion of a particular pregnancy (or possible pregnancy). So, each pregnancy should get a separate entry, if a mother participates in the program with respect to more than one pregnancy.'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'session' => array(
       'name' => t('Group Encounter'),
       'base' => 'node_content',

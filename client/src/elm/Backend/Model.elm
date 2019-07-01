@@ -26,6 +26,8 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
+import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
@@ -214,6 +216,8 @@ type Revision
     | PersonRevision PersonId Person
     | PhotoRevision PhotoId Photo
     | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
+    | PrenatalParticipantRevision PrenatalParticipantId PrenatalParticipant
+    | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
     | RelationshipRevision RelationshipId Relationship
     | SessionRevision SessionId Session
     | WeightRevision WeightId Weight
