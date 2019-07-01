@@ -235,7 +235,19 @@ function hedley_device_shards_for_person($nid) {
   $query->fields('hc', ['field_health_center_target_id']);
   $query->distinct();
 
-  return $query->execute()->fetchCol();
+  $shards = $query->execute()->fetchCol();
+
+  $person = entity_metadata_wrapper($nid);
+
+  if (isset($person->field_health_center)) {
+    $shard = $person->field_health_center->getIdentifier();
+
+    if (isset($shard) && !in_array($shard, $shards)) {
+      $shards[] = $shard;
+    }
+  }
+
+  return $shards;
 }
 
 /**
@@ -263,17 +275,8 @@ function hedley_recalculate_shards_for_person($nid) {
   $query->condition('p.field_person_target_id', $nid);
 
   // Limit to sharded nodes.
-  $query->condition('n.type', [
-    'attendance',
-    'counseling_session',
-    'family_planning',
-    'height',
-    'muac',
-    'nutrition',
-    'participant_consent',
-    'photo',
-    'weight',
-  ]);
+  $sharded = array_keys(HEDLEY_RESTFUL_SHARDED);
+  $query->condition('n.type', $sharded);
 
   $query->fields('n', ['nid']);
   $query->fields('s', ['field_shards_target_id']);

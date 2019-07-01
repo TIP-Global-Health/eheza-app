@@ -576,7 +576,7 @@ successful EditableSessions. Ideally, we would handle this in a more
 nuanced way.
 -}
 handleRevision : Revision -> ( ModelIndexedDb, Bool ) -> ( ModelIndexedDb, Bool )
-handleRevision revision ( model, recalc ) =
+handleRevision revision (( model, recalc ) as noChange) =
     case revision of
         AttendanceRevision uuid data ->
             ( mapMotherMeasurements
@@ -586,10 +586,11 @@ handleRevision revision ( model, recalc ) =
             , True
             )
 
+        BreastExamRevision uuid data ->
+            noChange
+
         CatchmentAreaRevision uuid data ->
-            ( model
-            , recalc
-            )
+            noChange
 
         ChildNutritionRevision uuid data ->
             ( mapChildMeasurements
@@ -607,6 +608,9 @@ handleRevision revision ( model, recalc ) =
             ( { model | clinics = clinics }
             , recalc
             )
+
+        CorePhysicalExamRevision uuid data ->
+            noChange
 
         CounselingScheduleRevision uuid data ->
             -- Just invalidate our value ... if someone wants it, we'll refetch it.
@@ -626,6 +630,9 @@ handleRevision revision ( model, recalc ) =
             ( { model | everyCounselingSchedule = NotAsked }
             , True
             )
+
+        DangerSignsRevision uuid data ->
+            noChange
 
         FamilyPlanningRevision uuid data ->
             ( mapMotherMeasurements
@@ -652,6 +659,15 @@ handleRevision revision ( model, recalc ) =
             , True
             )
 
+        LastMenstrualPeriodRevision uuid data ->
+            noChange
+
+        MedicalHistoryRevision uuid data ->
+            noChange
+
+        MedicationRevision uuid data ->
+            noChange
+
         MuacRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
@@ -662,9 +678,13 @@ handleRevision revision ( model, recalc ) =
 
         NurseRevision uuid data ->
             -- Nothing to do in ModelIndexedDb yet. App.Update does do something with this one.
-            ( model
-            , recalc
-            )
+            noChange
+
+        ObstetricalExamRevision uuid data ->
+            noChange
+
+        ObstetricHistoryRevision uuid data ->
+            noChange
 
         ParticipantConsentRevision uuid data ->
             ( mapMotherMeasurements
@@ -716,15 +736,24 @@ handleRevision revision ( model, recalc ) =
             )
 
         PrenatalParticipantRevision uuid data ->
-            ( model, False )
+            noChange
 
         PrenatalEncounterRevision uuid data ->
-            ( model, False )
+            noChange
+
+        PrenatalFamilyPlanningRevision uuid data ->
+            noChange
+
+        PrenatalNutritionRevision uuid data ->
+            noChange
 
         RelationshipRevision uuid data ->
             ( { model | relationshipsByPerson = EntityUuidDict.empty }
             , True
             )
+
+        ResourceRevision uuid data ->
+            noChange
 
         SessionRevision uuid data ->
             let
@@ -744,6 +773,12 @@ handleRevision revision ( model, recalc ) =
               }
             , True
             )
+
+        SocialHistoryRevision uuid data ->
+            noChange
+
+        VitalsRevision uuid data ->
+            noChange
 
         WeightRevision uuid data ->
             ( mapChildMeasurements

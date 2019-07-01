@@ -1,4 +1,4 @@
-module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), attendanceEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, relationshipEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, weightEndpoint)
+module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), attendanceEndpoint, breastExamEndpoint, childMeasurementListEndpoint, clinicEndpoint, corePhysicalExamEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, dangerSignsEndpoint, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, lastMenstrualPeriodEndpoint, medicalHistoryEndpoint, medicationEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, obstetricHistoryEndpoint, obstetricalExamEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, prenatalEncounterEndpoint, prenatalFamilyPlanningEndpoint, prenatalNutritionEndpoint, prenatalParticipantEndpoint, relationshipEndpoint, resourceEndpoint, sessionEndpoint, socialHistoryEndpoint, swEndpoint, syncDataEndpoint, vitalsEndpoint, weightEndpoint)
 
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
@@ -278,3 +278,81 @@ prenatalParticipantEndpoint : ReadWriteEndPoint Error PrenatalParticipantId Pren
 prenatalParticipantEndpoint =
     swEndpoint "nodes/prenatal_participant" decodePrenatalParticipant
         |> withValueEncoder encodePrenatalParticipant
+
+
+breastExamEndpoint : ReadWriteEndPoint Error BreastExamId BreastExam BreastExam ()
+breastExamEndpoint =
+    swEndpoint "nodes/breast_exam" decodeBreastExam
+        |> withValueEncoder (object << encodeBreastExam)
+
+
+corePhysicalExamEndpoint : ReadWriteEndPoint Error CorePhysicalExamId CorePhysicalExam CorePhysicalExam ()
+corePhysicalExamEndpoint =
+    swEndpoint "nodes/core_physical_exam" decodeCorePhysicalExam
+        |> withValueEncoder (object << encodeCorePhysicalExam)
+
+
+dangerSignsEndpoint : ReadWriteEndPoint Error DangerSignsId DangerSigns DangerSigns ()
+dangerSignsEndpoint =
+    swEndpoint "nodes/danger_signs" decodeDangerSigns
+        |> withValueEncoder (object << encodeDangerSigns)
+
+
+lastMenstrualPeriodEndpoint : ReadWriteEndPoint Error LastMenstrualPeriodId LastMenstrualPeriod LastMenstrualPeriod ()
+lastMenstrualPeriodEndpoint =
+    swEndpoint "nodes/last_menstrual_period" decodeLastMenstrualPeriod
+        |> withValueEncoder (object << encodeLastMenstrualPeriod)
+
+
+medicalHistoryEndpoint : ReadWriteEndPoint Error MedicalHistoryId MedicalHistory MedicalHistory ()
+medicalHistoryEndpoint =
+    swEndpoint "nodes/medical_history" decodeMedicalHistory
+        |> withValueEncoder (object << encodeMedicalHistory)
+
+
+medicationEndpoint : ReadWriteEndPoint Error MedicationId Medication Medication ()
+medicationEndpoint =
+    swEndpoint "nodes/medication" decodeMedication
+        |> withValueEncoder (object << encodeMedication)
+
+
+obstetricalExamEndpoint : ReadWriteEndPoint Error ObstetricalExamId ObstetricalExam ObstetricalExam ()
+obstetricalExamEndpoint =
+    swEndpoint "nodes/obstetrical_exam" decodeObstetricalExam
+        |> withValueEncoder (object << encodeObstetricalExam)
+
+
+obstetricHistoryEndpoint : ReadWriteEndPoint Error ObstetricHistoryId ObstetricHistory ObstetricHistory ()
+obstetricHistoryEndpoint =
+    swEndpoint "nodes/obstetric_history" decodeObstetricHistory
+        |> withValueEncoder (object << encodeObstetricHistory)
+
+
+prenatalFamilyPlanningEndpoint : ReadWriteEndPoint Error PrenatalFamilyPlanningId PrenatalFamilyPlanning PrenatalFamilyPlanning ()
+prenatalFamilyPlanningEndpoint =
+    swEndpoint "nodes/prenatal_family_planning" decodePrenatalFamilyPlanning
+        |> withValueEncoder (object << encodePrenatalFamilyPlanning)
+
+
+prenatalNutritionEndpoint : ReadWriteEndPoint Error PrenatalNutritionId PrenatalNutrition PrenatalNutrition ()
+prenatalNutritionEndpoint =
+    swEndpoint "nodes/prenatal_nutrition" decodePrenatalNutrition
+        |> withValueEncoder (object << encodePrenatalNutrition)
+
+
+resourceEndpoint : ReadWriteEndPoint Error ResourceId Resource Resource ()
+resourceEndpoint =
+    swEndpoint "nodes/resource" decodeResource
+        |> withValueEncoder (object << encodeResource)
+
+
+socialHistoryEndpoint : ReadWriteEndPoint Error SocialHistoryId SocialHistory SocialHistory ()
+socialHistoryEndpoint =
+    swEndpoint "nodes/social_history" decodeSocialHistory
+        |> withValueEncoder (object << encodeSocialHistory)
+
+
+vitalsEndpoint : ReadWriteEndPoint Error VitalsId Vitals Vitals ()
+vitalsEndpoint =
+    swEndpoint "nodes/vitals" decodeVitals
+        |> withValueEncoder (object << encodeVitals)

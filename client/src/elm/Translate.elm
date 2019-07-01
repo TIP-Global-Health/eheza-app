@@ -26,30 +26,14 @@ general utilities, see `Translate.Model` and `Translate.Utils`.
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
+import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model exposing (EducationLevel(..), Gender(..), HIVStatus(..), MaritalStatus(..), ModeOfDelivery(..), VaginalDelivery(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
 import Pages.Page exposing (..)
-import Pages.PrenatalActivity.Model
-    exposing
-        ( AbdomenCPEOption(..)
-        , BreastBEOption(..)
-        , CSectionReason(..)
-        , DangerSign(..)
-        , ExaminationTask(..)
-        , FetalPresentation(..)
-        , HandsCPEOption(..)
-        , HistoryTask(..)
-        , LegsCPEOption(..)
-        , LmpRange(..)
-        , LungsCPEOption(..)
-        , NeckCPEOption(..)
-        , PatientProvisionsTask(..)
-        , PreviousDeliveryPeriod(..)
-        )
+import Pages.PrenatalActivity.Model exposing (CSectionReason(..), ExaminationTask(..), HistoryTask(..), LmpRange(..), PatientProvisionsTask(..), PreviousDeliveryPeriod(..))
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
@@ -144,7 +128,7 @@ type Adherence
 
 type TranslationId
     = Abdomen
-    | AbdomenCPEOption AbdomenCPEOption
+    | AbdomenCPESign AbdomenCPESign
     | Abnormal
     | AccompaniedByPartner
     | AccessDenied
@@ -193,7 +177,7 @@ type TranslationId
     | BowedLegs
     | BpmUnit
     | BreastExam
-    | BreastBEOption BreastBEOption
+    | BreastExamSign BreastExamSign
     | BreastExamQuestion
     | BrittleHair
     | Cancel
@@ -248,7 +232,7 @@ type TranslationId
     | Device
     | DeviceNotAuthorized
     | DeviceStatus
-    | Diabates
+    | Diabetes
     | District
     | DOB
     | DropzoneDefaultMessage
@@ -293,7 +277,7 @@ type TranslationId
     | GroupAssessment
     | Gravida
     | Hands
-    | HandsCPEOption HandsCPEOption
+    | HandsCPESign HandsCPESign
     | HaveYouSynced
     | HeadHair
     | HealthCenter
@@ -311,7 +295,7 @@ type TranslationId
     | KilogramShorthand
     | LastChecked
     | Legs
-    | LegsCPEOption LegsCPEOption
+    | LegsCPESign LegsCPESign
     | LevelOfEducationLabel
     | LevelOfEducation EducationLevel
     | LinkToMother
@@ -321,7 +305,7 @@ type TranslationId
     | LmpRange LmpRange
     | LoginPhrase LoginPhrase
     | Lungs
-    | LungsCPEOption LungsCPEOption
+    | LungsCPESign LungsCPESign
     | MakeSureYouAreConnected
     | MaritalStatusLabel
     | MaritalStatus MaritalStatus
@@ -352,7 +336,7 @@ type TranslationId
     | MyRelatedByQuestion MyRelatedBy
     | NationalIdNumber
     | Neck
-    | NeckCPEOption NeckCPEOption
+    | NeckCPESign NeckCPESign
     | Next
     | No
     | NoActivitiesCompleted
@@ -538,7 +522,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        AbdomenCPEOption option ->
+        AbdomenCPESign option ->
             case option of
                 Heptomegaly ->
                     { english = "Heptomegaly"
@@ -967,7 +951,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        BreastBEOption option ->
+        BreastExamSign option ->
             case option of
                 Mass ->
                     { english = "Mass"
@@ -1063,7 +1047,7 @@ translationSet trans =
                 Backend.Measurement.Model.Edema ->
                     translationSet Edema
 
-                Backend.Measurement.Model.None ->
+                NormalChildNutrition ->
                     { english = "None of these"
                     , kinyarwanda = Just "Nta bimenyetso "
                     }
@@ -1096,7 +1080,7 @@ translationSet trans =
                 Backend.Measurement.Model.Edema ->
                     translationSet Edema
 
-                Backend.Measurement.Model.None ->
+                NormalChildNutrition ->
                     { english = "None"
                     , kinyarwanda = Just "Nta bimenyetso"
                     }
@@ -1288,8 +1272,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DificultyBreathing ->
-                    { english = "Dificulty breathing"
+                DifficultyBreathing ->
+                    { english = "Difficulty breathing"
                     , kinyarwanda = Nothing
                     }
 
@@ -1374,8 +1358,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        Diabates ->
-            { english = "Diabates"
+        Diabetes ->
+            { english = "Diabetes"
             , kinyarwanda = Nothing
             }
 
@@ -1681,7 +1665,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        HandsCPEOption option ->
+        HandsCPESign option ->
             case option of
                 PallorHands ->
                     translationSet Pallor
@@ -1809,7 +1793,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        LegsCPEOption option ->
+        LegsCPESign option ->
             case option of
                 PallorLegs ->
                     translationSet Pallor
@@ -1907,7 +1891,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        LungsCPEOption option ->
+        LungsCPESign option ->
             case option of
                 Wheezes ->
                     { english = "Wheezes"
@@ -2117,7 +2101,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        NeckCPEOption option ->
+        NeckCPESign option ->
             case option of
                 EnlargedThyroid ->
                     { english = "Enlarged Thyroid"

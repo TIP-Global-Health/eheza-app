@@ -1,4 +1,73 @@
-module Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, ChildMeasurements, ChildNutrition, ChildNutritionSign(..), CounselingSession, FamilyPlanning, FamilyPlanningSign(..), Height, HeightInCm(..), HistoricalMeasurements, Measurement, MeasurementData, Measurements, MotherMeasurementList, MotherMeasurements, Muac, MuacInCm(..), MuacIndication(..), ParticipantConsent, ParticipantConsentValue, Photo, PhotoUrl(..), SavedMeasurement(..), Weight, WeightInKg(..), emptyChildMeasurementList, emptyChildMeasurements, emptyHistoricalMeasurements, emptyMeasurements, emptyMotherMeasurementList, emptyMotherMeasurements)
+module Backend.Measurement.Model exposing
+    ( AbdomenCPESign(..)
+    , Attendance
+    , BreastExam
+    , BreastExamSign(..)
+    , BreastExamValue
+    , ChildMeasurementList
+    , ChildMeasurements
+    , ChildNutrition
+    , ChildNutritionSign(..)
+    , CorePhysicalExam
+    , CorePhysicalExamValue
+    , CounselingSession
+    , DangerSign(..)
+    , DangerSigns
+    , EyesCPESign(..)
+    , FamilyPlanning
+    , FamilyPlanningSign(..)
+    , FetalPresentation(..)
+    , GroupMeasurement
+    , HairHeadCPESign(..)
+    , HandsCPESign(..)
+    , HeartCPESign(..)
+    , Height
+    , HeightInCm(..)
+    , HistoricalMeasurements
+    , LastMenstrualPeriod
+    , LastMenstrualPeriodValue
+    , LegsCPESign(..)
+    , LungsCPESign(..)
+    , Measurement
+    , MeasurementData
+    , Measurements
+    , MedicalHistory
+    , MedicalHistorySign(..)
+    , Medication
+    , MedicationSign(..)
+    , MotherMeasurementList
+    , MotherMeasurements
+    , Muac
+    , MuacInCm(..)
+    , MuacIndication(..)
+    , NeckCPESign(..)
+    , ObstetricHistory
+    , ObstetricHistoryValue
+    , ObstetricalExam
+    , ObstetricalExamValue
+    , ParticipantConsent
+    , ParticipantConsentValue
+    , Photo
+    , PhotoUrl(..)
+    , PrenatalFamilyPlanning
+    , PrenatalMeasurement
+    , PrenatalNutrition
+    , PrenatalNutritionValue
+    , Resource
+    , ResourceSign(..)
+    , SocialHistory
+    , SocialHistorySign(..)
+    , Vitals
+    , VitalsValue
+    , Weight
+    , WeightInKg(..)
+    , emptyChildMeasurementList
+    , emptyChildMeasurements
+    , emptyHistoricalMeasurements
+    , emptyMeasurements
+    , emptyMotherMeasurementList
+    , emptyMotherMeasurements
+    )
 
 {-| This module represents various measurements to be stored on the backend,
 and cached in local storage.
@@ -21,21 +90,30 @@ import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictLi
 {-| A base that expresses some things all the measurements
 have in common, plus two things whose type varies:
 
-  - the type if the ID for the participant
+  - the type of the ID for the encounter this measurement
+    takes place in
   - the type of the value for this measurement
 
 -}
-type alias Measurement value =
+type alias Measurement encounter value =
     { dateMeasured : NominalDate
     , nurse : Maybe NurseId
     , participantId : PersonId
-    , sessionId : Maybe SessionId
+    , encounterId : Maybe encounter
     , value : value
     }
 
 
+type alias GroupMeasurement value =
+    Measurement SessionId value
 
--- SPECIFIC MEASUREMENT TYPES
+
+type alias PrenatalMeasurement value =
+    Measurement PrenatalEncounterId value
+
+
+
+-- GROUP MEASUREMENT TYPES
 
 
 {-| The string represents the URL of the photo -- that is, the URL which
@@ -46,7 +124,7 @@ type PhotoUrl
 
 
 type alias Photo =
-    Measurement PhotoUrl
+    GroupMeasurement PhotoUrl
 
 
 {-| For the various measurements that are floats, we wrap them in a type to
@@ -57,7 +135,7 @@ type MuacInCm
 
 
 type alias Muac =
-    Measurement MuacInCm
+    GroupMeasurement MuacInCm
 
 
 {-| An interpretation of a MUAC, according to the measurement
@@ -74,7 +152,7 @@ type HeightInCm
 
 
 type alias Height =
-    Measurement HeightInCm
+    GroupMeasurement HeightInCm
 
 
 type WeightInKg
@@ -82,7 +160,7 @@ type WeightInKg
 
 
 type alias Weight =
-    Measurement WeightInKg
+    GroupMeasurement WeightInKg
 
 
 type FamilyPlanningSign
@@ -96,11 +174,11 @@ type FamilyPlanningSign
 
 
 type alias FamilyPlanning =
-    Measurement (EverySet FamilyPlanningSign)
+    GroupMeasurement (EverySet FamilyPlanningSign)
 
 
 type alias ParticipantConsent =
-    Measurement ParticipantConsentValue
+    GroupMeasurement ParticipantConsentValue
 
 
 type alias ParticipantConsentValue =
@@ -110,7 +188,7 @@ type alias ParticipantConsentValue =
 
 
 type alias Attendance =
-    Measurement Bool
+    GroupMeasurement Bool
 
 
 type ChildNutritionSign
@@ -119,35 +197,238 @@ type ChildNutritionSign
     | BrittleHair
     | DrySkin
     | Edema
-    | None
     | PoorAppetite
+    | NormalChildNutrition
 
 
 type alias ChildNutrition =
-    Measurement (EverySet ChildNutritionSign)
+    GroupMeasurement (EverySet ChildNutritionSign)
 
 
 type alias CounselingSession =
-    Measurement ( CounselingTiming, EverySet CounselingTopicId )
+    GroupMeasurement ( CounselingTiming, EverySet CounselingTopicId )
 
 
 
--- UNIFIED MEASUREMENT TYPE
+-- PRENATAL MEASUREMENTS
 
 
-{-| A type which handles any kind of measurement along with its ID.
-(Thus, it is a "saved" measurement that has been assigned an ID.)
--}
-type SavedMeasurement
-    = SavedAttendance AttendanceId Attendance
-    | SavedFamilyPlanning FamilyPlanningId FamilyPlanning
-    | SavedParticipantConsent ParticipantConsentId ParticipantConsent
-    | SavedHeight HeightId Height
-    | SavedMuac MuacId Muac
-    | SavedChildNutrition ChildNutritionId ChildNutrition
-    | SavedPhoto PhotoId Photo
-    | SavedWeight WeightId Weight
-    | SavedCounselingSession CounselingSessionId CounselingSession
+type alias BreastExamValue =
+    { exam : EverySet BreastExamSign
+    , selfGuidance : Bool
+    }
+
+
+type BreastExamSign
+    = Mass
+    | Discharge
+    | Infection
+    | NormalBreast
+
+
+type alias BreastExam =
+    PrenatalMeasurement BreastExamValue
+
+
+type alias CorePhysicalExam =
+    PrenatalMeasurement CorePhysicalExamValue
+
+
+type alias CorePhysicalExamValue =
+    { hairHead : EverySet HairHeadCPESign
+    , eyes : EverySet EyesCPESign
+    , heart : EverySet HeartCPESign
+    , neck : EverySet NeckCPESign
+    , lungs : EverySet LungsCPESign
+    , abdomen : EverySet AbdomenCPESign
+    , hands : EverySet HandsCPESign
+    , legs : EverySet LegsCPESign
+    }
+
+
+type HairHeadCPESign
+    = BrittleHairCPE
+    | NormalHairHead
+
+
+type EyesCPESign
+    = PaleConjuctiva
+    | NormalEyes
+
+
+type HeartCPESign
+    = AbnormalHeart
+    | NormalHeart
+
+
+type NeckCPESign
+    = EnlargedThyroid
+    | EnlargedLymphNodes
+    | NormalNeck
+
+
+type LungsCPESign
+    = Wheezes
+    | Crackles
+    | NormalLungs
+
+
+type AbdomenCPESign
+    = Heptomegaly
+    | Splenomegaly
+    | TPRightUpper
+    | TPRightLower
+    | TPLeftUpper
+    | TPLeftLower
+    | Hernia
+    | NormalAbdomen
+
+
+type HandsCPESign
+    = PallorHands
+    | EdemaHands
+    | NormalHands
+
+
+type LegsCPESign
+    = PallorLegs
+    | EdemaLegs
+    | NormalLegs
+
+
+type DangerSign
+    = VaginalBleeding
+    | HeadacheBlurredVision
+    | Convulsions
+    | AbdominalPain
+    | DifficultyBreathing
+    | Fever
+    | ExtremeWeakness
+    | NoDangerSign
+
+
+type alias DangerSigns =
+    PrenatalMeasurement (EverySet DangerSign)
+
+
+type alias LastMenstrualPeriodValue =
+    { date : NominalDate
+    , confident : Bool
+    }
+
+
+type alias LastMenstrualPeriod =
+    PrenatalMeasurement LastMenstrualPeriodValue
+
+
+type MedicalHistorySign
+    = UterineMyoma
+    | Diabetes
+    | CardiacDisease
+    | RenalDisease
+    | HypertensionBeforePregnancy
+    | TuberculosisPast
+    | TuberculosisPresent
+    | Asthma
+    | BowedLegs
+    | HIV
+    | NoMedicalHistorySigns
+
+
+type alias MedicalHistory =
+    PrenatalMeasurement (EverySet MedicalHistorySign)
+
+
+type MedicationSign
+    = IronAndFolicAcidSupplement
+    | DewormingPill
+    | NoMedication
+
+
+type alias Medication =
+    PrenatalMeasurement (EverySet MedicationSign)
+
+
+type alias ObstetricalExamValue =
+    { fundalHeight : HeightInCm
+    , fetalPresentation : FetalPresentation
+    , fetalMovement : Bool
+    , fetalHeartRate : Int
+    , cSectionScar : Bool
+    }
+
+
+type alias ObstetricalExam =
+    PrenatalMeasurement ObstetricalExamValue
+
+
+type FetalPresentation
+    = Transverse
+    | Breach
+    | Cephalic
+
+
+type alias ObstetricHistoryValue =
+    { currentlyPregnant : Bool
+    , termPregnancy : Int
+    , pretermPregnancy : Int
+    , stillBirthsAtTerm : Int
+    , stillBirthsPreTerm : Int
+    , abortions : Int
+    , liveChildren : Int
+    }
+
+
+type alias ObstetricHistory =
+    PrenatalMeasurement ObstetricHistoryValue
+
+
+type alias PrenatalFamilyPlanning =
+    PrenatalMeasurement (EverySet FamilyPlanningSign)
+
+
+type alias PrenatalNutritionValue =
+    { height : HeightInCm
+    , weight : WeightInKg
+    , muac : MuacInCm
+    }
+
+
+type alias PrenatalNutrition =
+    PrenatalMeasurement PrenatalNutritionValue
+
+
+type ResourceSign
+    = MosquitoNet
+    | NoResource
+
+
+type alias Resource =
+    PrenatalMeasurement (EverySet ResourceSign)
+
+
+type SocialHistorySign
+    = AccompaniedByPartner
+    | PartnerHivCounseling
+    | MentalHealthHistory
+    | NoSocialHistorySign
+
+
+type alias SocialHistory =
+    PrenatalMeasurement (EverySet SocialHistorySign)
+
+
+type alias VitalsValue =
+    { sys : Float
+    , dia : Float
+    , heartRate : Int
+    , respiratoryRate : Int
+    , bodyTemperature : Float
+    }
+
+
+type alias Vitals =
+    PrenatalMeasurement VitalsValue
 
 
 

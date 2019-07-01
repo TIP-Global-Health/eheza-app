@@ -2,11 +2,10 @@ module Pages.PrenatalActivity.View exposing (view)
 
 import AllDict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
+import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Date.Extra as Date exposing (Interval(Day, Month))
 import DateSelector.SelectorDropdown
-import EveryDict exposing (EveryDict)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime, toLocalDateTime)
 import Html exposing (..)
@@ -307,7 +306,7 @@ viewHistoryContent language currentDate motherId data =
                     let
                         boolInputs =
                             [ data.medicalForm.uterineMyoma
-                            , data.medicalForm.diabates
+                            , data.medicalForm.diabetes
                             , data.medicalForm.cardiacDisease
                             , data.medicalForm.renalDisease
                             , data.medicalForm.hypertensionBeforePregnancy
@@ -706,7 +705,7 @@ viewDangerSignsContent language currentDate motherId data =
                 [ viewQuestionLabel language Translate.SelectDangerSigns
                 , viewCheckBoxMultipleSelectInput language
                     [ VaginalBleeding, HeadacheBlurredVision, Convulsions, AbdominalPain ]
-                    [ DificultyBreathing, Fever, ExtremeWeakness ]
+                    [ DifficultyBreathing, Fever, ExtremeWeakness ]
                     (form.signs |> Maybe.withDefault [])
                     (Just NoDangerSign)
                     SetDangerSign
@@ -977,8 +976,8 @@ viewMedicalForm language currentDate motherId form =
         uterineMyomaUpdateFunc value form_ =
             { form_ | uterineMyoma = Just value }
 
-        diabatesUpdateFunc value form_ =
-            { form_ | diabates = Just value }
+        diabetesUpdateFunc value form_ =
+            { form_ | diabetes = Just value }
 
         cardiacDiseaseUpdateFunc value form_ =
             { form_ | cardiacDisease = Just value }
@@ -1013,12 +1012,12 @@ viewMedicalForm language currentDate motherId form =
             (SetMedicalBoolInput uterineMyomaUpdateFunc)
             "uterine-myoma"
             Nothing
-        , viewLabel language Translate.Diabates
+        , viewLabel language Translate.Diabetes
         , viewBoolInput
             language
-            form.diabates
-            (SetMedicalBoolInput diabatesUpdateFunc)
-            "diabates"
+            form.diabetes
+            (SetMedicalBoolInput diabetesUpdateFunc)
+            "diabetes"
             Nothing
         , viewLabel language Translate.CardiacDisease
         , viewBoolInput
@@ -1344,7 +1343,7 @@ viewCorePhysicalExamForm language currentDate motherId form =
             [ NormalNeck ]
             form.neck
             SetCorePhysicalExamNeck
-            Translate.NeckCPEOption
+            Translate.NeckCPESign
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
@@ -1368,7 +1367,7 @@ viewCorePhysicalExamForm language currentDate motherId form =
             [ NormalLungs ]
             form.lungs
             SetCorePhysicalExamLungs
-            Translate.LungsCPEOption
+            Translate.LungsCPESign
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
@@ -1380,7 +1379,7 @@ viewCorePhysicalExamForm language currentDate motherId form =
             [ NormalAbdomen, Hernia, TPRightLower, TPLeftLower ]
             form.abdomen
             SetCorePhysicalExamAbdomen
-            Translate.AbdomenCPEOption
+            Translate.AbdomenCPESign
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
@@ -1393,14 +1392,14 @@ viewCorePhysicalExamForm language currentDate motherId form =
             [ NormalHands ]
             form.hands
             SetCorePhysicalExamHands
-            Translate.HandsCPEOption
+            Translate.HandsCPESign
         , div [ class "title legs" ] [ text <| (translate language Translate.Legs ++ ":") ]
         , viewCheckBoxSelectInput language
             [ PallorLegs, EdemaLegs ]
             [ NormalLegs ]
             form.legs
             SetCorePhysicalExamLegs
-            Translate.LegsCPEOption
+            Translate.LegsCPESign
         ]
 
 
@@ -1503,7 +1502,7 @@ viewBreastExamForm language currentDate motherId form =
             [ Infection, NormalBreast ]
             form.breast
             SetBreastExamBreast
-            Translate.BreastBEOption
+            Translate.BreastExamSign
         , div [ class "separator double" ] []
         , viewCustomLabel language Translate.BreastExamQuestion "?" "label self-guidance"
         , viewBoolInput

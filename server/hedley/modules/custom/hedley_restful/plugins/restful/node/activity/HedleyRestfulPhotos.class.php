@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulPhotos.
  */
-class HedleyRestfulPhotos extends HedleyRestfulChildActivityBase {
+class HedleyRestfulPhotos extends HedleyRestfulGroupActivityBase {
 
   /**
    * {@inheritdoc}
