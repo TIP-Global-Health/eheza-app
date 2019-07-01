@@ -208,9 +208,6 @@ viewParticipantDetailsForm language currentDate db id person =
         , familyMembers
         , p [] []
         , addFamilyMember
-        , h3
-            [ class "ui header" ]
-            [ text <| translate language Translate.Groups ++ ": " ]
         ]
 
 
