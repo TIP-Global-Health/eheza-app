@@ -615,7 +615,7 @@ viewCreateForm language currentDate relationId model db =
         demographicFields =
             viewPhoto
                 :: (List.map (Html.map (MsgForm relationId)) <|
-                        [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName True personForm
+                        [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName False personForm
                         , viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
                         , viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
                         ]
