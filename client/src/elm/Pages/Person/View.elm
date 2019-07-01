@@ -127,9 +127,7 @@ viewRelationship language currentDate id db relationship =
                             |> AllDict.values
                     )
     in
-    div
-        [ class "ui unstackable items participants-list" ]
-        [ viewWebData language (viewParticipant language currentDate (Just ( relationship, relationshipGroups )) relationship.relatedTo) identity relatedTo ]
+    viewWebData language (viewParticipant language currentDate (Just ( relationship, relationshipGroups )) relationship.relatedTo) identity relatedTo
 
 
 viewParticipantDetailsForm : Language -> NominalDate -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
@@ -139,7 +137,7 @@ viewParticipantDetailsForm language currentDate db id person =
             relationships
                 |> AllDictList.map (always (viewRelationship language currentDate id db))
                 |> AllDictList.values
-                |> div []
+                |> div [ class "ui unstackable items participants-list" ]
 
         familyMembers =
             AllDict.get id db.relationshipsByPerson
@@ -225,7 +223,7 @@ viewParticipant language currentDate myRelationshipData id person =
                 Nothing ->
                     "mother"
 
-        ( relationshipLabel, groups ) =
+        ( relationshipLabel, groups, action ) =
             myRelationshipData
                 |> Maybe.map
                     (\( relationship, relationshipGroups ) ->
@@ -239,9 +237,19 @@ viewParticipant language currentDate myRelationshipData id person =
                             [ label [] [ text <| translate language Translate.Groups ++ ": " ]
                             , span [] [ relationshipGroups |> String.join ", " |> text ]
                             ]
+                        , div [ class "action" ]
+                            [ div [ class "action-icon-wrapper" ]
+                                [ span
+                                    [ class "action-icon forward"
+
+                                    -- , onClick <| SetActivePage <| UserPage <| nextPage
+                                    ]
+                                    []
+                                ]
+                            ]
                         )
                     )
-                |> Maybe.withDefault ( emptyNode, emptyNode )
+                |> Maybe.withDefault ( emptyNode, emptyNode, emptyNode )
 
         content =
             div [ class "content" ]
@@ -266,6 +274,7 @@ viewParticipant language currentDate myRelationshipData id person =
                         ]
                     , groups
                     ]
+                , action
                 ]
     in
     div
