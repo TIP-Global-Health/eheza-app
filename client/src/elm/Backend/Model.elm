@@ -32,6 +32,7 @@ import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
 import Dict exposing (Dict)
+import Http
 import RemoteData exposing (RemoteData(..), WebData)
 import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
 import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
@@ -202,6 +203,9 @@ type MsgIndexedDb
     | HandleDeletedSyncData HealthCenterId (WebData ())
       -- Handling edits to session data
     | MsgSession SessionId Backend.Session.Model.Msg
+      -- Temporary, until we have a real UI for picking out a PrenatalEncounter
+    | GoToRandomPrenatalEncounter
+    | HandleRandomPrenatalEncounter (Result Http.Error (Maybe PrenatalEncounterId))
 
 
 {-| Wrapper for all the revisions we can receive.

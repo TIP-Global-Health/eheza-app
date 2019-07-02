@@ -153,6 +153,32 @@ updateIndexedDb currentDate nurseId msg model =
             , []
             )
 
+        -- Temporary
+        GoToRandomPrenatalEncounter ->
+            ( model
+            , sw.selectRange prenatalEncounterEndpoint () 0 (Just 1)
+                |> toTask
+                |> Task.map (.items >> List.head >> Maybe.map Tuple.first)
+                |> Task.attempt HandleRandomPrenatalEncounter
+            , []
+            )
+
+        -- Temporary
+        HandleRandomPrenatalEncounter result ->
+            let
+                appMsgs =
+                    case result of
+                        Ok (Just id) ->
+                            [ App.Model.SetActivePage <| UserPage <| Pages.Page.PrenatalEncounterPage id ]
+
+                        _ ->
+                            []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
         FetchParticipantsForPerson personId ->
             let
                 query1 =
