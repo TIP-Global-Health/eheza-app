@@ -751,7 +751,8 @@ viewCreateForm language currentDate relationId model db =
                                 ]
 
                             ExpectChild ->
-                                [ hmisNumberInput
+                                [ nationalIdInput
+                                , hmisNumberInput
                                 , genderInput
                                 , hivStatusInput
                                 , modeOfDeliveryInput
