@@ -122,6 +122,12 @@ function hedley_migrate_migrate_api() {
       'HedleyMigratePmtctParticipants' => [
         'class_name' => 'HedleyMigratePmtctParticipants',
       ],
+      'HedleyMigratePrenatalEncounters' => [
+        'class_name' => 'HedleyMigratePrenatalEncounters',
+      ],
+      'HedleyMigratePrenatalParticipants' => [
+        'class_name' => 'HedleyMigratePrenatalParticipants',
+      ],
       'HedleyMigrateRelationships' => [
         'class_name' => 'HedleyMigrateRelationships',
       ],
