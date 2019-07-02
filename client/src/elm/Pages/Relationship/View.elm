@@ -121,11 +121,10 @@ viewFetchedContent language currentDate id1 id2 model request data =
 
         viewCurrentGroups =
             currentGroupsIds
-                |> List.map
+                |> List.filterMap
                     (\clinicId ->
                         AllDictList.get clinicId data.clinics
                             |> Maybe.map .name
-                            |> Maybe.withDefault ""
                     )
                 |> String.join ", "
                 |> text
