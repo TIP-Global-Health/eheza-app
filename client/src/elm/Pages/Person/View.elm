@@ -1,6 +1,6 @@
 module Pages.Person.View exposing (view, viewCreateForm)
 
-import AllDict
+import AllDict exposing (AllDict)
 import AllDictList
 import App.Model
 import Backend.Clinic.Model exposing (Clinic)
@@ -32,6 +32,7 @@ import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Set
 import Time.Iso8601
 import Translate exposing (Language, TranslationId, translate)
+import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
 import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 import Utils.Form exposing (dateInput, getValueAsInt, isFormFieldSet, viewFormError)
 import Utils.GeoLocation exposing (GeoInfo, geoInfo, getGeoLocation)
@@ -79,63 +80,87 @@ viewHeader language name =
         ]
 
 
-viewRelationship : Language -> NominalDate -> ModelIndexedDb -> MyRelationship -> Html App.Model.Msg
-viewRelationship language currentDate db relationship =
-    let
-        relatedTo =
-            AllDict.get relationship.relatedTo db.people
-                |> Maybe.withDefault NotAsked
-    in
-    div
-        [ class "ui unstackable items participants-list" ]
-        [ viewWebData language (viewParticipant language currentDate (Just relationship) relationship.relatedTo) identity relatedTo ]
-
-
-viewPmtctParticipant : Language -> EntityUuidDictList ClinicId Clinic -> PmtctParticipant -> Html App.Model.Msg
-viewPmtctParticipant language clinics participant =
-    let
-        content =
-            AllDictList.get participant.clinic clinics
-                |> Maybe.map
-                    (\clinic ->
-                        p [] [ text <| clinic.name ]
-                    )
-                |> Maybe.withDefault (div [] [])
-    in
-    div
-        [ class "item participant-view" ]
-        [ div
-            [ class "ui image" ]
-            [ div [] [] ]
-        , content
-        ]
+{-| We want to show other people related to this person, either because they
+have a `Relationship` or because they are paired in a group. So, we have this
+custom type to track those other persons.
+-}
+type alias OtherPerson =
+    { relationship : Maybe ( RelationshipId, MyRelationship )
+    , groups : List ( PmtctParticipantId, PmtctParticipant )
+    }
 
 
 viewParticipantDetailsForm : Language -> NominalDate -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
 viewParticipantDetailsForm language currentDate db id person =
     let
-        viewFamilyMembers relationships =
-            relationships
-                |> AllDictList.map (always (viewRelationship language currentDate db))
-                |> AllDictList.values
-                |> div []
-
-        familyMembers =
+        -- We re-organize our data about relatoinships and group participations
+        -- so that we have one record per `OtherPerson`.
+        relationshipsData =
             AllDict.get id db.relationshipsByPerson
                 |> Maybe.withDefault NotAsked
-                |> viewWebData language viewFamilyMembers identity
 
-        viewGroups ( clinics, groups ) =
-            groups
-                |> AllDict.map (always (viewPmtctParticipant language clinics))
-                |> AllDict.values
-                |> div [ class "ui unstackable items participants-list" ]
-
-        groups =
+        participationsData =
             AllDict.get id db.participantsByPerson
                 |> Maybe.withDefault NotAsked
-                |> RemoteData.append db.clinics
-                |> viewWebData language viewGroups identity
+
+        addRelationshipToOtherPeople : RelationshipId -> MyRelationship -> EntityUuidDict PersonId OtherPerson -> EntityUuidDict PersonId OtherPerson
+        addRelationshipToOtherPeople relationshipId myRelationship accum =
+            AllDict.update myRelationship.relatedTo
+                (\existing ->
+                    Just
+                        { relationship = Just ( relationshipId, myRelationship )
+                        , groups =
+                            Maybe.map .groups existing
+                                |> Maybe.withDefault []
+                        }
+                )
+                accum
+
+        addParticipantToOtherPeople : PmtctParticipantId -> PmtctParticipant -> EntityUuidDict PersonId OtherPerson -> EntityUuidDict PersonId OtherPerson
+        addParticipantToOtherPeople pmtctParticipantId pmtctParticipant accum =
+            let
+                otherParticipantId =
+                    if pmtctParticipant.child == id then
+                        pmtctParticipant.adult
+
+                    else
+                        pmtctParticipant.child
+            in
+            AllDict.update otherParticipantId
+                (\existing ->
+                    Just
+                        { relationship = Maybe.andThen .relationship existing
+                        , groups =
+                            Maybe.map .groups existing
+                                |> Maybe.withDefault []
+                                |> (::) ( pmtctParticipantId, pmtctParticipant )
+                        }
+                )
+                accum
+
+        otherPeople : WebData (EntityUuidDict PersonId OtherPerson)
+        otherPeople =
+            RemoteData.append relationshipsData participationsData
+                |> RemoteData.map
+                    (\( relationships, participations ) ->
+                        let
+                            withParticipants =
+                                AllDict.foldl addParticipantToOtherPeople EntityUuidDict.empty participations
+                        in
+                        AllDictList.foldl addRelationshipToOtherPeople withParticipants relationships
+                    )
+
+        viewOtherPeople people =
+            people
+                |> AllDict.map
+                    (\otherPersonId otherPerson ->
+                        AllDict.get otherPersonId db.people
+                            |> Maybe.withDefault NotAsked
+                            |> RemoteData.append db.clinics
+                            |> viewWebData language (viewOtherPerson language currentDate id ( otherPersonId, otherPerson )) identity
+                    )
+                |> AllDict.values
+                |> div [ class "ui unstackable items participants-list" ]
 
         isAdult =
             isPersonAnAdult currentDate person
@@ -192,22 +217,63 @@ viewParticipantDetailsForm language currentDate db id person =
             [ text <| translate language Translate.DemographicInformation ++ ": " ]
         , div
             [ class "ui unstackable items participants-list" ]
-            [ viewParticipant language currentDate Nothing id person ]
+            [ viewPerson language currentDate id person ]
         , h3
             [ class "ui header" ]
             [ text <| translate language Translate.FamilyMembers ++ ": " ]
-        , familyMembers
+        , viewWebData language viewOtherPeople identity otherPeople
         , p [] []
         , addFamilyMember
-        , h3
-            [ class "ui header" ]
-            [ text <| translate language Translate.Groups ++ ": " ]
-        , groups
         ]
 
 
-viewParticipant : Language -> NominalDate -> Maybe MyRelationship -> PersonId -> Person -> Html App.Model.Msg
-viewParticipant language currentDate myRelationship id person =
+viewPerson : Language -> NominalDate -> PersonId -> Person -> Html App.Model.Msg
+viewPerson language currentDate id person =
+    let
+        typeForThumbnail =
+            case isPersonAnAdult currentDate person of
+                Just True ->
+                    "mother"
+
+                Just False ->
+                    "child"
+
+                Nothing ->
+                    "mother"
+
+        content =
+            div [ class "content" ]
+                [ div
+                    [ class "details" ]
+                    [ h2
+                        [ class "ui header" ]
+                        [ text person.name ]
+                    , p []
+                        [ label [] [ text <| translate language Translate.DOB ++ ": " ]
+                        , span []
+                            [ person.birthDate
+                                |> Maybe.map (renderDate language >> text)
+                                |> showMaybe
+                            ]
+                        ]
+                    , p []
+                        [ label [] [ text <| translate language Translate.Village ++ ": " ]
+                        , span [] [ person.village |> Maybe.withDefault "" |> text ]
+                        ]
+                    ]
+                ]
+    in
+    div
+        [ class "item participant-view" ]
+        [ div
+            [ class "ui image" ]
+            [ thumbnailImage typeForThumbnail person.avatarUrl person.name 120 120 ]
+        , content
+        ]
+
+
+viewOtherPerson : Language -> NominalDate -> PersonId -> ( PersonId, OtherPerson ) -> ( EntityUuidDictList ClinicId Clinic, Person ) -> Html App.Model.Msg
+viewOtherPerson language currentDate relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
     let
         typeForThumbnail =
             case isPersonAnAdult currentDate person of
@@ -221,9 +287,9 @@ viewParticipant language currentDate myRelationship id person =
                     "mother"
 
         relationshipLabel =
-            myRelationship
+            otherPerson.relationship
                 |> Maybe.map
-                    (\relationship ->
+                    (\( _, relationship ) ->
                         span
                             [ class "relationship" ]
                             [ text " ("
@@ -232,6 +298,32 @@ viewParticipant language currentDate myRelationship id person =
                             ]
                     )
                 |> Maybe.withDefault emptyNode
+
+        groupNames =
+            otherPerson.groups
+                |> List.map (\( _, group ) -> AllDictList.get group.clinic clinics)
+                |> List.filterMap (Maybe.map .name)
+                |> String.join ", "
+
+        groups =
+            p
+                []
+                [ label [] [ text <| translate language Translate.Groups ++ ": " ]
+                , span [] [ text groupNames ]
+                ]
+
+        action =
+            div
+                [ class "action" ]
+                [ div
+                    [ class "action-icon-wrapper" ]
+                    [ span
+                        [ class "action-icon forward"
+                        , onClick <| App.Model.SetActivePage <| UserPage <| RelationshipPage relationMainId otherPersonId
+                        ]
+                        []
+                    ]
+                ]
 
         content =
             div [ class "content" ]
@@ -254,7 +346,9 @@ viewParticipant language currentDate myRelationship id person =
                         [ label [] [ text <| translate language Translate.Village ++ ": " ]
                         , span [] [ person.village |> Maybe.withDefault "" |> text ]
                         ]
+                    , groups
                     ]
+                , action
                 ]
     in
     div
