@@ -5,12 +5,13 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
+import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.Model exposing (..)
 import PrenatalActivity.Utils exposing (getActivityIcon, getAllActivities)
@@ -18,6 +19,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date exposing (date)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (script, tabItem, thumbnailImage, viewLoading)
+import Utils.WebData exposing (viewWebData)
 
 
 thumbnailDimensions : { width : Int, height : Int }
@@ -27,27 +29,57 @@ thumbnailDimensions =
     }
 
 
-view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Model -> Html Msg
+type alias FetchedData =
+    { encounter : PrenatalEncounter
+    , participant : PrenatalParticipant
+    , person : Person
+    , id : PrenatalEncounterId
+    }
+
+
+view : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id db model =
     let
-        content =
-            AllDict.get id db.people
-                |> unwrap
-                    []
-                    (RemoteData.toMaybe
-                        >> unwrap
-                            []
-                            (\mother ->
-                                [ div [ class "ui unstackable items" ] <|
-                                    viewMotherAndMeasurements language currentDate mother
-                                        ++ viewMainPageContent language currentDate id model
-                                ]
-                            )
+        encounter =
+            AllDict.get id db.prenatalEncounters
+                |> Maybe.withDefault NotAsked
+
+        participant =
+            encounter
+                |> RemoteData.andThen
+                    (\encounter ->
+                        AllDict.get encounter.participant db.prenatalParticipants
+                            |> Maybe.withDefault NotAsked
                     )
+
+        person =
+            participant
+                |> RemoteData.andThen
+                    (\participant ->
+                        AllDict.get participant.person db.people
+                            |> Maybe.withDefault NotAsked
+                    )
+
+        data =
+            RemoteData.map FetchedData encounter
+                |> RemoteData.andMap participant
+                |> RemoteData.andMap person
+                |> RemoteData.andMap (Success id)
+
+        content =
+            viewWebData language (viewContent language currentDate model) identity data
     in
     div [ class "page-prenatal-encounter" ] <|
-        viewHeader language
-            :: content
+        [ viewHeader language
+        , content
+        ]
+
+
+viewContent : Language -> NominalDate -> Model -> FetchedData -> Html Msg
+viewContent language currentDate model data =
+    div [ class "ui unstackable items" ] <|
+        viewMotherAndMeasurements language currentDate data.person
+            ++ viewMainPageContent language currentDate data model
 
 
 viewHeader : Language -> Html Msg
@@ -139,8 +171,8 @@ viewMeasurements language currentDate =
         ]
 
 
-viewMainPageContent : Language -> NominalDate -> PersonId -> Model -> List (Html Msg)
-viewMainPageContent language currentDate motherId model =
+viewMainPageContent : Language -> NominalDate -> FetchedData -> Model -> List (Html Msg)
+viewMainPageContent language currentDate data model =
     let
         ( pendingActivities, completedActivities ) =
             ( getAllActivities, [] )
@@ -165,7 +197,7 @@ viewMainPageContent language currentDate motherId model =
             div [ class "card" ]
                 [ div
                     [ class "image"
-                    , onClick <| SetActivePage <| UserPage <| PrenatalActivityPage motherId activity
+                    , onClick <| SetActivePage <| UserPage <| PrenatalActivityPage data.id activity
                     ]
                     [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
                 , div [ class "content" ]

@@ -232,24 +232,24 @@ viewUserPage page model configured =
                         |> Html.map (MsgLoggedIn << MsgPageSession sessionId)
                         |> oldPageWrapper model
 
-                PrenatalEncounterPage motherId ->
+                PrenatalEncounterPage id ->
                     let
                         page =
-                            EveryDict.get motherId loggedInModel.prenatalEncounterPages
+                            AllDict.get id loggedInModel.prenatalEncounterPages
                                 |> Maybe.withDefault Pages.PrenatalEncounter.Model.emptyModel
                     in
-                    Pages.PrenatalEncounter.View.view model.language currentDate motherId model.indexedDb page
-                        |> Html.map (MsgLoggedIn << MsgPagePrenatalEncounter motherId)
+                    Pages.PrenatalEncounter.View.view model.language currentDate id model.indexedDb page
+                        |> Html.map (MsgLoggedIn << MsgPagePrenatalEncounter id)
                         |> flexPageWrapper model
 
-                PrenatalActivityPage motherId activity ->
+                PrenatalActivityPage id activity ->
                     let
                         page =
-                            EveryDict.get ( motherId, activity ) loggedInModel.prenatalActivityPages
+                            EveryDict.get ( id, activity ) loggedInModel.prenatalActivityPages
                                 |> Maybe.withDefault Pages.PrenatalActivity.Model.emptyModel
                     in
-                    Pages.PrenatalActivity.View.view model.language currentDate motherId activity model.indexedDb page
-                        |> Html.map (MsgLoggedIn << MsgPagePrenatalActivity motherId activity)
+                    Pages.PrenatalActivity.View.view model.language currentDate id activity model.indexedDb page
+                        |> Html.map (MsgLoggedIn << MsgPagePrenatalActivity id activity)
                         |> flexPageWrapper model
 
         Nothing ->

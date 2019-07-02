@@ -128,8 +128,8 @@ type UserPage
       -- then we're in a context in which we're looking to add a family member.
     | PersonsPage (Maybe PersonId)
     | RelationshipPage PersonId PersonId -- create or edit a relationship between these persons.
-    | PrenatalEncounterPage PersonId -- prenatal activities index
-    | PrenatalActivityPage PersonId PrenatalActivity -- record prenatal activity
+    | PrenatalEncounterPage PrenatalEncounterId -- prenatal activities index
+    | PrenatalActivityPage PrenatalEncounterId PrenatalActivity -- record prenatal activity
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it

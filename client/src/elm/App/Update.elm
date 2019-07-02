@@ -227,29 +227,29 @@ update msg model =
                             , extraMsgs
                             )
 
-                        MsgPagePrenatalEncounter motherId subMsg ->
+                        MsgPagePrenatalEncounter id subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.prenatalEncounterPages
-                                        |> EveryDict.get motherId
+                                        |> AllDict.get id
                                         |> Maybe.withDefault Pages.PrenatalEncounter.Model.emptyModel
-                                        |> Pages.PrenatalEncounter.Update.update motherId model.indexedDb subMsg
+                                        |> Pages.PrenatalEncounter.Update.update subMsg
                             in
-                            ( { data | prenatalEncounterPages = EveryDict.insert motherId subModel data.prenatalEncounterPages }
-                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalEncounter motherId) subCmd
+                            ( { data | prenatalEncounterPages = AllDict.insert id subModel data.prenatalEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalEncounter id) subCmd
                             , extraMsgs
                             )
 
-                        MsgPagePrenatalActivity motherId activity subMsg ->
+                        MsgPagePrenatalActivity id activity subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.prenatalActivityPages
-                                        |> EveryDict.get ( motherId, activity )
+                                        |> EveryDict.get ( id, activity )
                                         |> Maybe.withDefault Pages.PrenatalActivity.Model.emptyModel
-                                        |> Pages.PrenatalActivity.Update.update motherId activity model.indexedDb subMsg
+                                        |> Pages.PrenatalActivity.Update.update subMsg
                             in
-                            ( { data | prenatalActivityPages = EveryDict.insert ( motherId, activity ) subModel data.prenatalActivityPages }
-                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalActivity motherId activity) subCmd
+                            ( { data | prenatalActivityPages = EveryDict.insert ( id, activity ) subModel data.prenatalActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalActivity id activity) subCmd
                             , extraMsgs
                             )
                 )

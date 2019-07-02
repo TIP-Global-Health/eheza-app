@@ -91,8 +91,10 @@ type alias ModelIndexedDb =
     -- searching for.
     , personSearches : Dict String (WebData (EntityUuidDictList PersonId Person))
 
-    -- A simple cache of people.
+    -- A simple cache of several things.
     , people : EntityUuidDict PersonId (WebData Person)
+    , prenatalEncounters : EntityUuidDict PrenatalEncounterId (WebData PrenatalEncounter)
+    , prenatalParticipants : EntityUuidDict PrenatalParticipantId (WebData PrenatalParticipant)
 
     -- From the point of view of the specified person, all of their relationships.
     , relationshipsByPerson : EntityUuidDict PersonId (WebData (EntityUuidDictList RelationshipId MyRelationship))
@@ -128,6 +130,8 @@ emptyModelIndexedDb =
     , postPmtctParticipant = EntityUuidDict.empty
     , postRelationship = EntityUuidDict.empty
     , postSession = NotAsked
+    , prenatalEncounters = EntityUuidDict.empty
+    , prenatalParticipants = EntityUuidDict.empty
     , relationshipsByPerson = EntityUuidDict.empty
     , saveSyncDataRequests = EntityUuidDict.empty
     , sessionRequests = EntityUuidDict.empty
@@ -153,6 +157,8 @@ type MsgIndexedDb
     | FetchParticipantsForPerson PersonId
     | FetchPeopleByName String
     | FetchPerson PersonId
+    | FetchPrenatalEncounter PrenatalEncounterId
+    | FetchPrenatalParticipant PrenatalParticipantId
     | FetchRelationshipsForPerson PersonId
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
@@ -169,6 +175,8 @@ type MsgIndexedDb
     | HandleFetchedParticipantsForPerson PersonId (WebData (EntityUuidDict PmtctParticipantId PmtctParticipant))
     | HandleFetchedPeopleByName String (WebData (EntityUuidDictList PersonId Person))
     | HandleFetchedPerson PersonId (WebData Person)
+    | HandleFetchedPrenatalEncounter PrenatalEncounterId (WebData PrenatalEncounter)
+    | HandleFetchedPrenatalParticipant PrenatalParticipantId (WebData PrenatalParticipant)
     | HandleFetchedRelationshipsForPerson PersonId (WebData (EntityUuidDictList RelationshipId MyRelationship))
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (EntityUuidDictList SessionId Session))

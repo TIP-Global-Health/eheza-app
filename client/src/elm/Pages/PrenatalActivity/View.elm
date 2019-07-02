@@ -4,6 +4,9 @@ import AllDict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Person.Model exposing (Person)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
+import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import Date.Extra as Date exposing (Interval(Day, Month))
 import DateSelector.SelectorDropdown
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
@@ -19,33 +22,66 @@ import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Translate exposing (Language, TranslationId, translate)
+import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> PersonId -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
+type alias AssembledData =
+    { id : PrenatalEncounterId
+    , activity : PrenatalActivity
+    , encounter : PrenatalEncounter
+    , participant : PrenatalParticipant
+    , person : Person
+    }
+
+
+view : Language -> NominalDate -> PrenatalEncounterId -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id activity db model =
     let
-        content =
-            AllDict.get id db.people
-                |> unwrap
-                    []
-                    (RemoteData.toMaybe
-                        >> unwrap
-                            []
-                            (\mother ->
-                                [ div [ class "ui unstackable items" ] <|
-                                    viewMotherAndMeasurements language currentDate mother
-                                        ++ viewContent language currentDate id activity model
-                                ]
-                            )
+        encounter =
+            AllDict.get id db.prenatalEncounters
+                |> Maybe.withDefault NotAsked
+
+        participant =
+            encounter
+                |> RemoteData.andThen
+                    (\encounter ->
+                        AllDict.get encounter.participant db.prenatalParticipants
+                            |> Maybe.withDefault NotAsked
                     )
+
+        person =
+            participant
+                |> RemoteData.andThen
+                    (\participant ->
+                        AllDict.get participant.person db.people
+                            |> Maybe.withDefault NotAsked
+                    )
+
+        data =
+            RemoteData.map AssembledData (Success id)
+                |> RemoteData.andMap (Success activity)
+                |> RemoteData.andMap encounter
+                |> RemoteData.andMap participant
+                |> RemoteData.andMap person
+
+        content =
+            viewWebData language (viewContent language currentDate model) identity data
     in
     div [ class "page-prenatal-activity" ] <|
-        viewHeader language id activity
-            :: content
+        [ viewHeader language id activity
+        , content
+        ]
 
 
-viewHeader : Language -> PersonId -> PrenatalActivity -> Html Msg
-viewHeader language motherId activity =
+viewContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
+viewContent language currentDate model data =
+    div [ class "ui unstackable items" ] <|
+        viewMotherAndMeasurements language currentDate data.person
+            ++ viewActivity language currentDate data model
+
+
+viewHeader : Language -> PrenatalEncounterId -> PrenatalActivity -> Html Msg
+viewHeader language id activity =
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -53,7 +89,7 @@ viewHeader language motherId activity =
             [ text <| translate language <| Translate.PrenatalActivitiesTitle activity ]
         , a
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage motherId
+            , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage id
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -61,30 +97,30 @@ viewHeader language motherId activity =
         ]
 
 
-viewContent : Language -> NominalDate -> PersonId -> PrenatalActivity -> Model -> List (Html Msg)
-viewContent language currentDate motherId activity model =
-    case activity of
+viewActivity : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
+viewActivity language currentDate data model =
+    case data.activity of
         PregnancyDating ->
-            viewPregnancyDatingContent language currentDate motherId model.pregnancyDatingData
+            viewPregnancyDatingContent language currentDate data model.pregnancyDatingData
 
         History ->
-            viewHistoryContent language currentDate motherId model.historyData
+            viewHistoryContent language currentDate data model.historyData
 
         Examination ->
-            viewExaminationContent language currentDate motherId model.examinationData
+            viewExaminationContent language currentDate data model.examinationData
 
         FamilyPlanning ->
-            viewFamilyPlanningContent language currentDate motherId model.familyPlanningData
+            viewFamilyPlanningContent language currentDate data model.familyPlanningData
 
         PatientProvisions ->
-            viewPatientProvisionsContent language currentDate motherId model.patientProvisionsData
+            viewPatientProvisionsContent language currentDate data model.patientProvisionsData
 
         DangerSigns ->
-            viewDangerSignsContent language currentDate motherId model.dangerSignsData
+            viewDangerSignsContent language currentDate data model.dangerSignsData
 
 
-viewPregnancyDatingContent : Language -> NominalDate -> PersonId -> PregnancyDatingData -> List (Html Msg)
-viewPregnancyDatingContent language currentDate motherId data =
+viewPregnancyDatingContent : Language -> NominalDate -> AssembledData -> PregnancyDatingData -> List (Html Msg)
+viewPregnancyDatingContent language currentDate assembled data =
     let
         form =
             data.form
@@ -200,7 +236,7 @@ viewPregnancyDatingContent language currentDate motherId data =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage motherId
+                , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage assembled.id
                 ]
                 [ text <| translate language Translate.Save ]
             ]
@@ -208,8 +244,8 @@ viewPregnancyDatingContent language currentDate motherId data =
     ]
 
 
-viewHistoryContent : Language -> NominalDate -> PersonId -> HistoryData -> List (Html Msg)
-viewHistoryContent language currentDate motherId data =
+viewHistoryContent : Language -> NominalDate -> AssembledData -> HistoryData -> List (Html Msg)
+viewHistoryContent language currentDate assembled data =
     let
         tasks =
             [ Obstetric, Medical, Social ]
@@ -264,7 +300,7 @@ viewHistoryContent language currentDate motherId data =
                                     , form.liveChildren
                                     ]
                             in
-                            ( viewObstetricFormFirstStep language currentDate motherId form
+                            ( viewObstetricFormFirstStep language currentDate assembled form
                             , (intInputs
                                 |> List.map taskCompleted
                                 |> List.sum
@@ -291,7 +327,7 @@ viewHistoryContent language currentDate motherId data =
                                     , form.rhNegative
                                     ]
                             in
-                            ( viewObstetricFormSecondStep language currentDate motherId form
+                            ( viewObstetricFormSecondStep language currentDate assembled form
                             , (boolInputs
                                 |> List.map taskCompleted
                                 |> List.sum
@@ -317,7 +353,7 @@ viewHistoryContent language currentDate motherId data =
                             , data.medicalForm.hiv
                             ]
                     in
-                    ( viewMedicalForm language currentDate motherId data.medicalForm
+                    ( viewMedicalForm language currentDate assembled data.medicalForm
                     , boolInputs
                         |> List.map taskCompleted
                         |> List.sum
@@ -332,7 +368,7 @@ viewHistoryContent language currentDate motherId data =
                             , data.socialForm.mentalHealthHistory
                             ]
                     in
-                    ( viewSocialForm language currentDate motherId data.socialForm
+                    ( viewSocialForm language currentDate assembled data.socialForm
                     , boolInputs
                         |> List.map taskCompleted
                         |> List.sum
@@ -409,8 +445,8 @@ viewHistoryContent language currentDate motherId data =
     ]
 
 
-viewExaminationContent : Language -> NominalDate -> PersonId -> ExaminationData -> List (Html Msg)
-viewExaminationContent language currentDate motherId data =
+viewExaminationContent : Language -> NominalDate -> AssembledData -> ExaminationData -> List (Html Msg)
+viewExaminationContent language currentDate assembled data =
     let
         tasks =
             [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricalExam, BreastExam ]
@@ -463,7 +499,7 @@ viewExaminationContent language currentDate motherId data =
                         form =
                             data.vitalsForm
                     in
-                    ( viewVitalsForm language currentDate motherId form
+                    ( viewVitalsForm language currentDate assembled form
                     , taskListCompleted [ form.sysBloodPressure, form.diaBloodPressure ]
                         + ([ form.heartRate, form.respiratoryRate, form.bodyTemperature ]
                             |> List.map
@@ -478,7 +514,7 @@ viewExaminationContent language currentDate motherId data =
                         form =
                             data.nutritionAssessmentForm
                     in
-                    ( viewNutritionAssessmentForm language currentDate motherId form
+                    ( viewNutritionAssessmentForm language currentDate assembled form
                     , [ form.height, form.weight, form.bmi, form.muac ]
                         |> List.map taskCompleted
                         |> List.sum
@@ -497,7 +533,7 @@ viewExaminationContent language currentDate motherId data =
                             else
                                 0
                     in
-                    ( viewCorePhysicalExamForm language currentDate motherId form
+                    ( viewCorePhysicalExamForm language currentDate assembled form
                     , extremitiesTaskCompleted
                         + taskCompleted form.neck
                         + taskCompleted form.lungs
@@ -517,7 +553,7 @@ viewExaminationContent language currentDate motherId data =
                         form =
                             data.obstetricalExamForm
                     in
-                    ( viewObstetricalExamForm language currentDate motherId data.obstetricalExamForm
+                    ( viewObstetricalExamForm language currentDate assembled data.obstetricalExamForm
                     , taskCompleted form.fetalPresentation
                         + ([ form.fundalHeight, form.fetalHeartRate ]
                             |> List.map taskCompleted
@@ -535,7 +571,7 @@ viewExaminationContent language currentDate motherId data =
                         form =
                             data.breastExamForm
                     in
-                    ( viewBreastExamForm language currentDate motherId form
+                    ( viewBreastExamForm language currentDate assembled form
                     , taskCompleted form.breast + taskCompleted form.selfGuidance
                     , 2
                     )
@@ -564,8 +600,8 @@ viewExaminationContent language currentDate motherId data =
     ]
 
 
-viewFamilyPlanningContent : Language -> NominalDate -> PersonId -> FamilyPlanningData -> List (Html Msg)
-viewFamilyPlanningContent language currentDate motherId data =
+viewFamilyPlanningContent : Language -> NominalDate -> AssembledData -> FamilyPlanningData -> List (Html Msg)
+viewFamilyPlanningContent language currentDate assembled data =
     let
         form =
             data.form
@@ -593,7 +629,7 @@ viewFamilyPlanningContent language currentDate motherId data =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage motherId
+                , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage assembled.id
                 ]
                 [ text <| translate language Translate.Save ]
             ]
@@ -601,8 +637,8 @@ viewFamilyPlanningContent language currentDate motherId data =
     ]
 
 
-viewPatientProvisionsContent : Language -> NominalDate -> PersonId -> PatientProvisionsData -> List (Html Msg)
-viewPatientProvisionsContent language currentDate motherId data =
+viewPatientProvisionsContent : Language -> NominalDate -> AssembledData -> PatientProvisionsData -> List (Html Msg)
+viewPatientProvisionsContent language currentDate assembled data =
     let
         tasks =
             [ Medication, Resources ]
@@ -646,7 +682,7 @@ viewPatientProvisionsContent language currentDate motherId data =
                         form =
                             data.medicationForm
                     in
-                    ( viewMedicationForm language currentDate motherId form
+                    ( viewMedicationForm language currentDate assembled form
                     , [ form.receivedIronFolicAcid, form.receivedDewormingPill ]
                         |> List.map taskCompleted
                         |> List.sum
@@ -658,7 +694,7 @@ viewPatientProvisionsContent language currentDate motherId data =
                         form =
                             data.resourcesForm
                     in
-                    ( viewResourcesForm language currentDate motherId form
+                    ( viewResourcesForm language currentDate assembled form
                     , taskCompleted form.receivedMosquitoNet
                     , 1
                     )
@@ -686,8 +722,8 @@ viewPatientProvisionsContent language currentDate motherId data =
     ]
 
 
-viewDangerSignsContent : Language -> NominalDate -> PersonId -> DangerSignsData -> List (Html Msg)
-viewDangerSignsContent language currentDate motherId data =
+viewDangerSignsContent : Language -> NominalDate -> AssembledData -> DangerSignsData -> List (Html Msg)
+viewDangerSignsContent language currentDate assembled data =
     let
         form =
             data.form
@@ -715,7 +751,7 @@ viewDangerSignsContent language currentDate motherId data =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage motherId
+                , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage assembled.id
                 ]
                 [ text <| translate language Translate.Save ]
             ]
@@ -727,8 +763,8 @@ viewDangerSignsContent language currentDate motherId data =
 -- Forms
 
 
-viewObstetricFormFirstStep : Language -> NominalDate -> PersonId -> ObstetricFormFirstStep -> Html Msg
-viewObstetricFormFirstStep language currentDate motherId form =
+viewObstetricFormFirstStep : Language -> NominalDate -> AssembledData -> ObstetricFormFirstStep -> Html Msg
+viewObstetricFormFirstStep language currentDate assembled form =
     let
         gravidaResult =
             span [] [ text "02" ]
@@ -805,8 +841,8 @@ viewObstetricFormFirstStep language currentDate motherId form =
         ]
 
 
-viewObstetricFormSecondStep : Language -> NominalDate -> PersonId -> ObstetricFormSecondStep -> Html Msg
-viewObstetricFormSecondStep language currentDate motherId form =
+viewObstetricFormSecondStep : Language -> NominalDate -> AssembledData -> ObstetricFormSecondStep -> Html Msg
+viewObstetricFormSecondStep language currentDate assembled form =
     let
         cSectionInPreviousDeliveryUpdateFunc value form_ =
             { form_ | cSectionInPreviousDelivery = Just value }
@@ -970,8 +1006,8 @@ viewObstetricFormSecondStep language currentDate motherId form =
         ]
 
 
-viewMedicalForm : Language -> NominalDate -> PersonId -> MedicalHistoryForm -> Html Msg
-viewMedicalForm language currentDate motherId form =
+viewMedicalForm : Language -> NominalDate -> AssembledData -> MedicalHistoryForm -> Html Msg
+viewMedicalForm language currentDate assembled form =
     let
         uterineMyomaUpdateFunc value form_ =
             { form_ | uterineMyoma = Just value }
@@ -1078,8 +1114,8 @@ viewMedicalForm language currentDate motherId form =
         ]
 
 
-viewSocialForm : Language -> NominalDate -> PersonId -> SocialHistoryForm -> Html Msg
-viewSocialForm language currentDate motherId form =
+viewSocialForm : Language -> NominalDate -> AssembledData -> SocialHistoryForm -> Html Msg
+viewSocialForm language currentDate assembled form =
     let
         accompaniedByPartnerUpdateFunc value form_ =
             { form_ | accompaniedByPartner = Just value }
@@ -1115,8 +1151,8 @@ viewSocialForm language currentDate motherId form =
         ]
 
 
-viewVitalsForm : Language -> NominalDate -> PersonId -> VitalsForm -> Html Msg
-viewVitalsForm language currentDate motherId form =
+viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html Msg
+viewVitalsForm language currentDate assembled form =
     let
         sysBloodPressureUpdateFunc value form_ =
             { form_ | sysBloodPressure = value }
@@ -1212,8 +1248,8 @@ viewVitalsForm language currentDate motherId form =
         ]
 
 
-viewNutritionAssessmentForm : Language -> NominalDate -> PersonId -> NutritionAssessmentForm -> Html Msg
-viewNutritionAssessmentForm language currentDate motherId form =
+viewNutritionAssessmentForm : Language -> NominalDate -> AssembledData -> NutritionAssessmentForm -> Html Msg
+viewNutritionAssessmentForm language currentDate assembled form =
     let
         heightUpdateFunc value form_ =
             { form_ | height = value }
@@ -1296,8 +1332,8 @@ viewNutritionAssessmentForm language currentDate motherId form =
         ]
 
 
-viewCorePhysicalExamForm : Language -> NominalDate -> PersonId -> CorePhysicalExamForm -> Html Msg
-viewCorePhysicalExamForm language currentDate motherId form =
+viewCorePhysicalExamForm : Language -> NominalDate -> AssembledData -> CorePhysicalExamForm -> Html Msg
+viewCorePhysicalExamForm language currentDate assembled form =
     let
         brittleHairUpdateFunc value form_ =
             { form_ | brittleHair = Just value }
@@ -1403,8 +1439,8 @@ viewCorePhysicalExamForm language currentDate motherId form =
         ]
 
 
-viewObstetricalExamForm : Language -> NominalDate -> PersonId -> ObstetricalExamForm -> Html Msg
-viewObstetricalExamForm language currentDate motherId form =
+viewObstetricalExamForm : Language -> NominalDate -> AssembledData -> ObstetricalExamForm -> Html Msg
+viewObstetricalExamForm language currentDate assembled form =
     let
         fundalHeightUpdateFunc value form_ =
             { form_ | fundalHeight = value }
@@ -1485,8 +1521,8 @@ viewObstetricalExamForm language currentDate motherId form =
         ]
 
 
-viewBreastExamForm : Language -> NominalDate -> PersonId -> BreastExamForm -> Html Msg
-viewBreastExamForm language currentDate motherId form =
+viewBreastExamForm : Language -> NominalDate -> AssembledData -> BreastExamForm -> Html Msg
+viewBreastExamForm language currentDate assembled form =
     let
         selfGuidanceUpdateFunc value form_ =
             { form_ | selfGuidance = Just value }
@@ -1514,8 +1550,8 @@ viewBreastExamForm language currentDate motherId form =
         ]
 
 
-viewMedicationForm : Language -> NominalDate -> PersonId -> MedicationForm -> Html Msg
-viewMedicationForm language currentDate motherId form =
+viewMedicationForm : Language -> NominalDate -> AssembledData -> MedicationForm -> Html Msg
+viewMedicationForm language currentDate assembled form =
     let
         receivedIronFolicAcidUpdateFunc value form_ =
             { form_ | receivedIronFolicAcid = Just value }
@@ -1541,8 +1577,8 @@ viewMedicationForm language currentDate motherId form =
         ]
 
 
-viewResourcesForm : Language -> NominalDate -> PersonId -> ResourcesForm -> Html Msg
-viewResourcesForm language currentDate motherId form =
+viewResourcesForm : Language -> NominalDate -> AssembledData -> ResourcesForm -> Html Msg
+viewResourcesForm language currentDate assembled form =
     let
         receivedMosquitoNetUpdateFunc value form_ =
             { form_ | receivedMosquitoNet = Just value }

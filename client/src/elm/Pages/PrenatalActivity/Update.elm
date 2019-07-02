@@ -1,17 +1,14 @@
 module Pages.PrenatalActivity.Update exposing (update)
 
 import App.Model
-import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model exposing (DangerSign(..), FamilyPlanningSign(..))
-import Backend.Model exposing (ModelIndexedDb)
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.PrenatalActivity.Model exposing (..)
-import PrenatalActivity.Model exposing (PrenatalActivity)
 import Result exposing (Result)
 
 
-update : PersonId -> PrenatalActivity -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update motherId activity db msg model =
+update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update msg model =
     case msg of
         SetActivePage page ->
             ( model

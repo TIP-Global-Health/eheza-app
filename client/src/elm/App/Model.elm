@@ -146,8 +146,8 @@ type alias LoggedInModel =
 
     -- A set of pages for every "open" editable session.
     , sessionPages : EntityUuidDict SessionId Pages.Session.Model.Model
-    , prenatalEncounterPages : EveryDict PersonId Pages.PrenatalEncounter.Model.Model
-    , prenatalActivityPages : EveryDict ( PersonId, PrenatalActivity ) Pages.PrenatalActivity.Model.Model
+    , prenatalEncounterPages : EntityUuidDict PrenatalEncounterId Pages.PrenatalEncounter.Model.Model
+    , prenatalActivityPages : EveryDict ( PrenatalEncounterId, PrenatalActivity ) Pages.PrenatalActivity.Model.Model
     }
 
 
@@ -158,7 +158,7 @@ emptyLoggedInModel nurse =
     , relationshipPages = EveryDict.empty
     , nurse = nurse
     , sessionPages = EntityUuidDict.empty
-    , prenatalEncounterPages = EveryDict.empty
+    , prenatalEncounterPages = EntityUuidDict.empty
     , prenatalActivityPages = EveryDict.empty
     }
 
@@ -201,8 +201,8 @@ type MsgLoggedIn
     | MsgPagePersons Pages.People.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
-    | MsgPagePrenatalEncounter PersonId Pages.PrenatalEncounter.Model.Msg
-    | MsgPagePrenatalActivity PersonId PrenatalActivity Pages.PrenatalActivity.Model.Msg
+    | MsgPagePrenatalEncounter PrenatalEncounterId Pages.PrenatalEncounter.Model.Msg
+    | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.PrenatalActivity.Model.Msg
 
 
 type alias Flags =

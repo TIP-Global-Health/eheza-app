@@ -79,6 +79,16 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchPrenatalEncounter id ->
+            AllDict.get id model.prenatalEncounters
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchPrenatalParticipant id ->
+            AllDict.get id model.prenatalParticipants
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchRelationshipsForPerson id ->
             AllDict.get id model.relationshipsByPerson
                 |> Maybe.withDefault NotAsked
@@ -142,6 +152,12 @@ forget msg model =
 
         FetchParticipantsForPerson id ->
             { model | participantsByPerson = AllDict.remove id model.participantsByPerson }
+
+        FetchPrenatalEncounter id ->
+            { model | prenatalEncounters = AllDict.remove id model.prenatalEncounters }
+
+        FetchPrenatalParticipant id ->
+            { model | prenatalParticipants = AllDict.remove id model.prenatalParticipants }
 
         FetchRelationshipsForPerson id ->
             { model | relationshipsByPerson = AllDict.remove id model.relationshipsByPerson }

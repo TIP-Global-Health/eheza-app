@@ -73,8 +73,8 @@ fetch model =
             Pages.Session.Fetch.fetch sessionId sessionPage model.indexedDb
                 |> List.map MsgIndexedDb
 
-        UserPage (PrenatalEncounterPage motherId) ->
-            Pages.PrenatalEncounter.Fetch.fetch motherId
+        UserPage (PrenatalEncounterPage id) ->
+            Pages.PrenatalEncounter.Fetch.fetch id model.indexedDb
                 |> List.map MsgIndexedDb
 
         _ ->

@@ -274,6 +274,32 @@ updateIndexedDb currentDate nurseId msg model =
             , []
             )
 
+        FetchPrenatalEncounter id ->
+            ( { model | prenatalEncounters = AllDict.insert id Loading model.prenatalEncounters }
+            , sw.get prenatalEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedPrenatalEncounter id)
+            , []
+            )
+
+        HandleFetchedPrenatalEncounter id data ->
+            ( { model | prenatalEncounters = AllDict.insert id data model.prenatalEncounters }
+            , Cmd.none
+            , []
+            )
+
+        FetchPrenatalParticipant id ->
+            ( { model | prenatalParticipants = AllDict.insert id Loading model.prenatalParticipants }
+            , sw.get prenatalParticipantEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedPrenatalParticipant id)
+            , []
+            )
+
+        HandleFetchedPrenatalParticipant id data ->
+            ( { model | prenatalParticipants = AllDict.insert id data model.prenatalParticipants }
+            , Cmd.none
+            , []
+            )
+
         FetchSession sessionId ->
             ( { model | sessions = AllDict.insert sessionId Loading model.sessions }
             , sw.get sessionEndpoint sessionId
@@ -736,10 +762,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             )
 
         PrenatalParticipantRevision uuid data ->
-            noChange
+            ( { model | prenatalParticipants = AllDict.insert uuid (Success data) model.prenatalParticipants }
+            , recalc
+            )
 
         PrenatalEncounterRevision uuid data ->
-            noChange
+            ( { model | prenatalEncounters = AllDict.insert uuid (Success data) model.prenatalEncounters }
+            , recalc
+            )
 
         PrenatalFamilyPlanningRevision uuid data ->
             noChange
