@@ -726,7 +726,7 @@ viewCreateForm language currentDate relationId model db =
             viewSelectInput language Translate.NumberOfChildrenUnder5 options Backend.Person.Form.numberOfChildren "ten" "select-input" False personForm
 
         hmisNumberInput =
-            viewSelectInput language Translate.HmisNumber hmisNumberOptions Backend.Person.Form.hmisNumber "ten" "select-input" False personForm
+            viewSelectInput language Translate.ChildHmisNumber hmisNumberOptions Backend.Person.Form.hmisNumber "ten" "select-input" False personForm
 
         nationalIdInput =
             viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm

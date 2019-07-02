@@ -168,7 +168,7 @@ type TranslationId
     | Cell
     | ChartPhrase ChartPhrase
     | CheckIn
-    | HmisNumber
+    | ChildHmisNumber
     | ChildDemographicInformation
     | ChildNutritionSignLabel ChildNutritionSign
     | ChildNutritionSignReport ChildNutritionSign
@@ -756,7 +756,7 @@ translationSet trans =
             , kinyarwanda = Just "Kureba abaje"
             }
 
-        HmisNumber ->
+        ChildHmisNumber ->
             { english = "Child HMIS Number"
             , kinyarwanda = Nothing
             }
