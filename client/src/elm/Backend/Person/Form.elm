@@ -5,7 +5,6 @@ module Backend.Person.Form exposing
     , birthDate
     , birthDateEstimated
     , cell
-    , childBirthOrder
     , district
     , educationLevel
     , emptyForm
@@ -14,6 +13,7 @@ module Backend.Person.Form exposing
     , gender
     , healthCenter
     , hivStatus
+    , hmisNumber
     , maritalStatus
     , modeOfDelivery
     , nationalIdNumber
@@ -190,7 +190,7 @@ validatePerson maybeRelated maybeCurrentDate =
                 |> andMap (succeed <| String.trim firstNameValue)
                 |> andMap (succeed <| String.trim secondNameValue)
                 |> andMap (field nationalIdNumber validateNationalIdNumber)
-                |> andMap (field childBirthOrder validateChildBirthOrder)
+                |> andMap (field hmisNumber validateHmisNumber)
                 |> andMap (field photo <| nullable string)
                 |> andMap (succeed birthDate)
                 |> andMap (field birthDateEstimated bool)
@@ -231,8 +231,8 @@ validateNationalIdNumber =
         |> nullable
 
 
-validateChildBirthOrder : Validation ValidationError (Maybe String)
-validateChildBirthOrder =
+validateHmisNumber : Validation ValidationError (Maybe String)
+validateHmisNumber =
     string
         |> andThen
             (\s ->
@@ -241,7 +241,7 @@ validateChildBirthOrder =
                         String.trim s
 
                     error =
-                        customError InvalidChildBirthOrder
+                        customError InvalidHmisNumber
                 in
                 String.toInt s
                     |> Result.toMaybe
@@ -464,9 +464,9 @@ nationalIdNumber =
     "national_id_number"
 
 
-childBirthOrder : String
-childBirthOrder =
-    "child_birth_order"
+hmisNumber : String
+hmisNumber =
+    "hmis_number"
 
 
 photo : String

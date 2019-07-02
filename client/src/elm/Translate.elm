@@ -105,7 +105,7 @@ type ValidationError
     | InvalidBirthDate
     | InvalidBirthDateForAdult
     | InvalidBirthDateForChild
-    | InvalidChildBirthOrder
+    | InvalidHmisNumber
     | LengthError Int
     | LettersOnly
     | RequiredField
@@ -168,7 +168,7 @@ type TranslationId
     | Cell
     | ChartPhrase ChartPhrase
     | CheckIn
-    | ChildBirthOrder
+    | HmisNumber
     | ChildDemographicInformation
     | ChildNutritionSignLabel ChildNutritionSign
     | ChildNutritionSignReport ChildNutritionSign
@@ -756,7 +756,7 @@ translationSet trans =
             , kinyarwanda = Just "Kureba abaje"
             }
 
-        ChildBirthOrder ->
+        HmisNumber ->
             { english = "Child HMIS Number"
             , kinyarwanda = Nothing
             }
@@ -2628,7 +2628,7 @@ translateValidationError id =
             , kinyarwanda = Nothing
             }
 
-        InvalidChildBirthOrder ->
+        InvalidHmisNumber ->
             { english = "is invalid - child should be between 1 and 15"
             , kinyarwanda = Nothing
             }

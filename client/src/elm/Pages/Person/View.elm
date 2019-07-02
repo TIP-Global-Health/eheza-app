@@ -651,7 +651,7 @@ viewCreateForm language currentDate relationId model db =
                     )
                 |> (::) emptyOption
 
-        childBirthOrderOptions =
+        hmisNumberOptions =
             List.repeat 15 ""
                 |> List.indexedMap
                     (\index _ ->
@@ -725,8 +725,8 @@ viewCreateForm language currentDate relationId model db =
             in
             viewSelectInput language Translate.NumberOfChildrenUnder5 options Backend.Person.Form.numberOfChildren "ten" "select-input" False personForm
 
-        childBirthOrderInput =
-            viewSelectInput language Translate.ChildBirthOrder childBirthOrderOptions Backend.Person.Form.childBirthOrder "ten" "select-input" False personForm
+        hmisNumberInput =
+            viewSelectInput language Translate.HmisNumber hmisNumberOptions Backend.Person.Form.hmisNumber "ten" "select-input" False personForm
 
         nationalIdInput =
             viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
@@ -751,7 +751,7 @@ viewCreateForm language currentDate relationId model db =
                                 ]
 
                             ExpectChild ->
-                                [ childBirthOrderInput
+                                [ hmisNumberInput
                                 , genderInput
                                 , hivStatusInput
                                 , modeOfDeliveryInput
@@ -759,7 +759,7 @@ viewCreateForm language currentDate relationId model db =
 
                             ExpectAdultOrChild ->
                                 [ nationalIdInput
-                                , childBirthOrderInput
+                                , hmisNumberInput
                                 , genderInput
                                 , hivStatusInput
                                 , levelOfEducationInput

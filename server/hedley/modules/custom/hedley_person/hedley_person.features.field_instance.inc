@@ -151,8 +151,8 @@ function hedley_person_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-person-field_child_birth_order'.
-  $field_instances['node-person-field_child_birth_order'] = array(
+  // Exported field_instance: 'node-person-field_hmis_number'.
+  $field_instances['node-person-field_hmis_number'] = array(
     'bundle' => 'person',
     'default_value' => NULL,
     'deleted' => 0,
@@ -173,8 +173,8 @@ function hedley_person_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_child_birth_order',
-    'label' => 'Child birth order',
+    'field_name' => 'field_hmis_number',
+    'label' => 'Child hmis number',
     'required' => 0,
     'settings' => array(
       'text_processing' => 0,
@@ -1123,7 +1123,7 @@ function hedley_person_field_default_field_instances() {
   t('Birth date');
   t('Birth date estimated');
   t('Cell');
-  t('Child birth order');
+  t('Child hmis number');
   t('District');
   t('Education Level');
   t('First name');

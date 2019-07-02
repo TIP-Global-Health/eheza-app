@@ -86,13 +86,13 @@ function hedley_person_field_default_field_bases() {
     'type' => 'text',
   );
 
-  // Exported field_base: 'field_child_birth_order'.
-  $field_bases['field_child_birth_order'] = array(
+  // Exported field_base: 'field_hmis_number'.
+  $field_bases['field_hmis_number'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_child_birth_order',
+    'field_name' => 'field_hmis_number',
     'indexes' => array(
       'format' => array(
         0 => 'format',

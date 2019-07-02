@@ -15,7 +15,7 @@ decodePerson =
         |> optional "first_name" string ""
         |> optional "second_name" string ""
         |> optional "national_id_number" (nullable string) Nothing
-        |> optional "child_birth_order" (nullable string) Nothing
+        |> optional "hmis_number" (nullable string) Nothing
         |> optional "photo" (nullable string) Nothing
         |> optional "birth_date" (nullable decodeYYYYMMDD) Nothing
         |> optional "birth_date_estimated" bool False
