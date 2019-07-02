@@ -241,6 +241,10 @@ div.page-relationship {
         margin-bottom: 50px;
         margin-left: 60px;
     }
+
+    div.current-groups {
+      margin-bottom: 30px;
+    }
 }
 
 div.page-person {
@@ -248,7 +252,7 @@ div.page-person {
     padding: 0 35px 35px 35px;
     height: 100%;
     width: 100%;
-    overflow-y: hidden;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
 

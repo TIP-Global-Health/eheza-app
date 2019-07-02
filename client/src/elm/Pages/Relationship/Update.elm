@@ -40,10 +40,10 @@ update id1 id2 msg model =
               ]
             )
 
-        Save ->
+        Save maybeRelatedBy ->
             let
                 extraMsg =
-                    case model.relatedBy of
+                    case maybeRelatedBy of
                         Just relatedBy ->
                             [ Backend.Model.PostRelationship id1
                                 { relatedBy = relatedBy
