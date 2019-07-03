@@ -25,18 +25,15 @@ module Backend.Measurement.Decoder exposing
     , decodeWeight
     )
 
-import AllDict
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Dict exposing (Dict)
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict)
 import Gizra.NominalDate
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid, toEntityUuid)
 import Translate.Utils exposing (decodeLanguage)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
 import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 import Utils.Json exposing (decodeEverySet)
 
@@ -59,32 +56,6 @@ decodeMeasurement encounterTag valueDecoder =
         |> required "person" decodeEntityUuid
         |> optional encounterTag (nullable decodeEntityUuid) Nothing
         |> custom valueDecoder
-
-
-{-| Decodes `HistoricalMeasurements` as sent by `/api/offline_sessions/`
--}
-decodeHistoricalMeasurements : Decoder HistoricalMeasurements
-decodeHistoricalMeasurements =
-    decode HistoricalMeasurements
-        |> requiredAt [ "participants", "mother_activity" ]
-            (oneOf
-                [ decodeEmptyArrayAs EntityUuidDict.empty
-                , map toEntityUuidDict (dict decodeMotherMeasurementList)
-                ]
-            )
-        |> requiredAt [ "participants", "child_activity" ]
-            (oneOf
-                [ decodeEmptyArrayAs EntityUuidDict.empty
-                , map toEntityUuidDict (dict decodeChildMeasurementList)
-                ]
-            )
-
-
-{-| TODO: Put in elm-essentials.
--}
-toEntityUuidDict : Dict String v -> EntityUuidDict (EntityUuid k) v
-toEntityUuidDict =
-    Dict.foldl (\key value acc -> AllDict.insert (toEntityUuid key) value acc) EntityUuidDict.empty
 
 
 decodeWithEntityUuid : Decoder a -> Decoder ( EntityUuid b, a )
