@@ -107,6 +107,7 @@ type ValidationError
     | InvalidBirthDate
     | InvalidBirthDateForAdult
     | InvalidBirthDateForChild
+    | InvalidHmisNumber
     | LengthError Int
     | LettersOnly
     | RequiredField
@@ -189,6 +190,7 @@ type TranslationId
     | Cell
     | ChartPhrase ChartPhrase
     | CheckIn
+    | ChildHmisNumber
     | ChildDemographicInformation
     | ChildNutritionSignLabel ChildNutritionSign
     | ChildNutritionSignReport ChildNutritionSign
@@ -1018,6 +1020,11 @@ translationSet trans =
         CheckIn ->
             { english = "Check in:"
             , kinyarwanda = Just "Kureba abaje"
+            }
+
+        ChildHmisNumber ->
+            { english = "Child HMIS Number"
+            , kinyarwanda = Nothing
             }
 
         ChildDemographicInformation ->
@@ -3561,6 +3568,11 @@ translateValidationError id =
 
         InvalidBirthDateForChild ->
             { english = "is invalid - child should be below the age of 13"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidHmisNumber ->
+            { english = "is invalid - child should be between 1 and 15"
             , kinyarwanda = Nothing
             }
 

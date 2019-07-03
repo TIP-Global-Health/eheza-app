@@ -147,7 +147,47 @@ function hedley_person_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 14,
+      'weight' => 15,
+    ),
+  );
+
+  // Exported field_instance: 'node-person-field_hmis_number'.
+  $field_instances['node-person-field_hmis_number'] = array(
+    'bundle' => 'person',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 24,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_hmis_number',
+    'label' => 'Child hmis number',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 7,
     ),
   );
 
@@ -187,7 +227,7 @@ function hedley_person_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 17,
+      'weight' => 18,
     ),
   );
 
@@ -227,7 +267,7 @@ function hedley_person_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 12,
+      'weight' => 13,
     ),
   );
 
@@ -264,7 +304,7 @@ function hedley_person_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 9,
+      'weight' => 10,
     ),
   );
 
@@ -341,7 +381,7 @@ function hedley_person_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 7,
+      'weight' => 8,
     ),
   );
 
@@ -385,7 +425,7 @@ function hedley_person_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 18,
+      'weight' => 19,
     ),
   );
 
@@ -422,7 +462,7 @@ function hedley_person_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 19,
+      'weight' => 20,
     ),
   );
 
@@ -459,7 +499,7 @@ function hedley_person_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 8,
+      'weight' => 9,
     ),
   );
 
@@ -496,7 +536,7 @@ function hedley_person_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 20,
+      'weight' => 21,
     ),
   );
 
@@ -582,7 +622,7 @@ function hedley_person_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 21,
+      'weight' => 22,
     ),
   );
 
@@ -622,7 +662,7 @@ function hedley_person_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 16,
+      'weight' => 17,
     ),
   );
 
@@ -712,7 +752,7 @@ function hedley_person_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 11,
+      'weight' => 12,
     ),
   );
 
@@ -792,7 +832,7 @@ function hedley_person_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 13,
+      'weight' => 14,
     ),
   );
 
@@ -829,7 +869,7 @@ function hedley_person_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 10,
+      'weight' => 11,
     ),
   );
 
@@ -869,7 +909,7 @@ function hedley_person_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 22,
+      'weight' => 23,
     ),
   );
 
@@ -909,7 +949,7 @@ function hedley_person_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 15,
+      'weight' => 16,
     ),
   );
 
@@ -1083,6 +1123,7 @@ function hedley_person_field_default_field_instances() {
   t('Birth date');
   t('Birth date estimated');
   t('Cell');
+  t('Child hmis number');
   t('District');
   t('Education Level');
   t('First name');

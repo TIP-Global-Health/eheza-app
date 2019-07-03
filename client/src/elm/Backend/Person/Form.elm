@@ -1,4 +1,48 @@
-module Backend.Person.Form exposing (ExpectedAge(..), PersonForm, allDigitsPattern, birthDate, birthDateEstimated, cell, district, educationLevel, emptyForm, expectedAgeFromForm, firstName, gender, healthCenter, hivStatus, maritalStatus, modeOfDelivery, nationalIdNumber, numberOfChildren, phoneNumber, photo, province, secondName, sector, ubudehe, validateBirthDate, validateCell, validateDigitsOnly, validateDistrict, validateEducationLevel, validateGender, validateHealthCenterId, validateHivStatus, validateMaritalStatus, validateModeOfDelivery, validateNationalIdNumber, validatePerson, validateProvince, validateSector, validateUbudehe, validateVillage, village, withDefault)
+module Backend.Person.Form exposing
+    ( ExpectedAge(..)
+    , PersonForm
+    , allDigitsPattern
+    , birthDate
+    , birthDateEstimated
+    , cell
+    , district
+    , educationLevel
+    , emptyForm
+    , expectedAgeFromForm
+    , firstName
+    , gender
+    , healthCenter
+    , hivStatus
+    , hmisNumber
+    , maritalStatus
+    , modeOfDelivery
+    , nationalIdNumber
+    , numberOfChildren
+    , phoneNumber
+    , photo
+    , province
+    , secondName
+    , sector
+    , ubudehe
+    , validateBirthDate
+    , validateCell
+    , validateDigitsOnly
+    , validateDistrict
+    , validateEducationLevel
+    , validateGender
+    , validateHealthCenterId
+    , validateHivStatus
+    , validateMaritalStatus
+    , validateModeOfDelivery
+    , validateNationalIdNumber
+    , validatePerson
+    , validateProvince
+    , validateSector
+    , validateUbudehe
+    , validateVillage
+    , village
+    , withDefault
+    )
 
 import AllDict
 import Backend.Entities exposing (HealthCenterId)
@@ -146,6 +190,7 @@ validatePerson maybeRelated maybeCurrentDate =
                 |> andMap (succeed <| String.trim firstNameValue)
                 |> andMap (succeed <| String.trim secondNameValue)
                 |> andMap (field nationalIdNumber validateNationalIdNumber)
+                |> andMap (field hmisNumber validateHmisNumber)
                 |> andMap (field photo <| nullable string)
                 |> andMap (succeed birthDate)
                 |> andMap (field birthDateEstimated bool)
@@ -176,12 +221,39 @@ validateNationalIdNumber =
                     trimmed =
                         String.trim s
                 in
-                if String.length trimmed /= 18 then
-                    fail <| customError (LengthError 18)
+                if String.length trimmed /= 16 then
+                    fail <| customError (LengthError 16)
 
                 else
                     format allDigitsPattern trimmed
                         |> mapError (\_ -> customError DigitsOnly)
+            )
+        |> nullable
+
+
+validateHmisNumber : Validation ValidationError (Maybe String)
+validateHmisNumber =
+    string
+        |> andThen
+            (\s ->
+                let
+                    trimmed =
+                        String.trim s
+
+                    error =
+                        customError InvalidHmisNumber
+                in
+                String.toInt s
+                    |> Result.toMaybe
+                    |> Maybe.map
+                        (\number ->
+                            if number > 0 && number < 16 then
+                                succeed trimmed
+
+                            else
+                                fail error
+                        )
+                    |> Maybe.withDefault (fail error)
             )
         |> nullable
 
@@ -390,6 +462,11 @@ secondName =
 nationalIdNumber : String
 nationalIdNumber =
     "national_id_number"
+
+
+hmisNumber : String
+hmisNumber =
+    "hmis_number"
 
 
 photo : String

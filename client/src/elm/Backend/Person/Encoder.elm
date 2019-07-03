@@ -14,6 +14,7 @@ encodePerson person =
         , ( "first_name", string person.firstName )
         , ( "second_name", string person.secondName )
         , ( "national_id_number", maybe string person.nationalIdNumber )
+        , ( "hmis_number", maybe string person.hmisNumber )
         , ( "photo", maybe string person.avatarUrl )
         , ( "birth_date", maybe encodeYYYYMMDD person.birthDate )
         , ( "birth_date_estimated", bool person.isDateOfBirthEstimated )
