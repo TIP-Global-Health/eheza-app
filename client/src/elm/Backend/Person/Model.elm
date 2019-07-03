@@ -9,6 +9,7 @@ type alias Person =
     , firstName : String
     , secondName : String
     , nationalIdNumber : Maybe String
+    , hmisNumber : Maybe String
     , avatarUrl : Maybe String
     , birthDate : Maybe NominalDate
     , isDateOfBirthEstimated : Bool
