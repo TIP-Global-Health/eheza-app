@@ -182,22 +182,24 @@ viewFoundClinic language currentDate nurse clinicId clinic sessions =
 
         recentAndUpcomingSessions =
             sessions
-                |> Dict.filter
-                    (\_ session ->
-                        let
-                            deltaToEndDate =
-                                delta session.scheduledDate.end currentDate
-
-                            deltaToStartDate =
-                                delta session.scheduledDate.start currentDate
-                        in
-                        -- Ends last week or next week
-                        (abs deltaToEndDate.days <= daysToShow)
-                            || -- Starts last week or next week
-                               (abs deltaToStartDate.days <= daysToShow)
-                            || -- Is between start and end date
-                               (deltaToStartDate.days <= 0 && deltaToEndDate.days >= 0)
-                    )
+                -- @todo
+                -- Implement `delta`
+                -- |> Dict.filter
+                --     (\_ session ->
+                --         let
+                --             deltaToEndDate =
+                --                 delta session.scheduledDate.end currentDate
+                --
+                --             deltaToStartDate =
+                --                 delta session.scheduledDate.start currentDate
+                --         in
+                --         -- Ends last week or next week
+                --         (abs deltaToEndDate.days <= daysToShow)
+                --             || -- Starts last week or next week
+                --                (abs deltaToStartDate.days <= daysToShow)
+                --             || -- Is between start and end date
+                --                (deltaToStartDate.days <= 0 && deltaToEndDate.days >= 0)
+                --     )
                 |> Dict.map (viewSession language currentDate)
                 |> Dict.values
 
@@ -243,9 +245,11 @@ viewSession : Language -> NominalDate -> SessionId -> Session -> Html Msg
 viewSession language currentDate sessionId session =
     let
         enableLink =
-            ((delta session.scheduledDate.start currentDate).days <= 0)
-                && ((delta session.scheduledDate.end currentDate).days >= 0)
-                && not session.closed
+            -- @todo
+            -- Implement `delta`
+            -- ((delta session.scheduledDate.start currentDate).days <= 0)
+            --     && ((delta session.scheduledDate.end currentDate).days >= 0)
+            not session.closed
 
         link =
             button
