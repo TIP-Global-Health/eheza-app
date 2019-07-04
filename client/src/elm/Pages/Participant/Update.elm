@@ -5,7 +5,7 @@ import Backend.Measurement.Model exposing (MeasurementData, MotherMeasurements)
 import Measurement.Model
 import Measurement.Update
 import Pages.Page exposing (Page)
-import Pages.Participant.Model exposing (Model, Msg(..), emptyModel)
+import Pages.Participant.Model exposing (ChildUpdateReturns, Model, MotherUpdateReturns, Msg(..), emptyModel)
 
 
 {-| This is a bit of a variation on the usual `update` function.
@@ -32,7 +32,7 @@ updateChild :
     Msg ChildActivity Measurement.Model.MsgChild
     -> Model ChildActivity
     -> Measurement.Model.ModelChild
-    -> ( Model ChildActivity, Cmd (Msg ChildActivity Measurement.Model.MsgChild), Measurement.Model.ModelChild, Maybe Measurement.Model.OutMsgChild, Maybe Page )
+    -> ChildUpdateReturns
 updateChild msg model childForm =
     case msg of
         MsgMeasurement subMsg ->
@@ -40,34 +40,34 @@ updateChild msg model childForm =
                 ( subModel, subCmd, outMsg ) =
                     Measurement.Update.updateChild subMsg childForm
             in
-            ( model
-            , Cmd.map MsgMeasurement subCmd
-            , subModel
-            , outMsg
-            , Nothing
-            )
+            ChildUpdateReturns
+                model
+                (Cmd.map MsgMeasurement subCmd)
+                subModel
+                outMsg
+                Nothing
 
         Redirect page ->
-            ( model, Cmd.none, childForm, Nothing, Just page )
+            ChildUpdateReturns model Cmd.none childForm Nothing (Just page)
 
         SetSelectedActivity val ->
-            ( { model | selectedActivity = Just val }
-            , Cmd.none
-            , childForm
-            , Nothing
-            , Nothing
-            )
+            ChildUpdateReturns
+                { model | selectedActivity = Just val }
+                Cmd.none
+                childForm
+                Nothing
+                Nothing
 
         SetSelectedTab tab ->
-            ( { model
-                | selectedTab = tab
-                , selectedActivity = Nothing
-              }
-            , Cmd.none
-            , childForm
-            , Nothing
-            , Nothing
-            )
+            ChildUpdateReturns
+                { model
+                    | selectedTab = tab
+                    , selectedActivity = Nothing
+                }
+                Cmd.none
+                childForm
+                Nothing
+                Nothing
 
 
 {-| See comments on `updateChild` ... this has a similar structure.
@@ -77,7 +77,7 @@ updateMother :
     -> Model MotherActivity
     -> Measurement.Model.ModelMother
     -> MeasurementData MotherMeasurements
-    -> ( Model MotherActivity, Cmd (Msg MotherActivity Measurement.Model.MsgMother), Measurement.Model.ModelMother, Maybe Measurement.Model.OutMsgMother, Maybe Page )
+    -> MotherUpdateReturns
 updateMother msg model motherForm measurements =
     case msg of
         MsgMeasurement subMsg ->
@@ -85,31 +85,31 @@ updateMother msg model motherForm measurements =
                 ( subModel, subCmd, outMsg ) =
                     Measurement.Update.updateMother measurements subMsg motherForm
             in
-            ( model
-            , Cmd.map MsgMeasurement subCmd
-            , subModel
-            , outMsg
-            , Nothing
-            )
+            MotherUpdateReturns
+                model
+                (Cmd.map MsgMeasurement subCmd)
+                subModel
+                outMsg
+                Nothing
 
         Redirect page ->
-            ( model, Cmd.none, motherForm, Nothing, Just page )
+            MotherUpdateReturns model Cmd.none motherForm Nothing (Just page)
 
         SetSelectedActivity val ->
-            ( { model | selectedActivity = Just val }
-            , Cmd.none
-            , motherForm
-            , Nothing
-            , Nothing
-            )
+            MotherUpdateReturns
+                { model | selectedActivity = Just val }
+                Cmd.none
+                motherForm
+                Nothing
+                Nothing
 
         SetSelectedTab tab ->
-            ( { model
-                | selectedTab = tab
-                , selectedActivity = Nothing
-              }
-            , Cmd.none
-            , motherForm
-            , Nothing
-            , Nothing
-            )
+            MotherUpdateReturns
+                { model
+                    | selectedTab = tab
+                    , selectedActivity = Nothing
+                }
+                Cmd.none
+                motherForm
+                Nothing
+                Nothing
