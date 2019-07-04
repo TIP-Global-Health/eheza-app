@@ -121,8 +121,8 @@ viewParticipantDetailsForm language currentDate db id person =
                 |> Maybe.withDefault NotAsked
                 |> viewWebData language viewFamilyMembers identity
 
-        viewGroups ( clinics, groups ) =
-            groups
+        viewGroups ( clinics, groups_ ) =
+            groups_
                 |> Dict.map (always (viewPmtctParticipant language clinics))
                 |> Dict.values
                 |> div [ class "ui unstackable items participants-list" ]

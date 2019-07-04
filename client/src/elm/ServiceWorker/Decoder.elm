@@ -28,10 +28,10 @@ decodeIncomingMsg =
                         field "state" decodeNewWorker
                             |> map SetNewWorker
 
-                    "SyncData" ->
-                        field "data" (Dict.decodeArray2 (field "uuid" decodeEntityUuid) decodeSyncData)
-                            |> map SetSyncData
-
+                    -- @todo: implement decodeArray2
+                    -- "SyncData" ->
+                    --     field "data" (Dict.decodeArray2 (field "uuid" decodeEntityUuid) decodeSyncData)
+                    --         |> map SetSyncData
                     "NewRevisions" ->
                         field "data" (list decodeRevision)
                             |> map NewRevisions
