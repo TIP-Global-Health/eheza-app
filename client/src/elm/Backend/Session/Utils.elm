@@ -45,25 +45,25 @@ getMyMother childId session =
             )
 
 
-getChildHistoricalMeasurements : PersonId -> OfflineSession -> Lazy ChildMeasurementList
+getChildHistoricalMeasurements : PersonId -> OfflineSession -> ChildMeasurementList
 getChildHistoricalMeasurements childId session =
-    Lazy.map
+    .map
         (.historical >> .children >> Dict.get childId >> Maybe.withDefault emptyChildMeasurementList)
         session.measurements
 
 
-getMotherHistoricalMeasurements : PersonId -> OfflineSession -> Lazy MotherMeasurementList
+getMotherHistoricalMeasurements : PersonId -> OfflineSession -> MotherMeasurementList
 getMotherHistoricalMeasurements motherId session =
-    Lazy.map
+    .map
         (.historical >> .mothers >> Dict.get motherId >> Maybe.withDefault emptyMotherMeasurementList)
         session.measurements
 
 
 {-| Gets the data in the form that `Measurement.View` (and others) will want.
 -}
-getChildMeasurementData : PersonId -> EditableSession -> Lazy (MeasurementData ChildMeasurements)
+getChildMeasurementData : PersonId -> EditableSession -> MeasurementData ChildMeasurements
 getChildMeasurementData childId session =
-    Lazy.map
+    .map
         (\measurements ->
             { current =
                 Dict.get childId measurements.current.children
@@ -77,9 +77,9 @@ getChildMeasurementData childId session =
         session.offlineSession.measurements
 
 
-getChildMeasurementData2 : PersonId -> OfflineSession -> Lazy (MeasurementData ChildMeasurements)
+getChildMeasurementData2 : PersonId -> OfflineSession -> MeasurementData ChildMeasurements
 getChildMeasurementData2 childId session =
-    Lazy.map
+    .map
         (\measurements ->
             { current =
                 Dict.get childId measurements.current.children
@@ -95,9 +95,9 @@ getChildMeasurementData2 childId session =
 
 {-| Gets the data in the form that `Measurement.View` (and others) will want.
 -}
-getMotherMeasurementData : PersonId -> EditableSession -> Lazy (MeasurementData MotherMeasurements)
+getMotherMeasurementData : PersonId -> EditableSession -> MeasurementData MotherMeasurements
 getMotherMeasurementData motherId session =
-    Lazy.map
+    .map
         (\measurements ->
             { current =
                 Dict.get motherId measurements.current.mothers
@@ -111,9 +111,9 @@ getMotherMeasurementData motherId session =
         session.offlineSession.measurements
 
 
-getMotherMeasurementData2 : PersonId -> OfflineSession -> Lazy (MeasurementData MotherMeasurements)
+getMotherMeasurementData2 : PersonId -> OfflineSession -> MeasurementData MotherMeasurements
 getMotherMeasurementData2 motherId session =
-    Lazy.map
+    .map
         (\measurements ->
             { current =
                 Dict.get motherId measurements.current.mothers
