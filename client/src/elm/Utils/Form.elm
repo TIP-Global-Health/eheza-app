@@ -86,7 +86,7 @@ nullable validation field =
 the result of decoding. If the decoder fails, wraps the failure in the provided
 error tag.
 -}
-fromDecoder : (String -> e) -> Maybe e -> Decoder a -> Validation e a
+fromDecoder : (Json.Decode.Error -> e) -> Maybe e -> Decoder a -> Validation e a
 fromDecoder errorTag maybeRequiredTag decoder field =
     let
         decoded =

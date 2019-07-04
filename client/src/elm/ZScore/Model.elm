@@ -18,8 +18,8 @@ module ZScore.Model exposing
 
 -}
 
-import AssocList as Dict exposing (Dict)
 import RemoteData exposing (RemoteData(..), WebData)
+import Utils.AllDict exposing (AllDict)
 import Utils.NominalDate exposing (Days, Months)
 
 
@@ -114,8 +114,8 @@ type BMI
 
 
 type alias ByDaysAndMonths value =
-    { byDay : Dict.Days (ZScoreEntry value) Int
-    , byMonth : Dict.Months (ZScoreEntry value) Int
+    { byDay : AllDict Days (ZScoreEntry value) Int
+    , byMonth : AllDict Months (ZScoreEntry value) Int
     }
 
 
@@ -135,11 +135,11 @@ type alias WeightForAgeTables =
 
 
 type alias WeightForLengthTables =
-    MaleAndFemale (Dict.Length (ZScoreEntry Kilograms) Int)
+    MaleAndFemale (AllDict Length (ZScoreEntry Kilograms) Int)
 
 
 type alias WeightForHeightTables =
-    MaleAndFemale (Dict.Height (ZScoreEntry Kilograms) Int)
+    MaleAndFemale (AllDict Height (ZScoreEntry Kilograms) Int)
 
 
 type alias MaleAndFemale a =

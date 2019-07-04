@@ -14,13 +14,13 @@ far it doesn't seem to be a performance problem, so no premature optimization!
 
 -}
 
-import AssocList as Dict exposing (Dict)
 import Html exposing (Html)
 import RemoteData
 import Round
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Translate exposing (ChartPhrase(..), Language, TranslationId(..), translate)
+import Utils.AllDict as AllDict exposing (AllDict)
 import Utils.NominalDate exposing (Days(..))
 import ZScore.Model exposing (..)
 import ZScore.Utils exposing (valueForZScore)
@@ -71,7 +71,7 @@ viewHeightForAgeBoys language model data =
         , ageLines language
         , zScoreLabelsHeightForAgeBoys
         , model.lengthHeightForAge
-            |> RemoteData.map (.male >> .byDay >> Dict.toList)
+            |> RemoteData.map (.male >> .byDay >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData heightForAgeConfig
         , plotChildData heightForAgeConfig data
@@ -106,7 +106,7 @@ type alias Bounds =
 
 heightForAgeConfig : PlotConfig Days Centimetres
 heightForAgeConfig =
-    { toFloatX = \(Days days) -> toFloat days
+    { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
     , toFloatY = \(Centimetres cm) -> cm
     , input = { minY = 42, maxY = 99, minX = 0, maxX = 365 * 2 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
@@ -116,7 +116,7 @@ heightForAgeConfig =
 
 weightForAgeConfig : PlotConfig Days Kilograms
 weightForAgeConfig =
-    { toFloatX = \(Days days) -> toFloat days
+    { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
     , toFloatY = \(Kilograms kg) -> kg
     , input = { minY = 1.4, maxY = 17.8, minX = 0, maxX = 365 * 2 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
@@ -318,7 +318,7 @@ viewWeightForAgeBoys language model data =
         , ageLines language
         , zScoreLabelsWeightForAgeBoys
         , model.weightForAge
-            |> RemoteData.map (.male >> .byDay >> Dict.toList)
+            |> RemoteData.map (.male >> .byDay >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData weightForAgeConfig
         , plotChildData weightForAgeConfig data
@@ -339,7 +339,7 @@ viewWeightForHeightBoys language model data =
         , heightLines
         , zScoreLabelsWeightForHeightBoys
         , model.weightForLength
-            |> RemoteData.map (.male >> Dict.toList)
+            |> RemoteData.map (.male >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData weightForHeightConfig
         , plotChildData weightForHeightConfig data
@@ -360,7 +360,7 @@ viewWeightForHeightGirls language model data =
         , heightLines
         , zScoreLabelsWeightForHeightGirls
         , model.weightForLength
-            |> RemoteData.map (.female >> Dict.toList)
+            |> RemoteData.map (.female >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData weightForHeightConfig
         , plotChildData weightForHeightConfig data
@@ -381,7 +381,7 @@ viewHeightForAgeGirls language model data =
         , ageLines language
         , zScoreLabelsHeightForAgeGirls
         , model.lengthHeightForAge
-            |> RemoteData.map (.female >> .byDay >> Dict.toList)
+            |> RemoteData.map (.female >> .byDay >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData heightForAgeConfig
         , plotChildData heightForAgeConfig data
@@ -402,7 +402,7 @@ viewWeightForAgeGirls language model data =
         , ageLines language
         , zScoreLabelsWeightForAgeGirls
         , model.weightForAge
-            |> RemoteData.map (.female >> .byDay >> Dict.toList)
+            |> RemoteData.map (.female >> .byDay >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData weightForAgeConfig
         , plotChildData weightForAgeConfig data
