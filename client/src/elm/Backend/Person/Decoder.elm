@@ -10,7 +10,7 @@ import Restful.Endpoint exposing (decodeEntityUuid)
 
 decodePerson : Decoder Person
 decodePerson =
-    decode Person
+    succeed Person
         |> required "label" string
         |> optional "first_name" string ""
         |> optional "second_name" string ""
