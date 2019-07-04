@@ -59,7 +59,7 @@ view language device app model =
 viewDeviceStatus : Language -> WebData Device -> App.Model.Model -> Model -> Html Msg
 viewDeviceStatus language device app model =
     case device of
-        Success device ->
+        Success _ ->
             div [ class "device-status" ]
                 [ button
                     [ class "ui fluid primary button"
