@@ -98,7 +98,7 @@ view config language currentDate zscores selectedActivity ( sessionId, session )
                                 else
                                     Nothing
                             )
-                        |> Maybe.Extra.orElse (Maybe.map Tuple.first (Dict.head participants.completed))
+                        |> Maybe.Extra.orElse (Maybe.map Tuple.first (Dict.toList participants.completed |> List.head))
 
                 Pending ->
                     model.selectedParticipant
@@ -110,7 +110,7 @@ view config language currentDate zscores selectedActivity ( sessionId, session )
                                 else
                                     Nothing
                             )
-                        |> Maybe.Extra.orElse (Maybe.map Tuple.first (Dict.head participants.pending))
+                        |> Maybe.Extra.orElse (Maybe.map Tuple.first (Dict.toList participants.pending |> List.head))
 
         participantsHtml =
             let

@@ -181,7 +181,8 @@ viewFetchedContent language currentDate id1 id2 model request data =
         savedRelationship =
             data.relationships
                 |> Dict.filter (\_ relationship -> relationship.relatedTo == id2)
-                |> Dict.head
+                |> Dict.toList
+                |> List.head
                 |> Maybe.map (Tuple.second >> .relatedBy)
 
         viewedRelationship =

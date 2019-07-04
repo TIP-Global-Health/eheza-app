@@ -5,7 +5,7 @@ module Gizra.NominalDate exposing
     , fromLocalDateTime, toLocalDateTime
     , diffDays, diffCalendarMonthsAndDays
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
-    , compare, emptyNominalDate
+    , compare, emptyNominalDate, fromDate
     )
 
 {-| Some utilities for dealing with "pure" dates that have no time or
@@ -24,7 +24,7 @@ time zone information.
 
 -}
 
-import Date exposing (fromRataDie)
+import Date exposing (Date, fromRataDie)
 import Json.Decode exposing (Decoder, andThen, field, map2, string)
 import Json.Decode.Extra exposing (fromResult)
 import Json.Encode exposing (Value, object)
@@ -99,6 +99,24 @@ different day in a different time zone.
 -}
 fromLocalDateTime : Time.Posix -> NominalDate
 fromLocalDateTime date =
+    -- @todo
+    --    Time.Date.date
+    --        (Date.year date)
+    --        (monthToNumber (Date.month date))
+    --        (Date.day date)
+    emptyNominalDate
+
+
+{-| Converts an `elm-lang/core` `Date` to a `NominalDate`.
+
+We pick up the date part according to whatever the local browser's time zone
+is. Thus, results will be inconsistent from one locality to the next ... since
+the same universal time might be considered one day in one time zone and a
+different day in a different time zone.
+
+-}
+fromDate : Date -> NominalDate
+fromDate date =
     -- @todo
     --    Time.Date.date
     --        (Date.year date)

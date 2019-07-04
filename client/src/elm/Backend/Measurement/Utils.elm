@@ -3,6 +3,7 @@ module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, cur
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Gizra.NominalDate exposing (compare)
 import Restful.Endpoint exposing (EntityUuid)
 
 
@@ -163,8 +164,14 @@ getCurrentAndPrevious sessionId =
         -- the current and previous value
         go id value acc =
             if value.sessionId == Just sessionId then
+                let
+                    current_ =
+                        Dict.toList acc.current
+                            |> (::) ( id, value )
+                            |> Dict.fromList
+                in
                 -- If it's got our session ID, then it's current
-                { acc | current = Dict.cons id value acc.current }
+                { acc | current = current_ }
 
             else
                 case acc.previous of
@@ -173,7 +180,7 @@ getCurrentAndPrevious sessionId =
                         { acc | previous = Just ( id, value ) }
 
                     Just ( _, previousValue ) ->
-                        if Time.Date.compare value.dateMeasured previousValue.dateMeasured == GT then
+                        if compare value.dateMeasured previousValue.dateMeasured == GT then
                             { acc | previous = Just ( id, value ) }
 
                         else

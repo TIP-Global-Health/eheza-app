@@ -6,9 +6,10 @@ import Backend.Entities exposing (PersonId)
 import Backend.Model
 import Backend.Person.Form exposing (ExpectedAge(..), birthDate, validatePerson)
 import Backend.Person.Model exposing (Person)
+import Date exposing (toRataDie)
 import Form
 import Form.Field
-import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD, fromLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD, fromDate, fromLocalDateTime)
 import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 
@@ -82,7 +83,8 @@ update currentDate msg people model =
         DateSelected relation date ->
             let
                 dateAsString =
-                    fromLocalDateTime date |> formatYYYYMMDD
+                    fromDate date
+                        |> formatYYYYMMDD
 
                 setFieldMsg =
                     Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm relation

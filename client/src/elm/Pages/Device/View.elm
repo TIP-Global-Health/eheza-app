@@ -134,16 +134,16 @@ viewHealthCenters language db =
         |> RemoteData.map
             (\data ->
                 data
-                    |> Dict.sortBy .name
-                    |> Dict.map (viewHealthCenter language db)
-                    |> Dict.values
+                    |> Dict.toList
+                    |> List.sortBy (Tuple.second >> .name)
+                    |> List.map (viewHealthCenter language db)
                     |> div [ class "health-centers" ]
             )
         |> RemoteData.withDefault spinner
 
 
-viewHealthCenter : Language -> ModelIndexedDb -> HealthCenterId -> HealthCenter -> Html Msg
-viewHealthCenter language db uuid model =
+viewHealthCenter : Language -> ModelIndexedDb -> ( HealthCenterId, HealthCenter ) -> Html Msg
+viewHealthCenter language db ( uuid, model ) =
     let
         sync =
             db.syncData
