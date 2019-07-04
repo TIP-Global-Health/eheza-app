@@ -2,7 +2,7 @@ module Backend.Fetch exposing (forget, shouldFetch)
 
 import AssocList as Dict
 import Backend.Model exposing (..)
-import Dict
+import AssocList as Dict
 import RemoteData exposing (RemoteData(..), isNotAsked, isSuccess)
 
 

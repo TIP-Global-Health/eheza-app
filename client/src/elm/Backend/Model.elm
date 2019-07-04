@@ -30,7 +30,7 @@ import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
-import Dict exposing (Dict)
+import AssocList as Dict exposing (Dict)
 import RemoteData exposing (RemoteData(..), WebData)
 
 

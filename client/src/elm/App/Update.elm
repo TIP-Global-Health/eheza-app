@@ -10,7 +10,7 @@ import Backend.Update
 import Config
 import Device.Decoder
 import Device.Encoder
-import Dict
+import AssocList as Dict
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Http exposing (Error(..))
 import HttpBuilder

@@ -6,7 +6,7 @@ module Utils.Json exposing
     )
 
 import Date exposing (Date)
-import Dict exposing (Dict)
+import AssocList as Dict exposing (Dict)
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (Decoder, andThen, decodeString, dict, fail, field, float, index, int, list, map, map2, nullable, oneOf, string, succeed, value)

@@ -9,7 +9,7 @@ import Backend.Model exposing (Revision)
 import Backend.SyncData.Model exposing (SyncData)
 import Json.Encode exposing (Value)
 import RemoteData exposing (RemoteData(..))
-import Time exposing (Time)
+import Time
 
 
 {-| The state of the service worker system.
@@ -29,7 +29,7 @@ type alias Model =
     { active : Bool
     , registration : RemoteData String ()
     , newWorker : Maybe NewWorker
-    , lastUpdateCheck : Maybe Time
+    , lastUpdateCheck : Maybe Time.Posix
     }
 
 

@@ -3,6 +3,7 @@ module Gizra.Json exposing
     , decodeInt, decodeIntToString, decodeFloat
     , decodeEmptyArrayAs
     , decodeJsonInString
+    , dict
     )
 
 {-| Utilities for dealing with JSON.
@@ -29,9 +30,10 @@ module Gizra.Json exposing
 
 -}
 
-import Dict exposing (Dict)
+-- import Json.Decode.Extra exposing (dict2)
+
+import AssocList as Dict exposing (Dict)
 import Json.Decode exposing (..)
-import Json.Decode.Extra exposing (dict2)
 import Json.Encode exposing (object)
 import String
 
@@ -137,7 +139,7 @@ decodeFloat =
 {-| Given a decoder for the values, decode a dictionary that has integer keys.
 The resulting decoder will fail if any of the keys can't be converted to an `Int`.
 
-    import Dict
+    import AssocList as Dict
 
     """ { "27" : "value" } """
         |> decodeString (decodeIntDict string)
@@ -202,3 +204,36 @@ decodeJsonInString decoder =
                     Err err ->
                         fail <| errorToString err
             )
+
+
+
+-- Porting to 0.19
+
+
+dict : Decoder a -> Decoder (Dict String a)
+dict decoder =
+    map Dict.fromList (keyValuePairs decoder)
+
+
+dict2 : Decoder comparable -> Decoder v -> Decoder (Dict comparable v)
+dict2 keyDecoder valueDecoder =
+    keyValuePairs valueDecoder
+        |> andThen (decodeDictFromTuples keyDecoder)
+
+
+{-| Helper function for dict
+-}
+decodeDictFromTuples : Decoder comparable -> List ( String, v ) -> Decoder (Dict comparable v)
+decodeDictFromTuples keyDecoder tuples =
+    case tuples of
+        [] ->
+            succeed Dict.empty
+
+        ( strKey, value ) :: rest ->
+            case decodeString keyDecoder strKey of
+                Ok key ->
+                    decodeDictFromTuples keyDecoder rest
+                        |> andThen (Dict.insert key value >> succeed)
+
+                Err error ->
+                    errorToString error |> fail

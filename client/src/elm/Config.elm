@@ -1,7 +1,7 @@
 module Config exposing (caregiverPantheon, configs, counselingPantheon, ***REMOVED***, livePantheon, ***REMOVED***, ***REMOVED***, ***REMOVED***)
 
+import AssocList as Dict exposing (Dict)
 import Config.Model as Config exposing (Model)
-import Dict exposing (..)
 import LocalConfig exposing (localConfigs)
 import Pusher.Model exposing (Cluster(..), PusherAppKey)
 import Rollbar

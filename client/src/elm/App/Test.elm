@@ -2,7 +2,7 @@ module App.Test exposing (all)
 
 import App.Model exposing (..)
 import App.View exposing (view)
-import Dict
+import AssocList as Dict
 import Maybe exposing (withDefault)
 import Pages.Device.Model
 import Pages.PinCode.Model
