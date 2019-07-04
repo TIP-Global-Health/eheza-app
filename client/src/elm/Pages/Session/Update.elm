@@ -74,14 +74,14 @@ updateFoundSession sessionId session msg model =
                 childForm =
                     Maybe.map (\childId -> getChildForm childId model session) maybeChildId
 
-                ( subModel, subCmd, subForm, outMsg, page ) =
+                updateReturns =
                     Pages.Activity.Update.updateChild subMsg activityPage childForm
 
                 sessionMsgs =
                     maybeChildId
                         |> Maybe.map
                             (\childId ->
-                                [ Maybe.map (Backend.Session.Model.MeasurementOutMsgChild childId) outMsg
+                                [ Maybe.map (Backend.Session.Model.MeasurementOutMsgChild childId) updateReturns.outMsg
                                 ]
                                     |> List.filterMap identity
                                     |> List.map (App.Model.MsgIndexedDb << Backend.Model.MsgSession sessionId)
@@ -89,11 +89,11 @@ updateFoundSession sessionId session msg model =
                         |> Maybe.withDefault []
 
                 childForms =
-                    Maybe.map2 (\childId form -> Dict.insert childId form model.childForms) maybeChildId subForm
+                    Maybe.map2 (\childId form -> Dict.insert childId form model.childForms) maybeChildId updateReturns.form
                         |> Maybe.withDefault model.childForms
 
                 redirectMsgs =
-                    Maybe.map App.Model.SetActivePage page
+                    Maybe.map App.Model.SetActivePage updateReturns.page
                         |> Maybe.Extra.toList
             in
             -- So, to summarize
@@ -102,10 +102,10 @@ updateFoundSession sessionId session msg model =
             -- - we turn the redirect page into a message, if provided
             -- - we send a message to implement the OutMsg, if provided
             ( { model
-                | childActivityPages = Dict.insert activityType subModel model.childActivityPages
+                | childActivityPages = Dict.insert activityType updateReturns.model model.childActivityPages
                 , childForms = childForms
               }
-            , Cmd.map (MsgChildActivity activityType maybeChildId) subCmd
+            , Cmd.map (MsgChildActivity activityType maybeChildId) updateReturns.cmd
             , redirectMsgs ++ sessionMsgs
             )
 
@@ -124,14 +124,14 @@ updateFoundSession sessionId session msg model =
                         |> Maybe.map (\motherId -> force <| getMotherMeasurementData motherId session)
                         |> Maybe.withDefault (emptyMotherMeasurementData session)
 
-                ( subModel, subCmd, subForm, outMsg, page ) =
+                updateReturns =
                     Pages.Activity.Update.updateMother subMsg activityPage motherForm measurements
 
                 sessionMsgs =
                     maybeMotherId
                         |> Maybe.map
                             (\motherId ->
-                                [ Maybe.map (Backend.Session.Model.MeasurementOutMsgMother motherId) outMsg
+                                [ Maybe.map (Backend.Session.Model.MeasurementOutMsgMother motherId) updateReturns.outMsg
                                 ]
                                     |> List.filterMap identity
                                     |> List.map (App.Model.MsgIndexedDb << Backend.Model.MsgSession sessionId)
@@ -139,11 +139,11 @@ updateFoundSession sessionId session msg model =
                         |> Maybe.withDefault []
 
                 motherForms =
-                    Maybe.map2 (\motherId form -> Dict.insert motherId form model.motherForms) maybeMotherId subForm
+                    Maybe.map2 (\motherId form -> Dict.insert motherId form model.motherForms) maybeMotherId updateReturns.form
                         |> Maybe.withDefault model.motherForms
 
                 redirectMsgs =
-                    Maybe.map App.Model.SetActivePage page
+                    Maybe.map App.Model.SetActivePage updateReturns.page
                         |> Maybe.Extra.toList
             in
             -- So, to summarize
@@ -153,10 +153,10 @@ updateFoundSession sessionId session msg model =
             -- - we turn the redirect page into a message, if provided
             -- - we send a message to implement the OutMsg, if provided
             ( { model
-                | motherActivityPages = Dict.insert activityType subModel model.motherActivityPages
+                | motherActivityPages = Dict.insert activityType updateReturns.model model.motherActivityPages
                 , motherForms = motherForms
               }
-            , Cmd.map (MsgMotherActivity activityType maybeMotherId) subCmd
+            , Cmd.map (MsgMotherActivity activityType maybeMotherId) updateReturns.cmd
             , redirectMsgs ++ sessionMsgs
             )
 
