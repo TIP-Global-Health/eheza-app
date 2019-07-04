@@ -47,84 +47,78 @@ getMyMother childId session =
 
 getChildHistoricalMeasurements : PersonId -> OfflineSession -> ChildMeasurementList
 getChildHistoricalMeasurements childId session =
-    .map
-        (.historical >> .children >> Dict.get childId >> Maybe.withDefault emptyChildMeasurementList)
-        session.measurements
+    session.measurements
+        |> (.historical >> .children >> Dict.get childId >> Maybe.withDefault emptyChildMeasurementList)
 
 
 getMotherHistoricalMeasurements : PersonId -> OfflineSession -> MotherMeasurementList
 getMotherHistoricalMeasurements motherId session =
-    .map
-        (.historical >> .mothers >> Dict.get motherId >> Maybe.withDefault emptyMotherMeasurementList)
-        session.measurements
+    session.measurements
+        |> (.historical >> .mothers >> Dict.get motherId >> Maybe.withDefault emptyMotherMeasurementList)
 
 
 {-| Gets the data in the form that `Measurement.View` (and others) will want.
 -}
 getChildMeasurementData : PersonId -> EditableSession -> MeasurementData ChildMeasurements
 getChildMeasurementData childId session =
-    .map
-        (\measurements ->
-            { current =
-                Dict.get childId measurements.current.children
-                    |> Maybe.withDefault emptyChildMeasurements
-            , previous =
-                Dict.get childId measurements.previous.children
-                    |> Maybe.withDefault emptyChildMeasurements
-            , update = session.update
-            }
-        )
-        session.offlineSession.measurements
+    session.offlineSession.measurements
+        |> (\measurements ->
+                { current =
+                    Dict.get childId measurements.current.children
+                        |> Maybe.withDefault emptyChildMeasurements
+                , previous =
+                    Dict.get childId measurements.previous.children
+                        |> Maybe.withDefault emptyChildMeasurements
+                , update = session.update
+                }
+           )
 
 
 getChildMeasurementData2 : PersonId -> OfflineSession -> MeasurementData ChildMeasurements
 getChildMeasurementData2 childId session =
-    .map
-        (\measurements ->
-            { current =
-                Dict.get childId measurements.current.children
-                    |> Maybe.withDefault emptyChildMeasurements
-            , previous =
-                Dict.get childId measurements.previous.children
-                    |> Maybe.withDefault emptyChildMeasurements
-            , update = NotAsked
-            }
-        )
-        session.measurements
+    session.measurements
+        |> (\measurements ->
+                { current =
+                    Dict.get childId measurements.current.children
+                        |> Maybe.withDefault emptyChildMeasurements
+                , previous =
+                    Dict.get childId measurements.previous.children
+                        |> Maybe.withDefault emptyChildMeasurements
+                , update = NotAsked
+                }
+           )
 
 
 {-| Gets the data in the form that `Measurement.View` (and others) will want.
 -}
 getMotherMeasurementData : PersonId -> EditableSession -> MeasurementData MotherMeasurements
 getMotherMeasurementData motherId session =
-    .map
-        (\measurements ->
-            { current =
-                Dict.get motherId measurements.current.mothers
-                    |> Maybe.withDefault emptyMotherMeasurements
-            , previous =
-                Dict.get motherId measurements.previous.mothers
-                    |> Maybe.withDefault emptyMotherMeasurements
-            , update = session.update
-            }
-        )
-        session.offlineSession.measurements
+    session.offlineSession.measurements
+        |> (\measurements ->
+                { current =
+                    Dict.get motherId measurements.current.mothers
+                        |> Maybe.withDefault emptyMotherMeasurements
+                , previous =
+                    Dict.get motherId measurements.previous.mothers
+                        |> Maybe.withDefault emptyMotherMeasurements
+                , update = session.update
+                }
+           )
 
 
 getMotherMeasurementData2 : PersonId -> OfflineSession -> MeasurementData MotherMeasurements
 getMotherMeasurementData2 motherId session =
-    .map
-        (\measurements ->
-            { current =
-                Dict.get motherId measurements.current.mothers
-                    |> Maybe.withDefault emptyMotherMeasurements
-            , previous =
-                Dict.get motherId measurements.previous.mothers
-                    |> Maybe.withDefault emptyMotherMeasurements
-            , update = NotAsked
-            }
-        )
-        session.measurements
+    session.measurements
+        |> (\measurements ->
+                { current =
+                    Dict.get motherId measurements.current.mothers
+                        |> Maybe.withDefault emptyMotherMeasurements
+                , previous =
+                    Dict.get motherId measurements.previous.mothers
+                        |> Maybe.withDefault emptyMotherMeasurements
+                , update = NotAsked
+                }
+           )
 
 
 emptyMotherMeasurementData : EditableSession -> MeasurementData MotherMeasurements
@@ -145,7 +139,7 @@ isClosed : NominalDate -> Session -> Bool
 isClosed currentDate session =
     let
         pastEnd =
-            Time.Date.compare currentDate session.scheduledDate.end == GT
+            Gizra.NominalDate.compare currentDate session.scheduledDate.end == GT
     in
     session.closed || pastEnd
 
