@@ -30,6 +30,7 @@ type alias AssembledData =
     , activity : PrenatalActivity
     , encounter : PrenatalEncounter
     , participant : PrenatalParticipant
+    , measurements : PrenatalMeasurements
     , person : Person
     }
 
@@ -39,6 +40,10 @@ view language currentDate id activity db model =
     let
         encounter =
             AllDict.get id db.prenatalEncounters
+                |> Maybe.withDefault NotAsked
+
+        measurements =
+            AllDict.get id db.prenatalMeasurements
                 |> Maybe.withDefault NotAsked
 
         participant =
@@ -62,6 +67,7 @@ view language currentDate id activity db model =
                 |> RemoteData.andMap (Success activity)
                 |> RemoteData.andMap encounter
                 |> RemoteData.andMap participant
+                |> RemoteData.andMap measurements
                 |> RemoteData.andMap person
 
         content =

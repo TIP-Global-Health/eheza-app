@@ -2,6 +2,7 @@ module Pages.PrenatalEncounter.View exposing (view, viewMotherAndMeasurements)
 
 import AllDict
 import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (PrenatalMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
@@ -33,6 +34,7 @@ type alias FetchedData =
     { encounter : PrenatalEncounter
     , participant : PrenatalParticipant
     , person : Person
+    , measurements : PrenatalMeasurements
     , id : PrenatalEncounterId
     }
 
@@ -42,6 +44,10 @@ view language currentDate id db model =
     let
         encounter =
             AllDict.get id db.prenatalEncounters
+                |> Maybe.withDefault NotAsked
+
+        measurements =
+            AllDict.get id db.prenatalMeasurements
                 |> Maybe.withDefault NotAsked
 
         participant =
@@ -64,6 +70,7 @@ view language currentDate id db model =
             RemoteData.map FetchedData encounter
                 |> RemoteData.andMap participant
                 |> RemoteData.andMap person
+                |> RemoteData.andMap measurements
                 |> RemoteData.andMap (Success id)
 
         content =

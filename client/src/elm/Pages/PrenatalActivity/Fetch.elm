@@ -24,6 +24,7 @@ fetch id db =
     in
     List.filterMap identity
         [ Just <| FetchPrenatalEncounter id
+        , Just <| FetchPrenatalMeasurements id
         , Maybe.map FetchPrenatalParticipant participantId
         , Maybe.map FetchPerson personId
         ]
