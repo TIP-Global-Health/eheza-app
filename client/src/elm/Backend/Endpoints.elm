@@ -1,4 +1,4 @@
-module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), attendanceEndpoint, breastExamEndpoint, childMeasurementListEndpoint, clinicEndpoint, corePhysicalExamEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, dangerSignsEndpoint, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, lastMenstrualPeriodEndpoint, medicalHistoryEndpoint, medicationEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, obstetricHistoryEndpoint, obstetricalExamEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, prenatalEncounterEndpoint, prenatalFamilyPlanningEndpoint, prenatalNutritionEndpoint, prenatalParticipantEndpoint, relationshipEndpoint, resourceEndpoint, sessionEndpoint, socialHistoryEndpoint, swEndpoint, syncDataEndpoint, vitalsEndpoint, weightEndpoint)
+module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), attendanceEndpoint, breastExamEndpoint, childMeasurementListEndpoint, clinicEndpoint, corePhysicalExamEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, dangerSignsEndpoint, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodePrenatalEncounterParams, encodePrenatalParticipantParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, lastMenstrualPeriodEndpoint, medicalHistoryEndpoint, medicationEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, obstetricHistoryEndpoint, obstetricalExamEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, prenatalEncounterEndpoint, prenatalFamilyPlanningEndpoint, prenatalMeasurementsEndpoint, prenatalNutritionEndpoint, prenatalParticipantEndpoint, relationshipEndpoint, resourceEndpoint, sessionEndpoint, socialHistoryEndpoint, swEndpoint, syncDataEndpoint, vitalsEndpoint, weightEndpoint)
 
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
@@ -214,6 +214,11 @@ childMeasurementListEndpoint =
     swEndpoint "nodes/child-measurements" decodeChildMeasurementList
 
 
+prenatalMeasurementsEndpoint : ReadOnlyEndPoint Error PrenatalEncounterId PrenatalMeasurements ()
+prenatalMeasurementsEndpoint =
+    swEndpoint "nodes/prenatal-measurements" decodePrenatalMeasurements
+
+
 {-| Type-safe params ... how nice!
 -}
 type SessionParams
@@ -268,16 +273,38 @@ pmtctParticipantEndpoint =
         |> withParamsEncoder encodePmtctParticipantParams
 
 
-prenatalEncounterEndpoint : ReadWriteEndPoint Error PrenatalEncounterId PrenatalEncounter PrenatalEncounter ()
+prenatalEncounterEndpoint : ReadWriteEndPoint Error PrenatalEncounterId PrenatalEncounter PrenatalEncounter (Maybe PrenatalParticipantId)
 prenatalEncounterEndpoint =
     swEndpoint "nodes/prenatal_encounter" decodePrenatalEncounter
         |> withValueEncoder (object << encodePrenatalEncounter)
+        |> withParamsEncoder encodePrenatalEncounterParams
 
 
-prenatalParticipantEndpoint : ReadWriteEndPoint Error PrenatalParticipantId PrenatalParticipant PrenatalParticipant ()
+encodePrenatalEncounterParams : Maybe PrenatalParticipantId -> List ( String, String )
+encodePrenatalEncounterParams params =
+    case params of
+        Just id ->
+            [ ( "prenatal_participant", fromEntityUuid id ) ]
+
+        Nothing ->
+            []
+
+
+prenatalParticipantEndpoint : ReadWriteEndPoint Error PrenatalParticipantId PrenatalParticipant PrenatalParticipant (Maybe PersonId)
 prenatalParticipantEndpoint =
     swEndpoint "nodes/prenatal_participant" decodePrenatalParticipant
         |> withValueEncoder encodePrenatalParticipant
+        |> withParamsEncoder encodePrenatalParticipantParams
+
+
+encodePrenatalParticipantParams : Maybe PersonId -> List ( String, String )
+encodePrenatalParticipantParams params =
+    case params of
+        Just id ->
+            [ ( "person", fromEntityUuid id ) ]
+
+        Nothing ->
+            []
 
 
 breastExamEndpoint : ReadWriteEndPoint Error BreastExamId BreastExam BreastExam ()

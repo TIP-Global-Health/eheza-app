@@ -84,8 +84,23 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchPrenatalEncountersForParticipant id ->
+            AllDict.get id model.prenatalEncountersByParticipant
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchPrenatalMeasurements id ->
+            AllDict.get id model.prenatalMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchPrenatalParticipant id ->
             AllDict.get id model.prenatalParticipants
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchPrenatalParticipantsForPerson id ->
+            AllDict.get id model.prenatalParticipantsByPerson
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
@@ -150,11 +165,20 @@ forget msg model =
         FetchPerson id ->
             { model | people = AllDict.remove id model.people }
 
+        FetchPrenatalParticipantsForPerson id ->
+            { model | prenatalParticipantsByPerson = AllDict.remove id model.prenatalParticipantsByPerson }
+
         FetchParticipantsForPerson id ->
             { model | participantsByPerson = AllDict.remove id model.participantsByPerson }
 
         FetchPrenatalEncounter id ->
             { model | prenatalEncounters = AllDict.remove id model.prenatalEncounters }
+
+        FetchPrenatalEncountersForParticipant id ->
+            { model | prenatalEncountersByParticipant = AllDict.remove id model.prenatalEncountersByParticipant }
+
+        FetchPrenatalMeasurements id ->
+            { model | prenatalMeasurements = AllDict.remove id model.prenatalMeasurements }
 
         FetchPrenatalParticipant id ->
             { model | prenatalParticipants = AllDict.remove id model.prenatalParticipants }

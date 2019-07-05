@@ -97,6 +97,11 @@ type alias ModelIndexedDb =
     , prenatalEncounters : EntityUuidDict PrenatalEncounterId (WebData PrenatalEncounter)
     , prenatalParticipants : EntityUuidDict PrenatalParticipantId (WebData PrenatalParticipant)
 
+    -- Cache things organized in certain ways.
+    , prenatalParticipantsByPerson : EntityUuidDict PersonId (WebData (EntityUuidDictList PrenatalParticipantId PrenatalParticipant))
+    , prenatalEncountersByParticipant : EntityUuidDict PrenatalParticipantId (WebData (EntityUuidDictList PrenatalEncounterId PrenatalEncounter))
+    , prenatalMeasurements : EntityUuidDict PrenatalEncounterId (WebData PrenatalMeasurements)
+
     -- From the point of view of the specified person, all of their relationships.
     , relationshipsByPerson : EntityUuidDict PersonId (WebData (EntityUuidDictList RelationshipId MyRelationship))
 
@@ -133,6 +138,9 @@ emptyModelIndexedDb =
     , postSession = NotAsked
     , prenatalEncounters = EntityUuidDict.empty
     , prenatalParticipants = EntityUuidDict.empty
+    , prenatalParticipantsByPerson = EntityUuidDict.empty
+    , prenatalEncountersByParticipant = EntityUuidDict.empty
+    , prenatalMeasurements = EntityUuidDict.empty
     , relationshipsByPerson = EntityUuidDict.empty
     , saveSyncDataRequests = EntityUuidDict.empty
     , sessionRequests = EntityUuidDict.empty
@@ -159,6 +167,9 @@ type MsgIndexedDb
     | FetchPeopleByName String
     | FetchPerson PersonId
     | FetchPrenatalEncounter PrenatalEncounterId
+    | FetchPrenatalParticipantsForPerson PersonId
+    | FetchPrenatalEncountersForParticipant PrenatalParticipantId
+    | FetchPrenatalMeasurements PrenatalEncounterId
     | FetchPrenatalParticipant PrenatalParticipantId
     | FetchRelationshipsForPerson PersonId
     | FetchSession SessionId
@@ -177,6 +188,9 @@ type MsgIndexedDb
     | HandleFetchedPeopleByName String (WebData (EntityUuidDictList PersonId Person))
     | HandleFetchedPerson PersonId (WebData Person)
     | HandleFetchedPrenatalEncounter PrenatalEncounterId (WebData PrenatalEncounter)
+    | HandleFetchedPrenatalParticipantsForPerson PersonId (WebData (EntityUuidDictList PrenatalParticipantId PrenatalParticipant))
+    | HandleFetchedPrenatalEncountersForParticipant PrenatalParticipantId (WebData (EntityUuidDictList PrenatalEncounterId PrenatalEncounter))
+    | HandleFetchedPrenatalMeasurements PrenatalEncounterId (WebData PrenatalMeasurements)
     | HandleFetchedPrenatalParticipant PrenatalParticipantId (WebData PrenatalParticipant)
     | HandleFetchedRelationshipsForPerson PersonId (WebData (EntityUuidDictList RelationshipId MyRelationship))
     | HandleFetchedSession SessionId (WebData Session)

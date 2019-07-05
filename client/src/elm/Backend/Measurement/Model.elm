@@ -51,6 +51,7 @@ module Backend.Measurement.Model exposing
     , PhotoUrl(..)
     , PrenatalFamilyPlanning
     , PrenatalMeasurement
+    , PrenatalMeasurements
     , PrenatalNutrition
     , PrenatalNutritionValue
     , Resource
@@ -497,6 +498,26 @@ emptyHistoricalMeasurements =
 
 
 -- ONE OF EACH KIND OF MEASUREMENT
+
+
+{-| A set of prenatal measurements that correspond to the same prenatal
+encounter.
+-}
+type alias PrenatalMeasurements =
+    { breastExam : Maybe ( BreastExamId, BreastExam )
+    , corePhysicalExam : Maybe ( CorePhysicalExamId, CorePhysicalExam )
+    , dangerSigns : Maybe ( DangerSignsId, DangerSigns )
+    , lastMenstrualPeriod : Maybe ( LastMenstrualPeriodId, LastMenstrualPeriod )
+    , medicalHistory : Maybe ( MedicalHistoryId, MedicalHistory )
+    , medication : Maybe ( MedicationId, Medication )
+    , obstetricalExam : Maybe ( ObstetricalExamId, ObstetricalExam )
+    , obstetricHistory : Maybe ( ObstetricHistoryId, ObstetricHistory )
+    , familyPlanning : Maybe ( PrenatalFamilyPlanningId, PrenatalFamilyPlanning )
+    , nutrition : Maybe ( PrenatalNutritionId, PrenatalNutrition )
+    , resource : Maybe ( ResourceId, Resource )
+    , socialHistory : Maybe ( SocialHistoryId, SocialHistory )
+    , vitals : Maybe ( VitalsId, Vitals )
+    }
 
 
 {-| This is like `ChildMeasurementList`, except that it just covers one

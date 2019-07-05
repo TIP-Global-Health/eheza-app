@@ -18,7 +18,7 @@ import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getMyMother)
-import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements)
+import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements, mapPrenatalMeasurements)
 import Dict
 import EveryDict
 import Gizra.NominalDate exposing (NominalDate)
@@ -156,7 +156,7 @@ updateIndexedDb currentDate nurseId msg model =
         -- Temporary
         GoToRandomPrenatalEncounter ->
             ( model
-            , sw.selectRange prenatalEncounterEndpoint () 0 (Just 1)
+            , sw.selectRange prenatalEncounterEndpoint Nothing 0 (Just 1)
                 |> toTask
                 |> Task.map (.items >> List.head >> Maybe.map Tuple.first)
                 |> Task.attempt HandleRandomPrenatalEncounter
@@ -177,6 +177,45 @@ updateIndexedDb currentDate nurseId msg model =
             ( model
             , Cmd.none
             , appMsgs
+            )
+
+        FetchPrenatalParticipantsForPerson id ->
+            ( { model | prenatalParticipantsByPerson = AllDict.insert id Loading model.prenatalParticipantsByPerson }
+            , sw.select prenatalParticipantEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedPrenatalParticipantsForPerson id)
+            , []
+            )
+
+        HandleFetchedPrenatalParticipantsForPerson id data ->
+            ( { model | prenatalParticipantsByPerson = AllDict.insert id data model.prenatalParticipantsByPerson }
+            , Cmd.none
+            , []
+            )
+
+        FetchPrenatalEncountersForParticipant id ->
+            ( { model | prenatalEncountersByParticipant = AllDict.insert id Loading model.prenatalEncountersByParticipant }
+            , sw.select prenatalEncounterEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedPrenatalEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedPrenatalEncountersForParticipant id data ->
+            ( { model | prenatalEncountersByParticipant = AllDict.insert id data model.prenatalEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
+        FetchPrenatalMeasurements id ->
+            ( { model | prenatalMeasurements = AllDict.insert id Loading model.prenatalMeasurements }
+            , sw.get prenatalMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedPrenatalMeasurements id)
+            , []
+            )
+
+        HandleFetchedPrenatalMeasurements id data ->
+            ( { model | prenatalMeasurements = AllDict.insert id data model.prenatalMeasurements }
+            , Cmd.none
+            , []
             )
 
         FetchParticipantsForPerson personId ->
@@ -639,7 +678,12 @@ handleRevision revision (( model, recalc ) as noChange) =
             )
 
         BreastExamRevision uuid data ->
-            noChange
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | breastExam = Just ( uuid, data ) })
+                model
+            , recalc
+            )
 
         CatchmentAreaRevision uuid data ->
             noChange
@@ -684,7 +728,12 @@ handleRevision revision (( model, recalc ) as noChange) =
             )
 
         DangerSignsRevision uuid data ->
-            noChange
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | dangerSigns = Just ( uuid, data ) })
+                model
+            , recalc
+            )
 
         FamilyPlanningRevision uuid data ->
             ( mapMotherMeasurements
@@ -712,13 +761,28 @@ handleRevision revision (( model, recalc ) as noChange) =
             )
 
         LastMenstrualPeriodRevision uuid data ->
-            noChange
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | lastMenstrualPeriod = Just ( uuid, data ) })
+                model
+            , recalc
+            )
 
         MedicalHistoryRevision uuid data ->
-            noChange
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | medicalHistory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
 
         MedicationRevision uuid data ->
-            noChange
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | medication = Just ( uuid, data ) })
+                model
+            , recalc
+            )
 
         MuacRevision uuid data ->
             ( mapChildMeasurements
@@ -733,10 +797,20 @@ handleRevision revision (( model, recalc ) as noChange) =
             noChange
 
         ObstetricalExamRevision uuid data ->
-            noChange
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | obstetricalExam = Just ( uuid, data ) })
+                model
+            , recalc
+            )
 
         ObstetricHistoryRevision uuid data ->
-            noChange
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | obstetricHistory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
 
         ParticipantConsentRevision uuid data ->
             ( mapMotherMeasurements
@@ -788,20 +862,50 @@ handleRevision revision (( model, recalc ) as noChange) =
             )
 
         PrenatalParticipantRevision uuid data ->
-            ( { model | prenatalParticipants = AllDict.insert uuid (Success data) model.prenatalParticipants }
+            let
+                prenatalParticipants =
+                    AllDict.update uuid (Maybe.map (always (Success data))) model.prenatalParticipants
+
+                prenatalParticipantsByPerson =
+                    AllDict.remove data.person model.prenatalParticipantsByPerson
+            in
+            ( { model
+                | prenatalParticipants = prenatalParticipants
+                , prenatalParticipantsByPerson = prenatalParticipantsByPerson
+              }
             , recalc
             )
 
         PrenatalEncounterRevision uuid data ->
-            ( { model | prenatalEncounters = AllDict.insert uuid (Success data) model.prenatalEncounters }
+            let
+                prenatalEncounters =
+                    AllDict.update uuid (Maybe.map (always (Success data))) model.prenatalEncounters
+
+                prenatalEncountersByParticipant =
+                    AllDict.remove data.participant model.prenatalEncountersByParticipant
+            in
+            ( { model
+                | prenatalEncounters = prenatalEncounters
+                , prenatalEncountersByParticipant = prenatalEncountersByParticipant
+              }
             , recalc
             )
 
         PrenatalFamilyPlanningRevision uuid data ->
-            noChange
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | familyPlanning = Just ( uuid, data ) })
+                model
+            , recalc
+            )
 
         PrenatalNutritionRevision uuid data ->
-            noChange
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | nutrition = Just ( uuid, data ) })
+                model
+            , recalc
+            )
 
         RelationshipRevision uuid data ->
             ( { model | relationshipsByPerson = EntityUuidDict.empty }
@@ -809,7 +913,12 @@ handleRevision revision (( model, recalc ) as noChange) =
             )
 
         ResourceRevision uuid data ->
-            noChange
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | resource = Just ( uuid, data ) })
+                model
+            , recalc
+            )
 
         SessionRevision uuid data ->
             let
@@ -831,10 +940,20 @@ handleRevision revision (( model, recalc ) as noChange) =
             )
 
         SocialHistoryRevision uuid data ->
-            noChange
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | socialHistory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
 
         VitalsRevision uuid data ->
-            noChange
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | vitals = Just ( uuid, data ) })
+                model
+            , recalc
+            )
 
         WeightRevision uuid data ->
             ( mapChildMeasurements

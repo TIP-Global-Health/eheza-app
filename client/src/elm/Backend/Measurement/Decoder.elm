@@ -18,6 +18,7 @@ module Backend.Measurement.Decoder exposing
     , decodeParticipantConsent
     , decodePhoto
     , decodePrenatalFamilyPlanning
+    , decodePrenatalMeasurements
     , decodePrenatalNutrition
     , decodeResource
     , decodeSocialHistory
@@ -82,6 +83,28 @@ decodeChildMeasurementList =
         |> optional "photo" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodePhoto)) EntityUuidDictList.empty
         |> optional "weight" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeWeight)) EntityUuidDictList.empty
         |> optional "counseling_session" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeCounselingSession)) EntityUuidDictList.empty
+
+
+decodePrenatalMeasurements : Decoder PrenatalMeasurements
+decodePrenatalMeasurements =
+    let
+        decodeHead =
+            map List.head << list << decodeWithEntityUuid
+    in
+    decode PrenatalMeasurements
+        |> optional "breast_exam" (decodeHead decodeBreastExam) Nothing
+        |> optional "core_physical_exam" (decodeHead decodeCorePhysicalExam) Nothing
+        |> optional "danger_signs" (decodeHead decodeDangerSigns) Nothing
+        |> optional "last_menstrual_period" (decodeHead decodeLastMenstrualPeriod) Nothing
+        |> optional "medical_history" (decodeHead decodeMedicalHistory) Nothing
+        |> optional "medication" (decodeHead decodeMedication) Nothing
+        |> optional "obstetrical_exam" (decodeHead decodeObstetricalExam) Nothing
+        |> optional "obstetric_history" (decodeHead decodeObstetricHistory) Nothing
+        |> optional "prenatal_family_planning" (decodeHead decodePrenatalFamilyPlanning) Nothing
+        |> optional "prenatal_nutrition" (decodeHead decodePrenatalNutrition) Nothing
+        |> optional "resource" (decodeHead decodeResource) Nothing
+        |> optional "social_history" (decodeHead decodeSocialHistory) Nothing
+        |> optional "vitals" (decodeHead decodeVitals) Nothing
 
 
 decodePhoto : Decoder Photo
