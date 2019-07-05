@@ -327,17 +327,12 @@ update msg model =
         SetMedicalBoolInput formUpdateFunc value ->
             let
                 updatedData =
-                    case model.historyData.activeTask of
-                        Medical ->
-                            let
-                                updatedForm =
-                                    formUpdateFunc value model.historyData.medicalForm
-                            in
-                            model.historyData
-                                |> (\data -> { data | medicalForm = updatedForm })
-
-                        _ ->
-                            model.historyData
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.historyData.medicalForm
+                    in
+                    model.historyData
+                        |> (\data -> { data | medicalForm = updatedForm })
             in
             ( { model | historyData = updatedData }
             , Cmd.none
@@ -347,17 +342,12 @@ update msg model =
         SetSocialBoolInput formUpdateFunc value ->
             let
                 updatedData =
-                    case model.historyData.activeTask of
-                        Social ->
-                            let
-                                updatedForm =
-                                    formUpdateFunc value model.historyData.socialForm
-                            in
-                            model.historyData
-                                |> (\data -> { data | socialForm = updatedForm })
-
-                        _ ->
-                            model.historyData
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.historyData.socialForm
+                    in
+                    model.historyData
+                        |> (\data -> { data | socialForm = updatedForm })
             in
             ( { model | historyData = updatedData }
             , Cmd.none
@@ -411,25 +401,40 @@ update msg model =
             , []
             )
 
-        SetVitalsMeasurement formUpdateFunc value ->
+        SetVitalsIntMeasurement formUpdateFunc value ->
             let
                 updatedData =
-                    case model.examinationData.activeTask of
-                        Vitals ->
-                            let
-                                updatedForm =
-                                    case String.toFloat value of
-                                        Ok number ->
-                                            formUpdateFunc (Just number) model.examinationData.vitalsForm
+                    let
+                        updatedForm =
+                            case String.toInt value of
+                                Ok number ->
+                                    formUpdateFunc (Just number) model.examinationData.vitalsForm
 
-                                        Err _ ->
-                                            formUpdateFunc Nothing model.examinationData.vitalsForm
-                            in
-                            model.examinationData
-                                |> (\data -> { data | vitalsForm = updatedForm })
+                                Err _ ->
+                                    formUpdateFunc Nothing model.examinationData.vitalsForm
+                    in
+                    model.examinationData
+                        |> (\data -> { data | vitalsForm = updatedForm })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
 
-                        _ ->
-                            model.examinationData
+        SetVitalsFloatMeasurement formUpdateFunc value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            case String.toFloat value of
+                                Ok number ->
+                                    formUpdateFunc (Just number) model.examinationData.vitalsForm
+
+                                Err _ ->
+                                    formUpdateFunc Nothing model.examinationData.vitalsForm
+                    in
+                    model.examinationData
+                        |> (\data -> { data | vitalsForm = updatedForm })
             in
             ( { model | examinationData = updatedData }
             , Cmd.none
@@ -439,24 +444,17 @@ update msg model =
         SetNutritionAssessmentMeasurement formUpdateFunc value ->
             let
                 updatedData =
-                    case model.examinationData.activeTask of
-                        NutritionAssessment ->
-                            let
-                                updatedForm =
-                                    case String.toFloat value of
-                                        Ok number ->
-                                            formUpdateFunc (Just number) model.examinationData.nutritionAssessmentForm
-                                                |> calculateBmi
+                    let
+                        updatedForm =
+                            case String.toFloat value of
+                                Ok number ->
+                                    formUpdateFunc (Just number) model.examinationData.nutritionAssessmentForm
 
-                                        Err _ ->
-                                            formUpdateFunc Nothing model.examinationData.nutritionAssessmentForm
-                                                |> calculateBmi
-                            in
-                            model.examinationData
-                                |> (\data -> { data | nutritionAssessmentForm = updatedForm })
-
-                        _ ->
-                            model.examinationData
+                                Err _ ->
+                                    formUpdateFunc Nothing model.examinationData.nutritionAssessmentForm
+                    in
+                    model.examinationData
+                        |> (\data -> { data | nutritionAssessmentForm = updatedForm })
             in
             ( { model | examinationData = updatedData }
             , Cmd.none
@@ -466,17 +464,12 @@ update msg model =
         SetCorePhysicalExamBoolInput formUpdateFunc value ->
             let
                 updatedData =
-                    case model.examinationData.activeTask of
-                        CorePhysicalExam ->
-                            let
-                                updatedForm =
-                                    formUpdateFunc value model.examinationData.corePhysicalExamForm
-                            in
-                            model.examinationData
-                                |> (\data -> { data | corePhysicalExamForm = updatedForm })
-
-                        _ ->
-                            model.examinationData
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.examinationData.corePhysicalExamForm
+                    in
+                    model.examinationData
+                        |> (\data -> { data | corePhysicalExamForm = updatedForm })
             in
             ( { model | examinationData = updatedData }
             , Cmd.none
@@ -486,18 +479,13 @@ update msg model =
         SetCorePhysicalExamNeck value ->
             let
                 updatedData =
-                    case model.examinationData.activeTask of
-                        CorePhysicalExam ->
-                            let
-                                updatedForm =
-                                    model.examinationData.corePhysicalExamForm
-                                        |> (\form -> { form | neck = Just value })
-                            in
-                            model.examinationData
-                                |> (\data -> { data | corePhysicalExamForm = updatedForm })
-
-                        _ ->
-                            model.examinationData
+                    let
+                        updatedForm =
+                            model.examinationData.corePhysicalExamForm
+                                |> (\form -> { form | neck = Just value })
+                    in
+                    model.examinationData
+                        |> (\data -> { data | corePhysicalExamForm = updatedForm })
             in
             ( { model | examinationData = updatedData }
             , Cmd.none
@@ -507,18 +495,13 @@ update msg model =
         SetCorePhysicalExamLungs value ->
             let
                 updatedData =
-                    case model.examinationData.activeTask of
-                        CorePhysicalExam ->
-                            let
-                                updatedForm =
-                                    model.examinationData.corePhysicalExamForm
-                                        |> (\form -> { form | lungs = Just value })
-                            in
-                            model.examinationData
-                                |> (\data -> { data | corePhysicalExamForm = updatedForm })
-
-                        _ ->
-                            model.examinationData
+                    let
+                        updatedForm =
+                            model.examinationData.corePhysicalExamForm
+                                |> (\form -> { form | lungs = Just value })
+                    in
+                    model.examinationData
+                        |> (\data -> { data | corePhysicalExamForm = updatedForm })
             in
             ( { model | examinationData = updatedData }
             , Cmd.none
@@ -528,18 +511,13 @@ update msg model =
         SetCorePhysicalExamAbdomen value ->
             let
                 updatedData =
-                    case model.examinationData.activeTask of
-                        CorePhysicalExam ->
-                            let
-                                updatedForm =
-                                    model.examinationData.corePhysicalExamForm
-                                        |> (\form -> { form | abdomen = Just value })
-                            in
-                            model.examinationData
-                                |> (\data -> { data | corePhysicalExamForm = updatedForm })
-
-                        _ ->
-                            model.examinationData
+                    let
+                        updatedForm =
+                            model.examinationData.corePhysicalExamForm
+                                |> (\form -> { form | abdomen = Just value })
+                    in
+                    model.examinationData
+                        |> (\data -> { data | corePhysicalExamForm = updatedForm })
             in
             ( { model | examinationData = updatedData }
             , Cmd.none
@@ -549,18 +527,13 @@ update msg model =
         SetCorePhysicalExamHands value ->
             let
                 updatedData =
-                    case model.examinationData.activeTask of
-                        CorePhysicalExam ->
-                            let
-                                updatedForm =
-                                    model.examinationData.corePhysicalExamForm
-                                        |> (\form -> { form | hands = Just value })
-                            in
-                            model.examinationData
-                                |> (\data -> { data | corePhysicalExamForm = updatedForm })
-
-                        _ ->
-                            model.examinationData
+                    let
+                        updatedForm =
+                            model.examinationData.corePhysicalExamForm
+                                |> (\form -> { form | hands = Just value })
+                    in
+                    model.examinationData
+                        |> (\data -> { data | corePhysicalExamForm = updatedForm })
             in
             ( { model | examinationData = updatedData }
             , Cmd.none
@@ -570,18 +543,13 @@ update msg model =
         SetCorePhysicalExamLegs value ->
             let
                 updatedData =
-                    case model.examinationData.activeTask of
-                        CorePhysicalExam ->
-                            let
-                                updatedForm =
-                                    model.examinationData.corePhysicalExamForm
-                                        |> (\form -> { form | legs = Just value })
-                            in
-                            model.examinationData
-                                |> (\data -> { data | corePhysicalExamForm = updatedForm })
-
-                        _ ->
-                            model.examinationData
+                    let
+                        updatedForm =
+                            model.examinationData.corePhysicalExamForm
+                                |> (\form -> { form | legs = Just value })
+                    in
+                    model.examinationData
+                        |> (\data -> { data | corePhysicalExamForm = updatedForm })
             in
             ( { model | examinationData = updatedData }
             , Cmd.none
@@ -591,42 +559,52 @@ update msg model =
         SetObstetricalExamBoolInput formUpdateFunc value ->
             let
                 updatedData =
-                    case model.examinationData.activeTask of
-                        ObstetricalExam ->
-                            let
-                                updatedForm =
-                                    formUpdateFunc value model.examinationData.obstetricalExamForm
-                            in
-                            model.examinationData
-                                |> (\data -> { data | obstetricalExamForm = updatedForm })
-
-                        _ ->
-                            model.examinationData
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.examinationData.obstetricalExamForm
+                    in
+                    model.examinationData
+                        |> (\data -> { data | obstetricalExamForm = updatedForm })
             in
             ( { model | examinationData = updatedData }
             , Cmd.none
             , []
             )
 
-        SetObstetricalExamMeasurement formUpdateFunc value ->
+        SetObstetricalExamIntMeasurement formUpdateFunc value ->
             let
                 updatedData =
-                    case model.examinationData.activeTask of
-                        ObstetricalExam ->
-                            let
-                                updatedForm =
-                                    case String.toFloat value of
-                                        Ok number ->
-                                            formUpdateFunc (Just number) model.examinationData.obstetricalExamForm
+                    let
+                        updatedForm =
+                            case String.toInt value of
+                                Ok number ->
+                                    formUpdateFunc (Just number) model.examinationData.obstetricalExamForm
 
-                                        Err _ ->
-                                            formUpdateFunc Nothing model.examinationData.obstetricalExamForm
-                            in
-                            model.examinationData
-                                |> (\data -> { data | obstetricalExamForm = updatedForm })
+                                Err _ ->
+                                    formUpdateFunc Nothing model.examinationData.obstetricalExamForm
+                    in
+                    model.examinationData
+                        |> (\data -> { data | obstetricalExamForm = updatedForm })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
 
-                        _ ->
-                            model.examinationData
+        SetObstetricalExamFloatMeasurement formUpdateFunc value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            case String.toFloat value of
+                                Ok number ->
+                                    formUpdateFunc (Just number) model.examinationData.obstetricalExamForm
+
+                                Err _ ->
+                                    formUpdateFunc Nothing model.examinationData.obstetricalExamForm
+                    in
+                    model.examinationData
+                        |> (\data -> { data | obstetricalExamForm = updatedForm })
             in
             ( { model | examinationData = updatedData }
             , Cmd.none
@@ -636,18 +614,13 @@ update msg model =
         SetObstetricalExamFetalPresentation value ->
             let
                 updatedData =
-                    case model.examinationData.activeTask of
-                        ObstetricalExam ->
-                            let
-                                updatedForm =
-                                    model.examinationData.obstetricalExamForm
-                                        |> (\form -> { form | fetalPresentation = Just value })
-                            in
-                            model.examinationData
-                                |> (\data -> { data | obstetricalExamForm = updatedForm })
-
-                        _ ->
-                            model.examinationData
+                    let
+                        updatedForm =
+                            model.examinationData.obstetricalExamForm
+                                |> (\form -> { form | fetalPresentation = Just value })
+                    in
+                    model.examinationData
+                        |> (\data -> { data | obstetricalExamForm = updatedForm })
             in
             ( { model | examinationData = updatedData }
             , Cmd.none
@@ -657,17 +630,12 @@ update msg model =
         SetBreastExamBoolInput formUpdateFunc value ->
             let
                 updatedData =
-                    case model.examinationData.activeTask of
-                        BreastExam ->
-                            let
-                                updatedForm =
-                                    formUpdateFunc value model.examinationData.breastExamForm
-                            in
-                            model.examinationData
-                                |> (\data -> { data | breastExamForm = updatedForm })
-
-                        _ ->
-                            model.examinationData
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.examinationData.breastExamForm
+                    in
+                    model.examinationData
+                        |> (\data -> { data | breastExamForm = updatedForm })
             in
             ( { model | examinationData = updatedData }
             , Cmd.none
@@ -677,18 +645,13 @@ update msg model =
         SetBreastExamBreast value ->
             let
                 updatedData =
-                    case model.examinationData.activeTask of
-                        BreastExam ->
-                            let
-                                updatedForm =
-                                    model.examinationData.breastExamForm
-                                        |> (\form -> { form | breast = Just value })
-                            in
-                            model.examinationData
-                                |> (\data -> { data | breastExamForm = updatedForm })
-
-                        _ ->
-                            model.examinationData
+                    let
+                        updatedForm =
+                            model.examinationData.breastExamForm
+                                |> (\form -> { form | breast = Just value })
+                    in
+                    model.examinationData
+                        |> (\data -> { data | breastExamForm = updatedForm })
             in
             ( { model | examinationData = updatedData }
             , Cmd.none
@@ -784,17 +747,12 @@ update msg model =
         SetMedicationBoolInput formUpdateFunc value ->
             let
                 updatedData =
-                    case model.patientProvisionsData.activeTask of
-                        Medication ->
-                            let
-                                updatedForm =
-                                    formUpdateFunc value model.patientProvisionsData.medicationForm
-                            in
-                            model.patientProvisionsData
-                                |> (\data -> { data | medicationForm = updatedForm })
-
-                        _ ->
-                            model.patientProvisionsData
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.patientProvisionsData.medicationForm
+                    in
+                    model.patientProvisionsData
+                        |> (\data -> { data | medicationForm = updatedForm })
             in
             ( { model | patientProvisionsData = updatedData }
             , Cmd.none
@@ -804,17 +762,12 @@ update msg model =
         SetResourcesBoolInput formUpdateFunc value ->
             let
                 updatedData =
-                    case model.patientProvisionsData.activeTask of
-                        Resources ->
-                            let
-                                updatedForm =
-                                    formUpdateFunc value model.patientProvisionsData.resourcesForm
-                            in
-                            model.patientProvisionsData
-                                |> (\data -> { data | resourcesForm = updatedForm })
-
-                        _ ->
-                            model.patientProvisionsData
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.patientProvisionsData.resourcesForm
+                    in
+                    model.patientProvisionsData
+                        |> (\data -> { data | resourcesForm = updatedForm })
             in
             ( { model | patientProvisionsData = updatedData }
             , Cmd.none
@@ -868,22 +821,3 @@ update msg model =
             , Cmd.none
             , []
             )
-
-
-calculateBmi : NutritionAssessmentForm -> NutritionAssessmentForm
-calculateBmi form =
-    if isNothing form.weight || isNothing form.height then
-        { form | bmi = Nothing }
-
-    else
-        let
-            height =
-                form.height |> Maybe.withDefault 0
-
-            weight =
-                form.weight |> Maybe.withDefault 0
-
-            bmi =
-                weight / ((height / 100) ^ 2)
-        in
-        { form | bmi = Just bmi }

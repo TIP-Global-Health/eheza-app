@@ -3,9 +3,11 @@ module Pages.PrenatalActivity.Model exposing
     , CSectionReason(..)
     , CorePhysicalExamForm
     , DangerSignsData
+    , DangerSignsForm
     , ExaminationData
     , ExaminationTask(..)
     , FamilyPlanningData
+    , FamilyPlanningForm
     , HistoryData
     , HistoryTask(..)
     , LmpRange(..)
@@ -64,7 +66,8 @@ type Msg
     | SetActiveExaminationTask ExaminationTask
     | SetExaminationTaskCompleted
       -- ExaminationMsgs, Vitals
-    | SetVitalsMeasurement (Maybe Float -> VitalsForm -> VitalsForm) String
+    | SetVitalsIntMeasurement (Maybe Int -> VitalsForm -> VitalsForm) String
+    | SetVitalsFloatMeasurement (Maybe Float -> VitalsForm -> VitalsForm) String
       -- ExaminationMsgs, Nutrition Assessment
     | SetNutritionAssessmentMeasurement (Maybe Float -> NutritionAssessmentForm -> NutritionAssessmentForm) String
       -- ExaminationMsgs, Core Physical Exam
@@ -76,7 +79,8 @@ type Msg
     | SetCorePhysicalExamLegs LegsCPESign
       -- ExaminationMsgs, Obstetrical Exam
     | SetObstetricalExamBoolInput (Bool -> ObstetricalExamForm -> ObstetricalExamForm) Bool
-    | SetObstetricalExamMeasurement (Maybe Float -> ObstetricalExamForm -> ObstetricalExamForm) String
+    | SetObstetricalExamIntMeasurement (Maybe Int -> ObstetricalExamForm -> ObstetricalExamForm) String
+    | SetObstetricalExamFloatMeasurement (Maybe Float -> ObstetricalExamForm -> ObstetricalExamForm) String
     | SetObstetricalExamFetalPresentation FetalPresentation
       -- ExaminationMsgs, Breast Exam
     | SetBreastExamBoolInput (Bool -> BreastExamForm -> BreastExamForm) Bool
@@ -396,8 +400,8 @@ type ExaminationTask
 type alias VitalsForm =
     { sysBloodPressure : Maybe Float
     , diaBloodPressure : Maybe Float
-    , heartRate : Maybe Float
-    , respiratoryRate : Maybe Float
+    , heartRate : Maybe Int
+    , respiratoryRate : Maybe Int
     , bodyTemperature : Maybe Float
     }
 
@@ -415,7 +419,6 @@ emptyVitalsForm =
 type alias NutritionAssessmentForm =
     { height : Maybe Float
     , weight : Maybe Float
-    , bmi : Maybe Float
     , muac : Maybe Float
     }
 
@@ -424,12 +427,12 @@ emptyNutritionAssessmentForm : NutritionAssessmentForm
 emptyNutritionAssessmentForm =
     { height = Nothing
     , weight = Nothing
-    , bmi = Nothing
     , muac = Nothing
     }
 
 
 type alias CorePhysicalExamForm =
+    -- Needs to be redefined to use EverySet to allow multiple signs.
     { brittleHair : Maybe Bool
     , paleConjuctiva : Maybe Bool
     , neck : Maybe NeckCPESign
@@ -458,7 +461,7 @@ type alias ObstetricalExamForm =
     { fundalHeight : Maybe Float
     , fetalPresentation : Maybe FetalPresentation
     , fetalMovement : Maybe Bool
-    , fetalHeartRate : Maybe Float
+    , fetalHeartRate : Maybe Int
     , cSectionScar : Maybe Bool
     }
 
@@ -474,6 +477,7 @@ emptyObstetricalExamForm =
 
 
 type alias BreastExamForm =
+    -- Should be EverySet, since you can have more than one sign.
     { breast : Maybe BreastExamSign
     , selfGuidance : Maybe Bool
     }
@@ -521,6 +525,7 @@ emptyResourcesForm =
 
 
 type alias DangerSignsForm =
+    -- Should be EverySet
     { signs : Maybe (List DangerSign)
     }
 

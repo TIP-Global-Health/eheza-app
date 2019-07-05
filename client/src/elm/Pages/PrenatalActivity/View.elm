@@ -507,9 +507,11 @@ viewExaminationContent language currentDate assembled data =
                     in
                     ( viewVitalsForm language currentDate assembled form
                     , taskListCompleted [ form.sysBloodPressure, form.diaBloodPressure ]
-                        + ([ form.heartRate, form.respiratoryRate, form.bodyTemperature ]
-                            |> List.map
-                                taskCompleted
+                        + ([ Maybe.map (always ()) form.heartRate
+                           , Maybe.map (always ()) form.respiratoryRate
+                           , Maybe.map (always ()) form.bodyTemperature
+                           ]
+                            |> List.map taskCompleted
                             |> List.sum
                           )
                     , 4
@@ -521,7 +523,7 @@ viewExaminationContent language currentDate assembled data =
                             data.nutritionAssessmentForm
                     in
                     ( viewNutritionAssessmentForm language currentDate assembled form
-                    , [ form.height, form.weight, form.bmi, form.muac ]
+                    , [ form.height, form.weight, form.muac ]
                         |> List.map taskCompleted
                         |> List.sum
                     , 4
@@ -561,7 +563,7 @@ viewExaminationContent language currentDate assembled data =
                     in
                     ( viewObstetricalExamForm language currentDate assembled data.obstetricalExamForm
                     , taskCompleted form.fetalPresentation
-                        + ([ form.fundalHeight, form.fetalHeartRate ]
+                        + ([ Maybe.map (always ()) form.fundalHeight, Maybe.map (always ()) form.fetalHeartRate ]
                             |> List.map taskCompleted
                             |> List.sum
                           )
@@ -1200,7 +1202,7 @@ viewVitalsForm language currentDate assembled form =
         , viewMeasurementInput
             language
             form.sysBloodPressure
-            (SetVitalsMeasurement sysBloodPressureUpdateFunc)
+            (SetVitalsFloatMeasurement sysBloodPressureUpdateFunc)
             "sys-blood-pressure"
             Translate.MMHGUnit
         , viewPreviousMeasurement language sysBloodPressurePreviousValue Translate.MMHGUnit
@@ -1208,7 +1210,7 @@ viewVitalsForm language currentDate assembled form =
         , viewMeasurementInput
             language
             form.diaBloodPressure
-            (SetVitalsMeasurement diaBloodPressureUpdateFunc)
+            (SetVitalsFloatMeasurement diaBloodPressureUpdateFunc)
             "dia-blood-pressure"
             Translate.MMHGUnit
         , viewPreviousMeasurement language diaBloodPressurePreviousValue Translate.MMHGUnit
@@ -1218,10 +1220,10 @@ viewVitalsForm language currentDate assembled form =
                 [ viewLabel language Translate.HeartRate ]
             , viewWarning language Nothing
             ]
-        , viewMeasurementInput
+        , viewNumberInput
             language
             form.heartRate
-            (SetVitalsMeasurement heartRateUpdateFunc)
+            (SetVitalsIntMeasurement heartRateUpdateFunc)
             "heart-rate"
             Translate.BpmUnit
         , viewPreviousMeasurement language heartRatePreviousValue Translate.BpmUnit
@@ -1231,10 +1233,10 @@ viewVitalsForm language currentDate assembled form =
                 [ viewLabel language Translate.RespiratoryRate ]
             , viewWarning language Nothing
             ]
-        , viewMeasurementInput
+        , viewNumberInput
             language
             form.respiratoryRate
-            (SetVitalsMeasurement respiratoryRateUpdateFunc)
+            (SetVitalsIntMeasurement respiratoryRateUpdateFunc)
             "respiratory-rate"
             Translate.BpmUnit
         , viewPreviousMeasurement language respiratoryRatePreviousValue Translate.BpmUnit
@@ -1247,7 +1249,7 @@ viewVitalsForm language currentDate assembled form =
         , viewMeasurementInput
             language
             form.bodyTemperature
-            (SetVitalsMeasurement bodyTemperatureUpdateFunc)
+            (SetVitalsFloatMeasurement bodyTemperatureUpdateFunc)
             "body-temperature"
             Translate.Celcius
         , viewPreviousMeasurement language bodyTemperaturePreviousValue Translate.Celcius
@@ -1313,15 +1315,39 @@ viewNutritionAssessmentForm language currentDate assembled form =
                 [ viewLabel language Translate.BMI ]
             , viewWarning language Nothing
             ]
-        , div [ class "title bmi" ] [ text <| translate language Translate.BMIHelper ]
-        , viewMeasurementInputAndRound
-            language
-            form.bmi
-            (SetNutritionAssessmentMeasurement bmiUpdateFunc)
-            "bmi"
-            Translate.EmptyString
-            (Just 1)
-        , viewPreviousMeasurement language bmiPreviousValue Translate.EmptyString
+
+        {-
+
+           calculateBmi : NutritionAssessmentForm -> NutritionAssessmentForm
+           calculateBmi form =
+               if isNothing form.weight || isNothing form.height then
+                   { form | bmi = Nothing }
+
+               else
+                   let
+                       height =
+                           form.height |> Maybe.withDefault 0
+
+                       weight =
+                           form.weight |> Maybe.withDefault 0
+
+                       bmi =
+                           weight / ((height / 100) ^ 2)
+                   in
+                   { form | bmi = Just bmi }
+
+
+
+                      , div [ class "title bmi" ] [ text <| translate language Translate.BMIHelper ]
+                       , viewMeasurementInputAndRound
+                          language
+                          form.bmi
+                          (SetNutritionAssessmentMeasurement bmiUpdateFunc)
+                          "bmi"
+                          Translate.EmptyString
+                          (Just 1)
+                      , viewPreviousMeasurement language bmiPreviousValue Translate.EmptyString
+        -}
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
@@ -1475,7 +1501,7 @@ viewObstetricalExamForm language currentDate assembled form =
         , viewMeasurementInput
             language
             form.fundalHeight
-            (SetObstetricalExamMeasurement fundalHeightUpdateFunc)
+            (SetObstetricalExamFloatMeasurement fundalHeightUpdateFunc)
             "fundal-height"
             Translate.CentimeterShorthand
         , viewPreviousMeasurement language fundalHeightPreviousValue Translate.CentimeterShorthand
@@ -1509,10 +1535,10 @@ viewObstetricalExamForm language currentDate assembled form =
                 [ viewLabel language Translate.FetalHeartRate ]
             , viewWarning language Nothing
             ]
-        , viewMeasurementInput
+        , viewNumberInput
             language
             form.fetalHeartRate
-            (SetObstetricalExamMeasurement fetalHeartRateUpdateFunc)
+            (SetObstetricalExamIntMeasurement fetalHeartRateUpdateFunc)
             "fetal-heart-rate"
             Translate.BpmUnit
         , viewPreviousMeasurement language fetalHeartRatePreviousValue Translate.BpmUnit
