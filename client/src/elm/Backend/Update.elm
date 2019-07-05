@@ -12,6 +12,8 @@ import Backend.Measurement.Model exposing (HistoricalMeasurements)
 import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMeasurements)
 import Backend.Model exposing (..)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
+import Backend.PrenatalEncounter.Model
+import Backend.PrenatalEncounter.Update
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
 import Backend.Relationship.Model exposing (RelatedBy(..))
 import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
@@ -458,6 +460,20 @@ updateIndexedDb currentDate nurseId msg model =
         HandleDeletedSyncData uuid data ->
             ( { model | deleteSyncDataRequests = AllDict.insert uuid data model.deleteSyncDataRequests }
             , Cmd.none
+            , []
+            )
+
+        MsgPrenatalEncounter encounterId subMsg ->
+            let
+                requests =
+                    AllDict.get encounterId model.prenatalEncounterRequests
+                        |> Maybe.withDefault Backend.PrenatalEncounter.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.PrenatalEncounter.Update.update nurseId encounterId currentDate subMsg requests
+            in
+            ( { model | prenatalEncounterRequests = AllDict.insert encounterId subModel model.prenatalEncounterRequests }
+            , Cmd.map (MsgPrenatalEncounter encounterId) subCmd
             , []
             )
 

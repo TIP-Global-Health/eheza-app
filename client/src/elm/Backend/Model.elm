@@ -75,8 +75,9 @@ type alias ModelIndexedDb =
     -- organized data here, and recalculate it when necessary.
     , editableSessions : EntityUuidDict SessionId (WebData EditableSession)
 
-    -- Tracks requests in progress to update sessions
+    -- Tracks requests in progress to update sessions or prenatal encounters
     , sessionRequests : EntityUuidDict SessionId Backend.Session.Model.Model
+    , prenatalEncounterRequests : EntityUuidDict PrenatalEncounterId Backend.PrenatalEncounter.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
@@ -137,6 +138,7 @@ emptyModelIndexedDb =
     , postRelationship = EntityUuidDict.empty
     , postSession = NotAsked
     , prenatalEncounters = EntityUuidDict.empty
+    , prenatalEncounterRequests = EntityUuidDict.empty
     , prenatalParticipants = EntityUuidDict.empty
     , prenatalParticipantsByPerson = EntityUuidDict.empty
     , prenatalEncountersByParticipant = EntityUuidDict.empty
@@ -215,8 +217,9 @@ type MsgIndexedDb
     | DeleteSyncData HealthCenterId
     | HandleSavedSyncData HealthCenterId (WebData ())
     | HandleDeletedSyncData HealthCenterId (WebData ())
-      -- Handling edits to session data
+      -- Handling edits to session data or prenatal encounter data
     | MsgSession SessionId Backend.Session.Model.Msg
+    | MsgPrenatalEncounter PrenatalEncounterId Backend.PrenatalEncounter.Model.Msg
       -- Temporary, until we have a real UI for picking out a PrenatalEncounter
     | GoToRandomPrenatalEncounter
     | HandleRandomPrenatalEncounter (Result Http.Error (Maybe PrenatalEncounterId))

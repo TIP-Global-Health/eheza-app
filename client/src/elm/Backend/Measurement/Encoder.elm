@@ -2,34 +2,46 @@ module Backend.Measurement.Encoder exposing
     ( encodeAttendance
     , encodeAttendanceValue
     , encodeBreastExam
+    , encodeBreastExamValue
     , encodeCorePhysicalExam
+    , encodeCorePhysicalExamValue
     , encodeCounselingSession
     , encodeCounselingSessionValue
     , encodeDangerSigns
+    , encodeDangerSignsValue
     , encodeFamilyPlanning
     , encodeFamilyPlanningSignAsString
     , encodeFamilyPlanningValue
     , encodeHeight
     , encodeHeightValue
     , encodeLastMenstrualPeriod
+    , encodeLastMenstrualPeriodValue
     , encodeMedicalHistory
+    , encodeMedicalHistoryValue
     , encodeMedication
+    , encodeMedicationValue
     , encodeMuac
     , encodeMuacValue
     , encodeNutrition
     , encodeNutritionSignAsString
     , encodeNutritionValue
     , encodeObstetricHistory
+    , encodeObstetricHistoryValue
     , encodeObstetricalExam
+    , encodeObstetricalExamValue
     , encodeParticipantConsent
     , encodeParticipantConsentValue
     , encodePhoto
     , encodePhotoUrl
     , encodePrenatalFamilyPlanning
     , encodePrenatalNutrition
+    , encodePrenatalNutritionValue
     , encodeResource
+    , encodeResourceValue
     , encodeSocialHistory
+    , encodeSocialHistoryValue
     , encodeVitals
+    , encodeVitalsValue
     , encodeWeight
     , encodeWeightValue
     )
@@ -445,12 +457,14 @@ encodeDangerSigns =
 
 encodeLastMenstrualPeriod : LastMenstrualPeriod -> List ( String, Value )
 encodeLastMenstrualPeriod =
-    encodePrenatalMeasurement
-        (\value ->
-            [ ( "last_menstrual_period", Gizra.NominalDate.encodeYYYYMMDD value.date )
-            , ( "confident", bool value.confident )
-            ]
-        )
+    encodePrenatalMeasurement encodeLastMenstrualPeriodValue
+
+
+encodeLastMenstrualPeriodValue : LastMenstrualPeriodValue -> List ( String, Value )
+encodeLastMenstrualPeriodValue value =
+    [ ( "last_menstrual_period", Gizra.NominalDate.encodeYYYYMMDD value.date )
+    , ( "confident", bool value.confident )
+    ]
 
 
 encodeMedicalHistorySign : MedicalHistorySign -> Value
@@ -493,10 +507,12 @@ encodeMedicalHistorySign sign =
 
 encodeMedicalHistory : MedicalHistory -> List ( String, Value )
 encodeMedicalHistory =
-    encodePrenatalMeasurement
-        (\value ->
-            [ ( "medical_history", encodeEverySet encodeMedicalHistorySign value ) ]
-        )
+    encodePrenatalMeasurement encodeMedicalHistoryValue
+
+
+encodeMedicalHistoryValue : EverySet MedicalHistorySign -> List ( String, Value )
+encodeMedicalHistoryValue value =
+    [ ( "medical_history", encodeEverySet encodeMedicalHistorySign value ) ]
 
 
 encodeMedicationSign : MedicationSign -> Value
@@ -515,10 +531,12 @@ encodeMedicationSign sign =
 
 encodeMedication : Medication -> List ( String, Value )
 encodeMedication =
-    encodePrenatalMeasurement
-        (\value ->
-            [ ( "medication", encodeEverySet encodeMedicationSign value ) ]
-        )
+    encodePrenatalMeasurement encodeMedicationValue
+
+
+encodeMedicationValue : EverySet MedicationSign -> List ( String, Value )
+encodeMedicationValue value =
+    [ ( "medication", encodeEverySet encodeMedicationSign value ) ]
 
 
 encodeFetalPresentation : FetalPresentation -> Value
@@ -567,33 +585,37 @@ encodeObstetricalExam =
 
 encodeObstetricHistory : ObstetricHistory -> List ( String, Value )
 encodeObstetricHistory =
-    encodePrenatalMeasurement <|
-        \value ->
-            [ ( "currently_pregnant", bool value.currentlyPregnant )
-            , ( "term_pregnancy", int value.termPregnancy )
-            , ( "preterm_pregnancy", int value.pretermPregnancy )
-            , ( "stillbirths_at_term", int value.stillBirthsAtTerm )
-            , ( "stillbirths_preterm", int value.stillBirthsPreTerm )
-            , ( "abortions", int value.abortions )
-            , ( "live_children", int value.liveChildren )
-            ]
+    encodePrenatalMeasurement encodeObstetricHistoryValue
+
+
+encodeObstetricHistoryValue : ObstetricHistoryValue -> List ( String, Value )
+encodeObstetricHistoryValue value =
+    [ ( "currently_pregnant", bool value.currentlyPregnant )
+    , ( "term_pregnancy", int value.termPregnancy )
+    , ( "preterm_pregnancy", int value.pretermPregnancy )
+    , ( "stillbirths_at_term", int value.stillBirthsAtTerm )
+    , ( "stillbirths_preterm", int value.stillBirthsPreTerm )
+    , ( "abortions", int value.abortions )
+    , ( "live_children", int value.liveChildren )
+    ]
 
 
 encodePrenatalFamilyPlanning : PrenatalFamilyPlanning -> List ( String, Value )
 encodePrenatalFamilyPlanning =
-    encodePrenatalMeasurement <|
-        \value ->
-            [ ( "family_planning_signs", encodeEverySet encodeFamilyPlanningSign value ) ]
+    encodePrenatalMeasurement encodeFamilyPlanningValue
 
 
 encodePrenatalNutrition : PrenatalNutrition -> List ( String, Value )
 encodePrenatalNutrition =
-    encodePrenatalMeasurement <|
-        \value ->
-            [ ( "height", encodeHeightInCm value.height )
-            , ( "weight", encodeWeightInKg value.weight )
-            , ( "muac", encodeMuacInCm value.muac )
-            ]
+    encodePrenatalMeasurement encodePrenatalNutritionValue
+
+
+encodePrenatalNutritionValue : PrenatalNutritionValue -> List ( String, Value )
+encodePrenatalNutritionValue value =
+    [ ( "height", encodeHeightInCm value.height )
+    , ( "weight", encodeWeightInKg value.weight )
+    , ( "muac", encodeMuacInCm value.muac )
+    ]
 
 
 encodeResourceSign : ResourceSign -> Value
@@ -609,9 +631,12 @@ encodeResourceSign sign =
 
 encodeResource : Resource -> List ( String, Value )
 encodeResource =
-    encodePrenatalMeasurement <|
-        \value ->
-            [ ( "resources", encodeEverySet encodeResourceSign value ) ]
+    encodePrenatalMeasurement encodeResourceValue
+
+
+encodeResourceValue : EverySet ResourceSign -> List ( String, Value )
+encodeResourceValue value =
+    [ ( "resources", encodeEverySet encodeResourceSign value ) ]
 
 
 encodeSocialHistorySign : SocialHistorySign -> Value
@@ -633,18 +658,24 @@ encodeSocialHistorySign sign =
 
 encodeSocialHistory : SocialHistory -> List ( String, Value )
 encodeSocialHistory =
-    encodePrenatalMeasurement <|
-        \value ->
-            [ ( "social_history", encodeEverySet encodeSocialHistorySign value ) ]
+    encodePrenatalMeasurement encodeSocialHistoryValue
+
+
+encodeSocialHistoryValue : EverySet SocialHistorySign -> List ( String, Value )
+encodeSocialHistoryValue value =
+    [ ( "social_history", encodeEverySet encodeSocialHistorySign value ) ]
 
 
 encodeVitals : Vitals -> List ( String, Value )
 encodeVitals =
-    encodePrenatalMeasurement <|
-        \value ->
-            [ ( "sys", float value.sys )
-            , ( "dia", float value.dia )
-            , ( "heart_rate", int value.heartRate )
-            , ( "respiratory_rate", int value.respiratoryRate )
-            , ( "body_temperature", float value.bodyTemperature )
-            ]
+    encodePrenatalMeasurement encodeVitalsValue
+
+
+encodeVitalsValue : VitalsValue -> List ( String, Value )
+encodeVitalsValue value =
+    [ ( "sys", float value.sys )
+    , ( "dia", float value.dia )
+    , ( "heart_rate", int value.heartRate )
+    , ( "respiratory_rate", int value.respiratoryRate )
+    , ( "body_temperature", float value.bodyTemperature )
+    ]
