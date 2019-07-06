@@ -109,6 +109,10 @@ dbSync.version(4).stores({
     });
 });
 
+dbSync.version(5).stores({
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter'
+});
+
 function gatherWords (text) {
     // Split on spaces, and remove blanks from result.
     return (text || '').split(/\s+/).flatMap(function (word) {
