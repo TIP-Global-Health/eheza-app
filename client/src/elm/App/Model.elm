@@ -20,6 +20,7 @@ import Pages.Relationship.Model
 import Pages.Session.Model
 import PrenatalActivity.Model exposing (PrenatalActivity)
 import RemoteData exposing (RemoteData(..), WebData)
+import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, fromEntityId, select, toCmd, toEntityId, toEntityUuid)
 import Rollbar
 import ServiceWorker.Model
 import Time exposing (Time)
@@ -77,6 +78,9 @@ type alias Model =
     -- animation frame events when this is on. So, as long as we keep getting
     -- updates, we'll keep checking at animation frame intervals.
     , scheduleDataWantedCheck : Bool
+
+    -- Which health center a nurse is working at.
+    , healthCenterId : Maybe HealthCenterId
     }
 
 
@@ -184,6 +188,7 @@ type Msg
     | SetPersistentStorage Bool
     | SetStorageQuota StorageQuota
     | SetMemoryQuota MemoryQuota
+    | SetHealthCenter (Maybe HealthCenterId)
     | Tick Time
     | CheckDataWanted
 
@@ -204,11 +209,20 @@ type alias Flags =
     , activeServiceWorker : Bool
     , hostname : String
     , pinCode : String
+    , healthCenterId : String
     }
 
 
 emptyModel : Flags -> Model
 emptyModel flags =
+    let
+        healthCenterId =
+            if flags.healthCenterId == "" then
+                Nothing
+
+            else
+                Just (toEntityUuid flags.healthCenterId)
+    in
     { activePage = PinCodePage
     , configuration = NotAsked
     , currentTime = 0
@@ -221,4 +235,5 @@ emptyModel flags =
     , serviceWorker = ServiceWorker.Model.emptyModel flags.activeServiceWorker
     , storageQuota = Nothing
     , zscores = ZScore.Model.emptyModel
+    , healthCenterId = healthCenterId
     }

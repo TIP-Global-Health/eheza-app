@@ -1,4 +1,4 @@
-module Backend.Entities exposing (AttendanceId, AttendanceUuidType(..), CatchmentAreaId, CatchmentAreaUuidType(..), ChildNutritionId, ChildNutritionUuidType(..), ClinicId, ClinicUuidType(..), CounselingScheduleId, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicUuidType(..), FamilyPlanningId, FamilyPlanningUuidType(..), HealthCenterId, HealthCenterUuidType(..), HeightId, HeightUuidType(..), MuacId, MuacUuidType(..), NurseId, NurseUuidType(..), ParticipantConsentId, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormUuidType(..), PersonId, PersonUuidType(..), PhotoId, PhotoUuidType(..), PmtctParticipantId, PmtctParticipantUuidType(..), RelationshipId, RelationshipUuidType(..), SessionId, SessionUuidType(..), WeightId, WeightUuidType(..))
+module Backend.Entities exposing (AttendanceId, BreastExamId, CatchmentAreaId, ChildNutritionId, ClinicId, CorePhysicalExamId, CounselingScheduleId, CounselingSessionId, CounselingTopicId, DangerSignsId, FamilyPlanningId, HealthCenterId, HeightId, LastMenstrualPeriodId, MedicalHistoryId, MedicationId, MuacId, NurseId, ObstetricHistoryId, ObstetricalExamId, ParticipantConsentId, ParticipantFormId, PersonId, PhotoId, PmtctParticipantId, PrenatalEncounterId, PrenatalEncounterIdType(..), PrenatalFamilyPlanningId, PrenatalNutritionId, PrenatalParticipantId, PrenatalParticipantIdType(..), RelationshipId, ResourceId, SessionId, SocialHistoryId, VitalsId, WeightId)
 
 {-|
 
@@ -85,6 +85,110 @@ import Restful.Endpoint exposing (EntityUuid(..))
      how it can be made to work.
 
 -}
+
+
+type alias BreastExamId =
+    EntityUuid BreastExamUuidType
+
+
+type BreastExamUuidType
+    = BreastExamUuidType
+
+
+type alias CorePhysicalExamId =
+    EntityUuid CorePhysicalExamUuidType
+
+
+type CorePhysicalExamUuidType
+    = CorePhysicalExamUuidType
+
+
+type alias DangerSignsId =
+    EntityUuid DangerSignsUuidType
+
+
+type DangerSignsUuidType
+    = DangerSignsUuidType
+
+
+type alias LastMenstrualPeriodId =
+    EntityUuid LastMenstrualPeriodUuidType
+
+
+type LastMenstrualPeriodUuidType
+    = LastMenstrualPeriodUuidType
+
+
+type alias MedicalHistoryId =
+    EntityUuid MedicalHistoryUuidType
+
+
+type MedicalHistoryUuidType
+    = MedicalHistoryUuidType
+
+
+type alias MedicationId =
+    EntityUuid MedicationUuidType
+
+
+type MedicationUuidType
+    = MedicationUuidType
+
+
+type alias ObstetricalExamId =
+    EntityUuid ObstetricalExamUuidType
+
+
+type ObstetricalExamUuidType
+    = ObstetricalExamUuidType
+
+
+type alias ObstetricHistoryId =
+    EntityUuid ObstetricHistoryUuidType
+
+
+type ObstetricHistoryUuidType
+    = ObstetricHistoryUuidType
+
+
+type alias PrenatalFamilyPlanningId =
+    EntityUuid PrenatalFamilyPlanningUuidType
+
+
+type PrenatalFamilyPlanningUuidType
+    = PrenatalFamilyPlanningUuidType
+
+
+type alias PrenatalNutritionId =
+    EntityUuid PrenatalNutritionUuidType
+
+
+type PrenatalNutritionUuidType
+    = PrenatalNutritionUuidType
+
+
+type alias ResourceId =
+    EntityUuid ResourceUuidType
+
+
+type ResourceUuidType
+    = ResourceUuidType
+
+
+type alias SocialHistoryId =
+    EntityUuid SocialHistoryUuidType
+
+
+type SocialHistoryUuidType
+    = SocialHistoryUuidType
+
+
+type alias VitalsId =
+    EntityUuid VitalsUuidType
+
+
+type VitalsUuidType
+    = VitalsUuidType
 
 
 type alias CatchmentAreaId =
@@ -213,6 +317,22 @@ type alias PhotoId =
 
 type PhotoUuidType
     = PhotoUuidType
+
+
+type alias PrenatalParticipantId =
+    EntityUuid PrenatalParticipantIdType
+
+
+type PrenatalParticipantIdType
+    = PrenatalParticipantIdType
+
+
+type alias PrenatalEncounterId =
+    EntityUuid PrenatalEncounterIdType
+
+
+type PrenatalEncounterIdType
+    = PrenatalEncounterIdType
 
 
 type alias PmtctParticipantId =

@@ -1,4 +1,29 @@
-module Backend.Measurement.Decoder exposing (decodeAttendance, decodeChildMeasurement, decodeChildMeasurementList, decodeChildNutritionSign, decodeCounselingSession, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeHeight, decodeHistoricalMeasurements, decodeMeasurement, decodeMotherMeasurement, decodeMotherMeasurementList, decodeMuac, decodeNutrition, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodeSavedMeasurement, decodeWeight, decodeWithEntityUuid, toEveryDict)
+module Backend.Measurement.Decoder exposing
+    ( decodeAttendance
+    , decodeBreastExam
+    , decodeChildMeasurementList
+    , decodeCorePhysicalExam
+    , decodeCounselingSession
+    , decodeDangerSigns
+    , decodeFamilyPlanning
+    , decodeHeight
+    , decodeLastMenstrualPeriod
+    , decodeMedicalHistory
+    , decodeMedication
+    , decodeMotherMeasurementList
+    , decodeMuac
+    , decodeNutrition
+    , decodeObstetricHistory
+    , decodeObstetricalExam
+    , decodeParticipantConsent
+    , decodePhoto
+    , decodePrenatalFamilyPlanning
+    , decodePrenatalNutrition
+    , decodeResource
+    , decodeSocialHistory
+    , decodeVitals
+    , decodeWeight
+    )
 
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
@@ -15,82 +40,24 @@ import Translate.Utils exposing (decodeLanguage)
 import Utils.Json exposing (decodeEverySet)
 
 
-{-| Given a decoder for a value, produces a decoder for our `Measurement` type.
--}
-decodeChildMeasurement : Decoder value -> Decoder (Measurement PersonId value)
-decodeChildMeasurement =
-    decodeMeasurement (field "person" decodeEntityUuid)
+decodeGroupMeasurement : Decoder value -> Decoder (Measurement SessionId value)
+decodeGroupMeasurement =
+    decodeMeasurement "session"
 
 
-{-| Given a decoder for a value, produces a decoder for our `Measurement` type.
--}
-decodeMotherMeasurement : Decoder value -> Decoder (Measurement PersonId value)
-decodeMotherMeasurement =
-    decodeMeasurement (field "person" decodeEntityUuid)
+decodePrenatalMeasurement : Decoder value -> Decoder (Measurement PrenatalEncounterId value)
+decodePrenatalMeasurement =
+    decodeMeasurement "prenatal_encounter"
 
 
-decodeMeasurement : Decoder participantId -> Decoder value -> Decoder (Measurement participantId value)
-decodeMeasurement participantDecoder valueDecoder =
+decodeMeasurement : String -> Decoder value -> Decoder (Measurement (EntityUuid a) value)
+decodeMeasurement encounterTag valueDecoder =
     decode Measurement
         |> required "date_measured" Gizra.NominalDate.decodeYYYYMMDD
-        |> required "nurse" (nullable decodeEntityUuid)
-        |> custom participantDecoder
-        |> required "session" (nullable decodeEntityUuid)
+        |> optional "nurse" (nullable decodeEntityUuid) Nothing
+        |> required "person" decodeEntityUuid
+        |> optional encounterTag (nullable decodeEntityUuid) Nothing
         |> custom valueDecoder
-
-
-{-| Decodes a measurement that has an ID ... that is, a saved measurement.
-
-Tye `type` field controls which decoder we apply.
-
--}
-decodeSavedMeasurement : Decoder SavedMeasurement
-decodeSavedMeasurement =
-    field "type" string
-        |> andThen
-            (\s ->
-                case s of
-                    "attendance" ->
-                        decodeWithEntityUuid decodeAttendance
-                            |> map (uncurry SavedAttendance)
-
-                    "family_planning" ->
-                        decodeWithEntityUuid decodeFamilyPlanning
-                            |> map (uncurry SavedFamilyPlanning)
-
-                    "participant_consent" ->
-                        decodeWithEntityUuid decodeParticipantConsent
-                            |> map (uncurry SavedParticipantConsent)
-
-                    "height" ->
-                        decodeWithEntityUuid decodeHeight
-                            |> map (uncurry SavedHeight)
-
-                    "muac" ->
-                        decodeWithEntityUuid decodeMuac
-                            |> map (uncurry SavedMuac)
-
-                    "nutrition" ->
-                        decodeWithEntityUuid decodeNutrition
-                            |> map (uncurry SavedChildNutrition)
-
-                    "photo" ->
-                        decodeWithEntityUuid decodePhoto
-                            |> map (uncurry SavedPhoto)
-
-                    "weight" ->
-                        decodeWithEntityUuid decodeWeight
-                            |> map (uncurry SavedWeight)
-
-                    "counseling_session" ->
-                        decodeWithEntityUuid decodeCounselingSession
-                            |> map (uncurry SavedCounselingSession)
-
-                    _ ->
-                        fail <|
-                            s
-                                ++ " is not a recognized measurement type"
-            )
 
 
 {-| Decodes `HistoricalMeasurements` as sent by `/api/offline_sessions/`
@@ -149,46 +116,46 @@ decodePhoto : Decoder Photo
 decodePhoto =
     field "photo" string
         |> map PhotoUrl
-        |> decodeChildMeasurement
+        |> decodeGroupMeasurement
 
 
 decodeHeight : Decoder Height
 decodeHeight =
     field "height" decodeFloat
         |> map HeightInCm
-        |> decodeChildMeasurement
+        |> decodeGroupMeasurement
 
 
 decodeWeight : Decoder Weight
 decodeWeight =
     field "weight" decodeFloat
         |> map WeightInKg
-        |> decodeChildMeasurement
+        |> decodeGroupMeasurement
 
 
 decodeMuac : Decoder Muac
 decodeMuac =
     field "muac" decodeFloat
         |> map MuacInCm
-        |> decodeChildMeasurement
+        |> decodeGroupMeasurement
 
 
 decodeFamilyPlanning : Decoder FamilyPlanning
 decodeFamilyPlanning =
     decodeEverySet decodeFamilyPlanningSign
         |> field "family_planning_signs"
-        |> decodeMotherMeasurement
+        |> decodeGroupMeasurement
 
 
 decodeAttendance : Decoder Attendance
 decodeAttendance =
     field "attended" bool
-        |> decodeMotherMeasurement
+        |> decodeGroupMeasurement
 
 
 decodeParticipantConsent : Decoder ParticipantConsent
 decodeParticipantConsent =
-    decodeMotherMeasurement decodeParticipantConsentValue
+    decodeGroupMeasurement decodeParticipantConsentValue
 
 
 decodeParticipantConsentValue : Decoder ParticipantConsentValue
@@ -202,12 +169,12 @@ decodeNutrition : Decoder ChildNutrition
 decodeNutrition =
     decodeEverySet decodeChildNutritionSign
         |> field "nutrition_signs"
-        |> decodeChildMeasurement
+        |> decodeGroupMeasurement
 
 
 decodeCounselingSession : Decoder CounselingSession
 decodeCounselingSession =
-    decodeChildMeasurement <|
+    decodeGroupMeasurement <|
         map2 (,)
             (field "timing" decodeCounselingTiming)
             (field "topics" (decodeEverySet decodeEntityUuid))
@@ -247,7 +214,7 @@ decodeChildNutritionSign =
                         succeed Edema
 
                     "none" ->
-                        succeed None
+                        succeed NormalChildNutrition
 
                     "poor-appetite" ->
                         succeed PoorAppetite
@@ -291,3 +258,475 @@ decodeFamilyPlanningSign =
                             sign
                                 ++ " is not a recognized FamilyPlanningSign"
             )
+
+
+decodeBreastExamSign : Decoder BreastExamSign
+decodeBreastExamSign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "mass" ->
+                        succeed Mass
+
+                    "discharge" ->
+                        succeed Discharge
+
+                    "infection" ->
+                        succeed Infection
+
+                    "normal" ->
+                        succeed NormalBreast
+
+                    _ ->
+                        fail <|
+                            s
+                                ++ " is not a recognized BreastExamSign"
+            )
+
+
+decodeBreastExam : Decoder BreastExam
+decodeBreastExam =
+    succeed BreastExamValue
+        |> required "breast" (decodeEverySet decodeBreastExamSign)
+        |> required "breast_self_exam" bool
+        |> decodePrenatalMeasurement
+
+
+decodeHairHeadCPESign : Decoder HairHeadCPESign
+decodeHairHeadCPESign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "brittle-hair" ->
+                        succeed BrittleHairCPE
+
+                    "normal" ->
+                        succeed NormalHairHead
+
+                    _ ->
+                        fail <|
+                            s
+                                ++ " is not a recognized hair/head sign"
+            )
+
+
+decodeEyesCPESign : Decoder EyesCPESign
+decodeEyesCPESign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "pale-conjuctiva" ->
+                        succeed PaleConjuctiva
+
+                    "normal" ->
+                        succeed NormalEyes
+
+                    _ ->
+                        fail <|
+                            s
+                                ++ " is not a recognized EyesCPESign"
+            )
+
+
+decodeHeartCPESign : Decoder HeartCPESign
+decodeHeartCPESign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "abnormal" ->
+                        succeed AbnormalHeart
+
+                    "normal" ->
+                        succeed NormalHeart
+
+                    _ ->
+                        fail <|
+                            s
+                                ++ " is not a recognized HeartCPESign"
+            )
+
+
+decodeNeckCPESign : Decoder NeckCPESign
+decodeNeckCPESign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "enlarged-thyroid" ->
+                        succeed EnlargedThyroid
+
+                    "enlarged-lymph-nodes" ->
+                        succeed EnlargedLymphNodes
+
+                    "normal" ->
+                        succeed NormalNeck
+
+                    _ ->
+                        fail <|
+                            s
+                                ++ " is not a recognized NeckCPESign"
+            )
+
+
+decodeLungsCPESign : Decoder LungsCPESign
+decodeLungsCPESign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "wheezes" ->
+                        succeed Wheezes
+
+                    "crackles" ->
+                        succeed Crackles
+
+                    "normal" ->
+                        succeed NormalLungs
+
+                    _ ->
+                        fail <| s ++ " is not a recognized LungsCPESign"
+            )
+
+
+decodeAbdomenCPESign : Decoder AbdomenCPESign
+decodeAbdomenCPESign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "heptomegaly" ->
+                        succeed Heptomegaly
+
+                    "splenomegaly" ->
+                        succeed Splenomegaly
+
+                    "tender-to-palpitation-right-upper" ->
+                        succeed TPRightUpper
+
+                    "tender-to-palpitation-left-upper" ->
+                        succeed TPLeftUpper
+
+                    "tender-to-palpitation-right-lower" ->
+                        succeed TPRightLower
+
+                    "tender-to-palpitation-left-lower" ->
+                        succeed TPLeftLower
+
+                    "hernia" ->
+                        succeed Hernia
+
+                    "normal" ->
+                        succeed NormalAbdomen
+
+                    _ ->
+                        fail <| s ++ " is not a recognized AbdomenCPESign"
+            )
+
+
+decodeHandsCPESign : Decoder HandsCPESign
+decodeHandsCPESign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "pallor" ->
+                        succeed PallorHands
+
+                    "edema" ->
+                        succeed EdemaHands
+
+                    "normal" ->
+                        succeed NormalHands
+
+                    _ ->
+                        fail <| s ++ " is not a recognized HandsCPESign"
+            )
+
+
+decodeLegsCPESign : Decoder LegsCPESign
+decodeLegsCPESign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "pallor" ->
+                        succeed PallorLegs
+
+                    "edema" ->
+                        succeed EdemaLegs
+
+                    "normal" ->
+                        succeed NormalLegs
+
+                    _ ->
+                        fail <| s ++ " is not a recognized LegsCPESign"
+            )
+
+
+decodeCorePhysicalExam : Decoder CorePhysicalExam
+decodeCorePhysicalExam =
+    succeed CorePhysicalExamValue
+        |> required "head_hair" (decodeEverySet decodeHairHeadCPESign)
+        |> required "eyes" (decodeEverySet decodeEyesCPESign)
+        |> required "heart" (decodeEverySet decodeHeartCPESign)
+        |> required "neck" (decodeEverySet decodeNeckCPESign)
+        |> required "lungs" (decodeEverySet decodeLungsCPESign)
+        |> required "abdomen" (decodeEverySet decodeAbdomenCPESign)
+        |> required "hands" (decodeEverySet decodeHandsCPESign)
+        |> required "legs" (decodeEverySet decodeLegsCPESign)
+        |> decodePrenatalMeasurement
+
+
+decodeDangerSign : Decoder DangerSign
+decodeDangerSign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "vaginal-bleeding" ->
+                        succeed VaginalBleeding
+
+                    "sever-headaches-with-blurred-vision" ->
+                        succeed HeadacheBlurredVision
+
+                    "convulsions" ->
+                        succeed Convulsions
+
+                    "abdominal-pain" ->
+                        succeed AbdominalPain
+
+                    "difficulty-breathing" ->
+                        succeed DifficultyBreathing
+
+                    "fever" ->
+                        succeed Fever
+
+                    "extreme-weakness" ->
+                        succeed ExtremeWeakness
+
+                    "none" ->
+                        succeed NoDangerSign
+
+                    _ ->
+                        fail <| s ++ " is not a recognized DangerSign"
+            )
+
+
+decodeDangerSigns : Decoder DangerSigns
+decodeDangerSigns =
+    decodeEverySet decodeDangerSign
+        |> field "danger_signs"
+        |> decodePrenatalMeasurement
+
+
+decodeLastMenstrualPeriod : Decoder LastMenstrualPeriod
+decodeLastMenstrualPeriod =
+    succeed LastMenstrualPeriodValue
+        |> required "last_menstrual_period" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "confident" bool
+        |> decodePrenatalMeasurement
+
+
+decodeMedicalHistorySign : Decoder MedicalHistorySign
+decodeMedicalHistorySign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "uterine-myonma" ->
+                        succeed UterineMyoma
+
+                    "diabetes" ->
+                        succeed Diabetes
+
+                    "cardiac-disease" ->
+                        succeed CardiacDisease
+
+                    "renal-disease" ->
+                        succeed RenalDisease
+
+                    "hypertension-before-pregnancy" ->
+                        succeed HypertensionBeforePregnancy
+
+                    "tuberculosis-past" ->
+                        succeed TuberculosisPast
+
+                    "tuberculosis-present" ->
+                        succeed TuberculosisPresent
+
+                    "asthma" ->
+                        succeed Asthma
+
+                    "bowed-legs" ->
+                        succeed BowedLegs
+
+                    "hiv" ->
+                        succeed HIV
+
+                    "none" ->
+                        succeed NoMedicalHistorySigns
+
+                    _ ->
+                        fail <| s ++ " is not a recognized MedicalHistorySign"
+            )
+
+
+decodeMedicalHistory : Decoder MedicalHistory
+decodeMedicalHistory =
+    field "medical_history" (decodeEverySet decodeMedicalHistorySign)
+        |> decodePrenatalMeasurement
+
+
+decodeMedicationSign : Decoder MedicationSign
+decodeMedicationSign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "iron-and-folic-acid-supplement" ->
+                        succeed IronAndFolicAcidSupplement
+
+                    "deworming-pill" ->
+                        succeed DewormingPill
+
+                    "none" ->
+                        succeed NoMedication
+
+                    _ ->
+                        fail <| s ++ " is not a recognized MedicationSign"
+            )
+
+
+decodeMedication : Decoder Medication
+decodeMedication =
+    field "medication" (decodeEverySet decodeMedicationSign)
+        |> decodePrenatalMeasurement
+
+
+decodeFetalPresentation : Decoder FetalPresentation
+decodeFetalPresentation =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "transverse" ->
+                        succeed Transverse
+
+                    "cephalic" ->
+                        succeed Cephalic
+
+                    "breach" ->
+                        succeed Breach
+
+                    _ ->
+                        fail <| s ++ " is not a recognized FetalPresentation"
+            )
+
+
+decodeObstetricalExam : Decoder ObstetricalExam
+decodeObstetricalExam =
+    succeed ObstetricalExamValue
+        |> required "fundal_height" (map HeightInCm decodeFloat)
+        |> required "fetal_presentation" decodeFetalPresentation
+        |> required "fetal_movement" bool
+        |> required "fetal_heart_rate" decodeInt
+        |> required "c_section_scar" bool
+        |> decodePrenatalMeasurement
+
+
+decodeObstetricHistory : Decoder ObstetricHistory
+decodeObstetricHistory =
+    succeed ObstetricHistoryValue
+        |> required "currently_pregnant" bool
+        |> required "term_pregnancy" decodeInt
+        |> required "preterm_pregnancy" decodeInt
+        |> required "stillbirths_at_term" decodeInt
+        |> required "stillbirths_preterm" decodeInt
+        |> required "abortions" decodeInt
+        |> required "live_children" decodeInt
+        |> decodePrenatalMeasurement
+
+
+decodePrenatalFamilyPlanning : Decoder PrenatalFamilyPlanning
+decodePrenatalFamilyPlanning =
+    decodeEverySet decodeFamilyPlanningSign
+        |> field "family_planning_signs"
+        |> decodePrenatalMeasurement
+
+
+decodePrenatalNutrition : Decoder PrenatalNutrition
+decodePrenatalNutrition =
+    succeed PrenatalNutritionValue
+        |> required "height" (map HeightInCm decodeFloat)
+        |> required "weight" (map WeightInKg decodeFloat)
+        |> required "muac" (map MuacInCm decodeFloat)
+        |> decodePrenatalMeasurement
+
+
+decodeResourceSign : Decoder ResourceSign
+decodeResourceSign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "mosquito-net" ->
+                        succeed MosquitoNet
+
+                    "none" ->
+                        succeed NoResource
+
+                    _ ->
+                        fail <| s ++ " is not a recognized ResourceSign"
+            )
+
+
+decodeResource : Decoder Resource
+decodeResource =
+    decodeEverySet decodeResourceSign
+        |> field "resources"
+        |> decodePrenatalMeasurement
+
+
+decodeSocialHistorySign : Decoder SocialHistorySign
+decodeSocialHistorySign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "accompanied-by-partner" ->
+                        succeed AccompaniedByPartner
+
+                    "partner-hiv-counseling" ->
+                        succeed PartnerHivCounseling
+
+                    "mental-health-history" ->
+                        succeed MentalHealthHistory
+
+                    "none" ->
+                        succeed NoSocialHistorySign
+
+                    _ ->
+                        fail <| s ++ " is not a recognized SocialHistorySign"
+            )
+
+
+decodeSocialHistory : Decoder SocialHistory
+decodeSocialHistory =
+    decodeEverySet decodeSocialHistorySign
+        |> field "social_history"
+        |> decodePrenatalMeasurement
+
+
+decodeVitals : Decoder Vitals
+decodeVitals =
+    succeed VitalsValue
+        |> required "sys" decodeFloat
+        |> required "dia" decodeFloat
+        |> required "heart_rate" decodeInt
+        |> required "respiratory_rate" decodeInt
+        |> required "body_temperature" decodeFloat
+        |> decodePrenatalMeasurement

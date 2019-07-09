@@ -238,7 +238,7 @@ expectCounselingActivity session childId =
             historical
                 |> EveryDictList.filter (\_ counseling -> Tuple.first counseling.value == timing)
                 |> EveryDictList.head
-                |> Maybe.map (\( _, counseling ) -> diffDays counseling.dateMeasured session.offlineSession.session.scheduledDate.start)
+                |> Maybe.map (\( _, counseling ) -> diffDays counseling.dateMeasured session.offlineSession.session.startDate)
 
         -- How old will the child be as of the scheduled date of the session?
         -- (All of our date calculations are in days here).
@@ -251,7 +251,7 @@ expectCounselingActivity session childId =
                 |> Maybe.andThen
                     (\child ->
                         Maybe.map
-                            (\birthDate -> diffDays birthDate session.offlineSession.session.scheduledDate.start)
+                            (\birthDate -> diffDays birthDate session.offlineSession.session.startDate)
                             child.birthDate
                     )
                 |> Maybe.withDefault 0

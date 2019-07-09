@@ -90,8 +90,8 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
         -- session.
         dateOfLastAssessment =
             lastSessionWithMeasurement
-                |> Maybe.map (\( _, last ) -> last.scheduledDate.start)
-                |> Maybe.withDefault session.offlineSession.session.scheduledDate.start
+                |> Maybe.map (\( _, last ) -> last.startDate)
+                |> Maybe.withDefault session.offlineSession.session.startDate
 
         subtitle =
             p
@@ -189,7 +189,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                         , th
                             [ class "last" ]
                             [ child.birthDate
-                                |> Maybe.map (\birthDate -> renderAgeMonthsDaysAbbrev language birthDate session.offlineSession.session.scheduledDate.start)
+                                |> Maybe.map (\birthDate -> renderAgeMonthsDaysAbbrev language birthDate session.offlineSession.session.startDate)
                                 |> Maybe.withDefault ""
                                 |> text
                             ]
@@ -247,7 +247,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                     |> List.map
                                         (\( id, columnSession ) ->
                                             child.birthDate
-                                                |> Maybe.map (\birthDate -> renderAgeMonthsDaysHtml language birthDate columnSession.scheduledDate.start)
+                                                |> Maybe.map (\birthDate -> renderAgeMonthsDaysHtml language birthDate columnSession.startDate)
                                                 |> Maybe.withDefault []
                                                 |> th
                                                     [ classList
@@ -449,7 +449,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
             values
                 |> List.filterMap
                     (\value ->
-                        case value.sessionId of
+                        case value.encounterId of
                             Just id ->
                                 Just ( id, value )
 
@@ -586,7 +586,7 @@ chartWeightForHeight heights weight =
     -- Eventually, we shouild take age into account to distingiush height
     -- and length.
     heights
-        |> List.Extra.find (\height -> height.sessionId == weight.sessionId)
+        |> List.Extra.find (\height -> height.encounterId == weight.encounterId)
         |> Maybe.map
             (\height ->
                 ( case height.value of

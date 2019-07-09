@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulFamilyPlannings.
  */
-class HedleyRestfulFamilyPlannings extends HedleyRestfulMotherActivityBase {
+class HedleyRestfulFamilyPlannings extends HedleyRestfulGroupActivityBase {
 
   /**
    * {@inheritdoc}

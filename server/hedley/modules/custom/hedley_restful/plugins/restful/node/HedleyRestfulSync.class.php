@@ -61,19 +61,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    *   machine names for the restful handler to use when syncing.
    */
   public function entitiesForAllDevices() {
-    return [
-      'catchment_area' => 'catchment_areas',
-      'clinic' => 'clinics',
-      'counseling_schedule' => 'counseling-schedule',
-      'counseling_topic' => 'counseling-topics',
-      'health_center' => 'health_centers',
-      'nurse' => 'nurses',
-      'participant_form' => 'participants-form',
-      'person' => 'people',
-      'pmtct_participant' => 'pmtct-participants',
-      'relationship' => 'relationships',
-      'session' => 'sessions',
-    ];
+    return HEDLEY_RESTFUL_ALL_DEVICES;
   }
 
   /**
@@ -86,17 +74,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    *   machine names for the restful handler to use when syncing.
    */
   public function entitiesForHealthCenters() {
-    return [
-      'attendance' => 'attendances',
-      'counseling_session' => 'counseling-sessions',
-      'family_planning' => 'family-plannings',
-      'height' => 'heights',
-      'muac' => 'muacs',
-      'nutrition' => 'nutritions',
-      'participant_consent' => 'participants-consent',
-      'photo' => 'photos',
-      'weight' => 'weights',
-    ];
+    return HEDLEY_RESTFUL_SHARDED;
   }
 
   /**

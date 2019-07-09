@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * hedley_schedule.features.user_permission.inc
@@ -61,6 +62,26 @@ function hedley_schedule_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create prenatal_encounter content'.
+  $permissions['create prenatal_encounter content'] = array(
+    'name' => 'create prenatal_encounter content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create prenatal_participant content'.
+  $permissions['create prenatal_participant content'] = array(
+    'name' => 'create prenatal_participant content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create session content'.
   $permissions['create session content'] = array(
     'name' => 'create session content',
@@ -116,6 +137,24 @@ function hedley_schedule_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any prenatal_encounter content'.
+  $permissions['delete any prenatal_encounter content'] = array(
+    'name' => 'delete any prenatal_encounter content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any prenatal_participant content'.
+  $permissions['delete any prenatal_participant content'] = array(
+    'name' => 'delete any prenatal_participant content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any session content'.
   $permissions['delete any session content'] = array(
     'name' => 'delete any session content',
@@ -164,6 +203,24 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'delete own pmtct_participant content'.
   $permissions['delete own pmtct_participant content'] = array(
     'name' => 'delete own pmtct_participant content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own prenatal_encounter content'.
+  $permissions['delete own prenatal_encounter content'] = array(
+    'name' => 'delete own prenatal_encounter content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own prenatal_participant content'.
+  $permissions['delete own prenatal_participant content'] = array(
+    'name' => 'delete own prenatal_participant content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -230,6 +287,26 @@ function hedley_schedule_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any prenatal_encounter content'.
+  $permissions['edit any prenatal_encounter content'] = array(
+    'name' => 'edit any prenatal_encounter content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any prenatal_participant content'.
+  $permissions['edit any prenatal_participant content'] = array(
+    'name' => 'edit any prenatal_participant content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any session content'.
   $permissions['edit any session content'] = array(
     'name' => 'edit any session content',
@@ -284,6 +361,26 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'edit own pmtct_participant content'.
   $permissions['edit own pmtct_participant content'] = array(
     'name' => 'edit own pmtct_participant content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own prenatal_encounter content'.
+  $permissions['edit own prenatal_encounter content'] = array(
+    'name' => 'edit own prenatal_encounter content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own prenatal_participant content'.
+  $permissions['edit own prenatal_participant content'] = array(
+    'name' => 'edit own prenatal_participant content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

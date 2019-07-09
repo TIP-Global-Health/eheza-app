@@ -602,7 +602,7 @@ viewNutritionSignsSelector language nutritionSigns =
             |> div [ class "eight wide column" ]
         ]
     , div [ class "ui divider" ] []
-    , viewNutritionSignsSelectorItem language nutritionSigns None
+    , viewNutritionSignsSelectorItem language nutritionSigns NormalChildNutrition
     ]
 
 

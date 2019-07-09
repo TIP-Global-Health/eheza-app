@@ -3,10 +3,9 @@ module Backend.Session.Update exposing (update)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (..)
-import Backend.Session.Encoder exposing (..)
 import Backend.Session.Model exposing (..)
 import EveryDict
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
 import Json.Encode exposing (object)
 import Json.Encode.Extra
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
@@ -23,7 +22,7 @@ update nurseId sessionId currentDate msg model =
     case msg of
         CloseSession ->
             ( { model | closeSessionRequest = Loading }
-            , object [ encodeClosed True ]
+            , object [ ( "scheduled_date.value2", encodeYYYYMMDD currentDate ) ]
                 |> sw.patchAny sessionEndpoint sessionId
                 |> withoutDecoder
                 |> toCmd (RemoteData.fromResult >> HandleClosedSession)
@@ -43,7 +42,7 @@ update nurseId sessionId currentDate msg model =
                                 Nothing ->
                                     { participantId = childId
                                     , dateMeasured = currentDate
-                                    , sessionId = Just sessionId
+                                    , encounterId = Just sessionId
                                     , nurse = nurseId
                                     , value = height
                                     }
@@ -70,7 +69,7 @@ update nurseId sessionId currentDate msg model =
                                 Nothing ->
                                     { participantId = childId
                                     , dateMeasured = currentDate
-                                    , sessionId = Just sessionId
+                                    , encounterId = Just sessionId
                                     , nurse = nurseId
                                     , value = weight
                                     }
@@ -97,7 +96,7 @@ update nurseId sessionId currentDate msg model =
                                 Nothing ->
                                     { participantId = childId
                                     , dateMeasured = currentDate
-                                    , sessionId = Just sessionId
+                                    , encounterId = Just sessionId
                                     , nurse = nurseId
                                     , value = muac
                                     }
@@ -124,7 +123,7 @@ update nurseId sessionId currentDate msg model =
                                 Nothing ->
                                     { participantId = childId
                                     , dateMeasured = currentDate
-                                    , sessionId = Just sessionId
+                                    , encounterId = Just sessionId
                                     , nurse = nurseId
                                     , value = ( timing, topics )
                                     }
@@ -152,7 +151,7 @@ update nurseId sessionId currentDate msg model =
                                 Nothing ->
                                     { participantId = childId
                                     , dateMeasured = currentDate
-                                    , sessionId = Just sessionId
+                                    , encounterId = Just sessionId
                                     , nurse = nurseId
                                     , value = signs
                                     }
@@ -179,7 +178,7 @@ update nurseId sessionId currentDate msg model =
                                 Nothing ->
                                     { participantId = childId
                                     , dateMeasured = currentDate
-                                    , sessionId = Just sessionId
+                                    , encounterId = Just sessionId
                                     , nurse = nurseId
                                     , value = photo
                                     }
@@ -212,7 +211,7 @@ update nurseId sessionId currentDate msg model =
                                 Nothing ->
                                     { participantId = motherId
                                     , dateMeasured = currentDate
-                                    , sessionId = Just sessionId
+                                    , encounterId = Just sessionId
                                     , nurse = nurseId
                                     , value = attended
                                     }
@@ -239,7 +238,7 @@ update nurseId sessionId currentDate msg model =
                                 Nothing ->
                                     { participantId = motherId
                                     , dateMeasured = currentDate
-                                    , sessionId = Just sessionId
+                                    , encounterId = Just sessionId
                                     , nurse = nurseId
                                     , value = signs
                                     }
@@ -266,7 +265,7 @@ update nurseId sessionId currentDate msg model =
                                 Nothing ->
                                     { participantId = motherId
                                     , dateMeasured = currentDate
-                                    , sessionId = Just sessionId
+                                    , encounterId = Just sessionId
                                     , nurse = nurseId
                                     , value =
                                         { language = language

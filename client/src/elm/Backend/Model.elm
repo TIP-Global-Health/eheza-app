@@ -21,11 +21,13 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
-import Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, ChildNutrition, CounselingSession, FamilyPlanning, Height, MotherMeasurementList, Muac, ParticipantConsent, Photo, Weight)
+import Backend.Measurement.Model exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
+import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
@@ -103,6 +105,7 @@ type alias ModelIndexedDb =
     , postPerson : WebData PersonId
     , postPmtctParticipant : EveryDict PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
     , postRelationship : EveryDict PersonId (WebData MyRelationship)
+    , postSession : WebData SessionId
     }
 
 
@@ -124,6 +127,7 @@ emptyModelIndexedDb =
     , postPerson = NotAsked
     , postPmtctParticipant = EveryDict.empty
     , postRelationship = EveryDict.empty
+    , postSession = NotAsked    
     , relationshipsByPerson = EveryDict.empty
     , saveSyncDataRequests = EveryDict.empty
     , sessionRequests = EveryDict.empty
@@ -173,10 +177,12 @@ type MsgIndexedDb
     | PostPerson (Maybe PersonId) Person -- The first person is a person we ought to offer setting a relationship to.
     | PostRelationship PersonId MyRelationship (Maybe ClinicId)
     | PostPmtctParticipant PmtctParticipant
+    | PostSession Session
       -- Messages which handle responses to mutating data
     | HandlePostedPerson (Maybe PersonId) (WebData PersonId)
     | HandlePostedRelationship PersonId (WebData MyRelationship)
     | HandlePostedPmtctParticipant PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
+    | HandlePostedSession (WebData SessionId)
       -- Process some revisions we've received from the backend. In some cases,
       -- we can update our in-memory structures appropriately. In other cases, we
       -- can set them to `NotAsked` and let the "fetch" mechanism re-fetch them.
@@ -194,22 +200,37 @@ type MsgIndexedDb
 -}
 type Revision
     = AttendanceRevision AttendanceId Attendance
+    | BreastExamRevision BreastExamId BreastExam
     | CatchmentAreaRevision CatchmentAreaId CatchmentArea
     | ChildNutritionRevision ChildNutritionId ChildNutrition
     | ClinicRevision ClinicId Clinic
+    | CorePhysicalExamRevision CorePhysicalExamId CorePhysicalExam
     | CounselingScheduleRevision CounselingScheduleId CounselingSchedule
     | CounselingSessionRevision CounselingSessionId CounselingSession
     | CounselingTopicRevision CounselingTopicId CounselingTopic
+    | DangerSignsRevision DangerSignsId DangerSigns
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
     | HealthCenterRevision HealthCenterId HealthCenter
     | HeightRevision HeightId Height
+    | LastMenstrualPeriodRevision LastMenstrualPeriodId LastMenstrualPeriod
+    | MedicalHistoryRevision MedicalHistoryId MedicalHistory
+    | MedicationRevision MedicationId Medication
     | MuacRevision MuacId Muac
     | NurseRevision NurseId Nurse
+    | ObstetricalExamRevision ObstetricalExamId ObstetricalExam
+    | ObstetricHistoryRevision ObstetricHistoryId ObstetricHistory
     | ParticipantConsentRevision ParticipantConsentId ParticipantConsent
     | ParticipantFormRevision ParticipantFormId ParticipantForm
     | PersonRevision PersonId Person
     | PhotoRevision PhotoId Photo
     | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
+    | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
+    | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
+    | PrenatalParticipantRevision PrenatalParticipantId PrenatalParticipant
+    | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
     | RelationshipRevision RelationshipId Relationship
+    | ResourceRevision ResourceId Resource
     | SessionRevision SessionId Session
+    | SocialHistoryRevision SocialHistoryId SocialHistory
+    | VitalsRevision VitalsId Vitals
     | WeightRevision WeightId Weight

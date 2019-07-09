@@ -161,7 +161,7 @@ runTestCase testCase =
 makeCounselingSession : NominalDate -> CounselingTiming -> CounselingSession
 makeCounselingSession when timing =
     { participantId = childId
-    , sessionId = Nothing -- not needed
+    , encounterId = Nothing -- not needed
     , dateMeasured = when
     , value = ( timing, EverySet.empty )
     , nurse = Nothing
@@ -221,13 +221,9 @@ sessionDate =
 
 session : NominalDate -> Session
 session start =
-    { scheduledDate =
-        { start = start
-        , end = start
-        }
+    { startDate = start
+    , endDate = Nothing
     , clinicId = toEntityUuid "1" -- not relevant
-    , closed = False
-    , training = False
     }
 
 
@@ -268,4 +264,5 @@ makeChild test =
     , ubudehe = Nothing
     , village = Nothing
     , healthCenterId = Nothing
+    , hmisNumber = Nothing
     }
