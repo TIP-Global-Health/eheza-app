@@ -11,7 +11,7 @@ $plugin = array(
   'name' => 'obstetric-histories',
   'entity_type' => 'node',
   'bundle' => 'obstetric_history',
-  'description' => t('Exports the Obstetric History bundle.'),
+  'description' => t('Exports the Obstetric History first step bundle.'),
   'class' => 'HedleyRestfulObstetricHistories',
   'authentication_types' => TRUE,
 );
