@@ -202,7 +202,6 @@ viewFoundClinic language currentDate nurse postSession clinicId clinic sessions 
                                (deltaToStartDate.days <= 0 && deltaToEndDate.days >= 0)
                     )
 
-
         sessionsStartedToday =
             recentAndUpcomingSessions
                 |> EveryDictList.filter (\_ session -> session.startDate == currentDate)
@@ -256,8 +255,8 @@ viewFoundClinic language currentDate nurse postSession clinicId clinic sessions 
                             ]
                         ]
                     , recentAndUpcomingSessions
-                        |> AllDictList.map (viewSession language currentDate)
-                        |> AllDictList.values
+                        |> EveryDictList.map (viewSession language currentDate)
+                        |> EveryDictList.values
                         |> tbody []
                     ]
                 , createSessionButton

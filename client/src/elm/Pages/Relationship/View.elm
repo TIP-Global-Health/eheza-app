@@ -140,7 +140,7 @@ viewFetchedContent language currentDate id1 id2 model request data =
 
                 selector =
                     data.clinics
-                        |> AllDictList.filter
+                        |> EveryDictList.filter
                             (\clinicId clinic ->
                                 -- Clinic is not already selected.
                                 (not <| List.member clinicId currentGroupsIds)
@@ -161,7 +161,7 @@ viewFetchedContent language currentDate id1 id2 model request data =
                                             |> Maybe.withDefault True
                                        )
                             )
-                        |> AllDictList.map
+                        |> EveryDictList.map
                             (\clinicId clinic ->
                                 option
                                     [ value (fromEntityUuid clinicId)
@@ -169,7 +169,7 @@ viewFetchedContent language currentDate id1 id2 model request data =
                                     ]
                                     [ text clinic.name ]
                             )
-                        |> AllDictList.values
+                        |> EveryDictList.values
                         |> (::) emptyOption
                         |> select [ onInput AssignToClinicId ]
             in

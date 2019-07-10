@@ -14,7 +14,7 @@ import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Date.Extra as Date exposing (Interval(Year))
 import DateSelector.SelectorDropdown
-import EveryDict
+import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
 import Form exposing (Form)
 import Form.Field
@@ -103,9 +103,9 @@ viewParticipantDetailsForm language currentDate db id person =
             EveryDict.get id db.participantsByPerson
                 |> Maybe.withDefault NotAsked
 
-        addRelationshipToOtherPeople : RelationshipId -> MyRelationship -> EntityUuidDict PersonId OtherPerson -> EntityUuidDict PersonId OtherPerson
+        addRelationshipToOtherPeople : RelationshipId -> MyRelationship -> EveryDict PersonId OtherPerson -> EveryDict PersonId OtherPerson
         addRelationshipToOtherPeople relationshipId myRelationship accum =
-            AllDict.update myRelationship.relatedTo
+            EveryDict.update myRelationship.relatedTo
                 (\existing ->
                     Just
                         { relationship = Just ( relationshipId, myRelationship )
@@ -116,7 +116,7 @@ viewParticipantDetailsForm language currentDate db id person =
                 )
                 accum
 
-        addParticipantToOtherPeople : PmtctParticipantId -> PmtctParticipant -> EntityUuidDict PersonId OtherPerson -> EntityUuidDict PersonId OtherPerson
+        addParticipantToOtherPeople : PmtctParticipantId -> PmtctParticipant -> EveryDict PersonId OtherPerson -> EveryDict PersonId OtherPerson
         addParticipantToOtherPeople pmtctParticipantId pmtctParticipant accum =
             let
                 otherParticipantId =
@@ -126,7 +126,7 @@ viewParticipantDetailsForm language currentDate db id person =
                     else
                         pmtctParticipant.child
             in
-            AllDict.update otherParticipantId
+            EveryDict.update otherParticipantId
                 (\existing ->
                     Just
                         { relationship = Maybe.andThen .relationship existing
@@ -138,28 +138,28 @@ viewParticipantDetailsForm language currentDate db id person =
                 )
                 accum
 
-        otherPeople : WebData (EntityUuidDict PersonId OtherPerson)
+        otherPeople : WebData (EveryDict PersonId OtherPerson)
         otherPeople =
             RemoteData.append relationshipsData participationsData
                 |> RemoteData.map
                     (\( relationships, participations ) ->
                         let
                             withParticipants =
-                                AllDict.foldl addParticipantToOtherPeople EntityUuidDict.empty participations
+                                EveryDict.foldl addParticipantToOtherPeople EveryDict.empty participations
                         in
-                        AllDictList.foldl addRelationshipToOtherPeople withParticipants relationships
+                        EveryDictList.foldl addRelationshipToOtherPeople withParticipants relationships
                     )
 
         viewOtherPeople people =
             people
-                |> AllDict.map
+                |> EveryDict.map
                     (\otherPersonId otherPerson ->
-                        AllDict.get otherPersonId db.people
+                        EveryDict.get otherPersonId db.people
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.append db.clinics
                             |> viewWebData language (viewOtherPerson language currentDate id ( otherPersonId, otherPerson )) identity
                     )
-                |> AllDict.values
+                |> EveryDict.values
                 |> div [ class "ui unstackable items participants-list" ]
 
         isAdult =
@@ -272,7 +272,7 @@ viewPerson language currentDate id person =
         ]
 
 
-viewOtherPerson : Language -> NominalDate -> PersonId -> ( PersonId, OtherPerson ) -> ( EntityUuidDictList ClinicId Clinic, Person ) -> Html App.Model.Msg
+viewOtherPerson : Language -> NominalDate -> PersonId -> ( PersonId, OtherPerson ) -> ( EveryDictList ClinicId Clinic, Person ) -> Html App.Model.Msg
 viewOtherPerson language currentDate relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
     let
         typeForThumbnail =
@@ -301,7 +301,7 @@ viewOtherPerson language currentDate relationMainId ( otherPersonId, otherPerson
 
         groupNames =
             otherPerson.groups
-                |> List.map (\( _, group ) -> AllDictList.get group.clinic clinics)
+                |> List.map (\( _, group ) -> EveryDictList.get group.clinic clinics)
                 |> List.filterMap (Maybe.map .name)
                 |> String.join ", "
 

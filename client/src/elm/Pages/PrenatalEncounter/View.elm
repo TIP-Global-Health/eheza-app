@@ -1,10 +1,10 @@
 module Pages.PrenatalEncounter.View exposing (view, viewMotherAndMeasurements)
 
-import AllDict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
+import EveryDict
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
 import Html exposing (..)

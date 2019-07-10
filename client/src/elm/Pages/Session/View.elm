@@ -69,13 +69,13 @@ viewFoundSession : Language -> NominalDate -> ZScore.Model.Model -> Nurse -> ( S
 viewFoundSession language currentDate zscores nurse ( sessionId, session ) page model db =
     let
         editableSession =
-            AllDict.get sessionId db.editableSessions
+            EveryDict.get sessionId db.editableSessions
                 |> Maybe.withDefault NotAsked
 
         healthCenterId =
             db.clinics
                 |> RemoteData.toMaybe
-                |> Maybe.andThen (AllDictList.get session.clinicId)
+                |> Maybe.andThen (EveryDictList.get session.clinicId)
                 |> Maybe.map .healthCenterId
 
         authorized =

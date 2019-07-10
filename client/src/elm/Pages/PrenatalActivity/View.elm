@@ -1,11 +1,11 @@
 module Pages.PrenatalActivity.View exposing (view)
 
-import AllDict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Date.Extra as Date exposing (Interval(Day, Month))
 import DateSelector.SelectorDropdown
+import EveryDict
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime, toLocalDateTime)
 import Html exposing (..)

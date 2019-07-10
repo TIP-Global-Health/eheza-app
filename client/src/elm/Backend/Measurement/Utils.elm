@@ -4,6 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
+import Restful.Endpoint exposing (EntityUuid)
 import Time.Date
 
 
