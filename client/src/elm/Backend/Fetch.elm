@@ -80,27 +80,27 @@ shouldFetch model msg =
                 |> isNotAsked
 
         FetchPrenatalEncounter id ->
-            AllDict.get id model.prenatalEncounters
+            EveryDict.get id model.prenatalEncounters
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
         FetchPrenatalEncountersForParticipant id ->
-            AllDict.get id model.prenatalEncountersByParticipant
+            EveryDict.get id model.prenatalEncountersByParticipant
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
         FetchPrenatalMeasurements id ->
-            AllDict.get id model.prenatalMeasurements
+            EveryDict.get id model.prenatalMeasurements
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
         FetchPrenatalParticipant id ->
-            AllDict.get id model.prenatalParticipants
+            EveryDict.get id model.prenatalParticipants
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
         FetchPrenatalParticipantsForPerson id ->
-            AllDict.get id model.prenatalParticipantsByPerson
+            EveryDict.get id model.prenatalParticipantsByPerson
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
@@ -166,22 +166,22 @@ forget msg model =
             { model | people = EveryDict.remove id model.people }
 
         FetchPrenatalParticipantsForPerson id ->
-            { model | prenatalParticipantsByPerson = AllDict.remove id model.prenatalParticipantsByPerson }
+            { model | prenatalParticipantsByPerson = EveryDict.remove id model.prenatalParticipantsByPerson }
 
         FetchParticipantsForPerson id ->
             { model | participantsByPerson = EveryDict.remove id model.participantsByPerson }
 
         FetchPrenatalEncounter id ->
-            { model | prenatalEncounters = AllDict.remove id model.prenatalEncounters }
+            { model | prenatalEncounters = EveryDict.remove id model.prenatalEncounters }
 
         FetchPrenatalEncountersForParticipant id ->
-            { model | prenatalEncountersByParticipant = AllDict.remove id model.prenatalEncountersByParticipant }
+            { model | prenatalEncountersByParticipant = EveryDict.remove id model.prenatalEncountersByParticipant }
 
         FetchPrenatalMeasurements id ->
-            { model | prenatalMeasurements = AllDict.remove id model.prenatalMeasurements }
+            { model | prenatalMeasurements = EveryDict.remove id model.prenatalMeasurements }
 
         FetchPrenatalParticipant id ->
-            { model | prenatalParticipants = AllDict.remove id model.prenatalParticipants }
+            { model | prenatalParticipants = EveryDict.remove id model.prenatalParticipants }
 
         FetchRelationshipsForPerson id ->
             { model | relationshipsByPerson = EveryDict.remove id model.relationshipsByPerson }

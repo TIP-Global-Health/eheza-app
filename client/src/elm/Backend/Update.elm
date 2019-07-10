@@ -179,40 +179,40 @@ updateIndexedDb currentDate nurseId msg model =
             )
 
         FetchPrenatalParticipantsForPerson id ->
-            ( { model | prenatalParticipantsByPerson = AllDict.insert id Loading model.prenatalParticipantsByPerson }
+            ( { model | prenatalParticipantsByPerson = EveryDict.insert id Loading model.prenatalParticipantsByPerson }
             , sw.select prenatalParticipantEndpoint (Just id)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedPrenatalParticipantsForPerson id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedPrenatalParticipantsForPerson id)
             , []
             )
 
         HandleFetchedPrenatalParticipantsForPerson id data ->
-            ( { model | prenatalParticipantsByPerson = AllDict.insert id data model.prenatalParticipantsByPerson }
+            ( { model | prenatalParticipantsByPerson = EveryDict.insert id data model.prenatalParticipantsByPerson }
             , Cmd.none
             , []
             )
 
         FetchPrenatalEncountersForParticipant id ->
-            ( { model | prenatalEncountersByParticipant = AllDict.insert id Loading model.prenatalEncountersByParticipant }
+            ( { model | prenatalEncountersByParticipant = EveryDict.insert id Loading model.prenatalEncountersByParticipant }
             , sw.select prenatalEncounterEndpoint (Just id)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EntityUuidDictList.fromList) >> HandleFetchedPrenatalEncountersForParticipant id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedPrenatalEncountersForParticipant id)
             , []
             )
 
         HandleFetchedPrenatalEncountersForParticipant id data ->
-            ( { model | prenatalEncountersByParticipant = AllDict.insert id data model.prenatalEncountersByParticipant }
+            ( { model | prenatalEncountersByParticipant = EveryDict.insert id data model.prenatalEncountersByParticipant }
             , Cmd.none
             , []
             )
 
         FetchPrenatalMeasurements id ->
-            ( { model | prenatalMeasurements = AllDict.insert id Loading model.prenatalMeasurements }
+            ( { model | prenatalMeasurements = EveryDict.insert id Loading model.prenatalMeasurements }
             , sw.get prenatalMeasurementsEndpoint id
                 |> toCmd (RemoteData.fromResult >> HandleFetchedPrenatalMeasurements id)
             , []
             )
 
         HandleFetchedPrenatalMeasurements id data ->
-            ( { model | prenatalMeasurements = AllDict.insert id data model.prenatalMeasurements }
+            ( { model | prenatalMeasurements = EveryDict.insert id data model.prenatalMeasurements }
             , Cmd.none
             , []
             )
@@ -339,27 +339,27 @@ updateIndexedDb currentDate nurseId msg model =
             )
 
         FetchPrenatalEncounter id ->
-            ( { model | prenatalEncounters = AllDict.insert id Loading model.prenatalEncounters }
+            ( { model | prenatalEncounters = EveryDict.insert id Loading model.prenatalEncounters }
             , sw.get prenatalEncounterEndpoint id
                 |> toCmd (RemoteData.fromResult >> HandleFetchedPrenatalEncounter id)
             , []
             )
 
         HandleFetchedPrenatalEncounter id data ->
-            ( { model | prenatalEncounters = AllDict.insert id data model.prenatalEncounters }
+            ( { model | prenatalEncounters = EveryDict.insert id data model.prenatalEncounters }
             , Cmd.none
             , []
             )
 
         FetchPrenatalParticipant id ->
-            ( { model | prenatalParticipants = AllDict.insert id Loading model.prenatalParticipants }
+            ( { model | prenatalParticipants = EveryDict.insert id Loading model.prenatalParticipants }
             , sw.get prenatalParticipantEndpoint id
                 |> toCmd (RemoteData.fromResult >> HandleFetchedPrenatalParticipant id)
             , []
             )
 
         HandleFetchedPrenatalParticipant id data ->
-            ( { model | prenatalParticipants = AllDict.insert id data model.prenatalParticipants }
+            ( { model | prenatalParticipants = EveryDict.insert id data model.prenatalParticipants }
             , Cmd.none
             , []
             )
@@ -463,13 +463,13 @@ updateIndexedDb currentDate nurseId msg model =
         MsgPrenatalEncounter encounterId subMsg ->
             let
                 requests =
-                    AllDict.get encounterId model.prenatalEncounterRequests
+                    EveryDict.get encounterId model.prenatalEncounterRequests
                         |> Maybe.withDefault Backend.PrenatalEncounter.Model.emptyModel
 
                 ( subModel, subCmd ) =
                     Backend.PrenatalEncounter.Update.update nurseId encounterId currentDate subMsg requests
             in
-            ( { model | prenatalEncounterRequests = AllDict.insert encounterId subModel model.prenatalEncounterRequests }
+            ( { model | prenatalEncounterRequests = EveryDict.insert encounterId subModel model.prenatalEncounterRequests }
             , Cmd.map (MsgPrenatalEncounter encounterId) subCmd
             , []
             )
@@ -877,10 +877,10 @@ handleRevision revision (( model, recalc ) as noChange) =
         PrenatalParticipantRevision uuid data ->
             let
                 prenatalParticipants =
-                    AllDict.update uuid (Maybe.map (always (Success data))) model.prenatalParticipants
+                    EveryDict.update uuid (Maybe.map (always (Success data))) model.prenatalParticipants
 
                 prenatalParticipantsByPerson =
-                    AllDict.remove data.person model.prenatalParticipantsByPerson
+                    EveryDict.remove data.person model.prenatalParticipantsByPerson
             in
             ( { model
                 | prenatalParticipants = prenatalParticipants
@@ -892,10 +892,10 @@ handleRevision revision (( model, recalc ) as noChange) =
         PrenatalEncounterRevision uuid data ->
             let
                 prenatalEncounters =
-                    AllDict.update uuid (Maybe.map (always (Success data))) model.prenatalEncounters
+                    EveryDict.update uuid (Maybe.map (always (Success data))) model.prenatalEncounters
 
                 prenatalEncountersByParticipant =
-                    AllDict.remove data.participant model.prenatalEncountersByParticipant
+                    EveryDict.remove data.participant model.prenatalEncountersByParticipant
             in
             ( { model
                 | prenatalEncounters = prenatalEncounters

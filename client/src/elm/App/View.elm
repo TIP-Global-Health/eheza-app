@@ -234,7 +234,7 @@ viewUserPage page model configured =
                 PrenatalEncounterPage id ->
                     let
                         page =
-                            AllDict.get id loggedInModel.prenatalEncounterPages
+                            EveryDict.get id loggedInModel.prenatalEncounterPages
                                 |> Maybe.withDefault Pages.PrenatalEncounter.Model.emptyModel
                     in
                     Pages.PrenatalEncounter.View.view model.language currentDate id model.indexedDb page

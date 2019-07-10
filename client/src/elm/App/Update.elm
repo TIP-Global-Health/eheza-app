@@ -230,11 +230,11 @@ update msg model =
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.prenatalEncounterPages
-                                        |> AllDict.get id
+                                        |> EveryDict.get id
                                         |> Maybe.withDefault Pages.PrenatalEncounter.Model.emptyModel
                                         |> Pages.PrenatalEncounter.Update.update subMsg
                             in
-                            ( { data | prenatalEncounterPages = AllDict.insert id subModel data.prenatalEncounterPages }
+                            ( { data | prenatalEncounterPages = EveryDict.insert id subModel data.prenatalEncounterPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalEncounter id) subCmd
                             , extraMsgs
                             )

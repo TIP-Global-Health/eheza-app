@@ -32,9 +32,9 @@ import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
 import Dict exposing (Dict)
-import Http
 import EveryDict exposing (EveryDict)
 import EveryDictList exposing (EveryDictList)
+import Http
 import RemoteData exposing (RemoteData(..), WebData)
 
 
@@ -76,8 +76,9 @@ type alias ModelIndexedDb =
     , editableSessions : EveryDict SessionId (WebData EditableSession)
 
     -- Tracks requests in progress to update sessions or prenatal encounters
-    , sessionRequests : EntityUuidDict SessionId Backend.Session.Model.Model
+    , sessionRequests : EveryDict SessionId Backend.Session.Model.Model
     , prenatalEncounterRequests : EveryDict PrenatalEncounterId Backend.PrenatalEncounter.Model.Model
+
     -- Tracks requests in progress to update sessions or prenatal encounters
     , sessionRequests : EveryDict SessionId Backend.Session.Model.Model
 
@@ -101,8 +102,8 @@ type alias ModelIndexedDb =
     , prenatalParticipants : EveryDict PrenatalParticipantId (WebData PrenatalParticipant)
 
     -- Cache things organized in certain ways.
-    , prenatalParticipantsByPerson : EveryDict PersonId (WebData (EntityUuidDictList PrenatalParticipantId PrenatalParticipant))
-    , prenatalEncountersByParticipant : EveryDict PrenatalParticipantId (WebData (EntityUuidDictList PrenatalEncounterId PrenatalEncounter))
+    , prenatalParticipantsByPerson : EveryDict PersonId (WebData (EveryDictList PrenatalParticipantId PrenatalParticipant))
+    , prenatalEncountersByParticipant : EveryDict PrenatalParticipantId (WebData (EveryDictList PrenatalEncounterId PrenatalEncounter))
     , prenatalMeasurements : EveryDict PrenatalEncounterId (WebData PrenatalMeasurements)
 
     -- From the point of view of the specified person, all of their relationships.

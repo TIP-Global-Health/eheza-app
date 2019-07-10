@@ -144,7 +144,6 @@ type alias LoggedInModel =
     , nurse : ( NurseId, Nurse )
 
     -- A set of pages for every "open" editable session.
-
     , prenatalEncounterPages : EveryDict PrenatalEncounterId Pages.PrenatalEncounter.Model.Model
     , prenatalActivityPages : EveryDict ( PrenatalEncounterId, PrenatalActivity ) Pages.PrenatalActivity.Model.Model
     , sessionPages : EveryDict SessionId Pages.Session.Model.Model
