@@ -34,6 +34,7 @@ module Pages.PrenatalActivity.Model exposing
     , encodeLmpRange
     )
 
+import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
 import Pages.Page exposing (Page)
@@ -46,6 +47,7 @@ type Msg
     | SetLmpDate Date
     | SetLmpDateConfident Bool
     | SetLmpRange String
+    | SavePregnancyDating PrenatalEncounterId PersonId (Maybe LastMenstrualPeriodId)
       -- HistoryMsgs
     | SetActiveHistoryTask HistoryTask
     | SetHistoryTaskCompleted

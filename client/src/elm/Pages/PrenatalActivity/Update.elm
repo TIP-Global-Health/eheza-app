@@ -2,8 +2,12 @@ module Pages.PrenatalActivity.Update exposing (update)
 
 import App.Model
 import Backend.Measurement.Model exposing (DangerSign(..), FamilyPlanningSign(..))
-import Maybe.Extra exposing (isJust, isNothing)
+import Backend.Model
+import Backend.PrenatalEncounter.Model
+import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
+import Pages.PrenatalActivity.Utils exposing (toLastMenstrualPeriodValue)
 import Result exposing (Result)
 
 
@@ -84,6 +88,26 @@ update msg model =
             ( { model | pregnancyDatingData = updatedData }
             , Cmd.none
             , []
+            )
+
+        SavePregnancyDating prenatalEncounterId personId measurementId ->
+            let
+                appMsgs =
+                    model.pregnancyDatingData.form
+                        |> toLastMenstrualPeriodValue
+                        |> unwrap
+                            []
+                            (\lastMenstrualPeriodValue ->
+                                [ Backend.PrenatalEncounter.Model.SaveLastMenstrualPeriod personId measurementId lastMenstrualPeriodValue
+                                    |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
             )
 
         SetOBFirstStepCompleted ->
