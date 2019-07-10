@@ -29,13 +29,15 @@ module Backend.Measurement.Decoder exposing
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Dict exposing (Dict)
+import EveryDict exposing (EveryDict)
+import EveryDictList
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict)
 import Gizra.NominalDate
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid, toEntityUuid)
 import Translate.Utils exposing (decodeLanguage)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 import Utils.Json exposing (decodeEverySet)
 
 
@@ -69,20 +71,20 @@ decodeWithEntityUuid decoder =
 decodeMotherMeasurementList : Decoder MotherMeasurementList
 decodeMotherMeasurementList =
     decode MotherMeasurementList
-        |> optional "attendance" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeAttendance)) EntityUuidDictList.empty
-        |> optional "family_planning" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeFamilyPlanning)) EntityUuidDictList.empty
-        |> optional "participant_consent" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeParticipantConsent)) EntityUuidDictList.empty
+        |> optional "attendance" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeAttendance)) EveryDictList.empty
+        |> optional "family_planning" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeFamilyPlanning)) EveryDictList.empty
+        |> optional "participant_consent" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeParticipantConsent)) EveryDictList.empty
 
 
 decodeChildMeasurementList : Decoder ChildMeasurementList
 decodeChildMeasurementList =
     decode ChildMeasurementList
-        |> optional "height" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeHeight)) EntityUuidDictList.empty
-        |> optional "muac" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeMuac)) EntityUuidDictList.empty
-        |> optional "nutrition" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeNutrition)) EntityUuidDictList.empty
-        |> optional "photo" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodePhoto)) EntityUuidDictList.empty
-        |> optional "weight" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeWeight)) EntityUuidDictList.empty
-        |> optional "counseling_session" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeCounselingSession)) EntityUuidDictList.empty
+        |> optional "height" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeHeight)) EveryDictList.empty
+        |> optional "muac" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeMuac)) EveryDictList.empty
+        |> optional "nutrition" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeNutrition)) EveryDictList.empty
+        |> optional "photo" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodePhoto)) EveryDictList.empty
+        |> optional "weight" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeWeight)) EveryDictList.empty
+        |> optional "counseling_session" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeCounselingSession)) EveryDictList.empty
 
 
 decodePrenatalMeasurements : Decoder PrenatalMeasurements

@@ -1,11 +1,11 @@
 module Backend.Session.Utils exposing (emptyMotherMeasurementData, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother, isClosed)
 
-import AllDict
-import AllDictList
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (..)
+import EveryDict
+import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
 import Lazy exposing (Lazy, lazy)
 import RemoteData exposing (RemoteData(..))
@@ -16,33 +16,33 @@ import Time.Date
 -}
 getChildren : PersonId -> OfflineSession -> List ( PersonId, Person )
 getChildren motherId session =
-    AllDict.get motherId session.participants.byMotherId
+    EveryDict.get motherId session.participants.byMotherId
         |> Maybe.withDefault []
         |> List.filterMap
             (\participant ->
-                AllDictList.get participant.child session.children
+                EveryDictList.get participant.child session.children
                     |> Maybe.map (\child -> ( participant.child, child ))
             )
 
 
 getChild : PersonId -> OfflineSession -> Maybe Person
 getChild childId session =
-    AllDictList.get childId session.children
+    EveryDictList.get childId session.children
 
 
 getMother : PersonId -> OfflineSession -> Maybe Person
 getMother motherId session =
-    AllDictList.get motherId session.mothers
+    EveryDictList.get motherId session.mothers
 
 
 getMyMother : PersonId -> OfflineSession -> Maybe ( PersonId, Person )
 getMyMother childId session =
-    AllDict.get childId session.participants.byChildId
+    EveryDict.get childId session.participants.byChildId
         |> Maybe.withDefault []
         |> List.head
         |> Maybe.andThen
             (\participant ->
-                AllDictList.get participant.adult session.mothers
+                EveryDictList.get participant.adult session.mothers
                     |> Maybe.map (\person -> ( participant.adult, person ))
             )
 
@@ -50,14 +50,14 @@ getMyMother childId session =
 getChildHistoricalMeasurements : PersonId -> OfflineSession -> Lazy ChildMeasurementList
 getChildHistoricalMeasurements childId session =
     Lazy.map
-        (.historical >> .children >> AllDict.get childId >> Maybe.withDefault emptyChildMeasurementList)
+        (.historical >> .children >> EveryDict.get childId >> Maybe.withDefault emptyChildMeasurementList)
         session.measurements
 
 
 getMotherHistoricalMeasurements : PersonId -> OfflineSession -> Lazy MotherMeasurementList
 getMotherHistoricalMeasurements motherId session =
     Lazy.map
-        (.historical >> .mothers >> AllDict.get motherId >> Maybe.withDefault emptyMotherMeasurementList)
+        (.historical >> .mothers >> EveryDict.get motherId >> Maybe.withDefault emptyMotherMeasurementList)
         session.measurements
 
 
@@ -68,10 +68,10 @@ getChildMeasurementData childId session =
     Lazy.map
         (\measurements ->
             { current =
-                AllDict.get childId measurements.current.children
+                EveryDict.get childId measurements.current.children
                     |> Maybe.withDefault emptyChildMeasurements
             , previous =
-                AllDict.get childId measurements.previous.children
+                EveryDict.get childId measurements.previous.children
                     |> Maybe.withDefault emptyChildMeasurements
             , update = session.update
             }
@@ -84,10 +84,10 @@ getChildMeasurementData2 childId session =
     Lazy.map
         (\measurements ->
             { current =
-                AllDict.get childId measurements.current.children
+                EveryDict.get childId measurements.current.children
                     |> Maybe.withDefault emptyChildMeasurements
             , previous =
-                AllDict.get childId measurements.previous.children
+                EveryDict.get childId measurements.previous.children
                     |> Maybe.withDefault emptyChildMeasurements
             , update = NotAsked
             }
@@ -102,10 +102,10 @@ getMotherMeasurementData motherId session =
     Lazy.map
         (\measurements ->
             { current =
-                AllDict.get motherId measurements.current.mothers
+                EveryDict.get motherId measurements.current.mothers
                     |> Maybe.withDefault emptyMotherMeasurements
             , previous =
-                AllDict.get motherId measurements.previous.mothers
+                EveryDict.get motherId measurements.previous.mothers
                     |> Maybe.withDefault emptyMotherMeasurements
             , update = session.update
             }
@@ -118,10 +118,10 @@ getMotherMeasurementData2 motherId session =
     Lazy.map
         (\measurements ->
             { current =
-                AllDict.get motherId measurements.current.mothers
+                EveryDict.get motherId measurements.current.mothers
                     |> Maybe.withDefault emptyMotherMeasurements
             , previous =
-                AllDict.get motherId measurements.previous.mothers
+                EveryDict.get motherId measurements.previous.mothers
                     |> Maybe.withDefault emptyMotherMeasurements
             , update = NotAsked
             }

@@ -1,9 +1,9 @@
 module Pages.Person.Fetch exposing (fetch, fetchForCreateForm)
 
-import AllDict
-import AllDictList
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import EveryDict
+import EveryDictList
 import EverySet
 import RemoteData exposing (RemoteData(..))
 
@@ -12,9 +12,9 @@ fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetch id db =
     let
         familyMembers =
-            AllDict.get id db.relationshipsByPerson
+            EveryDict.get id db.relationshipsByPerson
                 |> Maybe.withDefault NotAsked
-                |> RemoteData.map (AllDictList.values >> List.map (.relatedTo >> FetchPerson))
+                |> RemoteData.map (EveryDictList.values >> List.map (.relatedTo >> FetchPerson))
                 |> RemoteData.withDefault []
 
         addParticipants participant accum =
@@ -28,10 +28,10 @@ fetch id db =
         -- We also need to fetch the person data for the other half of
         -- participant pairings even if not a family member.
         participantMembers =
-            AllDict.get id db.participantsByPerson
+            EveryDict.get id db.participantsByPerson
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.map
-                    (AllDict.values
+                    (EveryDict.values
                         >> List.foldl addParticipants EverySet.empty
                         >> EverySet.toList
                         >> List.map FetchPerson

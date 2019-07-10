@@ -1,6 +1,5 @@
 module Pages.PrenatalActivity.View exposing (view)
 
-import AllDict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
@@ -9,6 +8,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import Date.Extra as Date exposing (Interval(Day, Month))
 import DateSelector.SelectorDropdown
+import EveryDict
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime, toLocalDateTime)
 import Html exposing (..)
@@ -39,18 +39,18 @@ view : Language -> NominalDate -> PrenatalEncounterId -> PrenatalActivity -> Mod
 view language currentDate id activity db model =
     let
         encounter =
-            AllDict.get id db.prenatalEncounters
+            EveryDict.get id db.prenatalEncounters
                 |> Maybe.withDefault NotAsked
 
         measurements =
-            AllDict.get id db.prenatalMeasurements
+            EveryDict.get id db.prenatalMeasurements
                 |> Maybe.withDefault NotAsked
 
         participant =
             encounter
                 |> RemoteData.andThen
                     (\encounter ->
-                        AllDict.get encounter.participant db.prenatalParticipants
+                        EveryDict.get encounter.participant db.prenatalParticipants
                             |> Maybe.withDefault NotAsked
                     )
 
@@ -58,7 +58,7 @@ view language currentDate id activity db model =
             participant
                 |> RemoteData.andThen
                     (\participant ->
-                        AllDict.get participant.person db.people
+                        EveryDict.get participant.person db.people
                             |> Maybe.withDefault NotAsked
                     )
 
@@ -436,7 +436,7 @@ viewHistoryContent language currentDate assembled data =
             div [ class <| "actions history obstetric " ++ stepIndicationClass ]
                 buttons
     in
-    [ div [ class "ui task segment" ]
+    [ div [ class "ui task segment blue" ]
         [ div [ class "ui five column grid" ] <|
             List.map viewTask <|
                 tasks

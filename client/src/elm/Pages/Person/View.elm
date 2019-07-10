@@ -14,6 +14,8 @@ import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Date.Extra as Date exposing (Interval(Year))
 import DateSelector.SelectorDropdown
+import EveryDict exposing (EveryDict)
+import EveryDictList exposing (EveryDictList)
 import Form exposing (Form)
 import Form.Field
 import Form.Input
@@ -32,8 +34,6 @@ import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Set
 import Time.Iso8601
 import Translate exposing (Language, TranslationId, translate)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 import Utils.Form exposing (dateInput, getValueAsInt, isFormFieldSet, viewFormError)
 import Utils.GeoLocation exposing (GeoInfo, geoInfo, getGeoLocation)
 import Utils.Html exposing (script, thumbnailImage, viewLoading)
@@ -45,7 +45,7 @@ view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Html App.Model.M
 view language currentDate id db =
     let
         person =
-            AllDict.get id db.people
+            EveryDict.get id db.people
                 |> Maybe.withDefault NotAsked
 
         headerName =
@@ -96,16 +96,16 @@ viewParticipantDetailsForm language currentDate db id person =
         -- We re-organize our data about relatoinships and group participations
         -- so that we have one record per `OtherPerson`.
         relationshipsData =
-            AllDict.get id db.relationshipsByPerson
+            EveryDict.get id db.relationshipsByPerson
                 |> Maybe.withDefault NotAsked
 
         participationsData =
-            AllDict.get id db.participantsByPerson
+            EveryDict.get id db.participantsByPerson
                 |> Maybe.withDefault NotAsked
 
-        addRelationshipToOtherPeople : RelationshipId -> MyRelationship -> EntityUuidDict PersonId OtherPerson -> EntityUuidDict PersonId OtherPerson
+        addRelationshipToOtherPeople : RelationshipId -> MyRelationship -> EveryDict PersonId OtherPerson -> EveryDict PersonId OtherPerson
         addRelationshipToOtherPeople relationshipId myRelationship accum =
-            AllDict.update myRelationship.relatedTo
+            EveryDict.update myRelationship.relatedTo
                 (\existing ->
                     Just
                         { relationship = Just ( relationshipId, myRelationship )
@@ -116,7 +116,7 @@ viewParticipantDetailsForm language currentDate db id person =
                 )
                 accum
 
-        addParticipantToOtherPeople : PmtctParticipantId -> PmtctParticipant -> EntityUuidDict PersonId OtherPerson -> EntityUuidDict PersonId OtherPerson
+        addParticipantToOtherPeople : PmtctParticipantId -> PmtctParticipant -> EveryDict PersonId OtherPerson -> EveryDict PersonId OtherPerson
         addParticipantToOtherPeople pmtctParticipantId pmtctParticipant accum =
             let
                 otherParticipantId =
@@ -126,7 +126,7 @@ viewParticipantDetailsForm language currentDate db id person =
                     else
                         pmtctParticipant.child
             in
-            AllDict.update otherParticipantId
+            EveryDict.update otherParticipantId
                 (\existing ->
                     Just
                         { relationship = Maybe.andThen .relationship existing
@@ -138,28 +138,28 @@ viewParticipantDetailsForm language currentDate db id person =
                 )
                 accum
 
-        otherPeople : WebData (EntityUuidDict PersonId OtherPerson)
+        otherPeople : WebData (EveryDict PersonId OtherPerson)
         otherPeople =
             RemoteData.append relationshipsData participationsData
                 |> RemoteData.map
                     (\( relationships, participations ) ->
                         let
                             withParticipants =
-                                AllDict.foldl addParticipantToOtherPeople EntityUuidDict.empty participations
+                                EveryDict.foldl addParticipantToOtherPeople EveryDict.empty participations
                         in
-                        AllDictList.foldl addRelationshipToOtherPeople withParticipants relationships
+                        EveryDictList.foldl addRelationshipToOtherPeople withParticipants relationships
                     )
 
         viewOtherPeople people =
             people
-                |> AllDict.map
+                |> EveryDict.map
                     (\otherPersonId otherPerson ->
-                        AllDict.get otherPersonId db.people
+                        EveryDict.get otherPersonId db.people
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.append db.clinics
                             |> viewWebData language (viewOtherPerson language currentDate id ( otherPersonId, otherPerson )) identity
                     )
-                |> AllDict.values
+                |> EveryDict.values
                 |> div [ class "ui unstackable items participants-list" ]
 
         isAdult =
@@ -272,7 +272,7 @@ viewPerson language currentDate id person =
         ]
 
 
-viewOtherPerson : Language -> NominalDate -> PersonId -> ( PersonId, OtherPerson ) -> ( EntityUuidDictList ClinicId Clinic, Person ) -> Html App.Model.Msg
+viewOtherPerson : Language -> NominalDate -> PersonId -> ( PersonId, OtherPerson ) -> ( EveryDictList ClinicId Clinic, Person ) -> Html App.Model.Msg
 viewOtherPerson language currentDate relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
     let
         typeForThumbnail =
@@ -301,7 +301,7 @@ viewOtherPerson language currentDate relationMainId ( otherPersonId, otherPerson
 
         groupNames =
             otherPerson.groups
-                |> List.map (\( _, group ) -> AllDictList.get group.clinic clinics)
+                |> List.map (\( _, group ) -> EveryDictList.get group.clinic clinics)
                 |> List.filterMap (Maybe.map .name)
                 |> String.join ", "
 
@@ -473,7 +473,7 @@ viewCreateForm language currentDate relationId model db =
 
         maybeRelatedPerson =
             relationId
-                |> Maybe.andThen (\id -> AllDict.get id db.people)
+                |> Maybe.andThen (\id -> EveryDict.get id db.people)
                 |> Maybe.andThen RemoteData.toMaybe
 
         emptyOption =
@@ -786,7 +786,7 @@ viewCreateForm language currentDate relationId model db =
 
         geoLocationDictToOptions dict =
             dict
-                |> AllDict.toList
+                |> EveryDict.toList
                 |> List.map
                     (\( id, geoLocation ) ->
                         ( toString <| fromEntityId id, geoLocation.name )
@@ -794,7 +794,7 @@ viewCreateForm language currentDate relationId model db =
 
         filterGeoLocationDictByParent parentId dict =
             dict
-                |> AllDict.filter
+                |> EveryDict.filter
                     (\_ geoLocation ->
                         (Just <| toEntityId parentId) == geoLocation.parent
                     )
@@ -971,7 +971,7 @@ viewCreateForm language currentDate relationId model db =
                                 |> RemoteData.map
                                     (\dict ->
                                         dict
-                                            |> AllDictList.toList
+                                            |> EveryDictList.toList
                                             |> List.map
                                                 (\( id, healthCenter ) ->
                                                     ( fromEntityUuid id

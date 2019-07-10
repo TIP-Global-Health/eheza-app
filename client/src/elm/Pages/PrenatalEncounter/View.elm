@@ -1,6 +1,5 @@
 module Pages.PrenatalEncounter.View exposing (view, viewMotherAndMeasurements)
 
-import AllDict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (PrenatalMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
@@ -8,6 +7,7 @@ import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
+import EveryDict
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
 import Html exposing (..)
@@ -43,18 +43,18 @@ view : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Model
 view language currentDate id db model =
     let
         encounter =
-            AllDict.get id db.prenatalEncounters
+            EveryDict.get id db.prenatalEncounters
                 |> Maybe.withDefault NotAsked
 
         measurements =
-            AllDict.get id db.prenatalMeasurements
+            EveryDict.get id db.prenatalMeasurements
                 |> Maybe.withDefault NotAsked
 
         participant =
             encounter
                 |> RemoteData.andThen
                     (\encounter ->
-                        AllDict.get encounter.participant db.prenatalParticipants
+                        EveryDict.get encounter.participant db.prenatalParticipants
                             |> Maybe.withDefault NotAsked
                     )
 
@@ -62,7 +62,7 @@ view language currentDate id db model =
             participant
                 |> RemoteData.andThen
                     (\participant ->
-                        AllDict.get participant.person db.people
+                        EveryDict.get participant.person db.people
                             |> Maybe.withDefault NotAsked
                     )
 

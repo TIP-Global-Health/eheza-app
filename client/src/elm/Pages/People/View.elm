@@ -1,13 +1,13 @@
 module Pages.People.View exposing (view)
 
-import AllDict
-import AllDictList
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form exposing (ExpectedAge(..))
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Dict
+import EveryDict
+import EveryDictList
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -19,7 +19,6 @@ import Pages.People.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, translate)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewWebData)
@@ -40,7 +39,7 @@ view language currentDate relation model db =
         title =
             case relation of
                 Just relationId ->
-                    AllDict.get relationId db.people
+                    EveryDict.get relationId db.people
                         |> Maybe.withDefault NotAsked
                         |> RemoteData.map .name
                         |> RemoteData.withDefault (fromEntityUuid relationId)
@@ -100,7 +99,7 @@ viewSearchForm language currentDate relation model db =
 
         relatedPerson =
             relation
-                |> Maybe.andThen (\id -> AllDict.get id db.people)
+                |> Maybe.andThen (\id -> EveryDict.get id db.people)
                 |> Maybe.andThen RemoteData.toMaybe
 
         expectedAge =
@@ -154,13 +153,13 @@ viewSearchForm language currentDate relation model db =
                                 True
 
                             Just personId ->
-                                AllDict.get personId db.relationshipsByPerson
+                                EveryDict.get personId db.relationshipsByPerson
                                     |> Maybe.andThen RemoteData.toMaybe
                                     |> unwrap
                                         True
                                         (\relatedPersionRelationships ->
                                             relatedPersionRelationships
-                                                |> AllDictList.values
+                                                |> EveryDictList.values
                                                 |> List.all
                                                     (\relationship ->
                                                         relationship.relatedTo /= filteredPersonId
@@ -170,7 +169,7 @@ viewSearchForm language currentDate relation model db =
                 Dict.get searchValue db.personSearches
                     |> Maybe.withDefault NotAsked
                     |> RemoteData.map
-                        (AllDictList.filter
+                        (EveryDictList.filter
                             (\k v ->
                                 -- Applying 3 conditionms explained above
                                 not (relation == Just k) && personTypeCondition v && personRelationCondition k
@@ -184,17 +183,17 @@ viewSearchForm language currentDate relation model db =
                 |> Maybe.withDefault emptyNode
 
         viewSummary data =
-            AllDictList.length data
+            EveryDictList.length data
                 |> Translate.ReportResultsOfSearch
                 |> translate language
                 |> text
 
         searchResultsParticipants =
             results
-                |> Maybe.withDefault (Success EntityUuidDictList.empty)
-                |> RemoteData.withDefault EntityUuidDictList.empty
-                |> AllDictList.map (viewParticipant language currentDate relation db)
-                |> AllDictList.values
+                |> Maybe.withDefault (Success EveryDictList.empty)
+                |> RemoteData.withDefault EveryDictList.empty
+                |> EveryDictList.map (viewParticipant language currentDate relation db)
+                |> EveryDictList.values
 
         searchHelper =
             case relation of
