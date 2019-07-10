@@ -206,14 +206,14 @@ update msg model =
                                 SecondStep form ->
                                     let
                                         updatedReason =
-                                            if form.reasonForCSection == Just reason then
+                                            if form.cSectionReason == Just reason then
                                                 Nothing
 
                                             else
                                                 Just reason
 
                                         updatedForm =
-                                            { form | reasonForCSection = updatedReason }
+                                            { form | cSectionReason = updatedReason }
                                     in
                                     model.historyData
                                         |> (\data -> { data | obstetricForm = SecondStep updatedForm })

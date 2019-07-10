@@ -198,7 +198,7 @@ type TranslationId
     | Children
     | ClickTheCheckMark
     | Clinical
-    | ConvulsionsAndUnconciousPreviousDelivery
+    | ConvulsionsAndUnconsciousPreviousDelivery
     | ConvulsionsPreviousDelivery
     | GroupNotFound
     | Group
@@ -275,7 +275,7 @@ type TranslationId
     | FundalHeight
     | Gender Gender
     | GenderLabel
-    | GestatipnalDiabetesPreviousPregnancy
+    | GestationalDiabetesPreviousPregnancy
     | GoHome
     | GroupAssessment
     | Gravida
@@ -464,7 +464,7 @@ type TranslationId
     | SevereHemorrhagingPreviousDelivery
     | StillbornPreviousDelivery
     | SuccessiveAbortions
-    | SuccessivePrimatureDeliveries
+    | SuccessivePrematureDeliveries
     | GroupEncounterClosed
     | GroupEncounterClosed2 SessionId
     | GroupEncounterLoading SessionId
@@ -1118,7 +1118,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        ConvulsionsAndUnconciousPreviousDelivery ->
+        ConvulsionsAndUnconsciousPreviousDelivery ->
             { english = "Experienced convulsions and resulted in becoming unconscious after delivery"
             , kinyarwanda = Nothing
             }
@@ -1653,7 +1653,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        GestatipnalDiabetesPreviousPregnancy ->
+        GestationalDiabetesPreviousPregnancy ->
             { english = "Gestatipnal Diabetes in previous pregnancy"
             , kinyarwanda = Nothing
             }
@@ -2806,8 +2806,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        SuccessivePrimatureDeliveries ->
-            { english = "Successive Primature Deliveries"
+        SuccessivePrematureDeliveries ->
+            { english = "Successive Premature Deliveries"
             , kinyarwanda = Nothing
             }
 

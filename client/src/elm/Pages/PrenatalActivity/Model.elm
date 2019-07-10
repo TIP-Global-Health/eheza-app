@@ -261,18 +261,18 @@ emptyObstetricFormFirstStep =
 type alias ObstetricFormSecondStep =
     { cSections : Maybe Int
     , cSectionInPreviousDelivery : Maybe Bool
-    , reasonForCSection : Maybe CSectionReason
+    , cSectionReason : Maybe CSectionReason
     , previousDeliveryPeriod : Maybe PreviousDeliveryPeriod
     , successiveAbortions : Maybe Bool
-    , successivePrimatureDeliveries : Maybe Bool
+    , successivePrematureDeliveries : Maybe Bool
     , stillbornPreviousDelivery : Maybe Bool
     , babyDiedOnDayOfBirthPreviousDelivery : Maybe Bool
     , partialPlacentaPreviousDelivery : Maybe Bool
     , severeHemorrhagingPreviousDelivery : Maybe Bool
     , preeclampsiaPreviousPregnancy : Maybe Bool
     , convulsionsPreviousDelivery : Maybe Bool
-    , convulsionsAndUnconciousPreviousDelivery : Maybe Bool
-    , gestatipnalDiabetesPreviousPregnancy : Maybe Bool
+    , convulsionsAndUnconsciousPreviousDelivery : Maybe Bool
+    , gestationalDiabetesPreviousPregnancy : Maybe Bool
     , incompleteCervixPreviousPregnancy : Maybe Bool
     , rhNegative : Maybe Bool
     }
@@ -282,18 +282,18 @@ emptyObstetricFormSecondStep : ObstetricFormSecondStep
 emptyObstetricFormSecondStep =
     { cSections = Nothing
     , cSectionInPreviousDelivery = Nothing
-    , reasonForCSection = Nothing
+    , cSectionReason = Nothing
     , previousDeliveryPeriod = Nothing
     , successiveAbortions = Nothing
-    , successivePrimatureDeliveries = Nothing
+    , successivePrematureDeliveries = Nothing
     , stillbornPreviousDelivery = Nothing
     , babyDiedOnDayOfBirthPreviousDelivery = Nothing
     , partialPlacentaPreviousDelivery = Nothing
     , severeHemorrhagingPreviousDelivery = Nothing
     , preeclampsiaPreviousPregnancy = Nothing
     , convulsionsPreviousDelivery = Nothing
-    , convulsionsAndUnconciousPreviousDelivery = Nothing
-    , gestatipnalDiabetesPreviousPregnancy = Nothing
+    , convulsionsAndUnconsciousPreviousDelivery = Nothing
+    , gestationalDiabetesPreviousPregnancy = Nothing
     , incompleteCervixPreviousPregnancy = Nothing
     , rhNegative = Nothing
     }

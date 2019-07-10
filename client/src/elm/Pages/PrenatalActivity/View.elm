@@ -320,15 +320,15 @@ viewHistoryContent language currentDate assembled data =
                                 boolInputs =
                                     [ form.cSectionInPreviousDelivery
                                     , form.successiveAbortions
-                                    , form.successivePrimatureDeliveries
+                                    , form.successivePrematureDeliveries
                                     , form.stillbornPreviousDelivery
                                     , form.babyDiedOnDayOfBirthPreviousDelivery
                                     , form.partialPlacentaPreviousDelivery
                                     , form.severeHemorrhagingPreviousDelivery
                                     , form.preeclampsiaPreviousPregnancy
                                     , form.convulsionsPreviousDelivery
-                                    , form.convulsionsAndUnconciousPreviousDelivery
-                                    , form.gestatipnalDiabetesPreviousPregnancy
+                                    , form.convulsionsAndUnconsciousPreviousDelivery
+                                    , form.gestationalDiabetesPreviousPregnancy
                                     , form.incompleteCervixPreviousPregnancy
                                     , form.rhNegative
                                     ]
@@ -339,7 +339,7 @@ viewHistoryContent language currentDate assembled data =
                                 |> List.sum
                               )
                                 + taskCompleted form.cSections
-                                + taskCompleted form.reasonForCSection
+                                + taskCompleted form.cSectionReason
                                 + taskCompleted form.previousDeliveryPeriod
                             , 16
                             )
@@ -858,8 +858,8 @@ viewObstetricFormSecondStep language currentDate assembled form =
         successiveAbortionsUpdateFunc value form_ =
             { form_ | successiveAbortions = Just value }
 
-        successivePrimatureDeliveriesUpdateFunc value form_ =
-            { form_ | successivePrimatureDeliveries = Just value }
+        successivePrematureDeliveriesUpdateFunc value form_ =
+            { form_ | successivePrematureDeliveries = Just value }
 
         stillbornPreviousDeliveryUpdateFunc value form_ =
             { form_ | stillbornPreviousDelivery = Just value }
@@ -879,11 +879,11 @@ viewObstetricFormSecondStep language currentDate assembled form =
         convulsionsPreviousDeliveryUpdateFunc value form_ =
             { form_ | convulsionsPreviousDelivery = Just value }
 
-        convulsionsAndUnconciousPreviousDeliveryUpdateFunc value form_ =
-            { form_ | convulsionsAndUnconciousPreviousDelivery = Just value }
+        convulsionsAndUnconsciousPreviousDeliveryUpdateFunc value form_ =
+            { form_ | convulsionsAndUnconsciousPreviousDelivery = Just value }
 
-        gestatipnalDiabetesPreviousPregnancyUpdateFunc value form_ =
-            { form_ | gestatipnalDiabetesPreviousPregnancy = Just value }
+        gestationalDiabetesPreviousPregnancyUpdateFunc value form_ =
+            { form_ | gestationalDiabetesPreviousPregnancy = Just value }
 
         incompleteCervixPreviousPregnancyUpdateFunc value form_ =
             { form_ | incompleteCervixPreviousPregnancy = Just value }
@@ -913,7 +913,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
         , viewCheckBoxSelectInput language
             [ Breech, Emergency, Other ]
             [ FailureToProgress, None ]
-            form.reasonForCSection
+            form.cSectionReason
             SetCSectionReason
             Translate.CSectionReasons
         , div [ class "ui grid" ]
@@ -934,11 +934,11 @@ viewObstetricFormSecondStep language currentDate assembled form =
             (SetOBBoolInput successiveAbortionsUpdateFunc)
             "successive-abortions"
             Nothing
-        , viewLabel language Translate.SuccessivePrimatureDeliveries
+        , viewLabel language Translate.SuccessivePrematureDeliveries
         , viewBoolInput
             language
-            form.successivePrimatureDeliveries
-            (SetOBBoolInput successivePrimatureDeliveriesUpdateFunc)
+            form.successivePrematureDeliveries
+            (SetOBBoolInput successivePrematureDeliveriesUpdateFunc)
             "successive-primature-deliveries"
             Nothing
         , viewLabel language Translate.StillbornPreviousDelivery
@@ -983,18 +983,18 @@ viewObstetricFormSecondStep language currentDate assembled form =
             (SetOBBoolInput convulsionsPreviousDeliveryUpdateFunc)
             "convulsions-previous-pelivery"
             Nothing
-        , viewLabel language Translate.ConvulsionsAndUnconciousPreviousDelivery
+        , viewLabel language Translate.ConvulsionsAndUnconsciousPreviousDelivery
         , viewBoolInput
             language
-            form.convulsionsAndUnconciousPreviousDelivery
-            (SetOBBoolInput convulsionsAndUnconciousPreviousDeliveryUpdateFunc)
-            "convulsions-and-unconcious-previous-delivery"
+            form.convulsionsAndUnconsciousPreviousDelivery
+            (SetOBBoolInput convulsionsAndUnconsciousPreviousDeliveryUpdateFunc)
+            "convulsions-and-unconscious-previous-delivery"
             Nothing
-        , viewLabel language Translate.GestatipnalDiabetesPreviousPregnancy
+        , viewLabel language Translate.GestationalDiabetesPreviousPregnancy
         , viewBoolInput
             language
-            form.gestatipnalDiabetesPreviousPregnancy
-            (SetOBBoolInput gestatipnalDiabetesPreviousPregnancyUpdateFunc)
+            form.gestationalDiabetesPreviousPregnancy
+            (SetOBBoolInput gestationalDiabetesPreviousPregnancyUpdateFunc)
             "gestatipnal-diabetes-previous-pregnancy"
             Nothing
         , viewLabel language Translate.IncompleteCervixPreviousPregnancy
