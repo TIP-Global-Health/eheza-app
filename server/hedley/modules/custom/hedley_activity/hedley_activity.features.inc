@@ -115,6 +115,14 @@ function hedley_activity_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'obstetric_history_step2' => array(
+      'name' => t('Obstetric History Step2'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'obstetrical_exam' => array(
       'name' => t('Obstetrical Exam'),
       'base' => 'node_content',

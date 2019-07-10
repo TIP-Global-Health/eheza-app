@@ -168,6 +168,34 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_boolean',
   );
 
+  // Exported field_base: 'field_c_section_reason'.
+  $field_bases['field_c_section_reason'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_c_section_reason',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'breech' => 'Breech',
+        'emergency' => 'Emergency',
+        'failure-to-progress' => 'Failure To Progress',
+        'none' => 'None',
+        'other' => 'Other',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_c_section_scar'.
   $field_bases['field_c_section_scar'] = array(
     'active' => 1,
@@ -191,6 +219,21 @@ function hedley_activity_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_boolean',
+  );
+
+  // Exported field_base: 'field_c_sections'.
+  $field_bases['field_c_sections'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_c_sections',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
   );
 
   // Exported field_base: 'field_confident'.
@@ -827,6 +870,42 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_obstetric_history'.
+  $field_bases['field_obstetric_history'] = array(
+    'active' => 1,
+    'cardinality' => 10,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_obstetric_history',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'c-section-in-previous-delivery' => 'C Section In Previous Delivery',
+        'successive-abortions' => 'Successive Abortions',
+        'successive-premature-deliveries' => 'Successive Premature Deliveries',
+        'stillborn-previous-delivery' => 'Stillborn Previous Delivery',
+        'baby-died-on-day-of-birth-previous-delivery' => 'Baby Died On Day Of Birth Previous Delivery',
+        'partial-placenta-previous-delivery' => 'Partial Placenta Previous Delivery',
+        'severe-hemorrhaging-previous-delivery' => 'Severe Hemorrhaging Previous Delivery',
+        'preeclampsia-previous-pregnancy' => 'Preeclampsia Previous Pregnancy',
+        'convulsions-previous-delivery' => 'Convulsions Previous Delivery',
+        'convulsions-and-unconscious-previous-delivery' => 'Convulsions And Unconscious Previous Delivery',
+        'gestational-diabetes-previous-pregnancy' => 'Gestational Diabetes Previous Pregnancy',
+        'incomplete-cervix-previous-pregnancy' => 'Incomplete Cervix Previous Pregnancy',
+        'rh-negative' => 'RH Negative',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_prenatal_encounter'.
   $field_bases['field_prenatal_encounter'] = array(
     'active' => 1,
@@ -875,6 +954,32 @@ function hedley_activity_field_default_field_bases() {
     'settings' => array(),
     'translatable' => 0,
     'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_previous_delivery_period'.
+  $field_bases['field_previous_delivery_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_previous_delivery_period',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'less-than-18-month' => 'Less than 18 Month',
+        'more-than-5-years' => 'More Than 5 Years',
+        'neither' => 'Neither',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_resources'.

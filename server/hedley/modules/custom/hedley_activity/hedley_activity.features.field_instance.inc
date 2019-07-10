@@ -4576,6 +4576,387 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-obstetric_history_step2-field_c_section_reason'.
+  $field_instances['node-obstetric_history_step2-field_c_section_reason'] = array(
+    'bundle' => 'obstetric_history_step2',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_c_section_reason',
+    'label' => 'C Section Reason',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance: 'node-obstetric_history_step2-field_c_sections'.
+  $field_instances['node-obstetric_history_step2-field_c_sections'] = array(
+    'bundle' => 'obstetric_history_step2',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_c_sections',
+    'label' => 'C Sections',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance: 'node-obstetric_history_step2-field_nurse'.
+  $field_instances['node-obstetric_history_step2-field_nurse'] = array(
+    'bundle' => 'obstetric_history_step2',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 2,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_nurse',
+    'label' => 'Nurse',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 0,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-obstetric_history_step2-field_obstetric_history'.
+  $field_instances['node-obstetric_history_step2-field_obstetric_history'] = array(
+    'bundle' => 'obstetric_history_step2',
+    'default_value' => array(
+      0 => array(
+        'value' => 'rh-negative',
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_obstetric_history',
+    'label' => 'Obstetric History',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 10,
+    ),
+  );
+
+  // Exported field_instance: 'node-obstetric_history_step2-field_person'.
+  $field_instances['node-obstetric_history_step2-field_person'] = array(
+    'bundle' => 'obstetric_history_step2',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 1,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_person',
+    'label' => 'Person',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => -2,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-obstetric_history_step2-field_prenatal_encounter'.
+  $field_instances['node-obstetric_history_step2-field_prenatal_encounter'] = array(
+    'bundle' => 'obstetric_history_step2',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 3,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_prenatal_encounter',
+    'label' => 'Prenatal Encounter',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-obstetric_history_step2-field_previous_delivery_period'.
+  $field_instances['node-obstetric_history_step2-field_previous_delivery_period'] = array(
+    'bundle' => 'obstetric_history_step2',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_previous_delivery_period',
+    'label' => 'Previous Delivery Period',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 9,
+    ),
+  );
+
+  // Exported field_instance: 'node-obstetric_history_step2-field_shards'.
+  $field_instances['node-obstetric_history_step2-field_shards'] = array(
+    'bundle' => 'obstetric_history_step2',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 5,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_shards',
+    'label' => 'Shards',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 6,
+    ),
+  );
+
+  // Exported field_instance: 'node-obstetric_history_step2-field_uuid'.
+  $field_instances['node-obstetric_history_step2-field_uuid'] = array(
+    'bundle' => 'obstetric_history_step2',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 4,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 4,
+    ),
+  );
+
   // Exported field_instance: 'node-obstetrical_exam-field_c_section_scar'.
   $field_instances['node-obstetrical_exam-field_c_section_scar'] = array(
     'bundle' => 'obstetrical_exam',
@@ -7852,6 +8233,8 @@ function hedley_activity_field_default_field_instances() {
   t('Body temperature');
   t('Breast');
   t('Breast self exam');
+  t('C Section Reason');
+  t('C Sections');
   t('C-Section Scar');
   t('Child');
   t('Confident');
@@ -7887,10 +8270,12 @@ function hedley_activity_field_default_field_instances() {
   t('Neck');
   t('Nurse');
   t('Nutrition Signs');
+  t('Obstetric History');
   t('Person');
   t('Photo');
   t('PreTerm Pregnancy');
   t('Prenatal Encounter');
+  t('Previous Delivery Period');
   t('Refers to the date-entry session which this measurement was taken in.');
   t('Represents the date which on which the measurement took place. This is distinct from the date which data entry was scheduled (though that would be the default). It is also distinct from the creation date of the node, since that could be different from the date the measurement took place.');
   t('Resources');
