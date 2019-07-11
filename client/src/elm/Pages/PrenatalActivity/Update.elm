@@ -7,7 +7,7 @@ import Backend.PrenatalEncounter.Model
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
-import Pages.PrenatalActivity.Utils exposing (toLastMenstrualPeriodValue)
+import Pages.PrenatalActivity.Utils exposing (toLastMenstrualPeriodValueWithDefault)
 import Result exposing (Result)
 
 
@@ -90,11 +90,17 @@ update msg model =
             , []
             )
 
-        SavePregnancyDating prenatalEncounterId personId measurementId ->
+        SavePregnancyDating prenatalEncounterId personId saved ->
             let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
                 appMsgs =
                     model.pregnancyDatingData.form
-                        |> toLastMenstrualPeriodValue
+                        |> toLastMenstrualPeriodValueWithDefault measurement
                         |> unwrap
                             []
                             (\lastMenstrualPeriodValue ->

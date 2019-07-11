@@ -17,6 +17,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
+import Pages.PrenatalActivity.Utils exposing (lastMenstrualPeriodFormWithDefaultValue)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
@@ -129,7 +130,9 @@ viewPregnancyDatingContent : Language -> NominalDate -> AssembledData -> Pregnan
 viewPregnancyDatingContent language currentDate assembled data =
     let
         form =
-            data.form
+            assembled.measurements.lastMenstrualPeriod
+                |> Maybe.map (Tuple.second >> .value)
+                |> lastMenstrualPeriodFormWithDefaultValue data.form
 
         lmpRangeInput =
             option
@@ -242,7 +245,7 @@ viewPregnancyDatingContent language currentDate assembled data =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SavePregnancyDating assembled.id assembled.participant.person (Maybe.map Tuple.first <| assembled.measurements.lastMenstrualPeriod)
+                , onClick <| SavePregnancyDating assembled.id assembled.participant.person assembled.measurements.lastMenstrualPeriod
                 ]
                 [ text <| translate language Translate.Save ]
             ]

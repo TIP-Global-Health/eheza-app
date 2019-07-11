@@ -47,7 +47,7 @@ type Msg
     | SetLmpDate Date
     | SetLmpDateConfident Bool
     | SetLmpRange String
-    | SavePregnancyDating PrenatalEncounterId PersonId (Maybe LastMenstrualPeriodId)
+    | SavePregnancyDating PrenatalEncounterId PersonId (Maybe ( LastMenstrualPeriodId, LastMenstrualPeriod ))
       -- HistoryMsgs
     | SetActiveHistoryTask HistoryTask
     | SetHistoryTaskCompleted

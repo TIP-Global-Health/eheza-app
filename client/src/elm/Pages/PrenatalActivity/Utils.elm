@@ -1,9 +1,9 @@
-module Pages.PrenatalActivity.Utils exposing (fromBreastExamValue, fromCorePhysicalExamValue, fromDangerSignsValue, fromLastMenstrualPeriodValue, toBreastExamValue, toCorePhysicalExamValue, toLastMenstrualPeriodValue)
+module Pages.PrenatalActivity.Utils exposing (fromBreastExamValue, fromCorePhysicalExamValue, fromDangerSignsValue, fromFamilyPlanningValue, fromLastMenstrualPeriodValue, fromMedicalHistoryValue, fromMedicationValue, fromObstetricHistoryValue, fromObstetricalExamValue, fromPrenatalNutritionValue, fromResourceValue, fromSocialHistoryValue, fromVitalsValue, ifEmpty, ifTrue, lastMenstrualPeriodFormWithDefaultValue, toBreastExamValue, toCorePhysicalExamValue, toDangerSignsValue, toEverySet, toFamilyPlanningValue, toLastMenstrualPeriodValue, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValue, toMedicationValue, toObstetricHistoryValue, toObstetricalExamValue, toPrenatalNutritionValue, toResourceValue, toSocialHistoryValue, toVitalsValue)
 
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime, toLocalDateTime)
-import Maybe.Extra exposing (andMap, or)
+import Maybe.Extra exposing (andMap, or, unwrap)
 import Pages.PrenatalActivity.Model exposing (..)
 
 
@@ -99,6 +99,29 @@ fromLastMenstrualPeriodValue saved =
     , lmpDateConfident = Maybe.map .confident saved
     , isDateSelectorOpen = False
     }
+
+
+lastMenstrualPeriodFormWithDefaultValue : PregnancyDatingForm -> Maybe LastMenstrualPeriodValue -> PregnancyDatingForm
+lastMenstrualPeriodFormWithDefaultValue form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { lmpRange = or form.lmpRange (Just SixMonth)
+                , lmpDate = or form.lmpDate (Just (toLocalDateTime value.date 12 0 0 0))
+                , lmpDateConfident = or form.lmpDateConfident (Just value.confident)
+                , isDateSelectorOpen = form.isDateSelectorOpen
+                }
+            )
+
+
+toLastMenstrualPeriodValueWithDefault : Maybe LastMenstrualPeriodValue -> PregnancyDatingForm -> Maybe LastMenstrualPeriodValue
+toLastMenstrualPeriodValueWithDefault saved form =
+    let
+        form_ =
+            lastMenstrualPeriodFormWithDefaultValue form saved
+    in
+    toLastMenstrualPeriodValue form_
 
 
 toLastMenstrualPeriodValue : PregnancyDatingForm -> Maybe LastMenstrualPeriodValue
