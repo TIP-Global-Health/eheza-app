@@ -99,6 +99,7 @@ have in common, plus two things whose type varies:
 type alias Measurement encounter value =
     { dateMeasured : NominalDate
     , nurse : Maybe NurseId
+    , healthCenter : Maybe HealthCenterId
     , participantId : PersonId
     , encounterId : Maybe encounter
     , value : value

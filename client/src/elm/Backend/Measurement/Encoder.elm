@@ -187,6 +187,7 @@ encodeMeasurement encounterTag encoder measurement =
           , ( encounterTag, maybe encodeEntityUuid measurement.encounterId )
           , ( "date_measured", Gizra.NominalDate.encodeYYYYMMDD measurement.dateMeasured )
           , ( "nurse", maybe encodeEntityUuid measurement.nurse )
+          , ( "health_center", maybe encodeEntityUuid measurement.healthCenter )
           ]
         , encoder measurement.value
         ]

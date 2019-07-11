@@ -11,8 +11,8 @@ import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (applyBackendUrl, encodeEntityUuid, toCmd, withoutDecoder)
 
 
-update : Maybe NurseId -> PrenatalEncounterId -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg )
-update nurseId encounterId currentDate msg model =
+update : Maybe NurseId -> Maybe HealthCenterId -> PrenatalEncounterId -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg )
+update nurseId healthCenterId encounterId currentDate msg model =
     let
         sw =
             applyBackendUrl "/sw"
@@ -40,6 +40,7 @@ update nurseId encounterId currentDate msg model =
                             , dateMeasured = currentDate
                             , encounterId = Just encounterId
                             , nurse = nurseId
+                            , healthCenter = healthCenterId
                             , value = value
                             }
                                 |> sw.post breastExamEndpoint
@@ -48,7 +49,10 @@ update nurseId encounterId currentDate msg model =
 
                         Just id ->
                             encodeBreastExamValue value
-                                |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
                                 |> object
                                 |> sw.patchAny breastExamEndpoint id
                                 |> withoutDecoder
@@ -72,6 +76,7 @@ update nurseId encounterId currentDate msg model =
                             , dateMeasured = currentDate
                             , encounterId = Just encounterId
                             , nurse = nurseId
+                            , healthCenter = healthCenterId
                             , value = value
                             }
                                 |> sw.post corePhysicalExamEndpoint
@@ -80,7 +85,10 @@ update nurseId encounterId currentDate msg model =
 
                         Just id ->
                             encodeCorePhysicalExamValue value
-                                |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
                                 |> object
                                 |> sw.patchAny corePhysicalExamEndpoint id
                                 |> withoutDecoder
@@ -104,6 +112,7 @@ update nurseId encounterId currentDate msg model =
                             , dateMeasured = currentDate
                             , encounterId = Just encounterId
                             , nurse = nurseId
+                            , healthCenter = healthCenterId
                             , value = value
                             }
                                 |> sw.post dangerSignsEndpoint
@@ -112,7 +121,10 @@ update nurseId encounterId currentDate msg model =
 
                         Just id ->
                             encodeDangerSignsValue value
-                                |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
                                 |> object
                                 |> sw.patchAny dangerSignsEndpoint id
                                 |> withoutDecoder
@@ -136,6 +148,7 @@ update nurseId encounterId currentDate msg model =
                             , dateMeasured = currentDate
                             , encounterId = Just encounterId
                             , nurse = nurseId
+                            , healthCenter = healthCenterId
                             , value = value
                             }
                                 |> sw.post lastMenstrualPeriodEndpoint
@@ -144,7 +157,10 @@ update nurseId encounterId currentDate msg model =
 
                         Just id ->
                             encodeLastMenstrualPeriodValue value
-                                |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
                                 |> object
                                 |> sw.patchAny lastMenstrualPeriodEndpoint id
                                 |> withoutDecoder
@@ -168,6 +184,7 @@ update nurseId encounterId currentDate msg model =
                             , dateMeasured = currentDate
                             , encounterId = Just encounterId
                             , nurse = nurseId
+                            , healthCenter = healthCenterId
                             , value = value
                             }
                                 |> sw.post medicalHistoryEndpoint
@@ -176,7 +193,10 @@ update nurseId encounterId currentDate msg model =
 
                         Just id ->
                             encodeMedicalHistoryValue value
-                                |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
                                 |> object
                                 |> sw.patchAny medicalHistoryEndpoint id
                                 |> withoutDecoder
@@ -200,6 +220,7 @@ update nurseId encounterId currentDate msg model =
                             , dateMeasured = currentDate
                             , encounterId = Just encounterId
                             , nurse = nurseId
+                            , healthCenter = healthCenterId
                             , value = value
                             }
                                 |> sw.post medicationEndpoint
@@ -208,7 +229,10 @@ update nurseId encounterId currentDate msg model =
 
                         Just id ->
                             encodeMedicationValue value
-                                |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
                                 |> object
                                 |> sw.patchAny medicationEndpoint id
                                 |> withoutDecoder
@@ -232,6 +256,7 @@ update nurseId encounterId currentDate msg model =
                             , dateMeasured = currentDate
                             , encounterId = Just encounterId
                             , nurse = nurseId
+                            , healthCenter = healthCenterId
                             , value = value
                             }
                                 |> sw.post obstetricalExamEndpoint
@@ -240,7 +265,10 @@ update nurseId encounterId currentDate msg model =
 
                         Just id ->
                             encodeObstetricalExamValue value
-                                |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
                                 |> object
                                 |> sw.patchAny obstetricalExamEndpoint id
                                 |> withoutDecoder
@@ -264,6 +292,7 @@ update nurseId encounterId currentDate msg model =
                             , dateMeasured = currentDate
                             , encounterId = Just encounterId
                             , nurse = nurseId
+                            , healthCenter = healthCenterId
                             , value = value
                             }
                                 |> sw.post obstetricHistoryEndpoint
@@ -272,7 +301,10 @@ update nurseId encounterId currentDate msg model =
 
                         Just id ->
                             encodeObstetricHistoryValue value
-                                |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
                                 |> object
                                 |> sw.patchAny obstetricHistoryEndpoint id
                                 |> withoutDecoder
@@ -296,6 +328,7 @@ update nurseId encounterId currentDate msg model =
                             , dateMeasured = currentDate
                             , encounterId = Just encounterId
                             , nurse = nurseId
+                            , healthCenter = healthCenterId
                             , value = value
                             }
                                 |> sw.post prenatalFamilyPlanningEndpoint
@@ -304,7 +337,10 @@ update nurseId encounterId currentDate msg model =
 
                         Just id ->
                             encodeFamilyPlanningValue value
-                                |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
                                 |> object
                                 |> sw.patchAny prenatalFamilyPlanningEndpoint id
                                 |> withoutDecoder
@@ -328,6 +364,7 @@ update nurseId encounterId currentDate msg model =
                             , dateMeasured = currentDate
                             , encounterId = Just encounterId
                             , nurse = nurseId
+                            , healthCenter = healthCenterId
                             , value = value
                             }
                                 |> sw.post prenatalNutritionEndpoint
@@ -336,7 +373,10 @@ update nurseId encounterId currentDate msg model =
 
                         Just id ->
                             encodePrenatalNutritionValue value
-                                |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
                                 |> object
                                 |> sw.patchAny prenatalNutritionEndpoint id
                                 |> withoutDecoder
@@ -360,6 +400,7 @@ update nurseId encounterId currentDate msg model =
                             , dateMeasured = currentDate
                             , encounterId = Just encounterId
                             , nurse = nurseId
+                            , healthCenter = healthCenterId
                             , value = value
                             }
                                 |> sw.post resourceEndpoint
@@ -368,7 +409,10 @@ update nurseId encounterId currentDate msg model =
 
                         Just id ->
                             encodeResourceValue value
-                                |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
                                 |> object
                                 |> sw.patchAny resourceEndpoint id
                                 |> withoutDecoder
@@ -392,6 +436,7 @@ update nurseId encounterId currentDate msg model =
                             , dateMeasured = currentDate
                             , encounterId = Just encounterId
                             , nurse = nurseId
+                            , healthCenter = healthCenterId
                             , value = value
                             }
                                 |> sw.post socialHistoryEndpoint
@@ -400,7 +445,10 @@ update nurseId encounterId currentDate msg model =
 
                         Just id ->
                             encodeSocialHistoryValue value
-                                |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
                                 |> object
                                 |> sw.patchAny socialHistoryEndpoint id
                                 |> withoutDecoder
@@ -424,6 +472,7 @@ update nurseId encounterId currentDate msg model =
                             , dateMeasured = currentDate
                             , encounterId = Just encounterId
                             , nurse = nurseId
+                            , healthCenter = healthCenterId
                             , value = value
                             }
                                 |> sw.post vitalsEndpoint
@@ -432,7 +481,10 @@ update nurseId encounterId currentDate msg model =
 
                         Just id ->
                             encodeVitalsValue value
-                                |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
                                 |> object
                                 |> sw.patchAny vitalsEndpoint id
                                 |> withoutDecoder

@@ -159,7 +159,7 @@ update msg model =
         MsgIndexedDb subMsg ->
             let
                 ( subModel, subCmd, extraMsgs ) =
-                    Backend.Update.updateIndexedDb currentDate nurseId subMsg model.indexedDb
+                    Backend.Update.updateIndexedDb currentDate nurseId model.healthCenterId subMsg model.indexedDb
 
                 -- Most revisions are handled at the IndexedDB level, but there
                 -- is at least one we need to catch here.

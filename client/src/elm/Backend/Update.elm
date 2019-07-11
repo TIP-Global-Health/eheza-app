@@ -36,8 +36,8 @@ import Task
 import Time.Date
 
 
-updateIndexedDb : NominalDate -> Maybe NurseId -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
-updateIndexedDb currentDate nurseId msg model =
+updateIndexedDb : NominalDate -> Maybe NurseId -> Maybe HealthCenterId -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
+updateIndexedDb currentDate nurseId healthCenterId msg model =
     let
         sw =
             applyBackendUrl "/sw"
@@ -467,7 +467,7 @@ updateIndexedDb currentDate nurseId msg model =
                         |> Maybe.withDefault Backend.PrenatalEncounter.Model.emptyModel
 
                 ( subModel, subCmd ) =
-                    Backend.PrenatalEncounter.Update.update nurseId encounterId currentDate subMsg requests
+                    Backend.PrenatalEncounter.Update.update nurseId healthCenterId encounterId currentDate subMsg requests
             in
             ( { model | prenatalEncounterRequests = EveryDict.insert encounterId subModel model.prenatalEncounterRequests }
             , Cmd.map (MsgPrenatalEncounter encounterId) subCmd
@@ -602,7 +602,7 @@ updateIndexedDb currentDate nurseId msg model =
             , relationshipCmd
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate nurseId) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate nurseId healthCenterId) extraMsgs
 
         HandlePostedRelationship personId data ->
             let

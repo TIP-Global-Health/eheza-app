@@ -56,6 +56,7 @@ decodeMeasurement encounterTag valueDecoder =
     decode Measurement
         |> required "date_measured" Gizra.NominalDate.decodeYYYYMMDD
         |> optional "nurse" (nullable decodeEntityUuid) Nothing
+        |> optional "health_center" (nullable decodeEntityUuid) Nothing
         |> required "person" decodeEntityUuid
         |> optional encounterTag (nullable decodeEntityUuid) Nothing
         |> custom valueDecoder
