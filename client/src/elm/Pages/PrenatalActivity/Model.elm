@@ -64,16 +64,20 @@ type Msg
     | SaveOBHistory PrenatalEncounterId PersonId (Maybe ( ObstetricHistoryId, ObstetricHistory ))
       -- HistoryMsgs, Medical
     | SetMedicalBoolInput (Bool -> MedicalHistoryForm -> MedicalHistoryForm) Bool
+    | SaveMedicalHistory PrenatalEncounterId PersonId (Maybe ( MedicalHistoryId, MedicalHistory ))
       -- HistoryMsgs, Social
     | SetSocialBoolInput (Bool -> SocialHistoryForm -> SocialHistoryForm) Bool
+    | SaveSocialHistory PrenatalEncounterId PersonId (Maybe ( SocialHistoryId, SocialHistory ))
       -- ExaminationMsgs
     | SetActiveExaminationTask ExaminationTask
     | SetExaminationTaskCompleted
       -- ExaminationMsgs, Vitals
     | SetVitalsIntMeasurement (Maybe Int -> VitalsForm -> VitalsForm) String
     | SetVitalsFloatMeasurement (Maybe Float -> VitalsForm -> VitalsForm) String
+    | SaveVitals PrenatalEncounterId PersonId (Maybe ( VitalsId, Vitals ))
       -- ExaminationMsgs, Nutrition Assessment
     | SetNutritionAssessmentMeasurement (Maybe Float -> NutritionAssessmentForm -> NutritionAssessmentForm) String
+    | SaveNutritionAssessment PrenatalEncounterId PersonId (Maybe ( PrenatalNutritionId, PrenatalNutrition ))
       -- ExaminationMsgs, Core Physical Exam
     | SetCorePhysicalExamBoolInput (Bool -> CorePhysicalExamForm -> CorePhysicalExamForm) Bool
     | SetCorePhysicalExamNeck NeckCPESign
@@ -81,25 +85,32 @@ type Msg
     | SetCorePhysicalExamAbdomen AbdomenCPESign
     | SetCorePhysicalExamHands HandsCPESign
     | SetCorePhysicalExamLegs LegsCPESign
+    | SaveCorePhysicalExam PrenatalEncounterId PersonId (Maybe ( CorePhysicalExamId, CorePhysicalExam ))
       -- ExaminationMsgs, Obstetrical Exam
     | SetObstetricalExamBoolInput (Bool -> ObstetricalExamForm -> ObstetricalExamForm) Bool
     | SetObstetricalExamIntMeasurement (Maybe Int -> ObstetricalExamForm -> ObstetricalExamForm) String
     | SetObstetricalExamFloatMeasurement (Maybe Float -> ObstetricalExamForm -> ObstetricalExamForm) String
     | SetObstetricalExamFetalPresentation FetalPresentation
+    | SaveObstetricalExam PrenatalEncounterId PersonId (Maybe ( ObstetricalExamId, ObstetricalExam ))
       -- ExaminationMsgs, Breast Exam
     | SetBreastExamBoolInput (Bool -> BreastExamForm -> BreastExamForm) Bool
     | SetBreastExamBreast BreastExamSign
+    | SaveBreastExam PrenatalEncounterId PersonId (Maybe ( BreastExamId, BreastExam ))
       -- FamilyPlanningMsgs
     | SetFamilyPlanningSign FamilyPlanningSign
+    | SaveFamilyPlanning PrenatalEncounterId PersonId (Maybe ( PrenatalFamilyPlanningId, PrenatalFamilyPlanning ))
       -- PatientProvisionsMsgs
     | SetActivePatientProvisionsTask PatientProvisionsTask
     | SetPatientProvisionsTaskCompleted
       -- PatientProvisionsMsgs, Medication
     | SetMedicationBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
+    | SaveMedication PrenatalEncounterId PersonId (Maybe ( MedicationId, Medication ))
       -- PatientProvisionsMsgs, Resources
     | SetResourcesBoolInput (Bool -> ResourcesForm -> ResourcesForm) Bool
+    | SaveResources PrenatalEncounterId PersonId (Maybe ( ResourceId, Resource ))
       -- DangerSignsMsgs
     | SetDangerSign DangerSign
+    | SaveDangerSigns PrenatalEncounterId PersonId (Maybe ( DangerSignsId, DangerSigns ))
 
 
 type alias Model =
