@@ -50,9 +50,7 @@ type Msg
     | SavePregnancyDating PrenatalEncounterId PersonId (Maybe ( LastMenstrualPeriodId, LastMenstrualPeriod ))
       -- HistoryMsgs
     | SetActiveHistoryTask HistoryTask
-    | SetHistoryTaskCompleted
       -- HistoryMsgs, OB, Step 1
-    | SetOBFirstStepCompleted
     | SetCurrentlyPregnant Bool
     | SetOBIntInput (Maybe Int -> ObstetricFormFirstStep -> ObstetricFormFirstStep) String
       -- HistoryMsgs, OB, Step 2
@@ -70,7 +68,6 @@ type Msg
     | SaveSocialHistory PrenatalEncounterId PersonId (Maybe ( SocialHistoryId, SocialHistory ))
       -- ExaminationMsgs
     | SetActiveExaminationTask ExaminationTask
-    | SetExaminationTaskCompleted
       -- ExaminationMsgs, Vitals
     | SetVitalsIntMeasurement (Maybe Int -> VitalsForm -> VitalsForm) String
     | SetVitalsFloatMeasurement (Maybe Float -> VitalsForm -> VitalsForm) String
@@ -101,7 +98,6 @@ type Msg
     | SaveFamilyPlanning PrenatalEncounterId PersonId (Maybe ( PrenatalFamilyPlanningId, PrenatalFamilyPlanning ))
       -- PatientProvisionsMsgs
     | SetActivePatientProvisionsTask PatientProvisionsTask
-    | SetPatientProvisionsTaskCompleted
       -- PatientProvisionsMsgs, Medication
     | SetMedicationBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
     | SaveMedication PrenatalEncounterId PersonId (Maybe ( MedicationId, Medication ))

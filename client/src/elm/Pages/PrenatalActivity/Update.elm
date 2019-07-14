@@ -131,47 +131,6 @@ update msg model =
             , appMsgs
             )
 
-        SetOBFirstStepCompleted ->
-            let
-                updatedData =
-                    model.historyData
-                        |> (\data -> { data | obstetricForm = SecondStep emptyObstetricFormSecondStep })
-            in
-            ( { model | historyData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetHistoryTaskCompleted ->
-            let
-                updatedData =
-                    let
-                        activeTask =
-                            case model.historyData.activeTask of
-                                Obstetric ->
-                                    Medical
-
-                                Medical ->
-                                    Social
-
-                                Social ->
-                                    Obstetric
-
-                        completedTasks =
-                            if List.member model.historyData.activeTask model.historyData.completedTasks then
-                                model.historyData.completedTasks
-
-                            else
-                                model.historyData.activeTask :: model.historyData.completedTasks
-                    in
-                    model.historyData
-                        |> (\data -> { data | activeTask = activeTask, completedTasks = completedTasks })
-            in
-            ( { model | historyData = updatedData }
-            , Cmd.none
-            , []
-            )
-
         SetActiveHistoryTask task ->
             let
                 updatedData =
@@ -489,42 +448,6 @@ update msg model =
             ( { model | historyData = updatedData }
             , Cmd.none
             , appMsgs
-            )
-
-        SetExaminationTaskCompleted ->
-            let
-                updatedData =
-                    let
-                        activeTask =
-                            case model.examinationData.activeTask of
-                                Vitals ->
-                                    NutritionAssessment
-
-                                NutritionAssessment ->
-                                    CorePhysicalExam
-
-                                CorePhysicalExam ->
-                                    ObstetricalExam
-
-                                ObstetricalExam ->
-                                    BreastExam
-
-                                BreastExam ->
-                                    Vitals
-
-                        completedTasks =
-                            if List.member model.examinationData.activeTask model.examinationData.completedTasks then
-                                model.examinationData.completedTasks
-
-                            else
-                                model.examinationData.activeTask :: model.examinationData.completedTasks
-                    in
-                    model.examinationData
-                        |> (\data -> { data | activeTask = activeTask, completedTasks = completedTasks })
-            in
-            ( { model | examinationData = updatedData }
-            , Cmd.none
-            , []
             )
 
         SetActiveExaminationTask task ->
@@ -1020,33 +943,6 @@ update msg model =
                 updatedData =
                     model.patientProvisionsData
                         |> (\data -> { data | activeTask = task })
-            in
-            ( { model | patientProvisionsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetPatientProvisionsTaskCompleted ->
-            let
-                updatedData =
-                    let
-                        activeTask =
-                            case model.patientProvisionsData.activeTask of
-                                Medication ->
-                                    Resources
-
-                                Resources ->
-                                    Medication
-
-                        completedTasks =
-                            if List.member model.patientProvisionsData.activeTask model.patientProvisionsData.completedTasks then
-                                model.patientProvisionsData.completedTasks
-
-                            else
-                                model.patientProvisionsData.activeTask :: model.patientProvisionsData.completedTasks
-                    in
-                    model.patientProvisionsData
-                        |> (\data -> { data | activeTask = activeTask, completedTasks = completedTasks })
             in
             ( { model | patientProvisionsData = updatedData }
             , Cmd.none
