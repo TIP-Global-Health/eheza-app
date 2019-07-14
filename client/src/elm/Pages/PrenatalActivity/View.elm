@@ -19,8 +19,8 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils
     exposing
-        ( lastMenstrualPeriodFormWithDefaultValue
-        , obstetricHistoryFormWithDefaultValue
+        ( lastMenstrualPeriodFormWithDefault
+        , obstetricHistoryFormWithDefault
         )
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
@@ -136,7 +136,7 @@ viewPregnancyDatingContent language currentDate assembled data =
         form =
             assembled.measurements.lastMenstrualPeriod
                 |> Maybe.map (Tuple.second >> .value)
-                |> lastMenstrualPeriodFormWithDefaultValue data.form
+                |> lastMenstrualPeriodFormWithDefault data.form
 
         lmpRangeInput =
             option
@@ -307,7 +307,7 @@ viewHistoryContent language currentDate assembled data =
                                 formStep1_ =
                                     assembled.measurements.obstetricHistory
                                         |> Maybe.map (Tuple.second >> .value)
-                                        |> obstetricHistoryFormWithDefaultValue formStep1
+                                        |> obstetricHistoryFormWithDefault formStep1
 
                                 intInputs =
                                     [ formStep1_.termPregnancy
