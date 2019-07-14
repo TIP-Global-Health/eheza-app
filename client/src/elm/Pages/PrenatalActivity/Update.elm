@@ -384,11 +384,10 @@ update msg model =
                                 |> toObstetricHistoryValueWithDefault measurement
                                 |> unwrap
                                     []
-                                    (\obstetricHistoryValue ->
-                                        [ Backend.PrenatalEncounter.Model.SaveObstetricHistory personId measurementId obstetricHistoryValue
+                                    (\value ->
+                                        [ Backend.PrenatalEncounter.Model.SaveObstetricHistory personId measurementId value
                                             |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
                                             |> App.Model.MsgIndexedDb
-                                        , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
                                         ]
                                     )
                             , model.historyData
@@ -418,6 +417,35 @@ update msg model =
             , []
             )
 
+        SaveMedicalHistory prenatalEncounterId personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.historyData.medicalForm
+                        |> toMedicalHistoryValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveMedicalHistory personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
+                                    |> App.Model.MsgIndexedDb
+                                ]
+                            )
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | activeTask = Social })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
+
         SetSocialBoolInput formUpdateFunc value ->
             let
                 updatedData =
@@ -431,6 +459,36 @@ update msg model =
             ( { model | historyData = updatedData }
             , Cmd.none
             , []
+            )
+
+        SaveSocialHistory prenatalEncounterId personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.historyData.socialForm
+                        |> toSocialHistoryValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveSocialHistory personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
+                                ]
+                            )
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | activeTask = Obstetric })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , appMsgs
             )
 
         SetExaminationTaskCompleted ->
@@ -520,6 +578,35 @@ update msg model =
             , []
             )
 
+        SaveVitals prenatalEncounterId personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.examinationData.vitalsForm
+                        |> toVitalsValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveVitals personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
+                                    |> App.Model.MsgIndexedDb
+                                ]
+                            )
+
+                updatedData =
+                    model.examinationData
+                        |> (\data -> { data | activeTask = NutritionAssessment })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
+
         SetNutritionAssessmentMeasurement formUpdateFunc value ->
             let
                 updatedData =
@@ -538,6 +625,35 @@ update msg model =
             ( { model | examinationData = updatedData }
             , Cmd.none
             , []
+            )
+
+        SaveNutritionAssessment prenatalEncounterId personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.examinationData.nutritionAssessmentForm
+                        |> toPrenatalNutritionValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveNutrition personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
+                                    |> App.Model.MsgIndexedDb
+                                ]
+                            )
+
+                updatedData =
+                    model.examinationData
+                        |> (\data -> { data | activeTask = CorePhysicalExam })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , appMsgs
             )
 
         SetCorePhysicalExamBoolInput formUpdateFunc value ->
@@ -635,6 +751,35 @@ update msg model =
             , []
             )
 
+        SaveCorePhysicalExam prenatalEncounterId personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.examinationData.corePhysicalExamForm
+                        |> toCorePhysicalExamValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveCorePhysicalExam personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
+                                    |> App.Model.MsgIndexedDb
+                                ]
+                            )
+
+                updatedData =
+                    model.examinationData
+                        |> (\data -> { data | activeTask = ObstetricalExam })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
+
         SetObstetricalExamBoolInput formUpdateFunc value ->
             let
                 updatedData =
@@ -706,6 +851,35 @@ update msg model =
             , []
             )
 
+        SaveObstetricalExam prenatalEncounterId personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.examinationData.obstetricalExamForm
+                        |> toObstetricalExamValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveObstetricalExam personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
+                                    |> App.Model.MsgIndexedDb
+                                ]
+                            )
+
+                updatedData =
+                    model.examinationData
+                        |> (\data -> { data | activeTask = BreastExam })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
+
         SetBreastExamBoolInput formUpdateFunc value ->
             let
                 updatedData =
@@ -735,6 +909,36 @@ update msg model =
             ( { model | examinationData = updatedData }
             , Cmd.none
             , []
+            )
+
+        SaveBreastExam prenatalEncounterId personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.examinationData.breastExamForm
+                        |> toBreastExamValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveBreastExam personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
+                                ]
+                            )
+
+                updatedData =
+                    model.examinationData
+                        |> (\data -> { data | activeTask = Vitals })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , appMsgs
             )
 
         SetFamilyPlanningSign sign ->
@@ -783,6 +987,32 @@ update msg model =
             ( { model | familyPlanningData = updatedData }
             , Cmd.none
             , []
+            )
+
+        SaveFamilyPlanning prenatalEncounterId personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.familyPlanningData.form
+                        |> toFamilyPlanningValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveFamilyPlanning personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
             )
 
         SetActivePatientProvisionsTask task ->
@@ -838,6 +1068,35 @@ update msg model =
             , []
             )
 
+        SaveMedication prenatalEncounterId personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.patientProvisionsData.medicationForm
+                        |> toMedicationValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveMedication personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
+                                    |> App.Model.MsgIndexedDb
+                                ]
+                            )
+
+                updatedData =
+                    model.patientProvisionsData
+                        |> (\data -> { data | activeTask = Resources })
+            in
+            ( { model | patientProvisionsData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
+
         SetResourcesBoolInput formUpdateFunc value ->
             let
                 updatedData =
@@ -851,6 +1110,36 @@ update msg model =
             ( { model | patientProvisionsData = updatedData }
             , Cmd.none
             , []
+            )
+
+        SaveResources prenatalEncounterId personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.patientProvisionsData.resourcesForm
+                        |> toResourceValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveResource personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
+                                ]
+                            )
+
+                updatedData =
+                    model.patientProvisionsData
+                        |> (\data -> { data | activeTask = Medication })
+            in
+            ( { model | patientProvisionsData = updatedData }
+            , Cmd.none
+            , appMsgs
             )
 
         SetDangerSign sign ->
@@ -899,4 +1188,30 @@ update msg model =
             ( { model | dangerSignsData = updatedData }
             , Cmd.none
             , []
+            )
+
+        SaveDangerSigns prenatalEncounterId personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.dangerSignsData.form
+                        |> toDangerSignsValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.PrenatalEncounter.Model.SaveDangerSigns personId measurementId value
+                                    |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
             )
