@@ -17,7 +17,11 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
-import Pages.PrenatalActivity.Utils exposing (lastMenstrualPeriodFormWithDefaultValue)
+import Pages.PrenatalActivity.Utils
+    exposing
+        ( lastMenstrualPeriodFormWithDefaultValue
+        , obstetricHistoryFormWithDefaultValue
+        )
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
@@ -298,23 +302,28 @@ viewHistoryContent language currentDate assembled data =
             case data.activeTask of
                 Obstetric ->
                     case data.obstetricForm of
-                        FirstStep form ->
+                        FirstStep formStep1 ->
                             let
+                                formStep1_ =
+                                    assembled.measurements.obstetricHistory
+                                        |> Maybe.map (Tuple.second >> .value)
+                                        |> obstetricHistoryFormWithDefaultValue formStep1
+
                                 intInputs =
-                                    [ form.termPregnancy
-                                    , form.preTermPregnancy
-                                    , form.stillbirthsAtTerm
-                                    , form.stillbirthsPreTerm
-                                    , form.abortions
-                                    , form.liveChildren
+                                    [ formStep1_.termPregnancy
+                                    , formStep1_.preTermPregnancy
+                                    , formStep1_.stillbirthsAtTerm
+                                    , formStep1_.stillbirthsPreTerm
+                                    , formStep1_.abortions
+                                    , formStep1_.liveChildren
                                     ]
                             in
-                            ( viewObstetricFormFirstStep language currentDate assembled form
+                            ( viewObstetricFormFirstStep language currentDate assembled formStep1_
                             , (intInputs
                                 |> List.map taskCompleted
                                 |> List.sum
                               )
-                                + taskCompleted form.currentlyPregnant
+                                + taskCompleted formStep1_.currentlyPregnant
                             , 7
                             )
 
@@ -393,7 +402,7 @@ viewHistoryContent language currentDate assembled data =
                                 FirstStep _ ->
                                     ( [ button
                                             [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                            , onClick SetOBFirstStepCompleted
+                                            , onClick <| SaveOBHistory assembled.id assembled.participant.person assembled.measurements.obstetricHistory
                                             ]
                                             [ text <| translate language Translate.SaveAndNext ]
                                       ]

@@ -594,9 +594,9 @@ encodeObstetricHistoryValue : ObstetricHistoryValue -> List ( String, Value )
 encodeObstetricHistoryValue value =
     [ ( "currently_pregnant", bool value.currentlyPregnant )
     , ( "term_pregnancy", int value.termPregnancy )
-    , ( "preterm_pregnancy", int value.pretermPregnancy )
-    , ( "stillbirths_at_term", int value.stillBirthsAtTerm )
-    , ( "stillbirths_preterm", int value.stillBirthsPreTerm )
+    , ( "preterm_pregnancy", int value.preTermPregnancy )
+    , ( "stillbirths_at_term", int value.stillbirthsAtTerm )
+    , ( "stillbirths_preterm", int value.stillbirthsPreTerm )
     , ( "abortions", int value.abortions )
     , ( "live_children", int value.liveChildren )
     ]

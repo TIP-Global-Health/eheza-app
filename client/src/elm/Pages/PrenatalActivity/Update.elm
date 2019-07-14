@@ -7,7 +7,11 @@ import Backend.PrenatalEncounter.Model
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
-import Pages.PrenatalActivity.Utils exposing (toLastMenstrualPeriodValueWithDefault)
+import Pages.PrenatalActivity.Utils
+    exposing
+        ( toLastMenstrualPeriodValueWithDefault
+        , toObstetricHistoryValueWithDefault
+        )
 import Result exposing (Result)
 
 
@@ -352,6 +356,40 @@ update msg model =
             ( { model | historyData = updatedData }
             , Cmd.none
             , []
+            )
+
+        SaveOBHistory prenatalEncounterId personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( appMsgs, updatedData ) =
+                    case model.historyData.obstetricForm of
+                        FirstStep step1Form ->
+                            ( step1Form
+                                |> toObstetricHistoryValueWithDefault measurement
+                                |> unwrap
+                                    []
+                                    (\obstetricHistoryValue ->
+                                        [ Backend.PrenatalEncounter.Model.SaveObstetricHistory personId measurementId obstetricHistoryValue
+                                            |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
+                                            |> App.Model.MsgIndexedDb
+                                        , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
+                                        ]
+                                    )
+                            , model.historyData
+                                |> (\data -> { data | obstetricForm = SecondStep emptyObstetricFormSecondStep })
+                            )
+
+                        SecondStep step2Form ->
+                            ( [], model.historyData )
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , appMsgs
             )
 
         SetMedicalBoolInput formUpdateFunc value ->

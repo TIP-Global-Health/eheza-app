@@ -60,6 +60,8 @@ type Msg
     | SetNumberOfCSections String
     | SetOBBoolInput (Bool -> ObstetricFormSecondStep -> ObstetricFormSecondStep) Bool
     | SetPreviousDeliveryPeriod PreviousDeliveryPeriod
+      -- HistoryMsgs, OB
+    | SaveOBHistory PrenatalEncounterId PersonId (Maybe ( ObstetricHistoryId, ObstetricHistory ))
       -- HistoryMsgs, Medical
     | SetMedicalBoolInput (Bool -> MedicalHistoryForm -> MedicalHistoryForm) Bool
       -- HistoryMsgs, Social

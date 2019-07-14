@@ -373,9 +373,9 @@ type FetalPresentation
 type alias ObstetricHistoryValue =
     { currentlyPregnant : Bool
     , termPregnancy : Int
-    , pretermPregnancy : Int
-    , stillBirthsAtTerm : Int
-    , stillBirthsPreTerm : Int
+    , preTermPregnancy : Int
+    , stillbirthsAtTerm : Int
+    , stillbirthsPreTerm : Int
     , abortions : Int
     , liveChildren : Int
     }

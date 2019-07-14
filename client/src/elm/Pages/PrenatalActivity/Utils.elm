@@ -1,4 +1,4 @@
-module Pages.PrenatalActivity.Utils exposing (fromBreastExamValue, fromCorePhysicalExamValue, fromDangerSignsValue, fromFamilyPlanningValue, fromLastMenstrualPeriodValue, fromMedicalHistoryValue, fromMedicationValue, fromObstetricHistoryValue, fromObstetricalExamValue, fromPrenatalNutritionValue, fromResourceValue, fromSocialHistoryValue, fromVitalsValue, ifEmpty, ifTrue, lastMenstrualPeriodFormWithDefaultValue, toBreastExamValue, toCorePhysicalExamValue, toDangerSignsValue, toEverySet, toFamilyPlanningValue, toLastMenstrualPeriodValue, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValue, toMedicationValue, toObstetricHistoryValue, toObstetricalExamValue, toPrenatalNutritionValue, toResourceValue, toSocialHistoryValue, toVitalsValue)
+module Pages.PrenatalActivity.Utils exposing (fromBreastExamValue, fromCorePhysicalExamValue, fromDangerSignsValue, fromFamilyPlanningValue, fromLastMenstrualPeriodValue, fromMedicalHistoryValue, fromMedicationValue, fromObstetricHistoryValue, fromObstetricalExamValue, fromPrenatalNutritionValue, fromResourceValue, fromSocialHistoryValue, fromVitalsValue, ifEmpty, ifTrue, lastMenstrualPeriodFormWithDefaultValue, obstetricHistoryFormWithDefaultValue, obstetricalExamFormWithDefaultValue, toBreastExamValue, toCorePhysicalExamValue, toDangerSignsValue, toEverySet, toFamilyPlanningValue, toLastMenstrualPeriodValue, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValue, toMedicationValue, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValue, toPrenatalNutritionValue, toResourceValue, toSocialHistoryValue, toVitalsValue)
 
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
@@ -46,6 +46,24 @@ fromBreastExamValue saved =
     }
 
 
+breastExamFormWithDefaultValue : BreastExamForm -> Maybe BreastExamValue -> BreastExamForm
+breastExamFormWithDefaultValue form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { breast = or form.breast (value.exam |> EverySet.toList |> List.head)
+                , selfGuidance = or form.selfGuidance (Just value.selfGuidance)
+                }
+            )
+
+
+toBreastExamValueWithDefault : Maybe BreastExamValue -> BreastExamForm -> Maybe BreastExamValue
+toBreastExamValueWithDefault saved form =
+    breastExamFormWithDefaultValue form saved
+        |> toBreastExamValue
+
+
 toBreastExamValue : BreastExamForm -> Maybe BreastExamValue
 toBreastExamValue form =
     -- The `EverySet.singleton` is temporary, until BresatExamForm is
@@ -68,6 +86,30 @@ fromCorePhysicalExamValue saved =
     }
 
 
+corePhysicalExamFormWithDefaultValue : CorePhysicalExamForm -> Maybe CorePhysicalExamValue -> CorePhysicalExamForm
+corePhysicalExamFormWithDefaultValue form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { brittleHair = or form.brittleHair (value.hairHead |> EverySet.member BrittleHairCPE |> Just)
+                , paleConjuctiva = or form.paleConjuctiva (value.eyes |> EverySet.member PaleConjuctiva |> Just)
+                , neck = or form.neck (value.neck |> EverySet.toList |> List.head)
+                , abnormalHeart = or form.abnormalHeart (value.heart |> EverySet.member AbnormalHeart |> Just)
+                , lungs = or form.lungs (value.lungs |> EverySet.toList |> List.head)
+                , abdomen = or form.abdomen (value.abdomen |> EverySet.toList |> List.head)
+                , hands = or form.hands (value.hands |> EverySet.toList |> List.head)
+                , legs = or form.legs (value.legs |> EverySet.toList |> List.head)
+                }
+            )
+
+
+toCorePhysicalExamValueWithDefault : Maybe CorePhysicalExamValue -> CorePhysicalExamForm -> Maybe CorePhysicalExamValue
+toCorePhysicalExamValueWithDefault saved form =
+    corePhysicalExamFormWithDefaultValue form saved
+        |> toCorePhysicalExamValue
+
+
 toCorePhysicalExamValue : CorePhysicalExamForm -> Maybe CorePhysicalExamValue
 toCorePhysicalExamValue form =
     -- Also, termporary things here, until CorePhysicalExamForm is redefined
@@ -85,6 +127,23 @@ fromDangerSignsValue : Maybe (EverySet DangerSign) -> DangerSignsForm
 fromDangerSignsValue saved =
     { signs = Maybe.map EverySet.toList saved
     }
+
+
+fromDangerSignsFormWithDefaultValue : DangerSignsForm -> Maybe (EverySet DangerSign) -> DangerSignsForm
+fromDangerSignsFormWithDefaultValue form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { signs = or form.signs (EverySet.toList value |> Just)
+                }
+            )
+
+
+toDangerSignsValueWithDefault : Maybe (EverySet DangerSign) -> DangerSignsForm -> Maybe (EverySet DangerSign)
+toDangerSignsValueWithDefault saved form =
+    fromDangerSignsFormWithDefaultValue form saved
+        |> toDangerSignsValue
 
 
 toDangerSignsValue : DangerSignsForm -> Maybe (EverySet DangerSign)
@@ -187,6 +246,21 @@ fromObstetricalExamValue saved =
     }
 
 
+obstetricalExamFormWithDefaultValue : ObstetricalExamForm -> Maybe ObstetricalExamValue -> ObstetricalExamForm
+obstetricalExamFormWithDefaultValue form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { fundalHeight = or form.fundalHeight (value.fundalHeight |> (\(HeightInCm cm) -> cm) |> Just)
+                , fetalPresentation = or form.fetalPresentation (Just value.fetalPresentation)
+                , fetalMovement = or form.fetalMovement (Just value.fetalMovement)
+                , fetalHeartRate = or form.fetalHeartRate (Just value.fetalHeartRate)
+                , cSectionScar = or form.cSectionScar (Just value.cSectionScar)
+                }
+            )
+
+
 toObstetricalExamValue : ObstetricalExamForm -> Maybe ObstetricalExamValue
 toObstetricalExamValue form =
     Maybe.map ObstetricalExamValue (Maybe.map HeightInCm form.fundalHeight)
@@ -200,12 +274,38 @@ fromObstetricHistoryValue : Maybe ObstetricHistoryValue -> ObstetricFormFirstSte
 fromObstetricHistoryValue saved =
     { currentlyPregnant = Maybe.map .currentlyPregnant saved
     , termPregnancy = Maybe.map .termPregnancy saved
-    , preTermPregnancy = Maybe.map .pretermPregnancy saved
-    , stillbirthsAtTerm = Maybe.map .stillBirthsAtTerm saved
-    , stillbirthsPreTerm = Maybe.map .stillBirthsPreTerm saved
+    , preTermPregnancy = Maybe.map .preTermPregnancy saved
+    , stillbirthsAtTerm = Maybe.map .stillbirthsAtTerm saved
+    , stillbirthsPreTerm = Maybe.map .stillbirthsPreTerm saved
     , abortions = Maybe.map .abortions saved
     , liveChildren = Maybe.map .liveChildren saved
     }
+
+
+obstetricHistoryFormWithDefaultValue : ObstetricFormFirstStep -> Maybe ObstetricHistoryValue -> ObstetricFormFirstStep
+obstetricHistoryFormWithDefaultValue form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { currentlyPregnant = or form.currentlyPregnant (Just value.currentlyPregnant)
+                , termPregnancy = or form.termPregnancy (Just value.termPregnancy)
+                , preTermPregnancy = or form.preTermPregnancy (Just value.preTermPregnancy)
+                , stillbirthsAtTerm = or form.stillbirthsAtTerm (Just value.stillbirthsAtTerm)
+                , stillbirthsPreTerm = or form.stillbirthsPreTerm (Just value.stillbirthsPreTerm)
+                , abortions = or form.abortions (Just value.abortions)
+                , liveChildren = or form.liveChildren (Just value.liveChildren)
+                }
+            )
+
+
+toObstetricHistoryValueWithDefault : Maybe ObstetricHistoryValue -> ObstetricFormFirstStep -> Maybe ObstetricHistoryValue
+toObstetricHistoryValueWithDefault saved form =
+    let
+        form_ =
+            obstetricHistoryFormWithDefaultValue form saved
+    in
+    toObstetricHistoryValue form_
 
 
 toObstetricHistoryValue : ObstetricFormFirstStep -> Maybe ObstetricHistoryValue
