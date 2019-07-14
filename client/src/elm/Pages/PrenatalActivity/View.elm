@@ -429,7 +429,6 @@ viewHistoryContent language currentDate assembled data =
                                                 , ( "disabled", tasksCompleted /= totalTasks )
                                                 , ( "active", tasksCompleted == totalTasks )
                                                 ]
-                                            , onClick SetHistoryTaskCompleted
                                             ]
                                             [ text <| translate language Translate.Save ]
                                       ]
@@ -439,7 +438,7 @@ viewHistoryContent language currentDate assembled data =
                         Medical ->
                             ( [ button
                                     [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                    , onClick SetHistoryTaskCompleted
+                                    , onClick <| SaveMedicalHistory assembled.id assembled.participant.person assembled.measurements.medicalHistory
                                     ]
                                     [ text <| translate language Translate.Save ]
                               ]
@@ -449,7 +448,7 @@ viewHistoryContent language currentDate assembled data =
                         Social ->
                             ( [ button
                                     [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                    , onClick SetHistoryTaskCompleted
+                                    , onClick <| SaveSocialHistory assembled.id assembled.participant.person assembled.measurements.socialHistory
                                     ]
                                     [ text <| translate language Translate.Save ]
                               ]
@@ -608,10 +607,28 @@ viewExaminationContent language currentDate assembled data =
                     )
 
         actions =
+            let
+                saveAction =
+                    case data.activeTask of
+                        Vitals ->
+                            SaveVitals assembled.id assembled.participant.person assembled.measurements.vitals
+
+                        NutritionAssessment ->
+                            SaveNutritionAssessment assembled.id assembled.participant.person assembled.measurements.nutrition
+
+                        CorePhysicalExam ->
+                            SaveCorePhysicalExam assembled.id assembled.participant.person assembled.measurements.corePhysicalExam
+
+                        ObstetricalExam ->
+                            SaveObstetricalExam assembled.id assembled.participant.person assembled.measurements.obstetricalExam
+
+                        BreastExam ->
+                            SaveBreastExam assembled.id assembled.participant.person assembled.measurements.breastExam
+            in
             div [ class "actions examination" ]
                 [ button
                     [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                    , onClick SetExaminationTaskCompleted
+                    , onClick saveAction
                     ]
                     [ text <| translate language Translate.Save ]
                 ]
@@ -635,7 +652,9 @@ viewFamilyPlanningContent : Language -> NominalDate -> AssembledData -> FamilyPl
 viewFamilyPlanningContent language currentDate assembled data =
     let
         form =
-            data.form
+            assembled.measurements.familyPlanning
+                |> Maybe.map (Tuple.second >> .value)
+                |> familyPlanningFormWithDefault data.form
 
         totalTasks =
             1
@@ -660,7 +679,7 @@ viewFamilyPlanningContent language currentDate assembled data =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage assembled.id
+                , onClick <| SaveFamilyPlanning assembled.id assembled.participant.person assembled.measurements.familyPlanning
                 ]
                 [ text <| translate language Translate.Save ]
             ]
@@ -731,10 +750,19 @@ viewPatientProvisionsContent language currentDate assembled data =
                     )
 
         actions =
+            let
+                saveAction =
+                    case data.activeTask of
+                        Medication ->
+                            SaveMedication assembled.id assembled.participant.person assembled.measurements.medication
+
+                        Resources ->
+                            SaveResources assembled.id assembled.participant.person assembled.measurements.resource
+            in
             div [ class "actions examination" ]
                 [ button
                     [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                    , onClick SetPatientProvisionsTaskCompleted
+                    , onClick saveAction
                     ]
                     [ text <| translate language Translate.Save ]
                 ]
@@ -757,7 +785,9 @@ viewDangerSignsContent : Language -> NominalDate -> AssembledData -> DangerSigns
 viewDangerSignsContent language currentDate assembled data =
     let
         form =
-            data.form
+            assembled.measurements.dangerSigns
+                |> Maybe.map (Tuple.second >> .value)
+                |> dangerSignsFormWithDefault data.form
 
         totalTasks =
             1
@@ -782,7 +812,7 @@ viewDangerSignsContent language currentDate assembled data =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage assembled.id
+                , onClick <| SaveDangerSigns assembled.id assembled.participant.person assembled.measurements.dangerSigns
                 ]
                 [ text <| translate language Translate.Save ]
             ]
@@ -1038,8 +1068,13 @@ viewObstetricFormSecondStep language currentDate assembled form =
 
 
 viewMedicalForm : Language -> NominalDate -> AssembledData -> MedicalHistoryForm -> Html Msg
-viewMedicalForm language currentDate assembled form =
+viewMedicalForm language currentDate assembled bareForm =
     let
+        form =
+            assembled.measurements.medicalHistory
+                |> Maybe.map (Tuple.second >> .value)
+                |> medicalHistoryFormWithDefault bareForm
+
         uterineMyomaUpdateFunc value form_ =
             { form_ | uterineMyoma = Just value }
 
@@ -1146,8 +1181,13 @@ viewMedicalForm language currentDate assembled form =
 
 
 viewSocialForm : Language -> NominalDate -> AssembledData -> SocialHistoryForm -> Html Msg
-viewSocialForm language currentDate assembled form =
+viewSocialForm language currentDate assembled bareForm =
     let
+        form =
+            assembled.measurements.socialHistory
+                |> Maybe.map (Tuple.second >> .value)
+                |> socialHistoryFormWithDefault bareForm
+
         accompaniedByPartnerUpdateFunc value form_ =
             { form_ | accompaniedByPartner = Just value }
 
@@ -1183,8 +1223,13 @@ viewSocialForm language currentDate assembled form =
 
 
 viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html Msg
-viewVitalsForm language currentDate assembled form =
+viewVitalsForm language currentDate assembled bareForm =
     let
+        form =
+            assembled.measurements.vitals
+                |> Maybe.map (Tuple.second >> .value)
+                |> vitalsFormWithDefault bareForm
+
         sysBloodPressureUpdateFunc value form_ =
             { form_ | sysBloodPressure = value }
 
@@ -1280,8 +1325,13 @@ viewVitalsForm language currentDate assembled form =
 
 
 viewNutritionAssessmentForm : Language -> NominalDate -> AssembledData -> NutritionAssessmentForm -> Html Msg
-viewNutritionAssessmentForm language currentDate assembled form =
+viewNutritionAssessmentForm language currentDate assembled bareForm =
     let
+        form =
+            assembled.measurements.nutrition
+                |> Maybe.map (Tuple.second >> .value)
+                |> prenatalNutritionFormWithDefault bareForm
+
         heightUpdateFunc value form_ =
             { form_ | height = value }
 
@@ -1388,8 +1438,13 @@ viewNutritionAssessmentForm language currentDate assembled form =
 
 
 viewCorePhysicalExamForm : Language -> NominalDate -> AssembledData -> CorePhysicalExamForm -> Html Msg
-viewCorePhysicalExamForm language currentDate assembled form =
+viewCorePhysicalExamForm language currentDate assembled bareForm =
     let
+        form =
+            assembled.measurements.corePhysicalExam
+                |> Maybe.map (Tuple.second >> .value)
+                |> corePhysicalExamFormWithDefault bareForm
+
         brittleHairUpdateFunc value form_ =
             { form_ | brittleHair = Just value }
 
@@ -1495,8 +1550,13 @@ viewCorePhysicalExamForm language currentDate assembled form =
 
 
 viewObstetricalExamForm : Language -> NominalDate -> AssembledData -> ObstetricalExamForm -> Html Msg
-viewObstetricalExamForm language currentDate assembled form =
+viewObstetricalExamForm language currentDate assembled bareForm =
     let
+        form =
+            assembled.measurements.obstetricalExam
+                |> Maybe.map (Tuple.second >> .value)
+                |> obstetricalExamFormWithDefault bareForm
+
         fundalHeightUpdateFunc value form_ =
             { form_ | fundalHeight = value }
 
@@ -1577,8 +1637,13 @@ viewObstetricalExamForm language currentDate assembled form =
 
 
 viewBreastExamForm : Language -> NominalDate -> AssembledData -> BreastExamForm -> Html Msg
-viewBreastExamForm language currentDate assembled form =
+viewBreastExamForm language currentDate assembled bareForm =
     let
+        form =
+            assembled.measurements.breastExam
+                |> Maybe.map (Tuple.second >> .value)
+                |> breastExamFormWithDefault bareForm
+
         selfGuidanceUpdateFunc value form_ =
             { form_ | selfGuidance = Just value }
     in
@@ -1606,8 +1671,13 @@ viewBreastExamForm language currentDate assembled form =
 
 
 viewMedicationForm : Language -> NominalDate -> AssembledData -> MedicationForm -> Html Msg
-viewMedicationForm language currentDate assembled form =
+viewMedicationForm language currentDate assembled bareForm =
     let
+        form =
+            assembled.measurements.medication
+                |> Maybe.map (Tuple.second >> .value)
+                |> medicationFormWithDefault bareForm
+
         receivedIronFolicAcidUpdateFunc value form_ =
             { form_ | receivedIronFolicAcid = Just value }
 
@@ -1633,8 +1703,13 @@ viewMedicationForm language currentDate assembled form =
 
 
 viewResourcesForm : Language -> NominalDate -> AssembledData -> ResourcesForm -> Html Msg
-viewResourcesForm language currentDate assembled form =
+viewResourcesForm language currentDate assembled bareForm =
     let
+        form =
+            assembled.measurements.resource
+                |> Maybe.map (Tuple.second >> .value)
+                |> resourceFormWithDefault bareForm
+
         receivedMosquitoNetUpdateFunc value form_ =
             { form_ | receivedMosquitoNet = Just value }
     in
