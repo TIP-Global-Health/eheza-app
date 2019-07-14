@@ -369,20 +369,25 @@ viewHistoryContent language currentDate assembled data =
 
                 Medical ->
                     let
+                        medicalForm =
+                            assembled.measurements.medicalHistory
+                                |> Maybe.map (Tuple.second >> .value)
+                                |> medicalHistoryFormWithDefault data.medicalForm
+
                         boolInputs =
-                            [ data.medicalForm.uterineMyoma
-                            , data.medicalForm.diabetes
-                            , data.medicalForm.cardiacDisease
-                            , data.medicalForm.renalDisease
-                            , data.medicalForm.hypertensionBeforePregnancy
-                            , data.medicalForm.tuberculosisPast
-                            , data.medicalForm.tuberculosisPresent
-                            , data.medicalForm.asthma
-                            , data.medicalForm.bowedLegs
-                            , data.medicalForm.hiv
+                            [ medicalForm.uterineMyoma
+                            , medicalForm.diabetes
+                            , medicalForm.cardiacDisease
+                            , medicalForm.renalDisease
+                            , medicalForm.hypertensionBeforePregnancy
+                            , medicalForm.tuberculosisPast
+                            , medicalForm.tuberculosisPresent
+                            , medicalForm.asthma
+                            , medicalForm.bowedLegs
+                            , medicalForm.hiv
                             ]
                     in
-                    ( viewMedicalForm language currentDate assembled data.medicalForm
+                    ( viewMedicalForm language currentDate assembled medicalForm
                     , boolInputs
                         |> List.map taskCompleted
                         |> List.sum
@@ -391,13 +396,18 @@ viewHistoryContent language currentDate assembled data =
 
                 Social ->
                     let
+                        socialForm =
+                            assembled.measurements.medicalHistory
+                                |> Maybe.map (Tuple.second >> .value)
+                                |> medicalHistoryFormWithDefault data.socialForm
+
                         boolInputs =
-                            [ data.socialForm.accompaniedByPartner
-                            , data.socialForm.partnerReceivedCounseling
-                            , data.socialForm.mentalHealthHistory
+                            [ socialForm.accompaniedByPartner
+                            , socialForm.partnerReceivedCounseling
+                            , socialForm.mentalHealthHistory
                             ]
                     in
-                    ( viewSocialForm language currentDate assembled data.socialForm
+                    ( viewSocialForm language currentDate assembled socialForm
                     , boolInputs
                         |> List.map taskCompleted
                         |> List.sum
@@ -525,7 +535,9 @@ viewExaminationContent language currentDate assembled data =
                 Vitals ->
                     let
                         form =
-                            data.vitalsForm
+                            assembled.measurements.vitals
+                                |> Maybe.map (Tuple.second >> .value)
+                                |> vitalsFormWithDefault data.vitalsForm
                     in
                     ( viewVitalsForm language currentDate assembled form
                     , taskListCompleted [ form.sysBloodPressure, form.diaBloodPressure ]
@@ -542,7 +554,9 @@ viewExaminationContent language currentDate assembled data =
                 NutritionAssessment ->
                     let
                         form =
-                            data.nutritionAssessmentForm
+                            assembled.measurements.nutrition
+                                |> Maybe.map (Tuple.second >> .value)
+                                |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
                     in
                     ( viewNutritionAssessmentForm language currentDate assembled form
                     , [ form.height, form.weight, form.muac ]
@@ -554,7 +568,9 @@ viewExaminationContent language currentDate assembled data =
                 CorePhysicalExam ->
                     let
                         form =
-                            data.corePhysicalExamForm
+                            assembled.measurements.corePhysicalExam
+                                |> Maybe.map (Tuple.second >> .value)
+                                |> corePhysicalExamFormWithDefault data.corePhysicalExamForm
 
                         extremitiesTaskCompleted =
                             if isJust form.hands && isJust form.legs then
@@ -581,7 +597,9 @@ viewExaminationContent language currentDate assembled data =
                 ObstetricalExam ->
                     let
                         form =
-                            data.obstetricalExamForm
+                            assembled.measurements.obstetricalExam
+                                |> Maybe.map (Tuple.second >> .value)
+                                |> obstetricalExamFormWithDefault data.obstetricalExamForm
                     in
                     ( viewObstetricalExamForm language currentDate assembled data.obstetricalExamForm
                     , taskCompleted form.fetalPresentation
@@ -599,7 +617,9 @@ viewExaminationContent language currentDate assembled data =
                 BreastExam ->
                     let
                         form =
-                            data.breastExamForm
+                            assembled.measurements.breastExam
+                                |> Maybe.map (Tuple.second >> .value)
+                                |> breastExamFormWithDefault data.breastExamForm
                     in
                     ( viewBreastExamForm language currentDate assembled form
                     , taskCompleted form.breast + taskCompleted form.selfGuidance
@@ -730,7 +750,9 @@ viewPatientProvisionsContent language currentDate assembled data =
                 Medication ->
                     let
                         form =
-                            data.medicationForm
+                            assembled.measurements.medication
+                                |> Maybe.map (Tuple.second >> .value)
+                                |> medicationFormWithDefault data.medicationForm
                     in
                     ( viewMedicationForm language currentDate assembled form
                     , [ form.receivedIronFolicAcid, form.receivedDewormingPill ]
@@ -742,7 +764,9 @@ viewPatientProvisionsContent language currentDate assembled data =
                 Resources ->
                     let
                         form =
-                            data.resourcesForm
+                            assembled.measurements.resource
+                                |> Maybe.map (Tuple.second >> .value)
+                                |> resourceFormWithDefault data.resourcesForm
                     in
                     ( viewResourcesForm language currentDate assembled form
                     , taskCompleted form.receivedMosquitoNet
@@ -1068,13 +1092,8 @@ viewObstetricFormSecondStep language currentDate assembled form =
 
 
 viewMedicalForm : Language -> NominalDate -> AssembledData -> MedicalHistoryForm -> Html Msg
-viewMedicalForm language currentDate assembled bareForm =
+viewMedicalForm language currentDate assembled form =
     let
-        form =
-            assembled.measurements.medicalHistory
-                |> Maybe.map (Tuple.second >> .value)
-                |> medicalHistoryFormWithDefault bareForm
-
         uterineMyomaUpdateFunc value form_ =
             { form_ | uterineMyoma = Just value }
 
@@ -1181,13 +1200,8 @@ viewMedicalForm language currentDate assembled bareForm =
 
 
 viewSocialForm : Language -> NominalDate -> AssembledData -> SocialHistoryForm -> Html Msg
-viewSocialForm language currentDate assembled bareForm =
+viewSocialForm language currentDate assembled form =
     let
-        form =
-            assembled.measurements.socialHistory
-                |> Maybe.map (Tuple.second >> .value)
-                |> socialHistoryFormWithDefault bareForm
-
         accompaniedByPartnerUpdateFunc value form_ =
             { form_ | accompaniedByPartner = Just value }
 
@@ -1223,13 +1237,8 @@ viewSocialForm language currentDate assembled bareForm =
 
 
 viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html Msg
-viewVitalsForm language currentDate assembled bareForm =
+viewVitalsForm language currentDate assembled form =
     let
-        form =
-            assembled.measurements.vitals
-                |> Maybe.map (Tuple.second >> .value)
-                |> vitalsFormWithDefault bareForm
-
         sysBloodPressureUpdateFunc value form_ =
             { form_ | sysBloodPressure = value }
 
@@ -1325,13 +1334,8 @@ viewVitalsForm language currentDate assembled bareForm =
 
 
 viewNutritionAssessmentForm : Language -> NominalDate -> AssembledData -> NutritionAssessmentForm -> Html Msg
-viewNutritionAssessmentForm language currentDate assembled bareForm =
+viewNutritionAssessmentForm language currentDate assembled form =
     let
-        form =
-            assembled.measurements.nutrition
-                |> Maybe.map (Tuple.second >> .value)
-                |> prenatalNutritionFormWithDefault bareForm
-
         heightUpdateFunc value form_ =
             { form_ | height = value }
 
@@ -1438,13 +1442,8 @@ viewNutritionAssessmentForm language currentDate assembled bareForm =
 
 
 viewCorePhysicalExamForm : Language -> NominalDate -> AssembledData -> CorePhysicalExamForm -> Html Msg
-viewCorePhysicalExamForm language currentDate assembled bareForm =
+viewCorePhysicalExamForm language currentDate assembled form =
     let
-        form =
-            assembled.measurements.corePhysicalExam
-                |> Maybe.map (Tuple.second >> .value)
-                |> corePhysicalExamFormWithDefault bareForm
-
         brittleHairUpdateFunc value form_ =
             { form_ | brittleHair = Just value }
 
@@ -1550,13 +1549,8 @@ viewCorePhysicalExamForm language currentDate assembled bareForm =
 
 
 viewObstetricalExamForm : Language -> NominalDate -> AssembledData -> ObstetricalExamForm -> Html Msg
-viewObstetricalExamForm language currentDate assembled bareForm =
+viewObstetricalExamForm language currentDate assembled form =
     let
-        form =
-            assembled.measurements.obstetricalExam
-                |> Maybe.map (Tuple.second >> .value)
-                |> obstetricalExamFormWithDefault bareForm
-
         fundalHeightUpdateFunc value form_ =
             { form_ | fundalHeight = value }
 
@@ -1637,13 +1631,8 @@ viewObstetricalExamForm language currentDate assembled bareForm =
 
 
 viewBreastExamForm : Language -> NominalDate -> AssembledData -> BreastExamForm -> Html Msg
-viewBreastExamForm language currentDate assembled bareForm =
+viewBreastExamForm language currentDate assembled form =
     let
-        form =
-            assembled.measurements.breastExam
-                |> Maybe.map (Tuple.second >> .value)
-                |> breastExamFormWithDefault bareForm
-
         selfGuidanceUpdateFunc value form_ =
             { form_ | selfGuidance = Just value }
     in
@@ -1671,13 +1660,8 @@ viewBreastExamForm language currentDate assembled bareForm =
 
 
 viewMedicationForm : Language -> NominalDate -> AssembledData -> MedicationForm -> Html Msg
-viewMedicationForm language currentDate assembled bareForm =
+viewMedicationForm language currentDate assembled form =
     let
-        form =
-            assembled.measurements.medication
-                |> Maybe.map (Tuple.second >> .value)
-                |> medicationFormWithDefault bareForm
-
         receivedIronFolicAcidUpdateFunc value form_ =
             { form_ | receivedIronFolicAcid = Just value }
 
@@ -1703,13 +1687,8 @@ viewMedicationForm language currentDate assembled bareForm =
 
 
 viewResourcesForm : Language -> NominalDate -> AssembledData -> ResourcesForm -> Html Msg
-viewResourcesForm language currentDate assembled bareForm =
+viewResourcesForm language currentDate assembled form =
     let
-        form =
-            assembled.measurements.resource
-                |> Maybe.map (Tuple.second >> .value)
-                |> resourceFormWithDefault bareForm
-
         receivedMosquitoNetUpdateFunc value form_ =
             { form_ | receivedMosquitoNet = Just value }
     in
