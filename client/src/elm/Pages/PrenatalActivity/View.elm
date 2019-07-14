@@ -397,9 +397,9 @@ viewHistoryContent language currentDate assembled data =
                 Social ->
                     let
                         socialForm =
-                            assembled.measurements.medicalHistory
+                            assembled.measurements.socialHistory
                                 |> Maybe.map (Tuple.second >> .value)
-                                |> medicalHistoryFormWithDefault data.socialForm
+                                |> socialHistoryFormWithDefault data.socialForm
 
                         boolInputs =
                             [ socialForm.accompaniedByPartner
