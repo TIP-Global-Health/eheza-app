@@ -9,8 +9,19 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils
     exposing
-        ( toLastMenstrualPeriodValueWithDefault
+        ( toBreastExamValueWithDefault
+        , toCorePhysicalExamValueWithDefault
+        , toDangerSignsValueWithDefault
+        , toFamilyPlanningValueWithDefault
+        , toLastMenstrualPeriodValueWithDefault
+        , toMedicalHistoryValueWithDefault
+        , toMedicationValueWithDefault
         , toObstetricHistoryValueWithDefault
+        , toObstetricalExamValueWithDefault
+        , toPrenatalNutritionValueWithDefault
+        , toResourceValueWithDefault
+        , toSocialHistoryValueWithDefault
+        , toVitalsValueWithDefault
         )
 import Result exposing (Result)
 

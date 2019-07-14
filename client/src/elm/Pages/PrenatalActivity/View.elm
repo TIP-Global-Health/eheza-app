@@ -19,8 +19,19 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils
     exposing
-        ( lastMenstrualPeriodFormWithDefault
+        ( breastExamFormWithDefault
+        , corePhysicalExamFormWithDefault
+        , dangerSignsFormWithDefault
+        , familyPlanningFormWithDefault
+        , lastMenstrualPeriodFormWithDefault
+        , medicalHistoryFormWithDefault
+        , medicationFormWithDefault
         , obstetricHistoryFormWithDefault
+        , obstetricalExamFormWithDefault
+        , prenatalNutritionFormWithDefault
+        , resourceFormWithDefault
+        , socialHistoryFormWithDefault
+        , vitalsFormWithDefault
         )
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
