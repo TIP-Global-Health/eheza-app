@@ -6,8 +6,8 @@
  */
 'use strict';
 
-self.addEventListener('message', function (event) {
-    if (event.data === 'SkipWaiting') {
-        self.skipWaiting();
-    }
+self.addEventListener('message', function(event) {
+  if (event.data === 'SkipWaiting') {
+    self.skipWaiting();
+  }
 });
