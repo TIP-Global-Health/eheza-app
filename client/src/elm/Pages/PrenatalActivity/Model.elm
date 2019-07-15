@@ -1,6 +1,5 @@
 module Pages.PrenatalActivity.Model exposing
     ( BreastExamForm
-    , CSectionReason(..)
     , CorePhysicalExamForm
     , DangerSignsData
     , DangerSignsForm
@@ -349,14 +348,6 @@ type alias SocialHistoryForm =
 emptySocialHistoryForm : SocialHistoryForm
 emptySocialHistoryForm =
     SocialHistoryForm Nothing Nothing Nothing
-
-
-type CSectionReason
-    = Breech
-    | Emergency
-    | FailureToProgress
-    | None
-    | Other
 
 
 type PreviousDeliveryPeriod

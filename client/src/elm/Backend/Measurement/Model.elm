@@ -4,6 +4,7 @@ module Backend.Measurement.Model exposing
     , BreastExam
     , BreastExamSign(..)
     , BreastExamValue
+    , CSectionReason(..)
     , ChildMeasurementList
     , ChildMeasurements
     , ChildNutrition
@@ -385,6 +386,47 @@ type alias ObstetricHistory =
     PrenatalMeasurement ObstetricHistoryValue
 
 
+type alias ObstetricHistoryStep2Value =
+    { cSections : Int
+    , cSectionReason : CSectionReason
+    , previousDeliveryPeriod : PreviousDeliveryPeriod
+    , previousDeliveryPeriod : PreviousDeliverySign
+    , obstetricHistory : EverySet ObstetricHistorySign
+    }
+
+
+type CSectionReason
+    = Breech
+    | Emergency
+    | FailureToProgress
+    | None
+    | Other
+
+
+type PreviousDeliverSign
+    = CSectionInPreviousDelivery
+    | StillbornPreviousDelivery
+    | BabyDiedOnDayOfBirthPreviousDelivery
+    | PartialPlacentaPreviousDelivery
+    | SevereHemorrhagingPreviousDelivery
+    | ConvulsionsPreviousDelivery
+    | ConvulsionsAndUnconsciousPreviousDelivery
+    | NoPreviousDeliverSign
+
+
+type ObstetricHistorySign
+    = SuccessiveAbortions
+    | SuccessivePrematureDeliveries
+    | PreeclampsiaPreviousPregnancy
+    | GestationalDiabetesPreviousPregnancy
+    | IncompleteCervixPreviousPregnancy
+    | RhNegative
+
+
+type alias ObstetricHistoryStep2 =
+    PrenatalMeasurement ObstetricHistoryStep2Value
+
+
 type alias PrenatalFamilyPlanning =
     PrenatalMeasurement (EverySet FamilyPlanningSign)
 
@@ -513,6 +555,7 @@ type alias PrenatalMeasurements =
     , medication : Maybe ( MedicationId, Medication )
     , obstetricalExam : Maybe ( ObstetricalExamId, ObstetricalExam )
     , obstetricHistory : Maybe ( ObstetricHistoryId, ObstetricHistory )
+    , obstetricHistoryStep2 : Maybe ( ObstetricHistoryStep2Id, ObstetricHistoryStep2 )
     , familyPlanning : Maybe ( PrenatalFamilyPlanningId, PrenatalFamilyPlanning )
     , nutrition : Maybe ( PrenatalNutritionId, PrenatalNutrition )
     , resource : Maybe ( ResourceId, Resource )
