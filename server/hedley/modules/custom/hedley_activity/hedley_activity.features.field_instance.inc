@@ -4836,6 +4836,44 @@ function hedley_activity_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-obstetric_history_step2-field_previous_delivery'.
+  $field_instances['node-obstetric_history_step2-field_previous_delivery'] = array(
+    'bundle' => 'obstetric_history_step2',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_previous_delivery',
+    'label' => 'Previous Delivery',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 11,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-obstetric_history_step2-field_previous_delivery_period'.
   $field_instances['node-obstetric_history_step2-field_previous_delivery_period'] = array(
     'bundle' => 'obstetric_history_step2',
@@ -8229,6 +8267,7 @@ function hedley_activity_field_default_field_instances() {
   t('Photo');
   t('PreTerm Pregnancy');
   t('Prenatal Encounter');
+  t('Previous Delivery');
   t('Previous Delivery Period');
   t('Refers to the date-entry session which this measurement was taken in.');
   t('Represents the date which on which the measurement took place. This is distinct from the date which data entry was scheduled (though that would be the default). It is also distinct from the creation date of the node, since that could be different from the date the measurement took place.');
