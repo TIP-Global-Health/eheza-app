@@ -20,6 +20,7 @@ import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils
     exposing
         ( breastExamFormWithDefault
+        , calculateBmi
         , corePhysicalExamFormWithDefault
         , dangerSignsFormWithDefault
         , familyPlanningFormWithDefault
@@ -559,9 +560,13 @@ viewExaminationContent language currentDate assembled data =
                                 |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
                     in
                     ( viewNutritionAssessmentForm language currentDate assembled form
-                    , [ form.height, form.weight, form.muac ]
+                    , ([ form.height, form.weight, form.muac ]
                         |> List.map taskCompleted
                         |> List.sum
+                      )
+                        -- This is for BMI task, which is considered as completed
+                        -- when both height and weight are set.
+                        + taskListCompleted [ form.height, form.weight ]
                     , 4
                     )
 
@@ -1343,7 +1348,7 @@ viewNutritionAssessmentForm language currentDate assembled form =
             { form_ | weight = value }
 
         bmiUpdateFunc value form_ =
-            { form_ | bmi = value }
+            form_
 
         muacUpdateFunc value form_ =
             { form_ | muac = value }
@@ -1392,39 +1397,15 @@ viewNutritionAssessmentForm language currentDate assembled form =
                 [ viewLabel language Translate.BMI ]
             , viewWarning language Nothing
             ]
-
-        {-
-
-           calculateBmi : NutritionAssessmentForm -> NutritionAssessmentForm
-           calculateBmi form =
-               if isNothing form.weight || isNothing form.height then
-                   { form | bmi = Nothing }
-
-               else
-                   let
-                       height =
-                           form.height |> Maybe.withDefault 0
-
-                       weight =
-                           form.weight |> Maybe.withDefault 0
-
-                       bmi =
-                           weight / ((height / 100) ^ 2)
-                   in
-                   { form | bmi = Just bmi }
-
-
-
-                      , div [ class "title bmi" ] [ text <| translate language Translate.BMIHelper ]
-                       , viewMeasurementInputAndRound
-                          language
-                          form.bmi
-                          (SetNutritionAssessmentMeasurement bmiUpdateFunc)
-                          "bmi"
-                          Translate.EmptyString
-                          (Just 1)
-                      , viewPreviousMeasurement language bmiPreviousValue Translate.EmptyString
-        -}
+        , div [ class "title bmi" ] [ text <| translate language Translate.BMIHelper ]
+        , viewMeasurementInputAndRound
+            language
+            (calculateBmi form.height form.weight)
+            (SetNutritionAssessmentMeasurement bmiUpdateFunc)
+            "bmi"
+            Translate.EmptyString
+            (Just 1)
+        , viewPreviousMeasurement language bmiPreviousValue Translate.EmptyString
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
