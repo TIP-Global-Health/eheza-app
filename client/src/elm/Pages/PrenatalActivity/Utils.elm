@@ -532,16 +532,5 @@ toVitalsValue form =
 
 
 calculateBmi : Maybe Float -> Maybe Float -> Maybe Float
-calculateBmi height weight =
-    if isNothing weight || isNothing height then
-        Nothing
-
-    else
-        let
-            height_ =
-                height |> Maybe.withDefault 0
-
-            weight_ =
-                weight |> Maybe.withDefault 0
-        in
-        weight_ / ((height_ / 100) ^ 2) |> Just
+calculateBmi maybeHeight maybeWeight =
+    Maybe.map2 (\height weight -> weight / ((height / 100) ^ 2)) maybeHeight maybeWeight
