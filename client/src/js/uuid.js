@@ -28,7 +28,7 @@ SOFTWARE.
 
 'use strict';
 
-var kelektivUuid = (function() {
+var kelektivUuid = (function () {
 
   // --------------
   // bytesToUuid.js
@@ -44,24 +44,21 @@ var kelektivUuid = (function() {
     var bth = byteToHex;
     // join used to fix memory issue caused by concatenation: https://bugs.chromium.org/p/v8/issues/detail?id=3175#c4
     return ([bth[buf[i++]], bth[buf[i++]],
-      bth[buf[i++]], bth[buf[i++]], '-',
-      bth[buf[i++]], bth[buf[i++]], '-',
-      bth[buf[i++]], bth[buf[i++]], '-',
-      bth[buf[i++]], bth[buf[i++]], '-',
-      bth[buf[i++]], bth[buf[i++]],
-      bth[buf[i++]], bth[buf[i++]],
-      bth[buf[i++]], bth[buf[i++]]
-    ]).join('');
+  	bth[buf[i++]], bth[buf[i++]], '-',
+  	bth[buf[i++]], bth[buf[i++]], '-',
+  	bth[buf[i++]], bth[buf[i++]], '-',
+  	bth[buf[i++]], bth[buf[i++]], '-',
+  	bth[buf[i++]], bth[buf[i++]],
+  	bth[buf[i++]], bth[buf[i++]],
+  	bth[buf[i++]], bth[buf[i++]]]).join('');
   }
 
   // --------------
   // rng-browser-js
   // --------------
 
-  var getRandomValues = (typeof(crypto) != 'undefined' && crypto.getRandomValues &&
-      crypto.getRandomValues.bind(crypto)) ||
-    (typeof(msCrypto) != 'undefined' && typeof window.msCrypto.getRandomValues ==
-      'function' && msCrypto.getRandomValues.bind(msCrypto));
+  var getRandomValues = (typeof(crypto) != 'undefined' && crypto.getRandomValues && crypto.getRandomValues.bind(crypto)) ||
+                        (typeof(msCrypto) != 'undefined' && typeof window.msCrypto.getRandomValues == 'function' && msCrypto.getRandomValues.bind(msCrypto));
 
   if (getRandomValues) {
     // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
@@ -123,19 +120,15 @@ var kelektivUuid = (function() {
 
   function f(s, x, y, z) {
     switch (s) {
-      case 0:
-        return (x & y) ^ (~x & z);
-      case 1:
-        return x ^ y ^ z;
-      case 2:
-        return (x & y) ^ (x & z) ^ (y & z);
-      case 3:
-        return x ^ y ^ z;
+      case 0: return (x & y) ^ (~x & z);
+      case 1: return x ^ y ^ z;
+      case 2: return (x & y) ^ (x & z) ^ (y & z);
+      case 3: return x ^ y ^ z;
     }
   }
 
   function ROTL(x, n) {
-    return (x << n) | (x >>> (32 - n));
+    return (x << n) | (x>>> (32 - n));
   }
 
   function sha1(bytes) {
@@ -150,13 +143,13 @@ var kelektivUuid = (function() {
 
     bytes.push(0x80);
 
-    var l = bytes.length / 4 + 2;
-    var N = Math.ceil(l / 16);
+    var l = bytes.length/4 + 2;
+    var N = Math.ceil(l/16);
     var M = new Array(N);
 
-    for (var i = 0; i < N; i++) {
+    for (var i=0; i<N; i++) {
       M[i] = new Array(16);
-      for (var j = 0; j < 16; j++) {
+      for (var j=0; j<16; j++) {
         M[i][j] =
           bytes[i * 64 + j * 4] << 24 |
           bytes[i * 64 + j * 4 + 1] << 16 |
@@ -166,15 +159,14 @@ var kelektivUuid = (function() {
     }
 
     M[N - 1][14] = ((bytes.length - 1) * 8) /
-      Math.pow(2, 32);
-    M[N - 1][14] = Math.floor(M[N - 1][14]);
+      Math.pow(2, 32); M[N - 1][14] = Math.floor(M[N - 1][14]);
     M[N - 1][15] = ((bytes.length - 1) * 8) & 0xffffffff;
 
-    for (var i = 0; i < N; i++) {
+    for (var i=0; i<N; i++) {
       var W = new Array(80);
 
-      for (var t = 0; t < 16; t++) W[t] = M[i][t];
-      for (var t = 16; t < 80; t++) {
+      for (var t=0; t<16; t++) W[t] = M[i][t];
+      for (var t=16; t<80; t++) {
         W[t] = ROTL(W[t - 3] ^ W[t - 8] ^ W[t - 14] ^ W[t - 16], 1);
       }
 
@@ -184,8 +176,8 @@ var kelektivUuid = (function() {
       var d = H[3];
       var e = H[4];
 
-      for (var t = 0; t < 80; t++) {
-        var s = Math.floor(t / 20);
+      for (var t=0; t<80; t++) {
+        var s = Math.floor(t/20);
         var T = ROTL(a, 5) + f(s, b, c, d) + e + K[s] + W[t] >>> 0;
         e = d;
         d = c;
@@ -238,14 +230,10 @@ var kelektivUuid = (function() {
       var off = buf && offset || 0;
 
       if (typeof(value) == 'string') value = stringToBytes(value);
-      if (typeof(namespace) == 'string') namespace = uuidToBytes(
-        namespace);
+      if (typeof(namespace) == 'string') namespace = uuidToBytes(namespace);
 
-      if (!Array.isArray(value)) throw TypeError(
-        'value must be an array of bytes');
-      if (!Array.isArray(namespace) || namespace.length !== 16) throw TypeError(
-        'namespace must be uuid string or an Array of 16 byte values'
-      );
+      if (!Array.isArray(value)) throw TypeError('value must be an array of bytes');
+      if (!Array.isArray(namespace) || namespace.length !== 16) throw TypeError('namespace must be uuid string or an Array of 16 byte values');
 
       // Per 4.3
       var bytes = hashfunc(namespace.concat(value));
@@ -254,7 +242,7 @@ var kelektivUuid = (function() {
 
       if (buf) {
         for (var idx = 0; idx < 16; ++idx) {
-          buf[off + idx] = bytes[idx];
+          buf[off+idx] = bytes[idx];
         }
       }
 
@@ -264,7 +252,8 @@ var kelektivUuid = (function() {
     // Function#name is not settable on some platforms (#270)
     try {
       generateUUID.name = name;
-    } catch (err) {}
+    } catch (err) {
+    }
 
     // Pre-defined namespaces, per Appendix C
     generateUUID.DNS = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
