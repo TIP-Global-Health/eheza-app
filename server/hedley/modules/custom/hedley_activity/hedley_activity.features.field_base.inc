@@ -873,7 +873,7 @@ function hedley_activity_field_default_field_bases() {
   // Exported field_base: 'field_obstetric_history'.
   $field_bases['field_obstetric_history'] = array(
     'active' => 1,
-    'cardinality' => 7,
+    'cardinality' => 6,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_obstetric_history',
@@ -888,11 +888,11 @@ function hedley_activity_field_default_field_bases() {
       'allowed_values' => array(
         'successive-abortions' => 'Successive Abortions',
         'successive-premature-deliveries' => 'Successive Premature Deliveries',
-        'severe-hemorrhaging-previous-delivery' => 'Severe Hemorrhaging Previous Delivery',
         'preeclampsia-previous-pregnancy' => 'Preeclampsia Previous Pregnancy',
         'gestational-diabetes-previous-pregnancy' => 'Gestational Diabetes Previous Pregnancy',
         'incomplete-cervix-previous-pregnancy' => 'Incomplete Cervix Previous Pregnancy',
         'rh-negative' => 'RH Negative',
+        'none' => 'None of these',
       ),
       'allowed_values_function' => '',
     ),
@@ -953,7 +953,7 @@ function hedley_activity_field_default_field_bases() {
   // Exported field_base: 'field_previous_delivery'.
   $field_bases['field_previous_delivery'] = array(
     'active' => 1,
-    'cardinality' => 6,
+    'cardinality' => 7,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_previous_delivery',
@@ -970,8 +970,10 @@ function hedley_activity_field_default_field_bases() {
         'stillborn-previous-delivery' => 'Stillborn Previous Delivery',
         'baby-died-on-day-of-birth-previous-delivery' => 'Baby Died On Day Of Birth Previous Delivery',
         'partial-placenta-previous-delivery' => 'Partial Placenta Previous Delivery',
+        'severe-hemorrhaging-previous-delivery' => 'Severe Hemorrhaging Previous Delivery',
         'convulsions-previous-delivery' => 'Convulsions Previous Delivery',
         'convulsions-and-unconscious-previous-delivery' => 'Convulsions And Unconscious Previous Delivery',
+        'none' => 'None of these',
       ),
       'allowed_values_function' => '',
     ),

@@ -4708,11 +4708,7 @@ function hedley_activity_field_default_field_instances() {
   // 'node-obstetric_history_step2-field_obstetric_history'.
   $field_instances['node-obstetric_history_step2-field_obstetric_history'] = array(
     'bundle' => 'obstetric_history_step2',
-    'default_value' => array(
-      0 => array(
-        'value' => 'rh-negative',
-      ),
-    ),
+    'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
     'display' => array(
