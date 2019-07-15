@@ -606,7 +606,7 @@ viewExaminationContent language currentDate assembled data =
                                 |> Maybe.map (Tuple.second >> .value)
                                 |> obstetricalExamFormWithDefault data.obstetricalExamForm
                     in
-                    ( viewObstetricalExamForm language currentDate assembled data.obstetricalExamForm
+                    ( viewObstetricalExamForm language currentDate assembled form
                     , taskCompleted form.fetalPresentation
                         + ([ Maybe.map (always ()) form.fundalHeight, Maybe.map (always ()) form.fetalHeartRate ]
                             |> List.map taskCompleted
