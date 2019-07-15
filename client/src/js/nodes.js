@@ -43,27 +43,23 @@
 
       if (event.request.method === 'DELETE') {
         if (uuid) {
-          return event.respondWith(deleteNode(url, type,
-            uuid));
+          return event.respondWith(deleteNode(url, type, uuid));
         }
       }
 
       if (event.request.method === 'PUT') {
         if (uuid) {
-          return event.respondWith(putNode(event.request,
-            type, uuid));
+          return event.respondWith(putNode(event.request, type, uuid));
         }
       }
 
       if (event.request.method === 'POST') {
-        return event.respondWith(postNode(event.request,
-          type));
+        return event.respondWith(postNode(event.request, type));
       }
 
       if (event.request.method === 'PATCH') {
         if (uuid) {
-          return event.respondWith(patchNode(event.request,
-            type, uuid));
+          return event.respondWith(patchNode(event.request, type, uuid));
         }
       }
 
@@ -110,10 +106,9 @@
   function expectedOnDate(participation, sessionDate) {
     var joinedGroupBeforeSession = participation.expected.value <=
       sessionDate;
-    var notLeftGroup = !participation.expected.value2 || (participation
-      .expected.value === participation.expected.value2);
-    var leftGroupAfterSession = participation.expected.value2 >
-      sessionDate;
+    var notLeftGroup = !participation.expected.value2 ||
+      (participation.expected.value === participation.expected.value2);
+    var leftGroupAfterSession = participation.expected.value2 > sessionDate;
 
     return joinedGroupBeforeSession && (notLeftGroup ||
       leftGroupAfterSession);
