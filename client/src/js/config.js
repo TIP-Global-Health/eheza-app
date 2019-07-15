@@ -22,87 +22,84 @@
  */
 'use strict';
 
-(function() {
-  self.addEventListener('fetch', function(event) {
-    if (configUrlRegex.test(event.request.url)) {
-      if (event.request.method === 'GET') {
-        var response = caches.open(configCache).then(function(cache) {
-          return cache.match(event.request.url).then(function(
-            response) {
-            if (response) {
-              return response;
-            } else {
-              return new Response('Not found', {
-                status: 404,
-                statusText: 'Not Found'
-              });
-            }
-          });
-        });
-
-        event.respondWith(response);
-      }
-
-      if (event.request.method === 'PUT') {
-        var response = caches.open(configCache).then(function(cache) {
-          return event.request.text().then(function(body) {
-            var cachedResponse = new Response(body, {
-              status: 200,
-              statusText: 'OK',
-              headers: {
-                'Content-Type': 'application/json'
-              }
-            });
-
-            var cachedRequest = new Request(event.request.url, {
-              method: 'GET'
-            });
-
-            return cache.put(cachedRequest, cachedResponse).then(
-              function() {
-                if (credentialsUrlRegex.test(event.request.url)) {
-                  // If we have new credentials, kick off a background sync.
-                  registration.sync.register(syncTag).catch(
-                    function() {
-                      registration.active.postMessage(syncTag);
+(function () {
+    self.addEventListener('fetch', function (event) {
+        if (configUrlRegex.test(event.request.url)) {
+            if (event.request.method === 'GET') {
+                var response = caches.open(configCache).then(function (cache) {
+                    return cache.match(event.request.url).then(function(response) {
+                        if (response) {
+                            return response;
+                        } else {
+                            return new Response ('Not found', {
+                                status: 404,
+                                statusText: 'Not Found'
+                            });
+                        }
                     });
-                }
-
-                return new Response('', {
-                  status: 201,
-                  statusText: 'Created',
-                  headers: {
-                    Location: event.request.url
-                  }
                 });
-              });
-          }).catch(function(e) {
-            return new Response(e.toString(), {
-              status: 500,
-              statusText: 'Cache upload error'
-            });
-          });
-        });
 
-        event.respondWith(response);
-      }
+                event.respondWith(response);
+            }
 
-      if (event.request.method === 'DELETE') {
-        var response = caches.open(configCache).then(function(cache) {
-          var cachedRequest = new Request(event.request.url, {
-            method: 'GET'
-          });
+            if (event.request.method === 'PUT') {
+                var response = caches.open(configCache).then(function (cache) {
+                    return event.request.text().then(function (body) {
+                        var cachedResponse = new Response (body, {
+                            status: 200,
+                            statusText: 'OK',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
 
-          return cache.delete(cachedRequest).then(function(deleted) {
-            return new Response('', {
-              status: 204,
-              statusText: 'Deleted'
-            });
-          });
-        });
+                        var cachedRequest = new Request (event.request.url, {
+                            method: 'GET'
+                        });
 
-        event.respondWith(response);
-      }
-    }
-  });
+                        return cache.put(cachedRequest, cachedResponse).then(function () {
+                            if (credentialsUrlRegex.test(event.request.url)) {
+                                // If we have new credentials, kick off a background sync.
+                                registration.sync.register(syncTag).catch(function () {
+                                    registration.active.postMessage(syncTag);
+                                });
+                            }
+
+                            return new Response ('', {
+                                status: 201,
+                                statusText: 'Created',
+                                headers: {
+                                    Location: event.request.url
+                                }
+                            });
+                        });
+                    }).catch(function (e) {
+                        return new Response (e.toString(), {
+                            status: 500,
+                            statusText: 'Cache upload error'
+                        });
+                    });
+                });
+
+                event.respondWith(response);
+            }
+
+            if (event.request.method === 'DELETE') {
+                var response = caches.open(configCache).then(function (cache) {
+                    var cachedRequest = new Request (event.request.url, {
+                        method: 'GET'
+                    });
+
+                    return cache.delete(cachedRequest).then(function (deleted) {
+                        return new Response ('', {
+                            status: 204,
+                            statusText: 'Deleted'
+                        });
+                    });
+                });
+
+                event.respondWith(response);
+            }
+        }
+    });
 })();
