@@ -210,7 +210,6 @@ features[field_instance][] = node-prenatal_family_planning-field_person
 features[field_instance][] = node-prenatal_family_planning-field_prenatal_encounter
 features[field_instance][] = node-prenatal_family_planning-field_shards
 features[field_instance][] = node-prenatal_family_planning-field_uuid
-features[field_instance][] = node-prenatal_nutrition-field_bmi
 features[field_instance][] = node-prenatal_nutrition-field_date_measured
 features[field_instance][] = node-prenatal_nutrition-field_height
 features[field_instance][] = node-prenatal_nutrition-field_muac
