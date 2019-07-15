@@ -94,6 +94,7 @@
         nurse: 'nodes',
         nutrition: 'shards',
         obstetric_history: 'shards',
+        obstetric_history_step2: 'shards',
         obstetrical_exam: 'shards',
         participant_consent: 'shards',
         participant_form: 'nodes',
@@ -584,7 +585,7 @@
         if (node.health_center) {
             return Promise.resolve(node.health_center);
         }
-        
+
         if (node.session) {
             return dbSync.nodes.get(node.session).then (function (session) {
                 return dbSync.nodes.get(session.clinic).then(function (clinic) {

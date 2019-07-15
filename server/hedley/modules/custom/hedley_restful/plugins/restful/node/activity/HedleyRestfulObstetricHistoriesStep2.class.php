@@ -19,8 +19,9 @@ class HedleyRestfulObstetricHistoriesStep2 extends HedleyRestfulPrenatalActivity
     $standard_fields_names = [
       'field_c_sections',
       'field_c_section_reason',
-      'field_previous_delivery_period',
       'field_obstetric_history',
+      'field_previous_delivery',
+      'field_previous_delivery_period',
     ];
 
     foreach ($standard_fields_names as $field_name) {
