@@ -55,6 +55,7 @@ module Backend.Measurement.Model exposing
     , PrenatalMeasurements
     , PrenatalNutrition
     , PrenatalNutritionValue
+    , PreviousDeliveryPeriod(..)
     , Resource
     , ResourceSign(..)
     , SocialHistory
@@ -389,8 +390,8 @@ type alias ObstetricHistory =
 type alias ObstetricHistoryStep2Value =
     { cSections : Int
     , cSectionReason : CSectionReason
+    , previousDelivery : PreviousDeliverySign
     , previousDeliveryPeriod : PreviousDeliveryPeriod
-    , previousDeliveryPeriod : PreviousDeliverySign
     , obstetricHistory : EverySet ObstetricHistorySign
     }
 
@@ -401,6 +402,12 @@ type CSectionReason
     | FailureToProgress
     | None
     | Other
+
+
+type PreviousDeliveryPeriod
+    = LessThan18Month
+    | MoreThan5Years
+    | Neither
 
 
 type PreviousDeliverSign

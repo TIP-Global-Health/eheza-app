@@ -103,6 +103,7 @@ decodePrenatalMeasurements =
         |> optional "medication" (decodeHead decodeMedication) Nothing
         |> optional "obstetrical_exam" (decodeHead decodeObstetricalExam) Nothing
         |> optional "obstetric_history" (decodeHead decodeObstetricHistory) Nothing
+        |> optional "obstetric_history_step2" (decodeHead decodeObstetricHistoryStep2) Nothing
         |> optional "prenatal_family_planning" (decodeHead decodePrenatalFamilyPlanning) Nothing
         |> optional "prenatal_nutrition" (decodeHead decodePrenatalNutrition) Nothing
         |> optional "resource" (decodeHead decodeResource) Nothing
@@ -727,4 +728,128 @@ decodeVitals =
         |> required "heart_rate" decodeInt
         |> required "respiratory_rate" decodeInt
         |> required "body_temperature" decodeFloat
+        |> decodePrenatalMeasurement
+
+
+decodeCSectionReason : Decoder CSectionReason
+decodeCSectionReason =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "breech" ->
+                        succeed Breech
+
+                    "emergency" ->
+                        succeed Emergency
+
+                    "failure-to-progress" ->
+                        succeed FailureToProgress
+
+                    "none" ->
+                        succeed None
+
+                    "other" ->
+                        succeed Other
+
+                    _ ->
+                        fail <| s ++ " is not a recognized CSectionReason"
+            )
+
+
+decodePreviousDeliveryPeriod : Decoder PreviousDeliveryPeriod
+decodePreviousDeliveryPeriod =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "less-than-18-month" ->
+                        succeed LessThan18Month
+
+                    "more-than-5-years" ->
+                        succeed MoreThan5Years
+
+                    "neither" ->
+                        succeed Neither
+
+                    _ ->
+                        fail <| s ++ " is not a recognized PreviousDeliveryPeriod"
+            )
+
+
+decodePreviousDeliverSign : Decoder PreviousDeliverSign
+decodePreviousDeliverSign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "c-section-in-previous-delivery" ->
+                        succeed CSectionInPreviousDelivery
+
+                    "stillborn-previous-delivery" ->
+                        succeed StillbornPreviousDelivery
+
+                    "baby-died-on-day-of-birth-previous-delivery" ->
+                        succeed BabyDiedOnDayOfBirthPreviousDelivery
+
+                    "partial-placenta-previous-delivery" ->
+                        succeed PartialPlacentaPreviousDelivery
+
+                    "severe-hemorrhaging-previous-delivery" ->
+                        succeed SevereHemorrhagingPreviousDelivery
+
+                    "convulsions-previous-delivery|" ->
+                        succeed ConvulsionsPreviousDelivery
+
+                    "convulsions-and-unconscious-previous-delivery" ->
+                        succeed ConvulsionsAndUnconsciousPreviousDelivery
+
+                    "none" ->
+                        succeed NoPreviousDeliverSign
+
+                    _ ->
+                        fail <| s ++ " is not a recognized PreviousDeliverSign"
+            )
+
+
+decodeObstetricHistorySign : Decoder ObstetricHistorySign
+decodeObstetricHistorySign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "successive-abortions" ->
+                        succeed SuccessiveAbortions
+
+                    "successive-premature-deliveries" ->
+                        succeed SuccessivePrematureDeliveries
+
+                    "preeclampsia-previous-pregnancy" ->
+                        succeed PreeclampsiaPreviousPregnancy
+
+                    "gestational-diabetes-previous-pregnancy" ->
+                        succeed GestationalDiabetesPreviousPregnancy
+
+                    "incomplete-cervix-previous-pregnancy" ->
+                        succeed IncompleteCervixPreviousPregnancy
+
+                    "rh-negative" ->
+                        succeed RhNegative
+
+                    "none" ->
+                        succeed NoObstetricHistorySign
+
+                    _ ->
+                        fail <| s ++ " is not a recognized ObstetricHistorySign"
+            )
+
+
+decodeObstetricHistoryStep2 : Decoder ObstetricHistoryStep2
+decodeObstetricHistoryStep2 =
+    succeed ObstetricHistoryStep2
+        |> required "field_c_sections" decodeInt
+        |> required "field_c_section_reason" decodeCSectionReason
+        |> required "field_previous_delivery" (decodeEverySet decodePreviousDeliverSign)
+        |> required "field_previous_delivery_period" decodePreviousDeliveryPeriod
+        |> required "field_obstetric_history" (decodeEverySet decodeObstetricHistorySign)
         |> decodePrenatalMeasurement

@@ -1,7 +1,13 @@
 module Pages.PrenatalActivity.Update exposing (update)
 
 import App.Model
-import Backend.Measurement.Model exposing (CSectionReason(..), DangerSign(..), FamilyPlanningSign(..))
+import Backend.Measurement.Model
+    exposing
+        ( CSectionReason(..)
+        , DangerSign(..)
+        , FamilyPlanningSign(..)
+        , PreviousDeliveryPeriod(..)
+        )
 import Backend.Model
 import Backend.PrenatalEncounter.Model
 import Maybe.Extra exposing (isJust, isNothing, unwrap)

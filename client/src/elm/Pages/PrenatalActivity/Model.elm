@@ -23,7 +23,6 @@ module Pages.PrenatalActivity.Model exposing
     , PatientProvisionsTask(..)
     , PregnancyDatingData
     , PregnancyDatingForm
-    , PreviousDeliveryPeriod(..)
     , ResourcesForm
     , SocialHistoryForm
     , VitalsForm
@@ -348,12 +347,6 @@ type alias SocialHistoryForm =
 emptySocialHistoryForm : SocialHistoryForm
 emptySocialHistoryForm =
     SocialHistoryForm Nothing Nothing Nothing
-
-
-type PreviousDeliveryPeriod
-    = LessThan18Month
-    | MoreThan5Years
-    | Neither
 
 
 type LmpRange
