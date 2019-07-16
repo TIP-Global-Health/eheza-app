@@ -208,6 +208,40 @@ update msg model =
             , []
             )
 
+        SaveOBHistoryStep1 prenatalEncounterId personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( appMsgs, updatedData ) =
+                    case model.historyData.obstetricForm of
+                        FirstStep step1Form ->
+                            ( step1Form
+                                |> toObstetricHistoryValueWithDefault measurement
+                                |> unwrap
+                                    []
+                                    (\value ->
+                                        [ Backend.PrenatalEncounter.Model.SaveObstetricHistory personId measurementId value
+                                            |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
+                                            |> App.Model.MsgIndexedDb
+                                        ]
+                                    )
+                            , model.historyData
+                                |> (\data -> { data | obstetricForm = SecondStep emptyObstetricFormSecondStep })
+                            )
+
+                        -- Satisfy compiler.
+                        SecondStep _ ->
+                            ( [], model.historyData )
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
+
         SetCSectionReason reason ->
             let
                 updatedData =
@@ -335,7 +369,7 @@ update msg model =
             , []
             )
 
-        SaveOBHistory prenatalEncounterId personId saved ->
+        SaveOBHistoryStep2 prenatalEncounterId personId saved ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -345,23 +379,25 @@ update msg model =
 
                 ( appMsgs, updatedData ) =
                     case model.historyData.obstetricForm of
-                        FirstStep step1Form ->
-                            ( step1Form
-                                |> toObstetricHistoryValueWithDefault measurement
+                        -- Satisfy compiler.
+                        FirstStep _ ->
+                            ( [], model.historyData )
+
+                        SecondStep step2Form ->
+                            ( step2Form
+                                |> toObstetricHistoryStep2ValueWithDefault measurement
                                 |> unwrap
                                     []
                                     (\value ->
-                                        [ Backend.PrenatalEncounter.Model.SaveObstetricHistory personId measurementId value
+                                        [ Backend.PrenatalEncounter.Model.SaveObstetricHistoryStep2 personId measurementId value
                                             |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
                                             |> App.Model.MsgIndexedDb
+                                        , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
                                         ]
                                     )
                             , model.historyData
-                                |> (\data -> { data | obstetricForm = SecondStep emptyObstetricFormSecondStep })
+                                |> (\data -> { data | obstetricForm = FirstStep emptyObstetricFormFirstStep })
                             )
-
-                        SecondStep step2Form ->
-                            ( [], model.historyData )
             in
             ( { model | historyData = updatedData }
             , Cmd.none

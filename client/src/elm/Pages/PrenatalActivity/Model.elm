@@ -28,6 +28,7 @@ module Pages.PrenatalActivity.Model exposing
     , VitalsForm
     , decodeLmpRange
     , emptyModel
+    , emptyObstetricFormFirstStep
     , emptyObstetricFormSecondStep
     , encodeLmpRange
     )
@@ -51,13 +52,13 @@ type Msg
       -- HistoryMsgs, OB, Step 1
     | SetCurrentlyPregnant Bool
     | SetOBIntInput (Maybe Int -> ObstetricFormFirstStep -> ObstetricFormFirstStep) String
+    | SaveOBHistoryStep1 PrenatalEncounterId PersonId (Maybe ( ObstetricHistoryId, ObstetricHistory ))
       -- HistoryMsgs, OB, Step 2
     | SetCSectionReason CSectionReason
     | SetNumberOfCSections String
     | SetOBBoolInput (Bool -> ObstetricFormSecondStep -> ObstetricFormSecondStep) Bool
     | SetPreviousDeliveryPeriod PreviousDeliveryPeriod
-      -- HistoryMsgs, OB
-    | SaveOBHistory PrenatalEncounterId PersonId (Maybe ( ObstetricHistoryId, ObstetricHistory ))
+    | SaveOBHistoryStep2 PrenatalEncounterId PersonId (Maybe ( ObstetricHistoryStep2Id, ObstetricHistoryStep2 ))
       -- HistoryMsgs, Medical
     | SetMedicalBoolInput (Bool -> MedicalHistoryForm -> MedicalHistoryForm) Bool
     | SaveMedicalHistory PrenatalEncounterId PersonId (Maybe ( MedicalHistoryId, MedicalHistory ))
