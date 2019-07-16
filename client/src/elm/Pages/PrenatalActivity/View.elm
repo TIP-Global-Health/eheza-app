@@ -273,9 +273,6 @@ viewPregnancyDatingContent language currentDate assembled data =
 viewHistoryContent : Language -> NominalDate -> AssembledData -> HistoryData -> List (Html Msg)
 viewHistoryContent language currentDate assembled data =
     let
-        log =
-            Debug.log "" assembled
-
         tasks =
             [ Obstetric, Medical, Social ]
 
@@ -438,7 +435,10 @@ viewHistoryContent language currentDate assembled data =
                                     )
 
                                 SecondStep _ ->
-                                    ( [ button [ class "ui fluid primary button" ]
+                                    ( [ button
+                                            [ class "ui fluid primary button"
+                                            , onClick BackToOBHistoryStep1
+                                            ]
                                             [ text <| ("< " ++ translate language Translate.Back) ]
                                       , button
                                             [ classList

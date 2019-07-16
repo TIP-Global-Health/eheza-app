@@ -369,6 +369,17 @@ update msg model =
             , []
             )
 
+        BackToOBHistoryStep1 ->
+            let
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | obstetricForm = FirstStep emptyObstetricFormFirstStep })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveOBHistoryStep2 prenatalEncounterId personId saved ->
             let
                 measurementId =
