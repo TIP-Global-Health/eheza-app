@@ -14,6 +14,7 @@ module Backend.Measurement.Decoder exposing
     , decodeMuac
     , decodeNutrition
     , decodeObstetricHistory
+    , decodeObstetricHistoryStep2
     , decodeObstetricalExam
     , decodeParticipantConsent
     , decodePhoto

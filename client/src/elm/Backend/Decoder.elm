@@ -23,7 +23,7 @@ decodeRevision =
         |> andThen
             (\s ->
                 -- Some of these aren't implemented yet, because they need
-                -- to be converted from ID to UUUID references first.
+                -- to be converted from ID to UUID references first.
                 case s of
                     "attendance" ->
                         decodeWithUuid AttendanceRevision decodeAttendance
@@ -81,6 +81,9 @@ decodeRevision =
 
                     "obstetric_history" ->
                         decodeWithUuid ObstetricHistoryRevision decodeObstetricHistory
+
+                    "obstetric_history_step2" ->
+                        decodeWithUuid ObstetricHistoryStep2Revision decodeObstetricHistoryStep2
 
                     "obstetrical_exam" ->
                         decodeWithUuid ObstetricalExamRevision decodeObstetricalExam

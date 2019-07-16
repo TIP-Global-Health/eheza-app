@@ -251,6 +251,7 @@ type Revision
     | NurseRevision NurseId Nurse
     | ObstetricalExamRevision ObstetricalExamId ObstetricalExam
     | ObstetricHistoryRevision ObstetricHistoryId ObstetricHistory
+    | ObstetricHistoryStep2Revision ObstetricHistoryStep2Id ObstetricHistoryStep2
     | ParticipantConsentRevision ParticipantConsentId ParticipantConsent
     | ParticipantFormRevision ParticipantFormId ParticipantForm
     | PersonRevision PersonId Person

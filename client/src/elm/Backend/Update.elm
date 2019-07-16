@@ -825,6 +825,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        ObstetricHistoryStep2Revision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | obstetricHistoryStep2 = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         ParticipantConsentRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId
