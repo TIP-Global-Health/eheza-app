@@ -273,27 +273,27 @@ viewPregnancyDatingContent language currentDate assembled data =
 viewHistoryContent : Language -> NominalDate -> AssembledData -> HistoryData -> List (Html Msg)
 viewHistoryContent language currentDate assembled data =
     let
+        log =
+            Debug.log "" assembled
+
         tasks =
             [ Obstetric, Medical, Social ]
 
         viewTask task =
             let
-                iconClass =
+                ( iconClass, isCompleted ) =
                     case task of
                         Obstetric ->
-                            "obstetric"
+                            ( "obstetric", isJust assembled.measurements.obstetricHistory && isJust assembled.measurements.obstetricHistoryStep2 )
 
                         Medical ->
-                            "medical"
+                            ( "medical", isJust assembled.measurements.medicalHistory )
 
                         Social ->
-                            "social"
+                            ( "social", isJust assembled.measurements.socialHistory )
 
                 isActive =
                     task == data.activeTask
-
-                isCompleted =
-                    List.member task data.completedTasks
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -499,28 +499,25 @@ viewExaminationContent language currentDate assembled data =
 
         viewTask task =
             let
-                iconClass =
+                ( iconClass, isCompleted ) =
                     case task of
                         Vitals ->
-                            "vitals"
+                            ( "vitals", isJust assembled.measurements.vitals )
 
                         NutritionAssessment ->
-                            "nutrition-assessment"
+                            ( "nutrition-assessment", isJust assembled.measurements.nutrition )
 
                         CorePhysicalExam ->
-                            "core-physical-exam"
+                            ( "core-physical-exam", isJust assembled.measurements.corePhysicalExam )
 
                         ObstetricalExam ->
-                            "obstetrical-exam"
+                            ( "obstetrical-exam", isJust assembled.measurements.obstetricalExam )
 
                         BreastExam ->
-                            "breast-exam"
+                            ( "breast-exam", isJust assembled.measurements.breastExam )
 
                 isActive =
                     task == data.activeTask
-
-                isCompleted =
-                    List.member task data.completedTasks
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -727,19 +724,16 @@ viewPatientProvisionsContent language currentDate assembled data =
 
         viewTask task =
             let
-                iconClass =
+                ( iconClass, isCompleted ) =
                     case task of
                         Medication ->
-                            "medication"
+                            ( "medication", isJust assembled.measurements.medication )
 
                         Resources ->
-                            "resources"
+                            ( "resources", isJust assembled.measurements.resource )
 
                 isActive =
                     task == data.activeTask
-
-                isCompleted =
-                    List.member task data.completedTasks
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
