@@ -319,6 +319,42 @@ update nurseId healthCenterId encounterId currentDate msg model =
             , Cmd.none
             )
 
+        SaveObstetricHistoryStep2 personId valueId value ->
+            let
+                cmd =
+                    case valueId of
+                        Nothing ->
+                            { participantId = personId
+                            , dateMeasured = currentDate
+                            , encounterId = Just encounterId
+                            , nurse = nurseId
+                            , healthCenter = healthCenterId
+                            , value = value
+                            }
+                                |> sw.post obstetricHistoryStep2Endpoint
+                                |> withoutDecoder
+                                |> toCmd (RemoteData.fromResult >> HandleSavedObstetricHistoryStep2)
+
+                        Just id ->
+                            encodeObstetricHistoryStep2Value value
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
+                                |> object
+                                |> sw.patchAny obstetricHistoryStep2Endpoint id
+                                |> withoutDecoder
+                                |> toCmd (RemoteData.fromResult >> HandleSavedObstetricHistoryStep2)
+            in
+            ( { model | saveObstetricHistoryStep2 = Loading }
+            , cmd
+            )
+
+        HandleSavedObstetricHistoryStep2 data ->
+            ( { model | saveObstetricHistoryStep2 = data }
+            , Cmd.none
+            )
+
         SaveFamilyPlanning personId valueId value ->
             let
                 cmd =

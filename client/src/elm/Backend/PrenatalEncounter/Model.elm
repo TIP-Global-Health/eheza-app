@@ -27,6 +27,7 @@ type alias Model =
     , saveMedication : WebData ()
     , saveObstetricalExam : WebData ()
     , saveObstetricHistory : WebData ()
+    , saveObstetricHistoryStep2 : WebData ()
     , saveFamilyPlanning : WebData ()
     , saveNutrition : WebData ()
     , saveResource : WebData ()
@@ -46,6 +47,7 @@ emptyModel =
     , saveMedication = NotAsked
     , saveObstetricalExam = NotAsked
     , saveObstetricHistory = NotAsked
+    , saveObstetricHistoryStep2 = NotAsked
     , saveFamilyPlanning = NotAsked
     , saveNutrition = NotAsked
     , saveResource = NotAsked
@@ -64,6 +66,7 @@ type Msg
     | SaveMedication PersonId (Maybe MedicationId) (EverySet MedicationSign)
     | SaveObstetricalExam PersonId (Maybe ObstetricalExamId) ObstetricalExamValue
     | SaveObstetricHistory PersonId (Maybe ObstetricHistoryId) ObstetricHistoryValue
+    | SaveObstetricHistoryStep2 PersonId (Maybe ObstetricHistoryStep2Id) ObstetricHistoryStep2Value
     | SaveFamilyPlanning PersonId (Maybe PrenatalFamilyPlanningId) (EverySet FamilyPlanningSign)
     | SaveNutrition PersonId (Maybe PrenatalNutritionId) PrenatalNutritionValue
     | SaveResource PersonId (Maybe ResourceId) (EverySet ResourceSign)
@@ -78,6 +81,7 @@ type Msg
     | HandleSavedMedication (WebData ())
     | HandleSavedObstetricalExam (WebData ())
     | HandleSavedObstetricHistory (WebData ())
+    | HandleSavedObstetricHistoryStep2 (WebData ())
     | HandleSavedFamilyPlanning (WebData ())
     | HandleSavedNutrition (WebData ())
     | HandleSavedResource (WebData ())
