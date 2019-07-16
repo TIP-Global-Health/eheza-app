@@ -13,8 +13,10 @@ import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Maybe.Extra exposing (isJust)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.Model exposing (..)
+import PrenatalActivity.Model exposing (..)
 import PrenatalActivity.Utils exposing (getActivityIcon, getAllActivities)
 import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date exposing (date)
@@ -181,8 +183,36 @@ viewMeasurements language currentDate =
 viewMainPageContent : Language -> NominalDate -> FetchedData -> Model -> List (Html Msg)
 viewMainPageContent language currentDate data model =
     let
-        ( pendingActivities, completedActivities ) =
-            ( getAllActivities, [] )
+        ( completedActivities, pendingActivities ) =
+            List.partition
+                (\activity ->
+                    case activity of
+                        PregnancyDating ->
+                            isJust data.measurements.lastMenstrualPeriod
+
+                        History ->
+                            isJust data.measurements.obstetricHistory
+                                && isJust data.measurements.obstetricHistoryStep2
+                                && isJust data.measurements.medicalHistory
+                                && isJust data.measurements.socialHistory
+
+                        Examination ->
+                            isJust data.measurements.vitals
+                                && isJust data.measurements.nutrition
+                                && isJust data.measurements.corePhysicalExam
+                                && isJust data.measurements.obstetricalExam
+                                && isJust data.measurements.breastExam
+
+                        FamilyPlanning ->
+                            isJust data.measurements.familyPlanning
+
+                        PatientProvisions ->
+                            isJust data.measurements.medication && isJust data.measurements.resource
+
+                        DangerSigns ->
+                            isJust data.measurements.dangerSigns
+                )
+                getAllActivities
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
