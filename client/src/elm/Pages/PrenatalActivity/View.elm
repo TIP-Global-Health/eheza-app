@@ -340,32 +340,37 @@ viewHistoryContent language currentDate assembled data =
                             , 7
                             )
 
-                        SecondStep form ->
+                        SecondStep formStep2 ->
                             let
+                                formStep2_ =
+                                    assembled.measurements.obstetricHistoryStep2
+                                        |> Maybe.map (Tuple.second >> .value)
+                                        |> obstetricHistoryStep2FormWithDefault formStep2
+
                                 boolInputs =
-                                    [ form.cSectionInPreviousDelivery
-                                    , form.successiveAbortions
-                                    , form.successivePrematureDeliveries
-                                    , form.stillbornPreviousDelivery
-                                    , form.babyDiedOnDayOfBirthPreviousDelivery
-                                    , form.partialPlacentaPreviousDelivery
-                                    , form.severeHemorrhagingPreviousDelivery
-                                    , form.preeclampsiaPreviousPregnancy
-                                    , form.convulsionsPreviousDelivery
-                                    , form.convulsionsAndUnconsciousPreviousDelivery
-                                    , form.gestationalDiabetesPreviousPregnancy
-                                    , form.incompleteCervixPreviousPregnancy
-                                    , form.rhNegative
+                                    [ formStep2_.cSectionInPreviousDelivery
+                                    , formStep2_.successiveAbortions
+                                    , formStep2_.successivePrematureDeliveries
+                                    , formStep2_.stillbornPreviousDelivery
+                                    , formStep2_.babyDiedOnDayOfBirthPreviousDelivery
+                                    , formStep2_.partialPlacentaPreviousDelivery
+                                    , formStep2_.severeHemorrhagingPreviousDelivery
+                                    , formStep2_.preeclampsiaPreviousPregnancy
+                                    , formStep2_.convulsionsPreviousDelivery
+                                    , formStep2_.convulsionsAndUnconsciousPreviousDelivery
+                                    , formStep2_.gestationalDiabetesPreviousPregnancy
+                                    , formStep2_.incompleteCervixPreviousPregnancy
+                                    , formStep2_.rhNegative
                                     ]
                             in
-                            ( viewObstetricFormSecondStep language currentDate assembled form
+                            ( viewObstetricFormSecondStep language currentDate assembled formStep2_
                             , (boolInputs
                                 |> List.map taskCompleted
                                 |> List.sum
                               )
-                                + taskCompleted form.cSections
-                                + taskCompleted form.cSectionReason
-                                + taskCompleted form.previousDeliveryPeriod
+                                + taskCompleted formStep2_.cSections
+                                + taskCompleted formStep2_.cSectionReason
+                                + taskCompleted formStep2_.previousDeliveryPeriod
                             , 16
                             )
 
@@ -425,7 +430,7 @@ viewHistoryContent language currentDate assembled data =
                                 FirstStep _ ->
                                     ( [ button
                                             [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                            , onClick <| SaveOBHistory assembled.id assembled.participant.person assembled.measurements.obstetricHistory
+                                            , onClick <| SaveOBHistoryStep1 assembled.id assembled.participant.person assembled.measurements.obstetricHistory
                                             ]
                                             [ text <| translate language Translate.SaveAndNext ]
                                       ]
@@ -441,6 +446,7 @@ viewHistoryContent language currentDate assembled data =
                                                 , ( "disabled", tasksCompleted /= totalTasks )
                                                 , ( "active", tasksCompleted == totalTasks )
                                                 ]
+                                            , onClick <| SaveOBHistoryStep2 assembled.id assembled.participant.person assembled.measurements.obstetricHistoryStep2
                                             ]
                                             [ text <| translate language Translate.Save ]
                                       ]
