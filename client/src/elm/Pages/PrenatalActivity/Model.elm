@@ -145,7 +145,6 @@ type alias HistoryData =
     , medicalForm : MedicalHistoryForm
     , socialForm : SocialHistoryForm
     , activeTask : HistoryTask
-    , completedTasks : List HistoryTask
     }
 
 
@@ -155,7 +154,6 @@ emptyHistoryData =
     , medicalForm = emptyMedicalHistoryForm
     , socialForm = emptySocialHistoryForm
     , activeTask = Obstetric
-    , completedTasks = []
     }
 
 
@@ -166,7 +164,6 @@ type alias ExaminationData =
     , obstetricalExamForm : ObstetricalExamForm
     , breastExamForm : BreastExamForm
     , activeTask : ExaminationTask
-    , completedTasks : List ExaminationTask
     }
 
 
@@ -178,7 +175,6 @@ emptyExaminationData =
     , obstetricalExamForm = emptyObstetricalExamForm
     , breastExamForm = emptyBreastExamForm
     , activeTask = Vitals
-    , completedTasks = []
     }
 
 
@@ -197,7 +193,6 @@ type alias PatientProvisionsData =
     { medicationForm : MedicationForm
     , resourcesForm : ResourcesForm
     , activeTask : PatientProvisionsTask
-    , completedTasks : List PatientProvisionsTask
     }
 
 
@@ -206,7 +201,6 @@ emptyPatientProvisionsData =
     { medicationForm = emptyMedicationForm
     , resourcesForm = emptyResourcesForm
     , activeTask = Medication
-    , completedTasks = []
     }
 
 
