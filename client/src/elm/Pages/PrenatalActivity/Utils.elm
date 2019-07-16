@@ -1,4 +1,4 @@
-module Pages.PrenatalActivity.Utils exposing (breastExamFormWithDefault, calculateBmi, corePhysicalExamFormWithDefault, dangerSignsFormWithDefault, familyPlanningFormWithDefault, fromBreastExamValue, fromCorePhysicalExamValue, fromDangerSignsValue, fromFamilyPlanningValue, fromLastMenstrualPeriodValue, fromMedicalHistoryValue, fromMedicationValue, fromObstetricHistoryValue, fromObstetricalExamValue, fromPrenatalNutritionValue, fromResourceValue, fromSocialHistoryValue, fromVitalsValue, ifEmpty, ifTrue, lastMenstrualPeriodFormWithDefault, medicalHistoryFormWithDefault, medicationFormWithDefault, obstetricHistoryFormWithDefault, obstetricalExamFormWithDefault, prenatalNutritionFormWithDefault, resourceFormWithDefault, socialHistoryFormWithDefault, toBreastExamValue, toBreastExamValueWithDefault, toCorePhysicalExamValue, toCorePhysicalExamValueWithDefault, toDangerSignsValue, toDangerSignsValueWithDefault, toEverySet, toFamilyPlanningValue, toFamilyPlanningValueWithDefault, toLastMenstrualPeriodValue, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValue, toMedicalHistoryValueWithDefault, toMedicationValue, toMedicationValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValue, toObstetricalExamValueWithDefault, toPrenatalNutritionValue, toPrenatalNutritionValueWithDefault, toResourceValue, toResourceValueWithDefault, toSocialHistoryValue, toSocialHistoryValueWithDefault, toVitalsValue, toVitalsValueWithDefault, vitalsFormWithDefault)
+module Pages.PrenatalActivity.Utils exposing (breastExamFormWithDefault, calculateBmi, corePhysicalExamFormWithDefault, dangerSignsFormWithDefault, familyPlanningFormWithDefault, fromBreastExamValue, fromCorePhysicalExamValue, fromDangerSignsValue, fromFamilyPlanningValue, fromLastMenstrualPeriodValue, fromMedicalHistoryValue, fromMedicationValue, fromObstetricHistoryValue, fromObstetricalExamValue, fromPrenatalNutritionValue, fromResourceValue, fromSocialHistoryValue, fromVitalsValue, ifEmpty, ifTrue, lastMenstrualPeriodFormWithDefault, medicalHistoryFormWithDefault, medicationFormWithDefault, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, prenatalNutritionFormWithDefault, resourceFormWithDefault, socialHistoryFormWithDefault, toBreastExamValue, toBreastExamValueWithDefault, toCorePhysicalExamValue, toCorePhysicalExamValueWithDefault, toDangerSignsValue, toDangerSignsValueWithDefault, toEverySet, toFamilyPlanningValue, toFamilyPlanningValueWithDefault, toLastMenstrualPeriodValue, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValue, toMedicalHistoryValueWithDefault, toMedicationValue, toMedicationValueWithDefault, toObstetricHistoryStep2Value, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValue, toObstetricalExamValueWithDefault, toPrenatalNutritionValue, toPrenatalNutritionValueWithDefault, toResourceValue, toResourceValueWithDefault, toSocialHistoryValue, toSocialHistoryValueWithDefault, toVitalsValue, toVitalsValueWithDefault, vitalsFormWithDefault)
 
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
@@ -364,6 +364,71 @@ toObstetricHistoryValue form =
         |> andMap form.stillbirthsPreTerm
         |> andMap form.abortions
         |> andMap form.liveChildren
+
+
+obstetricHistoryStep2FormWithDefault : ObstetricFormSecondStep -> Maybe ObstetricHistoryStep2Value -> ObstetricFormSecondStep
+obstetricHistoryStep2FormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { cSections = or form.cSections (Just value.cSections)
+                , cSectionInPreviousDelivery = or form.cSectionInPreviousDelivery (EverySet.member CSectionInPreviousDelivery value.previousDelivery |> Just)
+                , cSectionReason = or form.cSectionReason (Just value.cSectionReason)
+                , previousDeliveryPeriod = or form.previousDeliveryPeriod (Just value.previousDeliveryPeriod)
+                , successiveAbortions = or form.successiveAbortions (EverySet.member SuccessiveAbortions value.obstetricHistory |> Just)
+                , successivePrematureDeliveries = or form.successivePrematureDeliveries (EverySet.member SuccessivePrematureDeliveries value.obstetricHistory |> Just)
+                , stillbornPreviousDelivery = or form.stillbornPreviousDelivery (EverySet.member StillbornPreviousDelivery value.previousDelivery |> Just)
+                , babyDiedOnDayOfBirthPreviousDelivery = or form.babyDiedOnDayOfBirthPreviousDelivery (EverySet.member BabyDiedOnDayOfBirthPreviousDelivery value.previousDelivery |> Just)
+                , partialPlacentaPreviousDelivery = or form.partialPlacentaPreviousDelivery (EverySet.member PartialPlacentaPreviousDelivery value.previousDelivery |> Just)
+                , severeHemorrhagingPreviousDelivery = or form.severeHemorrhagingPreviousDelivery (EverySet.member SevereHemorrhagingPreviousDelivery value.previousDelivery |> Just)
+                , preeclampsiaPreviousPregnancy = or form.preeclampsiaPreviousPregnancy (EverySet.member PreeclampsiaPreviousPregnancy value.obstetricHistory |> Just)
+                , convulsionsPreviousDelivery = or form.convulsionsPreviousDelivery (EverySet.member ConvulsionsPreviousDelivery value.previousDelivery |> Just)
+                , convulsionsAndUnconsciousPreviousDelivery = or form.convulsionsAndUnconsciousPreviousDelivery (EverySet.member ConvulsionsAndUnconsciousPreviousDelivery value.previousDelivery |> Just)
+                , gestationalDiabetesPreviousPregnancy = or form.gestationalDiabetesPreviousPregnancy (EverySet.member GestationalDiabetesPreviousPregnancy value.obstetricHistory |> Just)
+                , incompleteCervixPreviousPregnancy = or form.incompleteCervixPreviousPregnancy (EverySet.member IncompleteCervixPreviousPregnancy value.obstetricHistory |> Just)
+                , rhNegative = or form.rhNegative (EverySet.member RhNegative value.obstetricHistory |> Just)
+                }
+            )
+
+
+toObstetricHistoryStep2ValueWithDefault : Maybe ObstetricHistoryStep2Value -> ObstetricFormSecondStep -> Maybe ObstetricHistoryStep2Value
+toObstetricHistoryStep2ValueWithDefault saved form =
+    obstetricHistoryStep2FormWithDefault form saved
+        |> toObstetricHistoryStep2Value
+
+
+toObstetricHistoryStep2Value : ObstetricFormSecondStep -> Maybe ObstetricHistoryStep2Value
+toObstetricHistoryStep2Value form =
+    let
+        previousDeliverySet =
+            [ Maybe.map (ifTrue CSectionInPreviousDelivery) form.cSectionInPreviousDelivery
+            , Maybe.map (ifTrue StillbornPreviousDelivery) form.stillbornPreviousDelivery
+            , Maybe.map (ifTrue BabyDiedOnDayOfBirthPreviousDelivery) form.babyDiedOnDayOfBirthPreviousDelivery
+            , Maybe.map (ifTrue PartialPlacentaPreviousDelivery) form.partialPlacentaPreviousDelivery
+            , Maybe.map (ifTrue SevereHemorrhagingPreviousDelivery) form.severeHemorrhagingPreviousDelivery
+            , Maybe.map (ifTrue ConvulsionsPreviousDelivery) form.convulsionsPreviousDelivery
+            , Maybe.map (ifTrue ConvulsionsAndUnconsciousPreviousDelivery) form.convulsionsAndUnconsciousPreviousDelivery
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoPreviousDeliverySign)
+
+        obstetricHistorySet =
+            [ Maybe.map (ifTrue SuccessiveAbortions) form.successiveAbortions
+            , Maybe.map (ifTrue SuccessivePrematureDeliveries) form.successivePrematureDeliveries
+            , Maybe.map (ifTrue PreeclampsiaPreviousPregnancy) form.preeclampsiaPreviousPregnancy
+            , Maybe.map (ifTrue GestationalDiabetesPreviousPregnancy) form.gestationalDiabetesPreviousPregnancy
+            , Maybe.map (ifTrue IncompleteCervixPreviousPregnancy) form.incompleteCervixPreviousPregnancy
+            , Maybe.map (ifTrue RhNegative) form.rhNegative
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoObstetricHistorySign)
+    in
+    Maybe.map ObstetricHistoryStep2Value form.cSections
+        |> andMap form.cSectionReason
+        |> andMap previousDeliverySet
+        |> andMap form.previousDeliveryPeriod
+        |> andMap obstetricHistorySet
 
 
 fromFamilyPlanningValue : Maybe (EverySet FamilyPlanningSign) -> FamilyPlanningForm

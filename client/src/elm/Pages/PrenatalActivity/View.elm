@@ -28,6 +28,7 @@ import Pages.PrenatalActivity.Utils
         , medicalHistoryFormWithDefault
         , medicationFormWithDefault
         , obstetricHistoryFormWithDefault
+        , obstetricHistoryStep2FormWithDefault
         , obstetricalExamFormWithDefault
         , prenatalNutritionFormWithDefault
         , resourceFormWithDefault

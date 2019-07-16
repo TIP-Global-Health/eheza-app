@@ -22,6 +22,7 @@ import Pages.PrenatalActivity.Utils
         , toLastMenstrualPeriodValueWithDefault
         , toMedicalHistoryValueWithDefault
         , toMedicationValueWithDefault
+        , toObstetricHistoryStep2ValueWithDefault
         , toObstetricHistoryValueWithDefault
         , toObstetricalExamValueWithDefault
         , toPrenatalNutritionValueWithDefault
