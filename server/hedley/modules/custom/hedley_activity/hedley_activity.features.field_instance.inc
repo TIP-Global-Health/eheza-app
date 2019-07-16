@@ -4660,6 +4660,62 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-obstetric_history_step2-field_date_measured'.
+  $field_instances['node-obstetric_history_step2-field_date_measured'] = array(
+    'bundle' => 'obstetric_history_step2',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_date_measured',
+    'label' => 'Date Measured',
+    'required' => 1,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 13,
+    ),
+  );
+
   // Exported field_instance: 'node-obstetric_history_step2-field_nurse'.
   $field_instances['node-obstetric_history_step2-field_nurse'] = array(
     'bundle' => 'obstetric_history_step2',

@@ -359,7 +359,9 @@
             if (type === 'child-measurements') {
                 return viewMeasurements('person', uuid);
             } else if (type === 'mother-measurements') {
-                return viewMeasurements('person', uuid);
+                  return viewMeasurements('person', uuid);
+            } else if (type === 'prenatal-measurements') {
+                  return viewMeasurements('prenatal_encounter', uuid);
             } else {
                 return getTableForType(type).then(function (table) {
                     return table.get(uuid).catch(databaseError).then(function (node) {
@@ -393,7 +395,7 @@
     }
 
     // This is a kind of special-case for now, at least. We're wanting to get
-    // back all of a particular child's or mother's measurements.
+    // back all of measuremnts for whom the key is equal to the value.
     //
     // Ultimately, it would be better to make this more generic here and do the
     // processing on the client side, but this mirrors the pre-existing

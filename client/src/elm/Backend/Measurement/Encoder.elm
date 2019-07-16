@@ -604,6 +604,110 @@ encodeObstetricHistoryValue value =
     ]
 
 
+encodeCSectionReason : CSectionReason -> Value
+encodeCSectionReason sign =
+    string <|
+        case sign of
+            Breech ->
+                "breech"
+
+            Emergency ->
+                "emergency"
+
+            FailureToProgress ->
+                "failure-to-progress"
+
+            None ->
+                "none"
+
+            Other ->
+                "other"
+
+
+encodePreviousDeliveryPeriod : PreviousDeliveryPeriod -> Value
+encodePreviousDeliveryPeriod sign =
+    string <|
+        case sign of
+            LessThan18Month ->
+                "less-than-18-month"
+
+            MoreThan5Years ->
+                "more-than-5-years"
+
+            Neither ->
+                "neither"
+
+
+encodePreviousDeliverySign : PreviousDeliverySign -> Value
+encodePreviousDeliverySign sign =
+    string <|
+        case sign of
+            CSectionInPreviousDelivery ->
+                "c-section-in-previous-delivery"
+
+            StillbornPreviousDelivery ->
+                "stillborn-previous-delivery"
+
+            BabyDiedOnDayOfBirthPreviousDelivery ->
+                "baby-died-on-day-of-birth-previous-delivery"
+
+            PartialPlacentaPreviousDelivery ->
+                "partial-placenta-previous-delivery"
+
+            SevereHemorrhagingPreviousDelivery ->
+                "severe-hemorrhaging-previous-delivery"
+
+            ConvulsionsPreviousDelivery ->
+                "convulsions-previous-delivery"
+
+            ConvulsionsAndUnconsciousPreviousDelivery ->
+                "convulsions-and-unconscious-previous-delivery"
+
+            NoPreviousDeliverySign ->
+                "none"
+
+
+encodeObstetricHistorySign : ObstetricHistorySign -> Value
+encodeObstetricHistorySign sign =
+    string <|
+        case sign of
+            SuccessiveAbortions ->
+                "successive-abortions"
+
+            SuccessivePrematureDeliveries ->
+                "successive-premature-deliveries"
+
+            PreeclampsiaPreviousPregnancy ->
+                "preeclampsia-previous-pregnancy"
+
+            GestationalDiabetesPreviousPregnancy ->
+                "gestational-diabetes-previous-pregnancy"
+
+            IncompleteCervixPreviousPregnancy ->
+                "incomplete-cervix-previous-pregnancy"
+
+            RhNegative ->
+                "rh-negative"
+
+            NoObstetricHistorySign ->
+                "none"
+
+
+encodeObstetricHistoryStep2 : ObstetricHistoryStep2 -> List ( String, Value )
+encodeObstetricHistoryStep2 =
+    encodePrenatalMeasurement encodeObstetricHistoryStep2Value
+
+
+encodeObstetricHistoryStep2Value : ObstetricHistoryStep2Value -> List ( String, Value )
+encodeObstetricHistoryStep2Value value =
+    [ ( "c_sections", int value.cSections )
+    , ( "c_section_reason", encodeEverySet encodeCSectionReason value.cSectionReason )
+    , ( "obstetric_history", encodeEverySet encodeObstetricHistorySign value.obstetricHistory )
+    , ( "previous_delivery", encodeEverySet encodePreviousDeliverySign value.previousDelivery )
+    , ( "previous_delivery_period", encodeEverySet encodePreviousDeliveryPeriod value.previousDeliveryPeriod )
+    ]
+
+
 encodePrenatalFamilyPlanning : PrenatalFamilyPlanning -> List ( String, Value )
 encodePrenatalFamilyPlanning =
     encodePrenatalMeasurement encodeFamilyPlanningValue
@@ -682,108 +786,4 @@ encodeVitalsValue value =
     , ( "heart_rate", int value.heartRate )
     , ( "respiratory_rate", int value.respiratoryRate )
     , ( "body_temperature", float value.bodyTemperature )
-    ]
-
-
-encodeCSectionReason : CSectionReason -> Value
-encodeCSectionReason sign =
-    string <|
-        case sign of
-            Breech ->
-                "breech"
-
-            Emergency ->
-                "emergency"
-
-            FailureToProgress ->
-                "failure-to-progress"
-
-            None ->
-                "none"
-
-            Other ->
-                "other"
-
-
-encodePreviousDeliveryPeriod : PreviousDeliveryPeriod -> Value
-encodePreviousDeliveryPeriod sign =
-    string <|
-        case sign of
-            LessThan18Month ->
-                "less-than-18-month"
-
-            MoreThan5Years ->
-                "more-than-5-years"
-
-            Neither ->
-                "neither"
-
-
-encodePreviousDeliverySign : PreviousDeliverySign -> Value
-encodePreviousDeliverySign sign =
-    string <|
-        case sign of
-            CSectionInPreviousDelivery ->
-                "c-section-in-previous-delivery"
-
-            StillbornPreviousDelivery ->
-                "stillborn-previous-delivery"
-
-            BabyDiedOnDayOfBirthPreviousDelivery ->
-                "baby-died-on-day-of-birth-previous-delivery"
-
-            PartialPlacentaPreviousDelivery ->
-                "partial-placenta-previous-delivery"
-
-            SevereHemorrhagingPreviousDelivery ->
-                "severe-hemorrhaging-previous-delivery"
-
-            ConvulsionsPreviousDelivery ->
-                "convulsions-previous-delivery|"
-
-            ConvulsionsAndUnconsciousPreviousDelivery ->
-                "convulsions-and-unconscious-previous-delivery"
-
-            NoPreviousDeliverySign ->
-                "none"
-
-
-encodeObstetricHistorySign : ObstetricHistorySign -> Value
-encodeObstetricHistorySign sign =
-    string <|
-        case sign of
-            SuccessiveAbortions ->
-                "successive-abortions"
-
-            SuccessivePrematureDeliveries ->
-                "successive-premature-deliveries"
-
-            PreeclampsiaPreviousPregnancy ->
-                "preeclampsia-previous-pregnancy"
-
-            GestationalDiabetesPreviousPregnancy ->
-                "gestational-diabetes-previous-pregnancy"
-
-            IncompleteCervixPreviousPregnancy ->
-                "incomplete-cervix-previous-pregnancy"
-
-            RhNegative ->
-                "rh-negative"
-
-            NoObstetricHistorySign ->
-                "none"
-
-
-encodeObstetricHistoryStep2 : ObstetricHistoryStep2 -> List ( String, Value )
-encodeObstetricHistoryStep2 =
-    encodePrenatalMeasurement encodeObstetricHistoryStep2Value
-
-
-encodeObstetricHistoryStep2Value : ObstetricHistoryStep2Value -> List ( String, Value )
-encodeObstetricHistoryStep2Value value =
-    [ ( "field_c_sections", int value.cSections )
-    , ( "c_section_reason", encodeCSectionReason value.cSectionReason )
-    , ( "field_obstetric_history", encodeEverySet encodeObstetricHistorySign value.obstetricHistory )
-    , ( "field_previous_delivery", encodeEverySet encodePreviousDeliverySign value.previousDelivery )
-    , ( "field_previous_delivery_period", encodePreviousDeliveryPeriod value.previousDeliveryPeriod )
     ]

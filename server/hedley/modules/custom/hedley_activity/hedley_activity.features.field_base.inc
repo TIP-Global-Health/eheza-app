@@ -171,7 +171,7 @@ function hedley_activity_field_default_field_bases() {
   // Exported field_base: 'field_c_section_reason'.
   $field_bases['field_c_section_reason'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => 5,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_c_section_reason',
@@ -984,7 +984,7 @@ function hedley_activity_field_default_field_bases() {
   // Exported field_base: 'field_previous_delivery_period'.
   $field_bases['field_previous_delivery_period'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => 3,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_previous_delivery_period',

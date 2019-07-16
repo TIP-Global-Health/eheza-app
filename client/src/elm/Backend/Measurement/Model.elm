@@ -393,9 +393,9 @@ type alias ObstetricHistory =
 
 type alias ObstetricHistoryStep2Value =
     { cSections : Int
-    , cSectionReason : CSectionReason
+    , cSectionReason : EverySet CSectionReason
     , previousDelivery : EverySet PreviousDeliverySign
-    , previousDeliveryPeriod : PreviousDeliveryPeriod
+    , previousDeliveryPeriod : EverySet PreviousDeliveryPeriod
     , obstetricHistory : EverySet ObstetricHistorySign
     }
 

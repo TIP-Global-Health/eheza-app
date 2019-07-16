@@ -178,6 +178,7 @@ features[field_instance][] = node-obstetric_history-field_term_pregnancy
 features[field_instance][] = node-obstetric_history-field_uuid
 features[field_instance][] = node-obstetric_history_step2-field_c_section_reason
 features[field_instance][] = node-obstetric_history_step2-field_c_sections
+features[field_instance][] = node-obstetric_history_step2-field_date_measured
 features[field_instance][] = node-obstetric_history_step2-field_nurse
 features[field_instance][] = node-obstetric_history_step2-field_obstetric_history
 features[field_instance][] = node-obstetric_history_step2-field_person

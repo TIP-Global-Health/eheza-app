@@ -374,8 +374,8 @@ obstetricHistoryStep2FormWithDefault form saved =
             (\value ->
                 { cSections = or form.cSections (Just value.cSections)
                 , cSectionInPreviousDelivery = or form.cSectionInPreviousDelivery (EverySet.member CSectionInPreviousDelivery value.previousDelivery |> Just)
-                , cSectionReason = or form.cSectionReason (Just value.cSectionReason)
-                , previousDeliveryPeriod = or form.previousDeliveryPeriod (Just value.previousDeliveryPeriod)
+                , cSectionReason = or form.cSectionReason (value.cSectionReason |> EverySet.toList |> List.head)
+                , previousDeliveryPeriod = or form.previousDeliveryPeriod (value.previousDeliveryPeriod |> EverySet.toList |> List.head)
                 , successiveAbortions = or form.successiveAbortions (EverySet.member SuccessiveAbortions value.obstetricHistory |> Just)
                 , successivePrematureDeliveries = or form.successivePrematureDeliveries (EverySet.member SuccessivePrematureDeliveries value.obstetricHistory |> Just)
                 , stillbornPreviousDelivery = or form.stillbornPreviousDelivery (EverySet.member StillbornPreviousDelivery value.previousDelivery |> Just)
@@ -425,9 +425,9 @@ toObstetricHistoryStep2Value form =
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoObstetricHistorySign)
     in
     Maybe.map ObstetricHistoryStep2Value form.cSections
-        |> andMap form.cSectionReason
+        |> andMap (Maybe.map EverySet.singleton form.cSectionReason)
         |> andMap previousDeliverySet
-        |> andMap form.previousDeliveryPeriod
+        |> andMap (Maybe.map EverySet.singleton form.previousDeliveryPeriod)
         |> andMap obstetricHistorySet
 
 
