@@ -1228,7 +1228,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Model.None ->
+                Backend.Measurement.Model.None ->
                     { english = "None"
                     , kinyarwanda = Nothing
                     }

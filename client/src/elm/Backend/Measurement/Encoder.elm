@@ -686,7 +686,7 @@ encodeVitalsValue value =
 
 
 encodeCSectionReason : CSectionReason -> Value
-encodeCSectionReason =
+encodeCSectionReason sign =
     string <|
         case sign of
             Breech ->
@@ -706,7 +706,7 @@ encodeCSectionReason =
 
 
 encodePreviousDeliveryPeriod : PreviousDeliveryPeriod -> Value
-encodePreviousDeliveryPeriod =
+encodePreviousDeliveryPeriod sign =
     string <|
         case sign of
             LessThan18Month ->
@@ -719,8 +719,8 @@ encodePreviousDeliveryPeriod =
                 "neither"
 
 
-encodePreviousDeliverSign : PreviousDeliverSign -> Value
-encodePreviousDeliverSign =
+encodePreviousDeliverySign : PreviousDeliverySign -> Value
+encodePreviousDeliverySign sign =
     string <|
         case sign of
             CSectionInPreviousDelivery ->
@@ -744,12 +744,12 @@ encodePreviousDeliverSign =
             ConvulsionsAndUnconsciousPreviousDelivery ->
                 "convulsions-and-unconscious-previous-delivery"
 
-            NoPreviousDeliverSign ->
+            NoPreviousDeliverySign ->
                 "none"
 
 
 encodeObstetricHistorySign : ObstetricHistorySign -> Value
-encodeObstetricHistorySign =
+encodeObstetricHistorySign sign =
     string <|
         case sign of
             SuccessiveAbortions ->
@@ -784,6 +784,6 @@ encodeObstetricHistoryStep2Value value =
     [ ( "field_c_sections", int value.cSections )
     , ( "c_section_reason", encodeCSectionReason value.cSectionReason )
     , ( "field_obstetric_history", encodeEverySet encodeObstetricHistorySign value.obstetricHistory )
-    , ( "field_previous_delivery", encodeEverySet encodePreviousDeliverSign value.previousDelivery )
+    , ( "field_previous_delivery", encodeEverySet encodePreviousDeliverySign value.previousDelivery )
     , ( "field_previous_delivery_period", encodePreviousDeliveryPeriod value.previousDeliveryPeriod )
     ]

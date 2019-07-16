@@ -43,6 +43,9 @@ module Backend.Measurement.Model exposing
     , MuacIndication(..)
     , NeckCPESign(..)
     , ObstetricHistory
+    , ObstetricHistorySign(..)
+    , ObstetricHistoryStep2
+    , ObstetricHistoryStep2Value
     , ObstetricHistoryValue
     , ObstetricalExam
     , ObstetricalExamValue
@@ -56,6 +59,7 @@ module Backend.Measurement.Model exposing
     , PrenatalNutrition
     , PrenatalNutritionValue
     , PreviousDeliveryPeriod(..)
+    , PreviousDeliverySign(..)
     , Resource
     , ResourceSign(..)
     , SocialHistory
@@ -390,7 +394,7 @@ type alias ObstetricHistory =
 type alias ObstetricHistoryStep2Value =
     { cSections : Int
     , cSectionReason : CSectionReason
-    , previousDelivery : PreviousDeliverySign
+    , previousDelivery : EverySet PreviousDeliverySign
     , previousDeliveryPeriod : PreviousDeliveryPeriod
     , obstetricHistory : EverySet ObstetricHistorySign
     }
@@ -410,7 +414,7 @@ type PreviousDeliveryPeriod
     | Neither
 
 
-type PreviousDeliverSign
+type PreviousDeliverySign
     = CSectionInPreviousDelivery
     | StillbornPreviousDelivery
     | BabyDiedOnDayOfBirthPreviousDelivery
@@ -418,7 +422,7 @@ type PreviousDeliverSign
     | SevereHemorrhagingPreviousDelivery
     | ConvulsionsPreviousDelivery
     | ConvulsionsAndUnconsciousPreviousDelivery
-    | NoPreviousDeliverSign
+    | NoPreviousDeliverySign
 
 
 type ObstetricHistorySign
@@ -428,6 +432,7 @@ type ObstetricHistorySign
     | GestationalDiabetesPreviousPregnancy
     | IncompleteCervixPreviousPregnancy
     | RhNegative
+    | NoObstetricHistorySign
 
 
 type alias ObstetricHistoryStep2 =
