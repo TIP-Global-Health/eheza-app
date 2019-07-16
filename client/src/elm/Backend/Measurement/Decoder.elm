@@ -799,7 +799,7 @@ decodePreviousDeliverySign =
                     "severe-hemorrhaging-previous-delivery" ->
                         succeed SevereHemorrhagingPreviousDelivery
 
-                    "convulsions-previous-delivery|" ->
+                    "convulsions-previous-delivery" ->
                         succeed ConvulsionsPreviousDelivery
 
                     "convulsions-and-unconscious-previous-delivery" ->
@@ -848,9 +848,9 @@ decodeObstetricHistorySign =
 decodeObstetricHistoryStep2 : Decoder ObstetricHistoryStep2
 decodeObstetricHistoryStep2 =
     succeed ObstetricHistoryStep2Value
-        |> required "field_c_sections" decodeInt
-        |> required "field_c_section_reason" (decodeEverySet decodeCSectionReason)
-        |> required "field_previous_delivery" (decodeEverySet decodePreviousDeliverySign)
-        |> required "field_previous_delivery_period" (decodeEverySet decodePreviousDeliveryPeriod)
-        |> required "field_obstetric_history" (decodeEverySet decodeObstetricHistorySign)
+        |> required "c_sections" decodeInt
+        |> required "c_section_reason" (decodeEverySet decodeCSectionReason)
+        |> required "previous_delivery" (decodeEverySet decodePreviousDeliverySign)
+        |> required "previous_delivery_period" (decodeEverySet decodePreviousDeliveryPeriod)
+        |> required "obstetric_history" (decodeEverySet decodeObstetricHistorySign)
         |> decodePrenatalMeasurement
