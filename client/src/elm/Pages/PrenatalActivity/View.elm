@@ -1303,9 +1303,9 @@ viewVitalsForm language currentDate assembled form =
                 [ viewLabel language Translate.HeartRate ]
             , viewWarning language Nothing
             ]
-        , viewNumberInput
+        , viewMeasurementInput
             language
-            form.heartRate
+            (Maybe.map toFloat form.heartRate)
             (SetVitalsIntMeasurement heartRateUpdateFunc)
             "heart-rate"
             Translate.BpmUnit
@@ -1316,9 +1316,9 @@ viewVitalsForm language currentDate assembled form =
                 [ viewLabel language Translate.RespiratoryRate ]
             , viewWarning language Nothing
             ]
-        , viewNumberInput
+        , viewMeasurementInput
             language
-            form.respiratoryRate
+            (Maybe.map toFloat form.respiratoryRate)
             (SetVitalsIntMeasurement respiratoryRateUpdateFunc)
             "respiratory-rate"
             Translate.BpmUnit
@@ -1594,9 +1594,9 @@ viewObstetricalExamForm language currentDate assembled form =
                 [ viewLabel language Translate.FetalHeartRate ]
             , viewWarning language Nothing
             ]
-        , viewNumberInput
+        , viewMeasurementInput
             language
-            form.fetalHeartRate
+            (Maybe.map toFloat form.fetalHeartRate)
             (SetObstetricalExamIntMeasurement fetalHeartRateUpdateFunc)
             "fetal-heart-rate"
             Translate.BpmUnit
