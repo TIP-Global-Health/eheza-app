@@ -170,17 +170,20 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                             [ class "ui primary button group-assessment"
                             , onClick <| SendOutMsg <| SetActivePage <| UserPage <| ClinicsPage Nothing
                             ]
-                            [ span [ class "icon-group" ] []
+                            [ span [ class "icon" ] []
                             , span [ class "text" ] [ text <| translate language Translate.GroupAssessment ]
                             , span [ class "icon-back" ] []
                             ]
 
                     prenatalEncounterButton =
                         button
-                            [ class "ui fluid primary button"
+                            [ class "ui primary button individual-assessment"
                             , onClick <| SendOutMsg <| Pages.PinCode.Model.GoToRandomPrenatalEncounter
                             ]
-                            [ text <| translate language Translate.PrenatalEncounter ]
+                            [ span [ class "icon" ] []
+                            , span [ class "text" ] [ text <| translate language Translate.PrenatalEncounter ]
+                            , span [ class "icon-back" ] []
+                            ]
                 in
                 [ p [] [ text <| translate language Translate.WhatDoYouWantToDo ]
                 , groupAssessmentButton

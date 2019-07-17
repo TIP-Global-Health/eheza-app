@@ -152,15 +152,15 @@ div.page-pincode {
       width: 89%;
     }
 
-    button.ui.primary.button.group-assessment {
+    button.ui.primary.button.group-assessment,
+    button.ui.primary.button.individual-assessment {
       padding: 0;
       height: 60px;
       margin-left: auto;
       margin-right: auto;
       width: 80%;
 
-      .icon-group {
-        background-image: url(#{$img-path}icon-group-encounter.svg);
+      .icon {
         background-size: 50px 50px;
         display: block;
         height: 50px;
@@ -182,6 +182,26 @@ div.page-pincode {
         margin-top: 17px;
         margin-left: 90px;
         transform: rotate(180deg);
+      }
+    }
+
+    button.ui.primary.button.group-assessment .icon {
+      background-image: url(#{$img-path}icon-group-encounter.svg);
+    }
+
+    button.ui.primary.button.individual-assessment {
+
+      .icon {
+        background-image: url(#{$img-path}icon-individual-encounter.svg);
+        background-size: 40px 40px;
+        margin-left: 55px;
+        margin-top: 8px;
+        height: 40px;
+        width: 40px;
+      }
+
+      .icon-back {
+        margin-left: 71px;
       }
     }
 }
