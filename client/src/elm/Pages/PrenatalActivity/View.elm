@@ -35,6 +35,7 @@ import Pages.PrenatalActivity.Utils
         , socialHistoryFormWithDefault
         , vitalsFormWithDefault
         )
+import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
@@ -100,7 +101,7 @@ view language currentDate id activity db model =
 viewContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
 viewContent language currentDate model data =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate data.person
+        viewMotherAndMeasurements language currentDate data.person data.measurements
             ++ viewActivity language currentDate data model
 
 
@@ -200,35 +201,9 @@ viewPregnancyDatingContent language currentDate assembled data =
                     )
                 |> div [ class "form-input date" ]
 
-        ( eddResult, egaResult ) =
-            form.lmpDate
-                |> unwrap
-                    ( emptyNode, emptyNode )
-                    (\date ->
-                        let
-                            eddDate =
-                                Date.add Month 9 date
-                                    |> fromLocalDateTime
-
-                            lmpDate =
-                                fromLocalDateTime date
-
-                            diffInDays =
-                                diffDays lmpDate currentDate
-
-                            diffInWeeks =
-                                diffInDays // 7
-
-                            egaWeeks =
-                                translate language <| Translate.WeekSinglePlural diffInWeeks
-
-                            egaDays =
-                                translate language <| Translate.DaySinglePlural (diffInDays - 7 * diffInWeeks)
-                        in
-                        ( div [ class "value" ] [ text <| formatMMDDYYYY eddDate ]
-                        , div [ class "value" ] [ text <| egaWeeks ++ ", " ++ egaDays ]
-                        )
-                    )
+        ( edd, ega ) =
+            Maybe.map fromLocalDateTime form.lmpDate
+                |> generateEDDandEGA language currentDate
 
         totalTasks =
             2
@@ -250,11 +225,11 @@ viewPregnancyDatingContent language currentDate assembled data =
                 , div [ class "results" ]
                     [ div [ class "edd-result" ]
                         [ viewLabel language Translate.EddHeader
-                        , eddResult
+                        , div [ class "value" ] [ text edd ]
                         ]
                     , div [ class "ega-result" ]
                         [ viewLabel language Translate.EgaHeader
-                        , egaResult
+                        , div [ class "value" ] [ text ega ]
                         ]
                     ]
                 ]
@@ -857,11 +832,13 @@ viewDangerSignsContent language currentDate assembled data =
 viewObstetricFormFirstStep : Language -> NominalDate -> AssembledData -> ObstetricFormFirstStep -> Html Msg
 viewObstetricFormFirstStep language currentDate assembled form =
     let
-        gravidaResult =
-            span [] [ text "02" ]
+        gravida =
+            Maybe.map2 generateGravida form.termPregnancy form.preTermPregnancy
+                |> Maybe.withDefault ""
 
-        paraResult =
-            span [] [ text "0102" ]
+        para =
+            Maybe.map4 generatePara form.termPregnancy form.preTermPregnancy form.abortions form.liveChildren
+                |> Maybe.withDefault ""
 
         termPregnancyUpdateFunc value form_ =
             { form_ | termPregnancy = value }
@@ -922,11 +899,11 @@ viewObstetricFormFirstStep language currentDate assembled form =
         , div [ class "results" ]
             [ div [ class "gravida-result" ]
                 [ span [ class "label" ] [ text <| (translate language Translate.Gravida ++ ":") ]
-                , gravidaResult
+                , span [] [ text gravida ]
                 ]
             , div [ class "para-result" ]
                 [ span [ class "label" ] [ text <| (translate language Translate.Para ++ ":") ]
-                , paraResult
+                , span [] [ text para ]
                 ]
             ]
         ]

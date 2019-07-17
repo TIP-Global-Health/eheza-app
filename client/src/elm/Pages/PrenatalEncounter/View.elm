@@ -7,15 +7,17 @@ import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
+import Date.Extra as Date exposing (Interval(Day))
 import EveryDict
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.Model exposing (..)
+import Pages.PrenatalEncounter.Utils exposing (..)
 import PrenatalActivity.Model exposing (..)
 import PrenatalActivity.Utils exposing (getActivityIcon, getAllActivities)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -87,7 +89,7 @@ view language currentDate id db model =
 viewContent : Language -> NominalDate -> Model -> FetchedData -> Html Msg
 viewContent language currentDate model data =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate data.person
+        viewMotherAndMeasurements language currentDate data.person data.measurements
             ++ viewMainPageContent language currentDate data model
 
 
@@ -108,10 +110,10 @@ viewHeader language =
         ]
 
 
-viewMotherAndMeasurements : Language -> NominalDate -> Person -> List (Html any)
-viewMotherAndMeasurements language currentDate mother =
+viewMotherAndMeasurements : Language -> NominalDate -> Person -> PrenatalMeasurements -> List (Html any)
+viewMotherAndMeasurements language currentDate mother measurements =
     [ viewMotherDetails language currentDate mother
-    , viewMeasurements language currentDate
+    , viewMeasurements language currentDate measurements
     ]
 
 
@@ -136,46 +138,44 @@ viewMotherDetails language currentDate mother =
         ]
 
 
-viewMeasurements : Language -> NominalDate -> Html any
-viewMeasurements language currentDate =
+viewMeasurements : Language -> NominalDate -> PrenatalMeasurements -> Html any
+viewMeasurements language currentDate measurements =
     let
-        dummyDate =
-            date 2019 12 10
+        ( edd, ega ) =
+            measurements.lastMenstrualPeriod
+                |> Maybe.map (Tuple.second >> .value >> .date)
+                |> generateEDDandEGA language currentDate
 
-        diffInDays =
-            diffDays currentDate dummyDate
+        obstetricHistoryValue =
+            measurements.obstetricHistory
+                |> Maybe.map (Tuple.second >> .value)
 
-        diffInWeeks =
-            diffInDays // 7
-
-        egaWeeks =
-            translate language <| Translate.WeekSinglePlural diffInWeeks
-
-        egaDays =
-            translate language <| Translate.DaySinglePlural (diffInDays - 7 * diffInWeeks)
-
-        dummyGravida =
-            2
-
-        dummyPara =
-            "0102"
+        ( gravida, para ) =
+            unwrap
+                ( "", "" )
+                (\value ->
+                    ( generateGravida value.termPregnancy value.preTermPregnancy
+                    , generatePara value.termPregnancy value.preTermPregnancy value.abortions value.liveChildren
+                    )
+                )
+                obstetricHistoryValue
     in
     div [ class "item measurements" ]
         [ div [ class "ui edd" ]
             [ div [ class "label" ] [ text <| translate language Translate.Edd ++ ":" ]
-            , div [ class "value" ] [ text <| formatMMDDYYYY dummyDate ]
+            , div [ class "value" ] [ text edd ]
             ]
         , div [ class "ui ega" ]
             [ div [ class "label" ] [ text <| translate language Translate.Ega ++ ":" ]
-            , div [ class "value" ] [ text <| egaWeeks ++ ", " ++ egaDays ]
+            , div [ class "value" ] [ text ega ]
             ]
         , div [ class "ui gravida" ]
             [ div [ class "label" ] [ text <| translate language Translate.Gravida ++ ":" ]
-            , div [ class "value" ] [ text <| toString dummyGravida ]
+            , div [ class "value" ] [ text gravida ]
             ]
         , div [ class "ui para" ]
             [ div [ class "label" ] [ text <| translate language Translate.Para ++ ":" ]
-            , div [ class "value" ] [ text dummyPara ]
+            , div [ class "value" ] [ text para ]
             ]
         ]
 
