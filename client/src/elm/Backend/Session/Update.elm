@@ -22,7 +22,11 @@ update nurseId sessionId currentDate msg model =
     case msg of
         CloseSession ->
             ( { model | closeSessionRequest = Loading }
-            , object [ ( "scheduled_date.value2", encodeYYYYMMDD currentDate ) ]
+            , object
+                [ ( "scheduled_date"
+                  , object [ ( "value2", encodeYYYYMMDD currentDate ) ]
+                  )
+                ]
                 |> sw.patchAny sessionEndpoint sessionId
                 |> withoutDecoder
                 |> toCmd (RemoteData.fromResult >> HandleClosedSession)
