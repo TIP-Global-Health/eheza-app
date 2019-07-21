@@ -3,6 +3,8 @@
 
 var gulp = require("gulp");
 
+var transform = require('gulp-transform');
+
 var gulpSequence = require('gulp-sequence');
 
 // Loads the plugins without having to list all of them, but you need
@@ -41,11 +43,6 @@ const {
 // Deletes the directory that is used to serve the site during development
 gulp.task("clean:dev", function(cb) {
   return del(["serve"],
-    cb);
-});
-
-gulp.task("clean:compile", function(cb) {
-  return del(["elm-stuff/build-artifacts/0.18.0/Gizra/ihangane"],
     cb);
 });
 
@@ -102,7 +99,7 @@ gulp.task("zscore", [], function() {
   };
 
   return gulp.src("src/assets/z-score/*.txt")
-    .pipe($.transform('utf8', function(content) {
+    .pipe(transform('utf8', function(content) {
       return new Promise((resolve, reject) => {
         csvParse(content, parseOptions, function(err, result) {
           if (err) {
@@ -120,7 +117,7 @@ gulp.task("zscore", [], function() {
     // And copy it to a place where the backend can also get it
     .pipe(gulp.dest('../server/hedley/modules/custom/hedley_zscore/json/'))
     // And turn the JSON into an Elm fixture for testing
-    .pipe($.transform('utf8', function(content, file) {
+    .pipe(transform('utf8', function(content, file) {
       var moduleName = capitalize(path.basename(file.path, '.json'));
       return `module ZScore.Fixture.${moduleName} exposing (..)\n\n\njson : String\njson =\n    """${content}"""`;
     })).pipe($.rename(function(path) {
@@ -352,11 +349,10 @@ gulp.task("ssl-cert", function(cb) {
 // reload the website accordingly. Update or add other files you need to be watched.
 gulp.task("watch", function() {
   // We need to copy dev, so index.html may be replaced by error messages.
-  gulp.watch(["src/index.html", "src/js/**/*.js"], ["copy:compile",
-    "pwa:dev",
+  gulp.watch(["src/index.html", "src/js/**/*.js"], ["pwa:dev",
     reload
   ]);
-  gulp.watch(["src/elm/**/*.elm"], ["clean:compile", "elm", "copy:dev",
+  gulp.watch(["src/elm/**/*.elm"], ["elm", "copy:dev",
     "pwa:dev", reload
   ]);
   gulp.watch(["src/assets/scss/**/*.scss"], ["styles", "copy:dev",
@@ -467,7 +463,7 @@ gulp.task("default", ["serve:dev", "watch"]);
 
 // Builds the site but doesnt serve it to you
 // @todo: Add "bower" here
-gulp.task("build", gulpSequence("clean:compile", "clean:dev", ["styles",
+gulp.task("build", gulpSequence("clean:dev", ["styles",
   "zscore", "copy:dev",
   "elm", "pwa:dev"
 ]));
