@@ -5,6 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Model
 import Backend.Nurse.Model exposing (Nurse)
 import Browser
+import Browser.Navigation as Nav
 import Config.Model
 import Device.Model exposing (Device)
 import Http
@@ -42,6 +43,8 @@ default.
 -}
 type alias Model =
     { activePage : Page
+    , navigationKey : Nav.Key
+    , url : Url
 
     -- Access to things stored in IndexedDB. Eventually, most of this probably
     -- ought to be in LoggedInModel instead, but it's not urgent.
@@ -201,9 +204,11 @@ type alias Flags =
     }
 
 
-emptyModel : Flags -> Model
-emptyModel flags =
+emptyModel : Nav.Key -> Url -> Flags -> Model
+emptyModel key url flags =
     { activePage = PinCodePage
+    , navigationKey = key
+    , url = url
     , configuration = NotAsked
     , currentTime = Time.millisToPosix 0
     , dataWanted = Dict.empty

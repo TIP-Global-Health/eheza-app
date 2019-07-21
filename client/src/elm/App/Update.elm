@@ -41,10 +41,6 @@ import ZScore.Model
 import ZScore.Update
 
 
-
--- @todo: account forl url and key
-
-
 init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
     let
@@ -57,7 +53,7 @@ init flags url key =
                     English
 
         model =
-            emptyModel flags
+            emptyModel key url flags
 
         ( updatedModel, cmd ) =
             case Dict.get flags.hostname Config.configs of
@@ -99,10 +95,8 @@ init flags url key =
                                      , Pusher.Model.eventNames
                                      )
                                   -}
-                                  -- @todo
-                                  --   Task.perform Tick Time.now
-                                  -- ,
-                                  fetchCachedDevice
+                                  Task.perform Tick Time.now
+                                , fetchCachedDevice
                                 ]
 
                         configuredModel =
@@ -587,10 +581,8 @@ subscriptions model =
                 []
     in
     Sub.batch
-        ([ -- @todo
-           -- Time.every minute Tick
-           -- ,
-           Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
+        ([ Time.every 60000 Tick
+         , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
          , persistentStorage SetPersistentStorage
          , storageQuota SetStorageQuota
          , memoryQuota SetMemoryQuota
