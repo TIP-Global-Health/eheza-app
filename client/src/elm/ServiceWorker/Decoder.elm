@@ -6,6 +6,7 @@ import Backend.SyncData.Decoder exposing (decodeSyncData)
 import Json.Decode exposing (..)
 import Restful.Endpoint exposing (decodeEntityUuid)
 import ServiceWorker.Model exposing (..)
+import Utils.Json exposing (decodeArray2)
 
 
 {-| Given some JSON our port sends in, decode it into a Msg we can handle. So,
@@ -28,10 +29,10 @@ decodeIncomingMsg =
                         field "state" decodeNewWorker
                             |> map SetNewWorker
 
-                    -- @todo: implement decodeArray2
-                    -- "SyncData" ->
-                    --     field "data" (Dict.decodeArray2 (field "uuid" decodeEntityUuid) decodeSyncData)
-                    --         |> map SetSyncData
+                    "SyncData" ->
+                        field "data" (decodeArray2 (field "uuid" decodeEntityUuid) decodeSyncData)
+                            |> map SetSyncData
+
                     "NewRevisions" ->
                         field "data" (list decodeRevision)
                             |> map NewRevisions

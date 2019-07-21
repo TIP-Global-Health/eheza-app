@@ -1,15 +1,23 @@
 module Utils.Json exposing
-    ( decodeEmptyArrayAsEmptyDict
+    ( decodeArray2
+    , decodeEmptyArrayAsEmptyDict
     , decodeError
     , decodeEverySet
     , decodeNullAsEmptyArray
     )
 
-import Date exposing (Date)
 import AssocList as Dict exposing (Dict)
+import Date exposing (Date)
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (Decoder, andThen, decodeString, dict, fail, field, float, index, int, list, map, map2, nullable, oneOf, string, succeed, value)
+
+
+decodeArray2 : Decoder k -> Decoder v -> Decoder (Dict k v)
+decodeArray2 keyDecoder valueDecoder =
+    Json.Decode.map2 (\k v -> ( k, v )) keyDecoder valueDecoder
+        |> Json.Decode.list
+        |> Json.Decode.map Dict.fromList
 
 
 decodeEmptyArrayAsEmptyDict : Decoder (Dict.Dict k v)
