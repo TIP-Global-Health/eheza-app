@@ -8,11 +8,13 @@ if ((location.hostname.endsWith('pantheonsite.io') || (location.hostname === '**
 
 
 // Start up our Elm app.
-var elmApp = Elm.Main.fullscreen({
+var elmApp = Elm.Main.init({
+  flags: {
     pinCode: localStorage.getItem('pinCode') || '',
     activeServiceWorker: !!navigator.serviceWorker.controller,
     hostname: window.location.hostname,
     activeLanguage : localStorage.getItem('language') || ''
+  }
 });
 
 // Request persistent storage, and report whether it was granted.
