@@ -7,6 +7,7 @@ import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.Update
+import Browser
 import Browser.Navigation as Nav
 import Config
 import Device.Decoder
@@ -18,12 +19,14 @@ import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
 import Pages.Device.Model
 import Pages.Device.Update
+import Pages.Page exposing (..)
 import Pages.People.Update
 import Pages.Person.Update
 import Pages.PinCode.Model
 import Pages.PinCode.Update
 import Pages.Relationship.Model
 import Pages.Relationship.Update
+import Pages.Router exposing (activePageByUrl, pageToFragment)
 import Pages.Session.Model
 import Pages.Session.Update
 import RemoteData exposing (RemoteData(..), WebData)
@@ -52,8 +55,14 @@ init flags url key =
                 Err msg ->
                     English
 
+        fragment =
+            pageToFragment PinCodePage
+
+        url_ =
+            { url | fragment = fragment, query = Nothing }
+
         model =
-            emptyModel key url flags
+            emptyModel key url_ flags
 
         ( updatedModel, cmd ) =
             case Dict.get flags.hostname Config.configs of
@@ -97,6 +106,7 @@ init flags url key =
                                   -}
                                   Task.perform Tick Time.now
                                 , fetchCachedDevice
+                                , Nav.pushUrl model.navigationKey (Url.toString model.url)
                                 ]
 
                         configuredModel =
@@ -327,8 +337,16 @@ update msg model =
             )
 
         SetActivePage page ->
+            let
+                fragment =
+                    pageToFragment page
+
+                redirectUrl =
+                    model.url
+                        |> (\url -> { url | fragment = fragment, query = Nothing })
+            in
             ( { model | activePage = page }
-            , Cmd.none
+            , Nav.pushUrl model.navigationKey (Url.toString redirectUrl)
             )
 
         SendRollbar level message data ->
@@ -492,13 +510,32 @@ update msg model =
             in
             sequence update dataToFetch ( newModel, Cmd.none )
 
-        --@todo: implement
-        UrlRequested _ ->
-            ( model, Cmd.none )
+        UrlRequested urlRequest ->
+            let
+                ( modelUpdated, cmd ) =
+                    case urlRequest of
+                        Browser.Internal url ->
+                            let
+                                activePage =
+                                    activePageByUrl url
+                            in
+                            ( model, Nav.pushUrl model.navigationKey (Url.toString url) )
 
-        --@todo: implement
-        UrlChanged _ ->
-            ( model, Cmd.none )
+                        Browser.External href ->
+                            ( model, Nav.load href )
+            in
+            ( modelUpdated
+            , cmd
+            )
+
+        UrlChanged url ->
+            let
+                activePage =
+                    activePageByUrl url
+            in
+            ( { model | url = url, activePage = activePage }
+            , Cmd.none
+            )
 
 
 {-| Updates our `nurse` user if the uuid matches the logged-in user.
