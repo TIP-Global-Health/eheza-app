@@ -181,8 +181,6 @@ updateIndexedDb currentDate nurseId msg model =
                 query1 =
                     sw.select relationshipEndpoint { person = Just personId, relatedTo = Nothing }
                         |> toTask
-                        -- @todo: List.filterMap didn't work?
-                        -- |> Task.map (.items >> Dict.fromList >> Dict.filterMap (always (toMyRelationship personId)))
                         |> Task.map
                             (\val ->
                                 val.items
@@ -198,7 +196,6 @@ updateIndexedDb currentDate nurseId msg model =
                 query2 =
                     sw.select relationshipEndpoint { person = Nothing, relatedTo = Just personId }
                         |> toTask
-                        -- @todo: List.filterMap didn't work?
                         |> Task.map
                             (\val ->
                                 val.items

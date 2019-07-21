@@ -247,7 +247,7 @@ update msg model =
                 (\configured ->
                     let
                         postCode =
-                            HttpBuilder.get (configured.config.backendUrl ++ "api/pairing-code/" ++ code)
+                            HttpBuilder.get (configured.config.backendUrl ++ "/api/pairing-code/" ++ code)
                                 |> HttpBuilder.withExpectJson (Json.Decode.field "data" (Device.Decoder.decode configured.config.backendUrl))
                                 |> HttpBuilder.toTask
 
