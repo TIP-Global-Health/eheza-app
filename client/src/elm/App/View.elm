@@ -27,6 +27,7 @@ import ServiceWorker.View
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (spinner, wrapPage)
+import Version
 
 
 view : Model -> Browser.Document Msg
@@ -110,10 +111,8 @@ viewLanguageSwitcherAndVersion model =
             ]
             [ ServiceWorker.View.viewIcon model.serviceWorker
             , text <| translate model.language Translate.Version
-
-            -- @todo:
-            -- , text ": "
-            -- , text <| .build Version.version
+            , text ": "
+            , text <| .build Version.version
             ]
         ]
 

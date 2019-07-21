@@ -40,6 +40,7 @@ import Translate.Model exposing (Language(..))
 import Translate.Utils exposing (languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
 import Url
+import Version
 import ZScore.Model
 import ZScore.Update
 
@@ -353,11 +354,11 @@ update msg model =
             updateConfigured
                 (\configured ->
                     let
-                        -- @todo
-                        --                        version =
-                        --                            Version.version
-                        --                                |> .build
-                        --                                |> Json.Encode.string
+                        version =
+                            Version.version
+                                |> .build
+                                |> Json.Encode.string
+
                         cmd =
                             -- @todo
                             --                            Rollbar.send
