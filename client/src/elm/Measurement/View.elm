@@ -17,7 +17,7 @@ import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, s
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
-import Html.Events exposing (on, onClick, onInput, onWithOptions)
+import Html.Events exposing (on, onClick, onInput)
 import Json.Decode
 import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
@@ -186,7 +186,6 @@ viewFloatForm config language currentDate child measurements zscores model =
         floatValue =
             inputValue
                 |> String.toFloat
-                |> Result.toMaybe
 
         -- What is the most recent measurement we've saved, either locally or
         -- to the backend (we don't care at the moment which). If this is a new
@@ -263,7 +262,6 @@ viewFloatForm config language currentDate child measurements zscores model =
                             zScoreText =
                                 model.height
                                     |> String.toFloat
-                                    |> Result.toMaybe
                                     |> Maybe.andThen
                                         (\height ->
                                             Maybe.andThen

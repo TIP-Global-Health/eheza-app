@@ -442,9 +442,9 @@ viewFamilyLinks config language participantId ( sessionId, session ) =
 
         -- Generate markup for each child
         childrenMarkup =
-            List.indexedMap viewChild children
+            List.indexedMap viewChildMarkup children
 
-        viewChild index childId =
+        viewChildMarkup index childId =
             let
                 -- This determines whether this child is the one we were given
                 active =
@@ -472,11 +472,11 @@ viewFamilyLinks config language participantId ( sessionId, session ) =
                 ]
 
         motherMarkup =
-            Maybe.map viewMother maybeMotherId
+            Maybe.map viewMotherMarkup maybeMotherId
                 |> Maybe.Extra.toList
 
         -- Generate the markup for the mother, given a definite motherId
-        viewMother motherId =
+        viewMotherMarkup motherId =
             let
                 -- Figures out whether we're actually looking at this mother
                 active =

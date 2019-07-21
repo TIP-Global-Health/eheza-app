@@ -106,8 +106,10 @@ viewLanguageSwitcherAndVersion model =
             ]
             [ ServiceWorker.View.viewIcon model.serviceWorker
             , text <| translate model.language Translate.Version
-            , text ": "
-            , text <| .build Version.version
+
+            -- @todo:
+            -- , text ": "
+            -- , text <| .build Version.version
             ]
         ]
 
@@ -171,7 +173,7 @@ viewUserPage : UserPage -> Model -> ConfiguredModel -> Html Msg
 viewUserPage page model configured =
     let
         currentDate =
-            fromLocalDateTime <| Date.fromTime model.currentTime
+            fromLocalDateTime model.currentTime
     in
     case getLoggedInModel model of
         Just loggedInModel ->
@@ -200,11 +202,11 @@ viewUserPage page model configured =
 
                 RelationshipPage id1 id2 ->
                     let
-                        page =
+                        page_ =
                             Dict.get ( id1, id2 ) loggedInModel.relationshipPages
                                 |> Maybe.withDefault Pages.Relationship.Model.emptyModel
                     in
-                    Pages.Relationship.View.view model.language currentDate id1 id2 model.indexedDb page
+                    Pages.Relationship.View.view model.language currentDate id1 id2 model.indexedDb page_
                         |> Html.map (MsgLoggedIn << MsgPageRelationship id1 id2)
                         |> flexPageWrapper model
 
