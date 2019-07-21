@@ -118,7 +118,7 @@ decodeUbudehe =
                         succeed Ubudehe4
 
                     _ ->
-                        fail <| Debug.toString ubudehe ++ " is out of range for Ubudehe"
+                        fail <| String.fromInt ubudehe ++ " is out of range for Ubudehe"
             )
 
 
@@ -151,7 +151,7 @@ decodeEducationLevel =
 
                     _ ->
                         fail <|
-                            Debug.toString educationLevel
+                            String.fromInt educationLevel
                                 ++ " is not a recognized EducationLevel"
             )
 

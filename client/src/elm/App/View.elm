@@ -3,6 +3,7 @@ module App.View exposing (view)
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInModel)
 import AssocList as Dict
+import Browser
 import Config.View
 import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
@@ -28,19 +29,22 @@ import Translate.Model exposing (Language(..))
 import Utils.Html exposing (spinner, wrapPage)
 
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
-    case model.configuration of
-        Failure err ->
-            Config.View.view model.language err
+    { title = "EHEZRA app"
+    , body =
+        case model.configuration of
+            Failure err ->
+                [ Config.View.view model.language err ]
 
-        Success configuration ->
-            viewConfiguredModel model configuration
+            Success configuration ->
+                [ viewConfiguredModel model configuration ]
 
-        _ ->
-            -- Don't show anything if config resolution is in process but
-            -- hasn't failed yet.
-            viewLoading
+            _ ->
+                -- Don't show anything if config resolution is in process but
+                -- hasn't failed yet.
+                [ viewLoading ]
+    }
 
 
 {-| Given some HTML, wrap it in the new flex-box based structure.

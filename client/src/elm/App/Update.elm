@@ -3,14 +3,14 @@ port module App.Update exposing (init, subscriptions, updateAndThenFetch)
 import App.Fetch
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInModel)
-import AssocList
+import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.Update
+import Browser.Navigation as Nav
 import Config
 import Device.Decoder
 import Device.Encoder
-import AssocList as Dict
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Http exposing (Error(..))
 import HttpBuilder
@@ -32,15 +32,21 @@ import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
 import Task
+import Time
 import Translate.Model exposing (Language(..))
 import Translate.Utils exposing (languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
+import Url
 import ZScore.Model
 import ZScore.Update
 
 
-init : Flags -> ( Model, Cmd Msg )
-init flags =
+
+-- @todo: account forl url and key
+
+
+init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url key =
     let
         activeLanguage =
             case languageFromCode flags.activeLanguage of
@@ -80,7 +86,7 @@ init flags =
                                     )
                                 |> Task.perform HandlePairedDevice
 
-                        cmd =
+                        cmd_ =
                             -- We always check the cache for an offline session, since that affects
                             -- the UI we'll offer to show at a basic level. (An alternative would be
                             -- to fetch it only when we really, really need it).
@@ -115,7 +121,7 @@ init flags =
                                 [ TryPinCode flags.pinCode ]
                     in
                     ( { model | configuration = Success configuredModel }
-                    , cmd
+                    , cmd_
                     )
                         |> sequence update
                             (List.append tryPinCode
@@ -198,11 +204,11 @@ update msg model =
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.relationshipPages
-                                        |> AssocList.get ( id1, id2 )
+                                        |> Dict.get ( id1, id2 )
                                         |> Maybe.withDefault Pages.Relationship.Model.emptyModel
                                         |> Pages.Relationship.Update.update id1 id2 subMsg
                             in
-                            ( { data | relationshipPages = AssocList.insert ( id1, id2 ) subModel data.relationshipPages }
+                            ( { data | relationshipPages = Dict.insert ( id1, id2 ) subModel data.relationshipPages }
                             , Cmd.map (MsgLoggedIn << MsgPageRelationship id1 id2) subCmd
                             , extraMsgs
                             )
@@ -211,11 +217,11 @@ update msg model =
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.sessionPages
-                                        |> AssocList.get sessionId
+                                        |> Dict.get sessionId
                                         |> Maybe.withDefault Pages.Session.Model.emptyModel
                                         |> Pages.Session.Update.update sessionId model.indexedDb subMsg
                             in
-                            ( { data | sessionPages = AssocList.insert sessionId subModel data.sessionPages }
+                            ( { data | sessionPages = Dict.insert sessionId subModel data.sessionPages }
                             , Cmd.map (MsgLoggedIn << MsgPageSession sessionId) subCmd
                             , extraMsgs
                             )
@@ -392,8 +398,15 @@ update msg model =
                             [ MsgServiceWorker <| ServiceWorker.Model.SendOutgoingMsg ServiceWorker.Model.Update ]
 
                         Just checked ->
+                            let
+                                diffInMillis =
+                                    Time.posixToMillis time - Time.posixToMillis checked
+
+                                diffInMinutes =
+                                    diffInMillis // 60000
+                            in
                             -- Automatically check for updates every hour
-                            if time - checked > 60 * Time.minute then
+                            if diffInMinutes > 60 then
                                 [ MsgServiceWorker <| ServiceWorker.Model.SendOutgoingMsg ServiceWorker.Model.Update ]
 
                             else
@@ -463,14 +476,14 @@ update msg model =
                 -- Update our existing dataWanted to indicate that the data now wanted
                 -- was last wanted now.
                 dataWanted =
-                    List.foldl (\msg -> Dict.insert msg model.currentTime) model.dataWanted dataNowWanted
+                    List.foldl (\msg_ -> Dict.insert msg_ model.currentTime) model.dataWanted dataNowWanted
 
                 fiveMinutes =
                     5 * 1000 * 60
 
                 -- Figure out what to remember and what to forget.
                 ( dataToForget, dataToRemember ) =
-                    Dict.partition (\_ lastWanted -> model.currentTime - lastWanted > fiveMinutes) dataWanted
+                    Dict.partition (\_ lastWanted -> Time.posixToMillis model.currentTime - Time.posixToMillis lastWanted > fiveMinutes) dataWanted
 
                 -- Our new base model, remembering the desired data, and forgetting
                 -- the data to forget.
@@ -484,6 +497,14 @@ update msg model =
                             }
             in
             sequence update dataToFetch ( newModel, Cmd.none )
+
+        --@todo: implement
+        UrlRequested _ ->
+            ( model, Cmd.none )
+
+        --@todo: implement
+        UrlChanged _ ->
+            ( model, Cmd.none )
 
 
 {-| Updates our `nurse` user if the uuid matches the logged-in user.

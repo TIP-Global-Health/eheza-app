@@ -7,7 +7,7 @@ import Browser
 
 
 main =
-    RouteUrl.programWithFlags
+    Browser.application
         { init = App.Update.init
         , update = App.Update.updateAndThenFetch
         , view = App.View.view

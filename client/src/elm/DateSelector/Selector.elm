@@ -235,7 +235,7 @@ viewYearList minimum maximum maybeSelected =
                             else
                                 Json.Encode.null
                         ]
-                        [ text (Debug.toString y) ]
+                        [ text (String.fromInt y) ]
                 )
         )
 
@@ -385,7 +385,7 @@ viewDateTable minimum maximum selected =
                                                 else
                                                     Json.Encode.null
                                             ]
-                                            [ text (day date |> Debug.toString) ]
+                                            [ text (day date |> String.fromInt) ]
                                     )
                             )
                     )
@@ -414,7 +414,7 @@ viewDateTableDisabled date =
                                     (\date_ ->
                                         td
                                             [ class disabled ]
-                                            [ text (day date_ |> Debug.toString) ]
+                                            [ text (day date_ |> String.fromInt) ]
                                     )
                             )
                     )
