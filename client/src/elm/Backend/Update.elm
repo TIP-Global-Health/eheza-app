@@ -186,7 +186,11 @@ updateIndexedDb currentDate nurseId msg model =
                         |> Task.map
                             (\val ->
                                 val.items
-                                    |> List.filter (\( _, relationship ) -> isJust <| toMyRelationship personId relationship)
+                                    |> List.filterMap
+                                        (\( id, relationship ) ->
+                                            toMyRelationship personId relationship
+                                                |> Maybe.map (\myRelationship -> ( id, myRelationship ))
+                                        )
                                     |> Dict.fromList
                             )
                         |> RemoteData.fromTask
@@ -198,7 +202,11 @@ updateIndexedDb currentDate nurseId msg model =
                         |> Task.map
                             (\val ->
                                 val.items
-                                    |> List.filter (\( _, relationship ) -> isJust <| toMyRelationship personId relationship)
+                                    |> List.filterMap
+                                        (\( id, relationship ) ->
+                                            toMyRelationship personId relationship
+                                                |> Maybe.map (\myRelationship -> ( id, myRelationship ))
+                                        )
                                     |> Dict.fromList
                             )
                         |> RemoteData.fromTask
@@ -900,19 +908,18 @@ makeEditableSession sessionId db =
                 checkedIn =
                     -- @todo
                     -- lazy <|
-                    \_ -> cacheCheckedIn offline
+                    -- \_ ->
+                    cacheCheckedIn offline
 
                 summaryByParticipant =
                     -- @todo: Keep lazy?
                     -- Lazy.map (summarizeByParticipant offline) checkedIn
-                    summarizeByParticipant offline
-                        |> checkedIn
+                    summarizeByParticipant offline checkedIn
 
                 summaryByActivity =
                     -- @todo: Keep lazy?
                     -- Lazy.map (summarizeByActivity offline) checkedIn
-                    summarizeByActivity offline
-                        |> checkedIn
+                    summarizeByActivity offline checkedIn
             in
             { offlineSession = offline
             , update = NotAsked
