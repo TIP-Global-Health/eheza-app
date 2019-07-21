@@ -62,8 +62,7 @@ encodeNutritionValue : EverySet ChildNutritionSign -> List ( String, Value )
 encodeNutritionValue nutritions =
     [ ( "nutrition_signs"
       , EverySet.toList nutritions
-            |> List.map encodeNutritionSign
-            |> list
+            |> list encodeNutritionSign
       )
     ]
 
@@ -89,8 +88,7 @@ encodeCounselingSessionValue : ( CounselingTiming, EverySet CounselingTopicId ) 
 encodeCounselingSessionValue ( timing, topics ) =
     [ ( "topics"
       , EverySet.toList topics
-            |> List.map encodeEntityUuid
-            |> list
+            |> list encodeEntityUuid
       )
     , ( "timing"
       , encodeCounselingTiming timing
@@ -112,8 +110,7 @@ encodeFamilyPlanningValue : EverySet FamilyPlanningSign -> List ( String, Value 
 encodeFamilyPlanningValue familyPlannings =
     [ ( "family_planning_signs"
       , EverySet.toList familyPlannings
-            |> List.map encodeFamilyPlanningSign
-            |> list
+            |> list encodeFamilyPlanningSign
       )
     ]
 
@@ -211,38 +208,32 @@ encodeChildMeasurementList measurements =
         [ ( "height"
           , measurements.heights
                 |> Dict.toList
-                |> List.map (encodeEntity encodeHeight)
-                |> list
+                |> list (encodeEntity encodeHeight)
           )
         , ( "muac"
           , measurements.muacs
                 |> Dict.toList
-                |> List.map (encodeEntity encodeMuac)
-                |> list
+                |> list (encodeEntity encodeMuac)
           )
         , ( "nutrition"
           , measurements.nutritions
                 |> Dict.toList
-                |> List.map (encodeEntity encodeNutrition)
-                |> list
+                |> list (encodeEntity encodeNutrition)
           )
         , ( "counseling_session"
           , measurements.counselingSessions
                 |> Dict.toList
-                |> List.map (encodeEntity encodeCounselingSession)
-                |> list
+                |> list (encodeEntity encodeCounselingSession)
           )
         , ( "photo"
           , measurements.photos
                 |> Dict.toList
-                |> List.map (encodeEntity encodePhoto)
-                |> list
+                |> list (encodeEntity encodePhoto)
           )
         , ( "weight"
           , measurements.weights
                 |> Dict.toList
-                |> List.map (encodeEntity encodeWeight)
-                |> list
+                |> list (encodeEntity encodeWeight)
           )
         ]
 
@@ -253,20 +244,17 @@ encodeMotherMeasurementList measurements =
         [ ( "attendance"
           , measurements.attendances
                 |> Dict.toList
-                |> List.map (encodeEntity encodeAttendance)
-                |> list
+                |> list (encodeEntity encodeAttendance)
           )
         , ( "family_planning"
           , measurements.familyPlannings
                 |> Dict.toList
-                |> List.map (encodeEntity encodeFamilyPlanning)
-                |> list
+                |> list (encodeEntity encodeFamilyPlanning)
           )
         , ( "participant_consent"
           , measurements.consents
                 |> Dict.toList
-                |> List.map (encodeEntity encodeParticipantConsent)
-                |> list
+                |> list (encodeEntity encodeParticipantConsent)
           )
         ]
 
