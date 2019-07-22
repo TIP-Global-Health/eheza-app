@@ -42,13 +42,9 @@ looking at?
 -}
 expectedAgeFromForm : NominalDate -> PersonForm -> ExpectedAge
 expectedAgeFromForm currentDate form =
-    -- Our dates are formatted as 2019-07-02, which, strangely, Date.fromString
-    -- doesn't handle correctly. So, we use Time.Iso8601 instead.
     Form.getFieldAsString birthDate form
         |> .value
-        -- @todo
-        -- |> Maybe.andThen (Time.Iso8601.toDate >> Result.toMaybe)
-        |> Maybe.andThen (\_ -> Just emptyNominalDate)
+        |> Maybe.andThen (Date.fromIsoString >> Result.toMaybe)
         |> isAdult currentDate
         |> (\adult ->
                 case adult of

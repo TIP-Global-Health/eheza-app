@@ -18,6 +18,7 @@ import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSessio
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getMyMother)
 import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements)
+import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate, emptyNominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
@@ -443,9 +444,9 @@ updateIndexedDb currentDate nurseId msg model =
                         |> RemoteData.toMaybe
                         |> Maybe.andThen .birthDate
                         -- @todo
-                        -- |> Maybe.withDefault (Time.Date.addDays -28 currentDate)
-                        |> Maybe.withDefault emptyNominalDate
+                        |> Maybe.withDefault (Date.add Days -28 currentDate)
 
+                -- |> Maybe.withDefault emptyNominalDate
                 defaultAdultActivities =
                     case normalized.relatedBy of
                         ParentOf ->

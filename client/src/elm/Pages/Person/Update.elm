@@ -83,8 +83,7 @@ update currentDate msg people model =
         DateSelected relation date ->
             let
                 dateAsString =
-                    fromDate date
-                        |> formatYYYYMMDD
+                    Date.format "yyyy-MM-dd" date
 
                 setFieldMsg =
                     Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm relation

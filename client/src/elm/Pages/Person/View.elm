@@ -11,6 +11,7 @@ import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, al
 import Backend.Person.Utils exposing (isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
+import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import Form exposing (Form)
 import Form.Field
@@ -450,15 +451,11 @@ viewCreateForm language currentDate relationId model db =
 
         birthDateInput =
             let
-                today =
-                    toLocalDateTime currentDate 0 0 0 0
 
-                -- @todo
-                --                selectedDate =
-                --                    Form.getFieldAsString Backend.Person.Form.birthDate personForm
-                --                        |> .value
-                --                        |> Maybe.andThen (Time.Iso8601.toDate >> Result.toMaybe)
-                --                        |> Maybe.map (\date -> toLocalDateTime date 12 0 0 0)
+                selectedDate =
+                    Form.getFieldAsString Backend.Person.Form.birthDate personForm
+                        |> .value
+                        |> Maybe.andThen (Date.fromIsoString >> Result.toMaybe)
             in
             div [ class "ui grid" ]
                 [ div
@@ -468,15 +465,13 @@ viewCreateForm language currentDate relationId model db =
                     [ class "seven wide column required" ]
                     [ text <| translate language Translate.DateOfBirth ++ ":"
                     , br [] []
-
-                    -- @todo
-                    --                    , DateSelector.SelectorDropdown.view
-                    --                        ToggleDateSelector
-                    --                        (DateSelected relationId)
-                    --                        model.isDateSelectorOpen
-                    --                        (Date.add Year -60 today)
-                    --                        today
-                    --                        selectedDate
+                    , DateSelector.SelectorDropdown.view
+                        ToggleDateSelector
+                        (DateSelected relationId)
+                        model.isDateSelectorOpen
+                        (Date.add Years -60 currentDate)
+                        currentDate
+                        selectedDate
                     ]
                 , div
                     [ class "three wide column" ]

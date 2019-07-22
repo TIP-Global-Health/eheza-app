@@ -99,12 +99,7 @@ different day in a different time zone.
 -}
 fromLocalDateTime : Time.Posix -> NominalDate
 fromLocalDateTime date =
-    -- @todo
-    --    Time.Date.date
-    --        (Date.year date)
-    --        (monthToNumber (Date.month date))
-    --        (Date.day date)
-    emptyNominalDate
+    Date.fromPosix Time.utc date
 
 
 {-| Converts an `elm-lang/core` `Date` to a `NominalDate`.

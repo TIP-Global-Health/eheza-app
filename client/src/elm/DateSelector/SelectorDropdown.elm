@@ -84,11 +84,9 @@ viewWithButton viewButton close toSelect isOpen minimum maximum selected =
 
 defaultViewButton : msg -> Bool -> Maybe Date -> Html msg
 defaultViewButton toggle isOpen maybeDate =
-    -- @todo
-    --    input
-    --        [ value (maybeDate |> Maybe.map (Date.toFormattedString "MM-dd-yyyy") |> Maybe.withDefault "")
-    --        , readonly True
-    --        , onClick toggle
-    --        ]
-    --        []
-    div [] [ text "@todo defaultViewButton" ]
+    input
+        [ value (maybeDate |> Maybe.map (Date.format "MM-dd-yyyy") |> Maybe.withDefault "")
+        , readonly True
+        , onClick toggle
+        ]
+        []
