@@ -34,6 +34,7 @@ import Http
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
+import Time exposing (Month(..))
 import Translate.Model exposing (TranslationSet)
 import Translate.Utils exposing (..)
 
@@ -320,8 +321,7 @@ type TranslationId
     | ReportResultsOfSearch Int
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
-      -- @todo
-      --| ResolveMonth Month
+    | ResolveMonth Month
     | Retry
     | Save
     | SaveError
@@ -1748,9 +1748,9 @@ translationSet trans =
             , kinyarwanda = Just <| Debug.toString completed ++ " / " ++ Debug.toString (pending + completed) ++ " Raporo irarangiye"
             }
 
-        -- @todo
-        -- ResolveMonth month ->
-        --     translateMonth month
+        ResolveMonth month ->
+            translateMonth month
+
         Retry ->
             { english = "Retry"
             , kinyarwanda = Just "Kongera kugerageza"
@@ -2469,70 +2469,68 @@ translateLoginPhrase phrase =
             }
 
 
+translateMonth : Month -> TranslationSet String
+translateMonth month =
+    case month of
+        Jan ->
+            { english = "January"
+            , kinyarwanda = Just "Mutarama"
+            }
 
--- @todo
--- translateMonth : Month -> TranslationSet String
--- translateMonth month =
---     case month of
---         Jan ->
---             { english = "January"
---             , kinyarwanda = Just "Mutarama"
---             }
---
---         Feb ->
---             { english = "February"
---             , kinyarwanda = Just "Gashyantare"
---             }
---
---         Mar ->
---             { english = "March"
---             , kinyarwanda = Just "Werurwe"
---             }
---
---         Apr ->
---             { english = "April"
---             , kinyarwanda = Just "Mata"
---             }
---
---         May ->
---             { english = "May"
---             , kinyarwanda = Just "Gicurasi"
---             }
---
---         Jun ->
---             { english = "June"
---             , kinyarwanda = Just "Kamena"
---             }
---
---         Jul ->
---             { english = "July"
---             , kinyarwanda = Just "Nyakanga"
---             }
---
---         Aug ->
---             { english = "August"
---             , kinyarwanda = Just "Kanama"
---             }
---
---         Sep ->
---             { english = "September"
---             , kinyarwanda = Just "Nzeri"
---             }
---
---         Oct ->
---             { english = "October"
---             , kinyarwanda = Just "Ukwakira"
---             }
---
---         Nov ->
---             { english = "November"
---             , kinyarwanda = Just "Ugushyingo"
---             }
---
---         Date.Dec ->
---             { english = "December"
---             , kinyarwanda = Just "Ukuboza"
---             }
+        Feb ->
+            { english = "February"
+            , kinyarwanda = Just "Gashyantare"
+            }
+
+        Mar ->
+            { english = "March"
+            , kinyarwanda = Just "Werurwe"
+            }
+
+        Apr ->
+            { english = "April"
+            , kinyarwanda = Just "Mata"
+            }
+
+        May ->
+            { english = "May"
+            , kinyarwanda = Just "Gicurasi"
+            }
+
+        Jun ->
+            { english = "June"
+            , kinyarwanda = Just "Kamena"
+            }
+
+        Jul ->
+            { english = "July"
+            , kinyarwanda = Just "Nyakanga"
+            }
+
+        Aug ->
+            { english = "August"
+            , kinyarwanda = Just "Kanama"
+            }
+
+        Sep ->
+            { english = "September"
+            , kinyarwanda = Just "Nzeri"
+            }
+
+        Oct ->
+            { english = "October"
+            , kinyarwanda = Just "Ukwakira"
+            }
+
+        Nov ->
+            { english = "November"
+            , kinyarwanda = Just "Ugushyingo"
+            }
+
+        Dec ->
+            { english = "December"
+            , kinyarwanda = Just "Ukuboza"
+            }
 
 
 translateHttpError : Http.Error -> TranslationSet String

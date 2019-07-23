@@ -9,7 +9,7 @@ import Backend.Person.Model exposing (Person)
 import Date exposing (toRataDie)
 import Form
 import Form.Field
-import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD, fromDate, fromLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD, fromLocalDateTime)
 import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 

@@ -2,10 +2,10 @@ module Gizra.NominalDate exposing
     ( NominalDate
     , decodeYYYYMMDD, encodeYYYYMMDD
     , formatYYYYMMDD, formatMMDDYYYY
-    , fromLocalDateTime, toLocalDateTime
+    , fromLocalDateTime
     , diffDays, diffCalendarMonthsAndDays
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
-    , compare, emptyNominalDate, fromDate
+    , compare, emptyNominalDate
     )
 
 {-| Some utilities for dealing with "pure" dates that have no time or
@@ -14,7 +14,7 @@ time zone information.
 @docs NominalDate
 @docs decodeYYYYMMDD, encodeYYYYMMDD
 @docs formatYYYYMMDD, formatMMDDYYYY
-@docs fromLocalDateTime, toLocalDateTime
+@docs fromLocalDateTime
 @docs diffDays, diffCalendarMonthsAndDays
 
 
@@ -24,11 +24,11 @@ time zone information.
 
 -}
 
-import Date exposing (Date, fromRataDie)
+import Date
 import Json.Decode exposing (Decoder, andThen, field, map2, string)
 import Json.Decode.Extra exposing (fromResult)
 import Json.Encode exposing (Value, object)
-import Time
+import Time exposing (Month(..))
 
 
 {-| An alias for `Date.Date` from <https://github.com/justinmimbs/date>. Represents
@@ -42,7 +42,7 @@ type alias NominalDate =
 -}
 emptyNominalDate : NominalDate
 emptyNominalDate =
-    fromRataDie 1
+    Date.fromRataDie 1
 
 
 {-| A range of nominal dates, with a start and end.
@@ -57,10 +57,8 @@ type alias NominalDateRange =
 
 
 compare : NominalDate -> NominalDate -> Order
-compare d1 d2 =
-    -- @todo
-    -- Implement
-    EQ
+compare =
+    Date.compare
 
 
 {-| Convert a nominal date to formatted string.
@@ -71,10 +69,8 @@ compare d1 d2 =
 
 -}
 formatMMDDYYYY : NominalDate -> String
-formatMMDDYYYY date =
-    -- @todo
-    -- addLeadingZero (Debug.toString (month date)) ++ "/" ++ addLeadingZero (Debug.toString (day date)) ++ "/" ++ addLeadingZeroes 4 (Debug.toString (year date))
-    "@todo"
+formatMMDDYYYY =
+    Date.format "MM-dd-yyyy"
 
 
 {-| Convert nominal date to a formatted string..
@@ -84,9 +80,7 @@ formatMMDDYYYY date =
 -}
 formatYYYYMMDD : NominalDate -> String
 formatYYYYMMDD date =
-    -- @todo
-    -- addLeadingZeroes 4 (Debug.toString (year date)) ++ "-" ++ addLeadingZero (Debug.toString (month date)) ++ "-" ++ addLeadingZero (Debug.toString (day date))
-    "@todo"
+    Date.format "yyyy-MM-dd" date
 
 
 {-| Converts an `elm-lang/core` `Date` to a `NominalDate`.
@@ -98,46 +92,8 @@ different day in a different time zone.
 
 -}
 fromLocalDateTime : Time.Posix -> NominalDate
-fromLocalDateTime date =
-    Date.fromPosix Time.utc date
-
-
-{-| Converts an `elm-lang/core` `Date` to a `NominalDate`.
-
-We pick up the date part according to whatever the local browser's time zone
-is. Thus, results will be inconsistent from one locality to the next ... since
-the same universal time might be considered one day in one time zone and a
-different day in a different time zone.
-
--}
-fromDate : Date -> NominalDate
-fromDate date =
-    -- @todo
-    --    Time.Date.date
-    --        (Date.year date)
-    --        (monthToNumber (Date.month date))
-    --        (Date.day date)
-    emptyNominalDate
-
-
-{-| Converts a `NominalDate` to an Elm-core `Date`, with the supplied values
-for hour, minute, second and milliseconds (in that order).
-
-The resulting `Date` will be at that time in the local time zone.
-
--}
-toLocalDateTime : NominalDate -> Int -> Int -> Int -> Int -> Time.Posix
-toLocalDateTime nominal hour minutes seconds milliseconds =
-    -- @todo
-    --    fromParts
-    --        (year nominal)
-    --        (numberToMonth <| month nominal)
-    --        (day nominal)
-    --        hour
-    --        minutes
-    --        seconds
-    --        milliseconds
-    Time.millisToPosix 0
+fromLocalDateTime =
+    Date.fromPosix Time.utc
 
 
 {-| Decodes nominal date from string of the form "2017-02-20".
@@ -149,9 +105,7 @@ toLocalDateTime nominal hour minutes seconds milliseconds =
 -}
 decodeYYYYMMDD : Decoder NominalDate
 decodeYYYYMMDD =
-    -- @todo
-    -- andThen (fromResult << Result.mapError renderText << Time.Iso8601.toDate) string
-    Json.Decode.succeed emptyNominalDate
+    andThen (fromResult << Date.fromIsoString) string
 
 
 {-| Encode nominal date to string of the form "2017-02-20".
@@ -222,13 +176,6 @@ The result is positive if the second parameter is after the first parameter.
 -}
 diffDays : NominalDate -> NominalDate -> Int
 diffDays low high =
-    -- delta gives us separate deltas for years, months and days ... so, for
-    -- instance, for a difference of 2 years and 1 month, you'd get
-    --
-    -- { years : 2
-    -- , months: 25
-    -- , days: 760 -- roughly, depending on which months are involved
-    -- }
     Date.diff Date.Days high low
 
 
@@ -269,32 +216,79 @@ parameter.
 -}
 diffCalendarMonthsAndDays : NominalDate -> NominalDate -> { months : Int, days : Int }
 diffCalendarMonthsAndDays low high =
-    -- @todo
-    --    let
-    --        uncorrected =
-    --            { days = day high - day low
-    --            , months = (year high * 12 + month high) - (year low * 12 + month low)
-    --            }
-    --    in
-    --    if uncorrected.days >= 0 then
-    --        -- This is the easy case ... we're at the same day (or further
-    --        -- along) in the target month than the original month, so we're
-    --        -- done ... the answer is some number of full months (however
-    --        -- long they were) and some number of additional days.
-    --        uncorrected
-    --
-    --    else
-    --        -- This is the harder case. We're not as far along in our target
-    --        -- month as we were in the original month. So, we need to subtract
-    --        -- 1 from our months, and add something to the (negative) days.
-    --        --
-    --        -- Basically, we want to add however many days there were in the
-    --        -- original month. We're "borrowing" that number of days, to use
-    --        -- the language of subtraction-by-hand. And, it's the original
-    --        -- month that is the "partial" month we're borrowing from ... all
-    --        -- intervening months are full months, and the current month isn't
-    --        -- finished, so it can't matter how many days it has.
-    --        { months = uncorrected.months - 1
-    --        , days = uncorrected.days + Maybe.withDefault 0 (daysInMonth (year low) (month low))
-    --        }
-    { months = 1, days = 2 }
+    let
+        uncorrected =
+            { days = Date.day high - Date.day low
+            , months = (Date.year high * 12 + Date.monthNumber high) - (Date.year low * 12 + Date.monthNumber low)
+            }
+    in
+    if uncorrected.days >= 0 then
+        -- This is the easy case ... we're at the same day (or further
+        -- along) in the target month than the original month, so we're
+        -- done ... the answer is some number of full months (however
+        -- long they were) and some number of additional days.
+        uncorrected
+
+    else
+        -- This is the harder case. We're not as far along in our target
+        -- month as we were in the original month. So, we need to subtract
+        -- 1 from our months, and add something to the (negative) days.
+        --
+        -- Basically, we want to add however many days there were in the
+        -- original month. We're "borrowing" that number of days, to use
+        -- the language of subtraction-by-hand. And, it's the original
+        -- month that is the "partial" month we're borrowing from ... all
+        -- intervening months are full months, and the current month isn't
+        -- finished, so it can't matter how many days it has.
+        { months = uncorrected.months - 1
+        , days = uncorrected.days + daysInMonth (Date.year low) (Date.month low)
+        }
+
+
+daysInMonth : Int -> Month -> Int
+daysInMonth y m =
+    case m of
+        Jan ->
+            31
+
+        Feb ->
+            if isLeapYear y then
+                29
+
+            else
+                28
+
+        Mar ->
+            31
+
+        Apr ->
+            30
+
+        May ->
+            31
+
+        Jun ->
+            30
+
+        Jul ->
+            31
+
+        Aug ->
+            31
+
+        Sep ->
+            30
+
+        Oct ->
+            31
+
+        Nov ->
+            30
+
+        Dec ->
+            31
+
+
+isLeapYear : Int -> Bool
+isLeapYear y =
+    modBy 4 y == 0 && modBy 100 y /= 0 || modBy 400 y == 0

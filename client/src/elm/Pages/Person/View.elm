@@ -17,7 +17,7 @@ import Form exposing (Form)
 import Form.Field
 import Form.Input
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, toLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -451,7 +451,6 @@ viewCreateForm language currentDate relationId model db =
 
         birthDateInput =
             let
-
                 selectedDate =
                     Form.getFieldAsString Backend.Person.Form.birthDate personForm
                         |> .value
