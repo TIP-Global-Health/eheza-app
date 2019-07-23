@@ -5,7 +5,7 @@ import Backend.Entities exposing (HealthCenterId)
 import RemoteData
 
 
-{-| Returns the logged in model if we're logged in.
+{-| Returns the logged in model and selected health center, if we're logged in.
 -}
 getLoggedInData : Model -> Maybe ( HealthCenterId, LoggedInModel )
 getLoggedInData model =

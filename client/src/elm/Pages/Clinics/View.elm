@@ -97,7 +97,9 @@ viewLoadedClinicList language user selectedHealthCenterId ( clinics, sync ) =
             clinics
                 |> AllDictList.filter
                     (\_ clinic ->
+                        -- Group belongs to seleced health center.
                         (clinic.healthCenterId == selectedHealthCenterId)
+                            -- Health center is synced.
                             && AllDictList.member clinic.healthCenterId sync
                     )
                 |> AllDictList.sortBy .name
