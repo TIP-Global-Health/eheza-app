@@ -1,13 +1,15 @@
-module App.Utils exposing (getLoggedInModel)
+module App.Utils exposing (getLoggedInData)
 
 import App.Model exposing (..)
+import Backend.Entities exposing (HealthCenterId)
 import RemoteData
 
 
 {-| Returns the logged in model if we're logged in.
 -}
-getLoggedInModel : Model -> Maybe LoggedInModel
-getLoggedInModel model =
+getLoggedInData : Model -> Maybe ( HealthCenterId, LoggedInModel )
+getLoggedInData model =
     model.configuration
         |> RemoteData.toMaybe
         |> Maybe.andThen (.loggedIn >> RemoteData.toMaybe)
+        |> Maybe.map2 (\healthCenterId loggedIn -> ( healthCenterId, loggedIn )) model.healthCenterId
