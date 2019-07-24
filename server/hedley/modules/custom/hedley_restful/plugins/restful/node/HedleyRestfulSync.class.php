@@ -459,6 +459,22 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     }
     catch (Exception $e) {
       $transaction->rollback();
+
+      $m1 = '[MAIN] - ';
+      $m2 = '[DATA] - ';
+      foreach ($item as $k => $v) {
+        $m1 .= "  $k: $v  ||| ";
+      }
+
+      foreach ($item['data'] as $k => $v) {
+        $value = is_array($v) ? implode(', ', $v) : $v;
+
+        $m2 .= "  $k: $value";
+      }
+
+      watchdog('debug', $m1);
+      watchdog('debug', $m2);
+
       throw $e;
     }
 
