@@ -19,7 +19,7 @@ import Date
 import Form.Field exposing (Field)
 import Form.Init exposing (setGroup, setString)
 import Form.Validate as Validate exposing (Validation, field)
-import Gizra.NominalDate exposing (NominalDate, NominalDateRange, diffCalendarMonthsAndDays, emptyNominalDate, formatYYYYMMDD, fromLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, NominalDateRange, diffCalendarMonthsAndDays, formatYYYYMMDD, fromLocalDateTime)
 import Html exposing (Html)
 import Translate exposing (Language, translate)
 

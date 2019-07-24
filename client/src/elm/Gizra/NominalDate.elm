@@ -5,7 +5,7 @@ module Gizra.NominalDate exposing
     , fromLocalDateTime
     , diffDays, diffCalendarMonthsAndDays
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
-    , compare, emptyNominalDate
+    , compare
     )
 
 {-| Some utilities for dealing with "pure" dates that have no time or
@@ -36,13 +36,6 @@ a "pure" date without any time information or time zone information.
 -}
 type alias NominalDate =
     Date.Date
-
-
-{-| @todo: Remove, just for upgrade.
--}
-emptyNominalDate : NominalDate
-emptyNominalDate =
-    Date.fromRataDie 1
 
 
 {-| A range of nominal dates, with a start and end.

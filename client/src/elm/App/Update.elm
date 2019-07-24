@@ -12,6 +12,7 @@ import Browser.Navigation as Nav
 import Config
 import Device.Decoder
 import Device.Encoder
+import Dict as LegacyDict
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Http exposing (Error(..))
 import HttpBuilder
@@ -360,17 +361,15 @@ update msg model =
                                 |> Json.Encode.string
 
                         cmd =
-                            -- @todo
-                            --                            Rollbar.send
-                            --                                configured.config.rollbarToken
-                            --                                (Rollbar.scope "user")
-                            --                                (Rollbar.environment configured.config.name)
-                            --                                0
-                            --                                level
-                            --                                message
-                            --                                (Dict.insert "build" version data)
-                            --                                |> Task.attempt HandleRollbar
-                            Cmd.none
+                            Rollbar.send
+                                configured.config.rollbarToken
+                                (Rollbar.scope "user")
+                                (Rollbar.environment configured.config.name)
+                                0
+                                level
+                                message
+                                (Dict.insert "build" version data |> Dict.toList |> LegacyDict.fromList)
+                                |> Task.attempt HandleRollbar
                     in
                     ( configured
                     , cmd

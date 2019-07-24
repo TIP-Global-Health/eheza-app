@@ -14,6 +14,7 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (assignedToClinic)
 import Backend.Session.Model exposing (Session)
 import Backend.SyncData.Model exposing (SyncData)
+import Date exposing (Unit(..))
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
@@ -182,24 +183,22 @@ viewFoundClinic language currentDate nurse clinicId clinic sessions =
 
         recentAndUpcomingSessions =
             sessions
-                -- @todo
-                -- Implement `delta`
-                -- |> Dict.filter
-                --     (\_ session ->
-                --         let
-                --             deltaToEndDate =
-                --                 delta session.scheduledDate.end currentDate
-                --
-                --             deltaToStartDate =
-                --                 delta session.scheduledDate.start currentDate
-                --         in
-                --         -- Ends last week or next week
-                --         (abs deltaToEndDate.days <= daysToShow)
-                --             || -- Starts last week or next week
-                --                (abs deltaToStartDate.days <= daysToShow)
-                --             || -- Is between start and end date
-                --                (deltaToStartDate.days <= 0 && deltaToEndDate.days >= 0)
-                --     )
+                |> Dict.filter
+                    (\_ session ->
+                        let
+                            deltaToEndDateDays =
+                                Date.diff Days session.scheduledDate.end currentDate
+
+                            deltaToStartDateDays =
+                                Date.diff Days session.scheduledDate.start currentDate
+                        in
+                        -- Ends last week or next week
+                        (abs deltaToEndDateDays <= daysToShow)
+                            || -- Starts last week or next week
+                               (abs deltaToStartDateDays <= daysToShow)
+                            || -- Is between start and end date
+                               (deltaToStartDateDays <= 0 && deltaToEndDateDays >= 0)
+                    )
                 |> Dict.map (viewSession language currentDate)
                 |> Dict.values
 

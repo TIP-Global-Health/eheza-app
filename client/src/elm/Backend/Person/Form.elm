@@ -9,7 +9,7 @@ import Date
 import Form exposing (..)
 import Form.Init exposing (..)
 import Form.Validate exposing (..)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, emptyNominalDate)
+import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
 import Json.Decode
 import Maybe.Extra exposing (unwrap)
 import Regex exposing (Regex)
