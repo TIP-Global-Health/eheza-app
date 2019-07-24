@@ -521,8 +521,12 @@ update msg model =
                             in
                             ( model, Nav.pushUrl model.navigationKey (Url.toString url) )
 
+                        -- As we use a tag in multiple places in HTML and CSS,
+                        -- we'll get `External ""` msg when it's clicked.
+                        -- Therefore, we will not react to external Url requests,
+                        -- because app does not require it anyway.
                         Browser.External href ->
-                            ( model, Nav.load href )
+                            ( model, Cmd.none )
             in
             ( modelUpdated
             , cmd
