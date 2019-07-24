@@ -610,8 +610,7 @@ subscriptions model =
     let
         checkDataWanted =
             if model.scheduleDataWantedCheck then
-                [-- @todo
-                 -- AnimationFrame.times (always CheckDataWanted)
+                [ Time.every 50 (always CheckDataWanted)
                 ]
 
             else
