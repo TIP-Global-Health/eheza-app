@@ -89,7 +89,34 @@ var dropZone = undefined;
 
 Dropzone.autoDiscover = false;
 
-function bindDropZone() {
+elmApp.ports.bindDropZone.subscribe(function() {
+  waitForElement('dropzone', attachDropzone, null);
+});
+
+/**
+ * Wait for id to appear before invoking related functions.
+ */
+function waitForElement(id, fn, model, tryCount) {
+
+  // Repeat the timeout only maximum 5 times, which sohuld be enough for the
+  // element to appear.
+  tryCount = tryCount || 5;
+  --tryCount;
+  if (tryCount == 0) {
+    return;
+  }
+
+  setTimeout(function() {
+
+    var result = fn.call(null, id, model, tryCount);
+    if (!result) {
+      // Element still doesn't exist, so wait some more.
+      waitForElement(id, fn, model, tryCount);
+    }
+  }, 50);
+}
+
+function attachDropzone() {
   // We could make this dynamic, if needed
   var selector = "#dropzone";
   var element = document.querySelector(selector);

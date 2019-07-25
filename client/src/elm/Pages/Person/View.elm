@@ -32,7 +32,7 @@ import Set
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
 import Utils.GeoLocation exposing (GeoInfo, geoInfo, getGeoLocation)
-import Utils.Html exposing (script, thumbnailImage, viewLoading)
+import Utils.Html exposing (thumbnailImage, viewLoading)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
 
@@ -686,11 +686,6 @@ viewCreateForm language currentDate relationId model db =
                         ]
                     ]
                     |> keyed "dropzone"
-
-                -- This runs the function from our `app.js` at the precise moment this gets
-                -- written to the DOM. Indeed very convenient.
-                , script "bindDropZone()"
-                    |> keyed "script"
                 ]
 
         levelOfEducationInput =

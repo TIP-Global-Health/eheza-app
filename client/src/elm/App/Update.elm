@@ -21,6 +21,7 @@ import Json.Encode
 import Pages.Device.Model
 import Pages.Device.Update
 import Pages.Page exposing (..)
+import Pages.Participant.Update
 import Pages.People.Update
 import Pages.Person.Update
 import Pages.PinCode.Model
@@ -351,9 +352,21 @@ update msg model =
                 redirectUrl =
                     model.url
                         |> (\url -> { url | fragment = fragment, query = Nothing })
+
+                cmds =
+                    Nav.pushUrl model.navigationKey (Url.toString redirectUrl)
+                        :: (case page of
+                                -- When switching to registration form, bind
+                                -- DropZone to be able to take pictures.
+                                UserPage (CreatePersonPage _) ->
+                                    [ Pages.Participant.Update.bindDropZone () ]
+
+                                _ ->
+                                    []
+                           )
             in
             ( { model | activePage = page }
-            , Nav.pushUrl model.navigationKey (Url.toString redirectUrl)
+            , Cmd.batch cmds
             )
 
         SendRollbar level message data ->

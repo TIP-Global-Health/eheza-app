@@ -27,7 +27,7 @@ import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
 import Translate as Trans exposing (Language, TranslationId, translate)
-import Utils.Html exposing (script, viewModal)
+import Utils.Html exposing (viewModal)
 import Utils.NominalDate exposing (Days(..), diffDays)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
 import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
@@ -479,11 +479,6 @@ viewPhoto language measurement photo =
                         ]
                     ]
                     |> keyed "dropzone"
-
-                -- This runs the function from our `app.js` at the precise moment this gets
-                -- written to the DOM. Isn't that convenient?
-                , script "bindDropZone()"
-                    |> keyed "script"
                 ]
             ]
         , keyed "button" <|

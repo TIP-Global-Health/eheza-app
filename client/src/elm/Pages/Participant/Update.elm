@@ -1,4 +1,4 @@
-module Pages.Participant.Update exposing (updateChild, updateMother)
+port module Pages.Participant.Update exposing (bindDropZone, updateChild, updateMother)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
 import Backend.Measurement.Model exposing (MeasurementData, MotherMeasurements)
@@ -51,9 +51,20 @@ updateChild msg model childForm =
             ChildUpdateReturns model Cmd.none childForm Nothing (Just page)
 
         SetSelectedActivity val ->
+            let
+                cmd =
+                    case val of
+                        -- When switching to ChildPicture activity, bind
+                        -- DropZone to be able to take pictures.
+                        ChildPicture ->
+                            bindDropZone ()
+
+                        _ ->
+                            Cmd.none
+            in
             ChildUpdateReturns
                 { model | selectedActivity = Just val }
-                Cmd.none
+                cmd
                 childForm
                 Nothing
                 Nothing
@@ -113,3 +124,6 @@ updateMother msg model motherForm measurements =
                 motherForm
                 Nothing
                 Nothing
+
+
+port bindDropZone : () -> Cmd msg
