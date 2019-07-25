@@ -1,8 +1,9 @@
-module Backend.Session.Encoder exposing (encodeClosed, encodeSession)
+module Backend.Session.Encoder exposing (encodeSession)
 
 import Backend.Session.Model exposing (..)
 import Gizra.NominalDate exposing (encodeDrupalRange, encodeYYYYMMDD)
 import Json.Encode exposing (..)
+import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid, fromEntityUuid)
 
 
@@ -10,13 +11,11 @@ import Restful.Endpoint exposing (encodeEntityUuid, fromEntityUuid)
 -}
 encodeSession : Session -> List ( String, Value )
 encodeSession session =
-    [ ( "scheduled_date", encodeDrupalRange encodeYYYYMMDD session.scheduledDate )
+    [ ( "scheduled_date"
+      , object
+            [ ( "value", encodeYYYYMMDD session.startDate )
+            , ( "value2", maybe encodeYYYYMMDD session.endDate )
+            ]
+      )
     , ( "clinic", encodeEntityUuid session.clinicId )
-    , encodeClosed session.closed
-    , ( "training", bool session.training )
     ]
-
-
-encodeClosed : Bool -> ( String, Value )
-encodeClosed closed =
-    ( "closed", bool closed )

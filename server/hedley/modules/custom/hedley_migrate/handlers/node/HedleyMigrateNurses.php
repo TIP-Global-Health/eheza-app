@@ -10,17 +10,30 @@
  */
 class HedleyMigrateNurses extends HedleyMigrateBase {
 
+  /**
+   * {@inheritdoc}
+   */
   public $entityType = 'node';
+
+  /**
+   * {@inheritdoc}
+   */
   public $bundle = 'nurse';
 
+  /**
+   * {@inheritdoc}
+   */
   protected $csvColumns = [
     'id',
     'title',
     'field_role',
-    'field_clinics',
+    'field_health_centers',
     'field_pin_code',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
   protected $simpleMultipleMappings = [
     'field_role',
     'field_pin_code',
@@ -39,9 +52,9 @@ class HedleyMigrateNurses extends HedleyMigrateBase {
     ];
 
     $this
-      ->addFieldMapping('field_clinics', 'field_clinics')
+      ->addFieldMapping('field_health_centers', 'field_health_centers')
       ->separator('|')
-      ->sourceMigration('HedleyMigrateClinics');
+      ->sourceMigration('HedleyMigrateHealthCenters');
   }
 
 }

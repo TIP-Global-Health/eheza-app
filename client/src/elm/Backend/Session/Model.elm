@@ -20,7 +20,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
-import Gizra.NominalDate exposing (NominalDateRange)
+import Gizra.NominalDate exposing (NominalDate, NominalDateRange)
 import Measurement.Model
 import RemoteData exposing (RemoteData(..), WebData)
 
@@ -34,10 +34,9 @@ are meant to stay throughout a training workshop).
 
 -}
 type alias Session =
-    { scheduledDate : NominalDateRange
+    { startDate : NominalDate
+    , endDate : Maybe NominalDate
     , clinicId : ClinicId
-    , closed : Bool
-    , training : Bool
     }
 
 

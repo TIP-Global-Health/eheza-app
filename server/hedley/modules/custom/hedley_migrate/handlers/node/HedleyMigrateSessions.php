@@ -10,9 +10,19 @@
  */
 class HedleyMigrateSessions extends HedleyMigrateBase {
 
+  /**
+   * {@inheritdoc}
+   */
   protected $entityType = 'node';
+
+  /**
+   * {@inheritdoc}
+   */
   protected $bundle = 'session';
 
+  /**
+   * {@inheritdoc}
+   */
   protected $csvColumns = [
     'id',
     'field_clinic',

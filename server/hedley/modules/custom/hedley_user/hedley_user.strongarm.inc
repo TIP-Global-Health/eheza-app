@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * hedley_user.strongarm.inc
@@ -19,7 +20,7 @@ function hedley_user_strongarm() {
     'extra_fields' => array(
       'form' => array(
         'title' => array(
-          'weight' => '-5',
+          'weight' => '0',
         ),
       ),
       'display' => array(),

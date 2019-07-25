@@ -76,6 +76,7 @@ type LoginPhrase
     | PinCode
     | PinCodeRejected
     | SignIn
+    | SignOut
     | Username
     | WorkOffline
     | YouMustLoginBefore
@@ -104,6 +105,7 @@ type ValidationError
     | InvalidBirthDate
     | InvalidBirthDateForAdult
     | InvalidBirthDateForChild
+    | InvalidHmisNumber
     | LengthError Int
     | LettersOnly
     | RequiredField
@@ -166,12 +168,14 @@ type TranslationId
     | Cell
     | ChartPhrase ChartPhrase
     | CheckIn
+    | ChildHmisNumber
     | ChildDemographicInformation
     | ChildNutritionSignLabel ChildNutritionSign
     | ChildNutritionSignReport ChildNutritionSign
     | ChildOf
     | Children
     | ClickTheCheckMark
+    | Clinical
     | GroupNotFound
     | Group
     | Groups
@@ -188,6 +192,7 @@ type TranslationId
     | CounselorReviewed
     | CounselorSignature
     | CreateGroupEncounter
+    | CreateRelationship
     | CreateTrainingGroupEncounters
     | DeleteTrainingGroupEncounters
     | Dashboard
@@ -223,6 +228,7 @@ type TranslationId
     | Gender Gender
     | GenderLabel
     | GoHome
+    | GroupAssessment
     | HaveYouSynced
     | HealthCenter
     | HIVStatus HIVStatus
@@ -334,6 +340,7 @@ type TranslationId
     | SelectGroup
     | SelectLanguage
     | SelectYourGroup
+    | SelectYourHealthCenter
     | ServiceWorkerActive
     | ServiceWorkerCurrent
     | ServiceWorkerCheckForUpdates
@@ -383,6 +390,7 @@ type TranslationId
     | ViewProgressReport
     | Village
     | WelcomeUser String
+    | WhatDoYouWantToDo
     | Year
     | Yes
     | YouAreNotAnAdmin
@@ -748,6 +756,11 @@ translationSet trans =
             , kinyarwanda = Just "Kureba abaje"
             }
 
+        ChildHmisNumber ->
+            { english = "Child HMIS Number"
+            , kinyarwanda = Nothing
+            }
+
         ChildDemographicInformation ->
             { english = "Child Demographic Information"
             , kinyarwanda = Nothing
@@ -842,6 +855,11 @@ translationSet trans =
             , kinyarwanda = Just "Kanda (kuri) ku kazu niba umubyeyi ahari. Ku kazu harahita hahindura ibara habe icyaytsi niba wemeje ko umubyeyi ahari"
             }
 
+        Clinical ->
+            { english = "Clinical"
+            , kinyarwanda = Nothing
+            }
+
         GroupNotFound ->
             { english = "Group not found"
             , kinyarwanda = Nothing
@@ -918,6 +936,11 @@ translationSet trans =
         CreateGroupEncounter ->
             { english = "Create Group Encounter"
             , kinyarwanda = Just "Tangira igikorwa"
+            }
+
+        CreateRelationship ->
+            { english = "Create Relationship"
+            , kinyarwanda = Nothing
             }
 
         CreateTrainingGroupEncounters ->
@@ -1148,6 +1171,11 @@ translationSet trans =
         GoHome ->
             { english = "Go to main page"
             , kinyarwanda = Just "Kujya ahabanza"
+            }
+
+        GroupAssessment ->
+            { english = "Group Assessment"
+            , kinyarwanda = Nothing
             }
 
         HaveYouSynced ->
@@ -1811,6 +1839,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        SelectYourHealthCenter ->
+            { english = "Select your Health Center"
+            , kinyarwanda = Nothing
+            }
+
         ServiceWorkerActive ->
             { english = "The app is installed on this device."
             , kinyarwanda = Nothing
@@ -2055,6 +2088,11 @@ translationSet trans =
         WelcomeUser name ->
             { english = "Welcome " ++ name
             , kinyarwanda = Just <| "Murakaza neza " ++ name
+            }
+
+        WhatDoYouWantToDo ->
+            { english = "What do you want to do?"
+            , kinyarwanda = Nothing
             }
 
         Year ->
@@ -2453,6 +2491,11 @@ translateLoginPhrase phrase =
             , kinyarwanda = Just "Kwinjira"
             }
 
+        SignOut ->
+            { english = "Sign Out"
+            , kinyarwanda = Nothing
+            }
+
         Username ->
             { english = "Username"
             , kinyarwanda = Just "Izina ryo kwinjira"
@@ -2582,6 +2625,11 @@ translateValidationError id =
 
         InvalidBirthDateForChild ->
             { english = "is invalid - child should be below the age of 13"
+            , kinyarwanda = Nothing
+            }
+
+        InvalidHmisNumber ->
+            { english = "is invalid - child should be between 1 and 15"
             , kinyarwanda = Nothing
             }
 

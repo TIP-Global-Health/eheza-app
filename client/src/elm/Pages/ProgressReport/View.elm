@@ -89,8 +89,8 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
         -- session.
         dateOfLastAssessment =
             lastSessionWithMeasurement
-                |> Maybe.map (\( _, last ) -> last.scheduledDate.start)
-                |> Maybe.withDefault session.offlineSession.session.scheduledDate.start
+                |> Maybe.map (\( _, last ) -> last.startDate)
+                |> Maybe.withDefault session.offlineSession.session.startDate
 
         subtitle =
             p
@@ -188,7 +188,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                         , th
                             [ class "last" ]
                             [ child.birthDate
-                                |> Maybe.map (\birthDate -> renderAgeMonthsDaysAbbrev language birthDate session.offlineSession.session.scheduledDate.start)
+                                |> Maybe.map (\birthDate -> renderAgeMonthsDaysAbbrev language birthDate session.offlineSession.session.startDate)
                                 |> Maybe.withDefault ""
                                 |> text
                             ]
@@ -246,7 +246,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                     |> List.map
                                         (\( id, columnSession ) ->
                                             child.birthDate
-                                                |> Maybe.map (\birthDate -> renderAgeMonthsDaysHtml language birthDate columnSession.scheduledDate.start)
+                                                |> Maybe.map (\birthDate -> renderAgeMonthsDaysHtml language birthDate columnSession.startDate)
                                                 |> Maybe.withDefault []
                                                 |> th
                                                     [ classList

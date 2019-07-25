@@ -24,10 +24,10 @@ have in common, plus two things whose type varies:
   - the type of the value for this measurement
 
 -}
-type alias Measurement participantId value =
+type alias Measurement value =
     { dateMeasured : NominalDate
     , nurse : Maybe NurseId
-    , participantId : participantId
+    , participantId : PersonId
     , sessionId : Maybe SessionId
     , value : value
     }
@@ -45,7 +45,7 @@ type PhotoUrl
 
 
 type alias Photo =
-    Measurement PersonId PhotoUrl
+    Measurement PhotoUrl
 
 
 {-| For the various measurements that are floats, we wrap them in a type to
@@ -56,7 +56,7 @@ type MuacInCm
 
 
 type alias Muac =
-    Measurement PersonId MuacInCm
+    Measurement MuacInCm
 
 
 {-| An interpretation of a MUAC, according to the measurement
@@ -73,7 +73,7 @@ type HeightInCm
 
 
 type alias Height =
-    Measurement PersonId HeightInCm
+    Measurement HeightInCm
 
 
 type WeightInKg
@@ -81,7 +81,7 @@ type WeightInKg
 
 
 type alias Weight =
-    Measurement PersonId WeightInKg
+    Measurement WeightInKg
 
 
 type FamilyPlanningSign
@@ -95,11 +95,11 @@ type FamilyPlanningSign
 
 
 type alias FamilyPlanning =
-    Measurement PersonId (EverySet FamilyPlanningSign)
+    Measurement (EverySet FamilyPlanningSign)
 
 
 type alias ParticipantConsent =
-    Measurement PersonId ParticipantConsentValue
+    Measurement ParticipantConsentValue
 
 
 type alias ParticipantConsentValue =
@@ -109,7 +109,7 @@ type alias ParticipantConsentValue =
 
 
 type alias Attendance =
-    Measurement PersonId Bool
+    Measurement Bool
 
 
 type ChildNutritionSign
@@ -123,11 +123,11 @@ type ChildNutritionSign
 
 
 type alias ChildNutrition =
-    Measurement PersonId (EverySet ChildNutritionSign)
+    Measurement (EverySet ChildNutritionSign)
 
 
 type alias CounselingSession =
-    Measurement PersonId ( CounselingTiming, EverySet CounselingTopicId )
+    Measurement ( CounselingTiming, EverySet CounselingTopicId )
 
 
 

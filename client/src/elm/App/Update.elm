@@ -2,7 +2,7 @@ port module App.Update exposing (init, subscriptions, updateAndThenFetch)
 
 import App.Fetch
 import App.Model exposing (..)
-import App.Utils exposing (getLoggedInModel)
+import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
@@ -31,7 +31,7 @@ import Pages.Router exposing (activePageByUrl, pageToFragment)
 import Pages.Session.Model
 import Pages.Session.Update
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (decodeSingleDrupalEntity, fromEntityId, select, toCmd, toEntityId)
+import Restful.Endpoint exposing (fromEntityUuid, select, toCmd)
 import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
@@ -158,8 +158,8 @@ update msg model =
             fromLocalDateTime model.currentTime
 
         nurseId =
-            getLoggedInModel model
-                |> Maybe.map (.nurse >> Tuple.first)
+            getLoggedInData model
+                |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
     in
     case msg of
         MsgIndexedDb subMsg ->
@@ -305,10 +305,15 @@ update msg model =
                                                 ( [ TryPinCode code ], [] )
 
                                             Pages.PinCode.Model.Logout ->
-                                                ( [ SetLoggedIn NotAsked ], [ cachePinCode "" ] )
+                                                ( [ SetLoggedIn NotAsked, SetHealthCenter Nothing ]
+                                                , [ cachePinCode "", cacheHealthCenter "" ]
+                                                )
 
                                             Pages.PinCode.Model.SetActivePage page ->
                                                 ( [ SetActivePage page ], [] )
+
+                                            Pages.PinCode.Model.SetHealthCenter healthCenterId ->
+                                                ( [ SetHealthCenter (Just healthCenterId) ], [] )
                                     )
                                 |> Maybe.withDefault ( [], [] )
                     in
@@ -400,6 +405,14 @@ update msg model =
         SetStorageQuota quota ->
             ( { model | storageQuota = Just quota }
             , Cmd.none
+            )
+
+        SetHealthCenter healthCenterId ->
+            ( { model | healthCenterId = healthCenterId }
+            , healthCenterId
+                |> Maybe.map fromEntityUuid
+                |> Maybe.withDefault ""
+                |> cacheHealthCenter
             )
 
         Tick time ->
@@ -549,14 +562,14 @@ handleRevision model revision =
     case revision of
         Backend.Model.NurseRevision uuid data ->
             Maybe.andThen
-                (\loggedIn ->
+                (\( _, loggedIn ) ->
                     if Tuple.first loggedIn.nurse == uuid then
                         Just (SetLoggedIn (Success ( uuid, data )))
 
                     else
                         Nothing
                 )
-                (getLoggedInModel model)
+                (getLoggedInData model)
 
         _ ->
             Nothing
@@ -666,3 +679,9 @@ port memoryQuota : (MemoryQuota -> msg) -> Sub msg
 {-| Let the Javascript tell us about our storage quota.
 -}
 port storageQuota : (StorageQuota -> msg) -> Sub msg
+
+
+{-| Saves Health center ID selected by user, so that we can use it again if
+the browser is reloaded.
+-}
+port cacheHealthCenter : String -> Cmd msg

@@ -45,42 +45,4 @@ class HedleyScheduleIntegrity extends HedleyWebTestBase {
     $this->assertEqual($session_node->status, NODE_NOT_PUBLISHED);
   }
 
-  /**
-   * Test deleting a training session with all its measurements.
-   */
-  public function testDeleteTrainingSessionWithMeasurements() {
-    $clinic_nid = $this->createClinic();
-    $session_nid = $this->createSession($clinic_nid, REQUEST_TIME, TRUE);
-    $mother_nid = $this->createMother($clinic_nid);
-    $child_nid = $this->createChild($mother_nid);
-
-    // Create measurements.
-    $height_nid = $this->createHeight($session_nid, $child_nid, 125);
-    $weight_nid = $this->createWeight($session_nid, $child_nid, 25);
-
-    // Make sure we can get it the session now.
-    $session_node = node_load($session_nid);
-
-    // Should retrieve session we just created.
-    $this->assertTrue($session_node);
-
-    // Unpublish the session node.
-    $session_node->status = NODE_NOT_PUBLISHED;
-    node_save($session_node);
-
-    // Make sure we really unpublished it.
-    $session_node = node_load($session_nid);
-    $height_node = node_load($height_nid);
-    $weight_node = node_load($weight_nid);
-
-    // Session should be unpublished.
-    $this->assertEqual($session_node->status, NODE_NOT_PUBLISHED);
-
-    // Height measurement should be unpublished.
-    $this->assertEqual($height_node->status, NODE_NOT_PUBLISHED);
-
-    // Weight measurement should be unpublished.
-    $this->assertEqual($weight_node->status, NODE_NOT_PUBLISHED);
-  }
-
 }

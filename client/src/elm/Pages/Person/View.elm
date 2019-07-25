@@ -76,63 +76,87 @@ viewHeader language name =
         ]
 
 
-viewRelationship : Language -> NominalDate -> ModelIndexedDb -> MyRelationship -> Html App.Model.Msg
-viewRelationship language currentDate db relationship =
-    let
-        relatedTo =
-            Dict.get relationship.relatedTo db.people
-                |> Maybe.withDefault NotAsked
-    in
-    div
-        [ class "ui unstackable items participants-list" ]
-        [ viewWebData language (viewParticipant language currentDate (Just relationship) relationship.relatedTo) identity relatedTo ]
-
-
-viewPmtctParticipant : Language -> Dict ClinicId Clinic -> PmtctParticipant -> Html App.Model.Msg
-viewPmtctParticipant language clinics participant =
-    let
-        content =
-            Dict.get participant.clinic clinics
-                |> Maybe.map
-                    (\clinic ->
-                        p [] [ text <| clinic.name ]
-                    )
-                |> Maybe.withDefault (div [] [])
-    in
-    div
-        [ class "item participant-view" ]
-        [ div
-            [ class "ui image" ]
-            [ div [] [] ]
-        , content
-        ]
+{-| We want to show other people related to this person, either because they
+have a `Relationship` or because they are paired in a group. So, we have this
+custom type to track those other persons.
+-}
+type alias OtherPerson =
+    { relationship : Maybe ( RelationshipId, MyRelationship )
+    , groups : List ( PmtctParticipantId, PmtctParticipant )
+    }
 
 
 viewParticipantDetailsForm : Language -> NominalDate -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
 viewParticipantDetailsForm language currentDate db id person =
     let
-        viewFamilyMembers relationships =
-            relationships
-                |> Dict.map (always (viewRelationship language currentDate db))
-                |> Dict.values
-                |> div []
-
-        familyMembers =
+        -- We re-organize our data about relatoinships and group participations
+        -- so that we have one record per `OtherPerson`.
+        relationshipsData =
             Dict.get id db.relationshipsByPerson
                 |> Maybe.withDefault NotAsked
-                |> viewWebData language viewFamilyMembers identity
 
-        viewGroups ( clinics, groups_ ) =
-            groups_
-                |> Dict.map (always (viewPmtctParticipant language clinics))
-                |> Dict.values
-                |> div [ class "ui unstackable items participants-list" ]
-
-        groups =
+        participationsData =
             Dict.get id db.participantsByPerson
                 |> Maybe.withDefault NotAsked
-                |> RemoteData.append db.clinics
-                |> viewWebData language viewGroups identity
+
+        addRelationshipToOtherPeople : RelationshipId -> MyRelationship -> EntityUuidDict PersonId OtherPerson -> EntityUuidDict PersonId OtherPerson
+        addRelationshipToOtherPeople relationshipId myRelationship accum =
+            AllDict.update myRelationship.relatedTo
+                (\existing ->
+                    Just
+                        { relationship = Just ( relationshipId, myRelationship )
+                        , groups =
+                            Maybe.map .groups existing
+                                |> Maybe.withDefault []
+                        }
+                )
+                accum
+
+        addParticipantToOtherPeople : PmtctParticipantId -> PmtctParticipant -> EntityUuidDict PersonId OtherPerson -> EntityUuidDict PersonId OtherPerson
+        addParticipantToOtherPeople pmtctParticipantId pmtctParticipant accum =
+            let
+                otherParticipantId =
+                    if pmtctParticipant.child == id then
+                        pmtctParticipant.adult
+
+                    else
+                        pmtctParticipant.child
+            in
+            AllDict.update otherParticipantId
+                (\existing ->
+                    Just
+                        { relationship = Maybe.andThen .relationship existing
+                        , groups =
+                            Maybe.map .groups existing
+                                |> Maybe.withDefault []
+                                |> (::) ( pmtctParticipantId, pmtctParticipant )
+                        }
+                )
+                accum
+
+        otherPeople : WebData (EntityUuidDict PersonId OtherPerson)
+        otherPeople =
+            RemoteData.append relationshipsData participationsData
+                |> RemoteData.map
+                    (\( relationships, participations ) ->
+                        let
+                            withParticipants =
+                                AllDict.foldl addParticipantToOtherPeople EntityUuidDict.empty participations
+                        in
+                        AllDictList.foldl addRelationshipToOtherPeople withParticipants relationships
+                    )
+
+        viewOtherPeople people =
+            people
+                |> AllDict.map
+                    (\otherPersonId otherPerson ->
+                        AllDict.get otherPersonId db.people
+                            |> Maybe.withDefault NotAsked
+                            |> RemoteData.append db.clinics
+                            |> viewWebData language (viewOtherPerson language currentDate id ( otherPersonId, otherPerson )) identity
+                    )
+                |> AllDict.values
+                |> div [ class "ui unstackable items participants-list" ]
 
         isAdult =
             isPersonAnAdult currentDate person
@@ -187,22 +211,63 @@ viewParticipantDetailsForm language currentDate db id person =
             [ text <| translate language Translate.DemographicInformation ++ ": " ]
         , div
             [ class "ui unstackable items participants-list" ]
-            [ viewParticipant language currentDate Nothing id person ]
+            [ viewPerson language currentDate id person ]
         , h3
             [ class "ui header" ]
             [ text <| translate language Translate.FamilyMembers ++ ": " ]
-        , familyMembers
+        , viewWebData language viewOtherPeople identity otherPeople
         , p [] []
         , addFamilyMember
-        , h3
-            [ class "ui header" ]
-            [ text <| translate language Translate.Groups ++ ": " ]
-        , groups
         ]
 
 
-viewParticipant : Language -> NominalDate -> Maybe MyRelationship -> PersonId -> Person -> Html App.Model.Msg
-viewParticipant language currentDate myRelationship id person =
+viewPerson : Language -> NominalDate -> PersonId -> Person -> Html App.Model.Msg
+viewPerson language currentDate id person =
+    let
+        typeForThumbnail =
+            case isPersonAnAdult currentDate person of
+                Just True ->
+                    "mother"
+
+                Just False ->
+                    "child"
+
+                Nothing ->
+                    "mother"
+
+        content =
+            div [ class "content" ]
+                [ div
+                    [ class "details" ]
+                    [ h2
+                        [ class "ui header" ]
+                        [ text person.name ]
+                    , p []
+                        [ label [] [ text <| translate language Translate.DOB ++ ": " ]
+                        , span []
+                            [ person.birthDate
+                                |> Maybe.map (renderDate language >> text)
+                                |> showMaybe
+                            ]
+                        ]
+                    , p []
+                        [ label [] [ text <| translate language Translate.Village ++ ": " ]
+                        , span [] [ person.village |> Maybe.withDefault "" |> text ]
+                        ]
+                    ]
+                ]
+    in
+    div
+        [ class "item participant-view" ]
+        [ div
+            [ class "ui image" ]
+            [ thumbnailImage typeForThumbnail person.avatarUrl person.name 120 120 ]
+        , content
+        ]
+
+
+viewOtherPerson : Language -> NominalDate -> PersonId -> ( PersonId, OtherPerson ) -> ( EntityUuidDictList ClinicId Clinic, Person ) -> Html App.Model.Msg
+viewOtherPerson language currentDate relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
     let
         typeForThumbnail =
             case isPersonAnAdult currentDate person of
@@ -216,9 +281,9 @@ viewParticipant language currentDate myRelationship id person =
                     "mother"
 
         relationshipLabel =
-            myRelationship
+            otherPerson.relationship
                 |> Maybe.map
-                    (\relationship ->
+                    (\( _, relationship ) ->
                         span
                             [ class "relationship" ]
                             [ text " ("
@@ -227,6 +292,32 @@ viewParticipant language currentDate myRelationship id person =
                             ]
                     )
                 |> Maybe.withDefault emptyNode
+
+        groupNames =
+            otherPerson.groups
+                |> List.map (\( _, group ) -> AllDictList.get group.clinic clinics)
+                |> List.filterMap (Maybe.map .name)
+                |> String.join ", "
+
+        groups =
+            p
+                []
+                [ label [] [ text <| translate language Translate.Groups ++ ": " ]
+                , span [] [ text groupNames ]
+                ]
+
+        action =
+            div
+                [ class "action" ]
+                [ div
+                    [ class "action-icon-wrapper" ]
+                    [ span
+                        [ class "action-icon forward"
+                        , onClick <| App.Model.SetActivePage <| UserPage <| RelationshipPage relationMainId otherPersonId
+                        ]
+                        []
+                    ]
+                ]
 
         content =
             div [ class "content" ]
@@ -249,7 +340,9 @@ viewParticipant language currentDate myRelationship id person =
                         [ label [] [ text <| translate language Translate.Village ++ ": " ]
                         , span [] [ person.village |> Maybe.withDefault "" |> text ]
                         ]
+                    , groups
                     ]
+                , action
                 ]
     in
     div
@@ -548,6 +641,25 @@ viewCreateForm language currentDate relationId model db =
                     )
                 |> (::) emptyOption
 
+        hmisNumberOptions =
+            List.repeat 15 ""
+                |> List.indexedMap
+                    (\index _ ->
+                        let
+                            order =
+                                index + 1
+
+                            orderAsString =
+                                if order < 10 then
+                                    "0" ++ toString order
+
+                                else
+                                    toString order
+                        in
+                        ( orderAsString, orderAsString )
+                    )
+                |> (::) emptyOption
+
         photoUrl =
             Form.getFieldAsString Backend.Person.Form.photo personForm
                 |> .value
@@ -603,19 +715,26 @@ viewCreateForm language currentDate relationId model db =
             in
             viewSelectInput language Translate.NumberOfChildrenUnder5 options Backend.Person.Form.numberOfChildren "ten" "select-input" False personForm
 
+        hmisNumberInput =
+            viewSelectInput language Translate.ChildHmisNumber hmisNumberOptions Backend.Person.Form.hmisNumber "ten" "select-input" False personForm
+
+        nationalIdInput =
+            viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
+
         demographicFields =
             viewPhoto
                 :: (List.map (Html.map (MsgForm relationId)) <|
-                        [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName True personForm
+                        [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName False personForm
                         , viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
-                        , viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
+                        , viewNumberInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
                         ]
                    )
                 ++ [ birthDateInput ]
                 ++ (List.map (Html.map (MsgForm relationId)) <|
                         case expectedAge of
                             ExpectAdult ->
-                                [ genderInput
+                                [ nationalIdInput
+                                , genderInput
                                 , hivStatusInput
                                 , levelOfEducationInput
                                 , maritalStatusInput
@@ -623,13 +742,17 @@ viewCreateForm language currentDate relationId model db =
                                 ]
 
                             ExpectChild ->
-                                [ genderInput
+                                [ nationalIdInput
+                                , hmisNumberInput
+                                , genderInput
                                 , hivStatusInput
                                 , modeOfDeliveryInput
                                 ]
 
                             ExpectAdultOrChild ->
-                                [ genderInput
+                                [ nationalIdInput
+                                , hmisNumberInput
+                                , genderInput
                                 , hivStatusInput
                                 , levelOfEducationInput
                                 , maritalStatusInput
@@ -933,6 +1056,16 @@ viewCreateForm language currentDate relationId model db =
 
 viewTextInput : Language -> TranslationId -> String -> Bool -> Form e a -> Html Form.Msg
 viewTextInput language labelId fieldName isRequired form =
+    viewFormInput language labelId Form.Input.textInput fieldName isRequired form
+
+
+viewNumberInput : Language -> TranslationId -> String -> Bool -> Form e a -> Html Form.Msg
+viewNumberInput language labelId fieldName isRequired form =
+    viewFormInput language labelId (Form.Input.baseInput "number" Form.Field.String Form.Text) fieldName isRequired form
+
+
+viewFormInput : Language -> TranslationId -> Form.Input.Input e String -> String -> Bool -> Form e a -> Html Form.Msg
+viewFormInput language labelId formInput fieldName isRequired form =
     let
         field =
             Form.getFieldAsString fieldName form

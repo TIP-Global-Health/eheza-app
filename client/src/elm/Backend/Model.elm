@@ -30,7 +30,6 @@ import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
-import AssocList as Dict exposing (Dict)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
@@ -102,6 +101,7 @@ type alias ModelIndexedDb =
     , postPerson : WebData PersonId
     , postPmtctParticipant : Dict PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
     , postRelationship : Dict PersonId (WebData MyRelationship)
+    , postSession : WebData SessionId
     }
 
 
@@ -123,6 +123,7 @@ emptyModelIndexedDb =
     , postPerson = NotAsked
     , postPmtctParticipant = Dict.empty
     , postRelationship = Dict.empty
+    , postSession = NotAsked
     , relationshipsByPerson = Dict.empty
     , saveSyncDataRequests = Dict.empty
     , sessionRequests = Dict.empty
@@ -172,10 +173,12 @@ type MsgIndexedDb
     | PostPerson (Maybe PersonId) Person -- The first person is a person we ought to offer setting a relationship to.
     | PostRelationship PersonId MyRelationship (Maybe ClinicId)
     | PostPmtctParticipant PmtctParticipant
+    | PostSession Session
       -- Messages which handle responses to mutating data
     | HandlePostedPerson (Maybe PersonId) (WebData PersonId)
     | HandlePostedRelationship PersonId (WebData MyRelationship)
     | HandlePostedPmtctParticipant PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
+    | HandlePostedSession (WebData SessionId)
       -- Process some revisions we've received from the backend. In some cases,
       -- we can update our in-memory structures appropriately. In other cases, we
       -- can set them to `NotAsked` and let the "fetch" mechanism re-fetch them.

@@ -1,7 +1,10 @@
 module Pages.PinCode.View exposing (view)
 
 import Backend.Entities exposing (..)
+import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse, Role(..))
+import EveryDictList
+import EverySet
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -13,18 +16,60 @@ import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner, viewLogo)
 
 
-view : Language -> Page -> WebData ( NurseId, Nurse ) -> Model -> Html Msg
-view language activePage nurseData model =
+view : Language -> Page -> WebData ( NurseId, Nurse ) -> Maybe HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
+view language activePage nurseData healthCenterId model db =
     div
         [ class "ui basic segment page-pincode" ]
-        (viewLogo language :: viewContent language activePage nurseData model)
+    <|
+        viewHeader language nurseData healthCenterId model
+            :: viewContent language activePage nurseData healthCenterId model db
 
 
-viewContent : Language -> Page -> WebData ( NurseId, Nurse ) -> Model -> List (Html Msg)
-viewContent language activePage nurseData model =
+viewHeader : Language -> WebData ( NurseId, Nurse ) -> Maybe HealthCenterId -> Model -> Html Msg
+viewHeader language nurseData healthCenterId model =
     case nurseData of
         Success ( _, nurse ) ->
-            viewWhenLoggedIn language nurse
+            let
+                selectedAuthorizedHealthCenter =
+                    healthCenterId
+                        |> Maybe.map (\id -> EverySet.member id nurse.healthCenters)
+                        |> Maybe.withDefault False
+            in
+            if selectedAuthorizedHealthCenter then
+                case model.menu of
+                    ClinicalMenu ->
+                        div [ class "ui basic head segment" ]
+                            [ h1
+                                [ class "ui header" ]
+                                [ text <| translate language Translate.Clinical ]
+                            , a
+                                [ class "link-back"
+                                , onClick <| SetDisplayMenu MainMenu
+                                ]
+                                [ span [ class "icon-back" ] []
+                                , span [] []
+                                ]
+                            ]
+
+                    MainMenu ->
+                        viewLogo language
+
+            else
+                div [ class "ui basic head segment" ]
+                    [ h1
+                        [ class "ui header" ]
+                        [ text <| translate language Translate.HealthCenter ]
+                    ]
+
+        _ ->
+            viewLogo language
+
+
+viewContent : Language -> Page -> WebData ( NurseId, Nurse ) -> Maybe HealthCenterId -> Model -> ModelIndexedDb -> List (Html Msg)
+viewContent language activePage nurseData healthCenterId model db =
+    case nurseData of
+        Success ( _, nurse ) ->
+            viewWhenLoggedIn language nurse healthCenterId model db
 
         _ ->
             let
@@ -98,57 +143,123 @@ viewContent language activePage nurseData model =
             ]
 
 
-viewWhenLoggedIn : Language -> Nurse -> List (Html Msg)
-viewWhenLoggedIn language nurse =
+viewWhenLoggedIn : Language -> Nurse -> Maybe HealthCenterId -> Model -> ModelIndexedDb -> List (Html Msg)
+viewWhenLoggedIn language nurse healthCenterId model db =
     let
-        deviceStatusButton =
-            button
-                [ class "ui primary button"
-                , Pages.Page.DevicePage
-                    |> SetActivePage
-                    |> SendOutMsg
-                    |> onClick
-                ]
-                [ Translate.ActivePage DevicePage
-                    |> translate language
-                    |> text
-                ]
-
-        selectClinicButton =
-            button
-                [ class "ui primary button"
-                , onClick <| SendOutMsg <| SetActivePage <| UserPage <| ClinicsPage Nothing
-                ]
-                [ text <| translate language Translate.SelectYourGroup ]
-
-        registerParticipantButton =
-            button
-                [ class "ui fluid primary button"
-                , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing
-                ]
-                [ text <| translate language Translate.RegisterAParticipant ]
-
         logoutButton =
             button
                 [ class "ui button logout"
                 , onClick HandleLogoutClicked
                 ]
-                [ Translate.LoginPhrase Translate.Logout
+                [ Translate.LoginPhrase Translate.SignOut
                     |> translate language
                     |> text
                 ]
 
-        loggedInAs =
-            p []
-                [ Translate.LoginPhrase Translate.LoggedInAs
-                    |> translate language
-                    |> text
-                , text <| ": " ++ nurse.name
-                ]
+        selectedAuthorizedHealthCenter =
+            healthCenterId
+                |> Maybe.map (\id -> EverySet.member id nurse.healthCenters)
+                |> Maybe.withDefault False
     in
-    [ loggedInAs
-    , deviceStatusButton
-    , selectClinicButton
-    , registerParticipantButton
-    , logoutButton
-    ]
+    if selectedAuthorizedHealthCenter then
+        case model.menu of
+            ClinicalMenu ->
+                let
+                    groupAssessmentButton =
+                        button
+                            [ class "ui primary button group-assessment"
+                            , onClick <| SendOutMsg <| SetActivePage <| UserPage <| ClinicsPage Nothing
+                            ]
+                            [ span [ class "icon-group" ] []
+                            , span [ class "text" ] [ text <| translate language Translate.GroupAssessment ]
+                            , span [ class "icon-back" ] []
+                            ]
+                in
+                [ p [] [ text <| translate language Translate.WhatDoYouWantToDo ]
+                , groupAssessmentButton
+                ]
+
+            MainMenu ->
+                let
+                    loggedInAs =
+                        p [ class "logged-in-as" ]
+                            [ Translate.LoginPhrase Translate.LoggedInAs
+                                |> translate language
+                                |> text
+                            , text <| ": " ++ nurse.name
+                            ]
+
+                    healthCenterName =
+                        healthCenterId
+                            |> Maybe.andThen
+                                (\id ->
+                                    RemoteData.toMaybe db.healthCenters
+                                        |> Maybe.andThen (EveryDictList.get id)
+                                )
+                            |> Maybe.map
+                                (\healthCenter ->
+                                    p
+                                        [ class "health-center-name" ]
+                                        [ text healthCenter.name ]
+                                )
+                            |> Maybe.withDefault emptyNode
+
+                    deviceStatusButton =
+                        button
+                            [ class "ui primary button"
+                            , Pages.Page.DevicePage
+                                |> SetActivePage
+                                |> SendOutMsg
+                                |> onClick
+                            ]
+                            [ Translate.ActivePage DevicePage
+                                |> translate language
+                                |> text
+                            ]
+
+                    clinicalButton =
+                        button
+                            [ class "ui primary button"
+                            , onClick <| SetDisplayMenu ClinicalMenu
+                            ]
+                            [ text <| translate language Translate.Clinical ]
+
+                    registerParticipantButton =
+                        button
+                            [ class "ui primary button"
+                            , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing
+                            ]
+                            [ text <| translate language Translate.RegisterAParticipant ]
+                in
+                [ loggedInAs
+                , healthCenterName
+                , clinicalButton
+                , registerParticipantButton
+                , deviceStatusButton
+                , logoutButton
+                ]
+
+    else
+        let
+            filteredHealthCenters =
+                case db.healthCenters of
+                    Success healthCenters ->
+                        healthCenters
+                            |> EveryDictList.filter (\uuid _ -> EverySet.member uuid nurse.healthCenters)
+                            |> EveryDictList.toList
+
+                    _ ->
+                        []
+
+            selectHealthCenterButton ( healthCenterId, healthCenter ) =
+                button
+                    [ class "ui primary button"
+                    , onClick <| SendOutMsg <| SetHealthCenter healthCenterId
+                    ]
+                    [ text healthCenter.name ]
+        in
+        p [ class "select-health-center" ] [ text <| (translate language Translate.SelectYourHealthCenter ++ ":") ]
+            :: (filteredHealthCenters
+                    |> List.map selectHealthCenterButton
+                    |> List.append [ logoutButton ]
+               )

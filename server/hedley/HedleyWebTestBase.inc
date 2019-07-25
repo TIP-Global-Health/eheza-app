@@ -216,7 +216,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    * @return int
    *   The node ID of the session.
    */
-  public function createSession($clinic_id, $timestamp = REQUEST_TIME, $is_training = FALSE) {
+  public function createSession($clinic_id, $timestamp = REQUEST_TIME) {
     $date = date('Y-m-d', $timestamp);
 
     $node = $this->drupalCreateNode(['type' => 'session']);
@@ -227,11 +227,6 @@ class HedleyWebTestBase extends DrupalWebTestCase {
       'value' => $date,
       'value2' => $date,
     ]);
-    $wrapper->field_closed->set(FALSE);
-
-    if ($is_training) {
-      $wrapper->field_training->set(TRUE);
-    }
 
     $wrapper->save();
 

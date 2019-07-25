@@ -220,13 +220,9 @@ sessionDate =
 
 session : NominalDate -> Session
 session start =
-    { scheduledDate =
-        { start = start
-        , end = start
-        }
+    { startDate = start
+    , endDate = Nothing
     , clinicId = toEntityUuid "1" -- not relevant
-    , closed = False
-    , training = False
     }
 
 
@@ -267,4 +263,5 @@ makeChild test =
     , ubudehe = Nothing
     , village = Nothing
     , healthCenterId = Nothing
+    , hmisNumber = Nothing
     }

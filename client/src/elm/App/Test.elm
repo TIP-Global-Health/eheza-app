@@ -8,6 +8,7 @@ import Pages.Device.Model
 import Pages.PinCode.Model
 import Pusher.Model exposing (Cluster(..), PusherAppKey)
 import RemoteData exposing (RemoteData(..))
+import Restful.Endpoint exposing (toEntityUuid)
 import Rollbar
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
@@ -32,6 +33,7 @@ exampleFlags =
     , hostname = ""
     , activeLanguage = "en"
     , activeServiceWorker = False
+    , healthCenterId = ""
     }
 
 

@@ -1,6 +1,5 @@
 module Utils.Form exposing (dateInput, fromDecoder, getValueAsInt, isFormFieldSet, isFormFieldValid, nullable, onError, viewFormError)
 
-import Backend.Session.Form
 import Form exposing (..)
 import Form.Error exposing (..)
 import Form.Field exposing (asBool, asString)
@@ -14,17 +13,11 @@ import Translate exposing (Language, ValidationError, translate)
 
 viewFormError : Language -> ( String, ErrorValue ValidationError ) -> Html msg
 viewFormError language ( path, error ) =
-    if path == Backend.Session.Form.clinicId then
-        -- We special-case this one because it's common, to get a nicer
-        -- customized message
-        li [] [ text <| translate language Translate.PleaseSelectGroup ]
-
-    else
-        li []
-            [ text <| translate language <| Translate.FormField path
-            , text " "
-            , text <| translate language <| Translate.FormError error
-            ]
+    li []
+        [ text <| translate language <| Translate.FormField path
+        , text " "
+        , text <| translate language <| Translate.FormError error
+        ]
 
 
 {-| Possibly recover from an error.

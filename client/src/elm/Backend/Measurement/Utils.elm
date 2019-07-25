@@ -157,7 +157,7 @@ splitChildMeasurements sessionId =
 
 {-| Picks out current and previous values from a list of measurements.
 -}
-getCurrentAndPrevious : SessionId -> Dict (EntityUuid id) (Measurement a b) -> { current : Dict (EntityUuid id) (Measurement a b), previous : Maybe ( EntityUuid id, Measurement a b ) }
+getCurrentAndPrevious : SessionId -> Dict (EntityUuid id) (Measurement b) -> { current : Dict (EntityUuid id) (Measurement b), previous : Maybe ( EntityUuid id, Measurement b ) }
 getCurrentAndPrevious sessionId =
     let
         -- This is designed to iterate through each list only once, to get both

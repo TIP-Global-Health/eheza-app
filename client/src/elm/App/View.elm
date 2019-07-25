@@ -1,7 +1,7 @@
 module App.View exposing (view)
 
 import App.Model exposing (..)
-import App.Utils exposing (getLoggedInModel)
+import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Browser
 import Config.View
@@ -155,7 +155,7 @@ viewConfiguredModel model configured =
                     |> flexPageWrapper model
 
             PinCodePage ->
-                Pages.PinCode.View.view model.language model.activePage (RemoteData.map .nurse configured.loggedIn) configured.pinCodePage
+                Pages.PinCode.View.view model.language model.activePage (RemoteData.map .nurse configured.loggedIn) model.healthCenterId configured.pinCodePage model.indexedDb
                     |> Html.map MsgPagePinCode
                     |> flexPageWrapper model
 
@@ -178,15 +178,15 @@ viewUserPage page model configured =
         currentDate =
             fromLocalDateTime model.currentTime
     in
-    case getLoggedInModel model of
-        Just loggedInModel ->
+    case getLoggedInData model of
+        Just ( healthCenterId, loggedInModel ) ->
             case page of
                 MyAccountPage ->
                     Pages.MyAccount.View.view model.language loggedInModel.nurse
                         |> oldPageWrapper model
 
                 ClinicsPage clinicId ->
-                    Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) clinicId model.indexedDb
+                    Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) healthCenterId clinicId model.indexedDb
                         |> flexPageWrapper model
 
                 CreatePersonPage relation ->
@@ -232,7 +232,7 @@ viewUserPage page model configured =
                         |> oldPageWrapper model
 
         Nothing ->
-            Pages.PinCode.View.view model.language model.activePage (RemoteData.map .nurse configured.loggedIn) configured.pinCodePage
+            Pages.PinCode.View.view model.language model.activePage (RemoteData.map .nurse configured.loggedIn) model.healthCenterId configured.pinCodePage model.indexedDb
                 |> Html.map MsgPagePinCode
                 |> flexPageWrapper model
 

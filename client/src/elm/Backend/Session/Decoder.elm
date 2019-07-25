@@ -12,15 +12,6 @@ import Restful.Endpoint exposing (decodeEntityUuid)
 decodeSession : Decoder Session
 decodeSession =
     succeed Session
-        |> required "scheduled_date" (decodeDrupalRange decodeYYYYMMDD)
-        |> custom
-            (oneOf
-                -- Work with "full_view" true or false, or with the
-                -- structure we encode for the cache.
-                [ field "clinic" decodeEntityUuid
-                , field "clinic_id" decodeEntityUuid
-                , at [ "clinic", "id" ] decodeEntityUuid
-                ]
-            )
-        |> optional "closed" bool False
-        |> optional "training" bool False
+        |> requiredAt [ "scheduled_date", "value" ] decodeYYYYMMDD
+        |> optionalAt [ "scheduled_date", "value2" ] (nullable decodeYYYYMMDD) Nothing
+        |> required "clinic" decodeEntityUuid

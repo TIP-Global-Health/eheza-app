@@ -1,9 +1,10 @@
-module Backend.Nurse.Utils exposing (assignedToClinic)
+module Backend.Nurse.Utils exposing (assignedToHealthCenter)
 
 import Backend.Entities exposing (..)
 import Backend.Nurse.Model exposing (..)
+import EverySet
 
 
-assignedToClinic : ClinicId -> Nurse -> Bool
-assignedToClinic clinicId nurse =
-    List.any ((==) clinicId) nurse.clinics
+assignedToHealthCenter : HealthCenterId -> Nurse -> Bool
+assignedToHealthCenter healthCenterId nurse =
+    EverySet.member healthCenterId nurse.healthCenters
