@@ -241,7 +241,6 @@ validateHmisNumber =
                         customError InvalidHmisNumber
                 in
                 String.toInt s
-                    |> Result.toMaybe
                     |> Maybe.map
                         (\number ->
                             if number > 0 && number < 16 then

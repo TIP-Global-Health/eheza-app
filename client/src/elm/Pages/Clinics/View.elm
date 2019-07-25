@@ -182,7 +182,7 @@ if it is open. (That is, the dates are correct and it's not explicitly closed).
 We'll show anything which was scheduled to start or end within the last week
 or the next week.
 -}
-viewFoundClinic : Language -> NominalDate -> Nurse -> WebData SessionId -> ClinicId -> Clinic -> EntityUuidDictList SessionId Session -> List (Html Msg)
+viewFoundClinic : Language -> NominalDate -> Nurse -> WebData SessionId -> ClinicId -> Clinic -> Dict SessionId Session -> List (Html Msg)
 viewFoundClinic language currentDate nurse postSession clinicId clinic sessions =
     let
         daysToShow =
@@ -262,8 +262,8 @@ viewFoundClinic language currentDate nurse postSession clinicId clinic sessions 
                             ]
                         ]
                     , recentAndUpcomingSessions
-                        |> AllDictList.map (viewSession language currentDate)
-                        |> AllDictList.values
+                        |> Dict.map (viewSession language currentDate)
+                        |> Dict.values
                         |> tbody []
                     ]
                 , createSessionButton

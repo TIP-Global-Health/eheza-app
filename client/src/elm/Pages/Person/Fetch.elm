@@ -27,10 +27,10 @@ fetch id db =
         -- We also need to fetch the person data for the other half of
         -- participant pairings even if not a family member.
         participantMembers =
-            AllDict.get id db.participantsByPerson
+            Dict.get id db.participantsByPerson
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.map
-                    (AllDict.values
+                    (Dict.values
                         >> List.foldl addParticipants EverySet.empty
                         >> EverySet.toList
                         >> List.map FetchPerson

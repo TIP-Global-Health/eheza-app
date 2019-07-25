@@ -1,6 +1,5 @@
 module Backend.Measurement.Decoder exposing
     ( decodeAttendance
-    , decodeChildMeasurement
     , decodeChildMeasurementList
     , decodeChildNutritionSign
     , decodeCounselingSession
@@ -9,7 +8,6 @@ module Backend.Measurement.Decoder exposing
     , decodeHeight
     , decodeHistoricalMeasurements
     , decodeMeasurement
-    , decodeMotherMeasurement
     , decodeMotherMeasurementList
     , decodeMuac
     , decodeNutrition
@@ -36,7 +34,7 @@ import Utils.Json exposing (decodeEverySet)
 
 decodeMeasurement : Decoder value -> Decoder (Measurement value)
 decodeMeasurement valueDecoder =
-    decode Measurement
+    succeed Measurement
         |> required "date_measured" Gizra.NominalDate.decodeYYYYMMDD
         |> required "nurse" (nullable decodeEntityUuid)
         |> required "person" decodeEntityUuid
@@ -213,7 +211,7 @@ decodeNutrition =
 decodeCounselingSession : Decoder CounselingSession
 decodeCounselingSession =
     decodeMeasurement <|
-        map2 (,)
+        map2 (\a b -> ( a, b ))
             (field "timing" decodeCounselingTiming)
             (field "topics" (decodeEverySet decodeEntityUuid))
 
