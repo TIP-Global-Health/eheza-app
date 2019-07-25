@@ -1090,7 +1090,7 @@ viewFormInput language labelId formInput fieldName isRequired form =
             [ text <| translate language labelId ++ ":" ]
         , div
             [ class "ten wide column" ]
-            [ Form.Input.textInput field
+            [ formInput field
                 [ classList
                     [ ( "error", isJust field.liveError )
                     , ( "field", True )
