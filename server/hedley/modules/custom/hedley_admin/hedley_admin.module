@@ -101,8 +101,6 @@ function hedley_admin_block_view($delta) {
  * Implements hook_node_update().
  */
 function hedley_admin_node_update($node) {
-  dpm('hi');
-  dpm(variable_get('hedley_superuser_mode', FALSE));
   if (($node->status != NODE_NOT_PUBLISHED) || ($node->original->status != NODE_PUBLISHED)) {
     // We're not unpublishing the node.
     return;
