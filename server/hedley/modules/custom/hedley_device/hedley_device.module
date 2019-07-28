@@ -42,18 +42,6 @@ function hedley_device_node_presave($node) {
 }
 
 /**
- * Implements hook_node_delete().
- */
-function hedley_device_node_delete($node) {
-  // Allow to manually skip this exception.
-  if (!empty($node->allow_delete) || variable_get('hedley_device_allow_deletion', FALSE)) {
-    return;
-  }
-
-  throw new Exception('Cannot delete this node. Consider unpublishing it instead.');
-}
-
-/**
  * Implements hook_node_insert().
  */
 function hedley_device_node_insert($node) {
