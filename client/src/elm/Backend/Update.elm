@@ -22,6 +22,7 @@ import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
+import LocalData exposing (LocalData(..))
 import Maybe.Extra exposing (isJust)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model
@@ -822,91 +823,8 @@ makeEditableSession sessionId db =
                 )
                 participantsData
 
-        childMeasurementListData =
-            RemoteData.andThen
-                (\children ->
-                    Dict.keys children
-                        |> List.map
-                            (\childId ->
-                                Dict.get childId db.childMeasurements
-                                    |> Maybe.withDefault NotAsked
-                                    |> RemoteData.map (\data -> ( childId, data ))
-                            )
-                        |> RemoteData.fromList
-                        |> RemoteData.map Dict.fromList
-                )
-                childrenData
-
-        adultMeasurementListData =
-            RemoteData.andThen
-                (\mothers ->
-                    Dict.keys mothers
-                        |> List.map
-                            (\motherId ->
-                                Dict.get motherId db.motherMeasurements
-                                    |> Maybe.withDefault NotAsked
-                                    |> RemoteData.map (\data -> ( motherId, data ))
-                            )
-                        |> RemoteData.fromList
-                        |> RemoteData.map Dict.fromList
-                )
-                mothersData
-
-        childMeasurementsSplitData =
-            -- @todo: Keep lazy?
-            -- RemoteData.map (\list -> lazy <| \_ -> splitChildMeasurements sessionId list) childMeasurementListData
-            RemoteData.map (\list -> splitChildMeasurements sessionId list) childMeasurementListData
-
-        adultMeasurementsSplitData =
-            -- @todo: Keep lazy?
-            -- RemoteData.map (\list -> lazy <| \_ -> splitMotherMeasurements sessionId list) adultMeasurementListData
-            RemoteData.map (\list -> splitMotherMeasurements sessionId list) adultMeasurementListData
-
-        historicalMeasurementData =
-            RemoteData.map2 HistoricalMeasurements adultMeasurementListData childMeasurementListData
-
-        currentAndPrevious =
-            RemoteData.map2
-                -- @todo: Keep lazy?
-                -- Lazy.map2
-                (\childData motherData ->
-                    { current =
-                        { mothers = Dict.map (always .current) motherData
-                        , children = Dict.map (always .current) childData
-                        }
-                    , previous =
-                        { mothers = Dict.map (always .previous) motherData
-                        , children = Dict.map (always .previous) childData
-                        }
-                    }
-                )
-                childMeasurementsSplitData
-                adultMeasurementsSplitData
-
-        currentMeasurementData =
-            -- @todo: Keep lazy?
-            -- RemoteData.map (Lazy.map .current) currentAndPrevious
-            RemoteData.map .current currentAndPrevious
-
-        previousMeasurementData =
-            -- @todo: Keep lazy?
-            -- RemoteData.map (Lazy.map .previous) currentAndPrevious
-            RemoteData.map .previous currentAndPrevious
-
         measurementData =
-            RemoteData.map3
-                (\historical ->
-                    -- @todo: Keep lazy?
-                    -- Lazy.map2
-                    \current previous ->
-                        { historical = historical
-                        , current = current
-                        , previous = previous
-                        }
-                )
-                historicalMeasurementData
-                currentMeasurementData
-                previousMeasurementData
+            Success NotNeeded
 
         offlineSession =
             RemoteData.map OfflineSession sessionData
@@ -919,31 +837,186 @@ makeEditableSession sessionId db =
     in
     RemoteData.map
         (\offline ->
-            let
-                checkedIn =
-                    -- @todo
-                    -- lazy <|
-                    -- \_ ->
-                    cacheCheckedIn offline
-
-                summaryByParticipant =
-                    -- @todo: Keep lazy?
-                    -- Lazy.map (summarizeByParticipant offline) checkedIn
-                    summarizeByParticipant offline checkedIn
-
-                summaryByActivity =
-                    -- @todo: Keep lazy?
-                    -- Lazy.map (summarizeByActivity offline) checkedIn
-                    summarizeByActivity offline checkedIn
-            in
             { offlineSession = offline
             , update = NotAsked
-            , checkedIn = checkedIn
-            , summaryByParticipant = summaryByParticipant
-            , summaryByActivity = summaryByActivity
+            , checkedIn = NotNeeded
+            , summaryByParticipant = NotNeeded
+            , summaryByActivity = NotNeeded
             }
         )
         offlineSession
+
+
+
+-- makeEditableSessionOld : SessionId -> ModelIndexedDb -> WebData EditableSession
+-- makeEditableSessionOld sessionId db =
+--     let
+--         sessionData =
+--             Dict.get sessionId db.sessions
+--                 |> Maybe.withDefault NotAsked
+--
+--         allParticipantFormsData =
+--             db.participantForms
+--
+--         everyCounselingScheduleData =
+--             db.everyCounselingSchedule
+--
+--         participantsData =
+--             Dict.get sessionId db.expectedParticipants
+--                 |> Maybe.withDefault NotAsked
+--
+--         mothersData =
+--             RemoteData.andThen
+--                 (\participants ->
+--                     Dict.keys participants.byMotherId
+--                         |> List.map
+--                             (\id ->
+--                                 Dict.get id db.people
+--                                     |> Maybe.withDefault NotAsked
+--                                     |> RemoteData.map (\data -> ( id, data ))
+--                             )
+--                         |> RemoteData.fromList
+--                         |> RemoteData.map (List.sortBy (Tuple.second >> .name) >> Dict.fromList)
+--                 )
+--                 participantsData
+--
+--         childrenData =
+--             RemoteData.andThen
+--                 (\participants ->
+--                     Dict.keys participants.byChildId
+--                         |> List.map
+--                             (\id ->
+--                                 Dict.get id db.people
+--                                     |> Maybe.withDefault NotAsked
+--                                     |> RemoteData.map (\data -> ( id, data ))
+--                             )
+--                         |> RemoteData.fromList
+--                         |> RemoteData.map Dict.fromList
+--                 )
+--                 participantsData
+--
+--         childMeasurementListData =
+--             RemoteData.andThen
+--                 (\children ->
+--                     Dict.keys children
+--                         |> List.map
+--                             (\childId ->
+--                                 Dict.get childId db.childMeasurements
+--                                     |> Maybe.withDefault NotAsked
+--                                     |> RemoteData.map (\data -> ( childId, data ))
+--                             )
+--                         |> RemoteData.fromList
+--                         |> RemoteData.map Dict.fromList
+--                 )
+--                 childrenData
+--
+--         adultMeasurementListData =
+--             RemoteData.andThen
+--                 (\mothers ->
+--                     Dict.keys mothers
+--                         |> List.map
+--                             (\motherId ->
+--                                 Dict.get motherId db.motherMeasurements
+--                                     |> Maybe.withDefault NotAsked
+--                                     |> RemoteData.map (\data -> ( motherId, data ))
+--                             )
+--                         |> RemoteData.fromList
+--                         |> RemoteData.map Dict.fromList
+--                 )
+--                 mothersData
+--
+--         childMeasurementsSplitData =
+--             -- @todo: Keep lazy?
+--             -- RemoteData.map (\list -> lazy <| \_ -> splitChildMeasurements sessionId list) childMeasurementListData
+--             RemoteData.map (\list -> splitChildMeasurements sessionId list) childMeasurementListData
+--
+--         adultMeasurementsSplitData =
+--             -- @todo: Keep lazy?
+--             -- RemoteData.map (\list -> lazy <| \_ -> splitMotherMeasurements sessionId list) adultMeasurementListData
+--             RemoteData.map (\list -> splitMotherMeasurements sessionId list) adultMeasurementListData
+--
+--         historicalMeasurementData =
+--             RemoteData.map2 HistoricalMeasurements adultMeasurementListData childMeasurementListData
+--
+--         currentAndPrevious =
+--             RemoteData.map2
+--                 -- @todo: Keep lazy?
+--                 -- Lazy.map2
+--                 (\childData motherData ->
+--                     { current =
+--                         { mothers = Dict.map (always .current) motherData
+--                         , children = Dict.map (always .current) childData
+--                         }
+--                     , previous =
+--                         { mothers = Dict.map (always .previous) motherData
+--                         , children = Dict.map (always .previous) childData
+--                         }
+--                     }
+--                 )
+--                 childMeasurementsSplitData
+--                 adultMeasurementsSplitData
+--
+--         currentMeasurementData =
+--             -- @todo: Keep lazy?
+--             -- RemoteData.map (Lazy.map .current) currentAndPrevious
+--             RemoteData.map .current currentAndPrevious
+--
+--         previousMeasurementData =
+--             -- @todo: Keep lazy?
+--             -- RemoteData.map (Lazy.map .previous) currentAndPrevious
+--             RemoteData.map .previous currentAndPrevious
+--
+--         measurementData =
+--             RemoteData.map3
+--                 (\historical ->
+--                     -- @todo: Keep lazy?
+--                     -- Lazy.map2
+--                     \current previous ->
+--                         { historical = historical
+--                         , current = current
+--                         , previous = previous
+--                         }
+--                 )
+--                 historicalMeasurementData
+--                 currentMeasurementData
+--                 previousMeasurementData
+--
+--         offlineSession =
+--             RemoteData.map OfflineSession sessionData
+--                 |> RemoteData.andMap allParticipantFormsData
+--                 |> RemoteData.andMap everyCounselingScheduleData
+--                 |> RemoteData.andMap participantsData
+--                 |> RemoteData.andMap mothersData
+--                 |> RemoteData.andMap childrenData
+--                 |> RemoteData.andMap measurementData
+--     in
+--     RemoteData.map
+--         (\offline ->
+--             let
+--                 checkedIn =
+--                     -- @todo
+--                     -- lazy <|
+--                     -- \_ ->
+--                     cacheCheckedIn offline
+--
+--                 summaryByParticipant =
+--                     -- @todo: Keep lazy?
+--                     -- Lazy.map (summarizeByParticipant offline) checkedIn
+--                     summarizeByParticipant offline checkedIn
+--
+--                 summaryByActivity =
+--                     -- @todo: Keep lazy?
+--                     -- Lazy.map (summarizeByActivity offline) checkedIn
+--                     summarizeByActivity offline checkedIn
+--             in
+--             { offlineSession = offline
+--             , update = NotAsked
+--             , checkedIn = checkedIn
+--             , summaryByParticipant = summaryByParticipant
+--             , summaryByActivity = summaryByActivity
+--             }
+--         )
+--         offlineSession
 
 
 {-| Summarize our data for the editable session in a way that is useful
