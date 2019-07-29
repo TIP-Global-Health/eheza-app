@@ -7,6 +7,7 @@ at a session.
 
 -}
 
+import Activity.Model exposing (emptySummaryByActivity)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
@@ -15,12 +16,12 @@ import Backend.Session.Utils exposing (getChildren, getMotherMeasurementData)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import LocalData
 import Pages.Attendance.Model exposing (..)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
-import Utils.Upgrade exposing (force)
 
 
 view : Language -> ( SessionId, EditableSession ) -> Model -> Html Msg
@@ -109,14 +110,14 @@ viewMother session motherId mother =
     let
         attendanceId =
             getMotherMeasurementData motherId session
-                |> (force >> .current >> .attendance)
-                |> Maybe.map Tuple.first
-
-        checkedIn =
-            force session.checkedIn
+                |> LocalData.map (.current >> .attendance >> Maybe.map Tuple.first)
+                |> LocalData.withDefault Nothing
 
         isCheckedIn =
-            Dict.member motherId checkedIn.mothers
+            session.checkedIn
+                |> LocalData.unwrap
+                    False
+                    (\checkedIn -> Dict.member motherId checkedIn.mothers)
 
         checkIn =
             if isCheckedIn then

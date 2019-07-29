@@ -1,5 +1,6 @@
 module Pages.Activity.View exposing (view)
 
+import Activity.Model exposing (emptySummaryByActivity)
 import Activity.Utils exposing (getActivityIcon)
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -10,6 +11,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List as List
+import LocalData
 import Maybe.Extra
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Session.Model
@@ -17,7 +19,6 @@ import Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, norma
 import Participant.Model exposing (Participant)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage)
-import Utils.Upgrade exposing (force)
 import ZScore.Model
 
 
@@ -41,8 +42,14 @@ view : Participant id value activity msg -> Language -> NominalDate -> ZScore.Mo
 view config language currentDate zscores selectedActivity ( sessionId, session ) pages model =
     let
         participants =
-            config.summarizeParticipantsForActivity selectedActivity session.offlineSession (force session.checkedIn)
-                |> applyNameFilter
+            session.checkedIn
+                |> LocalData.unwrap
+                    { completed = Dict.empty
+                    , pending = Dict.empty
+                    }
+                    (config.summarizeParticipantsForActivity selectedActivity session.offlineSession
+                        >> applyNameFilter
+                    )
 
         applyNameFilter { pending, completed } =
             { pending = Dict.filter filterParticipantNames pending

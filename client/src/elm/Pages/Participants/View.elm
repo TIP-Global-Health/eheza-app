@@ -1,5 +1,6 @@
 module Pages.Participants.View exposing (view)
 
+import Activity.Model exposing (emptySummaryByParticipant)
 import Activity.Utils exposing (getActivityCountForMother)
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -8,12 +9,12 @@ import Backend.Session.Utils exposing (getChildren)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
+import LocalData
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participants.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Utils exposing (filterDependentNoResultsMessage, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
-import Utils.Upgrade exposing (force)
 
 
 thumbnailDimensions : { width : Int, height : Int }
@@ -30,12 +31,13 @@ view language ( sessionId, session ) model =
             normalizeFilter model.filter
 
         mothersInAttendance =
-            force session.checkedIn
-                |> .mothers
-                |> Dict.filter (matchMotherAndHerChildren filter session.offlineSession)
+            session.checkedIn
+                |> LocalData.unwrap
+                    Dict.empty
+                    (.mothers >> Dict.filter (matchMotherAndHerChildren filter session.offlineSession))
 
         summary =
-            force session.summaryByParticipant
+            session.summaryByParticipant |> LocalData.withDefault emptySummaryByParticipant
 
         ( mothersWithPendingActivity, mothersWithoutPendingActivity ) =
             Dict.partition

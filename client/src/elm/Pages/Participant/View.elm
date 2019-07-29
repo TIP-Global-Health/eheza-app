@@ -11,6 +11,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
+import LocalData
 import Maybe.Extra
 import Measurement.Model
 import Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getMotherForm)
@@ -23,7 +24,6 @@ import Participant.Utils exposing (childParticipant, motherParticipant)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderDate)
-import Utils.Upgrade exposing (force)
 import ZScore.Model
 
 
@@ -153,16 +153,18 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                 case selectedActivity of
                     Just activity ->
                         let
-                            measurements =
-                                getChildMeasurementData childId session
-
                             form =
                                 getChildForm childId pages session
                         in
-                        [ Measurement.View.viewChild language currentDate child activity (force measurements) zscores session form
-                            |> Html.map MsgMeasurement
-                            |> keyed "content"
-                        ]
+                        getChildMeasurementData childId session
+                            |> LocalData.unwrap
+                                []
+                                (\measurements ->
+                                    [ Measurement.View.viewChild language currentDate child activity measurements zscores session form
+                                        |> Html.map MsgMeasurement
+                                        |> keyed "content"
+                                    ]
+                                )
 
                     Nothing ->
                         []
@@ -267,16 +269,18 @@ viewFoundMother language ( motherId, mother ) ( sessionId, session ) pages model
             case selectedActivity of
                 Just activity ->
                     let
-                        measurements =
-                            getMotherMeasurementData motherId session
-
                         form =
                             getMotherForm motherId pages session
                     in
-                    [ Measurement.View.viewMother language activity (force measurements) form
-                        |> Html.map MsgMeasurement
-                        |> keyed "content"
-                    ]
+                    getMotherMeasurementData motherId session
+                        |> LocalData.unwrap
+                            []
+                            (\measurements ->
+                                [ Measurement.View.viewMother language activity measurements form
+                                    |> Html.map MsgMeasurement
+                                    |> keyed "content"
+                                ]
+                            )
 
                 Nothing ->
                     []

@@ -6,6 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (emptyMotherMeasurementData, getMotherMeasurementData)
+import LocalData
 import Maybe.Extra
 import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Pages.Activities.Update
@@ -17,7 +18,6 @@ import Pages.Participant.Update
 import Pages.Participants.Update
 import Pages.Session.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
-import Utils.Upgrade exposing (force)
 
 
 update : SessionId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -121,7 +121,7 @@ updateFoundSession sessionId session msg model =
 
                 measurements =
                     maybeMotherId
-                        |> Maybe.map (\motherId -> force <| getMotherMeasurementData motherId session)
+                        |> Maybe.map (\motherId -> LocalData.toMaybe <| getMotherMeasurementData motherId session)
                         |> Maybe.withDefault (emptyMotherMeasurementData session)
 
                 updateReturns =
@@ -210,33 +210,36 @@ updateFoundSession sessionId session msg model =
                 motherPage =
                     Dict.get motherId model.motherPages
                         |> Maybe.withDefault Pages.Participant.Model.emptyModel
-
-                measurements =
-                    getMotherMeasurementData motherId session
-
-                updateReturns =
-                    Pages.Participant.Update.updateMother subMsg motherPage motherForm (force measurements)
-
-                sessionMsgs =
-                    List.map (App.Model.MsgIndexedDb << Backend.Model.MsgSession sessionId)
-                        (Maybe.Extra.toList (Maybe.map (Backend.Session.Model.MeasurementOutMsgMother motherId) updateReturns.outMsg))
-
-                redirectMsgs =
-                    Maybe.map App.Model.SetActivePage updateReturns.page
-                        |> Maybe.Extra.toList
             in
-            -- So, to summarize
-            --
-            -- - we own the subModel, subCmd, and subForm, so we handle them normally
-            -- - we turn the redirect page into a message, if provided
-            -- - we send a message to implement the OutMsg, if provided
-            ( { model
-                | motherPages = Dict.insert motherId updateReturns.model model.motherPages
-                , motherForms = Dict.insert motherId updateReturns.form model.motherForms
-              }
-            , Cmd.map (MsgMother motherId) updateReturns.cmd
-            , redirectMsgs ++ sessionMsgs
-            )
+            getMotherMeasurementData motherId session
+                |> LocalData.unwrap
+                    ( model, Cmd.none, [] )
+                    (\measurements ->
+                        let
+                            updateReturns =
+                                Pages.Participant.Update.updateMother subMsg motherPage motherForm measurements
+
+                            sessionMsgs =
+                                List.map (App.Model.MsgIndexedDb << Backend.Model.MsgSession sessionId)
+                                    (Maybe.Extra.toList (Maybe.map (Backend.Session.Model.MeasurementOutMsgMother motherId) updateReturns.outMsg))
+
+                            redirectMsgs =
+                                Maybe.map App.Model.SetActivePage updateReturns.page
+                                    |> Maybe.Extra.toList
+                        in
+                        -- So, to summarize
+                        --
+                        -- - we own the subModel, subCmd, and subForm, so we handle them normally
+                        -- - we turn the redirect page into a message, if provided
+                        -- - we send a message to implement the OutMsg, if provided
+                        ( { model
+                            | motherPages = Dict.insert motherId updateReturns.model model.motherPages
+                            , motherForms = Dict.insert motherId updateReturns.form model.motherForms
+                          }
+                        , Cmd.map (MsgMother motherId) updateReturns.cmd
+                        , redirectMsgs ++ sessionMsgs
+                        )
+                    )
 
         MsgParticipants subMsg ->
             let

@@ -16,6 +16,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
+import LocalData
 import Maybe.Extra
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
@@ -24,7 +25,6 @@ import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (Days(..), Months(..), diffDays, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate)
-import Utils.Upgrade exposing (force)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), Length(..), ZScore)
 import ZScore.Utils exposing (zScoreLengthHeightForAge, zScoreWeightForAge)
@@ -204,16 +204,18 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                 |> text
                             ]
                         , current
-                            |> force
-                            |> mapMeasurementData .nutrition
-                            |> currentValue
-                            |> Maybe.map .value
-                            |> Maybe.withDefault EverySet.empty
-                            |> EverySet.toList
-                            |> List.map (translate language << Translate.ChildNutritionSignReport)
-                            |> String.join ", "
-                            |> text
-                            |> List.singleton
+                            |> LocalData.unwrap
+                                []
+                                (mapMeasurementData .nutrition
+                                    >> currentValue
+                                    >> Maybe.map .value
+                                    >> Maybe.withDefault EverySet.empty
+                                    >> EverySet.toList
+                                    >> List.map (translate language << Translate.ChildNutritionSignReport)
+                                    >> String.join ", "
+                                    >> text
+                                    >> List.singleton
+                                )
                             |> td []
                         ]
                     ]

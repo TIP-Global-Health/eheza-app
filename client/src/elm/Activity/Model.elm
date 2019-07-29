@@ -1,4 +1,4 @@
-module Activity.Model exposing (Activity(..), ChildActivity(..), CompletedAndPending, MotherActivity(..), SummaryByActivity, SummaryByParticipant)
+module Activity.Model exposing (Activity(..), ChildActivity(..), CompletedAndPending, MotherActivity(..), SummaryByActivity, SummaryByParticipant, emptySummaryByActivity, emptySummaryByParticipant)
 
 {-| This module provides types relating to the UI for presenting activities.
 
@@ -68,6 +68,13 @@ type alias SummaryByActivity =
     }
 
 
+emptySummaryByActivity : SummaryByActivity
+emptySummaryByActivity =
+    { children = Dict.empty
+    , mothers = Dict.empty
+    }
+
+
 {-| Like SummaryByActivity, but organized by Participant instead.
 So, for each participant, what activities have been completed,
 and what activities are still pending?
@@ -75,4 +82,11 @@ and what activities are still pending?
 type alias SummaryByParticipant =
     { children : Dict PersonId (CompletedAndPending (List ChildActivity))
     , mothers : Dict PersonId (CompletedAndPending (List MotherActivity))
+    }
+
+
+emptySummaryByParticipant : SummaryByParticipant
+emptySummaryByParticipant =
+    { children = Dict.empty
+    , mothers = Dict.empty
     }
