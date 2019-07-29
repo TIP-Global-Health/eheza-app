@@ -7,7 +7,6 @@ at a session.
 
 -}
 
-import Activity.Model exposing (emptySummaryByActivity)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)

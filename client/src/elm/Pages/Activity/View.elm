@@ -1,6 +1,5 @@
 module Pages.Activity.View exposing (view)
 
-import Activity.Model exposing (emptySummaryByActivity)
 import Activity.Utils exposing (getActivityIcon)
 import AssocList as Dict
 import Backend.Entities exposing (..)

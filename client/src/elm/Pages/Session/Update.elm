@@ -121,7 +121,7 @@ updateFoundSession sessionId session msg model =
 
                 measurements =
                     maybeMotherId
-                        |> Maybe.map (\motherId -> LocalData.toMaybe <| getMotherMeasurementData motherId session)
+                        |> Maybe.andThen (\motherId -> LocalData.toMaybe <| getMotherMeasurementData motherId session)
                         |> Maybe.withDefault (emptyMotherMeasurementData session)
 
                 updateReturns =
