@@ -40,6 +40,7 @@ import Backend.Session.Model exposing (..)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
 import EverySet
 import Gizra.NominalDate exposing (diffDays)
+import LocalData
 import Maybe.Extra exposing (isJust, isNothing)
 
 
@@ -214,18 +215,18 @@ expectCounselingActivity session childId =
         -- that one, and not switch to something else.
         cachedTiming =
             getChildMeasurementData childId session
-                -- @todo: `force` belonged to Lazy package.
-                -- |> force
-                |> mapMeasurementData .counselingSession
-                |> currentValue
-                |> Maybe.map (.value >> Tuple.first)
+                |> LocalData.toMaybe
+                |> Maybe.andThen
+                    (mapMeasurementData .counselingSession
+                        >> currentValue
+                        >> Maybe.map (.value >> Tuple.first)
+                    )
 
         -- All the counseling session records from the past
         historical =
             getChildHistoricalMeasurements childId session.offlineSession
-                -- @todo: `force` belonged to Lazy package.
-                -- |> force
-                |> .counselingSessions
+                |> LocalData.map .counselingSessions
+                |> LocalData.withDefault Dict.empty
 
         -- Have we ever completed a counseling session of the specified type?
         completed timing =
@@ -428,12 +429,13 @@ expectParticipantConsent session motherId =
     let
         previouslyConsented =
             getMotherHistoricalMeasurements motherId session.offlineSession
-                -- @todo: `force` belonged to Lazy package.
-                -- |> force
-                |> .consents
-                |> Dict.map (\_ consent -> consent.value.formId)
-                |> Dict.values
-                |> EverySet.fromList
+                |> LocalData.map
+                    (.consents
+                        >> Dict.map (\_ consent -> consent.value.formId)
+                        >> Dict.values
+                        >> EverySet.fromList
+                    )
+                |> LocalData.withDefault EverySet.empty
     in
     session.offlineSession.allParticipantForms
         |> Dict.filter (\id _ -> not (EverySet.member id previouslyConsented))
@@ -588,9 +590,8 @@ hasCompletedChildActivity activityType measurements =
 childHasCompletedActivity : PersonId -> ChildActivity -> OfflineSession -> Bool
 childHasCompletedActivity childId activityType session =
     getChildMeasurementData2 childId session
-        -- @todo: `force` belonged to Lazy package.
-        -- |> force
-        |> hasCompletedChildActivity activityType
+        |> LocalData.map (hasCompletedChildActivity activityType)
+        |> LocalData.withDefault False
 
 
 hasCompletedMotherActivity : OfflineSession -> PersonId -> MotherActivity -> MeasurementData MotherMeasurements -> Bool
@@ -620,9 +621,8 @@ hasCompletedMotherActivity session motherId activityType measurements =
 motherHasCompletedActivity : PersonId -> MotherActivity -> OfflineSession -> Bool
 motherHasCompletedActivity motherId activityType session =
     getMotherMeasurementData2 motherId session
-        -- @todo: `force` belonged to Lazy package.
-        -- |> force
-        |> hasCompletedMotherActivity session motherId activityType
+        |> LocalData.map (hasCompletedMotherActivity session motherId activityType)
+        |> LocalData.withDefault False
 
 
 {-| Should some measurement be considered completed? Note that this means that it has
@@ -675,9 +675,8 @@ motherIsCheckedIn motherId session =
     let
         explicitlyCheckedIn =
             getMotherMeasurementData2 motherId session
-                -- @todo: `force` belonged to Lazy package.
-                -- |> force
-                |> (.current >> .attendance >> Maybe.map (Tuple.second >> .value) >> (==) (Just True))
+                |> LocalData.map (.current >> .attendance >> Maybe.map (Tuple.second >> .value) >> (==) (Just True))
+                |> LocalData.withDefault False
 
         hasCompletedActivity =
             motherOrAnyChildHasAnyCompletedActivity motherId session
@@ -698,9 +697,8 @@ childIsCheckedIn childId session =
 motherHasAnyCompletedActivity : PersonId -> OfflineSession -> Bool
 motherHasAnyCompletedActivity motherId session =
     getMotherMeasurementData2 motherId session
-        -- @todo: `force` belonged to Lazy package.
-        -- |> force
-        |> hasAnyCompletedMotherActivity session motherId
+        |> LocalData.map (hasAnyCompletedMotherActivity session motherId)
+        |> LocalData.withDefault False
 
 
 {-| Does the child have any completed activity?
@@ -708,6 +706,5 @@ motherHasAnyCompletedActivity motherId session =
 childHasAnyCompletedActivity : PersonId -> OfflineSession -> Bool
 childHasAnyCompletedActivity childId session =
     getChildMeasurementData2 childId session
-        -- @todo: `force` belonged to Lazy package.
-        -- |> force
-        |> hasAnyCompletedChildActivity
+        |> LocalData.map hasAnyCompletedChildActivity
+        |> LocalData.withDefault False

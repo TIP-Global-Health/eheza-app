@@ -8,9 +8,9 @@ import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasu
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData)
 import EverySet
+import LocalData
 import Measurement.Model exposing (..)
 import Pages.Session.Model
-import Utils.Upgrade exposing (force)
 
 
 getInputConstraintsHeight : FloatInputConstraints
@@ -115,17 +115,19 @@ getMotherForm motherId pages session =
 
         Nothing ->
             getMotherMeasurementData motherId session
-                |> force
-                |> fromMotherMeasurementData
-                |> (\form ->
-                        { form
-                            | participantConsent =
-                                { expected = expectParticipantConsent session motherId
-                                , view = Nothing
-                                , progress = form.participantConsent.progress
+                |> LocalData.unwrap
+                    emptyModelMother
+                    (fromMotherMeasurementData
+                        >> (\form ->
+                                { form
+                                    | participantConsent =
+                                        { expected = expectParticipantConsent session motherId
+                                        , view = Nothing
+                                        , progress = form.participantConsent.progress
+                                        }
                                 }
-                        }
-                   )
+                           )
+                    )
 
 
 getChildForm : PersonId -> Pages.Session.Model.Model -> EditableSession -> ModelChild
@@ -138,24 +140,26 @@ getChildForm childId pages session =
 
         Nothing ->
             getChildMeasurementData childId session
-                |> force
-                |> fromChildMeasurementData
-                |> (\form ->
-                        -- We need some special logic for the counseling
-                        -- session, to fill in the correct kind of session.
-                        -- This seems to be the best place to do that, though
-                        -- that may need some more thinking at some point.
-                        case form.counseling of
-                            Just _ ->
-                                form
+                |> LocalData.unwrap
+                    emptyModelChild
+                    (fromChildMeasurementData
+                        >> (\form ->
+                                -- We need some special logic for the counseling
+                                -- session, to fill in the correct kind of session.
+                                -- This seems to be the best place to do that, though
+                                -- that may need some more thinking at some point.
+                                case form.counseling of
+                                    Just _ ->
+                                        form
 
-                            Nothing ->
-                                { form
-                                    | counseling =
-                                        expectCounselingActivity session childId
-                                            |> Maybe.map
-                                                (\timing ->
-                                                    ( timing, EverySet.empty )
-                                                )
-                                }
-                   )
+                                    Nothing ->
+                                        { form
+                                            | counseling =
+                                                expectCounselingActivity session childId
+                                                    |> Maybe.map
+                                                        (\timing ->
+                                                            ( timing, EverySet.empty )
+                                                        )
+                                        }
+                           )
+                    )

@@ -1,4 +1,4 @@
-module LocalData exposing (LocalData(..), map, toMaybe, withDefault)
+module LocalData exposing (LocalData(..), map, toMaybe, unwrap, withDefault)
 
 
 type LocalData a
@@ -33,3 +33,9 @@ map func data =
 
         Calcualting ->
             Calcualting
+
+
+unwrap : b -> (a -> b) -> LocalData a -> b
+unwrap default func data =
+    map func data
+        |> withDefault default
