@@ -21,6 +21,7 @@ import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Gizra.NominalDate exposing (NominalDate, NominalDateRange)
+import LocalData exposing (LocalData(..))
 import Measurement.Model
 import RemoteData exposing (RemoteData(..), WebData)
 
@@ -87,22 +88,21 @@ type alias OfflineSession =
     -- This is lazy because it requires some significant calculation, and we
     -- don't always need it.
     , measurements :
-        -- @todo: Used to be Lazy.
-        -- Lazy
-        -- These are all the measurements which have been saved. (Not necessarily
-        -- synced to the backend yet).
-        { historical : HistoricalMeasurements
+        LocalData
+            -- These are all the measurements which have been saved. (Not necessarily
+            -- synced to the backend yet).
+            { historical : HistoricalMeasurements
 
-        -- These are the measurements we're currently working on, that is, the ones
-        -- for this very session, that have been saved (at least locally).
-        , current : Measurements
+            -- These are the measurements we're currently working on, that is, the ones
+            -- for this very session, that have been saved (at least locally).
+            , current : Measurements
 
-        -- These represent the most recent measurement of each kind in
-        -- `historicalMeasurements` that is not in `currentMeasurements`. That is,
-        -- it is the most recent measurement we have before the current session, to
-        -- be used to compare the current session with.
-        , previous : Measurements
-        }
+            -- These represent the most recent measurement of each kind in
+            -- `historicalMeasurements` that is not in `currentMeasurements`. That is,
+            -- it is the most recent measurement we have before the current session, to
+            -- be used to compare the current session with.
+            , previous : Measurements
+            }
     }
 
 
@@ -111,21 +111,12 @@ type alias OfflineSession =
 type alias EditableSession =
     { offlineSession : OfflineSession
     , update : WebData ()
-
-    -- -- @todo: Used to be Lazy.
     , checkedIn :
-        -- Lazy { mothers : Dict PersonId Person, children : Dict PersonId Person }
-        { mothers : Dict PersonId Person, children : Dict PersonId Person }
-
-    -- @todo: Used to be Lazy.
+        LocalData { mothers : Dict PersonId Person, children : Dict PersonId Person }
     , summaryByParticipant :
-        -- Lazy SummaryByParticipant
-        SummaryByParticipant
-
-    -- @todo: Used to be Lazy.
+        LocalData SummaryByParticipant
     , summaryByActivity :
-        -- Lazy SummaryByActivity
-        SummaryByActivity
+        LocalData SummaryByActivity
     }
 
 
