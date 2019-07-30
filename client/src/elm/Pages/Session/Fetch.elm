@@ -3,6 +3,7 @@ module Pages.Session.Fetch exposing (fetch)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Session.Fetch exposing (fetchEditableSession)
+import Pages.Activities.Fetch
 import Pages.Activity.Fetch
 import Pages.Attendance.Fetch
 import Pages.Page exposing (SessionPage(..))
@@ -17,6 +18,9 @@ fetch sessionId sessionPage db =
             case sessionPage of
                 ActivityPage _ ->
                     Pages.Activity.Fetch.fetch sessionId
+
+                ActivitiesPage ->
+                    Pages.Activities.Fetch.fetch sessionId
 
                 AttendancePage ->
                     Pages.Attendance.Fetch.fetch sessionId

@@ -46,6 +46,24 @@ shouldFetch model msg =
                 |> RemoteData.map (.checkedIn >> isNotNeeded)
                 |> RemoteData.withDefault False
 
+        FetchEditableSessionMeasurements id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map (.offlineSession >> .measurements >> isNotNeeded)
+                |> RemoteData.withDefault False
+
+        FetchEditableSessionSummaryByActivity id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map (.summaryByActivity >> isNotNeeded)
+                |> RemoteData.withDefault False
+
+        FetchEditableSessionSummaryByParticipant id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map (.summaryByParticipant >> isNotNeeded)
+                |> RemoteData.withDefault False
+
         FetchEveryCounselingSchedule ->
             isNotAsked model.everyCounselingSchedule
 

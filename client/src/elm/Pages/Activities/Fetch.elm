@@ -1,4 +1,4 @@
-module Pages.Participants.Fetch exposing (fetch)
+module Pages.Activities.Fetch exposing (fetch)
 
 import Backend.Entities exposing (..)
 import Backend.Model exposing (MsgIndexedDb(..))
