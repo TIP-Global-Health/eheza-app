@@ -141,6 +141,9 @@ type MsgIndexedDb
       -- you get from `Backend.Session.Fetch.fetchEditableSession`
     | FetchEditableSession SessionId
     | FetchEditableSessionCheckedIn SessionId
+    | FetchEditableSessionMeasurements SessionId
+    | FetchEditableSessionSummaryByActivity SessionId
+    | FetchEditableSessionSummaryByParticipant SessionId
     | FetchEveryCounselingSchedule
     | FetchExpectedParticipants SessionId
     | FetchExpectedSessions PersonId
