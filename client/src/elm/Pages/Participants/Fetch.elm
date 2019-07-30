@@ -8,5 +8,5 @@ fetch : SessionId -> List MsgIndexedDb
 fetch sessionId =
     [ FetchEditableSessionMeasurements sessionId
     , FetchEditableSessionCheckedIn sessionId
-    , FetchEditableSessionSummaryByActivity sessionId
+    , FetchEditableSessionSummaryByParticipant sessionId
     ]

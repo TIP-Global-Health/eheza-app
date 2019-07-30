@@ -6,4 +6,6 @@ import Backend.Model exposing (MsgIndexedDb(..))
 
 fetch : SessionId -> List MsgIndexedDb
 fetch sessionId =
-    [ FetchEditableSessionCheckedIn sessionId ]
+    [ FetchEditableSessionMeasurements sessionId
+    , FetchEditableSessionCheckedIn sessionId
+    ]
