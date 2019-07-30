@@ -1,4 +1,4 @@
-module LocalData exposing (LocalData(..), map, toMaybe, unwrap, withDefault)
+module LocalData exposing (LocalData(..), isNotNeeded, map, toMaybe, unwrap, withDefault)
 
 
 type LocalData a
@@ -39,3 +39,8 @@ unwrap : b -> (a -> b) -> LocalData a -> b
 unwrap default func data =
     map func data
         |> withDefault default
+
+
+isNotNeeded : LocalData a -> Bool
+isNotNeeded data =
+    data == NotNeeded

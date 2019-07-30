@@ -140,6 +140,7 @@ type MsgIndexedDb
       -- For `FetchEditableSession`, you'll also need to send the messages
       -- you get from `Backend.Session.Fetch.fetchEditableSession`
     | FetchEditableSession SessionId
+    | FetchEditableSessionCheckedIn SessionId
     | FetchEveryCounselingSchedule
     | FetchExpectedParticipants SessionId
     | FetchExpectedSessions PersonId

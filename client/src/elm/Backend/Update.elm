@@ -23,7 +23,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..))
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model
 import Pages.Relationship.Model
@@ -73,6 +73,25 @@ updateIndexedDb currentDate nurseId msg model =
             , Cmd.none
             , []
             )
+
+        FetchEditableSessionCheckedIn id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map
+                    (\editable ->
+                        let
+                            checkedIn =
+                                cacheCheckedIn editable.offlineSession
+
+                            updatedEditable =
+                                { editable | checkedIn = checkedIn }
+                        in
+                        ( { model | editableSessions = Dict.insert id (Success updatedEditable) model.editableSessions }
+                        , Cmd.none
+                        , []
+                        )
+                    )
+                |> RemoteData.withDefault ( model, Cmd.none, [] )
 
         FetchEveryCounselingSchedule ->
             let
@@ -1081,7 +1100,7 @@ Ideally, we'd move it there and not expose it, but we'd have to rearrange a
 bunch of stuff to avoid circular imports.
 
 -}
-cacheCheckedIn : OfflineSession -> CheckedIn
+cacheCheckedIn : OfflineSession -> LocalData CheckedIn
 cacheCheckedIn session =
     let
         -- A mother is checked in if explicitly checked in or has any completed
@@ -1101,6 +1120,7 @@ cacheCheckedIn session =
                 )
                 session.children
     in
-    { mothers = mothers
-    , children = children
-    }
+    Ready
+        { mothers = mothers
+        , children = children
+        }

@@ -3,7 +3,10 @@ module Pages.Session.Fetch exposing (fetch)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Session.Fetch exposing (fetchEditableSession)
+import Pages.Activity.Fetch
+import Pages.Attendance.Fetch
 import Pages.Page exposing (SessionPage(..))
+import Pages.Participants.Fetch
 import Pages.ProgressReport.Fetch
 
 
@@ -12,6 +15,15 @@ fetch sessionId sessionPage db =
     let
         forSessionPage =
             case sessionPage of
+                ActivityPage _ ->
+                    Pages.Activity.Fetch.fetch sessionId
+
+                AttendancePage ->
+                    Pages.Attendance.Fetch.fetch sessionId
+
+                ParticipantsPage ->
+                    Pages.Participants.Fetch.fetch sessionId
+
                 ProgressReportPage childId ->
                     Pages.ProgressReport.Fetch.fetch childId
 

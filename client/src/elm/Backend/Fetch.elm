@@ -2,7 +2,7 @@ module Backend.Fetch exposing (forget, shouldFetch)
 
 import AssocList as Dict
 import Backend.Model exposing (..)
-import AssocList as Dict
+import LocalData exposing (isNotNeeded)
 import RemoteData exposing (RemoteData(..), isNotAsked, isSuccess)
 
 
@@ -39,6 +39,12 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isSuccess
                 |> not
+
+        FetchEditableSessionCheckedIn id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map (.checkedIn >> isNotNeeded)
+                |> RemoteData.withDefault False
 
         FetchEveryCounselingSchedule ->
             isNotAsked model.everyCounselingSchedule
