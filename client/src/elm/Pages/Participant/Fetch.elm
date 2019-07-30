@@ -1,4 +1,4 @@
-module Pages.Activity.Fetch exposing (fetch)
+module Pages.Participant.Fetch exposing (fetch)
 
 import Backend.Entities exposing (..)
 import Backend.Model exposing (MsgIndexedDb(..))
@@ -7,5 +7,4 @@ import Backend.Model exposing (MsgIndexedDb(..))
 fetch : SessionId -> List MsgIndexedDb
 fetch sessionId =
     [ FetchEditableSessionMeasurements sessionId
-    , FetchEditableSessionCheckedIn sessionId
     ]
