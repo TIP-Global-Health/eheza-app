@@ -125,11 +125,11 @@ updateIndexedDb currentDate nurseId msg model =
                 |> RemoteData.map
                     (\editable ->
                         let
-                            summaryByParticipant =
-                                summarizeByParticipant editable.offlineSession editable.checkedIn
+                            summaryByActivity =
+                                summarizeByActivity editable.offlineSession editable.checkedIn
 
                             updatedEditable =
-                                { editable | summaryByParticipant = summaryByParticipant }
+                                { editable | summaryByActivity = summaryByActivity }
                         in
                         ( { model | editableSessions = Dict.insert id (Success updatedEditable) model.editableSessions }
                         , Cmd.none
