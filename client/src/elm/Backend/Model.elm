@@ -139,7 +139,7 @@ type MsgIndexedDb
     | FetchClinics
       -- For `FetchEditableSession`, you'll also need to send the messages
       -- you get from `Backend.Session.Fetch.fetchEditableSession`
-    | FetchEditableSession SessionId
+    | FetchEditableSession SessionId (List MsgIndexedDb)
     | FetchEditableSessionCheckedIn SessionId
     | FetchEditableSessionMeasurements SessionId
     | FetchEditableSessionSummaryByActivity SessionId

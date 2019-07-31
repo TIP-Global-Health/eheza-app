@@ -68,14 +68,26 @@ updateIndexedDb currentDate nurseId msg model =
             , []
             )
 
-        FetchEditableSession id ->
+        FetchEditableSession id calculationMsgs ->
+            let
+                newEditable =
+                    makeEditableSession id model
+
+                extraMsgs =
+                    if RemoteData.isSuccess newEditable then
+                        calculationMsgs
+
+                    else
+                        []
+            in
             -- This one is a bit special. What we're asking for is not a fetch
             -- from IndexedDB as such, but a certain kind of organization of
             -- the data.
-            ( { model | editableSessions = Dict.insert id (makeEditableSession id model) model.editableSessions }
+            ( { model | editableSessions = Dict.insert id newEditable model.editableSessions }
             , Cmd.none
             , []
             )
+                |> sequenceExtra (updateIndexedDb currentDate nurseId) extraMsgs
 
         FetchEditableSessionCheckedIn id ->
             Dict.get id model.editableSessions
@@ -1167,35 +1179,37 @@ summarizeByActivity session checkedIn_ =
 {-| Who is checked in, considering both explicit check in and anyone who has
 any completed activity?
 
-Don't call this directly ... we store it lazily on EditableSession.checkedIn.
-Ideally, we'd move it there and not expose it, but we'd have to rearrange a
-bunch of stuff to avoid circular imports.
+It depdends on Measurements at OfflineSession being fully loaded,
+and for this reason we start with 'LocalData.map'
 
 -}
 cacheCheckedIn : OfflineSession -> LocalData CheckedIn
 cacheCheckedIn session =
-    let
-        -- A mother is checked in if explicitly checked in or has any completed
-        -- activites.
-        mothers =
-            Dict.filter
-                (\motherId _ -> motherIsCheckedIn motherId session)
-                session.mothers
+    LocalData.map
+        (\_ ->
+            let
+                -- A mother is checked in if explicitly checked in or has any completed
+                -- activites.
+                mothers =
+                    Dict.filter
+                        (\motherId _ -> motherIsCheckedIn motherId session)
+                        session.mothers
 
-        -- A child is checked in if the mother is checked in.
-        children =
-            Dict.filter
-                (\childId _ ->
-                    getMyMother childId session
-                        |> Maybe.map (\( motherId, _ ) -> Dict.member motherId mothers)
-                        |> Maybe.withDefault False
-                )
-                session.children
-    in
-    Ready
-        { mothers = mothers
-        , children = children
-        }
+                -- A child is checked in if the mother is checked in.
+                children =
+                    Dict.filter
+                        (\childId _ ->
+                            getMyMother childId session
+                                |> Maybe.map (\( motherId, _ ) -> Dict.member motherId mothers)
+                                |> Maybe.withDefault False
+                        )
+                        session.children
+            in
+            { mothers = mothers
+            , children = children
+            }
+        )
+        session.measurements
 
 
 calculateOfflineSessionMeasurements :

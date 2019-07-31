@@ -15,7 +15,7 @@ import Pages.ProgressReport.Fetch
 fetch : SessionId -> SessionPage -> ModelIndexedDb -> List MsgIndexedDb
 fetch sessionId sessionPage db =
     let
-        forSessionPage =
+        ( forSessionPage, calculations ) =
             case sessionPage of
                 ActivityPage _ ->
                     Pages.Activity.Fetch.fetch sessionId
@@ -44,4 +44,9 @@ fetch sessionId sessionPage db =
         forEditableSession =
             fetchEditableSession sessionId db
     in
-    forSessionPage ++ forEditableSession ++ [ FetchEditableSession sessionId ]
+    -- We sent 'calculations' in 2 places here:
+    -- 1. To be sent after 'FetchEditableSession' is completed, which may bring
+    --    new editableSession, with all LocalData parts as NotNeeded.
+    -- 2. Separatly, for case when 'FetchEditableSession' will node do anything
+    --    as it's already fetched.
+    forSessionPage ++ calculations ++ forEditableSession ++ [ FetchEditableSession sessionId calculations ]

@@ -26,7 +26,7 @@ shouldFetch model msg =
         FetchClinics ->
             isNotAsked model.clinics
 
-        FetchEditableSession id ->
+        FetchEditableSession id _ ->
             -- This one is a bit special because it is synthetic ...  what
             -- we're asking for here is not the fetch itself, but a certain
             -- organization of the fetched data. We want to re-run the
@@ -137,7 +137,7 @@ forget msg model =
         FetchClinics ->
             { model | clinics = NotAsked }
 
-        FetchEditableSession id ->
+        FetchEditableSession id _ ->
             { model | editableSessions = Dict.remove id model.editableSessions }
 
         FetchEveryCounselingSchedule ->
