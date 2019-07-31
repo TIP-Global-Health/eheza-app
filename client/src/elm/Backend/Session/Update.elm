@@ -1,5 +1,6 @@
 module Backend.Session.Update exposing (update)
 
+import App.Ports exposing (bindDropZone)
 import AssocList as Dict
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
@@ -326,25 +327,25 @@ update nurseId sessionId maybeSession currentDate msg model =
 
         HandleSaveHeight childId data ->
             ( { model | saveHeightRequest = Dict.insert childId data model.saveHeightRequest }
-            , Cmd.none
+            , bindDropZone ()
             )
 
         HandleSaveWeight childId data ->
             ( { model | saveWeightRequest = Dict.insert childId data model.saveWeightRequest }
-            , Cmd.none
+            , bindDropZone ()
             )
 
         HandleSaveMuac childId data ->
             ( { model | saveMuacRequest = Dict.insert childId data model.saveMuacRequest }
-            , Cmd.none
+            , bindDropZone ()
             )
 
         HandleSavePhoto childId data ->
             ( { model | savePhotoRequest = Dict.insert childId data model.savePhotoRequest }
-            , Cmd.none
+            , bindDropZone ()
             )
 
         HandleSaveNutrition childId data ->
             ( { model | saveNutritionRequest = Dict.insert childId data model.saveNutritionRequest }
-            , Cmd.none
+            , bindDropZone ()
             )
