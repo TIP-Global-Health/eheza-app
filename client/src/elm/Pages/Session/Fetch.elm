@@ -44,9 +44,9 @@ fetch sessionId sessionPage db =
         forEditableSession =
             fetchEditableSession sessionId db
     in
-    -- We sent 'calculations' in 2 places here:
+    -- We send 'calculations' in 2 places here:
     -- 1. To be sent after 'FetchEditableSession' is completed, which may bring
     --    new editableSession, with all LocalData parts as NotNeeded.
-    -- 2. Separatly, for case when 'FetchEditableSession' will node do anything
+    -- 2. Separatly, for case when 'FetchEditableSession' will not do anything
     --    as it's already fetched.
     forSessionPage ++ calculations ++ forEditableSession ++ [ FetchEditableSession sessionId calculations ]
