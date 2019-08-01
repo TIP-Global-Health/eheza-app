@@ -127,6 +127,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    * @throws \RestfulBadRequestException
    */
   public function getForAllDevices() {
+    watchdog('debug', 'Processing sync download request for GENERAL');
     $request = $this->getRequest();
     $handlersForTypes = $this->entitiesForAllDevices();
 
@@ -231,6 +232,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       $output[] = $rendered;
     }
 
+    watchdog('debug', 'Sync download by ' . $account->name . ' with ' . count($optimized) . ' changes was successful');
+
     return [
       'base_revision' => $base,
       'last_timestamp' => $last_timestamp,
@@ -253,6 +256,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    * @throws \RestfulBadRequestException
    */
   public function getForHealthCenter($uuid) {
+    watchdog('debug', "Processing sync download request for HC $uuid");
+
     $request = $this->getRequest();
     $handlersForTypes = $this->entitiesForHealthCenters();
 
@@ -372,6 +377,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       $output[] = $rendered;
     }
 
+    watchdog('debug', 'Sync download by ' . $account->name . ' with ' . count($optimized) . ' changes was successful');
+
     return [
       'base_revision' => $base,
       'last_timestamp' => $last_timestamp,
@@ -391,9 +398,12 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    * @throws \RestfulBadRequestException
    */
   public function handleChanges() {
+    watchdog('debug', 'Processing sync upload request');
     $request = $this->getRequest();
     $handlersForTypes = $this->allEntities();
     $account = $this->getAccount();
+
+    watchdog('debug', 'Sync upload by ' . $account->name . ' with ' . count($request['changes']) . ' changes');
 
     // We'd like this entire operation to succeed or fail as a whole, so that
     // we don't have deal with partially-successful updates. So, we create a
@@ -477,6 +487,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
       throw $e;
     }
+
+    watchdog('debug', 'Sync upload request was successful');
 
     return [];
   }
