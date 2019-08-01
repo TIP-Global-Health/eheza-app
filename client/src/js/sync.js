@@ -695,7 +695,9 @@
 
                         return fetchWithTimeout(req, {}, imageTimeout).then(function(response) {
                             if (!response.ok) {
-                                throw new TypeError('Response status ' + response.status + ' fetching ' + url);
+                                // Even though we failed to fetch the image,
+                                // we return a success, so we can proceed with sync process.
+                                Promise.resolve();
                             }
 
                             return cache.put(url, response);

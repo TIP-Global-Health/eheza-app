@@ -16,7 +16,7 @@ class HedleyDeviceRevisions extends HedleyWebTestBase {
    * @inheritdoc
    */
   public function setUp() {
-    parent::setUp(['hedley_device']);
+    parent::setUp(['hedley_admin', 'hedley_device']);
   }
 
   /**
@@ -45,7 +45,7 @@ class HedleyDeviceRevisions extends HedleyWebTestBase {
       $this->fail('Failed to throw exception for deleting node.');
     }
     catch (Exception $e) {
-      $this->assertEqual($e->getMessage(), 'Cannot delete this node. Consider unpublishing it instead.');
+      $this->assertEqual($e->getMessage(), 'Content deletion is forbidden!');
     }
   }
 
