@@ -232,7 +232,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       $output[] = $rendered;
     }
 
-    watchdog('debug', 'Sync download by ' . $account->name . ' with ' . count($optimized) . ' changes was successful');
+    $user = $account->name;
+    $total = count($optimized);
+    watchdog('debug', "Sync download by $user with $total changes was successful");
 
     return [
       'base_revision' => $base,
@@ -377,7 +379,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       $output[] = $rendered;
     }
 
-    watchdog('debug', 'Sync download by ' . $account->name . ' with ' . count($optimized) . ' changes was successful');
+    $user = $account->name;
+    $total = count($optimized);
+    watchdog('debug', "Sync download by $user with $total changes was successful");
 
     return [
       'base_revision' => $base,
@@ -402,8 +406,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $request = $this->getRequest();
     $handlersForTypes = $this->allEntities();
     $account = $this->getAccount();
-
-    watchdog('debug', 'Sync upload by ' . $account->name . ' with ' . count($request['changes']) . ' changes');
 
     // We'd like this entire operation to succeed or fail as a whole, so that
     // we don't have deal with partially-successful updates. So, we create a
@@ -488,7 +490,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       throw $e;
     }
 
-    watchdog('debug', 'Sync upload request was successful');
+    $user = $account->name;
+    $total = count($request['changes']);
+    watchdog('debug', "Sync upload by $user with $total changes was successful");
 
     return [];
   }
