@@ -71,12 +71,12 @@ function hedley_device_node_update($node) {
   else {
     $wrapper = entity_metadata_wrapper('node', $node->original);
     $pairing_code = $wrapper->field_pairing_code->value();
-    $superuser_mode = variable_get('hedley_superuser_mode', FALSE);
+    $super_user_mode = variable_get('hedley_super_user_mode', FALSE);
 
     // Do not allow to reset device pairing code, if it was already
     // paired (pairing code is empty). This check is skipped when
-    // working at 'superuser' mode.
-    if (empty($pairing_code) && !$superuser_mode) {
+    // working at 'super_user' mode.
+    if (empty($pairing_code) && !$super_user_mode) {
       throw new Exception('Device can\'t be edited after it was paired!');
     }
   }

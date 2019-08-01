@@ -97,7 +97,7 @@ class HedleyRestfulPairingCode extends \RestfulTokenAuthenticationBase {
 
     // The pairing code is one-shot, so we'll delete it now that we've used it.
     // An admin can enter a new pairing code on the backend if necessary,
-    // when 'superuser' mode is activated.
+    // when 'super_user' mode is activated.
     $wrapper = entity_metadata_wrapper('node', $device);
     $wrapper->field_pairing_code->set('');
     $wrapper->save();
