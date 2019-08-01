@@ -7,7 +7,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (HistoricalMeasurements)
+import Backend.Measurement.Model exposing (HistoricalMeasurements, Measurements)
 import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMeasurements)
 import Backend.Model exposing (..)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
@@ -23,7 +23,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..))
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model
 import Pages.Relationship.Model
@@ -37,6 +37,9 @@ updateIndexedDb currentDate nurseId msg model =
     let
         sw =
             applyBackendUrl "/sw"
+
+        noChange =
+            ( model, Cmd.none, [] )
     in
     case msg of
         FetchChildMeasurements childId ->
@@ -65,14 +68,106 @@ updateIndexedDb currentDate nurseId msg model =
             , []
             )
 
-        FetchEditableSession id ->
+        FetchEditableSession id calculationMsgs ->
+            let
+                newEditable =
+                    makeEditableSession id model
+
+                extraMsgs =
+                    if RemoteData.isSuccess newEditable then
+                        calculationMsgs
+
+                    else
+                        []
+            in
             -- This one is a bit special. What we're asking for is not a fetch
             -- from IndexedDB as such, but a certain kind of organization of
             -- the data.
-            ( { model | editableSessions = Dict.insert id (makeEditableSession id model) model.editableSessions }
+            ( { model | editableSessions = Dict.insert id newEditable model.editableSessions }
             , Cmd.none
             , []
             )
+                |> sequenceExtra (updateIndexedDb currentDate nurseId) extraMsgs
+
+        FetchEditableSessionCheckedIn id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map
+                    (\editable ->
+                        let
+                            checkedIn =
+                                cacheCheckedIn editable.offlineSession
+
+                            updatedEditable =
+                                { editable | checkedIn = checkedIn }
+                        in
+                        ( { model | editableSessions = Dict.insert id (Success updatedEditable) model.editableSessions }
+                        , Cmd.none
+                        , []
+                        )
+                    )
+                |> RemoteData.withDefault noChange
+
+        FetchEditableSessionMeasurements id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map
+                    (\editable ->
+                        let
+                            measurements =
+                                calculateOfflineSessionMeasurements id editable.offlineSession model
+
+                            updatedOffline =
+                                editable.offlineSession
+                                    |> (\offline -> { offline | measurements = measurements })
+
+                            updatedEditable =
+                                { editable | offlineSession = updatedOffline }
+                        in
+                        ( { model | editableSessions = Dict.insert id (Success updatedEditable) model.editableSessions }
+                        , Cmd.none
+                        , []
+                        )
+                    )
+                |> RemoteData.withDefault noChange
+
+        FetchEditableSessionSummaryByActivity id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map
+                    (\editable ->
+                        let
+                            summaryByActivity =
+                                summarizeByActivity editable.offlineSession editable.checkedIn
+
+                            updatedEditable =
+                                { editable | summaryByActivity = summaryByActivity }
+                        in
+                        ( { model | editableSessions = Dict.insert id (Success updatedEditable) model.editableSessions }
+                        , Cmd.none
+                        , []
+                        )
+                    )
+                |> RemoteData.withDefault noChange
+
+        FetchEditableSessionSummaryByParticipant id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map
+                    (\editable ->
+                        let
+                            summaryByParticipant =
+                                summarizeByParticipant editable.offlineSession editable.checkedIn
+
+                            updatedEditable =
+                                { editable | summaryByParticipant = summaryByParticipant }
+                        in
+                        ( { model | editableSessions = Dict.insert id (Success updatedEditable) model.editableSessions }
+                        , Cmd.none
+                        , []
+                        )
+                    )
+                |> RemoteData.withDefault noChange
 
         FetchEveryCounselingSchedule ->
             let
@@ -1023,84 +1118,174 @@ makeEditableSession sessionId db =
 for our UI, when we're focused on participants. This only considers children &
 mothers who are checked in to the session.
 -}
-summarizeByParticipant : OfflineSession -> CheckedIn -> SummaryByParticipant
-summarizeByParticipant session checkedIn =
-    let
-        children =
-            Dict.map
-                (\childId _ -> summarizeChildParticipant childId session)
-                checkedIn.children
+summarizeByParticipant : OfflineSession -> LocalData CheckedIn -> LocalData SummaryByParticipant
+summarizeByParticipant session checkedIn_ =
+    LocalData.map
+        (\checkedIn ->
+            let
+                children =
+                    Dict.map
+                        (\childId _ -> summarizeChildParticipant childId session)
+                        checkedIn.children
 
-        mothers =
-            Dict.map
-                (\motherId _ -> summarizeMotherParticipant motherId session)
-                checkedIn.mothers
-    in
-    { children = children
-    , mothers = mothers
-    }
+                mothers =
+                    Dict.map
+                        (\motherId _ -> summarizeMotherParticipant motherId session)
+                        checkedIn.mothers
+            in
+            { children = children
+            , mothers = mothers
+            }
+        )
+        checkedIn_
 
 
 {-| Summarize our data for the editable session in a way that is useful
 for our UI, when we're focused on activities. This only considers children &
 mothers who are checked in to the session.
 -}
-summarizeByActivity : OfflineSession -> CheckedIn -> SummaryByActivity
-summarizeByActivity session checkedIn =
-    let
-        children =
-            getAllChildActivities
-                |> List.map
-                    (\activity ->
-                        ( activity
-                        , summarizeChildActivity activity session checkedIn
-                        )
-                    )
-                |> Dict.fromList
+summarizeByActivity : OfflineSession -> LocalData CheckedIn -> LocalData SummaryByActivity
+summarizeByActivity session checkedIn_ =
+    LocalData.map
+        (\checkedIn ->
+            let
+                children =
+                    getAllChildActivities
+                        |> List.map
+                            (\activity ->
+                                ( activity
+                                , summarizeChildActivity activity session checkedIn
+                                )
+                            )
+                        |> Dict.fromList
 
-        mothers =
-            getAllMotherActivities
-                |> List.map
-                    (\activity ->
-                        ( activity
-                        , summarizeMotherActivity activity session checkedIn
-                        )
-                    )
-                |> Dict.fromList
-    in
-    { children = children
-    , mothers = mothers
-    }
+                mothers =
+                    getAllMotherActivities
+                        |> List.map
+                            (\activity ->
+                                ( activity
+                                , summarizeMotherActivity activity session checkedIn
+                                )
+                            )
+                        |> Dict.fromList
+            in
+            { children = children
+            , mothers = mothers
+            }
+        )
+        checkedIn_
 
 
 {-| Who is checked in, considering both explicit check in and anyone who has
 any completed activity?
 
-Don't call this directly ... we store it lazily on EditableSession.checkedIn.
-Ideally, we'd move it there and not expose it, but we'd have to rearrange a
-bunch of stuff to avoid circular imports.
+It depdends on Measurements at OfflineSession being fully loaded,
+and for this reason we start with 'LocalData.map'
 
 -}
-cacheCheckedIn : OfflineSession -> CheckedIn
+cacheCheckedIn : OfflineSession -> LocalData CheckedIn
 cacheCheckedIn session =
-    let
-        -- A mother is checked in if explicitly checked in or has any completed
-        -- activites.
-        mothers =
-            Dict.filter
-                (\motherId _ -> motherIsCheckedIn motherId session)
-                session.mothers
+    LocalData.map
+        (\_ ->
+            let
+                -- A mother is checked in if explicitly checked in or has any completed
+                -- activites.
+                mothers =
+                    Dict.filter
+                        (\motherId _ -> motherIsCheckedIn motherId session)
+                        session.mothers
 
-        -- A child is checked in if the mother is checked in.
-        children =
-            Dict.filter
-                (\childId _ ->
-                    getMyMother childId session
-                        |> Maybe.map (\( motherId, _ ) -> Dict.member motherId mothers)
-                        |> Maybe.withDefault False
+                -- A child is checked in if the mother is checked in.
+                children =
+                    Dict.filter
+                        (\childId _ ->
+                            getMyMother childId session
+                                |> Maybe.map (\( motherId, _ ) -> Dict.member motherId mothers)
+                                |> Maybe.withDefault False
+                        )
+                        session.children
+            in
+            { mothers = mothers
+            , children = children
+            }
+        )
+        session.measurements
+
+
+calculateOfflineSessionMeasurements :
+    SessionId
+    -> OfflineSession
+    -> ModelIndexedDb
+    ->
+        LocalData
+            { historical : HistoricalMeasurements
+            , current : Measurements
+            , previous : Measurements
+            }
+calculateOfflineSessionMeasurements sessionId offlineSession db =
+    let
+        childMeasurementListData =
+            Dict.keys offlineSession.children
+                |> List.map
+                    (\childId ->
+                        Dict.get childId db.childMeasurements
+                            |> Maybe.withDefault NotAsked
+                            |> RemoteData.map (\data -> ( childId, data ))
+                    )
+                |> RemoteData.fromList
+                |> RemoteData.map Dict.fromList
+
+        adultMeasurementListData =
+            Dict.keys offlineSession.mothers
+                |> List.map
+                    (\motherId ->
+                        Dict.get motherId db.motherMeasurements
+                            |> Maybe.withDefault NotAsked
+                            |> RemoteData.map (\data -> ( motherId, data ))
+                    )
+                |> RemoteData.fromList
+                |> RemoteData.map Dict.fromList
+
+        childMeasurementsSplitData =
+            RemoteData.map (\list -> splitChildMeasurements sessionId list) childMeasurementListData
+
+        adultMeasurementsSplitData =
+            RemoteData.map (\list -> splitMotherMeasurements sessionId list) adultMeasurementListData
+
+        historicalMeasurementData =
+            RemoteData.map2 HistoricalMeasurements adultMeasurementListData childMeasurementListData
+
+        currentAndPrevious =
+            RemoteData.map2
+                (\childData motherData ->
+                    { current =
+                        { mothers = Dict.map (always .current) motherData
+                        , children = Dict.map (always .current) childData
+                        }
+                    , previous =
+                        { mothers = Dict.map (always .previous) motherData
+                        , children = Dict.map (always .previous) childData
+                        }
+                    }
                 )
-                session.children
+                childMeasurementsSplitData
+                adultMeasurementsSplitData
+
+        currentMeasurementData =
+            RemoteData.map .current currentAndPrevious
+
+        previousMeasurementData =
+            RemoteData.map .previous currentAndPrevious
     in
-    { mothers = mothers
-    , children = children
-    }
+    RemoteData.map3
+        (\historical current previous ->
+            Ready
+                { historical = historical
+                , current = current
+                , previous = previous
+                }
+        )
+        historicalMeasurementData
+        currentMeasurementData
+        previousMeasurementData
+        |> RemoteData.withDefault NotNeeded

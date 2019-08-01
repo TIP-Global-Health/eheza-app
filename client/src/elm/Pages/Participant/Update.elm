@@ -1,6 +1,7 @@
-port module Pages.Participant.Update exposing (bindDropZone, updateChild, updateMother)
+module Pages.Participant.Update exposing (updateChild, updateMother)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
+import App.Ports exposing (bindDropZone)
 import Backend.Measurement.Model exposing (MeasurementData, MotherMeasurements)
 import Measurement.Model
 import Measurement.Update
@@ -124,6 +125,3 @@ updateMother msg model motherForm measurements =
                 motherForm
                 Nothing
                 Nothing
-
-
-port bindDropZone : () -> Cmd msg

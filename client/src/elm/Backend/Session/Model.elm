@@ -111,12 +111,9 @@ type alias OfflineSession =
 type alias EditableSession =
     { offlineSession : OfflineSession
     , update : WebData ()
-    , checkedIn :
-        LocalData { mothers : Dict PersonId Person, children : Dict PersonId Person }
-    , summaryByParticipant :
-        LocalData SummaryByParticipant
-    , summaryByActivity :
-        LocalData SummaryByActivity
+    , checkedIn : LocalData CheckedIn
+    , summaryByParticipant : LocalData SummaryByParticipant
+    , summaryByActivity : LocalData SummaryByActivity
     }
 
 

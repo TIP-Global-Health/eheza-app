@@ -2,7 +2,7 @@ module Backend.Fetch exposing (forget, shouldFetch)
 
 import AssocList as Dict
 import Backend.Model exposing (..)
-import AssocList as Dict
+import LocalData exposing (isNotNeeded)
 import RemoteData exposing (RemoteData(..), isNotAsked, isSuccess)
 
 
@@ -26,7 +26,7 @@ shouldFetch model msg =
         FetchClinics ->
             isNotAsked model.clinics
 
-        FetchEditableSession id ->
+        FetchEditableSession id _ ->
             -- This one is a bit special because it is synthetic ...  what
             -- we're asking for here is not the fetch itself, but a certain
             -- organization of the fetched data. We want to re-run the
@@ -39,6 +39,30 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isSuccess
                 |> not
+
+        FetchEditableSessionCheckedIn id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map (.checkedIn >> isNotNeeded)
+                |> RemoteData.withDefault False
+
+        FetchEditableSessionMeasurements id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map (.offlineSession >> .measurements >> isNotNeeded)
+                |> RemoteData.withDefault False
+
+        FetchEditableSessionSummaryByActivity id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map (.summaryByActivity >> isNotNeeded)
+                |> RemoteData.withDefault False
+
+        FetchEditableSessionSummaryByParticipant id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map (.summaryByParticipant >> isNotNeeded)
+                |> RemoteData.withDefault False
 
         FetchEveryCounselingSchedule ->
             isNotAsked model.everyCounselingSchedule
@@ -113,7 +137,7 @@ forget msg model =
         FetchClinics ->
             { model | clinics = NotAsked }
 
-        FetchEditableSession id ->
+        FetchEditableSession id _ ->
             { model | editableSessions = Dict.remove id model.editableSessions }
 
         FetchEveryCounselingSchedule ->
