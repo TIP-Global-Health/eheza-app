@@ -713,9 +713,6 @@ viewCreateForm language currentDate relationId model db =
         hmisNumberInput =
             viewSelectInput language Translate.ChildHmisNumber hmisNumberOptions Backend.Person.Form.hmisNumber "ten" "select-input" False personForm
 
-        nationalIdInput =
-            viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
-
         demographicFields =
             viewPhoto
                 :: (List.map (Html.map (MsgForm relationId)) <|
@@ -728,8 +725,7 @@ viewCreateForm language currentDate relationId model db =
                 ++ (List.map (Html.map (MsgForm relationId)) <|
                         case expectedAge of
                             ExpectAdult ->
-                                [ nationalIdInput
-                                , genderInput
+                                [ genderInput
                                 , hivStatusInput
                                 , levelOfEducationInput
                                 , maritalStatusInput
@@ -737,16 +733,14 @@ viewCreateForm language currentDate relationId model db =
                                 ]
 
                             ExpectChild ->
-                                [ nationalIdInput
-                                , hmisNumberInput
+                                [ hmisNumberInput
                                 , genderInput
                                 , hivStatusInput
                                 , modeOfDeliveryInput
                                 ]
 
                             ExpectAdultOrChild ->
-                                [ nationalIdInput
-                                , hmisNumberInput
+                                [ hmisNumberInput
                                 , genderInput
                                 , hivStatusInput
                                 , levelOfEducationInput
