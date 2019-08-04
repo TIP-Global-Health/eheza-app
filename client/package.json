@@ -43,6 +43,7 @@
     "gulp-svgstore": "^7.0.1",
     "gulp-terser": "^1.1.7",
     "gulp-transform": "^3.0.5",
+    "gulp-uglify": "^3.0.2",
     "gulp-useref": "^3.1.6",
     "gulp-util": "^3.0.7",
     "install": "^0.12.2",

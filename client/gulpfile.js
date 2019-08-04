@@ -7,6 +7,8 @@ var transform = require('gulp-transform');
 
 var gulpSequence = require('gulp-sequence');
 
+var uglify = require('gulp-uglify');
+
 // Loads the plugins without having to list all of them, but you need
 // to call them as $.pluginname
 var $ = require("gulp-load-plugins")();
@@ -233,8 +235,7 @@ gulp.task("minify", ["styles", "zscore", "copy:images", "copy:favicon"],
       // Concatenate JavaScript files and preserve important comments.
       // DropZone had a problem if we mangle
       // ... see <https://github.com/rowanwins/vue-dropzone/issues/119>
-      .pipe($.if("*.js", $.uglify({
-        preserveComments: "some",
+      .pipe($.if("*.js", uglify({
         mangle: false
       }))).on('error', function(err) {
         console.error(err);

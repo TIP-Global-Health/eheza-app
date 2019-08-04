@@ -1,4 +1,4 @@
-module Config exposing (caregiverPantheon, configs, counselingPantheon, ***REMOVED***, livePantheon, ***REMOVED***, ***REMOVED***, ***REMOVED***)
+module Config exposing (configs, ***REMOVED***, livePantheon, ***REMOVED***, ***REMOVED***, ***REMOVED***)
 
 import AssocList as Dict exposing (Dict)
 import Config.Model as Config exposing (Model)
@@ -51,17 +51,6 @@ ehezaGlobal =
     }
 
 
-counselingPantheon : Model
-counselingPantheon =
-    { backendUrl = "https://counseling-ihangane.pantheonsite.io"
-    , name = "counselingPantheon"
-    , pusherKey = PusherAppKey "" UsEast1
-    , debug = False
-    , rollbarToken = Rollbar.token "***REMOVED***"
-    , sandbox = False
-    }
-
-
 ***REMOVED*** : Model
 ***REMOVED*** =
     { backendUrl = "https://***REMOVED***"
@@ -87,10 +76,10 @@ counselingPantheon =
     }
 
 
-caregiverPantheon : Model
-caregiverPantheon =
-    { backendUrl = "https://caregiver-ihangane.pantheonsite.io"
-    , name = "caregiverPantheon"
+elm19Pantheon : Model
+elm19Pantheon =
+    { backendUrl = "https://elm19-ihangane.pantheonsite.io"
+    , name = "elm19Pantheon"
     , pusherKey = PusherAppKey "" UsEast1
     , debug = False
     , rollbarToken = Rollbar.token "***REMOVED***"
@@ -105,9 +94,8 @@ configs =
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", livePantheon )
         , ( "***REMOVED***", ***REMOVED*** )
-        , ( "counseling-ihangane.pantheonsite.io", counselingPantheon )
         , ( "***REMOVED***", ehezaGlobal )
         , ( "***REMOVED***", ***REMOVED*** )
-        , ( "caregiver-ihangane.pantheonsite.io", caregiverPantheon )
+        , ( "elm-19-ihangane.pantheonsite.io", elm19Pantheon )
         ]
         |> Dict.union localConfigs
