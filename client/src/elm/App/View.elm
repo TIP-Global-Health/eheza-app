@@ -32,7 +32,7 @@ import Version
 
 view : Model -> Browser.Document Msg
 view model =
-    { title = "EHEZRA app"
+    { title = "E-Heza System"
     , body =
         case model.configuration of
             Failure err ->
