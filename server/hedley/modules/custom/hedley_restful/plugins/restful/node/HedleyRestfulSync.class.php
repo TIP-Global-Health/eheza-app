@@ -127,7 +127,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    * @throws \RestfulBadRequestException
    */
   public function getForAllDevices() {
-    watchdog('debug', 'Processing sync download request for GENERAL');
     $request = $this->getRequest();
     $handlersForTypes = $this->entitiesForAllDevices();
 
@@ -232,10 +231,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       $output[] = $rendered;
     }
 
-    $user = $account->name;
-    $total = count($optimized);
-    watchdog('debug', "Sync download by $user with $total changes was successful");
-
     return [
       'base_revision' => $base,
       'last_timestamp' => $last_timestamp,
@@ -258,8 +253,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    * @throws \RestfulBadRequestException
    */
   public function getForHealthCenter($uuid) {
-    watchdog('debug', "Processing sync download request for HC $uuid");
-
     $request = $this->getRequest();
     $handlersForTypes = $this->entitiesForHealthCenters();
 
@@ -379,10 +372,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       $output[] = $rendered;
     }
 
-    $user = $account->name;
-    $total = count($optimized);
-    watchdog('debug', "Sync download by $user with $total changes was successful");
-
     return [
       'base_revision' => $base,
       'last_timestamp' => $last_timestamp,
@@ -484,8 +473,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
         $m2 .= "  $k: $value";
       }
 
-      watchdog('debug', $m1);
-      watchdog('debug', $m2);
+      watchdog('debug', $m1, [], WATCHDOG_ERROR);
+      watchdog('debug', $m2, [], WATCHDOG_ERROR);
 
       throw $e;
     }
