@@ -142,6 +142,7 @@ div.page-pincode {
       font-size: 2rem;
       font-weight: bold;
       margin-bottom: 3rem;
+      margin-top: 6rem;
     }
 
     button.ui.logout.button {
@@ -183,6 +184,10 @@ div.page-pincode {
         margin-left: 90px;
         transform: rotate(180deg);
       }
+    }
+
+    button:last-child {
+        margin-bottom: 6rem !important;
     }
 }
 
