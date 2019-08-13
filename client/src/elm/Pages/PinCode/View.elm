@@ -253,7 +253,7 @@ viewWhenLoggedIn language nurse healthCenterId model db =
 
             selectHealthCenterButton ( healthCenterId_, healthCenter ) =
                 button
-                    [ class "ui primary button"
+                    [ class "ui primary button health-center"
                     , onClick <| SendOutMsg <| SetHealthCenter healthCenterId_
                     ]
                     [ text healthCenter.name ]
