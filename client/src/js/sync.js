@@ -150,7 +150,7 @@
                 return nodeShardToSync()
                 .then(function (shard) {
                     return processSingleShard (shard, credentials).catch(function (err) {
-                        // When authentication token is invalid, besides standard 401 respones,
+                        // When authentication token is invalid, besides standard 401 response,
                         // we may get 403 from file-upload resource.
                         // Therefore, we'll try to refresh token on 403 respnse as well.
                         if ((err.tag === BadResponse) && (err.status === 401 || err.status === 403)) {
