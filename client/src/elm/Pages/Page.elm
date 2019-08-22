@@ -127,6 +127,7 @@ type UserPage
       -- Shows list of people using search string. If the PersonId is provided,
       -- then we're in a context in which we're looking to add a family member.
     | PersonsPage (Maybe PersonId)
+    | PrenatalParticipantsPage
     | RelationshipPage PersonId PersonId -- create or edit a relationship between these persons.
     | PrenatalEncounterPage PrenatalEncounterId -- prenatal activities index
     | PrenatalActivityPage PrenatalEncounterId PrenatalActivity -- record prenatal activity

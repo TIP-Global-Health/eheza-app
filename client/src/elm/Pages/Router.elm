@@ -69,6 +69,9 @@ delta2url previous current =
                     in
                     Just <| UrlChange NewEntry url
 
+                PrenatalParticipantsPage ->
+                    Just <| UrlChange NewEntry "#prenatal-participants"
+
                 RelationshipPage id1 id2 ->
                     Just <|
                         UrlChange NewEntry <|

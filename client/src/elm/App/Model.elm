@@ -16,6 +16,7 @@ import Pages.Person.Model
 import Pages.PinCode.Model
 import Pages.PrenatalActivity.Model
 import Pages.PrenatalEncounter.Model
+import Pages.PrenatalParticipants.Model
 import Pages.Relationship.Model
 import Pages.Session.Model
 import PrenatalActivity.Model exposing (PrenatalActivity)
@@ -139,6 +140,7 @@ type alias LoggedInModel =
     { createPersonPage : Pages.Person.Model.Model
     , relationshipPages : EveryDict ( PersonId, PersonId ) Pages.Relationship.Model.Model
     , personsPage : Pages.People.Model.Model
+    , prenatalParticipantsPage : Pages.PrenatalParticipants.Model.Model
 
     -- The nurse who has logged in.
     , nurse : ( NurseId, Nurse )
@@ -154,6 +156,7 @@ emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
 emptyLoggedInModel nurse =
     { createPersonPage = Pages.Person.Model.emptyModel
     , personsPage = Pages.People.Model.emptyModel
+    , prenatalParticipantsPage = Pages.PrenatalParticipants.Model.emptyModel
     , relationshipPages = EveryDict.empty
     , nurse = nurse
     , prenatalEncounterPages = EveryDict.empty
@@ -198,6 +201,7 @@ type Msg
 type MsgLoggedIn
     = MsgPageCreatePerson Pages.Person.Model.Msg
     | MsgPagePersons Pages.People.Model.Msg
+    | MsgPagePrenatalParticipants Pages.PrenatalParticipants.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
     | MsgPagePrenatalEncounter PrenatalEncounterId Pages.PrenatalEncounter.Model.Msg

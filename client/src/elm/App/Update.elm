@@ -28,6 +28,7 @@ import Pages.PrenatalActivity.Model
 import Pages.PrenatalActivity.Update
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.Update
+import Pages.PrenatalParticipants.Update
 import Pages.Relationship.Model
 import Pages.Relationship.Update
 import Pages.Session.Model
@@ -197,6 +198,16 @@ update msg model =
                             in
                             ( { data | personsPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPagePersons) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPagePrenatalParticipants subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.PrenatalParticipants.Update.update subMsg data.prenatalParticipantsPage
+                            in
+                            ( { data | prenatalParticipantsPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalParticipants) subCmd
                             , appMsgs
                             )
 
