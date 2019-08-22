@@ -6,6 +6,6 @@ import Gizra.NominalDate exposing (NominalDate)
 
 type alias PrenatalParticipant =
     { person : PersonId
-    , start : NominalDate
-    , end : Maybe NominalDate
+    , startDate : NominalDate
+    , endDate : Maybe NominalDate
     }

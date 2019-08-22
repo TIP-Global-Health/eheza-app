@@ -71,7 +71,7 @@ fetch model =
             getLoggedInModel model
                 |> Maybe.map
                     (\data ->
-                        Pages.PrenatalParticipant.Fetch.fetch personId
+                        Pages.PrenatalParticipant.Fetch.fetch personId model.indexedDb
                             |> List.map MsgIndexedDb
                     )
                 |> Maybe.withDefault []
