@@ -401,6 +401,7 @@ type TranslationId
     | PreviousMeasurementNotFound
     | Profession
     | ProgressReport
+    | PrenatalParticipant
     | PrenatalParticipants
     | PreTermPregnancy
     | Province
@@ -2487,6 +2488,11 @@ translationSet trans =
             , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
             }
 
+        PrenatalParticipant ->
+            { english = "Prenatal Participant"
+            , kinyarwanda = Nothing
+            }
+
         PrenatalParticipants ->
             { english = "Prenatal Participants"
             , kinyarwanda = Nothing
@@ -3174,6 +3180,11 @@ translateActivePage page =
 
                 PersonsPage _ ->
                     { english = "Participant Directory"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalParticipantPage _ ->
+                    { english = "Prenatal Participant"
                     , kinyarwanda = Nothing
                     }
 

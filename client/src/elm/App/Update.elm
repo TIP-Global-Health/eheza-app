@@ -28,6 +28,7 @@ import Pages.PrenatalActivity.Model
 import Pages.PrenatalActivity.Update
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.Update
+import Pages.PrenatalParticipant.Update
 import Pages.PrenatalParticipants.Update
 import Pages.Relationship.Model
 import Pages.Relationship.Update
@@ -198,6 +199,16 @@ update msg model =
                             in
                             ( { data | personsPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPagePersons) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPagePrenatalParticipant id subMsg ->
+                            let
+                                ( subCmd, appMsgs ) =
+                                    Pages.PrenatalParticipant.Update.update currentDate id subMsg
+                            in
+                            ( data
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalParticipant id) subCmd
                             , appMsgs
                             )
 

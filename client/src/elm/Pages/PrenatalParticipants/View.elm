@@ -70,228 +70,123 @@ viewHeader title =
 
 viewSearchForm : Language -> NominalDate -> Model -> ModelIndexedDb -> Html Msg
 viewSearchForm language currentDate model db =
-    div [] [ text "hi" ]
+    let
+        searchForm =
+            Html.form []
+                [ div
+                    [ class "ui search form" ]
+                    [ div []
+                        [ input
+                            [ placeholder <| translate language Translate.PlaceholderEnterParticipantName
+                            , type_ "text"
+                            , onInput SetInput
+                            , value model.input
+                            , autofocus True
+                            ]
+                            []
+                        ]
+                    ]
+                ]
+
+        searchValue =
+            model.search
+                |> Maybe.withDefault ""
+
+        results =
+            if String.isEmpty searchValue then
+                Nothing
+
+            else
+                Dict.get searchValue db.personSearches
+                    |> Maybe.withDefault NotAsked
+                    |> RemoteData.map
+                        (EveryDictList.filter
+                            (\k v -> isPersonAnAdult currentDate v |> Maybe.withDefault False)
+                        )
+                    |> Just
+
+        summary =
+            results
+                |> Maybe.map (viewWebData language viewSummary identity)
+                |> Maybe.withDefault emptyNode
+
+        viewSummary data =
+            EveryDictList.length data
+                |> Translate.ReportResultsOfSearch
+                |> translate language
+                |> text
+
+        searchResultsParticipants =
+            results
+                |> Maybe.withDefault (Success EveryDictList.empty)
+                |> RemoteData.withDefault EveryDictList.empty
+                |> EveryDictList.map (viewParticipant language currentDate db)
+                |> EveryDictList.values
+
+        searchHelper =
+            Translate.SearchHelper
+    in
+    div [ class "registration-page search" ]
+        [ div
+            [ class "search-top" ]
+            [ p
+                [ class "search-helper" ]
+                [ text <| translate language searchHelper ]
+            , searchForm
+            ]
+        , div
+            [ class "search-middle" ]
+            [ div
+                [ class "results-summary" ]
+                [ summary ]
+            , div
+                [ class "ui unstackable items participants-list" ]
+                searchResultsParticipants
+            ]
+        ]
 
 
+viewParticipant : Language -> NominalDate -> ModelIndexedDb -> PersonId -> Person -> Html Msg
+viewParticipant language currentDate db id person =
+    let
+        action =
+            div [ class "action" ]
+                [ div [ class "action-icon-wrapper" ]
+                    [ span
+                        [ class "action-icon forward"
+                        , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage id
+                        ]
+                        []
+                    ]
+                ]
 
---     let
---         searchForm =
---             Html.form []
---                 [ div
---                     [ class "ui search form" ]
---                     [ div []
---                         [ input
---                             [ placeholder <| translate language Translate.PlaceholderEnterParticipantName
---                             , type_ "text"
---                             , onInput SetInput
---                             , value model.input
---                             , autofocus True
---                             ]
---                             []
---                         ]
---                     ]
---                 ]
---
---         relatedPerson =
---             relation
---                 |> Maybe.andThen (\id -> EveryDict.get id db.people)
---                 |> Maybe.andThen RemoteData.toMaybe
---
---         expectedAge =
---             relatedPerson
---                 |> Maybe.andThen (isPersonAnAdult currentDate)
---                 |> (\isAdult ->
---                         case isAdult of
---                             Just True ->
---                                 ExpectChild
---
---                             Just False ->
---                                 ExpectAdult
---
---                             Nothing ->
---                                 ExpectAdultOrChild
---                    )
---
---         searchValue =
---             model.search
---                 |> Maybe.withDefault ""
---
---         results =
---             if String.isEmpty searchValue then
---                 Nothing
---
---             else
---                 let
---                     -- When relation person is provided, we need to make sure
---                     -- that at search result, we don't present:
---                     -- 1. Relation person himself.
---                     -- 2. People of same type as relation person. If relation person
---                     --    is an adult, related person must be a child, and vice versa.
---                     -- 3. People already related to relation person.
---                     personTypeCondition filteredPerson =
---                         case isPersonAnAdult currentDate filteredPerson of
---                             Just True ->
---                                 -- We'll show adults unless we're expecting children
---                                 expectedAge /= ExpectChild
---
---                             Just False ->
---                                 -- We''ll show children unless we're expecting adults.
---                                 expectedAge /= ExpectAdult
---
---                             Nothing ->
---                                 -- If we don't know, then show it.
---                                 True
---
---                     personRelationCondition filteredPersonId =
---                         case relation of
---                             Nothing ->
---                                 True
---
---                             Just personId ->
---                                 EveryDict.get personId db.relationshipsByPerson
---                                     |> Maybe.andThen RemoteData.toMaybe
---                                     |> unwrap
---                                         True
---                                         (\relatedPersionRelationships ->
---                                             relatedPersionRelationships
---                                                 |> EveryDictList.values
---                                                 |> List.all
---                                                     (\relationship ->
---                                                         relationship.relatedTo /= filteredPersonId
---                                                     )
---                                         )
---                 in
---                 Dict.get searchValue db.personSearches
---                     |> Maybe.withDefault NotAsked
---                     |> RemoteData.map
---                         (EveryDictList.filter
---                             (\k v ->
---                                 -- Applying 3 conditionms explained above
---                                 not (relation == Just k) && personTypeCondition v && personRelationCondition k
---                             )
---                         )
---                     |> Just
---
---         summary =
---             results
---                 |> Maybe.map (viewWebData language viewSummary identity)
---                 |> Maybe.withDefault emptyNode
---
---         viewSummary data =
---             EveryDictList.length data
---                 |> Translate.ReportResultsOfSearch
---                 |> translate language
---                 |> text
---
---         searchResultsParticipants =
---             results
---                 |> Maybe.withDefault (Success EveryDictList.empty)
---                 |> RemoteData.withDefault EveryDictList.empty
---                 |> EveryDictList.map (viewParticipant language currentDate relation db)
---                 |> EveryDictList.values
---
---         searchHelper =
---             case relation of
---                 Just _ ->
---                     Translate.SearchHelperFamilyMember
---
---                 Nothing ->
---                     Translate.SearchHelper
---     in
---     div [ class "registration-page search" ]
---         [ div
---             [ class "search-top" ]
---             [ p
---                 [ class "search-helper" ]
---                 [ text <| translate language searchHelper ]
---             , searchForm
---             ]
---         , div
---             [ class "search-middle" ]
---             [ div
---                 [ class "results-summary" ]
---                 [ summary ]
---             , div
---                 [ class "ui unstackable items participants-list" ]
---                 searchResultsParticipants
---             ]
---         , div
---             [ class "search-bottom" ]
---             [ div
---                 [ class "register-helper" ]
---                 [ text <| translate language Translate.RegisterHelper ]
---             , div
---                 [ class "register-actions" ]
---                 [ button
---                     [ class "ui primary button fluid"
---                     , onClick <| SetActivePage <| UserPage <| CreatePersonPage relation
---                     ]
---                     [ text <| translate language Translate.RegisterNewParticipant ]
---                 ]
---             ]
---         ]
---
---
--- viewParticipant : Language -> NominalDate -> Maybe PersonId -> ModelIndexedDb -> PersonId -> Person -> Html Msg
--- viewParticipant language currentDate relation db id person =
---     let
---         typeForThumbnail =
---             case isPersonAnAdult currentDate person of
---                 Just True ->
---                     "mother"
---
---                 Just False ->
---                     "child"
---
---                 Nothing ->
---                     "mother"
---
---         nextPage =
---             case relation of
---                 Just relationId ->
---                     RelationshipPage relationId id
---
---                 Nothing ->
---                     PersonPage id
---
---         action =
---             div [ class "action" ]
---                 [ div [ class "action-icon-wrapper" ]
---                     [ span
---                         [ class "action-icon forward"
---                         , onClick <| SetActivePage <| UserPage <| nextPage
---                         ]
---                         []
---                     ]
---                 ]
---
---         content =
---             div [ class "content" ]
---                 [ div
---                     [ class "details" ]
---                     [ h2
---                         [ class "ui header" ]
---                         [ text <| person.name ]
---                     , p []
---                         [ label [] [ text <| translate language Translate.DOB ++ ": " ]
---                         , span []
---                             [ person.birthDate
---                                 |> Maybe.map (renderDate language >> text)
---                                 |> showMaybe
---                             ]
---                         ]
---                     , p []
---                         [ label [] [ text <| translate language Translate.Village ++ ": " ]
---                         , span [] [ person.village |> Maybe.withDefault "" |> text ]
---                         ]
---                     ]
---                 , action
---                 ]
---     in
---     div
---         [ class "item participant-view" ]
---         [ div
---             [ class "ui image" ]
---             [ thumbnailImage typeForThumbnail person.avatarUrl person.name 120 120 ]
---         , content
---         ]
+        content =
+            div [ class "content" ]
+                [ div
+                    [ class "details" ]
+                    [ h2
+                        [ class "ui header" ]
+                        [ text <| person.name ]
+                    , p []
+                        [ label [] [ text <| translate language Translate.DOB ++ ": " ]
+                        , span []
+                            [ person.birthDate
+                                |> Maybe.map (renderDate language >> text)
+                                |> showMaybe
+                            ]
+                        ]
+                    , p []
+                        [ label [] [ text <| translate language Translate.Village ++ ": " ]
+                        , span [] [ person.village |> Maybe.withDefault "" |> text ]
+                        ]
+                    ]
+                , action
+                ]
+    in
+    div
+        [ class "item participant-view" ]
+        [ div
+            [ class "ui image" ]
+            [ thumbnailImage "mother" person.avatarUrl person.name 120 120 ]
+        , content
+        ]

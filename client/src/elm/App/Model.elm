@@ -16,6 +16,7 @@ import Pages.Person.Model
 import Pages.PinCode.Model
 import Pages.PrenatalActivity.Model
 import Pages.PrenatalEncounter.Model
+import Pages.PrenatalParticipant.Model
 import Pages.PrenatalParticipants.Model
 import Pages.Relationship.Model
 import Pages.Session.Model
@@ -201,6 +202,7 @@ type Msg
 type MsgLoggedIn
     = MsgPageCreatePerson Pages.Person.Model.Msg
     | MsgPagePersons Pages.People.Model.Msg
+    | MsgPagePrenatalParticipant PersonId Pages.PrenatalParticipant.Model.Msg
     | MsgPagePrenatalParticipants Pages.PrenatalParticipants.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
