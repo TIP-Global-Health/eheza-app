@@ -462,12 +462,17 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
 
         MsgPrenatalEncounter encounterId subMsg ->
             let
+                encounter =
+                    EveryDict.get encounterId model.prenatalEncounters
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+
                 requests =
                     EveryDict.get encounterId model.prenatalEncounterRequests
                         |> Maybe.withDefault Backend.PrenatalEncounter.Model.emptyModel
 
                 ( subModel, subCmd ) =
-                    Backend.PrenatalEncounter.Update.update nurseId healthCenterId encounterId currentDate subMsg requests
+                    Backend.PrenatalEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
             in
             ( { model | prenatalEncounterRequests = EveryDict.insert encounterId subModel model.prenatalEncounterRequests }
             , Cmd.map (MsgPrenatalEncounter encounterId) subCmd

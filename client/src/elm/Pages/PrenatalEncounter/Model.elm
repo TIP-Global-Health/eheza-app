@@ -1,5 +1,7 @@
 module Pages.PrenatalEncounter.Model exposing (Model, Msg(..), Tab(..), emptyModel)
 
+import Backend.Entities exposing (..)
+import Backend.PrenatalEncounter.Model
 import Pages.Page exposing (Page)
 
 
@@ -9,7 +11,8 @@ type alias Model =
 
 
 type Msg
-    = SetActivePage Page
+    = CloseEncounter PrenatalEncounterId
+    | SetActivePage Page
     | SetSelectedTab Tab
 
 

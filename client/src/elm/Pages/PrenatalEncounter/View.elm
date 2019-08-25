@@ -274,7 +274,7 @@ viewMainPageContent language currentDate data model =
                 , div [ class "actions" ]
                     [ button
                         [ class "ui fluid primary button"
-                        , onClick <| SetActivePage PinCodePage
+                        , onClick <| CloseEncounter data.id
                         ]
                         [ text <| translate language Translate.EndEncounter ]
                     ]
