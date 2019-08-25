@@ -1,7 +1,7 @@
 module App.View exposing (view)
 
 import App.Model exposing (..)
-import App.Utils exposing (getLoggedInModel)
+import App.Utils exposing (getLoggedInData)
 import Config.View
 import Date
 import EveryDict
@@ -178,15 +178,15 @@ viewUserPage page model configured =
         currentDate =
             fromLocalDateTime <| Date.fromTime model.currentTime
     in
-    case getLoggedInModel model of
-        Just loggedInModel ->
+    case getLoggedInData model of
+        Just ( healthCenterId, loggedInModel ) ->
             case page of
                 MyAccountPage ->
                     Pages.MyAccount.View.view model.language loggedInModel.nurse
                         |> oldPageWrapper model
 
                 ClinicsPage clinicId ->
-                    Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) clinicId model.indexedDb
+                    Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) healthCenterId clinicId model.indexedDb
                         |> flexPageWrapper model
 
                 CreatePersonPage relation ->

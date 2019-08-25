@@ -42,18 +42,6 @@ function hedley_device_node_presave($node) {
 }
 
 /**
- * Implements hook_node_delete().
- */
-function hedley_device_node_delete($node) {
-  // Allow to manually skip this exception.
-  if (!empty($node->allow_delete) || variable_get('hedley_device_allow_deletion', FALSE)) {
-    return;
-  }
-
-  throw new Exception('Cannot delete this node. Consider unpublishing it instead.');
-}
-
-/**
  * Implements hook_node_insert().
  */
 function hedley_device_node_insert($node) {
@@ -69,11 +57,28 @@ function hedley_device_node_insert($node) {
  * Implements hook_node_update().
  */
 function hedley_device_node_update($node) {
+  if (!in_array($node->type, ['device', 'pmtct_participant'])) {
+    return;
+  }
+
   if ($node->type == 'pmtct_participant') {
     $wrapper = entity_metadata_wrapper('node', $node);
 
     hedley_recalculate_shards_for_person($wrapper->field_person->getIdentifier());
     hedley_recalculate_shards_for_person($wrapper->field_adult->getIdentifier());
+  }
+  // The type is 'device'.
+  else {
+    $wrapper = entity_metadata_wrapper('node', $node->original);
+    $pairing_code = $wrapper->field_pairing_code->value();
+    $super_user_mode = variable_get('hedley_super_user_mode', FALSE);
+
+    // Do not allow to reset device pairing code, if it was already
+    // paired (pairing code is empty). This check is skipped when
+    // working at 'super_user' mode.
+    if (empty($pairing_code) && !$super_user_mode) {
+      throw new Exception('Device can\'t be edited after it was paired!');
+    }
   }
 }
 

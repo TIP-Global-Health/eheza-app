@@ -369,6 +369,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    * @throws \RestfulBadRequestException
    */
   public function handleChanges() {
+    watchdog('debug', 'Processing sync upload request');
     $request = $this->getRequest();
     $handlersForTypes = $this->allEntities();
     $account = $this->getAccount();
@@ -437,8 +438,28 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     }
     catch (Exception $e) {
       $transaction->rollback();
+
+      $m1 = '[MAIN] - ';
+      $m2 = '[DATA] - ';
+      foreach ($item as $k => $v) {
+        $m1 .= "  $k: $v  ||| ";
+      }
+
+      foreach ($item['data'] as $k => $v) {
+        $value = is_array($v) ? implode(', ', $v) : $v;
+
+        $m2 .= "  $k: $value";
+      }
+
+      watchdog('debug', $m1, [], WATCHDOG_ERROR);
+      watchdog('debug', $m2, [], WATCHDOG_ERROR);
+
       throw $e;
     }
+
+    $user = $account->name;
+    $total = count($request['changes']);
+    watchdog('debug', "Sync upload by $user with $total changes was successful");
 
     return [];
   }
