@@ -706,10 +706,6 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             )
 
         HandlePostedPrenatalEncounter participantId data ->
-            let
-                log =
-                    Debug.log "" data
-            in
             ( { model | postPrenatalEncounter = EveryDict.insert participantId data model.postPrenatalEncounter }
             , Cmd.none
             , RemoteData.map
