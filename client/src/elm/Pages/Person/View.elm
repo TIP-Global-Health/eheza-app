@@ -728,22 +728,19 @@ viewCreateForm language currentDate relationId model db =
         hmisNumberInput =
             viewSelectInput language Translate.ChildHmisNumber hmisNumberOptions Backend.Person.Form.hmisNumber "ten" "select-input" False personForm
 
-        nationalIdInput =
-            viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
-
         demographicFields =
             viewPhoto
                 :: (List.map (Html.map (MsgForm relationId)) <|
                         [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName False personForm
                         , viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
+                        , viewNumberInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
                         ]
                    )
                 ++ [ birthDateInput ]
                 ++ (List.map (Html.map (MsgForm relationId)) <|
                         case expectedAge of
                             ExpectAdult ->
-                                [ nationalIdInput
-                                , genderInput
+                                [ genderInput
                                 , hivStatusInput
                                 , levelOfEducationInput
                                 , maritalStatusInput
@@ -751,16 +748,14 @@ viewCreateForm language currentDate relationId model db =
                                 ]
 
                             ExpectChild ->
-                                [ nationalIdInput
-                                , hmisNumberInput
+                                [ hmisNumberInput
                                 , genderInput
                                 , hivStatusInput
                                 , modeOfDeliveryInput
                                 ]
 
                             ExpectAdultOrChild ->
-                                [ nationalIdInput
-                                , hmisNumberInput
+                                [ hmisNumberInput
                                 , genderInput
                                 , hivStatusInput
                                 , levelOfEducationInput
@@ -1065,6 +1060,16 @@ viewCreateForm language currentDate relationId model db =
 
 viewTextInput : Language -> TranslationId -> String -> Bool -> Form e a -> Html Form.Msg
 viewTextInput language labelId fieldName isRequired form =
+    viewFormInput language labelId Form.Input.textInput fieldName isRequired form
+
+
+viewNumberInput : Language -> TranslationId -> String -> Bool -> Form e a -> Html Form.Msg
+viewNumberInput language labelId fieldName isRequired form =
+    viewFormInput language labelId (Form.Input.baseInput "number" Form.Field.String Form.Text) fieldName isRequired form
+
+
+viewFormInput : Language -> TranslationId -> Form.Input.Input e String -> String -> Bool -> Form e a -> Html Form.Msg
+viewFormInput language labelId formInput fieldName isRequired form =
     let
         field =
             Form.getFieldAsString fieldName form
@@ -1079,7 +1084,7 @@ viewTextInput language labelId fieldName isRequired form =
             [ text <| translate language labelId ++ ":" ]
         , div
             [ class "ten wide column" ]
-            [ Form.Input.textInput field
+            [ formInput field
                 [ classList
                     [ ( "error", isJust field.liveError )
                     , ( "field", True )

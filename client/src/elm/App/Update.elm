@@ -4,7 +4,7 @@ import AllDict
 import AnimationFrame
 import App.Fetch
 import App.Model exposing (..)
-import App.Utils exposing (getLoggedInModel)
+import App.Utils exposing (getLoggedInData)
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.Update
@@ -153,8 +153,8 @@ update msg model =
             fromLocalDateTime <| Date.fromTime model.currentTime
 
         nurseId =
-            getLoggedInModel model
-                |> Maybe.map (.nurse >> Tuple.first)
+            getLoggedInData model
+                |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
     in
     case msg of
         MsgIndexedDb subMsg ->
@@ -537,14 +537,14 @@ handleRevision model revision =
     case revision of
         Backend.Model.NurseRevision uuid data ->
             Maybe.andThen
-                (\loggedIn ->
+                (\( _, loggedIn ) ->
                     if Tuple.first loggedIn.nurse == uuid then
                         Just (SetLoggedIn (Success ( uuid, data )))
 
                     else
                         Nothing
                 )
-                (getLoggedInModel model)
+                (getLoggedInData model)
 
         _ ->
             Nothing

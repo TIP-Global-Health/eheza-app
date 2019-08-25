@@ -108,11 +108,12 @@
         }
     });
 
-    // Checks our `syncMetadata` table for shards that we ought to sync.  Also
-    // creates the metadata for our `nodesUuid` shard if it doesn't exist yet.
-    function shardsToSync () {
+    // Returns node (`nodesUuid`) shard which we ought to sync.  Will
+    // creates the metadata for our it, if it doesn't exist yet.
+    function nodeShardToSync () {
         return dbSync.transaction(rw, dbSync.syncMetadata, function () {
-            return dbSync.syncMetadata.get(nodesUuid).then(function (item) {
+            return dbSync.syncMetadata.get(nodesUuid)
+            .then(function (item) {
                 // If we don't have metadata for nodesUuid yet, create it.
                 if (item) {
                     return Promise.resolve(item.uuid);
@@ -125,19 +126,43 @@
                         }
                     });
                 }
-            }).then(function () {
-                // We return all the shards. We used to "lock" shards for whom
-                // a sync was already in progress. However, it turns out that
-                // this is not necessary. Because we're initiating this through
-                // the backround sync mechanism, the browser won't handle two
-                // of these events at once anyway.
-                return dbSync.syncMetadata.toArray();
             })
-        }).catch(formatDatabaseError).catch(function (attempt) {
+            .then(function () {
+                return dbSync.syncMetadata.get(nodesUuid);
+            })
+        })
+        .catch(formatDatabaseError)
+        .catch(function (attempt) {
             // If we get an error at this level, record it against the
             // nodesUUID, so we'll see it, and then re-throw, so we
             // won't continue.
             return recordAttempt(nodesUuid, attempt).then(function () {
+                return Promise.reject(attempt);
+            });
+        });
+    }
+
+    // Checks our `syncMetadata` table for shards that we ought to sync, other
+    // than the node shard.
+    function otherShardsToSync () {
+        return dbSync.transaction(rw, dbSync.syncMetadata, function () {
+            // We return all the shards which uuid is different from that
+            // of node shard. We used to "lock" shards for whom
+            // a sync was already in progress. However, it turns out that
+            // this is not necessary. Because we're initiating this through
+            // the backround sync mechanism, the browser won't handle two
+            // of these events at once anyway.
+            return dbSync.syncMetadata.filter(function (value) {
+                return value.uuid !== nodesUuid;
+            }).toArray();
+        })
+        .catch(formatDatabaseError)
+        .catch(function (attempt) {
+            // If we get an error at this level, record it against the
+            // nodesUUID, so we'll see it, and then re-throw, so we
+            // won't continue.
+            return recordAttempt(nodesUuid, attempt)
+            .then(function () {
                 return Promise.reject(attempt);
             });
         });
@@ -148,18 +173,11 @@
     // its own success or failure).
     function syncAllShards () {
         return getCredentials().then(function (credentials) {
-            return dbSync.open().then(function () {
-                return shardsToSync().then(function (shards) {
-                    var actions = shards.map(function (shard) {
-                        // Probably makes sense to upload and then download ...
-                        // that way, we'll get the server's interpretation of
-                        // our changes immediately.
-                        return uploadSingleShard(shard, credentials).then(function () {
-                            return downloadSingleShard(shard, credentials);
-                        });
-                    });
-
-                    return Promise.all(actions).catch(function (err) {
+            return dbSync.open()
+            .then(function () {
+                return nodeShardToSync()
+                .then(function (shard) {
+                    return processSingleShard (shard, credentials).catch(function (err) {
                         if ((err.tag === BadResponse) && (err.status === 401)) {
                             return tryRefreshToken(credentials).catch(function () {
                                 // If we couldn't get a new access token,
@@ -172,9 +190,29 @@
                         } else {
                             return Promise.reject(err);
                         }
+                    })
+                    .then(function () {
+                        return otherShardsToSync()
+                        .then(function (shards) {
+                            var actions = shards.map(function (shard) {
+                                return processSingleShard(shard, credentials);
+                            });
+
+                            return Promise.all(actions);
+                        });
                     });
                 });
             });
+        });
+    }
+
+    // Uploads and then Downloads data for single shard.
+    function processSingleShard (shard, credentials) {
+        // Probably makes sense to upload and then download ...
+        // that way, we'll get the server's interpretation of
+        // our changes immediately.
+        return uploadSingleShard(shard, credentials).then(function () {
+            return downloadSingleShard(shard, credentials);
         });
     }
 
@@ -670,7 +708,9 @@
 
                         return fetchWithTimeout(req, {}, imageTimeout).then(function(response) {
                             if (!response.ok) {
-                                throw new TypeError('Response status ' + response.status + ' fetching ' + url);
+                                // Even though we failed to fetch the image,
+                                // we return a success, so we can proceed with sync process.
+                                Promise.resolve();
                             }
 
                             return cache.put(url, response);

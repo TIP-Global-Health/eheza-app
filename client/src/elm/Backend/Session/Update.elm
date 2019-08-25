@@ -8,25 +8,38 @@ import Backend.Session.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
 import Json.Encode exposing (object)
 import Json.Encode.Extra
+import Maybe.Extra exposing (unwrap)
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (applyBackendUrl, encodeEntityUuid, toCmd, withoutDecoder)
 
 
-update : Maybe NurseId -> SessionId -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg )
-update nurseId sessionId currentDate msg model =
+update : Maybe NurseId -> SessionId -> Maybe Session -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg )
+update nurseId sessionId maybeSession currentDate msg model =
     let
         sw =
             applyBackendUrl "/sw"
     in
     case msg of
         CloseSession ->
-            ( { model | closeSessionRequest = Loading }
-            , object [ ( "scheduled_date.value2", encodeYYYYMMDD currentDate ) ]
-                |> sw.patchAny sessionEndpoint sessionId
-                |> withoutDecoder
-                |> toCmd (RemoteData.fromResult >> HandleClosedSession)
-            )
+            unwrap
+                ( model, Cmd.none )
+                (\session ->
+                    ( { model | closeSessionRequest = Loading }
+                    , object
+                        [ ( "scheduled_date"
+                          , object
+                                [ ( "value", encodeYYYYMMDD session.startDate )
+                                , ( "value2", encodeYYYYMMDD currentDate )
+                                ]
+                          )
+                        ]
+                        |> sw.patchAny sessionEndpoint sessionId
+                        |> withoutDecoder
+                        |> toCmd (RemoteData.fromResult >> HandleClosedSession)
+                    )
+                )
+                maybeSession
 
         HandleClosedSession data ->
             ( { model | closeSessionRequest = data }
