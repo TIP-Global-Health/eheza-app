@@ -8,9 +8,9 @@ import RemoteData exposing (RemoteData(..), WebData)
 
 
 type alias PrenatalEncounter =
-    { startDate : NominalDate
+    { participant : PrenatalParticipantId
+    , startDate : NominalDate
     , endDate : Maybe NominalDate
-    , participant : PrenatalParticipantId
     }
 
 

@@ -70,7 +70,7 @@ delta2url previous current =
                     Just <| UrlChange NewEntry url
 
                 PrenatalParticipantPage id ->
-                    Just <| UrlChange NewEntry <| "#prenatal-participant" ++ fromEntityUuid id
+                    Just <| UrlChange NewEntry <| "#prenatal-participant/" ++ fromEntityUuid id
 
                 PrenatalParticipantsPage ->
                     Just <| UrlChange NewEntry "#prenatal-participants"

@@ -674,6 +674,44 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , []
             )
 
+        PostPrenatalSession prenatalSession ->
+            ( { model | postPrenatalSession = EveryDict.insert prenatalSession.person Loading model.postPrenatalSession }
+            , sw.post prenatalParticipantEndpoint prenatalSession
+                |> toCmd (RemoteData.fromResult >> HandlePostedPrenatalSession prenatalSession.person)
+            , []
+            )
+
+        HandlePostedPrenatalSession personId data ->
+            ( { model | postPrenatalSession = EveryDict.insert personId data model.postPrenatalSession }
+            , Cmd.none
+            , []
+            )
+
+        PostPrenatalEncounter prenatalEncounter ->
+            ( { model | postPrenatalEncounter = EveryDict.insert prenatalEncounter.participant Loading model.postPrenatalEncounter }
+            , sw.post prenatalEncounterEndpoint prenatalEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedPrenatalEncounter prenatalEncounter.participant)
+            , []
+            )
+
+        HandlePostedPrenatalEncounter participantId data ->
+            let
+                log =
+                    Debug.log "" data
+            in
+            ( { model | postPrenatalEncounter = EveryDict.insert participantId data model.postPrenatalEncounter }
+            , Cmd.none
+            , RemoteData.map
+                (\( prenatalEncounterId, _ ) ->
+                    [ App.Model.SetActivePage <|
+                        UserPage <|
+                            Pages.Page.PrenatalEncounterPage prenatalEncounterId
+                    ]
+                )
+                data
+                |> RemoteData.withDefault []
+            )
+
 
 {-| The extra return value indicates whether we need to recalculate our
 successful EditableSessions. Ideally, we would handle this in a more

@@ -3,10 +3,11 @@ module Pages.PrenatalParticipant.View exposing (view)
 import App.Model
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import EveryDict
 import EveryDictList exposing (EveryDictList)
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -36,13 +37,16 @@ view language currentDate id db =
         prenatalSessions =
             EveryDict.get id db.prenatalParticipantsByPerson
                 |> Maybe.withDefault NotAsked
+
+        log =
+            EveryDict.get id db.prenatalParticipantsByPerson |> Debug.log "1"
     in
     div
         [ class "page-prenatal-participant" ]
         [ viewHeader language headerName
         , div
             [ class "ui full segment blue" ]
-            [ viewWebData language (viewPrenatalSessions language id db) identity prenatalSessions
+            [ viewWebData language (viewPrenatalSessions language currentDate id db) identity prenatalSessions
             ]
         ]
 
@@ -64,46 +68,63 @@ viewHeader language name =
         ]
 
 
-viewPrenatalSessions : Language -> PersonId -> ModelIndexedDb -> EveryDictList PrenatalParticipantId PrenatalParticipant -> Html App.Model.Msg
-viewPrenatalSessions language id db prenatalSessions =
+viewPrenatalSessions : Language -> NominalDate -> PersonId -> ModelIndexedDb -> EveryDictList PrenatalParticipantId PrenatalParticipant -> Html App.Model.Msg
+viewPrenatalSessions language currentDate id db prenatalSessions =
+    let
+        sessionInProgress =
+            not <| EveryDictList.isEmpty prenatalSessions
+    in
     div [ class "ui table session-list" ]
-        [ h1 [] [ text <| translate language Translate.RecentAndUpcomingGroupEncounters ]
+        [ h1 [] [ text "Pregnancy tracking" ]
         , table
             [ class "ui table session-list" ]
             [ thead []
                 [ tr []
                     [ th [] [ text <| translate language Translate.StartDate ]
-                    , th [] [ text <| translate language Translate.EndDate ]
                     ]
                 ]
             , prenatalSessions
-                |> EveryDictList.map (viewPrenatalSession language db)
+                |> EveryDictList.map (viewPrenatalSession language currentDate db)
                 |> EveryDictList.values
                 |> tbody []
             ]
-        , createSessionButton language id
+        , createSessionButton language currentDate id db |> showIf (not sessionInProgress)
         ]
 
 
-viewPrenatalSession : Language -> ModelIndexedDb -> PrenatalParticipantId -> PrenatalParticipant -> Html App.Model.Msg
-viewPrenatalSession language db sessionId session =
+viewPrenatalSession : Language -> NominalDate -> ModelIndexedDb -> PrenatalParticipantId -> PrenatalParticipant -> Html App.Model.Msg
+viewPrenatalSession language currentDate db sessionId session =
     let
         enableLink =
             True
+
+        log2 =
+            Debug.log "" sessionId
+
+        log =
+            EveryDict.get sessionId db.prenatalEncountersByParticipant |> Debug.log "2"
 
         action =
             EveryDict.get sessionId db.prenatalEncountersByParticipant
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.map
                     (EveryDictList.toList
-                        -- Commenting out temporarary
-                        -- >> List.filter (\( _, encounter ) -> isNothing encounter.endDate)
+                        >> List.filter (\( _, encounter ) -> isNothing encounter.endDate)
                         >> List.head
                         >> Maybe.map
                             (\( encounterId, _ ) ->
-                                [ onClick <| App.Model.SetActivePage <| UserPage <| Pages.Page.PrenatalEncounterPage encounterId ]
+                                [ onClick <|
+                                    App.Model.SetActivePage <|
+                                        UserPage <|
+                                            Pages.Page.PrenatalEncounterPage encounterId
+                                ]
                             )
-                        >> Maybe.withDefault []
+                        >> Maybe.withDefault
+                            [ PrenatalEncounter sessionId currentDate Nothing
+                                |> Backend.Model.PostPrenatalEncounter
+                                |> App.Model.MsgIndexedDb
+                                |> onClick
+                            ]
                     )
                 |> RemoteData.withDefault []
 
@@ -120,23 +141,30 @@ viewPrenatalSession language db sessionId session =
     in
     tr []
         [ td [] [ text <| formatYYYYMMDD session.startDate ]
-        , td [] [ text <| Maybe.withDefault "" <| Maybe.map formatYYYYMMDD session.endDate ]
         , td [] [ link ]
         ]
 
 
-createSessionButton : Language -> PersonId -> Html App.Model.Msg
-createSessionButton language id =
+createSessionButton : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
+createSessionButton language currentDate id db =
+    let
+        isLoading =
+            case EveryDict.get id db.postPrenatalSession of
+                Just Loading ->
+                    True
+
+                _ ->
+                    False
+    in
     button
         [ classList
-            [ ( "ui button active", True )
-
-            --  , ( "loading", isLoading postSession )
+            [ ( "ui button", True )
+            , ( "active", not isLoading )
+            , ( "loading", isLoading )
             ]
-
-        -- , defaultSession
-        --     |> PostSession
-        --     |> App.Model.MsgIndexedDb
-        --     |> onClick
+        , PrenatalParticipant id currentDate Nothing
+            |> Backend.Model.PostPrenatalSession
+            |> App.Model.MsgIndexedDb
+            |> onClick
         ]
-        [ text <| translate language Translate.CreateGroupEncounter ]
+        [ text "Track new pregnancy" ]
