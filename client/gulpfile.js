@@ -44,11 +44,6 @@ gulp.task("clean:dev", function(cb) {
     cb);
 });
 
-gulp.task("clean:compile", function(cb) {
-  return del(["elm-stuff/build-artifacts/0.18.0/Gizra/ihangane"],
-    cb);
-});
-
 
 // Deletes the directory that the optimized site is output to
 gulp.task("clean:prod", function(cb) {
@@ -356,7 +351,7 @@ gulp.task("watch", function() {
     "pwa:dev",
     reload
   ]);
-  gulp.watch(["src/elm/**/*.elm"], ["clean:compile", "elm", "copy:dev",
+  gulp.watch(["src/elm/**/*.elm"], ["elm", "copy:dev",
     "pwa:dev", reload
   ]);
   gulp.watch(["src/assets/scss/**/*.scss"], ["styles", "copy:dev",
@@ -467,7 +462,7 @@ gulp.task("default", ["serve:dev", "watch"]);
 
 // Builds the site but doesnt serve it to you
 // @todo: Add "bower" here
-gulp.task("build", gulpSequence("clean:compile", "clean:dev", ["styles",
+gulp.task("build", gulpSequence("clean:dev", ["styles",
   "zscore", "copy:dev",
   "elm", "pwa:dev"
 ]));
