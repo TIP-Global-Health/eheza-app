@@ -21,6 +21,8 @@ import Pages.PrenatalActivity.Model
 import Pages.PrenatalActivity.View
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.View
+import Pages.PrenatalParticipant.View
+import Pages.PrenatalParticipants.View
 import Pages.Relationship.Model
 import Pages.Relationship.View
 import Pages.Session.Model
@@ -201,6 +203,15 @@ viewUserPage page model configured =
                 PersonsPage relation ->
                     Pages.People.View.view model.language currentDate relation loggedInModel.personsPage model.indexedDb
                         |> Html.map (MsgLoggedIn << MsgPagePersons)
+                        |> flexPageWrapper model
+
+                PrenatalParticipantPage id ->
+                    Pages.PrenatalParticipant.View.view model.language currentDate id model.indexedDb
+                        |> flexPageWrapper model
+
+                PrenatalParticipantsPage ->
+                    Pages.PrenatalParticipants.View.view model.language currentDate loggedInModel.prenatalParticipantsPage model.indexedDb
+                        |> Html.map (MsgLoggedIn << MsgPagePrenatalParticipants)
                         |> flexPageWrapper model
 
                 RelationshipPage id1 id2 ->

@@ -12,6 +12,8 @@ import Pages.People.Fetch
 import Pages.Person.Fetch
 import Pages.PinCode.Fetch
 import Pages.PrenatalEncounter.Fetch
+import Pages.PrenatalParticipant.Fetch
+import Pages.PrenatalParticipants.Fetch
 import Pages.Relationship.Fetch
 import Pages.Session.Fetch
 
@@ -61,6 +63,24 @@ fetch model =
                 |> Maybe.map
                     (\( _, loggedIn ) ->
                         Pages.People.Fetch.fetch relation loggedIn.personsPage
+                            |> List.map MsgIndexedDb
+                    )
+                |> Maybe.withDefault []
+
+        UserPage (PrenatalParticipantPage personId) ->
+            getLoggedInModel model
+                |> Maybe.map
+                    (\data ->
+                        Pages.PrenatalParticipant.Fetch.fetch personId model.indexedDb
+                            |> List.map MsgIndexedDb
+                    )
+                |> Maybe.withDefault []
+
+        UserPage PrenatalParticipantsPage ->
+            getLoggedInModel model
+                |> Maybe.map
+                    (\data ->
+                        Pages.PrenatalParticipants.Fetch.fetch data.prenatalParticipantsPage
                             |> List.map MsgIndexedDb
                     )
                 |> Maybe.withDefault []

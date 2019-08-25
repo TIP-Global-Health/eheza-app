@@ -13,8 +13,8 @@ encodePrenatalParticipant data =
         [ ( "person", encodeEntityUuid data.person )
         , ( "expected"
           , object
-                [ ( "value", encodeYYYYMMDD data.start )
-                , ( "value2", maybe encodeYYYYMMDD data.end )
+                [ ( "value", encodeYYYYMMDD data.startDate )
+                , ( "value2", maybe encodeYYYYMMDD data.endDate )
                 ]
           )
         ]

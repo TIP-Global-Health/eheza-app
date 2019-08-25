@@ -118,6 +118,8 @@ type alias ModelIndexedDb =
     , postPmtctParticipant : EveryDict PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
     , postRelationship : EveryDict PersonId (WebData MyRelationship)
     , postSession : WebData SessionId
+    , postPrenatalSession : EveryDict PersonId (WebData ( PrenatalParticipantId, PrenatalParticipant ))
+    , postPrenatalEncounter : EveryDict PrenatalParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))
     }
 
 
@@ -138,6 +140,8 @@ emptyModelIndexedDb =
     , personSearches = Dict.empty
     , postPerson = NotAsked
     , postPmtctParticipant = EveryDict.empty
+    , postPrenatalSession = EveryDict.empty
+    , postPrenatalEncounter = EveryDict.empty
     , postRelationship = EveryDict.empty
     , postSession = NotAsked
     , prenatalEncounters = EveryDict.empty
@@ -206,11 +210,15 @@ type MsgIndexedDb
     | PostRelationship PersonId MyRelationship (Maybe ClinicId)
     | PostPmtctParticipant PmtctParticipant
     | PostSession Session
+    | PostPrenatalSession PrenatalParticipant
+    | PostPrenatalEncounter PrenatalEncounter
       -- Messages which handle responses to mutating data
     | HandlePostedPerson (Maybe PersonId) (WebData PersonId)
     | HandlePostedRelationship PersonId (WebData MyRelationship)
     | HandlePostedPmtctParticipant PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
     | HandlePostedSession (WebData SessionId)
+    | HandlePostedPrenatalSession PersonId (WebData ( PrenatalParticipantId, PrenatalParticipant ))
+    | HandlePostedPrenatalEncounter PrenatalParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))
       -- Process some revisions we've received from the backend. In some cases,
       -- we can update our in-memory structures appropriately. In other cases, we
       -- can set them to `NotAsked` and let the "fetch" mechanism re-fetch them.

@@ -178,7 +178,7 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                     prenatalEncounterButton =
                         button
                             [ class "ui primary button individual-assessment"
-                            , onClick <| SendOutMsg <| Pages.PinCode.Model.GoToRandomPrenatalEncounter
+                            , onClick <| SendOutMsg <| SetActivePage <| UserPage PrenatalParticipantsPage
                             ]
                             [ span [ class "icon" ] []
                             , span [ class "text" ] [ text <| translate language Translate.PrenatalEncounter ]
