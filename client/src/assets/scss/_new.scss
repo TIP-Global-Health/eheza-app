@@ -142,6 +142,7 @@ div.page-pincode {
       font-size: 2rem;
       font-weight: bold;
       margin-bottom: 3rem;
+      margin-top: 6rem;
     }
 
     button.ui.logout.button {
@@ -203,6 +204,11 @@ div.page-pincode {
       .icon-back {
         margin-left: 71px;
       }
+    }
+
+    // Maintaing margin from 'sign out' button when selecting health center.
+    button.health-center:last-child {
+        margin-bottom: 6rem !important;
     }
 }
 

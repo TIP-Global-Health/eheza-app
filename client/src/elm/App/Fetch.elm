@@ -1,7 +1,7 @@
 module App.Fetch exposing (fetch, forget, shouldFetch)
 
 import App.Model exposing (..)
-import App.Utils exposing (getLoggedInModel)
+import App.Utils exposing (getLoggedInData)
 import Backend.Fetch
 import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
@@ -57,10 +57,10 @@ fetch model =
                 |> List.map MsgIndexedDb
 
         UserPage (PersonsPage relation) ->
-            getLoggedInModel model
+            getLoggedInData model
                 |> Maybe.map
-                    (\data ->
-                        Pages.People.Fetch.fetch relation data.personsPage
+                    (\( _, loggedIn ) ->
+                        Pages.People.Fetch.fetch relation loggedIn.personsPage
                             |> List.map MsgIndexedDb
                     )
                 |> Maybe.withDefault []

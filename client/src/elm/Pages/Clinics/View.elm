@@ -36,22 +36,22 @@ For now, at least, we don't really need our own `Msg` type, so we're just using
 the big one.
 
 -}
-view : Language -> NominalDate -> Nurse -> Maybe ClinicId -> ModelIndexedDb -> Html Msg
-view language currentDate user selectedClinic db =
+view : Language -> NominalDate -> Nurse -> HealthCenterId -> Maybe ClinicId -> ModelIndexedDb -> Html Msg
+view language currentDate user healthCenterId selectedClinic db =
     case selectedClinic of
         Just clinicId ->
             viewClinic language currentDate user clinicId db
 
         Nothing ->
-            viewClinicList language user db
+            viewClinicList language user healthCenterId db
 
 
-viewClinicList : Language -> Nurse -> ModelIndexedDb -> Html Msg
-viewClinicList language user db =
+viewClinicList : Language -> Nurse -> HealthCenterId -> ModelIndexedDb -> Html Msg
+viewClinicList language user healthCenterId db =
     let
         content =
             viewWebData language
-                (viewLoadedClinicList language user)
+                (viewLoadedClinicList language user healthCenterId)
                 identity
                 (RemoteData.append db.clinics db.syncData)
     in
@@ -82,8 +82,8 @@ we could show something about the sync status here ... might want to know how
 up-to-date things are.
 
 -}
-viewLoadedClinicList : Language -> Nurse -> ( EveryDictList ClinicId Clinic, EveryDictList HealthCenterId SyncData ) -> Html Msg
-viewLoadedClinicList language user ( clinics, sync ) =
+viewLoadedClinicList : Language -> Nurse -> HealthCenterId -> ( EveryDictList ClinicId Clinic, EveryDictList HealthCenterId SyncData ) -> Html Msg
+viewLoadedClinicList language user selectedHealthCenterId ( clinics, sync ) =
     let
         title =
             p
@@ -94,7 +94,13 @@ viewLoadedClinicList language user ( clinics, sync ) =
 
         synced =
             clinics
-                |> EveryDictList.filter (\_ clinic -> EveryDictList.member clinic.healthCenterId sync)
+                |> EveryDictList.filter
+                    (\_ clinic ->
+                        -- Group belongs to seleced health center.
+                        (clinic.healthCenterId == selectedHealthCenterId)
+                            -- Health center is synced.
+                            && EveryDictList.member clinic.healthCenterId sync
+                    )
                 |> EveryDictList.sortBy .name
 
         clinicView =
