@@ -347,7 +347,7 @@ gulp.task("ssl-cert", function(cb) {
 // reload the website accordingly. Update or add other files you need to be watched.
 gulp.task("watch", function() {
   // We need to copy dev, so index.html may be replaced by error messages.
-  gulp.watch(["src/index.html", "src/js/**/*.js"], ["copy:compile",
+  gulp.watch(["src/index.html", "src/js/**/*.js"], ["copy:dev",
     "pwa:dev",
     reload
   ]);

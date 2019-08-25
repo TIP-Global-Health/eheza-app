@@ -476,12 +476,18 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
 
         MsgSession sessionId subMsg ->
             let
+                session =
+                    AllDict.get sessionId model.editableSessions
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.map (.offlineSession >> .session)
+                        |> RemoteData.toMaybe
+
                 requests =
                     EveryDict.get sessionId model.sessionRequests
                         |> Maybe.withDefault Backend.Session.Model.emptyModel
 
                 ( subModel, subCmd ) =
-                    Backend.Session.Update.update nurseId sessionId currentDate subMsg requests
+                    Backend.Session.Update.update nurseId sessionId session currentDate subMsg requests
             in
             ( { model | sessionRequests = EveryDict.insert sessionId subModel model.sessionRequests }
             , Cmd.map (MsgSession sessionId) subCmd
