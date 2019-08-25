@@ -240,12 +240,12 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
         heightWeightMuacTable =
             expectedSessions
                 |> AllDictList.toList
-                |> greedyGroupsOf 12
+                |> greedyGroupsOf 6
                 |> List.map
-                    (\groupOfTwelve ->
+                    (\groupOfSix ->
                         let
                             ages =
-                                groupOfTwelve
+                                groupOfSix
                                     |> List.map
                                         (\( id, columnSession ) ->
                                             child.birthDate
@@ -265,7 +265,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                     |> tr []
 
                             heights =
-                                groupOfTwelve
+                                groupOfSix
                                     |> List.map
                                         (\( id, _ ) ->
                                             AllDict.get id heightValuesBySession
@@ -278,7 +278,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                     |> tr []
 
                             muacs =
-                                groupOfTwelve
+                                groupOfSix
                                     |> List.map
                                         (\( id, _ ) ->
                                             AllDict.get id muacValuesBySession
@@ -345,7 +345,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                 span indication [ text value ]
 
                             weights =
-                                groupOfTwelve
+                                groupOfSix
                                     |> List.map
                                         (\( id, _ ) ->
                                             AllDict.get id weightValuesBySession
