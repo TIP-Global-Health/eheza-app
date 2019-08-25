@@ -140,6 +140,8 @@ parseUrl =
         , map (\id -> UserPage <| CreatePersonPage (Just id)) (s "person" </> s "new" </> parseUuid)
         , map (UserPage <| CreatePersonPage Nothing) (s "person" </> s "new")
         , map (\id -> UserPage <| PersonPage id) (s "person" </> parseUuid)
+        , map (UserPage PrenatalParticipantsPage) (s "prenatal-participants")
+        , map (\id -> UserPage <| PrenatalParticipantPage id) (s "prenatal-participant" </> parseUuid)
         , map (\id1 id2 -> UserPage <| RelationshipPage id1 id2) (s "relationship" </> parseUuid </> parseUuid)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)

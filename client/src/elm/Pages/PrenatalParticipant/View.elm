@@ -39,7 +39,7 @@ view language currentDate id db =
                 |> Maybe.withDefault NotAsked
     in
     div
-        [ class "page-prenatal-participant" ]
+        [ class "wrap wrap-alt-2 page-prenatal-participant" ]
         [ viewHeader language headerName
         , div
             [ class "ui full segment blue" ]
@@ -54,7 +54,7 @@ viewHeader language name =
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text name ]
+            [ text <| name ++ " pregnancy" ]
         , a
             [ class "link-back"
             , onClick <| App.Model.SetActivePage <| UserPage PrenatalParticipantsPage
@@ -72,12 +72,12 @@ viewPrenatalSessions language currentDate id db prenatalSessions =
             not <| EveryDictList.isEmpty prenatalSessions
     in
     div [ class "ui table session-list" ]
-        [ h1 [] [ text "Pregnancy tracking" ]
-        , table
+        [ table
             [ class "ui table session-list" ]
             [ thead []
                 [ tr []
                     [ th [] [ text <| translate language Translate.StartDate ]
+                    , th [] [ text <| translate language Translate.EndDate ]
                     ]
                 ]
             , prenatalSessions
@@ -132,6 +132,7 @@ viewPrenatalSession language currentDate db sessionId session =
     in
     tr []
         [ td [] [ text <| formatYYYYMMDD session.startDate ]
+        , td [] [ text <| Maybe.withDefault "" <| Maybe.map formatYYYYMMDD session.endDate ]
         , td [] [ link ]
         ]
 

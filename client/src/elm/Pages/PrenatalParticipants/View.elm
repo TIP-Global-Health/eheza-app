@@ -40,7 +40,7 @@ view language currentDate model db =
             translate language Translate.PrenatalParticipants
     in
     div
-        [ class "page-prenatal-participants" ]
+        [ class "wrap wrap-alt-2 page-prenatal-participants" ]
         [ viewHeader title
         , div
             [ class "search-wrapper" ]
