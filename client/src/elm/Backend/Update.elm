@@ -477,7 +477,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
         MsgSession sessionId subMsg ->
             let
                 session =
-                    AllDict.get sessionId model.editableSessions
+                    EveryDict.get sessionId model.editableSessions
                         |> Maybe.withDefault NotAsked
                         |> RemoteData.map (.offlineSession >> .session)
                         |> RemoteData.toMaybe

@@ -68,19 +68,19 @@ fetch model =
                 |> Maybe.withDefault []
 
         UserPage (PrenatalParticipantPage personId) ->
-            getLoggedInModel model
+            getLoggedInData model
                 |> Maybe.map
-                    (\data ->
+                    (\( _, loggedIn ) ->
                         Pages.PrenatalParticipant.Fetch.fetch personId model.indexedDb
                             |> List.map MsgIndexedDb
                     )
                 |> Maybe.withDefault []
 
         UserPage PrenatalParticipantsPage ->
-            getLoggedInModel model
+            getLoggedInData model
                 |> Maybe.map
-                    (\data ->
-                        Pages.PrenatalParticipants.Fetch.fetch data.prenatalParticipantsPage
+                    (\( _, loggedIn ) ->
+                        Pages.PrenatalParticipants.Fetch.fetch loggedIn.prenatalParticipantsPage
                             |> List.map MsgIndexedDb
                     )
                 |> Maybe.withDefault []
