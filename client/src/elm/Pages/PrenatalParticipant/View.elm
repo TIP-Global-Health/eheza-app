@@ -37,9 +37,6 @@ view language currentDate id db =
         prenatalSessions =
             EveryDict.get id db.prenatalParticipantsByPerson
                 |> Maybe.withDefault NotAsked
-
-        log =
-            EveryDict.get id db.prenatalParticipantsByPerson |> Debug.log "1"
     in
     div
         [ class "page-prenatal-participant" ]
@@ -97,12 +94,6 @@ viewPrenatalSession language currentDate db sessionId session =
     let
         enableLink =
             True
-
-        log2 =
-            Debug.log "" sessionId
-
-        log =
-            EveryDict.get sessionId db.prenatalEncountersByParticipant |> Debug.log "2"
 
         action =
             EveryDict.get sessionId db.prenatalEncountersByParticipant
