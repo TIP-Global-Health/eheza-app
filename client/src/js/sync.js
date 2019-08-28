@@ -150,27 +150,35 @@
                 return nodeShardToSync()
                 .then(function (shard) {
                     return processSingleShard (shard, credentials).catch(function (err) {
-                        if ((err.tag === BadResponse) && (err.status === 401)) {
+                        // When authentication token is invalid, besides standard 401 response,
+                        // we may get 403 from file-upload resource.
+                        // Therefore, we'll try to refresh token on 403 respnse as well.
+                        if ((err.tag === BadResponse) && (err.status === 401 || err.status === 403)) {
                             return tryRefreshToken(credentials).catch(function () {
                                 // If we couldn't get a new access token,
                                 // then reject with our original error.
                                 return Promise.reject(err);
                             }).then(function () {
                                 // If we could, then try again.
-                                return syncAllShards();
+                                // We fetch new credentials, since they got refreshed.
+                                return getCredentials().then(function (credentials) {
+                                    return processSingleShard (shard, credentials);
+                                });
                             });
                         } else {
                             return Promise.reject(err);
                         }
                     })
                     .then(function () {
-                        return otherShardsToSync()
-                        .then(function (shards) {
-                            var actions = shards.map(function (shard) {
-                                return processSingleShard(shard, credentials);
-                            });
+                        // Need to fetch new credentials, since they may have got refreshed.
+                        return getCredentials().then(function (credentials) {
+                            return otherShardsToSync().then(function (shards) {
+                                var actions = shards.map(function (shard) {
+                                    return processSingleShard(shard, credentials);
+                                });
 
-                            return Promise.all(actions);
+                                return Promise.all(actions);
+                            });
                         });
                     });
                 });
