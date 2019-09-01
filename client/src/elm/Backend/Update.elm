@@ -764,7 +764,12 @@ handleRevision revision (( model, recalc ) as noChange) =
             )
 
         CorePhysicalExamRevision uuid data ->
-            noChange
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | corePhysicalExam = Just ( uuid, data ) })
+                model
+            , recalc
+            )
 
         CounselingScheduleRevision uuid data ->
             -- Just invalidate our value ... if someone wants it, we'll refetch it.
