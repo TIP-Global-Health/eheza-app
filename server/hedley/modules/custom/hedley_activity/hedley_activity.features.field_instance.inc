@@ -782,6 +782,10 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Eyes',
     'required' => 0,
     'settings' => array(
+      'max' => '',
+      'min' => 0,
+      'prefix' => '',
+      'suffix' => 'cm',
       'user_register_form' => FALSE,
     ),
     'widget' => array(
@@ -6266,6 +6270,10 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Nurse',
     'required' => 0,
     'settings' => array(
+      'max' => '',
+      'min' => 0,
+      'prefix' => '',
+      'suffix' => '',
       'user_register_form' => FALSE,
     ),
     'widget' => array(
@@ -7690,7 +7698,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Weight',
     'required' => 1,
     'settings' => array(
-      'max' => 500,
+      'max' => '',
       'min' => 0,
       'prefix' => '',
       'suffix' => 'kg',
