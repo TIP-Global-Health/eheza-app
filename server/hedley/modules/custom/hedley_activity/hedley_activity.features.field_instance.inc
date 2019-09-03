@@ -801,7 +801,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Height',
     'required' => 1,
     'settings' => array(
-      'max' => 300,
+      'max' => '',
       'min' => 0,
       'prefix' => '',
       'suffix' => 'cm',
@@ -1207,7 +1207,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'MUAC',
     'required' => 1,
     'settings' => array(
-      'max' => 200,
+      'max' => '',
       'min' => 0,
       'prefix' => '',
       'suffix' => '',
@@ -2545,7 +2545,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Weight',
     'required' => 1,
     'settings' => array(
-      'max' => 500,
+      'max' => '',
       'min' => 0,
       'prefix' => '',
       'suffix' => 'kg',
