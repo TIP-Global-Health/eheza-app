@@ -968,7 +968,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
         , div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
                 [ viewLabel language Translate.CSectionReason ]
-            , viewWarning language (Just "Warning!!")
+            , viewWarning language Nothing
             ]
         , viewCheckBoxSelectInput language
             [ Breech, Emergency, Other ]
@@ -1241,22 +1241,22 @@ viewVitalsForm language currentDate assembled form =
             Nothing
 
         diaBloodPressurePreviousValue =
-            Just 110
+            Nothing
 
         heartRatePreviousValue =
             Nothing
 
         respiratoryRatePreviousValue =
-            Just 21
+            Nothing
 
         bodyTemperaturePreviousValue =
-            Just 36.9
+            Nothing
     in
     div [ class "ui form examination vitals" ]
         [ div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
                 [ viewLabel language Translate.BloodPressure ]
-            , viewWarning language (Just "Warning!!")
+            , viewWarning language Nothing
             ]
         , div [ class "title sys" ] [ text <| translate language Translate.BloodPressureSysLabel ]
         , viewMeasurementInput
@@ -1335,19 +1335,19 @@ viewNutritionAssessmentForm language currentDate assembled form =
             Nothing
 
         weightPreviousValue =
-            Just 76
+            Nothing
 
         bmiPreviousValue =
             Nothing
 
         muacPreviousValue =
-            Just 18
+            Nothing
     in
     div [ class "ui form examination nutrition-assessment" ]
         [ div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
                 [ viewLabel language Translate.Height ]
-            , viewWarning language (Just "Warning!!")
+            , viewWarning language Nothing
             ]
         , viewMeasurementInput
             language
@@ -1388,7 +1388,7 @@ viewNutritionAssessmentForm language currentDate assembled form =
         , div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
                 [ viewLabel language Translate.MUAC ]
-            , viewWarning language (Just "Warning!!")
+            , viewWarning language Nothing
             ]
         , viewMeasurementInput
             language
@@ -1488,7 +1488,7 @@ viewCorePhysicalExamForm language currentDate assembled form =
         , div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
                 [ viewLabel language Translate.Extremities ]
-            , viewWarning language (Just "Attention!")
+            , viewWarning language Nothing
             ]
         , div [ class "title hands" ] [ text <| (translate language Translate.Hands ++ ":") ]
         , viewCheckBoxSelectInput language
@@ -1523,7 +1523,7 @@ viewObstetricalExamForm language currentDate assembled form =
             { form_ | cSectionScar = Just value }
 
         fetalHeartRatePreviousValue =
-            Just 170
+            Nothing
 
         fundalHeightPreviousValue =
             Nothing
@@ -1532,7 +1532,7 @@ viewObstetricalExamForm language currentDate assembled form =
         [ div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
                 [ viewLabel language Translate.FundalHeight ]
-            , viewWarning language (Just "Attention!")
+            , viewWarning language Nothing
             ]
         , viewMeasurementInput
             language
@@ -1557,7 +1557,7 @@ viewObstetricalExamForm language currentDate assembled form =
         , div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
                 [ viewLabel language Translate.FetalMovement ]
-            , viewWarning language (Just "Attention!")
+            , viewWarning language Nothing
             ]
         , viewBoolInput
             language
