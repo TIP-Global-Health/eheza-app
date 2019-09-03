@@ -11,8 +11,10 @@ import Backend.Session.Model exposing (EditableSession, Session)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother, getMyMother)
 import EveryDict
 import EveryDictList exposing (EveryDictList)
+import Date.Extra
 import EverySet
 import Gizra.Html exposing (emptyNode)
+import Gizra.NominalDate exposing (toLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -235,15 +237,27 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                 |> List.reverse
                 |> List.Extra.find hasMeasurement
 
+        sessionsSortFunc ( k1, v1 ) ( k2, v2 ) =
+            let
+                d1 =
+                    toLocalDateTime v1.startDate 0 0 0 0
+
+                d2 =
+                    toLocalDateTime v2.startDate 0 0 0 0
+            in
+            Date.Extra.compare d1 d2
+
         heightWeightMuacTable =
             expectedSessions
                 |> EveryDictList.toList
-                |> greedyGroupsOf 12
+                |> List.sortWith sessionsSortFunc
+                |> List.reverse
+                |> greedyGroupsOf 6
                 |> List.map
-                    (\groupOfTwelve ->
+                    (\groupOfSix ->
                         let
                             ages =
-                                groupOfTwelve
+                                groupOfSix
                                     |> List.map
                                         (\( id, columnSession ) ->
                                             child.birthDate
@@ -263,7 +277,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                     |> tr []
 
                             heights =
-                                groupOfTwelve
+                                groupOfSix
                                     |> List.map
                                         (\( id, _ ) ->
                                             EveryDict.get id heightValuesBySession
@@ -276,7 +290,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                     |> tr []
 
                             muacs =
-                                groupOfTwelve
+                                groupOfSix
                                     |> List.map
                                         (\( id, _ ) ->
                                             EveryDict.get id muacValuesBySession
@@ -343,7 +357,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                 span indication [ text value ]
 
                             weights =
-                                groupOfTwelve
+                                groupOfSix
                                     |> List.map
                                         (\( id, _ ) ->
                                             EveryDict.get id weightValuesBySession
