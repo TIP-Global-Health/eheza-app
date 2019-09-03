@@ -112,7 +112,7 @@ viewContent language activePage nurseData healthCenterId model db =
                         [ class "ui transparent left icon input" ]
                         [ input
                             [ placeholder <| translate language <| Translate.LoginPhrase Translate.PinCode
-                            , type_ "text"
+                            , type_ "password"
                             , name "pincode"
                             , onInput SetPinCode
                             , value model.code
