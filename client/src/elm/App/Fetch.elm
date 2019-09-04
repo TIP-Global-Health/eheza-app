@@ -12,6 +12,7 @@ import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.People.Fetch
 import Pages.Person.Fetch
 import Pages.PinCode.Fetch
+import Pages.PrenatalActivity.Fetch
 import Pages.PrenatalEncounter.Fetch
 import Pages.PrenatalParticipant.Fetch
 import Pages.PrenatalParticipants.Fetch
@@ -46,6 +47,15 @@ fetch model =
 
         PinCodePage ->
             List.map MsgIndexedDb Pages.PinCode.Fetch.fetch
+
+        PageNotFound _ ->
+            []
+
+        ServiceWorkerPage ->
+            []
+
+        UserPage MyAccountPage ->
+            []
 
         UserPage ClinicalPage ->
             Pages.Clinical.Fetch.fetch
@@ -102,8 +112,9 @@ fetch model =
             Pages.PrenatalEncounter.Fetch.fetch id model.indexedDb
                 |> List.map MsgIndexedDb
 
-        _ ->
-            []
+        UserPage (PrenatalActivityPage prenatalEncounterId _) ->
+            Pages.PrenatalActivity.Fetch.fetch prenatalEncounterId model.indexedDb
+                |> List.map MsgIndexedDb
 
 
 {-| Given a `Msg`, do we need to fetch the data it would fetch? We only answer
