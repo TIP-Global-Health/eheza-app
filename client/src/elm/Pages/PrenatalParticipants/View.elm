@@ -60,7 +60,7 @@ viewHeader title =
             [ text title ]
         , a
             [ class "link-back"
-            , onClick <| SetActivePage PinCodePage
+            , onClick <| SetActivePage <| UserPage ClinicalPage
             ]
             [ span [ class "icon-back" ] []
             , span [] []

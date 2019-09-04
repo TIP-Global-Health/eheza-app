@@ -3158,6 +3158,11 @@ translateActivePage page =
 
         UserPage userPage ->
             case userPage of
+                ClinicalPage ->
+                    { english = "Clinical"
+                    , kinyarwanda = Nothing
+                    }
+
                 ClinicsPage _ ->
                     { english = "Groups"
                     , kinyarwanda = Nothing

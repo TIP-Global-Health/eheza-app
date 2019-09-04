@@ -62,7 +62,7 @@ viewClinicList language user healthCenterId db =
                 [ text <| translate language Translate.Groups ]
             , a
                 [ class "link-back"
-                , onClick <| SetActivePage PinCodePage
+                , onClick <| SetActivePage <| UserPage ClinicalPage
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []

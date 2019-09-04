@@ -5,6 +5,7 @@ import App.Utils exposing (getLoggedInData)
 import Backend.Fetch
 import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
+import Pages.Clinical.Fetch
 import Pages.Clinics.Fetch
 import Pages.Device.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
@@ -45,6 +46,10 @@ fetch model =
 
         PinCodePage ->
             List.map MsgIndexedDb Pages.PinCode.Fetch.fetch
+
+        UserPage ClinicalPage ->
+            Pages.Clinical.Fetch.fetch
+                |> List.map MsgIndexedDb
 
         UserPage (ClinicsPage clinicId) ->
             Pages.Clinics.Fetch.fetch clinicId

@@ -33,6 +33,9 @@ delta2url previous current =
         -- These are pages that required a logged-in user
         UserPage userPage ->
             case userPage of
+                ClinicalPage ->
+                    Just <| UrlChange NewEntry "#clinical"
+
                 ClinicsPage clinicId ->
                     let
                         clinic =
@@ -134,6 +137,7 @@ parseUrl =
         , map PinCodePage (s "pincode")
         , map ServiceWorkerPage (s "deployment")
         , map (UserPage MyAccountPage) (s "my-account")
+        , map (UserPage ClinicalPage) (s "clinical")
         , map (\id page -> UserPage <| SessionPage id page) (s "session" </> parseUuid </> parseSessionPage)
         , map (UserPage <| PersonsPage Nothing) (s "persons")
         , map (\id -> UserPage <| PersonsPage (Just id)) (s "relations" </> parseUuid)

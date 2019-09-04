@@ -153,6 +153,27 @@ div.page-pincode {
       width: 89%;
     }
 
+    // Maintaing margin from 'sign out' button when selecting health center.
+    button.health-center:last-child {
+        margin-bottom: 6rem !important;
+    }
+}
+
+div.page-clinical {
+    font-size: 1.72rem; //24px;
+    text-align: center;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    div.ui.basic.head.segment {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      margin-left: -40px;
+    }
+
     button.ui.primary.button.group-assessment,
     button.ui.primary.button.individual-assessment {
       padding: 0;
@@ -206,10 +227,6 @@ div.page-pincode {
       }
     }
 
-    // Maintaing margin from 'sign out' button when selecting health center.
-    button.health-center:last-child {
-        margin-bottom: 6rem !important;
-    }
 }
 
 div.page-person-create {

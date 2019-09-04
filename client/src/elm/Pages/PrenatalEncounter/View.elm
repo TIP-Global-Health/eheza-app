@@ -77,11 +77,14 @@ view language currentDate id db model =
                 |> RemoteData.andMap measurements
                 |> RemoteData.andMap (Success id)
 
+        header =
+            viewWebData language (viewHeader language) identity data
+
         content =
             viewWebData language (viewContent language currentDate model) identity data
     in
     div [ class "page-prenatal-encounter" ] <|
-        [ viewHeader language
+        [ header
         , content
         ]
 
@@ -93,8 +96,8 @@ viewContent language currentDate model data =
             ++ viewMainPageContent language currentDate data model
 
 
-viewHeader : Language -> Html Msg
-viewHeader language =
+viewHeader : Language -> FetchedData -> Html Msg
+viewHeader language data =
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -102,7 +105,7 @@ viewHeader language =
             [ text <| translate language Translate.PrenatalEncounter ]
         , a
             [ class "link-back"
-            , onClick <| SetActivePage PinCodePage
+            , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage data.participant.person
             ]
             [ span [ class "icon-back" ] []
             , span [] []
