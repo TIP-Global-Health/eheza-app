@@ -48,7 +48,7 @@ import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeHivStatus, decodeMaritalStatus, decodeModeOfDelivery, decodeUbudehe)
 import Backend.Person.Model exposing (..)
-import Backend.Person.Utils exposing (isAdult, isPersonAnAdult)
+import Backend.Person.Utils exposing (diffInYears, isAdult, isPersonAnAdult)
 import Date
 import Form exposing (..)
 import Form.Init exposing (..)
@@ -357,12 +357,10 @@ validateBirthDate expectedAge maybeCurrentDate =
                                     Date.fromIsoString s
                                         |> Result.toMaybe
                             in
-                            maybeBirthDate
-                                -- Calculate difference of years between input birth
-                                -- date and current date.
-                                |> Maybe.map (\date_ -> Date.diff Date.Years currentDate date_)
+                            -- Calculate difference of years between input birth
+                            -- date and current date.
+                            diffInYears currentDate maybeBirthDate
                                 |> unwrap
-                                    -- Conversion to NominalDate failed.
                                     (fail <| customError InvalidBirthDate)
                                     (\delta ->
                                         if delta > 12 && expectedAge == ExpectChild then

@@ -10,10 +10,9 @@ import Backend.Person.Model exposing (Gender(..), Person)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (EditableSession, Session)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother, getMyMother)
-import Date.Extra
+import Date
 import EverySet
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (toLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -239,14 +238,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                 |> List.Extra.find hasMeasurement
 
         sessionsSortFunc ( k1, v1 ) ( k2, v2 ) =
-            let
-                d1 =
-                    toLocalDateTime v1.startDate 0 0 0 0
-
-                d2 =
-                    toLocalDateTime v2.startDate 0 0 0 0
-            in
-            Date.Extra.compare d1 d2
+            Date.compare v1.startDate v2.startDate
 
         heightWeightMuacTable =
             expectedSessions

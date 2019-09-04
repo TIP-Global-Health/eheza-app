@@ -12,7 +12,7 @@ ageInYears currentDate person =
 
 diffInYears : NominalDate -> Maybe NominalDate -> Maybe Int
 diffInYears currentDate comparedDate =
-    Maybe.map (Date.diff Date.Years currentDate) comparedDate
+    Maybe.map (\compared -> Date.diff Date.Years compared currentDate) comparedDate
 
 
 isAdult : NominalDate -> Maybe NominalDate -> Maybe Bool
