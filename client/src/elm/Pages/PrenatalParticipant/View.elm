@@ -128,7 +128,7 @@ viewPrenatalSession language currentDate db sessionId session =
                     ]
                     :: action
                 )
-                [ text <| translate language Translate.Attendance ]
+                [ text <| translate language Translate.Continue ]
     in
     tr []
         [ td [] [ text <| formatYYYYMMDD session.startDate ]
