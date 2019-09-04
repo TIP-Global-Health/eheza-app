@@ -804,7 +804,7 @@ viewDangerSignsContent language currentDate assembled data =
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form danger-signs" ]
-                [ viewQuestionLabel language Translate.SelectDangerSigns
+                [ viewLabel language Translate.SelectDangerSigns
                 , viewCheckBoxMultipleSelectInput language
                     [ VaginalBleeding, HeadacheBlurredVision, Convulsions, AbdominalPain ]
                     [ DifficultyBreathing, Fever, ExtremeWeakness ]
@@ -1108,7 +1108,7 @@ viewMedicalForm language currentDate assembled form =
             { form_ | hiv = Just value }
     in
     div [ class "form history medical" ]
-        [ viewCustomLabel language Translate.MedicalFormHelper "?" "label helper"
+        [ viewCustomLabel language Translate.MedicalFormHelper ":" "label helper"
         , viewLabel language Translate.UterineMyoma
         , viewBoolInput
             language
