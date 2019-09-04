@@ -286,13 +286,13 @@ viewHistoryContent language currentDate assembled data =
         ( viewForm, tasksCompleted, totalTasks ) =
             case data.activeTask of
                 Obstetric ->
-                    case data.obstetricForm of
-                        FirstStep formStep1 ->
+                    case data.obstetricHistoryStep of
+                        ObstetricHistoryFirstStep ->
                             let
                                 formStep1_ =
                                     assembled.measurements.obstetricHistory
                                         |> Maybe.map (Tuple.second >> .value)
-                                        |> obstetricHistoryFormWithDefault formStep1
+                                        |> obstetricHistoryFormWithDefault data.obstetricFormFirstStep
 
                                 intInputs =
                                     [ formStep1_.termPregnancy
@@ -312,12 +312,12 @@ viewHistoryContent language currentDate assembled data =
                             , 7
                             )
 
-                        SecondStep formStep2 ->
+                        ObstetricHistorySecondStep ->
                             let
                                 formStep2_ =
                                     assembled.measurements.obstetricHistoryStep2
                                         |> Maybe.map (Tuple.second >> .value)
-                                        |> obstetricHistoryStep2FormWithDefault formStep2
+                                        |> obstetricHistoryStep2FormWithDefault data.obstetricFormSecondStep
 
                                 boolInputs =
                                     [ formStep2_.cSectionInPreviousDelivery
@@ -398,8 +398,8 @@ viewHistoryContent language currentDate assembled data =
                 ( buttons, stepIndicationClass ) =
                     case data.activeTask of
                         Obstetric ->
-                            case data.obstetricForm of
-                                FirstStep _ ->
+                            case data.obstetricHistoryStep of
+                                ObstetricHistoryFirstStep ->
                                     ( [ button
                                             [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
                                             , onClick <| SaveOBHistoryStep1 assembled.id assembled.participant.person assembled.measurements.obstetricHistory
@@ -409,7 +409,7 @@ viewHistoryContent language currentDate assembled data =
                                     , "first"
                                     )
 
-                                SecondStep _ ->
+                                ObstetricHistorySecondStep ->
                                     ( [ button
                                             [ class "ui fluid primary button"
                                             , onClick BackToOBHistoryStep1

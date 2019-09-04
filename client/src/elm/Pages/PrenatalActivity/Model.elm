@@ -17,7 +17,7 @@ module Pages.PrenatalActivity.Model exposing
     , NutritionAssessmentForm
     , ObstetricFormFirstStep
     , ObstetricFormSecondStep
-    , ObstetricHistoryFormType(..)
+    , ObstetricHistoryStep(..)
     , ObstetricalExamForm
     , PatientProvisionsData
     , PatientProvisionsTask(..)
@@ -142,7 +142,9 @@ emptyPregnancyDatingData =
 
 
 type alias HistoryData =
-    { obstetricForm : ObstetricHistoryFormType
+    { obstetricFormFirstStep : ObstetricFormFirstStep
+    , obstetricFormSecondStep : ObstetricFormSecondStep
+    , obstetricHistoryStep : ObstetricHistoryStep
     , medicalForm : MedicalHistoryForm
     , socialForm : SocialHistoryForm
     , activeTask : HistoryTask
@@ -151,7 +153,9 @@ type alias HistoryData =
 
 emptyHistoryData : HistoryData
 emptyHistoryData =
-    { obstetricForm = FirstStep emptyObstetricFormFirstStep
+    { obstetricFormFirstStep = emptyObstetricFormFirstStep
+    , obstetricFormSecondStep = emptyObstetricFormSecondStep
+    , obstetricHistoryStep = ObstetricHistoryFirstStep
     , medicalForm = emptyMedicalHistoryForm
     , socialForm = emptySocialHistoryForm
     , activeTask = Obstetric
@@ -216,9 +220,9 @@ emptyDangerSignsData =
     }
 
 
-type ObstetricHistoryFormType
-    = FirstStep ObstetricFormFirstStep
-    | SecondStep ObstetricFormSecondStep
+type ObstetricHistoryStep
+    = ObstetricHistoryFirstStep
+    | ObstetricHistorySecondStep
 
 
 type HistoryTask

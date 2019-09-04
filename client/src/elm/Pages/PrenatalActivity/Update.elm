@@ -154,18 +154,21 @@ update msg model =
                 updatedData =
                     case model.historyData.activeTask of
                         Obstetric ->
-                            case model.historyData.obstetricForm of
-                                FirstStep form ->
+                            case model.historyData.obstetricHistoryStep of
+                                ObstetricHistoryFirstStep ->
                                     let
+                                        form =
+                                            model.historyData.obstetricFormFirstStep
+
                                         updatedForm =
                                             { form | currentlyPregnant = Just value }
                                     in
                                     model.historyData
-                                        |> (\data -> { data | obstetricForm = FirstStep updatedForm })
+                                        |> (\data -> { data | obstetricFormFirstStep = updatedForm })
 
                                 -- We should never get here.
                                 -- Input is set on first step.
-                                SecondStep form ->
+                                ObstetricHistorySecondStep ->
                                     model.historyData
 
                         _ ->
@@ -181,9 +184,12 @@ update msg model =
                 updatedData =
                     case model.historyData.activeTask of
                         Obstetric ->
-                            case model.historyData.obstetricForm of
-                                FirstStep form ->
+                            case model.historyData.obstetricHistoryStep of
+                                ObstetricHistoryFirstStep ->
                                     let
+                                        form =
+                                            model.historyData.obstetricFormFirstStep
+
                                         updatedForm =
                                             case String.toInt value of
                                                 Ok number ->
@@ -193,11 +199,11 @@ update msg model =
                                                     formUpdateFunc Nothing form
                                     in
                                     model.historyData
-                                        |> (\data -> { data | obstetricForm = FirstStep updatedForm })
+                                        |> (\data -> { data | obstetricFormFirstStep = updatedForm })
 
                                 -- We should never get here.
                                 -- Input is set on first step.
-                                SecondStep form ->
+                                ObstetricHistorySecondStep ->
                                     model.historyData
 
                         _ ->
@@ -217,9 +223,9 @@ update msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 ( appMsgs, updatedData ) =
-                    case model.historyData.obstetricForm of
-                        FirstStep step1Form ->
-                            ( step1Form
+                    case model.historyData.obstetricHistoryStep of
+                        ObstetricHistoryFirstStep ->
+                            ( model.historyData.obstetricFormFirstStep
                                 |> toObstetricHistoryValueWithDefault measurement
                                 |> unwrap
                                     []
@@ -230,11 +236,11 @@ update msg model =
                                         ]
                                     )
                             , model.historyData
-                                |> (\data -> { data | obstetricForm = SecondStep emptyObstetricFormSecondStep })
+                                |> (\data -> { data | obstetricHistoryStep = ObstetricHistorySecondStep })
                             )
 
                         -- Satisfy compiler.
-                        SecondStep _ ->
+                        ObstetricHistorySecondStep ->
                             ( [], model.historyData )
             in
             ( { model | historyData = updatedData }
@@ -247,9 +253,12 @@ update msg model =
                 updatedData =
                     case model.historyData.activeTask of
                         Obstetric ->
-                            case model.historyData.obstetricForm of
-                                SecondStep form ->
+                            case model.historyData.obstetricHistoryStep of
+                                ObstetricHistorySecondStep ->
                                     let
+                                        form =
+                                            model.historyData.obstetricFormSecondStep
+
                                         updatedReason =
                                             if form.cSectionReason == Just reason then
                                                 Nothing
@@ -261,11 +270,11 @@ update msg model =
                                             { form | cSectionReason = updatedReason }
                                     in
                                     model.historyData
-                                        |> (\data -> { data | obstetricForm = SecondStep updatedForm })
+                                        |> (\data -> { data | obstetricFormSecondStep = updatedForm })
 
                                 -- We should never get here.
                                 -- Input is set on second step.
-                                FirstStep form ->
+                                ObstetricHistoryFirstStep ->
                                     model.historyData
 
                         _ ->
@@ -281,9 +290,12 @@ update msg model =
                 updatedData =
                     case model.historyData.activeTask of
                         Obstetric ->
-                            case model.historyData.obstetricForm of
-                                SecondStep form ->
+                            case model.historyData.obstetricHistoryStep of
+                                ObstetricHistorySecondStep ->
                                     let
+                                        form =
+                                            model.historyData.obstetricFormSecondStep
+
                                         updatedForm =
                                             case String.toInt value of
                                                 Ok number ->
@@ -293,11 +305,11 @@ update msg model =
                                                     form
                                     in
                                     model.historyData
-                                        |> (\data -> { data | obstetricForm = SecondStep updatedForm })
+                                        |> (\data -> { data | obstetricFormSecondStep = updatedForm })
 
                                 -- We should never get here.
                                 -- Input is set on first step.
-                                FirstStep form ->
+                                ObstetricHistoryFirstStep ->
                                     model.historyData
 
                         _ ->
@@ -313,18 +325,18 @@ update msg model =
                 updatedData =
                     case model.historyData.activeTask of
                         Obstetric ->
-                            case model.historyData.obstetricForm of
-                                SecondStep form ->
+                            case model.historyData.obstetricHistoryStep of
+                                ObstetricHistorySecondStep ->
                                     let
                                         updatedForm =
-                                            formUpdateFunc value form
+                                            formUpdateFunc value model.historyData.obstetricFormSecondStep
                                     in
                                     model.historyData
-                                        |> (\data -> { data | obstetricForm = SecondStep updatedForm })
+                                        |> (\data -> { data | obstetricFormSecondStep = updatedForm })
 
                                 -- We should never get here.
                                 -- Input is set on second step.
-                                FirstStep form ->
+                                ObstetricHistoryFirstStep ->
                                     model.historyData
 
                         _ ->
@@ -340,9 +352,12 @@ update msg model =
                 updatedData =
                     case model.historyData.activeTask of
                         Obstetric ->
-                            case model.historyData.obstetricForm of
-                                SecondStep form ->
+                            case model.historyData.obstetricHistoryStep of
+                                ObstetricHistorySecondStep ->
                                     let
+                                        form =
+                                            model.historyData.obstetricFormSecondStep
+
                                         updatedPeriod =
                                             if form.previousDeliveryPeriod == Just period then
                                                 Nothing
@@ -354,11 +369,11 @@ update msg model =
                                             { form | previousDeliveryPeriod = updatedPeriod }
                                     in
                                     model.historyData
-                                        |> (\data -> { data | obstetricForm = SecondStep updatedForm })
+                                        |> (\data -> { data | obstetricFormSecondStep = updatedForm })
 
                                 -- We should never get here.
                                 -- Input is set on second step.
-                                FirstStep form ->
+                                ObstetricHistoryFirstStep ->
                                     model.historyData
 
                         _ ->
@@ -373,7 +388,7 @@ update msg model =
             let
                 updatedData =
                     model.historyData
-                        |> (\data -> { data | obstetricForm = FirstStep emptyObstetricFormFirstStep })
+                        |> (\data -> { data | obstetricHistoryStep = ObstetricHistoryFirstStep })
             in
             ( { model | historyData = updatedData }
             , Cmd.none
@@ -389,13 +404,13 @@ update msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 ( appMsgs, updatedData ) =
-                    case model.historyData.obstetricForm of
+                    case model.historyData.obstetricHistoryStep of
                         -- Satisfy compiler.
-                        FirstStep _ ->
+                        ObstetricHistoryFirstStep ->
                             ( [], model.historyData )
 
-                        SecondStep step2Form ->
-                            ( step2Form
+                        ObstetricHistorySecondStep ->
+                            ( model.historyData.obstetricFormSecondStep
                                 |> toObstetricHistoryStep2ValueWithDefault measurement
                                 |> unwrap
                                     []
@@ -407,7 +422,7 @@ update msg model =
                                         ]
                                     )
                             , model.historyData
-                                |> (\data -> { data | obstetricForm = FirstStep emptyObstetricFormFirstStep })
+                                |> (\data -> { data | obstetricHistoryStep = ObstetricHistoryFirstStep })
                             )
             in
             ( { model | historyData = updatedData }
