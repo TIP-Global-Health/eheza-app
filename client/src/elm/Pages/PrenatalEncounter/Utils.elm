@@ -8,10 +8,10 @@ import Maybe.Extra exposing (unwrap)
 import Translate exposing (Language, translate)
 
 
-generateEDDandEGA : Language -> NominalDate -> Maybe NominalDate -> ( String, String )
-generateEDDandEGA language currentDate maybeLmpDate =
+generateEDDandEGA : Language -> NominalDate -> ( String, String ) -> Maybe NominalDate -> ( String, String )
+generateEDDandEGA language currentDate defaults maybeLmpDate =
     unwrap
-        ( "", "" )
+        defaults
         (\lmpDate ->
             let
                 eddDate =

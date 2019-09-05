@@ -203,7 +203,7 @@ viewPregnancyDatingContent language currentDate assembled data =
 
         ( edd, ega ) =
             Maybe.map fromLocalDateTime form.lmpDate
-                |> generateEDDandEGA language currentDate
+                |> generateEDDandEGA language currentDate ( "", "" )
 
         totalTasks =
             2

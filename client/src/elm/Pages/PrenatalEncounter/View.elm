@@ -147,7 +147,7 @@ viewMeasurements language currentDate measurements =
         ( edd, ega ) =
             measurements.lastMenstrualPeriod
                 |> Maybe.map (Tuple.second >> .value >> .date)
-                |> generateEDDandEGA language currentDate
+                |> generateEDDandEGA language currentDate ( "--/--/----", "----" )
 
         obstetricHistoryValue =
             measurements.obstetricHistory
@@ -155,7 +155,7 @@ viewMeasurements language currentDate measurements =
 
         ( gravida, para ) =
             unwrap
-                ( "", "" )
+                ( "----", "----" )
                 (\value ->
                     ( generateGravida value.termPregnancy value.preTermPregnancy
                     , generatePara value.termPregnancy value.preTermPregnancy value.abortions value.liveChildren
