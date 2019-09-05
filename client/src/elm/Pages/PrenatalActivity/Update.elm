@@ -418,11 +418,10 @@ update msg model =
                                         [ Backend.PrenatalEncounter.Model.SaveObstetricHistoryStep2 personId measurementId value
                                             |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
                                             |> App.Model.MsgIndexedDb
-                                        , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
                                         ]
                                     )
                             , model.historyData
-                                |> (\data -> { data | obstetricHistoryStep = ObstetricHistoryFirstStep })
+                                |> (\data -> { data | obstetricHistoryStep = ObstetricHistoryFirstStep, activeTask = Medical })
                             )
             in
             ( { model | historyData = updatedData }
