@@ -1311,8 +1311,8 @@ viewVitalsForm language currentDate assembled form =
             form.bodyTemperature
             (SetVitalsFloatMeasurement bodyTemperatureUpdateFunc)
             "body-temperature"
-            Translate.Celcius
-        , viewPreviousMeasurement language bodyTemperaturePreviousValue Translate.Celcius
+            Translate.Celsius
+        , viewPreviousMeasurement language bodyTemperaturePreviousValue Translate.Celsius
         ]
 
 
@@ -1479,7 +1479,7 @@ viewCorePhysicalExamForm language currentDate assembled form =
             , viewWarning language Nothing
             ]
         , viewCheckBoxSelectInput language
-            [ Heptomegaly, Splenomegaly, TPRightUpper, TPLeftUpper ]
+            [ Hepatomegaly, Splenomegaly, TPRightUpper, TPLeftUpper ]
             [ NormalAbdomen, Hernia, TPRightLower, TPLeftLower ]
             form.abdomen
             SetCorePhysicalExamAbdomen

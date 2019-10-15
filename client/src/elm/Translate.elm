@@ -186,7 +186,7 @@ type TranslationId
     | CaregiverName
     | CaregiverNationalId
     | CentimeterShorthand
-    | Celcius
+    | Celsius
     | Cell
     | ChartPhrase ChartPhrase
     | CheckIn
@@ -529,8 +529,8 @@ translationSet trans =
 
         AbdomenCPESign option ->
             case option of
-                Heptomegaly ->
-                    { english = "Heptomegaly"
+                Hepatomegaly ->
+                    { english = "Hepatomegaly"
                     , kinyarwanda = Nothing
                     }
 
@@ -907,12 +907,12 @@ translationSet trans =
             }
 
         BloodPressureDiaLabel ->
-            { english = "DIA"
+            { english = "Diastolic"
             , kinyarwanda = Nothing
             }
 
         BloodPressureSysLabel ->
-            { english = "SYS"
+            { english = "Systolic"
             , kinyarwanda = Nothing
             }
 
@@ -1011,8 +1011,8 @@ translationSet trans =
             , kinyarwanda = Just "cm"
             }
 
-        Celcius ->
-            { english = "celcius"
+        Celsius ->
+            { english = "Celsius"
             , kinyarwanda = Nothing
             }
 
@@ -1656,7 +1656,7 @@ translationSet trans =
             }
 
         GestationalDiabetesPreviousPregnancy ->
-            { english = "Gestatipnal Diabetes in previous pregnancy"
+            { english = "Gestational Diabetes in previous pregnancy"
             , kinyarwanda = Nothing
             }
 
@@ -1969,7 +1969,7 @@ translationSet trans =
             }
 
         MedicalFormHelper ->
-            { english = "Please recode if the mother was diagnosed with the following medical issues"
+            { english = "Please record if the mother was diagnosed with the following medical issues"
             , kinyarwanda = Nothing
             }
 
@@ -1979,7 +1979,7 @@ translationSet trans =
             }
 
         MentalHealthHistory ->
-            { english = "Mental Health History"
+            { english = "History of Mental Health Problems"
             , kinyarwanda = Nothing
             }
 

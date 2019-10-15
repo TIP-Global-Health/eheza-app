@@ -282,7 +282,7 @@ type LungsCPESign
 
 
 type AbdomenCPESign
-    = Heptomegaly
+    = Hepatomegaly
     | Splenomegaly
     | TPRightUpper
     | TPRightLower

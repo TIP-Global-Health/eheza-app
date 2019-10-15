@@ -398,8 +398,8 @@ decodeAbdomenCPESign =
         |> andThen
             (\s ->
                 case s of
-                    "heptomegaly" ->
-                        succeed Heptomegaly
+                    "hepatomegaly" ->
+                        succeed Hepatomegaly
 
                     "splenomegaly" ->
                         succeed Splenomegaly

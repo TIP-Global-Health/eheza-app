@@ -335,8 +335,8 @@ encodeAbdomenCPESign : AbdomenCPESign -> Value
 encodeAbdomenCPESign sign =
     string <|
         case sign of
-            Heptomegaly ->
-                "heptomegaly"
+            Hepatomegaly ->
+                "hepatomegaly"
 
             Splenomegaly ->
                 "splenomegaly"

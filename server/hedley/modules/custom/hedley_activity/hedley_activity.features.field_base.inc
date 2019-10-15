@@ -27,7 +27,7 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'heptomegaly' => 'Heptomegaly',
+        'hepatomegaly' => 'Hepatomegaly',
         'splenomegaly' => 'Splenomegaly',
         'tender-to-palpitation-right-upper' => 'Tender to Palpitation right upper',
         'tender-to-palpitation-left-upper' => 'Tender to Palpitation left upper',
