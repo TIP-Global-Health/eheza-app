@@ -172,13 +172,22 @@ type alias Weight =
 
 
 type FamilyPlanningSign
-    = Condoms
-    | IUD
+    = AutoObservation
+    | Condoms
+    | CycleBeads
+    | CycleCounting
+    | Hysterectomy
     | Implant
     | Injection
+    | IUD
+    | LactationAmenorrhea
     | Necklace
     | NoFamilyPlanning
+    | OralContraceptives
     | Pill
+    | Spermicide
+    | TubalLigatures
+    | Vasectomy
 
 
 type alias FamilyPlanning =

@@ -233,11 +233,20 @@ encodeFamilyPlanningSign =
 encodeFamilyPlanningSignAsString : FamilyPlanningSign -> String
 encodeFamilyPlanningSignAsString sign =
     case sign of
+        AutoObservation ->
+            "auto-observation"
+
         Condoms ->
             "condoms"
 
-        IUD ->
-            "iud"
+        CycleBeads ->
+            "cycle-beads"
+
+        CycleCounting ->
+            "cycle-counting"
+
+        Hysterectomy ->
+            "hysterectomy"
 
         Implant ->
             "implant"
@@ -245,14 +254,32 @@ encodeFamilyPlanningSignAsString sign =
         Injection ->
             "injection"
 
+        IUD ->
+            "iud"
+
+        LactationAmenorrhea ->
+            "lactation-amenorrhea"
+
         Necklace ->
             "necklace"
 
         NoFamilyPlanning ->
             "none"
 
+        OralContraceptives ->
+            "oral-contraceptives"
+
         Pill ->
             "pill"
+
+        Spermicide ->
+            "spermicide"
+
+        TubalLigatures ->
+            "tubal-ligatures"
+
+        Vasectomy ->
+            "vasectomy"
 
 
 encodeBreastExamSign : BreastExamSign -> Value

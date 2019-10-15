@@ -1530,14 +1530,29 @@ translationSet trans =
 
         FamilyPlanningSignLabel sign ->
             case sign of
+                AutoObservation ->
+                    { english = "Auto observation"
+                    , kinyarwanda = Nothing
+                    }
+
                 Condoms ->
                     { english = "Condoms"
                     , kinyarwanda = Just "Udukingirizo"
                     }
 
-                IUD ->
-                    { english = "IUD"
-                    , kinyarwanda = Just "Akapira ko mu mura (agapira ko munda ibyara)"
+                CycleBeads ->
+                    { english = "Cycle beads"
+                    , kinyarwanda = Nothing
+                    }
+
+                CycleCounting ->
+                    { english = "Cycle counting"
+                    , kinyarwanda = Nothing
+                    }
+
+                Hysterectomy ->
+                    { english = "Hysterectomy"
+                    , kinyarwanda = Nothing
                     }
 
                 Implant ->
@@ -1550,9 +1565,29 @@ translationSet trans =
                     , kinyarwanda = Just "Urushinge"
                     }
 
+                IUD ->
+                    { english = "IUD"
+                    , kinyarwanda = Just "Akapira ko mu mura (agapira ko munda ibyara)"
+                    }
+
+                LactationAmenorrhea ->
+                    { english = "Lactation amenorrhea"
+                    , kinyarwanda = Nothing
+                    }
+
                 Necklace ->
                     { english = "Necklace"
                     , kinyarwanda = Just "Urunigi"
+                    }
+
+                NoFamilyPlanning ->
+                    { english = "None of these"
+                    , kinyarwanda = Just "nta buryo bwo kuboneza urubyaro akoresha"
+                    }
+
+                OralContraceptives ->
+                    { english = "Oral contraceptives"
+                    , kinyarwanda = Nothing
                     }
 
                 Pill ->
@@ -1560,9 +1595,19 @@ translationSet trans =
                     , kinyarwanda = Just "Ibinini"
                     }
 
-                NoFamilyPlanning ->
-                    { english = "None of these"
-                    , kinyarwanda = Just "nta buryo bwo kuboneza urubyaro akoresha"
+                Spermicide ->
+                    { english = "Spermicide"
+                    , kinyarwanda = Nothing
+                    }
+
+                TubalLigatures ->
+                    { english = "Tubal ligatures"
+                    , kinyarwanda = Nothing
+                    }
+
+                Vasectomy ->
+                    { english = "Vasectomy"
+                    , kinyarwanda = Nothing
                     }
 
         FamilyUbudehe ->

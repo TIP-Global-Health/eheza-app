@@ -672,8 +672,8 @@ viewFamilyPlanningContent language currentDate assembled data =
             [ div [ class "ui form family-planning" ]
                 [ viewQuestionLabel language Translate.FamilyPlanningInFutureQuestion
                 , viewCheckBoxMultipleSelectInput language
-                    [ Pill, Condoms, IUD ]
-                    [ Injection, Necklace, Implant ]
+                    [ AutoObservation, Condoms, CycleBeads, CycleCounting, Hysterectomy, Implant, Injection ]
+                    [ IUD, LactationAmenorrhea, OralContraceptives, Spermicide, TubalLigatures, Vasectomy ]
                     (form.signs |> Maybe.withDefault [])
                     (Just NoFamilyPlanning)
                     SetFamilyPlanningSign
