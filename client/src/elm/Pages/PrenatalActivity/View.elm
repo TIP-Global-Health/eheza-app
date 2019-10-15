@@ -833,7 +833,7 @@ viewObstetricFormFirstStep : Language -> NominalDate -> AssembledData -> Obstetr
 viewObstetricFormFirstStep language currentDate assembled form =
     let
         gravida =
-            Maybe.map2 generateGravida form.termPregnancy form.preTermPregnancy
+            Maybe.map3 generateGravida form.termPregnancy form.preTermPregnancy form.currentlyPregnant
                 |> Maybe.withDefault ""
 
         para =

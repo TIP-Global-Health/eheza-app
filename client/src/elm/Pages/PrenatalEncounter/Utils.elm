@@ -36,11 +36,17 @@ generateEDDandEGA language currentDate defaults maybeLmpDate =
         maybeLmpDate
 
 
-generateGravida : Int -> Int -> String
-generateGravida termPregnancy preTermPregnancy =
+generateGravida : Int -> Int -> Bool -> String
+generateGravida termPregnancy preTermPregnancy currentlyPregnant =
     let
         total =
-            termPregnancy + preTermPregnancy
+            (termPregnancy + preTermPregnancy)
+                + (if currentlyPregnant then
+                    1
+
+                   else
+                    0
+                  )
     in
     if total < 10 then
         "0" ++ toString total
