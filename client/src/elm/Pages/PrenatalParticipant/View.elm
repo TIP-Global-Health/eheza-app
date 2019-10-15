@@ -54,7 +54,7 @@ viewHeader language name =
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text <| name ++ " pregnancy" ]
+            [ text name ]
         , a
             [ class "link-back"
             , onClick <| App.Model.SetActivePage <| UserPage PrenatalParticipantsPage
