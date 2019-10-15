@@ -2437,7 +2437,7 @@ translationSet trans =
                     }
 
         PrenatalEncounter ->
-            { english = "Prenatal Encounter"
+            { english = "Antenatal Encounter"
             , kinyarwanda = Nothing
             }
 
@@ -2489,12 +2489,12 @@ translationSet trans =
             }
 
         PrenatalParticipant ->
-            { english = "Prenatal Participant"
+            { english = "Antenatal Participant"
             , kinyarwanda = Nothing
             }
 
         PrenatalParticipants ->
-            { english = "Prenatal Participants"
+            { english = "Antenatal Participants"
             , kinyarwanda = Nothing
             }
 
@@ -3189,12 +3189,12 @@ translateActivePage page =
                     }
 
                 PrenatalParticipantPage _ ->
-                    { english = "Prenatal Participant"
+                    { english = "Antenatal Participant"
                     , kinyarwanda = Nothing
                     }
 
                 PrenatalParticipantsPage ->
-                    { english = "Prenatal Participants"
+                    { english = "Antenatal Participants"
                     , kinyarwanda = Nothing
                     }
 
@@ -3241,12 +3241,12 @@ translateActivePage page =
                             }
 
                 PrenatalEncounterPage _ ->
-                    { english = "Prenatal Encounter"
+                    { english = "Antenatal Encounter"
                     , kinyarwanda = Nothing
                     }
 
                 PrenatalActivityPage _ _ ->
-                    { english = "Prenatal Activity"
+                    { english = "Antenatal Activity"
                     , kinyarwanda = Nothing
                     }
 
