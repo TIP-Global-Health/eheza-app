@@ -451,7 +451,7 @@ viewHistoryContent language currentDate assembled data =
             div [ class <| "actions history obstetric " ++ stepIndicationClass ]
                 buttons
     in
-    [ div [ class "ui task segment blue" ]
+    [ div [ class "ui task segment blue", id tasksBarId ]
         [ div [ class "ui five column grid" ] <|
             List.map viewTask <|
                 tasks

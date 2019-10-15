@@ -388,6 +388,9 @@ update msg model =
             , Cmd.map MsgZScore subCmd
             )
 
+        ScrollToElement elementId ->
+            ( model, scrollToElement elementId )
+
         SetActivePage page ->
             ( { model | activePage = page }
             , Cmd.none
@@ -683,3 +686,6 @@ port storageQuota : (StorageQuota -> msg) -> Sub msg
 the browser is reloaded.
 -}
 port cacheHealthCenter : String -> Cmd msg
+
+
+port scrollToElement : String -> Cmd msg

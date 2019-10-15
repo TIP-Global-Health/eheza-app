@@ -31,6 +31,7 @@ module Pages.PrenatalActivity.Model exposing
     , emptyObstetricFormFirstStep
     , emptyObstetricFormSecondStep
     , encodeLmpRange
+    , tasksBarId
     )
 
 import Backend.Entities exposing (..)
@@ -528,3 +529,8 @@ type alias DangerSignsForm =
 emptyDangerSignsForm : DangerSignsForm
 emptyDangerSignsForm =
     DangerSignsForm Nothing
+
+
+tasksBarId : String
+tasksBarId =
+    "tasks-bar"

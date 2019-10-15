@@ -426,7 +426,7 @@ update msg model =
             in
             ( { model | historyData = updatedData }
             , Cmd.none
-            , appMsgs
+            , App.Model.ScrollToElement tasksBarId :: appMsgs
             )
 
         SetMedicalBoolInput formUpdateFunc value ->

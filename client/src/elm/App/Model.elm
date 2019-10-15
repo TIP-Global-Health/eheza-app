@@ -187,6 +187,7 @@ type Msg
     | SendRollbar Rollbar.Level String (Dict String Value)
     | HandleRollbar (Result Http.Error Uuid)
       -- Manage our own model
+    | ScrollToElement String
     | SetActivePage Page
     | SetLanguage Language
     | SetPersistentStorage Bool
