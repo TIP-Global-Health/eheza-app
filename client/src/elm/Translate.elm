@@ -2499,7 +2499,7 @@ translationSet trans =
             }
 
         PreTermPregnancy ->
-            { english = "Pre Term Pregnancy"
+            { english = "Number of Pre Term Pregnancies"
             , kinyarwanda = Nothing
             }
 
@@ -2919,7 +2919,7 @@ translationSet trans =
             }
 
         TermPregnancy ->
-            { english = "Term Pregnancy"
+            { english = "Number of Term Pregnancies"
             , kinyarwanda = Nothing
             }
 
