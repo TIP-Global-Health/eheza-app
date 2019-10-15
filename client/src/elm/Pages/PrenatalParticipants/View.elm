@@ -4,7 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form exposing (ExpectedAge(..))
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInYears, isPersonAFertileWoman)
 import Dict
 import EveryDict
 import EveryDictList
@@ -101,7 +101,7 @@ viewSearchForm language currentDate model db =
                     |> Maybe.withDefault NotAsked
                     |> RemoteData.map
                         (EveryDictList.filter
-                            (\k v -> isPersonAnAdult currentDate v |> Maybe.withDefault False)
+                            (\k v -> isPersonAFertileWoman currentDate v |> Maybe.withDefault False)
                         )
                     |> Just
 
