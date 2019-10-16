@@ -177,14 +177,12 @@ type FamilyPlanningSign
     | CycleBeads
     | CycleCounting
     | Hysterectomy
-    | Implant
-    | Injection
+    | Implants
+    | Injectables
     | IUD
     | LactationAmenorrhea
-    | Necklace
     | NoFamilyPlanning
     | OralContraceptives
-    | Pill
     | Spermicide
     | TubalLigatures
     | Vasectomy

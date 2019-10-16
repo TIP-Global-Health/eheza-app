@@ -240,7 +240,7 @@ encodeFamilyPlanningSignAsString sign =
             "condoms"
 
         CycleBeads ->
-            "cycle-beads"
+            "necklace"
 
         CycleCounting ->
             "cycle-counting"
@@ -248,10 +248,10 @@ encodeFamilyPlanningSignAsString sign =
         Hysterectomy ->
             "hysterectomy"
 
-        Implant ->
+        Implants ->
             "implant"
 
-        Injection ->
+        Injectables ->
             "injection"
 
         IUD ->
@@ -260,16 +260,10 @@ encodeFamilyPlanningSignAsString sign =
         LactationAmenorrhea ->
             "lactation-amenorrhea"
 
-        Necklace ->
-            "necklace"
-
         NoFamilyPlanning ->
             "none"
 
         OralContraceptives ->
-            "oral-contraceptives"
-
-        Pill ->
             "pill"
 
         Spermicide ->

@@ -1555,14 +1555,14 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                Implant ->
-                    { english = "Implant"
-                    , kinyarwanda = Just "Akapira ko mu kaboko"
+                Implants ->
+                    { english = "Implants"
+                    , kinyarwanda = Nothing
                     }
 
-                Injection ->
-                    { english = "Injection"
-                    , kinyarwanda = Just "Urushinge"
+                Injectables ->
+                    { english = "Injectables"
+                    , kinyarwanda = Nothing
                     }
 
                 IUD ->
@@ -1575,11 +1575,6 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                Necklace ->
-                    { english = "Necklace"
-                    , kinyarwanda = Just "Urunigi"
-                    }
-
                 NoFamilyPlanning ->
                     { english = "None of these"
                     , kinyarwanda = Just "nta buryo bwo kuboneza urubyaro akoresha"
@@ -1588,11 +1583,6 @@ translationSet trans =
                 OralContraceptives ->
                     { english = "Oral contraceptives"
                     , kinyarwanda = Nothing
-                    }
-
-                Pill ->
-                    { english = "Pill"
-                    , kinyarwanda = Just "Ibinini"
                     }
 
                 Spermicide ->

@@ -238,7 +238,7 @@ decodeFamilyPlanningSign =
                     "condoms" ->
                         succeed Condoms
 
-                    "cycle-beads" ->
+                    "necklace" ->
                         succeed CycleBeads
 
                     "cycle-counting" ->
@@ -248,10 +248,10 @@ decodeFamilyPlanningSign =
                         succeed Hysterectomy
 
                     "implant" ->
-                        succeed Implant
+                        succeed Implants
 
                     "injection" ->
-                        succeed Injection
+                        succeed Injectables
 
                     "iud" ->
                         succeed IUD
@@ -259,17 +259,11 @@ decodeFamilyPlanningSign =
                     "lactation-amenorrhea" ->
                         succeed LactationAmenorrhea
 
-                    "necklace" ->
-                        succeed Necklace
-
                     "none" ->
                         succeed NoFamilyPlanning
 
-                    "oral-contraceptives" ->
-                        succeed OralContraceptives
-
                     "pill" ->
-                        succeed Pill
+                        succeed OralContraceptives
 
                     "spermicide" ->
                         succeed Spermicide
