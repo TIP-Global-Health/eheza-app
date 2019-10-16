@@ -283,7 +283,7 @@ toMedicationValue form =
 fromObstetricalExamValue : Maybe ObstetricalExamValue -> ObstetricalExamForm
 fromObstetricalExamValue saved =
     { fundalHeight = Maybe.map (.fundalHeight >> (\(HeightInCm cm) -> cm)) saved
-    , fetalPresentation = Maybe.map .fetalPresentation saved
+    , fetalPresentation = Maybe.map (.fetalPresentation >> EverySet.toList) saved
     , fetalMovement = Maybe.map .fetalMovement saved
     , fetalHeartRate = Maybe.map .fetalHeartRate saved
     , cSectionScar = Maybe.map .cSectionScar saved
@@ -297,7 +297,7 @@ obstetricalExamFormWithDefault form saved =
             form
             (\value ->
                 { fundalHeight = or form.fundalHeight (value.fundalHeight |> (\(HeightInCm cm) -> cm) |> Just)
-                , fetalPresentation = or form.fetalPresentation (Just value.fetalPresentation)
+                , fetalPresentation = or form.fetalPresentation (value.fetalPresentation |> EverySet.toList |> Just)
                 , fetalMovement = or form.fetalMovement (Just value.fetalMovement)
                 , fetalHeartRate = or form.fetalHeartRate (Just value.fetalHeartRate)
                 , cSectionScar = or form.cSectionScar (Just value.cSectionScar)
@@ -314,7 +314,7 @@ toObstetricalExamValueWithDefault saved form =
 toObstetricalExamValue : ObstetricalExamForm -> Maybe ObstetricalExamValue
 toObstetricalExamValue form =
     Maybe.map ObstetricalExamValue (Maybe.map HeightInCm form.fundalHeight)
-        |> andMap form.fetalPresentation
+        |> andMap (Maybe.map EverySet.fromList form.fetalPresentation)
         |> andMap form.fetalMovement
         |> andMap form.fetalHeartRate
         |> andMap form.cSectionScar

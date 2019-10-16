@@ -1547,10 +1547,11 @@ viewObstetricalExamForm language currentDate assembled form =
                 [ viewLabel language Translate.FetalPresentationLabel ]
             , viewWarning language Nothing
             ]
-        , viewCheckBoxSelectInput language
+        , viewCheckBoxMultipleSelectInput language
             [ Transverse, Cephalic ]
             [ Breach, Twins ]
-            form.fetalPresentation
+            (form.fetalPresentation |> Maybe.withDefault [])
+            Nothing
             SetObstetricalExamFetalPresentation
             Translate.FetalPresentation
         , div [ class "separator" ] []

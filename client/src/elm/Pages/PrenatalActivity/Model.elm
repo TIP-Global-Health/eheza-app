@@ -37,6 +37,7 @@ module Pages.PrenatalActivity.Model exposing
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
+import EverySet exposing (EverySet)
 import Pages.Page exposing (Page)
 
 
@@ -455,7 +456,7 @@ emptyCorePhysicalExamForm =
 
 type alias ObstetricalExamForm =
     { fundalHeight : Maybe Float
-    , fetalPresentation : Maybe FetalPresentation
+    , fetalPresentation : Maybe (List FetalPresentation)
     , fetalMovement : Maybe Bool
     , fetalHeartRate : Maybe Int
     , cSectionScar : Maybe Bool

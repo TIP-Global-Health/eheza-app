@@ -832,7 +832,26 @@ update msg model =
                     let
                         updatedForm =
                             model.examinationData.obstetricalExamForm
-                                |> (\form -> { form | fetalPresentation = Just value })
+                                |> (\form ->
+                                        case form.fetalPresentation of
+                                            Just options ->
+                                                if List.member value options then
+                                                    let
+                                                        updatedOptions =
+                                                            if List.length options == 1 then
+                                                                Nothing
+
+                                                            else
+                                                                options |> List.filter ((/=) value) |> Just
+                                                    in
+                                                    { form | fetalPresentation = updatedOptions }
+
+                                                else
+                                                    { form | fetalPresentation = Just (value :: options) }
+
+                                            Nothing ->
+                                                { form | fetalPresentation = Just [ value ] }
+                                   )
                     in
                     model.examinationData
                         |> (\data -> { data | obstetricalExamForm = updatedForm })
