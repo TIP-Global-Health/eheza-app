@@ -643,6 +643,9 @@ decodeFetalPresentation =
                     "breach" ->
                         succeed Breach
 
+                    "twins" ->
+                        succeed Twins
+
                     _ ->
                         fail <| s ++ " is not a recognized FetalPresentation"
             )

@@ -577,6 +577,9 @@ encodeFetalPresentation sign =
             Breach ->
                 "breach"
 
+            Twins ->
+                "twins"
+
 
 encodeHeightInCm : HeightInCm -> Value
 encodeHeightInCm (HeightInCm cm) =

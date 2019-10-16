@@ -1647,6 +1647,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Twins ->
+                    { english = "Twins"
+                    , kinyarwanda = Nothing
+                    }
+
         Fetch ->
             { english = "Fetch"
             , kinyarwanda = Just "Gushakisha"
