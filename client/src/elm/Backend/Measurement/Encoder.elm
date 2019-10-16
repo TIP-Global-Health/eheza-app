@@ -602,7 +602,7 @@ encodeObstetricalExamValue value =
     , ( "fetal_presentation", encodeEverySet encodeFetalPresentation value.fetalPresentation )
     , ( "fetal_movement", bool value.fetalMovement )
     , ( "fetal_heart_rate", int value.fetalHeartRate )
-    , ( "c_section_scar", bool value.cSectionScar )
+    , ( "c_section_scar", encodeCSectionScar value.cSectionScar )
     ]
 
 
@@ -646,6 +646,20 @@ encodeCSectionReason sign =
 
             Other ->
                 "other"
+
+
+encodeCSectionScar : CSectionScar -> Value
+encodeCSectionScar sign =
+    string <|
+        case sign of
+            Vertical ->
+                "vertical"
+
+            Horizontal ->
+                "horizontal"
+
+            NoScar ->
+                "none"
 
 
 encodePreviousDeliveryPeriod : PreviousDeliveryPeriod -> Value

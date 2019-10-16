@@ -5,6 +5,7 @@ module Backend.Measurement.Model exposing
     , BreastExamSign(..)
     , BreastExamValue
     , CSectionReason(..)
+    , CSectionScar(..)
     , ChildMeasurementList
     , ChildMeasurements
     , ChildNutrition
@@ -369,7 +370,7 @@ type alias ObstetricalExamValue =
     , fetalPresentation : EverySet FetalPresentation
     , fetalMovement : Bool
     , fetalHeartRate : Int
-    , cSectionScar : Bool
+    , cSectionScar : CSectionScar
     }
 
 
@@ -382,6 +383,12 @@ type FetalPresentation
     | Breach
     | Cephalic
     | Twins
+
+
+type CSectionScar
+    = Vertical
+    | Horizontal
+    | NoScar
 
 
 type alias ObstetricHistoryValue =

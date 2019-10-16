@@ -200,6 +200,7 @@ type TranslationId
     | Clinical
     | ConvulsionsAndUnconsciousPreviousDelivery
     | ConvulsionsPreviousDelivery
+    | CSectionScar CSectionScar
     | GroupNotFound
     | Group
     | Groups
@@ -1129,6 +1130,23 @@ translationSet trans =
             { english = "Experienced convulsions in previous delivery"
             , kinyarwanda = Nothing
             }
+
+        CSectionScar scar ->
+            case scar of
+                Vertical ->
+                    { english = "Vertical"
+                    , kinyarwanda = Nothing
+                    }
+
+                Horizontal ->
+                    { english = "Horizontal"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoScar ->
+                    { english = "None"
+                    , kinyarwanda = Nothing
+                    }
 
         GroupNotFound ->
             { english = "Group not found"
@@ -2482,7 +2500,7 @@ translationSet trans =
             }
 
         PreviousCSectionScar ->
-            { english = "Presence of previous C-section scar"
+            { english = "Previous C-section scar"
             , kinyarwanda = Nothing
             }
 

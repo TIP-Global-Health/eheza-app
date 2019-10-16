@@ -212,13 +212,14 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        0 => '',
-        1 => '',
+        'vertical' => 'Vertical',
+        'horizontal' => 'Horizontal',
+        'none' => 'None',
       ),
       'allowed_values_function' => '',
     ),
     'translatable' => 0,
-    'type' => 'list_boolean',
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_c_sections'.

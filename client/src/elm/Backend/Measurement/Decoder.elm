@@ -658,7 +658,7 @@ decodeObstetricalExam =
         |> required "fetal_presentation" (decodeEverySet decodeFetalPresentation)
         |> required "fetal_movement" bool
         |> required "fetal_heart_rate" decodeInt
-        |> required "c_section_scar" bool
+        |> required "c_section_scar" decodeCSectionScar
         |> decodePrenatalMeasurement
 
 
@@ -779,6 +779,26 @@ decodeCSectionReason =
 
                     _ ->
                         fail <| s ++ " is not a recognized CSectionReason"
+            )
+
+
+decodeCSectionScar : Decoder CSectionScar
+decodeCSectionScar =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "vertical" ->
+                        succeed Vertical
+
+                    "horizontal" ->
+                        succeed Horizontal
+
+                    "none" ->
+                        succeed NoScar
+
+                    _ ->
+                        fail <| s ++ " is not a recognized CSectionScar"
             )
 
 

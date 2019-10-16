@@ -5063,7 +5063,7 @@ function hedley_activity_field_default_field_instances() {
         'module' => 'list',
         'settings' => array(),
         'type' => 'list_default',
-        'weight' => 5,
+        'weight' => 11,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -5083,8 +5083,8 @@ function hedley_activity_field_default_field_instances() {
       'active' => 1,
       'module' => 'options',
       'settings' => array(),
-      'type' => 'options_buttons',
-      'weight' => 2,
+      'type' => 'options_select',
+      'weight' => 13,
     ),
   );
 

@@ -89,6 +89,7 @@ type Msg
     | SetObstetricalExamIntMeasurement (Maybe Int -> ObstetricalExamForm -> ObstetricalExamForm) String
     | SetObstetricalExamFloatMeasurement (Maybe Float -> ObstetricalExamForm -> ObstetricalExamForm) String
     | SetObstetricalExamFetalPresentation FetalPresentation
+    | SetObstetricalExamCSectionScar CSectionScar
     | SaveObstetricalExam PrenatalEncounterId PersonId (Maybe ( ObstetricalExamId, ObstetricalExam ))
       -- ExaminationMsgs, Breast Exam
     | SetBreastExamBoolInput (Bool -> BreastExamForm -> BreastExamForm) Bool
@@ -458,7 +459,7 @@ type alias ObstetricalExamForm =
     , fetalPresentation : Maybe (List FetalPresentation)
     , fetalMovement : Maybe Bool
     , fetalHeartRate : Maybe Int
-    , cSectionScar : Maybe Bool
+    , cSectionScar : Maybe CSectionScar
     }
 
 

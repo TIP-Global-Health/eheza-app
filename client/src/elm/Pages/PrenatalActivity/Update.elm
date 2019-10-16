@@ -1032,6 +1032,22 @@ update msg model =
             , []
             )
 
+        SetObstetricalExamCSectionScar value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            model.examinationData.obstetricalExamForm
+                                |> (\form -> { form | cSectionScar = Just value })
+                    in
+                    model.examinationData
+                        |> (\data -> { data | obstetricalExamForm = updatedForm })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveObstetricalExam prenatalEncounterId personId saved ->
             let
                 measurementId =

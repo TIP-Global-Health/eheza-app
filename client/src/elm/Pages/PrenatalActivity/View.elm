@@ -587,11 +587,9 @@ viewExaminationContent language currentDate assembled data =
                     in
                     ( viewObstetricalExamForm language currentDate assembled form
                     , taskCompleted form.fetalPresentation
+                        + taskCompleted form.fetalMovement
+                        + taskCompleted form.cSectionScar
                         + ([ Maybe.map (always ()) form.fundalHeight, Maybe.map (always ()) form.fetalHeartRate ]
-                            |> List.map taskCompleted
-                            |> List.sum
-                          )
-                        + ([ form.fetalMovement, form.cSectionScar ]
                             |> List.map taskCompleted
                             |> List.sum
                           )
@@ -1524,9 +1522,6 @@ viewObstetricalExamForm language currentDate assembled form =
         fetalMovementUpdateFunc value form_ =
             { form_ | fetalMovement = Just value }
 
-        cSectionScarUpdateFunc value form_ =
-            { form_ | cSectionScar = Just value }
-
         fetalHeartRatePreviousValue =
             Nothing
 
@@ -1586,12 +1581,12 @@ viewObstetricalExamForm language currentDate assembled form =
         , viewPreviousMeasurement language fetalHeartRatePreviousValue Translate.BpmUnit
         , div [ class "separator" ] []
         , viewLabel language Translate.PreviousCSectionScar
-        , viewBoolInput
-            language
+        , viewCheckBoxSelectInput language
+            [ Vertical, Horizontal ]
+            [ NoScar ]
             form.cSectionScar
-            (SetObstetricalExamBoolInput cSectionScarUpdateFunc)
-            "c-section-scar"
-            Nothing
+            SetObstetricalExamCSectionScar
+            Translate.CSectionScar
         ]
 
 
