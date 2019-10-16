@@ -3,10 +3,15 @@ module Pages.PrenatalActivity.Update exposing (update)
 import App.Model
 import Backend.Measurement.Model
     exposing
-        ( BreastExamSign(..)
+        ( AbdomenCPESign(..)
+        , BreastExamSign(..)
         , CSectionReason(..)
         , DangerSign(..)
         , FamilyPlanningSign(..)
+        , HandsCPESign(..)
+        , LegsCPESign(..)
+        , LungsCPESign(..)
+        , NeckCPESign(..)
         , PreviousDeliveryPeriod(..)
         )
 import Backend.Model
@@ -669,7 +674,40 @@ update msg model =
                     let
                         updatedForm =
                             model.examinationData.corePhysicalExamForm
-                                |> (\form -> { form | neck = Just value })
+                                |> (\form ->
+                                        case form.neck of
+                                            Just options ->
+                                                if List.member value options then
+                                                    let
+                                                        updatedOptions =
+                                                            if List.length options == 1 then
+                                                                Nothing
+
+                                                            else
+                                                                options |> List.filter ((/=) value) |> Just
+                                                    in
+                                                    { form | neck = updatedOptions }
+
+                                                else
+                                                    case value of
+                                                        NormalNeck ->
+                                                            { form | neck = Just [ value ] }
+
+                                                        _ ->
+                                                            let
+                                                                updatedOptions =
+                                                                    case options of
+                                                                        [ NormalNeck ] ->
+                                                                            Just [ value ]
+
+                                                                        _ ->
+                                                                            Just (value :: options)
+                                                            in
+                                                            { form | neck = updatedOptions }
+
+                                            Nothing ->
+                                                { form | neck = Just [ value ] }
+                                   )
                     in
                     model.examinationData
                         |> (\data -> { data | corePhysicalExamForm = updatedForm })
@@ -685,7 +723,40 @@ update msg model =
                     let
                         updatedForm =
                             model.examinationData.corePhysicalExamForm
-                                |> (\form -> { form | lungs = Just value })
+                                |> (\form ->
+                                        case form.lungs of
+                                            Just options ->
+                                                if List.member value options then
+                                                    let
+                                                        updatedOptions =
+                                                            if List.length options == 1 then
+                                                                Nothing
+
+                                                            else
+                                                                options |> List.filter ((/=) value) |> Just
+                                                    in
+                                                    { form | lungs = updatedOptions }
+
+                                                else
+                                                    case value of
+                                                        NormalLungs ->
+                                                            { form | lungs = Just [ value ] }
+
+                                                        _ ->
+                                                            let
+                                                                updatedOptions =
+                                                                    case options of
+                                                                        [ NormalLungs ] ->
+                                                                            Just [ value ]
+
+                                                                        _ ->
+                                                                            Just (value :: options)
+                                                            in
+                                                            { form | lungs = updatedOptions }
+
+                                            Nothing ->
+                                                { form | lungs = Just [ value ] }
+                                   )
                     in
                     model.examinationData
                         |> (\data -> { data | corePhysicalExamForm = updatedForm })
@@ -701,7 +772,40 @@ update msg model =
                     let
                         updatedForm =
                             model.examinationData.corePhysicalExamForm
-                                |> (\form -> { form | abdomen = Just value })
+                                |> (\form ->
+                                        case form.abdomen of
+                                            Just options ->
+                                                if List.member value options then
+                                                    let
+                                                        updatedOptions =
+                                                            if List.length options == 1 then
+                                                                Nothing
+
+                                                            else
+                                                                options |> List.filter ((/=) value) |> Just
+                                                    in
+                                                    { form | abdomen = updatedOptions }
+
+                                                else
+                                                    case value of
+                                                        NormalAbdomen ->
+                                                            { form | abdomen = Just [ value ] }
+
+                                                        _ ->
+                                                            let
+                                                                updatedOptions =
+                                                                    case options of
+                                                                        [ NormalAbdomen ] ->
+                                                                            Just [ value ]
+
+                                                                        _ ->
+                                                                            Just (value :: options)
+                                                            in
+                                                            { form | abdomen = updatedOptions }
+
+                                            Nothing ->
+                                                { form | abdomen = Just [ value ] }
+                                   )
                     in
                     model.examinationData
                         |> (\data -> { data | corePhysicalExamForm = updatedForm })
@@ -717,7 +821,40 @@ update msg model =
                     let
                         updatedForm =
                             model.examinationData.corePhysicalExamForm
-                                |> (\form -> { form | hands = Just value })
+                                |> (\form ->
+                                        case form.hands of
+                                            Just options ->
+                                                if List.member value options then
+                                                    let
+                                                        updatedOptions =
+                                                            if List.length options == 1 then
+                                                                Nothing
+
+                                                            else
+                                                                options |> List.filter ((/=) value) |> Just
+                                                    in
+                                                    { form | hands = updatedOptions }
+
+                                                else
+                                                    case value of
+                                                        NormalHands ->
+                                                            { form | hands = Just [ value ] }
+
+                                                        _ ->
+                                                            let
+                                                                updatedOptions =
+                                                                    case options of
+                                                                        [ NormalHands ] ->
+                                                                            Just [ value ]
+
+                                                                        _ ->
+                                                                            Just (value :: options)
+                                                            in
+                                                            { form | hands = updatedOptions }
+
+                                            Nothing ->
+                                                { form | hands = Just [ value ] }
+                                   )
                     in
                     model.examinationData
                         |> (\data -> { data | corePhysicalExamForm = updatedForm })
@@ -733,7 +870,40 @@ update msg model =
                     let
                         updatedForm =
                             model.examinationData.corePhysicalExamForm
-                                |> (\form -> { form | legs = Just value })
+                                |> (\form ->
+                                        case form.legs of
+                                            Just options ->
+                                                if List.member value options then
+                                                    let
+                                                        updatedOptions =
+                                                            if List.length options == 1 then
+                                                                Nothing
+
+                                                            else
+                                                                options |> List.filter ((/=) value) |> Just
+                                                    in
+                                                    { form | legs = updatedOptions }
+
+                                                else
+                                                    case value of
+                                                        NormalLegs ->
+                                                            { form | legs = Just [ value ] }
+
+                                                        _ ->
+                                                            let
+                                                                updatedOptions =
+                                                                    case options of
+                                                                        [ NormalLegs ] ->
+                                                                            Just [ value ]
+
+                                                                        _ ->
+                                                                            Just (value :: options)
+                                                            in
+                                                            { form | legs = updatedOptions }
+
+                                            Nothing ->
+                                                { form | legs = Just [ value ] }
+                                   )
                     in
                     model.examinationData
                         |> (\data -> { data | corePhysicalExamForm = updatedForm })

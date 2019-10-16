@@ -1442,10 +1442,11 @@ viewCorePhysicalExamForm language currentDate assembled form =
                 [ viewLabel language Translate.Neck ]
             , viewWarning language Nothing
             ]
-        , viewCheckBoxSelectInput language
+        , viewCheckBoxMultipleSelectInput language
             [ EnlargedThyroid, EnlargedLymphNodes ]
             [ NormalNeck ]
-            form.neck
+            (form.neck |> Maybe.withDefault [])
+            Nothing
             SetCorePhysicalExamNeck
             Translate.NeckCPESign
         , div [ class "separator" ] []
@@ -1466,10 +1467,11 @@ viewCorePhysicalExamForm language currentDate assembled form =
                 [ viewLabel language Translate.Lungs ]
             , viewWarning language Nothing
             ]
-        , viewCheckBoxSelectInput language
+        , viewCheckBoxMultipleSelectInput language
             [ Wheezes, Crackles ]
             [ NormalLungs ]
-            form.lungs
+            (form.lungs |> Maybe.withDefault [])
+            Nothing
             SetCorePhysicalExamLungs
             Translate.LungsCPESign
         , div [ class "separator" ] []
@@ -1478,10 +1480,11 @@ viewCorePhysicalExamForm language currentDate assembled form =
                 [ viewLabel language Translate.Abdomen ]
             , viewWarning language Nothing
             ]
-        , viewCheckBoxSelectInput language
+        , viewCheckBoxMultipleSelectInput language
             [ Hepatomegaly, Splenomegaly, TPRightUpper, TPLeftUpper ]
             [ NormalAbdomen, Hernia, TPRightLower, TPLeftLower ]
-            form.abdomen
+            (form.abdomen |> Maybe.withDefault [])
+            Nothing
             SetCorePhysicalExamAbdomen
             Translate.AbdomenCPESign
         , div [ class "separator" ] []
@@ -1491,17 +1494,19 @@ viewCorePhysicalExamForm language currentDate assembled form =
             , viewWarning language Nothing
             ]
         , div [ class "title hands" ] [ text <| (translate language Translate.Hands ++ ":") ]
-        , viewCheckBoxSelectInput language
+        , viewCheckBoxMultipleSelectInput language
             [ PallorHands, EdemaHands ]
             [ NormalHands ]
-            form.hands
+            (form.hands |> Maybe.withDefault [])
+            Nothing
             SetCorePhysicalExamHands
             Translate.HandsCPESign
         , div [ class "title legs" ] [ text <| (translate language Translate.Legs ++ ":") ]
-        , viewCheckBoxSelectInput language
+        , viewCheckBoxMultipleSelectInput language
             [ PallorLegs, EdemaLegs ]
             [ NormalLegs ]
-            form.legs
+            (form.legs |> Maybe.withDefault [])
+            Nothing
             SetCorePhysicalExamLegs
             Translate.LegsCPESign
         ]

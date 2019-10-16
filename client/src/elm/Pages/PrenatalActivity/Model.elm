@@ -431,12 +431,12 @@ type alias CorePhysicalExamForm =
     -- Needs to be redefined to use EverySet to allow multiple signs.
     { brittleHair : Maybe Bool
     , paleConjuctiva : Maybe Bool
-    , neck : Maybe NeckCPESign
+    , neck : Maybe (List NeckCPESign)
     , abnormalHeart : Maybe Bool
-    , lungs : Maybe LungsCPESign
-    , abdomen : Maybe AbdomenCPESign
-    , hands : Maybe HandsCPESign
-    , legs : Maybe LegsCPESign
+    , lungs : Maybe (List LungsCPESign)
+    , abdomen : Maybe (List AbdomenCPESign)
+    , hands : Maybe (List HandsCPESign)
+    , legs : Maybe (List LegsCPESign)
     }
 
 
