@@ -3,7 +3,8 @@ module Pages.PrenatalActivity.Update exposing (update)
 import App.Model
 import Backend.Measurement.Model
     exposing
-        ( CSectionReason(..)
+        ( BreastExamSign(..)
+        , CSectionReason(..)
         , DangerSign(..)
         , FamilyPlanningSign(..)
         , PreviousDeliveryPeriod(..)
@@ -911,7 +912,40 @@ update msg model =
                     let
                         updatedForm =
                             model.examinationData.breastExamForm
-                                |> (\form -> { form | breast = Just value })
+                                |> (\form ->
+                                        case form.breast of
+                                            Just options ->
+                                                if List.member value options then
+                                                    let
+                                                        updatedOptions =
+                                                            if List.length options == 1 then
+                                                                Nothing
+
+                                                            else
+                                                                options |> List.filter ((/=) value) |> Just
+                                                    in
+                                                    { form | breast = updatedOptions }
+
+                                                else
+                                                    case value of
+                                                        NormalBreast ->
+                                                            { form | breast = Just [ value ] }
+
+                                                        _ ->
+                                                            let
+                                                                updatedOptions =
+                                                                    case options of
+                                                                        [ NormalBreast ] ->
+                                                                            Just [ value ]
+
+                                                                        _ ->
+                                                                            Just (value :: options)
+                                                            in
+                                                            { form | breast = updatedOptions }
+
+                                            Nothing ->
+                                                { form | breast = Just [ value ] }
+                                   )
                     in
                     model.examinationData
                         |> (\data -> { data | breastExamForm = updatedForm })

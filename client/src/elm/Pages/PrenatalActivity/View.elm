@@ -1602,10 +1602,11 @@ viewBreastExamForm language currentDate assembled form =
                 [ viewLabel language Translate.BreastExam ]
             , viewWarning language Nothing
             ]
-        , viewCheckBoxSelectInput language
+        , viewCheckBoxMultipleSelectInput language
             [ Mass, Discharge ]
             [ Infection, NormalBreast ]
-            form.breast
+            (form.breast |> Maybe.withDefault [])
+            Nothing
             SetBreastExamBreast
             Translate.BreastExamSign
         , div [ class "separator double" ] []

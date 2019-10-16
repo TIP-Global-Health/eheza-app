@@ -39,9 +39,7 @@ ifEmpty value set =
 
 fromBreastExamValue : Maybe BreastExamValue -> BreastExamForm
 fromBreastExamValue saved =
-    -- The `List.head` is temporary, until BreastExamForm is redefined
-    -- to allow more than one.
-    { breast = Maybe.andThen (.exam >> EverySet.toList >> List.head) saved
+    { breast = Maybe.map (.exam >> EverySet.toList) saved
     , selfGuidance = Maybe.map .selfGuidance saved
     }
 
@@ -52,7 +50,7 @@ breastExamFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { breast = or form.breast (value.exam |> EverySet.toList |> List.head)
+                { breast = or form.breast (value.exam |> EverySet.toList |> Just)
                 , selfGuidance = or form.selfGuidance (Just value.selfGuidance)
                 }
             )
@@ -68,7 +66,7 @@ toBreastExamValue : BreastExamForm -> Maybe BreastExamValue
 toBreastExamValue form =
     -- The `EverySet.singleton` is temporary, until BresatExamForm is
     -- redefined to allow more than one.
-    Maybe.map BreastExamValue (Maybe.map EverySet.singleton form.breast)
+    Maybe.map BreastExamValue (Maybe.map EverySet.fromList form.breast)
         |> andMap form.selfGuidance
 
 

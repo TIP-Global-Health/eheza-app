@@ -37,7 +37,6 @@ module Pages.PrenatalActivity.Model exposing
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
-import EverySet exposing (EverySet)
 import Pages.Page exposing (Page)
 
 
@@ -475,7 +474,7 @@ emptyObstetricalExamForm =
 
 type alias BreastExamForm =
     -- Should be EverySet, since you can have more than one sign.
-    { breast : Maybe BreastExamSign
+    { breast : Maybe (List BreastExamSign)
     , selfGuidance : Maybe Bool
     }
 
