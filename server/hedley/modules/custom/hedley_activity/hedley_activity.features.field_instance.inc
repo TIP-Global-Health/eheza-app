@@ -697,7 +697,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 3,
+      'weight' => 8,
     ),
   );
 
@@ -752,7 +752,7 @@ function hedley_activity_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 7,
+      'weight' => 11,
     ),
   );
 
@@ -793,7 +793,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => -1,
+      'weight' => 3,
     ),
   );
 
@@ -830,7 +830,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 4,
+      'weight' => 9,
     ),
   );
 
@@ -867,7 +867,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => -2,
+      'weight' => 2,
     ),
   );
 
@@ -904,7 +904,44 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 1,
+      'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance: 'node-core_physical_exam-field_heart_murmur'.
+  $field_instances['node-core_physical_exam-field_heart_murmur'] = array(
+    'bundle' => 'core_physical_exam',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 14,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_heart_murmur',
+    'label' => 'Heart Murmur',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 6,
     ),
   );
 
@@ -941,7 +978,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 5,
+      'weight' => 10,
     ),
   );
 
@@ -978,7 +1015,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 2,
+      'weight' => 7,
     ),
   );
 
@@ -1015,7 +1052,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 0,
+      'weight' => 4,
     ),
   );
 
@@ -1059,7 +1096,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 9,
+      'weight' => 12,
     ),
   );
 
@@ -1103,7 +1140,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -1148,7 +1185,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 11,
+      'weight' => 13,
     ),
   );
 
@@ -1232,7 +1269,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 13,
+      'weight' => 14,
     ),
   );
 
@@ -8305,6 +8342,7 @@ function hedley_activity_field_default_field_instances() {
   t('Has the mother attended for this session?');
   t('Head / hair');
   t('Heart');
+  t('Heart Murmur');
   t('Heart rate');
   t('Height');
   t('Last Menstrual Period');

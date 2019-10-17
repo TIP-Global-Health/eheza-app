@@ -21,6 +21,7 @@ class HedleyRestfulCorePhysicalExams extends HedleyRestfulPrenatalActivityBase {
       'field_eyes',
       'field_neck',
       'field_heart',
+      'field_heart_murmur',
       'field_lungs',
       'field_abdomen',
       'field_hands',
