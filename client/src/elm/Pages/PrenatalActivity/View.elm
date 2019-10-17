@@ -568,9 +568,9 @@ viewExaminationContent language currentDate assembled data =
                         + taskCompleted form.neck
                         + taskCompleted form.lungs
                         + taskCompleted form.abdomen
+                        + taskCompleted form.heart
                         + ([ form.brittleHair
                            , form.paleConjuctiva
-                           , form.abnormalHeart
                            ]
                             |> List.map taskCompleted
                             |> List.sum
@@ -1407,8 +1407,8 @@ viewCorePhysicalExamForm language currentDate assembled form =
         paleConjuctivaUpdateFunc value form_ =
             { form_ | paleConjuctiva = Just value }
 
-        abnormalHeartUpdateFunc value form_ =
-            { form_ | abnormalHeart = Just value }
+        -- heartUpdateFunc value form_ =
+        --     { form_ | heart = Just value }
     in
     div [ class "ui form examination core-physical-exam" ]
         [ div [ class "ui grid" ]
@@ -1453,12 +1453,12 @@ viewCorePhysicalExamForm language currentDate assembled form =
                 [ viewLabel language Translate.Heart ]
             , viewWarning language Nothing
             ]
-        , viewBoolInput
-            language
-            form.abnormalHeart
-            (SetCorePhysicalExamBoolInput abnormalHeartUpdateFunc)
-            "abnormal-heart"
-            (Just ( Translate.Abnormal, Translate.Normal ))
+        , viewCheckBoxSelectInput language
+            [ IrregularRhythm, SinusTachycardia ]
+            [ NormalRateAndRhythm ]
+            form.heart
+            SetCorePhysicalExamHeart
+            Translate.HeartCPESign
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]

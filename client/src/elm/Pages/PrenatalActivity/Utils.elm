@@ -75,7 +75,7 @@ fromCorePhysicalExamValue saved =
     { brittleHair = Maybe.map (.hairHead >> EverySet.member BrittleHairCPE) saved
     , paleConjuctiva = Maybe.map (.eyes >> EverySet.member PaleConjuctiva) saved
     , neck = Maybe.map (.neck >> EverySet.toList) saved
-    , abnormalHeart = Maybe.map (.heart >> EverySet.member AbnormalHeart) saved
+    , heart = Maybe.andThen (.heart >> EverySet.toList >> List.head) saved
     , lungs = Maybe.map (.lungs >> EverySet.toList) saved
     , abdomen = Maybe.map (.abdomen >> EverySet.toList) saved
     , hands = Maybe.map (.hands >> EverySet.toList) saved
@@ -92,7 +92,7 @@ corePhysicalExamFormWithDefault form saved =
                 { brittleHair = or form.brittleHair (value.hairHead |> EverySet.member BrittleHairCPE |> Just)
                 , paleConjuctiva = or form.paleConjuctiva (value.eyes |> EverySet.member PaleConjuctiva |> Just)
                 , neck = or form.neck (value.neck |> EverySet.toList |> Just)
-                , abnormalHeart = or form.abnormalHeart (value.heart |> EverySet.member AbnormalHeart |> Just)
+                , heart = or form.heart (value.heart |> EverySet.toList |> List.head)
                 , lungs = or form.lungs (value.lungs |> EverySet.toList |> Just)
                 , abdomen = or form.abdomen (value.abdomen |> EverySet.toList |> Just)
                 , hands = or form.hands (value.hands |> EverySet.toList |> Just)
@@ -112,7 +112,7 @@ toCorePhysicalExamValue form =
     -- Also, termporary things here, until CorePhysicalExamForm is redefined
     Maybe.map CorePhysicalExamValue (Maybe.map (toEverySet BrittleHairCPE NormalHairHead) form.brittleHair)
         |> andMap (Maybe.map (toEverySet PaleConjuctiva NormalEyes) form.paleConjuctiva)
-        |> andMap (Maybe.map (toEverySet AbnormalHeart NormalHeart) form.abnormalHeart)
+        |> andMap (Maybe.map EverySet.singleton form.heart)
         |> andMap (Maybe.map EverySet.fromList form.neck)
         |> andMap (Maybe.map EverySet.fromList form.lungs)
         |> andMap (Maybe.map EverySet.fromList form.abdomen)

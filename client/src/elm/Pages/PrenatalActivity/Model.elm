@@ -78,6 +78,7 @@ type Msg
     | SaveNutritionAssessment PrenatalEncounterId PersonId (Maybe ( PrenatalNutritionId, PrenatalNutrition ))
       -- ExaminationMsgs, Core Physical Exam
     | SetCorePhysicalExamBoolInput (Bool -> CorePhysicalExamForm -> CorePhysicalExamForm) Bool
+    | SetCorePhysicalExamHeart HeartCPESign
     | SetCorePhysicalExamNeck NeckCPESign
     | SetCorePhysicalExamLungs LungsCPESign
     | SetCorePhysicalExamAbdomen AbdomenCPESign
@@ -433,7 +434,7 @@ type alias CorePhysicalExamForm =
     { brittleHair : Maybe Bool
     , paleConjuctiva : Maybe Bool
     , neck : Maybe (List NeckCPESign)
-    , abnormalHeart : Maybe Bool
+    , heart : Maybe HeartCPESign
     , lungs : Maybe (List LungsCPESign)
     , abdomen : Maybe (List AbdomenCPESign)
     , hands : Maybe (List HandsCPESign)
@@ -446,7 +447,7 @@ emptyCorePhysicalExamForm =
     { brittleHair = Nothing
     , paleConjuctiva = Nothing
     , neck = Nothing
-    , abnormalHeart = Nothing
+    , heart = Nothing
     , lungs = Nothing
     , abdomen = Nothing
     , hands = Nothing

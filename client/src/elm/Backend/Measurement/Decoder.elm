@@ -358,11 +358,14 @@ decodeHeartCPESign =
         |> andThen
             (\s ->
                 case s of
-                    "abnormal" ->
-                        succeed AbnormalHeart
+                    "irregular-rhythm" ->
+                        succeed IrregularRhythm
 
-                    "normal" ->
-                        succeed NormalHeart
+                    "normal-rate-and-rhythm" ->
+                        succeed NormalRateAndRhythm
+
+                    "sinus-tachycardia" ->
+                        succeed SinusTachycardia
 
                     _ ->
                         fail <|

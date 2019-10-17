@@ -286,6 +286,7 @@ type TranslationId
     | HeadHair
     | HealthCenter
     | Heart
+    | HeartCPESign HeartCPESign
     | HeartRate
     | Height
     | HistoryTask HistoryTask
@@ -1768,6 +1769,23 @@ translationSet trans =
             { english = "Heart"
             , kinyarwanda = Nothing
             }
+
+        HeartCPESign sign ->
+            case sign of
+                IrregularRhythm ->
+                    { english = "Irregular Rhythm"
+                    , kinyarwanda = Nothing
+                    }
+
+                NormalRateAndRhythm ->
+                    { english = "Normal Rate And Rhythm"
+                    , kinyarwanda = Nothing
+                    }
+
+                SinusTachycardia ->
+                    { english = "Sinus Tachycardia"
+                    , kinyarwanda = Nothing
+                    }
 
         HeartRate ->
             { english = "Heart Rate"

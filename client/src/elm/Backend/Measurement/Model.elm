@@ -273,8 +273,9 @@ type EyesCPESign
 
 
 type HeartCPESign
-    = AbnormalHeart
-    | NormalHeart
+    = IrregularRhythm
+    | NormalRateAndRhythm
+    | SinusTachycardia
 
 
 type NeckCPESign

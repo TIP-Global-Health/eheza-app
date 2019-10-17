@@ -668,6 +668,22 @@ update msg model =
             , []
             )
 
+        SetCorePhysicalExamHeart value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            model.examinationData.corePhysicalExamForm
+                                |> (\form -> { form | heart = Just value })
+                    in
+                    model.examinationData
+                        |> (\data -> { data | corePhysicalExamForm = updatedForm })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetCorePhysicalExamNeck value ->
             let
                 updatedData =

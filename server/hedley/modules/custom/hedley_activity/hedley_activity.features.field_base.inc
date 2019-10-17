@@ -574,7 +574,7 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'Normal-rate-and-rhythm' => 'Normal Rate and Rhythm',
+        'normal-rate-and-rhythm' => 'Normal Rate and Rhythm',
         'sinus-tachycardia' => 'Sinus Tachycardia',
         'irregular-rhythm' => 'Irregular Rhythm',
       ),

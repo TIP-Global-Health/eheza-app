@@ -331,11 +331,14 @@ encodeHeartCPESign : HeartCPESign -> Value
 encodeHeartCPESign sign =
     string <|
         case sign of
-            AbnormalHeart ->
-                "abnormal"
+            IrregularRhythm ->
+                "irregular-rhythm"
 
-            NormalHeart ->
-                "normal"
+            NormalRateAndRhythm ->
+                "normal-rate-and-rhythm"
+
+            SinusTachycardia ->
+                "sinus-tachycardia"
 
 
 encodeNeckCPESign : NeckCPESign -> Value
