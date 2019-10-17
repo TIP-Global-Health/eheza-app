@@ -402,7 +402,7 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'auto-observation' => 'Auto Observation',
+        'auto-observation' => 'Auto-observation',
         'condoms' => 'Condoms',
         'necklace' => 'Cycle Beads',
         'cycle-counting' => 'Cycle Counting',

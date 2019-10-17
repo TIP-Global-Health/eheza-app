@@ -1549,7 +1549,7 @@ translationSet trans =
         FamilyPlanningSignLabel sign ->
             case sign of
                 AutoObservation ->
-                    { english = "Auto observation"
+                    { english = "Auto-observation"
                     , kinyarwanda = Nothing
                     }
 
