@@ -435,6 +435,7 @@ type alias CorePhysicalExamForm =
     , paleConjuctiva : Maybe Bool
     , neck : Maybe (List NeckCPESign)
     , heart : Maybe HeartCPESign
+    , heartMurmur : Maybe Bool
     , lungs : Maybe (List LungsCPESign)
     , abdomen : Maybe (List AbdomenCPESign)
     , hands : Maybe (List HandsCPESign)
@@ -448,6 +449,7 @@ emptyCorePhysicalExamForm =
     , paleConjuctiva = Nothing
     , neck = Nothing
     , heart = Nothing
+    , heartMurmur = Nothing
     , lungs = Nothing
     , abdomen = Nothing
     , hands = Nothing

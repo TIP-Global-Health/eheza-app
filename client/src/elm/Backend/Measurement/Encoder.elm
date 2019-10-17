@@ -431,6 +431,7 @@ encodeCorePhysicalExamValue value =
     [ ( "head_hair", encodeEverySet encodeHairHeadCPESign value.hairHead )
     , ( "eyes", encodeEverySet encodeEyesCPESign value.eyes )
     , ( "heart", encodeEverySet encodeHeartCPESign value.heart )
+    , ( "heart_murmur", bool value.heartMurmur )
     , ( "neck", encodeEverySet encodeNeckCPESign value.neck )
     , ( "lungs", encodeEverySet encodeLungsCPESign value.lungs )
     , ( "abdomen", encodeEverySet encodeAbdomenCPESign value.abdomen )

@@ -286,6 +286,7 @@ type TranslationId
     | HeadHair
     | HealthCenter
     | Heart
+    | HeartMurmur
     | HeartCPESign HeartCPESign
     | HeartRate
     | Height
@@ -1767,6 +1768,11 @@ translationSet trans =
 
         Heart ->
             { english = "Heart"
+            , kinyarwanda = Nothing
+            }
+
+        HeartMurmur ->
+            { english = "Heart Murmur"
             , kinyarwanda = Nothing
             }
 

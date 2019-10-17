@@ -254,6 +254,7 @@ type alias CorePhysicalExamValue =
     { hairHead : EverySet HairHeadCPESign
     , eyes : EverySet EyesCPESign
     , heart : EverySet HeartCPESign
+    , heartMurmur : Bool
     , neck : EverySet NeckCPESign
     , lungs : EverySet LungsCPESign
     , abdomen : EverySet AbdomenCPESign

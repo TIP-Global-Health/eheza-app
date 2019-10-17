@@ -497,6 +497,7 @@ decodeCorePhysicalExam =
         |> required "head_hair" (decodeEverySet decodeHairHeadCPESign)
         |> required "eyes" (decodeEverySet decodeEyesCPESign)
         |> required "heart" (decodeEverySet decodeHeartCPESign)
+        |> required "heart_murmur" bool
         |> required "neck" (decodeEverySet decodeNeckCPESign)
         |> required "lungs" (decodeEverySet decodeLungsCPESign)
         |> required "abdomen" (decodeEverySet decodeAbdomenCPESign)

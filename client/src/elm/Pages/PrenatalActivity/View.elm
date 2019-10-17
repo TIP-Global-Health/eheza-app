@@ -1407,8 +1407,8 @@ viewCorePhysicalExamForm language currentDate assembled form =
         paleConjuctivaUpdateFunc value form_ =
             { form_ | paleConjuctiva = Just value }
 
-        -- heartUpdateFunc value form_ =
-        --     { form_ | heart = Just value }
+        heartMurmurUpdateFunc value form_ =
+            { form_ | heartMurmur = Just value }
     in
     div [ class "ui form examination core-physical-exam" ]
         [ div [ class "ui grid" ]
@@ -1459,6 +1459,18 @@ viewCorePhysicalExamForm language currentDate assembled form =
             form.heart
             SetCorePhysicalExamHeart
             Translate.HeartCPESign
+        , div [ class "separator" ] []
+        , div [ class "ui grid" ]
+            [ div [ class "eleven wide column" ]
+                [ viewLabel language Translate.HeartMurmur ]
+            , viewWarning language Nothing
+            ]
+        , viewBoolInput
+            language
+            form.heartMurmur
+            (SetCorePhysicalExamBoolInput heartMurmurUpdateFunc)
+            "heart-murmur"
+            Nothing
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
