@@ -1035,19 +1035,37 @@ viewObstetricFormSecondStep language currentDate assembled form =
             "preeclampsia-previous-pregnancy"
             Nothing
         , viewLabel language Translate.ConvulsionsPreviousDelivery
-        , viewBoolInput
-            language
-            form.convulsionsPreviousDelivery
-            (SetOBBoolInput convulsionsPreviousDeliveryUpdateFunc)
-            "convulsions-previous-pelivery"
-            Nothing
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewBoolInput
+                    language
+                    form.convulsionsPreviousDelivery
+                    (SetOBBoolInput convulsionsPreviousDeliveryUpdateFunc)
+                    "convulsions-previous-pelivery"
+                    Nothing
+                ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.convulsionsPreviousDelivery |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    False
+                ]
+            ]
         , viewLabel language Translate.ConvulsionsAndUnconsciousPreviousDelivery
-        , viewBoolInput
-            language
-            form.convulsionsAndUnconsciousPreviousDelivery
-            (SetOBBoolInput convulsionsAndUnconsciousPreviousDeliveryUpdateFunc)
-            "convulsions-and-unconscious-previous-delivery"
-            Nothing
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewBoolInput
+                    language
+                    form.convulsionsAndUnconsciousPreviousDelivery
+                    (SetOBBoolInput convulsionsAndUnconsciousPreviousDeliveryUpdateFunc)
+                    "convulsions-and-unconscious-previous-delivery"
+                    Nothing
+                ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.convulsionsAndUnconsciousPreviousDelivery |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    False
+                ]
+            ]
         , viewLabel language Translate.GestationalDiabetesPreviousPregnancy
         , viewBoolInput
             language
