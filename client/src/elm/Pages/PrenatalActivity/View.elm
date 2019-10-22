@@ -1412,9 +1412,13 @@ viewCorePhysicalExamForm language currentDate assembled form =
     in
     div [ class "ui form examination core-physical-exam" ]
         [ div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
+            [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.HeadHair ]
-            , viewWarning language Nothing
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.brittleHair |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    False
+                ]
             ]
         , viewBoolInput
             language
@@ -1424,9 +1428,13 @@ viewCorePhysicalExamForm language currentDate assembled form =
             (Just ( Translate.BrittleHair, Translate.Normal ))
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
+            [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.Eyes ]
-            , viewWarning language Nothing
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.paleConjuctiva |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    False
+                ]
             ]
         , viewBoolInput
             language
@@ -1436,9 +1444,13 @@ viewCorePhysicalExamForm language currentDate assembled form =
             (Just ( Translate.PaleConjuctiva, Translate.Normal ))
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
+            [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.Neck ]
-            , viewWarning language Nothing
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.neck |> Maybe.withDefault [])
+                    NormalNeck
+                ]
             ]
         , viewCheckBoxMultipleSelectInput language
             [ EnlargedThyroid, EnlargedLymphNodes ]
@@ -1449,9 +1461,13 @@ viewCorePhysicalExamForm language currentDate assembled form =
             Translate.NeckCPESign
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
+            [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.Heart ]
-            , viewWarning language Nothing
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.heart |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    NormalRateAndRhythm
+                ]
             ]
         , viewCheckBoxSelectInput language
             [ IrregularRhythm, SinusTachycardia ]
@@ -1473,9 +1489,13 @@ viewCorePhysicalExamForm language currentDate assembled form =
             Nothing
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
+            [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.Lungs ]
-            , viewWarning language Nothing
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.lungs |> Maybe.withDefault [])
+                    NormalLungs
+                ]
             ]
         , viewCheckBoxMultipleSelectInput language
             [ Wheezes, Crackles ]
@@ -1486,9 +1506,13 @@ viewCorePhysicalExamForm language currentDate assembled form =
             Translate.LungsCPESign
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
+            [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.Abdomen ]
-            , viewWarning language Nothing
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.abdomen |> Maybe.withDefault [])
+                    NormalAbdomen
+                ]
             ]
         , viewCheckBoxMultipleSelectInput language
             [ Hepatomegaly, Splenomegaly, TPRightUpper, TPLeftUpper ]
@@ -1501,9 +1525,16 @@ viewCorePhysicalExamForm language currentDate assembled form =
         , div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
                 [ viewLabel language Translate.Extremities ]
-            , viewWarning language Nothing
             ]
-        , div [ class "title hands" ] [ text <| (translate language Translate.Hands ++ ":") ]
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ div [ class "title hands" ] [ text <| (translate language Translate.Hands ++ ":") ] ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.hands |> Maybe.withDefault [])
+                    NormalHands
+                ]
+            ]
         , viewCheckBoxMultipleSelectInput language
             [ PallorHands, EdemaHands ]
             [ NormalHands ]
@@ -1511,7 +1542,15 @@ viewCorePhysicalExamForm language currentDate assembled form =
             Nothing
             SetCorePhysicalExamHands
             Translate.HandsCPESign
-        , div [ class "title legs" ] [ text <| (translate language Translate.Legs ++ ":") ]
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ div [ class "title legs" ] [ text <| (translate language Translate.Legs ++ ":") ] ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.legs |> Maybe.withDefault [])
+                    NormalLegs
+                ]
+            ]
         , viewCheckBoxMultipleSelectInput language
             [ PallorLegs, EdemaLegs ]
             [ NormalLegs ]
@@ -1890,6 +1929,26 @@ viewPreviousMeasurement language maybePreviousValue unitTranslationId =
     div [ class "previous-value" ] [ text message ]
 
 
+viewRedAlertForSelect : List a -> a -> Html any
+viewRedAlertForSelect actual expected =
+    viewAlertForSelect "red" actual expected
+
+
+viewYellowAlertForSelect : List a -> a -> Html any
+viewYellowAlertForSelect actual expected =
+    viewAlertForSelect "yellow" actual expected
+
+
+viewAlertForSelect : String -> List a -> a -> Html any
+viewAlertForSelect color actual expected =
+    if List.isEmpty actual || actual == [ expected ] then
+        emptyNode
+
+    else
+        div [ class <| "alert " ++ color ]
+            [ viewAlert color ]
+
+
 viewWarning : Language -> Maybe String -> Html any
 viewWarning language maybeMessage =
     maybeMessage
@@ -1899,6 +1958,15 @@ viewWarning language maybeMessage =
                 div [ class "five wide column" ]
                     [ text message ]
             )
+
+
+viewAlert : String -> Html any
+viewAlert color =
+    let
+        icon =
+            "assets/images/alert-" ++ color ++ ".png"
+    in
+    img [ src icon ] []
 
 
 
