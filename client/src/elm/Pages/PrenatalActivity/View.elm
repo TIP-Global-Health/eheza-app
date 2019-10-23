@@ -1393,7 +1393,7 @@ viewNutritionAssessmentForm language currentDate assembled form =
             , div [ class "four wide column" ]
                 [ viewConditionalAlert calculatedBmi
                     [ [ (<) 30 ], [ (>) 18.5 ] ]
-                    [ [ (>=) 30, (<=) 18.5 ] ]
+                    [ [ (>=) 30, (<=) 25 ] ]
                 ]
             ]
         , div [ class "title bmi" ] [ text <| translate language Translate.BMIHelper ]
