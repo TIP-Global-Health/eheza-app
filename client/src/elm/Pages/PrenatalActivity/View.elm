@@ -1506,7 +1506,11 @@ viewCorePhysicalExamForm language currentDate assembled form =
         , div [ class "ui grid" ]
             [ div [ class "eleven wide column" ]
                 [ viewLabel language Translate.HeartMurmur ]
-            , viewWarning language Nothing
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.heartMurmur |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    False
+                ]
             ]
         , viewBoolInput
             language
