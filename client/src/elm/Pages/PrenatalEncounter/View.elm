@@ -23,7 +23,7 @@ import PrenatalActivity.Utils exposing (getActivityIcon, getAllActivities)
 import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date exposing (date)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (script, tabItem, thumbnailImage, viewLoading)
+import Utils.Html exposing (script, tabItem, thumbnailImage, viewLoading, viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -92,7 +92,7 @@ view language currentDate id db model =
 viewContent : Language -> NominalDate -> Model -> FetchedData -> Html Msg
 viewContent language currentDate model data =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate data.person data.measurements
+        viewMotherAndMeasurements language currentDate data.person data.measurements model.showAlertsDialog SetAlertsDialogState
             ++ viewMainPageContent language currentDate data model
 
 
@@ -113,15 +113,15 @@ viewHeader language data =
         ]
 
 
-viewMotherAndMeasurements : Language -> NominalDate -> Person -> PrenatalMeasurements -> List (Html any)
-viewMotherAndMeasurements language currentDate mother measurements =
-    [ viewMotherDetails language currentDate mother
+viewMotherAndMeasurements : Language -> NominalDate -> Person -> PrenatalMeasurements -> Bool -> (Bool -> msg) -> List (Html msg)
+viewMotherAndMeasurements language currentDate mother measurements isDialogOpen setAlertsDialogStateMsg =
+    [ viewMotherDetails language currentDate mother isDialogOpen setAlertsDialogStateMsg
     , viewMeasurements language currentDate measurements
     ]
 
 
-viewMotherDetails : Language -> NominalDate -> Person -> Html any
-viewMotherDetails language currentDate mother =
+viewMotherDetails : Language -> NominalDate -> Person -> Bool -> (Bool -> msg) -> Html msg
+viewMotherDetails language currentDate mother isDialogOpen setAlertsDialogStateMsg =
     div [ class "item" ]
         [ div [ class "ui image" ]
             [ thumbnailImage "mother" mother.avatarUrl mother.name thumbnailDimensions.height thumbnailDimensions.width ]
@@ -138,7 +138,37 @@ viewMotherDetails language currentDate mother =
                     )
                     (ageInYears currentDate mother)
             ]
+        , div
+            [ class "alerts"
+            , onClick <| setAlertsDialogStateMsg True
+            ]
+            [ img [ src "assets/images/exclamation-red.png" ] [] ]
+        , viewModal <| alertsDialog language isDialogOpen setAlertsDialogStateMsg
         ]
+
+
+alertsDialog : Language -> Bool -> (Bool -> msg) -> Maybe (Html msg)
+alertsDialog language isOpen setAlertsDialogStateMsg =
+    if isOpen then
+        Just <|
+            div [ class "ui active modal" ]
+                [ div [ class "header" ]
+                    [ text "This is header" ]
+                , div [ class "content" ]
+                    [ p [] [ text "This is body" ]
+                    ]
+                , div
+                    [ class "actions" ]
+                    [ button
+                        [ class "ui primary fluid button"
+                        , onClick <| setAlertsDialogStateMsg False
+                        ]
+                        [ text "Close" ]
+                    ]
+                ]
+
+    else
+        Nothing
 
 
 viewMeasurements : Language -> NominalDate -> PrenatalMeasurements -> Html any

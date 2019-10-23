@@ -48,6 +48,9 @@ update msg model =
             , [ App.Model.SetActivePage page ]
             )
 
+        SetAlertsDialogState isOpen ->
+            ( { model | showAlertsDialog = isOpen }, Cmd.none, [] )
+
         ToggleDateSelector ->
             let
                 updatedForm =
