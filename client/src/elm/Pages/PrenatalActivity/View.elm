@@ -1356,6 +1356,9 @@ viewNutritionAssessmentForm language currentDate assembled form =
 
         muacPreviousValue =
             Nothing
+
+        calculatedBmi =
+            calculateBmi form.height form.weight
     in
     div [ class "ui form examination nutrition-assessment" ]
         [ div [ class "ui grid" ]
@@ -1385,14 +1388,18 @@ viewNutritionAssessmentForm language currentDate assembled form =
         , viewPreviousMeasurement language weightPreviousValue Translate.KilogramShorthand
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
+            [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.BMI ]
-            , viewWarning language Nothing
+            , div [ class "four wide column" ]
+                [ viewConditionalAlert calculatedBmi
+                    [ [ (<) 30 ], [ (>) 18.5 ] ]
+                    [ [ (>=) 30, (<=) 18.5 ] ]
+                ]
             ]
         , div [ class "title bmi" ] [ text <| translate language Translate.BMIHelper ]
         , viewMeasurementInputAndRound
             language
-            (calculateBmi form.height form.weight)
+            calculatedBmi
             (SetNutritionAssessmentMeasurement bmiUpdateFunc)
             "bmi"
             Translate.EmptyString
@@ -1400,9 +1407,13 @@ viewNutritionAssessmentForm language currentDate assembled form =
         , viewPreviousMeasurement language bmiPreviousValue Translate.EmptyString
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
+            [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.MUAC ]
-            , viewWarning language Nothing
+            , div [ class "four wide column" ]
+                [ viewConditionalAlert form.muac
+                    [ [ (>=) 16 ] ]
+                    [ [ (<) 16, (>) 18.5 ] ]
+                ]
             ]
         , viewMeasurementInput
             language
@@ -1963,6 +1974,45 @@ viewAlertForSelect color actual expected =
     else
         div [ class <| "alert " ++ color ]
             [ viewAlert color ]
+
+
+{-| The idea here is that we get lists for red alert conditions, and yellow
+alert conditions. If any of red conditions matches, we present red alert.
+If any of yellow conditions matches, we present yellow alert.
+Otherwise, no alret is needed.
+
+Note that conditions are list of lists, so all conditions in inner list
+need to match, for a condition in outer list to match.
+We need this for range conditions. For example, number between 5 and 8.
+
+-}
+viewConditionalAlert : Maybe a -> List (List (a -> Bool)) -> List (List (a -> Bool)) -> Html any
+viewConditionalAlert maybeActual redConditions yellowConditions =
+    maybeActual
+        |> Maybe.map
+            (\actual ->
+                if
+                    List.any
+                        (\conditions ->
+                            List.all (\condition -> condition actual) conditions
+                        )
+                        redConditions
+                then
+                    viewAlert "red"
+
+                else if
+                    List.any
+                        (\conditions ->
+                            List.all (\condition -> condition actual) conditions
+                        )
+                        yellowConditions
+                then
+                    viewAlert "yellow"
+
+                else
+                    emptyNode
+            )
+        |> Maybe.withDefault emptyNode
 
 
 viewWarning : Language -> Maybe String -> Html any
