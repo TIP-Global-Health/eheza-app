@@ -1272,7 +1272,15 @@ viewVitalsForm language currentDate assembled form =
                 [ viewLabel language Translate.BloodPressure ]
             , viewWarning language Nothing
             ]
-        , div [ class "title sys" ] [ text <| translate language Translate.BloodPressureSysLabel ]
+        , div [ class "ui grid systolic" ]
+            [ div [ class "twelve wide column" ]
+                [ div [ class "title sys" ] [ text <| translate language Translate.BloodPressureSysLabel ] ]
+            , div [ class "four wide column" ]
+                [ viewConditionalAlert form.sysBloodPressure
+                    [ [ (<) 140, (>=) 180 ] ]
+                    []
+                ]
+            ]
         , viewMeasurementInput
             language
             form.sysBloodPressure
@@ -1280,7 +1288,15 @@ viewVitalsForm language currentDate assembled form =
             "sys-blood-pressure"
             Translate.MMHGUnit
         , viewPreviousMeasurement language sysBloodPressurePreviousValue Translate.MMHGUnit
-        , div [ class "title dia" ] [ text <| translate language Translate.BloodPressureDiaLabel ]
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ div [ class "title dia" ] [ text <| translate language Translate.BloodPressureDiaLabel ] ]
+            , div [ class "four wide column" ]
+                [ viewConditionalAlert form.diaBloodPressure
+                    [ [ (<) 90, (>=) 100 ] ]
+                    []
+                ]
+            ]
         , viewMeasurementInput
             language
             form.diaBloodPressure
@@ -1290,9 +1306,13 @@ viewVitalsForm language currentDate assembled form =
         , viewPreviousMeasurement language diaBloodPressurePreviousValue Translate.MMHGUnit
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
+            [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.HeartRate ]
-            , viewWarning language Nothing
+            , div [ class "four wide column" ]
+                [ viewConditionalAlert form.heartRate
+                    [ [ (>) 40 ], [ (<=) 120 ] ]
+                    [ [ (<=) 40, (>=) 50 ], [ (<) 100, (>) 120 ] ]
+                ]
             ]
         , viewMeasurementInput
             language
@@ -1303,9 +1323,13 @@ viewVitalsForm language currentDate assembled form =
         , viewPreviousMeasurement language heartRatePreviousValue Translate.BpmUnit
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
+            [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.RespiratoryRate ]
-            , viewWarning language Nothing
+            , div [ class "four wide column" ]
+                [ viewConditionalAlert form.respiratoryRate
+                    [ [ (>) 12 ], [ (<) 30 ] ]
+                    [ [ (<=) 21, (>=) 30 ] ]
+                ]
             ]
         , viewMeasurementInput
             language
@@ -1316,9 +1340,13 @@ viewVitalsForm language currentDate assembled form =
         , viewPreviousMeasurement language respiratoryRatePreviousValue Translate.BpmUnit
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
+            [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.BodyTemperature ]
-            , viewWarning language Nothing
+            , div [ class "four wide column" ]
+                [ viewConditionalAlert form.bodyTemperature
+                    [ [ (>) 35 ], [ (<) 37.5 ] ]
+                    []
+                ]
             ]
         , viewMeasurementInput
             language
@@ -1504,7 +1532,7 @@ viewCorePhysicalExamForm language currentDate assembled form =
             Translate.HeartCPESign
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
+            [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.HeartMurmur ]
             , div [ class "four wide column" ]
                 [ viewRedAlertForSelect
@@ -1998,7 +2026,15 @@ viewConditionalAlert maybeActual redConditions yellowConditions =
                 if
                     List.any
                         (\conditions ->
-                            List.all (\condition -> condition actual) conditions
+                            List.all
+                                (\condition ->
+                                    let
+                                        _ =
+                                            Debug.log " " condition
+                                    in
+                                    condition actual
+                                )
+                                conditions
                         )
                         redConditions
                 then
