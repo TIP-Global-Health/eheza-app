@@ -34,7 +34,7 @@ import Form.Error exposing (ErrorValue(..))
 import Http
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model exposing (ExaminationTask(..), HistoryTask(..), LmpRange(..), PatientProvisionsTask(..))
-import PrenatalActivity.Model exposing (PrenatalActivity(..))
+import PrenatalActivity.Model exposing (HighRiskFactor(..), HighSeverityAlert(..), PrenatalActivity(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Translate.Model exposing (TranslationSet)
@@ -205,6 +205,7 @@ type TranslationId
     | Group
     | Groups
     | GroupUnauthorized
+    | Close
     | Closed
     | ConfirmationRequired
     | ConfirmDeleteTrainingGroupEncounters
@@ -290,6 +291,11 @@ type TranslationId
     | HeartCPESign HeartCPESign
     | HeartRate
     | Height
+    | High
+    | HighRiskFactor HighRiskFactor
+    | HighRiskFactors
+    | HighSeverityAlert HighSeverityAlert
+    | HighSeverityAlerts
     | HistoryTask HistoryTask
     | HIV
     | HIVStatus HIVStatus
@@ -310,6 +316,7 @@ type TranslationId
     | LmpRangeHeader
     | LmpRange LmpRange
     | LoginPhrase LoginPhrase
+    | Low
     | Lungs
     | LungsCPESign LungsCPESign
     | MakeSureYouAreConnected
@@ -1165,6 +1172,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Close ->
+            { english = "Close"
+            , kinyarwanda = Nothing
+            }
+
         Closed ->
             { english = "Closed"
             , kinyarwanda = Just "Gufunga"
@@ -1803,6 +1815,55 @@ translationSet trans =
             , kinyarwanda = Just "Uburebure"
             }
 
+        High ->
+            { english = "High"
+            , kinyarwanda = Nothing
+            }
+
+        HighRiskFactor factor ->
+            case factor of
+                PrenatalActivity.Model.ConvulsionsAndUnconsciousPreviousDelivery ->
+                    { english = "Patient experienced convulsions in previous delivery and became unconscious after delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalActivity.Model.ConvulsionsPreviousDelivery ->
+                    { english = "Patient experienced convulsions in previous delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+        HighRiskFactors ->
+            { english = "High Risk Factors"
+            , kinyarwanda = Nothing
+            }
+
+        HighSeverityAlert alert ->
+            case alert of
+                PrenatalActivity.Model.BodyTemperature ->
+                    { english = "Body Temperature"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalActivity.Model.BloodPressure ->
+                    { english = "Blood Pressure"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalActivity.Model.HeartRate ->
+                    { english = "Heart Rate"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalActivity.Model.RespiratoryRate ->
+                    { english = "Respiratory Rate"
+                    , kinyarwanda = Nothing
+                    }
+
+        HighSeverityAlerts ->
+            { english = "High Severity Alerts"
+            , kinyarwanda = Nothing
+            }
+
         HistoryTask task ->
             case task of
                 Obstetric ->
@@ -1982,6 +2043,11 @@ translationSet trans =
 
         LoginPhrase phrase ->
             translateLoginPhrase phrase
+
+        Low ->
+            { english = "Low"
+            , kinyarwanda = Nothing
+            }
 
         Lungs ->
             { english = "Lungs"

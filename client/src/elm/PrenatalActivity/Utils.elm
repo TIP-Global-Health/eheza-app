@@ -2,6 +2,8 @@ module PrenatalActivity.Utils exposing
     ( decodeActivityFromString
     , defaultActivity
     , encodeActivityAsString
+    , generateHighRiskAlert
+    , generateHighSeverityAlert
     , getActivityIcon
     , getAllActivities
     )
@@ -16,7 +18,10 @@ expected (and not completed).
 
 -}
 
+import Backend.Measurement.Model exposing (PrenatalMeasurements, PreviousDeliverySign(..))
+import EverySet
 import PrenatalActivity.Model exposing (..)
+import Translate exposing (Language, TranslationId, translate)
 
 
 {-| Used for URL etc., not for display in the normal UI (since we'd translate
@@ -89,3 +94,145 @@ getActivityIcon activity =
 getAllActivities : List PrenatalActivity
 getAllActivities =
     [ PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, DangerSigns ]
+
+
+generateHighRiskAlert : Language -> PrenatalMeasurements -> HighRiskFactor -> Maybe String
+generateHighRiskAlert language measurements factor =
+    let
+        transAlert factor =
+            translate language (Translate.HighRiskFactor factor)
+    in
+    case factor of
+        PrenatalActivity.Model.ConvulsionsAndUnconsciousPreviousDelivery ->
+            measurements.obstetricHistoryStep2
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            signs =
+                                Tuple.second measurement |> .value |> .previousDelivery
+                        in
+                        if EverySet.member Backend.Measurement.Model.ConvulsionsAndUnconsciousPreviousDelivery signs then
+                            Just (transAlert factor)
+
+                        else
+                            Nothing
+                    )
+
+        PrenatalActivity.Model.ConvulsionsPreviousDelivery ->
+            measurements.obstetricHistoryStep2
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            signs =
+                                Tuple.second measurement |> .value |> .previousDelivery
+                        in
+                        if EverySet.member Backend.Measurement.Model.ConvulsionsPreviousDelivery signs then
+                            Just (transAlert factor)
+
+                        else
+                            Nothing
+                    )
+
+
+generateHighSeverityAlert : Language -> PrenatalMeasurements -> HighSeverityAlert -> Maybe ( String, String )
+generateHighSeverityAlert language measurements alert =
+    let
+        trans =
+            translate language
+
+        transAlert alert =
+            trans (Translate.HighSeverityAlert alert)
+    in
+    case alert of
+        BodyTemperature ->
+            measurements.vitals
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value |> .bodyTemperature
+                        in
+                        if value >= 38.5 then
+                            Just
+                                ( trans Translate.High ++ " " ++ transAlert alert
+                                , toString value ++ "°C"
+                                )
+
+                        else if value < 35 then
+                            Just
+                                ( trans Translate.Low ++ " " ++ transAlert alert
+                                , toString value ++ "°C"
+                                )
+
+                        else
+                            Nothing
+                    )
+
+        BloodPressure ->
+            measurements.vitals
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            sys =
+                                Tuple.second measurement |> .value |> .sys
+
+                            dia =
+                                Tuple.second measurement |> .value |> .dia
+                        in
+                        if sys > 180 || dia > 100 then
+                            Just
+                                ( trans Translate.High ++ " " ++ transAlert alert
+                                , toString sys ++ "/" ++ toString dia ++ trans Translate.MMHGUnit
+                                )
+
+                        else
+                            Nothing
+                    )
+
+        HeartRate ->
+            measurements.vitals
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value |> .heartRate
+                        in
+                        if value >= 120 then
+                            Just
+                                ( trans Translate.High ++ " " ++ transAlert alert
+                                , toString value ++ trans Translate.BpmUnit
+                                )
+
+                        else if value < 40 then
+                            Just
+                                ( trans Translate.Low ++ " " ++ transAlert alert
+                                , toString value ++ trans Translate.BpmUnit
+                                )
+
+                        else
+                            Nothing
+                    )
+
+        RespiratoryRate ->
+            measurements.vitals
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value |> .respiratoryRate
+                        in
+                        if value > 30 then
+                            Just
+                                ( trans Translate.High ++ " " ++ transAlert alert
+                                , toString value ++ trans Translate.BpmUnit
+                                )
+
+                        else if value < 12 then
+                            Just
+                                ( trans Translate.Low ++ " " ++ transAlert alert
+                                , toString value ++ trans Translate.BpmUnit
+                                )
+
+                        else
+                            Nothing
+                    )

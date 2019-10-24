@@ -19,7 +19,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.Model exposing (..)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import PrenatalActivity.Model exposing (..)
-import PrenatalActivity.Utils exposing (getActivityIcon, getAllActivities)
+import PrenatalActivity.Utils exposing (generateHighRiskAlert, generateHighSeverityAlert, getActivityIcon, getAllActivities)
 import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date exposing (date)
 import Translate exposing (Language, TranslationId, translate)
@@ -115,13 +115,13 @@ viewHeader language data =
 
 viewMotherAndMeasurements : Language -> NominalDate -> Person -> PrenatalMeasurements -> Bool -> (Bool -> msg) -> List (Html msg)
 viewMotherAndMeasurements language currentDate mother measurements isDialogOpen setAlertsDialogStateMsg =
-    [ viewMotherDetails language currentDate mother isDialogOpen setAlertsDialogStateMsg
+    [ viewMotherDetails language currentDate mother measurements isDialogOpen setAlertsDialogStateMsg
     , viewMeasurements language currentDate measurements
     ]
 
 
-viewMotherDetails : Language -> NominalDate -> Person -> Bool -> (Bool -> msg) -> Html msg
-viewMotherDetails language currentDate mother isDialogOpen setAlertsDialogStateMsg =
+viewMotherDetails : Language -> NominalDate -> Person -> PrenatalMeasurements -> Bool -> (Bool -> msg) -> Html msg
+viewMotherDetails language currentDate mother measurements isDialogOpen setAlertsDialogStateMsg =
     div [ class "item" ]
         [ div [ class "ui image" ]
             [ thumbnailImage "mother" mother.avatarUrl mother.name thumbnailDimensions.height thumbnailDimensions.width ]
@@ -143,17 +143,49 @@ viewMotherDetails language currentDate mother isDialogOpen setAlertsDialogStateM
             , onClick <| setAlertsDialogStateMsg True
             ]
             [ img [ src "assets/images/exclamation-red.png" ] [] ]
-        , viewModal <| alertsDialog language isDialogOpen setAlertsDialogStateMsg
+        , viewModal <| alertsDialog language measurements isDialogOpen setAlertsDialogStateMsg
         ]
 
 
-alertsDialog : Language -> Bool -> (Bool -> msg) -> Maybe (Html msg)
-alertsDialog language isOpen setAlertsDialogStateMsg =
+alertsDialog : Language -> PrenatalMeasurements -> Bool -> (Bool -> msg) -> Maybe (Html msg)
+alertsDialog language measurements isOpen setAlertsDialogStateMsg =
     if isOpen then
+        let
+            sectionLabel title =
+                div [ class "section-label-wrapper" ]
+                    [ img [ src "assets/images/exclamation-red.png" ] []
+                    , div [ class "section-label" ] [ text <| translate language title ++ ":" ]
+                    ]
+
+            viewHighSeverityAlert ( message, value ) =
+                div [ class "alert" ]
+                    [ span [ class "alert-text" ] [ text <| "- " ++ message ++ ":" ]
+                    , span [ class "alert-value" ] [ text value ]
+                    ]
+
+            highRiskAlerts =
+                allHighRiskFactors
+                    |> List.filterMap (generateHighRiskAlert language measurements)
+                    |> List.map (\message -> div [ class "alert" ] [ text <| "- " ++ message ])
+
+            highSeverityAlerts =
+                allHighSeverityAlerts
+                    |> List.filterMap (generateHighSeverityAlert language measurements)
+                    |> List.map viewHighSeverityAlert
+        in
         Just <|
             div [ class "ui active modal alerts-dialog" ]
                 [ div [ class "content" ]
-                    [ p [] [ text "This is body" ]
+                    [ div [ class "high-risk-alerts" ]
+                        [ sectionLabel Translate.HighRiskFactors
+                        , highRiskAlerts
+                            |> div [ class "section-items" ]
+                        ]
+                    , div [ class "high-severity-alerts" ]
+                        [ sectionLabel Translate.HighSeverityAlerts
+                        , highSeverityAlerts
+                            |> div [ class "section-items" ]
+                        ]
                     ]
                 , div
                     [ class "actions" ]
@@ -161,7 +193,7 @@ alertsDialog language isOpen setAlertsDialogStateMsg =
                         [ class "ui primary fluid button"
                         , onClick <| setAlertsDialogStateMsg False
                         ]
-                        [ text "Close" ]
+                        [ text <| translate language Translate.Close ]
                     ]
                 ]
 
