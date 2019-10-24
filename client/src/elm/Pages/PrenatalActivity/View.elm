@@ -1439,8 +1439,8 @@ viewNutritionAssessmentForm language currentDate assembled form =
                 [ viewLabel language Translate.MUAC ]
             , div [ class "four wide column" ]
                 [ viewConditionalAlert form.muac
-                    [ [ (>=) 16 ] ]
-                    [ [ (<) 16, (>) 18.5 ] ]
+                    [ [ (>) 18.5 ] ]
+                    [ [ (<=) 18.5, (>) 22.5 ] ]
                 ]
             ]
         , viewMeasurementInput
