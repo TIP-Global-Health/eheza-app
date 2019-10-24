@@ -2,8 +2,8 @@ module PrenatalActivity.Utils exposing
     ( decodeActivityFromString
     , defaultActivity
     , encodeActivityAsString
-    , generateHighRiskAlert
-    , generateHighSeverityAlert
+    , generateHighRiskAlertData
+    , generateHighSeverityAlertData
     , getActivityIcon
     , getAllActivities
     )
@@ -96,8 +96,8 @@ getAllActivities =
     [ PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, DangerSigns ]
 
 
-generateHighRiskAlert : Language -> PrenatalMeasurements -> HighRiskFactor -> Maybe String
-generateHighRiskAlert language measurements factor =
+generateHighRiskAlertData : Language -> PrenatalMeasurements -> HighRiskFactor -> Maybe String
+generateHighRiskAlertData language measurements factor =
     let
         transAlert factor =
             translate language (Translate.HighRiskFactor factor)
@@ -134,8 +134,8 @@ generateHighRiskAlert language measurements factor =
                     )
 
 
-generateHighSeverityAlert : Language -> PrenatalMeasurements -> HighSeverityAlert -> Maybe ( String, String )
-generateHighSeverityAlert language measurements alert =
+generateHighSeverityAlertData : Language -> PrenatalMeasurements -> HighSeverityAlert -> Maybe ( String, String )
+generateHighSeverityAlertData language measurements alert =
     let
         trans =
             translate language

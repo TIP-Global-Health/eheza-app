@@ -9,7 +9,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import Date.Extra as Date exposing (Interval(Day))
 import EveryDict
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -19,7 +19,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.Model exposing (..)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import PrenatalActivity.Model exposing (..)
-import PrenatalActivity.Utils exposing (generateHighRiskAlert, generateHighSeverityAlert, getActivityIcon, getAllActivities)
+import PrenatalActivity.Utils exposing (generateHighRiskAlertData, generateHighSeverityAlertData, getActivityIcon, getAllActivities)
 import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date exposing (date)
 import Translate exposing (Language, TranslationId, translate)
@@ -122,6 +122,26 @@ viewMotherAndMeasurements language currentDate mother measurements isDialogOpen 
 
 viewMotherDetails : Language -> NominalDate -> Person -> PrenatalMeasurements -> Bool -> (Bool -> msg) -> Html msg
 viewMotherDetails language currentDate mother measurements isDialogOpen setAlertsDialogStateMsg =
+    let
+        highRiskAlertsData =
+            allHighRiskFactors
+                |> List.filterMap (generateHighRiskAlertData language measurements)
+
+        highSeverityAlertsData =
+            allHighSeverityAlerts
+                |> List.filterMap (generateHighSeverityAlertData language measurements)
+
+        alertSign =
+            if List.isEmpty highRiskAlertsData && List.isEmpty highSeverityAlertsData then
+                emptyNode
+
+            else
+                div
+                    [ class "alerts"
+                    , onClick <| setAlertsDialogStateMsg True
+                    ]
+                    [ img [ src "assets/images/exclamation-red.png" ] [] ]
+    in
     div [ class "item" ]
         [ div [ class "ui image" ]
             [ thumbnailImage "mother" mother.avatarUrl mother.name thumbnailDimensions.height thumbnailDimensions.width ]
@@ -138,17 +158,13 @@ viewMotherDetails language currentDate mother measurements isDialogOpen setAlert
                     )
                     (ageInYears currentDate mother)
             ]
-        , div
-            [ class "alerts"
-            , onClick <| setAlertsDialogStateMsg True
-            ]
-            [ img [ src "assets/images/exclamation-red.png" ] [] ]
-        , viewModal <| alertsDialog language measurements isDialogOpen setAlertsDialogStateMsg
+        , alertSign
+        , viewModal <| alertsDialog language highRiskAlertsData highSeverityAlertsData isDialogOpen setAlertsDialogStateMsg
         ]
 
 
-alertsDialog : Language -> PrenatalMeasurements -> Bool -> (Bool -> msg) -> Maybe (Html msg)
-alertsDialog language measurements isOpen setAlertsDialogStateMsg =
+alertsDialog : Language -> List String -> List ( String, String ) -> Bool -> (Bool -> msg) -> Maybe (Html msg)
+alertsDialog language highRiskAlertsData highSeverityAlertsData isOpen setAlertsDialogStateMsg =
     if isOpen then
         let
             sectionLabel title =
@@ -164,13 +180,11 @@ alertsDialog language measurements isOpen setAlertsDialogStateMsg =
                     ]
 
             highRiskAlerts =
-                allHighRiskFactors
-                    |> List.filterMap (generateHighRiskAlert language measurements)
+                highRiskAlertsData
                     |> List.map (\message -> div [ class "alert" ] [ text <| "- " ++ message ])
 
             highSeverityAlerts =
-                allHighSeverityAlerts
-                    |> List.filterMap (generateHighSeverityAlert language measurements)
+                highSeverityAlertsData
                     |> List.map viewHighSeverityAlert
         in
         Just <|
@@ -181,11 +195,13 @@ alertsDialog language measurements isOpen setAlertsDialogStateMsg =
                         , highRiskAlerts
                             |> div [ class "section-items" ]
                         ]
+                        |> showIf (List.isEmpty highRiskAlerts |> not)
                     , div [ class "high-severity-alerts" ]
                         [ sectionLabel Translate.HighSeverityAlerts
                         , highSeverityAlerts
                             |> div [ class "section-items" ]
                         ]
+                        |> showIf (List.isEmpty highSeverityAlerts |> not)
                     ]
                 , div
                     [ class "actions" ]
