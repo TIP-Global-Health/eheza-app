@@ -1708,9 +1708,13 @@ viewBreastExamForm language currentDate assembled form =
     in
     div [ class "ui form examination breast-exam" ]
         [ div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
+            [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.BreastExam ]
-            , viewWarning language Nothing
+            , div [ class "four wide column" ]
+                [ viewYellowAlertForSelect
+                    (form.breast |> Maybe.withDefault [])
+                    NormalBreast
+                ]
             ]
         , viewCheckBoxMultipleSelectInput language
             [ Mass, Discharge ]
