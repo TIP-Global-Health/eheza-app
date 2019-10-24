@@ -1017,6 +1017,21 @@ input::placeholder {
   margin-left: -213px !important; //temp
   box-shadow: 0 0 8px rgba(0,0,0,0.2);
 
+  &.alerts-dialog {
+    border-top: 4px solid $color-red-alert;
+    width: 600px !important;
+    margin-left: -300px !important;
+
+    > .content {
+      min-height: 200px;
+      max-height: 600px;
+    }
+
+    > .actions > .button {
+      margin-left: 0;
+    }
+  }
+
   > .icon:first-child+*,
   >:first-child:not(.icon) {
     border-top-left-radius: 0;

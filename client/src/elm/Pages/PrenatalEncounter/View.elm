@@ -151,10 +151,8 @@ alertsDialog : Language -> Bool -> (Bool -> msg) -> Maybe (Html msg)
 alertsDialog language isOpen setAlertsDialogStateMsg =
     if isOpen then
         Just <|
-            div [ class "ui active modal" ]
-                [ div [ class "header" ]
-                    [ text "This is header" ]
-                , div [ class "content" ]
+            div [ class "ui active modal alerts-dialog" ]
+                [ div [ class "content" ]
                     [ p [] [ text "This is body" ]
                     ]
                 , div
