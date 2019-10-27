@@ -967,7 +967,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.CSectionInPreviousDelivery ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.cSectionInPreviousDelivery ]
+                [ viewRedAlertForBool form.cSectionInPreviousDelivery False ]
             ]
         , viewBoolInput
             language
@@ -981,7 +981,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             , div [ class "four wide column" ]
                 [ viewRedAlertForSelect
                     (form.cSectionReason |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    None
+                    [ None ]
                 ]
             ]
         , viewCheckBoxSelectInput language
@@ -996,7 +996,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             , div [ class "four wide column" ]
                 [ viewRedAlertForSelect
                     (form.previousDeliveryPeriod |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    Neither
+                    [ Neither ]
                 ]
             ]
         , viewCheckBoxSelectInput language
@@ -1009,7 +1009,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewCustomLabel language Translate.SuccessiveAbortions "?" "label successive-abortions" ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.successiveAbortions ]
+                [ viewRedAlertForBool form.successiveAbortions False ]
             ]
         , viewBoolInput
             language
@@ -1021,7 +1021,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.SuccessivePrematureDeliveries ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.successivePrematureDeliveries ]
+                [ viewRedAlertForBool form.successivePrematureDeliveries False ]
             ]
         , viewBoolInput
             language
@@ -1033,7 +1033,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.StillbornPreviousDelivery ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.stillbornPreviousDelivery ]
+                [ viewRedAlertForBool form.stillbornPreviousDelivery False ]
             ]
         , viewBoolInput
             language
@@ -1045,7 +1045,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.BabyDiedOnDayOfBirthPreviousDelivery ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.babyDiedOnDayOfBirthPreviousDelivery ]
+                [ viewRedAlertForBool form.babyDiedOnDayOfBirthPreviousDelivery False ]
             ]
         , viewBoolInput
             language
@@ -1057,7 +1057,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.PartialPlacentaPreviousDelivery ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.partialPlacentaPreviousDelivery ]
+                [ viewRedAlertForBool form.partialPlacentaPreviousDelivery False ]
             ]
         , viewBoolInput
             language
@@ -1069,7 +1069,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.SevereHemorrhagingPreviousDelivery ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.severeHemorrhagingPreviousDelivery ]
+                [ viewRedAlertForBool form.severeHemorrhagingPreviousDelivery False ]
             ]
         , viewBoolInput
             language
@@ -1081,7 +1081,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.PreeclampsiaPreviousPregnancy ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.preeclampsiaPreviousPregnancy ]
+                [ viewRedAlertForBool form.preeclampsiaPreviousPregnancy False ]
             ]
         , viewBoolInput
             language
@@ -1093,7 +1093,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.ConvulsionsPreviousDelivery ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.convulsionsPreviousDelivery ]
+                [ viewRedAlertForBool form.convulsionsPreviousDelivery False ]
             ]
         , viewBoolInput
             language
@@ -1105,7 +1105,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.ConvulsionsAndUnconsciousPreviousDelivery ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.convulsionsAndUnconsciousPreviousDelivery ]
+                [ viewRedAlertForBool form.convulsionsAndUnconsciousPreviousDelivery False ]
             ]
         , viewBoolInput
             language
@@ -1117,7 +1117,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.GestationalDiabetesPreviousPregnancy ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.gestationalDiabetesPreviousPregnancy ]
+                [ viewRedAlertForBool form.gestationalDiabetesPreviousPregnancy False ]
             ]
         , viewBoolInput
             language
@@ -1129,7 +1129,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.IncompleteCervixPreviousPregnancy ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.incompleteCervixPreviousPregnancy ]
+                [ viewRedAlertForBool form.incompleteCervixPreviousPregnancy False ]
             ]
         , viewBoolInput
             language
@@ -1141,7 +1141,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.RhNegative ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.rhNegative ]
+                [ viewRedAlertForBool form.rhNegative False ]
             ]
         , viewBoolInput
             language
@@ -1191,7 +1191,7 @@ viewMedicalForm language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.UterineMyoma ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.uterineMyoma ]
+                [ viewRedAlertForBool form.uterineMyoma False ]
             ]
         , viewBoolInput
             language
@@ -1203,7 +1203,7 @@ viewMedicalForm language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.Diabetes ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.diabetes ]
+                [ viewRedAlertForBool form.diabetes False ]
             ]
         , viewBoolInput
             language
@@ -1215,7 +1215,7 @@ viewMedicalForm language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.CardiacDisease ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.cardiacDisease ]
+                [ viewRedAlertForBool form.cardiacDisease False ]
             ]
         , viewBoolInput
             language
@@ -1227,7 +1227,7 @@ viewMedicalForm language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.RenalDisease ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.renalDisease ]
+                [ viewRedAlertForBool form.renalDisease False ]
             ]
         , viewBoolInput
             language
@@ -1239,7 +1239,7 @@ viewMedicalForm language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.HypertensionBeforePregnancy ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.hypertensionBeforePregnancy ]
+                [ viewRedAlertForBool form.hypertensionBeforePregnancy False ]
             ]
         , viewBoolInput
             language
@@ -1251,7 +1251,7 @@ viewMedicalForm language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.TuberculosisPast ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.tuberculosisPast ]
+                [ viewRedAlertForBool form.tuberculosisPast False ]
             ]
         , viewBoolInput
             language
@@ -1263,7 +1263,7 @@ viewMedicalForm language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.TuberculosisPresent ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.tuberculosisPresent ]
+                [ viewRedAlertForBool form.tuberculosisPresent False ]
             ]
         , viewBoolInput
             language
@@ -1275,7 +1275,7 @@ viewMedicalForm language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.Asthma ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.asthma ]
+                [ viewRedAlertForBool form.asthma False ]
             ]
         , viewBoolInput
             language
@@ -1287,7 +1287,7 @@ viewMedicalForm language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.BowedLegs ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.bowedLegs ]
+                [ viewRedAlertForBool form.bowedLegs False ]
             ]
         , viewBoolInput
             language
@@ -1299,7 +1299,7 @@ viewMedicalForm language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.HIV ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.hiv ]
+                [ viewRedAlertForBool form.hiv False ]
             ]
         , viewBoolInput
             language
@@ -1584,7 +1584,7 @@ viewCorePhysicalExamForm language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.HeadHair ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.brittleHair ]
+                [ viewRedAlertForBool form.brittleHair False ]
             ]
         , viewBoolInput
             language
@@ -1597,7 +1597,7 @@ viewCorePhysicalExamForm language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.Eyes ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.paleConjuctiva ]
+                [ viewRedAlertForBool form.paleConjuctiva False ]
             ]
         , viewBoolInput
             language
@@ -1612,7 +1612,7 @@ viewCorePhysicalExamForm language currentDate assembled form =
             , div [ class "four wide column" ]
                 [ viewRedAlertForSelect
                     (form.neck |> Maybe.withDefault [])
-                    NormalNeck
+                    [ NormalNeck ]
                 ]
             ]
         , viewCheckBoxMultipleSelectInput language
@@ -1629,7 +1629,7 @@ viewCorePhysicalExamForm language currentDate assembled form =
             , div [ class "four wide column" ]
                 [ viewRedAlertForSelect
                     (form.heart |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    NormalRateAndRhythm
+                    [ NormalRateAndRhythm ]
                 ]
             ]
         , viewCheckBoxSelectInput language
@@ -1643,7 +1643,7 @@ viewCorePhysicalExamForm language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.HeartMurmur ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.heartMurmur ]
+                [ viewRedAlertForBool form.heartMurmur False ]
             ]
         , viewBoolInput
             language
@@ -1658,7 +1658,7 @@ viewCorePhysicalExamForm language currentDate assembled form =
             , div [ class "four wide column" ]
                 [ viewRedAlertForSelect
                     (form.lungs |> Maybe.withDefault [])
-                    NormalLungs
+                    [ NormalLungs ]
                 ]
             ]
         , viewCheckBoxMultipleSelectInput language
@@ -1675,7 +1675,7 @@ viewCorePhysicalExamForm language currentDate assembled form =
             , div [ class "four wide column" ]
                 [ viewRedAlertForSelect
                     (form.abdomen |> Maybe.withDefault [])
-                    NormalAbdomen
+                    [ NormalAbdomen ]
                 ]
             ]
         , viewCheckBoxMultipleSelectInput language
@@ -1696,7 +1696,7 @@ viewCorePhysicalExamForm language currentDate assembled form =
             , div [ class "four wide column" ]
                 [ viewRedAlertForSelect
                     (form.hands |> Maybe.withDefault [])
-                    NormalHands
+                    [ NormalHands ]
                 ]
             ]
         , viewCheckBoxMultipleSelectInput language
@@ -1712,7 +1712,7 @@ viewCorePhysicalExamForm language currentDate assembled form =
             , div [ class "four wide column" ]
                 [ viewRedAlertForSelect
                     (form.legs |> Maybe.withDefault [])
-                    NormalLegs
+                    [ NormalLegs ]
                 ]
             ]
         , viewCheckBoxMultipleSelectInput language
@@ -1728,6 +1728,65 @@ viewCorePhysicalExamForm language currentDate assembled form =
 viewObstetricalExamForm : Language -> NominalDate -> AssembledData -> ObstetricalExamForm -> Html Msg
 viewObstetricalExamForm language currentDate assembled form =
     let
+        alerts =
+            assembled.measurements.lastMenstrualPeriod
+                |> Maybe.map
+                    (\measurement ->
+                        let
+                            lmpDate =
+                                Tuple.second measurement |> .value |> .date
+
+                            egaInWeeks =
+                                diffDays lmpDate currentDate // 7 |> toFloat
+
+                            fundalHeightAlert =
+                                viewConditionalAlert form.fundalHeight
+                                    [ [ (>) (egaInWeeks - 4) ], [ (<=) (egaInWeeks + 4) ] ]
+                                    [ [ (<=) (egaInWeeks - 4), (>) (egaInWeeks - 2) ], [ (<) (egaInWeeks + 2), (>=) (egaInWeeks + 4) ] ]
+
+                            fetalPresentationAlert =
+                                if egaInWeeks > 36 then
+                                    viewRedAlertForSelect
+                                        (form.fetalPresentation |> Maybe.withDefault [])
+                                        [ Cephalic, Twins ]
+
+                                else if egaInWeeks > 31 then
+                                    viewYellowAlertForSelect
+                                        (form.fetalPresentation |> Maybe.withDefault [])
+                                        [ Cephalic, Twins ]
+
+                                else
+                                    emptyNode
+
+                            fetalMovementAlert =
+                                if egaInWeeks > 19 then
+                                    viewRedAlertForBool form.fetalMovement True
+
+                                else
+                                    emptyNode
+
+                            fetalHeartRateAlert =
+                                if egaInWeeks > 19 then
+                                    viewConditionalAlert form.fetalHeartRate
+                                        [ [ (>) 120 ], [ (<) 160 ] ]
+                                        []
+
+                                else
+                                    emptyNode
+                        in
+                        { fundalHeight = fundalHeightAlert
+                        , fetalPresentation = fetalPresentationAlert
+                        , fetalMovement = fetalMovementAlert
+                        , fetalHeartRate = fetalHeartRateAlert
+                        }
+                    )
+                |> Maybe.withDefault
+                    { fundalHeight = emptyNode
+                    , fetalPresentation = emptyNode
+                    , fetalMovement = emptyNode
+                    , fetalHeartRate = emptyNode
+                    }
+
         fundalHeightUpdateFunc value form_ =
             { form_ | fundalHeight = value }
 
@@ -1745,9 +1804,10 @@ viewObstetricalExamForm language currentDate assembled form =
     in
     div [ class "ui form examination obstetrical-exam" ]
         [ div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
+            [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.FundalHeight ]
-            , viewWarning language Nothing
+            , div [ class "four wide column" ]
+                [ alerts.fundalHeight ]
             ]
         , viewMeasurementInput
             language
@@ -1758,9 +1818,10 @@ viewObstetricalExamForm language currentDate assembled form =
         , viewPreviousMeasurement language fundalHeightPreviousValue Translate.CentimeterShorthand
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
+            [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.FetalPresentationLabel ]
-            , viewWarning language Nothing
+            , div [ class "four wide column" ]
+                [ alerts.fetalPresentation ]
             ]
         , viewCheckBoxMultipleSelectInput language
             [ Transverse, Cephalic ]
@@ -1771,9 +1832,10 @@ viewObstetricalExamForm language currentDate assembled form =
             Translate.FetalPresentation
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
+            [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.FetalMovement ]
-            , viewWarning language Nothing
+            , div [ class "four wide column" ]
+                [ alerts.fetalMovement ]
             ]
         , viewBoolInput
             language
@@ -1783,9 +1845,10 @@ viewObstetricalExamForm language currentDate assembled form =
             Nothing
         , div [ class "separator" ] []
         , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
+            [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.FetalHeartRate ]
-            , viewWarning language Nothing
+            , div [ class "four wide column" ]
+                [ alerts.fetalHeartRate ]
             ]
         , viewMeasurementInput
             language
@@ -1818,7 +1881,7 @@ viewBreastExamForm language currentDate assembled form =
             , div [ class "four wide column" ]
                 [ viewYellowAlertForSelect
                     (form.breast |> Maybe.withDefault [])
-                    NormalBreast
+                    [ NormalBreast ]
                 ]
             ]
         , viewCheckBoxMultipleSelectInput language
@@ -2108,19 +2171,26 @@ viewPreviousMeasurement language maybePreviousValue unitTranslationId =
     div [ class "previous-value" ] [ text message ]
 
 
-viewRedAlertForSelect : List a -> a -> Html any
-viewRedAlertForSelect actual expected =
-    viewAlertForSelect "red" actual expected
+viewRedAlertForSelect : List a -> List a -> Html any
+viewRedAlertForSelect actual normal =
+    viewAlertForSelect "red" actual normal
 
 
-viewYellowAlertForSelect : List a -> a -> Html any
-viewYellowAlertForSelect actual expected =
-    viewAlertForSelect "yellow" actual expected
+viewYellowAlertForSelect : List a -> List a -> Html any
+viewYellowAlertForSelect actual normal =
+    viewAlertForSelect "yellow" actual normal
 
 
-viewAlertForSelect : String -> List a -> a -> Html any
-viewAlertForSelect color actual expected =
-    if List.isEmpty actual || actual == [ expected ] then
+viewAlertForSelect : String -> List a -> List a -> Html any
+viewAlertForSelect color actual normal =
+    if
+        List.isEmpty actual
+            || List.all
+                (\item ->
+                    List.member item normal
+                )
+                actual
+    then
         emptyNode
 
     else
@@ -2128,11 +2198,11 @@ viewAlertForSelect color actual expected =
             [ viewAlert color ]
 
 
-viewRedAlertForBool : Maybe Bool -> Html any
-viewRedAlertForBool actual =
+viewRedAlertForBool : Maybe Bool -> Bool -> Html any
+viewRedAlertForBool actual normal =
     viewRedAlertForSelect
         (actual |> Maybe.map List.singleton |> Maybe.withDefault [])
-        False
+        [ normal ]
 
 
 {-| The idea here is that we get lists for red alert conditions, and yellow
