@@ -1380,7 +1380,7 @@ viewVitalsForm language currentDate assembled form =
                 [ div [ class "title sys" ] [ text <| translate language Translate.BloodPressureSysLabel ] ]
             , div [ class "four wide column" ]
                 [ viewConditionalAlert form.sysBloodPressure
-                    [ [ (<) 140, (>=) 180 ] ]
+                    [ [ (<) 140 ] ]
                     []
                 ]
             ]
@@ -1396,7 +1396,7 @@ viewVitalsForm language currentDate assembled form =
                 [ div [ class "title dia" ] [ text <| translate language Translate.BloodPressureDiaLabel ] ]
             , div [ class "four wide column" ]
                 [ viewConditionalAlert form.diaBloodPressure
-                    [ [ (<) 90, (>=) 100 ] ]
+                    [ [ (<) 90 ] ]
                     []
                 ]
             ]
