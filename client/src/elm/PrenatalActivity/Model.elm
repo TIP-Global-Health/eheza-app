@@ -28,6 +28,8 @@ type HighRiskFactor
 type HighSeverityAlert
     = BodyTemperature
     | BloodPressure
+    | FetalHeartRate
+    | FetalMovement
     | HeartRate
     | RespiratoryRate
 
@@ -39,4 +41,4 @@ allHighRiskFactors =
 
 allHighSeverityAlerts : List HighSeverityAlert
 allHighSeverityAlerts =
-    [ BodyTemperature, BloodPressure, HeartRate, RespiratoryRate ]
+    [ BodyTemperature, BloodPressure, HeartRate, RespiratoryRate, FetalMovement, FetalHeartRate ]

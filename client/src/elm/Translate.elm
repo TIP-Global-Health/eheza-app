@@ -1849,6 +1849,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                PrenatalActivity.Model.FetalHeartRate ->
+                    { english = "No fetal heart rate noted"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalActivity.Model.FetalMovement ->
+                    { english = "No fetal movement noted"
+                    , kinyarwanda = Nothing
+                    }
+
                 PrenatalActivity.Model.HeartRate ->
                     { english = "Heart Rate"
                     , kinyarwanda = Nothing

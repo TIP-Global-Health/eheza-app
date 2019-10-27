@@ -129,7 +129,7 @@ viewMotherDetails language currentDate mother measurements isDialogOpen setAlert
 
         highSeverityAlertsData =
             allHighSeverityAlerts
-                |> List.filterMap (generateHighSeverityAlertData language measurements)
+                |> List.filterMap (generateHighSeverityAlertData language currentDate measurements)
 
         alertSign =
             if List.isEmpty highRiskAlertsData && List.isEmpty highSeverityAlertsData then
@@ -173,15 +173,25 @@ alertsDialog language highRiskAlertsData highSeverityAlertsData isOpen setAlerts
                     , div [ class "section-label" ] [ text <| translate language title ++ ":" ]
                     ]
 
-            viewHighSeverityAlert ( message, value ) =
+            viewAlertWithValue message value =
                 div [ class "alert" ]
                     [ span [ class "alert-text" ] [ text <| "- " ++ message ++ ":" ]
                     , span [ class "alert-value" ] [ text value ]
                     ]
 
+            viewAlertWithoutValue message =
+                div [ class "alert" ] [ text <| "- " ++ message ]
+
+            viewHighSeverityAlert ( message, value ) =
+                if value == "" then
+                    viewAlertWithoutValue message
+
+                else
+                    viewAlertWithValue message value
+
             highRiskAlerts =
                 highRiskAlertsData
-                    |> List.map (\message -> div [ class "alert" ] [ text <| "- " ++ message ])
+                    |> List.map viewAlertWithoutValue
 
             highSeverityAlerts =
                 highSeverityAlertsData

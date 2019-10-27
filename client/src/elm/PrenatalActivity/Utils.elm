@@ -20,6 +20,7 @@ expected (and not completed).
 
 import Backend.Measurement.Model exposing (PrenatalMeasurements, PreviousDeliverySign(..))
 import EverySet
+import Gizra.NominalDate exposing (NominalDate, diffDays)
 import PrenatalActivity.Model exposing (..)
 import Translate exposing (Language, TranslationId, translate)
 
@@ -134,8 +135,8 @@ generateHighRiskAlertData language measurements factor =
                     )
 
 
-generateHighSeverityAlertData : Language -> PrenatalMeasurements -> HighSeverityAlert -> Maybe ( String, String )
-generateHighSeverityAlertData language measurements alert =
+generateHighSeverityAlertData : Language -> NominalDate -> PrenatalMeasurements -> HighSeverityAlert -> Maybe ( String, String )
+generateHighSeverityAlertData language currentDate measurements alert =
     let
         trans =
             translate language
@@ -184,6 +185,66 @@ generateHighSeverityAlertData language measurements alert =
                                 ( trans Translate.High ++ " " ++ transAlert alert
                                 , toString sys ++ "/" ++ toString dia ++ trans Translate.MMHGUnit
                                 )
+
+                        else
+                            Nothing
+                    )
+
+        FetalHeartRate ->
+            measurements.lastMenstrualPeriod
+                |> Maybe.andThen
+                    (\lastMenstrualPeriod ->
+                        let
+                            lmpDate =
+                                Tuple.second lastMenstrualPeriod |> .value |> .date
+
+                            egaInWeeks =
+                                diffDays lmpDate currentDate // 7
+                        in
+                        if egaInWeeks > 19 then
+                            measurements.obstetricalExam
+                                |> Maybe.andThen
+                                    (\measurement ->
+                                        let
+                                            value =
+                                                Tuple.second measurement |> .value |> .fetalHeartRate
+                                        in
+                                        if value == 0 then
+                                            Just ( transAlert alert, "" )
+
+                                        else
+                                            Nothing
+                                    )
+
+                        else
+                            Nothing
+                    )
+
+        FetalMovement ->
+            measurements.lastMenstrualPeriod
+                |> Maybe.andThen
+                    (\lastMenstrualPeriod ->
+                        let
+                            lmpDate =
+                                Tuple.second lastMenstrualPeriod |> .value |> .date
+
+                            egaInWeeks =
+                                diffDays lmpDate currentDate // 7
+                        in
+                        if egaInWeeks > 19 then
+                            measurements.obstetricalExam
+                                |> Maybe.andThen
+                                    (\measurement ->
+                                        let
+                                            value =
+                                                Tuple.second measurement |> .value |> .fetalMovement
+                                        in
+                                        if value == False then
+                                            Just ( transAlert alert, "" )
+
+                                        else
+                                            Nothing
+                                    )
 
                         else
                             Nothing
