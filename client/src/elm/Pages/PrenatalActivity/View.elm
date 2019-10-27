@@ -868,31 +868,37 @@ viewObstetricFormFirstStep language currentDate assembled form =
             (SetOBIntInput termPregnancyUpdateFunc)
             "term-pregnancy"
             Translate.TermPregnancy
+            Nothing
         , viewNumberInput language
             form.preTermPregnancy
             (SetOBIntInput preTermPregnancyUpdateFunc)
             "preterm-pregnancy"
             Translate.PreTermPregnancy
+            Nothing
         , viewNumberInput language
             form.stillbirthsAtTerm
             (SetOBIntInput stillbirthsAtTermUpdateFunc)
             "stillbirths-at-term"
             Translate.NumberOfStillbirthsAtTerm
+            Nothing
         , viewNumberInput language
             form.stillbirthsPreTerm
             (SetOBIntInput stillbirthsPreTermUpdateFunc)
             "stillbirths-pre-term"
             Translate.NumberOfStillbirthsPreTerm
+            Nothing
         , viewNumberInput language
             form.abortions
             (SetOBIntInput abortionsUpdateFunc)
             "abortions"
             Translate.NumberOfAbortions
+            Nothing
         , viewNumberInput language
             form.liveChildren
             (SetOBIntInput liveChildrenUpdateFunc)
             "live-children"
             Translate.NumberOfLiveChildren
+            Nothing
         , div [ class "separator" ] []
         , div [ class "results" ]
             [ div [ class "gravida-result" ]
@@ -956,7 +962,16 @@ viewObstetricFormSecondStep language currentDate assembled form =
             SetNumberOfCSections
             "c-sections"
             Translate.NumberOfCSections
-        , viewLabel language Translate.CSectionInPreviousDelivery
+            (Just ( [ [ (<) 0 ] ], [] ))
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.CSectionInPreviousDelivery ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.cSectionInPreviousDelivery |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    False
+                ]
+            ]
         , viewBoolInput
             language
             form.cSectionInPreviousDelivery
@@ -964,9 +979,13 @@ viewObstetricFormSecondStep language currentDate assembled form =
             "c-section-previous-delivery"
             Nothing
         , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
+            [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.CSectionReason ]
-            , viewWarning language Nothing
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.cSectionReason |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    None
+                ]
             ]
         , viewCheckBoxSelectInput language
             [ Breech, Emergency, Other ]
@@ -975,9 +994,13 @@ viewObstetricFormSecondStep language currentDate assembled form =
             SetCSectionReason
             Translate.CSectionReasons
         , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
+            [ div [ class "twelve wide column" ]
                 [ viewCustomLabel language Translate.PreviousDelivery ":" "label c-section-previous-delivery" ]
-            , viewWarning language Nothing
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.previousDeliveryPeriod |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    Neither
+                ]
             ]
         , viewCheckBoxSelectInput language
             [ LessThan18Month, MoreThan5Years ]
@@ -985,49 +1008,105 @@ viewObstetricFormSecondStep language currentDate assembled form =
             form.previousDeliveryPeriod
             SetPreviousDeliveryPeriod
             Translate.PreviousDeliveryPeriods
-        , viewCustomLabel language Translate.SuccessiveAbortions "?" "label successive-abortions"
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewCustomLabel language Translate.SuccessiveAbortions "?" "label successive-abortions" ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.successiveAbortions |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    False
+                ]
+            ]
         , viewBoolInput
             language
             form.successiveAbortions
             (SetOBBoolInput successiveAbortionsUpdateFunc)
             "successive-abortions"
             Nothing
-        , viewLabel language Translate.SuccessivePrematureDeliveries
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.SuccessivePrematureDeliveries ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.successivePrematureDeliveries |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    False
+                ]
+            ]
         , viewBoolInput
             language
             form.successivePrematureDeliveries
             (SetOBBoolInput successivePrematureDeliveriesUpdateFunc)
             "successive-primature-deliveries"
             Nothing
-        , viewLabel language Translate.StillbornPreviousDelivery
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.StillbornPreviousDelivery ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.stillbornPreviousDelivery |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    False
+                ]
+            ]
         , viewBoolInput
             language
             form.stillbornPreviousDelivery
             (SetOBBoolInput stillbornPreviousDeliveryUpdateFunc)
             "stillborn-previous-delivery"
             Nothing
-        , viewLabel language Translate.BabyDiedOnDayOfBirthPreviousDelivery
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.BabyDiedOnDayOfBirthPreviousDelivery ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.babyDiedOnDayOfBirthPreviousDelivery |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    False
+                ]
+            ]
         , viewBoolInput
             language
             form.babyDiedOnDayOfBirthPreviousDelivery
             (SetOBBoolInput babyDiedOnDayOfBirthPreviousDeliveryUpdateFunc)
             "baby-died-on-day-off-birth-previous-delivery"
             Nothing
-        , viewLabel language Translate.PartialPlacentaPreviousDelivery
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.PartialPlacentaPreviousDelivery ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.partialPlacentaPreviousDelivery |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    False
+                ]
+            ]
         , viewBoolInput
             language
             form.partialPlacentaPreviousDelivery
             (SetOBBoolInput partialPlacentaPreviousDeliveryUpdateFunc)
             "partial-placenta-previous-delivery"
             Nothing
-        , viewLabel language Translate.SevereHemorrhagingPreviousDelivery
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.SevereHemorrhagingPreviousDelivery ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.severeHemorrhagingPreviousDelivery |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    False
+                ]
+            ]
         , viewBoolInput
             language
             form.severeHemorrhagingPreviousDelivery
             (SetOBBoolInput severeHemorrhagingPreviousDeliveryUpdateFunc)
             "severe-hemorrhaging-previous-delivery"
             Nothing
-        , viewLabel language Translate.PreeclampsiaPreviousPregnancy
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.PreeclampsiaPreviousPregnancy ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.preeclampsiaPreviousPregnancy |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    False
+                ]
+            ]
         , viewBoolInput
             language
             form.preeclampsiaPreviousPregnancy
@@ -1064,21 +1143,45 @@ viewObstetricFormSecondStep language currentDate assembled form =
             (SetOBBoolInput convulsionsAndUnconsciousPreviousDeliveryUpdateFunc)
             "convulsions-and-unconscious-previous-delivery"
             Nothing
-        , viewLabel language Translate.GestationalDiabetesPreviousPregnancy
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.GestationalDiabetesPreviousPregnancy ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.gestationalDiabetesPreviousPregnancy |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    False
+                ]
+            ]
         , viewBoolInput
             language
             form.gestationalDiabetesPreviousPregnancy
             (SetOBBoolInput gestationalDiabetesPreviousPregnancyUpdateFunc)
             "gestatipnal-diabetes-previous-pregnancy"
             Nothing
-        , viewLabel language Translate.IncompleteCervixPreviousPregnancy
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.IncompleteCervixPreviousPregnancy ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.incompleteCervixPreviousPregnancy |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    False
+                ]
+            ]
         , viewBoolInput
             language
             form.incompleteCervixPreviousPregnancy
             (SetOBBoolInput incompleteCervixPreviousPregnancyUpdateFunc)
             "incomplete-cervix-previous-pregnancy"
             Nothing
-        , viewLabel language Translate.RhNegative
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.RhNegative ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.rhNegative |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    False
+                ]
+            ]
         , viewBoolInput
             language
             form.rhNegative
@@ -1440,7 +1543,7 @@ viewNutritionAssessmentForm language currentDate assembled form =
             , div [ class "four wide column" ]
                 [ viewConditionalAlert form.muac
                     [ [ (>) 18.5 ] ]
-                    [ [ (<=) 18.5, (>) 22.5 ] ]
+                    [ [ (<=) 18.5, (>) 22 ] ]
                 ]
             ]
         , viewMeasurementInput
@@ -1832,27 +1935,37 @@ viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
 
 viewNumberInput :
     Language
-    -> Maybe Int
-    ->
-        (String
-         -> Msg
-        )
+    -> Maybe a
+    -> (String -> Msg)
     -> String
     -> TranslationId
+    -> Maybe ( List (List (a -> Bool)), List (List (a -> Bool)) )
     -> Html Msg
-viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId =
+viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId maybeAlertConditions =
     let
         currentValue =
             maybeCurrentValue
                 |> unwrap
                     ""
                     toString
+
+        ( labelWidth, inputWidth, alert ) =
+            maybeAlertConditions
+                |> Maybe.map
+                    (\( red, yellow ) ->
+                        ( "eight"
+                        , "four"
+                        , div [ class "four wide column" ]
+                            [ viewConditionalAlert maybeCurrentValue red yellow ]
+                        )
+                    )
+                |> Maybe.withDefault ( "ten", "six", emptyNode )
     in
     div [ class <| "form-input number " ++ inputClass ]
         [ div [ class "ui grid" ]
-            [ div [ class "ten wide column" ]
+            [ div [ class <| labelWidth ++ " wide column" ]
                 [ viewLabel language labelTranslationId ]
-            , div [ class "six wide column" ]
+            , div [ class <| inputWidth ++ " wide column" ]
                 [ input
                     [ type_ "number"
                     , Html.Attributes.min "0"
@@ -1862,6 +1975,7 @@ viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId 
                     ]
                     []
                 ]
+            , alert
             ]
         ]
 
