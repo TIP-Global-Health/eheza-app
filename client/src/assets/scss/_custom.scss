@@ -1026,6 +1026,7 @@ input::placeholder {
       display: inline-block;
       max-height: 600px;
       min-height: 200px;
+      overflow-y: auto;
 
       .section-label-wrapper {
         height: 48px;
