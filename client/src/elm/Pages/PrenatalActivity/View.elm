@@ -967,10 +967,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.CSectionInPreviousDelivery ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.cSectionInPreviousDelivery |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    False
-                ]
+                [ viewRedAlertForBool form.cSectionInPreviousDelivery ]
             ]
         , viewBoolInput
             language
@@ -1012,10 +1009,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewCustomLabel language Translate.SuccessiveAbortions "?" "label successive-abortions" ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.successiveAbortions |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    False
-                ]
+                [ viewRedAlertForBool form.successiveAbortions ]
             ]
         , viewBoolInput
             language
@@ -1027,10 +1021,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.SuccessivePrematureDeliveries ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.successivePrematureDeliveries |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    False
-                ]
+                [ viewRedAlertForBool form.successivePrematureDeliveries ]
             ]
         , viewBoolInput
             language
@@ -1042,10 +1033,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.StillbornPreviousDelivery ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.stillbornPreviousDelivery |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    False
-                ]
+                [ viewRedAlertForBool form.stillbornPreviousDelivery ]
             ]
         , viewBoolInput
             language
@@ -1057,10 +1045,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.BabyDiedOnDayOfBirthPreviousDelivery ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.babyDiedOnDayOfBirthPreviousDelivery |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    False
-                ]
+                [ viewRedAlertForBool form.babyDiedOnDayOfBirthPreviousDelivery ]
             ]
         , viewBoolInput
             language
@@ -1072,10 +1057,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.PartialPlacentaPreviousDelivery ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.partialPlacentaPreviousDelivery |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    False
-                ]
+                [ viewRedAlertForBool form.partialPlacentaPreviousDelivery ]
             ]
         , viewBoolInput
             language
@@ -1087,10 +1069,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.SevereHemorrhagingPreviousDelivery ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.severeHemorrhagingPreviousDelivery |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    False
-                ]
+                [ viewRedAlertForBool form.severeHemorrhagingPreviousDelivery ]
             ]
         , viewBoolInput
             language
@@ -1102,10 +1081,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.PreeclampsiaPreviousPregnancy ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.preeclampsiaPreviousPregnancy |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    False
-                ]
+                [ viewRedAlertForBool form.preeclampsiaPreviousPregnancy ]
             ]
         , viewBoolInput
             language
@@ -1117,10 +1093,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.ConvulsionsPreviousDelivery ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.convulsionsPreviousDelivery |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    False
-                ]
+                [ viewRedAlertForBool form.convulsionsPreviousDelivery ]
             ]
         , viewBoolInput
             language
@@ -1132,10 +1105,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.ConvulsionsAndUnconsciousPreviousDelivery ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.convulsionsAndUnconsciousPreviousDelivery |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    False
-                ]
+                [ viewRedAlertForBool form.convulsionsAndUnconsciousPreviousDelivery ]
             ]
         , viewBoolInput
             language
@@ -1147,10 +1117,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.GestationalDiabetesPreviousPregnancy ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.gestationalDiabetesPreviousPregnancy |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    False
-                ]
+                [ viewRedAlertForBool form.gestationalDiabetesPreviousPregnancy ]
             ]
         , viewBoolInput
             language
@@ -1162,10 +1129,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.IncompleteCervixPreviousPregnancy ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.incompleteCervixPreviousPregnancy |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    False
-                ]
+                [ viewRedAlertForBool form.incompleteCervixPreviousPregnancy ]
             ]
         , viewBoolInput
             language
@@ -1177,10 +1141,7 @@ viewObstetricFormSecondStep language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.RhNegative ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.rhNegative |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    False
-                ]
+                [ viewRedAlertForBool form.rhNegative ]
             ]
         , viewBoolInput
             language
@@ -1226,70 +1187,120 @@ viewMedicalForm language currentDate assembled form =
     in
     div [ class "form history medical" ]
         [ viewCustomLabel language Translate.MedicalFormHelper ":" "label helper"
-        , viewLabel language Translate.UterineMyoma
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.UterineMyoma ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForBool form.uterineMyoma ]
+            ]
         , viewBoolInput
             language
             form.uterineMyoma
             (SetMedicalBoolInput uterineMyomaUpdateFunc)
             "uterine-myoma"
             Nothing
-        , viewLabel language Translate.Diabetes
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.Diabetes ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForBool form.diabetes ]
+            ]
         , viewBoolInput
             language
             form.diabetes
             (SetMedicalBoolInput diabetesUpdateFunc)
             "diabetes"
             Nothing
-        , viewLabel language Translate.CardiacDisease
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.CardiacDisease ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForBool form.cardiacDisease ]
+            ]
         , viewBoolInput
             language
             form.cardiacDisease
             (SetMedicalBoolInput cardiacDiseaseUpdateFunc)
             "cardiac-disease"
             Nothing
-        , viewLabel language Translate.RenalDisease
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.RenalDisease ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForBool form.renalDisease ]
+            ]
         , viewBoolInput
             language
             form.renalDisease
             (SetMedicalBoolInput renalDiseaseUpdateFunc)
             "renal-disease"
             Nothing
-        , viewLabel language Translate.HypertensionBeforePregnancy
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.HypertensionBeforePregnancy ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForBool form.hypertensionBeforePregnancy ]
+            ]
         , viewBoolInput
             language
             form.hypertensionBeforePregnancy
             (SetMedicalBoolInput hypertensionBeforePregnancyUpdateFunc)
             "hypertension-before-pregnancy"
             Nothing
-        , viewLabel language Translate.TuberculosisPast
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.TuberculosisPast ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForBool form.tuberculosisPast ]
+            ]
         , viewBoolInput
             language
             form.tuberculosisPast
             (SetMedicalBoolInput tuberculosisPastUpdateFunc)
             "tuberculosis-past"
             Nothing
-        , viewLabel language Translate.TuberculosisPresent
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.TuberculosisPresent ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForBool form.tuberculosisPresent ]
+            ]
         , viewBoolInput
             language
             form.tuberculosisPresent
             (SetMedicalBoolInput tuberculosisPresentUpdateFunc)
             "tuberculosis-present"
             Nothing
-        , viewLabel language Translate.Asthma
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.Asthma ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForBool form.asthma ]
+            ]
         , viewBoolInput
             language
             form.asthma
             (SetMedicalBoolInput asthmaUpdateFunc)
             "asthma"
             Nothing
-        , viewLabel language Translate.BowedLegs
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.BowedLegs ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForBool form.bowedLegs ]
+            ]
         , viewBoolInput
             language
             form.bowedLegs
             (SetMedicalBoolInput bowedLegsUpdateFunc)
             "bowed-legs"
             Nothing
-        , viewLabel language Translate.HIV
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.HIV ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForBool form.hiv ]
+            ]
         , viewBoolInput
             language
             form.hiv
@@ -1573,10 +1584,7 @@ viewCorePhysicalExamForm language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.HeadHair ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.brittleHair |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    False
-                ]
+                [ viewRedAlertForBool form.brittleHair ]
             ]
         , viewBoolInput
             language
@@ -1589,10 +1597,7 @@ viewCorePhysicalExamForm language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.Eyes ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.paleConjuctiva |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    False
-                ]
+                [ viewRedAlertForBool form.paleConjuctiva ]
             ]
         , viewBoolInput
             language
@@ -1638,10 +1643,7 @@ viewCorePhysicalExamForm language currentDate assembled form =
             [ div [ class "twelve wide column" ]
                 [ viewLabel language Translate.HeartMurmur ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.heartMurmur |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    False
-                ]
+                [ viewRedAlertForBool form.heartMurmur ]
             ]
         , viewBoolInput
             language
@@ -2124,6 +2126,13 @@ viewAlertForSelect color actual expected =
     else
         div [ class <| "alert " ++ color ]
             [ viewAlert color ]
+
+
+viewRedAlertForBool : Maybe Bool -> Html any
+viewRedAlertForBool actual =
+    viewRedAlertForSelect
+        (actual |> Maybe.map List.singleton |> Maybe.withDefault [])
+        False
 
 
 {-| The idea here is that we get lists for red alert conditions, and yellow

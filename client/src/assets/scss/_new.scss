@@ -604,6 +604,13 @@ div.page-prenatal-activity {
         .label.successive-abortions {
           margin-top: 30px
         }
+
+        &.medical {
+
+          .alert img {
+            margin-top: -10px;
+          }
+        }
       }
 
       .form.examination {
