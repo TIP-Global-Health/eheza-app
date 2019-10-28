@@ -1323,21 +1323,36 @@ viewSocialForm language currentDate assembled form =
             { form_ | mentalHealthHistory = Just value }
     in
     div [ class "form history social" ]
-        [ viewQuestionLabel language Translate.AccompaniedByPartner
+        [ div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewQuestionLabel language Translate.AccompaniedByPartner ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForBool form.accompaniedByPartner True ]
+            ]
         , viewBoolInput
             language
             form.accompaniedByPartner
             (SetSocialBoolInput accompaniedByPartnerUpdateFunc)
             "accompanied-by-partner"
             Nothing
-        , viewQuestionLabel language Translate.PartnerReceivedCounseling
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewQuestionLabel language Translate.PartnerReceivedCounseling ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForBool form.partnerReceivedCounseling True ]
+            ]
         , viewBoolInput
             language
             form.partnerReceivedCounseling
             (SetSocialBoolInput partnerReceivedCounselingUpdateFunc)
             "partner-received-counseling"
             Nothing
-        , viewLabel language Translate.MentalHealthHistory
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.MentalHealthHistory ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForBool form.mentalHealthHistory False ]
+            ]
         , viewBoolInput
             language
             form.mentalHealthHistory
@@ -1731,10 +1746,10 @@ viewObstetricalExamForm language currentDate assembled form =
         alerts =
             assembled.measurements.lastMenstrualPeriod
                 |> Maybe.map
-                    (\measurement ->
+                    (\lastMenstrualPeriod ->
                         let
                             lmpDate =
-                                Tuple.second measurement |> .value |> .date
+                                Tuple.second lastMenstrualPeriod |> .value |> .date
 
                             egaInWeeks =
                                 diffDays lmpDate currentDate // 7 |> toFloat
