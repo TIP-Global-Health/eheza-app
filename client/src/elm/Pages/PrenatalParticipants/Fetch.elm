@@ -14,9 +14,10 @@ fetch model =
                 |> Maybe.withDefault ""
                 |> String.trim
     in
-    if String.isEmpty trimmed then
-        []
+    FetchSyncData
+        :: (if String.isEmpty trimmed then
+                []
 
-    else
-        [ FetchPeopleByName trimmed
-        ]
+            else
+                [ FetchPeopleByName trimmed ]
+           )

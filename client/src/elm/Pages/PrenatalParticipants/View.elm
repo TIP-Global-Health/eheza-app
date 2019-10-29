@@ -33,8 +33,8 @@ import Utils.WebData exposing (viewWebData)
     family member for that person, either child, parent, etc.
 
 -}
-view : Language -> NominalDate -> Model -> ModelIndexedDb -> Html Msg
-view language currentDate model db =
+view : Language -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
+view language currentDate healthCenterId model db =
     let
         title =
             translate language Translate.PrenatalParticipants
@@ -42,12 +42,7 @@ view language currentDate model db =
     div
         [ class "wrap wrap-alt-2 page-prenatal-participants" ]
         [ viewHeader title
-        , div
-            [ class "search-wrapper" ]
-            [ div
-                [ class "ui full segment" ]
-                [ viewSearchForm language currentDate model db ]
-            ]
+        , viewContent language currentDate healthCenterId model db
         ]
 
 
@@ -66,6 +61,52 @@ viewHeader title =
             , span [] []
             ]
         ]
+
+
+viewContent : Language -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
+viewContent language currentDate selectedHealthCenterId model db =
+    let
+        sync =
+            db.syncData |> RemoteData.withDefault EveryDictList.empty
+
+        showWarningMessage header message =
+            div [ class "ui basic segment" ]
+                [ div
+                    [ class "ui message warning" ]
+                    [ div [ class "header" ] [ text <| translate language header ]
+                    , text <| translate language message
+                    ]
+                ]
+    in
+    EveryDictList.get selectedHealthCenterId sync
+        |> unwrap
+            (showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync)
+            (\selectedHealthCenterSyncData ->
+                let
+                    isDownloading =
+                        selectedHealthCenterSyncData.downloadStatus
+                            |> Maybe.map (\status -> status.remaining > 0)
+                            |> Maybe.withDefault True
+
+                    isUploading =
+                        selectedHealthCenterSyncData.uploadStatus
+                            |> Maybe.map (\status -> status.remaining > 0)
+                            |> Maybe.withDefault False
+                in
+                if isDownloading then
+                    showWarningMessage Translate.SelectedHCSyncing Translate.SelectedHCDownloading
+
+                else if isUploading then
+                    showWarningMessage Translate.SelectedHCSyncing Translate.SelectedHCUploading
+
+                else
+                    div
+                        [ class "search-wrapper" ]
+                        [ div
+                            [ class "ui full segment" ]
+                            [ viewSearchForm language currentDate model db ]
+                        ]
+            )
 
 
 viewSearchForm : Language -> NominalDate -> Model -> ModelIndexedDb -> Html Msg

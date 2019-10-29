@@ -283,7 +283,6 @@ type TranslationId
     | Gravida
     | Hands
     | HandsCPESign HandsCPESign
-    | HaveYouSynced
     | HeadHair
     | HealthCenter
     | Heart
@@ -401,6 +400,7 @@ type TranslationId
     | PlaceholderEnterParticipantName
     | PlaceholderEnterWeight
     | PleaseSelectGroup
+    | PleaseSync
     | PreeclampsiaPreviousPregnancy
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalEncounter
@@ -457,6 +457,10 @@ type TranslationId
     | SelectLanguage
     | SelectYourGroup
     | SelectYourHealthCenter
+    | SelectedHCDownloading
+    | SelectedHCNotSynced
+    | SelectedHCSyncing
+    | SelectedHCUploading
     | ServiceWorkerActive
     | ServiceWorkerCurrent
     | ServiceWorkerCheckForUpdates
@@ -1763,11 +1767,6 @@ translationSet trans =
                 NormalHands ->
                     translationSet Normal
 
-        HaveYouSynced ->
-            { english = "Have you synced data for the health center you are working with?"
-            , kinyarwanda = Nothing
-            }
-
         HeadHair ->
             { english = "Head/Hair"
             , kinyarwanda = Nothing
@@ -2557,6 +2556,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PleaseSync ->
+            { english = "Please sync data for selected Health Center."
+            , kinyarwanda = Nothing
+            }
+
         PreeclampsiaPreviousPregnancy ->
             { english = "Preeclampsia in previous pregnancy "
             , kinyarwanda = Nothing
@@ -2878,6 +2882,26 @@ translationSet trans =
 
         SelectYourHealthCenter ->
             { english = "Select your Health Center"
+            , kinyarwanda = Nothing
+            }
+
+        SelectedHCDownloading ->
+            { english = "Downloading data for selected Health Center. Please wait until completed."
+            , kinyarwanda = Nothing
+            }
+
+        SelectedHCNotSynced ->
+            { english = "Data is not synced"
+            , kinyarwanda = Nothing
+            }
+
+        SelectedHCSyncing ->
+            { english = "Data is syncing"
+            , kinyarwanda = Nothing
+            }
+
+        SelectedHCUploading ->
+            { english = "Uploading data for selected Health Center. Please wait until completed."
             , kinyarwanda = Nothing
             }
 
