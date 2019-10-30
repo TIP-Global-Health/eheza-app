@@ -24,8 +24,14 @@ view language currentDate healthCenterId model db =
     div
         []
         [ div
-            [ class "ui basic segment" ]
-            [ viewDonutChart data ]
+            [ class "ui placeholder segment" ]
+            [ div [ class "ui two column stackable center aligned grid" ]
+                [ div [ class "middle aligned row" ]
+                    [ div [ class "column" ] [ viewDonutChart data ]
+                    , div [ class "column" ] [ viewDonutChart data ]
+                    ]
+                ]
+            ]
         ]
 
 
