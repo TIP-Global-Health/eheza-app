@@ -20,6 +20,7 @@ in the UI.
 import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, EveryCounselingSchedule)
+import Backend.Dashboard.Model exposing (DashboardRaw)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, ChildNutrition, CounselingSession, FamilyPlanning, Height, MotherMeasurementList, Muac, ParticipantConsent, Photo, Weight)
@@ -42,7 +43,7 @@ type alias ModelIndexedDb =
     -- actually need all the clinics at once, but there should be a reasonable
     -- number.
     { clinics : WebData (Dict ClinicId Clinic)
-    , computedDashboard : Dict HealthCenterId HealthCenter
+    , computedDashboard : Dict HealthCenterId DashboardRaw
     , everyCounselingSchedule : WebData EveryCounselingSchedule
     , healthCenters : WebData (Dict HealthCenterId HealthCenter)
     , participantForms : WebData (Dict ParticipantFormId ParticipantForm)
@@ -162,7 +163,7 @@ type MsgIndexedDb
     | FetchSyncData
       -- Messages which handle responses to data
     | HandleFetchedChildMeasurements PersonId (WebData ChildMeasurementList)
-    | HandleFetchedComputedDashboard HealthCenterId (WebData (Dict HealthCenterId HealthCenter))
+    | HandleFetchedComputedDashboard HealthCenterId (WebData (Dict HealthCenterId DashboardRaw))
     | HandleFetchedEveryCounselingSchedule (WebData EveryCounselingSchedule)
     | HandleFetchedMotherMeasurements PersonId (WebData MotherMeasurementList)
     | HandleFetchedClinics (WebData (Dict ClinicId Clinic))

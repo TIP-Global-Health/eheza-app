@@ -54,12 +54,21 @@
             var query = dbSync.nodes.where(criteria);
             var getNodes = query.toArray();
 
+            // @todo: Here we will gather all the necessary `DashboardRaw` data.
+
+
             return getNodes.catch(databaseError).then(function (nodes) {
+
+                var data = [];
+                 nodes.forEach(function (node, index) {
+                    node.computed_property = 'Custom ' + index;
+                    data.push(node);
+                });
 
                 var body = JSON.stringify({
                     offset: 0,
                     count: nodes.length,
-                    data: nodes
+                    data: data
                 });
 
                 var response = new Response(body, {

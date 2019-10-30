@@ -1,6 +1,7 @@
 module Pages.Dashboard.View exposing (view)
 
 import Array exposing (Array)
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Color exposing (Color)
@@ -21,6 +22,21 @@ import TypedSvg.Types exposing (Fill(..), Transform(..))
 -}
 view : Language -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
 view language currentDate healthCenterId model db =
+    let
+        debug =
+            ul [ class "segment" ]
+                (db.computedDashboard
+                    |> Dict.values
+                    |> List.take 5
+                    |> List.map
+                        (\row ->
+                            li []
+                                [ div [] [ text row.computed ]
+                                , div [] [ text <| Debug.toString row.healthCenter ]
+                                ]
+                        )
+                )
+    in
     div
         []
         [ div
@@ -32,7 +48,7 @@ view language currentDate healthCenterId model db =
                     ]
                 ]
             ]
-        , div [] [ text <| Debug.toString db.computedDashboard ]
+        , debug
         ]
 
 
