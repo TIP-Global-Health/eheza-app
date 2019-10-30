@@ -27,6 +27,10 @@
         var url = new URL(event.request.url);
         var matches = nodesUrlRegex.exec(url.pathname);
 
+        console.log(url);
+        console.log(matches);
+        console.log(event);
+
         if (matches) {
             var type = matches[1];
 

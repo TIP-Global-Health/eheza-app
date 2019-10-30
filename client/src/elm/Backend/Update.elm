@@ -55,10 +55,23 @@ updateIndexedDb currentDate nurseId msg model =
             , []
             )
 
+        HandleFetchedComputedDashboard healthCenterId webData ->
+            ( { model | computedDashboard = webData }
+            , Cmd.none
+            , []
+            )
+
         FetchClinics ->
             ( { model | clinics = Loading }
             , sw.select clinicEndpoint ()
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> List.sortBy (Tuple.second >> .name) >> Dict.fromList) >> HandleFetchedClinics)
+            , []
+            )
+
+        FetchComputedDashboard healthCenterId ->
+            ( { model | computedDashboard = Loading }
+            , sw.select computedDashboardEndpoint ()
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedComputedDashboard healthCenterId)
             , []
             )
 

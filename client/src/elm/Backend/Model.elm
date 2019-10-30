@@ -42,6 +42,7 @@ type alias ModelIndexedDb =
     -- actually need all the clinics at once, but there should be a reasonable
     -- number.
     { clinics : WebData (Dict ClinicId Clinic)
+    , computedDashboard : WebData (Dict HealthCenterId HealthCenter)
     , everyCounselingSchedule : WebData EveryCounselingSchedule
     , healthCenters : WebData (Dict HealthCenterId HealthCenter)
     , participantForms : WebData (Dict ParticipantFormId ParticipantForm)
@@ -109,6 +110,7 @@ emptyModelIndexedDb : ModelIndexedDb
 emptyModelIndexedDb =
     { childMeasurements = Dict.empty
     , clinics = NotAsked
+    , computedDashboard = NotAsked
     , deleteSyncDataRequests = Dict.empty
     , editableSessions = Dict.empty
     , everyCounselingSchedule = NotAsked
@@ -137,6 +139,7 @@ type MsgIndexedDb
     = -- Messages which fetch various kinds of data.
       FetchChildMeasurements PersonId
     | FetchClinics
+    | FetchComputedDashboard HealthCenterId
       -- For `FetchEditableSession`, you'll also need to send the messages
       -- you get from `Backend.Session.Fetch.fetchEditableSession`
     | FetchEditableSession SessionId (List MsgIndexedDb)
@@ -159,6 +162,7 @@ type MsgIndexedDb
     | FetchSyncData
       -- Messages which handle responses to data
     | HandleFetchedChildMeasurements PersonId (WebData ChildMeasurementList)
+    | HandleFetchedComputedDashboard HealthCenterId (WebData (Dict HealthCenterId HealthCenter))
     | HandleFetchedEveryCounselingSchedule (WebData EveryCounselingSchedule)
     | HandleFetchedMotherMeasurements PersonId (WebData MotherMeasurementList)
     | HandleFetchedClinics (WebData (Dict ClinicId Clinic))
