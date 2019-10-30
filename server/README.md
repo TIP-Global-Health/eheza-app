@@ -8,7 +8,21 @@ This is a starting base to create Drupal 7 websites using an install profile.
 **Warning:** you need to setup [Drush](https://github.com/drush-ops/drush)
 first or the installation and update scripts will not work.
 
-Clone the project from [GitHub](https://github.com/Gizra/hedley).
+### With DDEV
+
+Copy the example configuration file to config.sh:
+
+	cp default.config.sh config.sh
+	
+Build Drupal modules
+
+    chmod +x ./scripts/build
+	./scripts/build
+	
+(Re)Start DDEV
+
+    ddev restart
+
 
 #### Create config file
 
