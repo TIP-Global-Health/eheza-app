@@ -24,7 +24,7 @@ view : Language -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> H
 view language currentDate healthCenterId model db =
     let
         debug =
-            ul [ class "segment" ]
+            ul [ class "ui segment" ]
                 (db.computedDashboard
                     |> Dict.values
                     |> List.take 5
