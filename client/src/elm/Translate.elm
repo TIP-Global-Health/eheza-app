@@ -2218,6 +2218,11 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
+                DashboardPage ->
+                    { english = "Dashboards"
+                    , kinyarwanda = Nothing
+                    }
+
                 MyAccountPage ->
                     { english = "My Account"
                     , kinyarwanda = Just "Compte"

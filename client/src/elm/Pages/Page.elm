@@ -116,6 +116,7 @@ the login page instead.
 -}
 type UserPage
     = ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
+    | DashboardPage -- Dashboard with visual summary of the data
     | SessionPage SessionId SessionPage -- pages that manipulate a group session
     | MyAccountPage -- shows information about the logged-in user
     | PersonPage PersonId -- Shows a particular person.

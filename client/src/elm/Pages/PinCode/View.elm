@@ -174,9 +174,20 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                             , span [ class "text" ] [ text <| translate language Translate.GroupAssessment ]
                             , span [ class "icon-back" ] []
                             ]
+
+                    dashboardButton =
+                        button
+                            [ class "ui primary button dashboard"
+                            , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage
+                            ]
+                            [ span [ class "icon-group" ] []
+                            , span [ class "text" ] [ text <| translate language Translate.Dashboard ]
+                            , span [ class "icon-back" ] []
+                            ]
                 in
                 [ p [] [ text <| translate language Translate.WhatDoYouWantToDo ]
                 , groupAssessmentButton
+                , dashboardButton
                 ]
 
             MainMenu ->

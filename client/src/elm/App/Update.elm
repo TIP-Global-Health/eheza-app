@@ -19,6 +19,7 @@ import Http exposing (Error(..))
 import HttpBuilder
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
+import Pages.Dashboard.Update
 import Pages.Device.Model
 import Pages.Device.Update
 import Pages.Page exposing (..)
@@ -195,6 +196,16 @@ update msg model =
                             in
                             ( { data | createPersonPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageCreatePerson) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPageDashboard subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.Dashboard.Update.update subMsg data.dashboardPage
+                            in
+                            ( { data | dashboardPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageDashboard) subCmd
                             , appMsgs
                             )
 

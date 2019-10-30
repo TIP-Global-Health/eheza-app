@@ -10,6 +10,7 @@ import Config.Model
 import Device.Model exposing (Device)
 import Http
 import Json.Encode exposing (Value)
+import Pages.Dashboard.Model
 import Pages.Device.Model
 import Pages.Page exposing (Page(..))
 import Pages.People.Model
@@ -138,6 +139,7 @@ it at the appropriate moment.
 -}
 type alias LoggedInModel =
     { createPersonPage : Pages.Person.Model.Model
+    , dashboardPage : Pages.Dashboard.Model.Model
     , relationshipPages : Dict ( PersonId, PersonId ) Pages.Relationship.Model.Model
     , personsPage : Pages.People.Model.Model
 
@@ -152,6 +154,7 @@ type alias LoggedInModel =
 emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
 emptyLoggedInModel nurse =
     { createPersonPage = Pages.Person.Model.emptyModel
+    , dashboardPage = Pages.Dashboard.Model.emptyModel
     , personsPage = Pages.People.Model.emptyModel
     , relationshipPages = Dict.empty
     , nurse = nurse
@@ -196,6 +199,7 @@ type Msg
 -}
 type MsgLoggedIn
     = MsgPageCreatePerson Pages.Person.Model.Msg
+    | MsgPageDashboard Pages.Dashboard.Model.Msg
     | MsgPagePersons Pages.People.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg

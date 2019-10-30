@@ -43,6 +43,9 @@ pageToFragment current =
                     in
                     Just ("clinics" ++ clinic)
 
+                DashboardPage ->
+                    Just "dashboard"
+
                 MyAccountPage ->
                     Just "my-account"
 
@@ -114,6 +117,7 @@ parser =
     oneOf
         [ map (UserPage << ClinicsPage << Just) (s "clinics" </> parseUuid)
         , map (UserPage (ClinicsPage Nothing)) (s "clinics")
+        , map (UserPage DashboardPage) (s "dashboard")
         , map DevicePage (s "device")
         , map PinCodePage (s "pincode")
         , map ServiceWorkerPage (s "deployment")
