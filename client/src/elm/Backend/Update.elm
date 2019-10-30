@@ -75,10 +75,6 @@ updateIndexedDb currentDate nurseId msg model =
             )
 
         FetchComputedDashboard healthCenterId ->
-            let
-                _ =
-                    Debug.log "FetchComputedDashboard" True
-            in
             ( model
             , sw.select computedDashboardEndpoint ()
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedComputedDashboard healthCenterId)
