@@ -104,13 +104,13 @@ viewContent language currentDate selectedHealthCenterId model db =
                         [ class "search-wrapper" ]
                         [ div
                             [ class "ui full segment" ]
-                            [ viewSearchForm language currentDate model db ]
+                            [ viewSearchForm language currentDate selectedHealthCenterId model db ]
                         ]
             )
 
 
-viewSearchForm : Language -> NominalDate -> Model -> ModelIndexedDb -> Html Msg
-viewSearchForm language currentDate model db =
+viewSearchForm : Language -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
+viewSearchForm language currentDate selectedHealthCenterId model db =
     let
         searchForm =
             Html.form []
@@ -142,7 +142,11 @@ viewSearchForm language currentDate model db =
                     |> Maybe.withDefault NotAsked
                     |> RemoteData.map
                         (EveryDictList.filter
-                            (\k v -> isPersonAFertileWoman currentDate v |> Maybe.withDefault False)
+                            (\_ person ->
+                                (isPersonAFertileWoman currentDate person |> Maybe.withDefault False)
+                                    -- Show only mothers that belong to selected health center
+                                    && (person.healthCenterId == Just selectedHealthCenterId)
+                            )
                         )
                     |> Just
 
