@@ -6,6 +6,7 @@ import Backend.Fetch
 import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Pages.Clinics.Fetch
+import Pages.Dashboard.Fetch
 import Pages.Device.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.People.Fetch
@@ -47,6 +48,15 @@ fetch model =
         UserPage (ClinicsPage clinicId) ->
             Pages.Clinics.Fetch.fetch clinicId
                 |> List.map MsgIndexedDb
+
+        UserPage DashboardPage ->
+            getLoggedInData model
+                |> Maybe.map
+                    (\( healthCenterId, loggedIn ) ->
+                        Pages.Dashboard.Fetch.fetch healthCenterId loggedIn.dashboardPage
+                            |> List.map MsgIndexedDb
+                    )
+                |> Maybe.withDefault []
 
         UserPage (CreatePersonPage relatedId) ->
             Pages.Person.Fetch.fetchForCreateForm relatedId
