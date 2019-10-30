@@ -32,6 +32,7 @@ view language currentDate healthCenterId model db =
                     ]
                 ]
             ]
+        , div [] [ text <| Debug.toString db.computedDashboard ]
         ]
 
 

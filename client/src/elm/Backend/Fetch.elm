@@ -23,6 +23,10 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchComputedDashboard healthCenterId ->
+            Dict.member healthCenterId model.computedDashboard
+                |> not
+
         FetchClinics ->
             isNotAsked model.clinics
 

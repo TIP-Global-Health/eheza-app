@@ -27,10 +27,6 @@
         var url = new URL(event.request.url);
         var matches = nodesUrlRegex.exec(url.pathname);
 
-        console.log(url);
-        console.log(matches);
-        console.log(event);
-
         if (matches) {
             var type = matches[1];
 
@@ -55,10 +51,27 @@
         return dbSync.open().catch(databaseError).then(function () {
             var criteria = {type: type};
 
-            dbSync.nodes.where(criteria).each(function(node) {
-                console.log(node);
-            });
+            var query = dbSync.nodes.where(criteria);
+            var getNodes = query.toArray();
 
+            return getNodes.catch(databaseError).then(function (nodes) {
+
+                var body = JSON.stringify({
+                    offset: 0,
+                    count: nodes.length,
+                    data: nodes
+                });
+
+                var response = new Response(body, {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                return Promise.resolve(response);
+            });
 
         }).catch(sendErrorResponses);
     }

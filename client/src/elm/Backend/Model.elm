@@ -42,7 +42,7 @@ type alias ModelIndexedDb =
     -- actually need all the clinics at once, but there should be a reasonable
     -- number.
     { clinics : WebData (Dict ClinicId Clinic)
-    , computedDashboard : WebData (Dict HealthCenterId HealthCenter)
+    , computedDashboard : Dict HealthCenterId HealthCenter
     , everyCounselingSchedule : WebData EveryCounselingSchedule
     , healthCenters : WebData (Dict HealthCenterId HealthCenter)
     , participantForms : WebData (Dict ParticipantFormId ParticipantForm)
@@ -110,7 +110,7 @@ emptyModelIndexedDb : ModelIndexedDb
 emptyModelIndexedDb =
     { childMeasurements = Dict.empty
     , clinics = NotAsked
-    , computedDashboard = NotAsked
+    , computedDashboard = Dict.empty
     , deleteSyncDataRequests = Dict.empty
     , editableSessions = Dict.empty
     , everyCounselingSchedule = NotAsked

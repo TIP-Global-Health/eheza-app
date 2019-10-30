@@ -56,7 +56,13 @@ updateIndexedDb currentDate nurseId msg model =
             )
 
         HandleFetchedComputedDashboard healthCenterId webData ->
-            ( { model | computedDashboard = webData }
+            let
+                modelUpdated =
+                    RemoteData.toMaybe webData
+                        |> Maybe.map (\data -> { model | computedDashboard = data })
+                        |> Maybe.withDefault model
+            in
+            ( modelUpdated
             , Cmd.none
             , []
             )
@@ -69,7 +75,11 @@ updateIndexedDb currentDate nurseId msg model =
             )
 
         FetchComputedDashboard healthCenterId ->
-            ( { model | computedDashboard = Loading }
+            let
+                _ =
+                    Debug.log "FetchComputedDashboard" True
+            in
+            ( model
             , sw.select computedDashboardEndpoint ()
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedComputedDashboard healthCenterId)
             , []
