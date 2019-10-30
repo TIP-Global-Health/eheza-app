@@ -51,16 +51,16 @@ rgba255 r g b a =
 colors : Array Color
 colors =
     Array.fromList
-        [ rgba255 31 119 180 0.5
-        , rgba255 255 127 14 0.5
-        , rgba255 44 159 44 0.5
-        , rgba255 214 39 40 0.5
-        , rgba255 148 103 189 0.5
-        , rgba255 140 86 75 0.5
-        , rgba255 227 119 194 0.5
-        , rgba255 128 128 128 0.5
-        , rgba255 188 189 34 0.5
-        , rgba255 23 190 207 0.5
+        [ rgba255 31 119 180 1
+        , rgba255 255 127 14 1
+        , rgba255 44 159 44 1
+        , rgba255 214 39 40 1
+        , rgba255 148 103 189 1
+        , rgba255 140 86 75 1
+        , rgba255 227 119 194 1
+        , rgba255 128 128 128 1
+        , rgba255 188 189 34 1
+        , rgba255 23 190 207 1
         ]
 
 
@@ -88,9 +88,7 @@ annular arcs =
     let
         makeSlice index datum =
             Path.element (Shape.arc { datum | innerRadius = radius - 60 })
-                [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors
-                , stroke Color.black
-                ]
+                [ fill <| Fill <| Maybe.withDefault Color.black <| Array.get index colors ]
     in
     g [ transform [ Translate (3 * radius + 20) radius ] ]
         [ g [] <| List.indexedMap makeSlice arcs
@@ -101,7 +99,13 @@ viewDonutChart : List Float -> Svg msg
 viewDonutChart model =
     let
         pieData =
-            model |> Shape.pie { defaultPieConfig | outerRadius = radius, padAngle = 0.03 }
+            model
+                |> Shape.pie
+                    { defaultPieConfig
+                        | outerRadius = radius
+                        , padAngle = 0
+                        , cornerRadius = 0
+                    }
     in
     svg [ viewBox 0 0 w h ]
         [ annular pieData ]
