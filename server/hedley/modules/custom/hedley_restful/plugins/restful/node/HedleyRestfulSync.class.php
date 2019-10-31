@@ -232,6 +232,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     }
 
     // @todo: Convert to real stats per Health center.
+    // @todo: Calculate only when node from health center changed.
     $output[] = [
       'type' => 'statistics',
       'health_center_id' => 7100,

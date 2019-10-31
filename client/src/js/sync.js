@@ -549,11 +549,10 @@
                         return previous.then(function () {
 
                             // Apart of the nodes we send statistics.
-                            if (!!item.statistics) {
-                                return table.put(item).then(function () {
-                                    saved.push(item);
-                                    return Promise.resolve();
-                                });
+                            if (!!item.type && item.type === 'statistics') {
+                                // We don't push it to the saved nodes, since
+                                // it's not a node.
+                                return dbSync.statistics.put(item);
                             }
 
                             return formatNode(table, item, shardUuid).then(function (formatted) {
@@ -570,7 +569,7 @@
                         // partial progress. Now, we'll note that we have some
                         // remaining things to get, so we'll try again. But,
                         // then, the thing we failed on will be first. So, if
-                        // we fail agaim, we won't have saved anything, and
+                        // we fail again, we won't have saved anything, and
                         // we'll return the error then.  That seems like a
                         // reasonable sequence of events.
                         if (saved.length > 0) {
