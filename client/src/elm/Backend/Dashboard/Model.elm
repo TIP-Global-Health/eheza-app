@@ -1,19 +1,9 @@
-module Backend.Dashboard.Model exposing (Dashboard, DashboardRaw)
+module Backend.Dashboard.Model exposing (DashboardStats)
 
-import Backend.HealthCenter.Model exposing (HealthCenter)
-
-
-{-| The raw info we get for the dashboard.
+{-| The stats for the dashboard.
 -}
-type alias DashboardRaw =
-    { computed : String
-    , healthCenter : HealthCenter
-    }
 
 
-{-| The computed info.
--}
-type alias Dashboard =
-    { computed : String
-    , healthCenter : HealthCenter
+type alias DashboardStats =
+    { totalMeasurements : Int
     }

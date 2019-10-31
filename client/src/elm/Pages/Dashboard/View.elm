@@ -31,8 +31,7 @@ view language currentDate healthCenterId model db =
                     |> List.map
                         (\row ->
                             li []
-                                [ div [] [ text row.computed ]
-                                , div [] [ text <| Debug.toString row.healthCenter ]
+                                [ div [] [ text <| String.fromInt row.totalMeasurements ]
                                 ]
                         )
                 )

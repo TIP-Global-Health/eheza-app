@@ -6,8 +6,8 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.Counseling.Encoder exposing (encodeCounselingSchedule, encodeCounselingTopic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
-import Backend.Dashboard.Decoder exposing (decodeDashboardRaw)
-import Backend.Dashboard.Model exposing (DashboardRaw)
+import Backend.Dashboard.Decoder exposing (decodeDashboardStats)
+import Backend.Dashboard.Model exposing (DashboardStats)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Decoder exposing (decodeHealthCenter)
 import Backend.HealthCenter.Model exposing (HealthCenter)
@@ -95,9 +95,9 @@ encodeRelationshipParams params =
 
 {-| @todo: For now we'll fetch only health center. Eventually, we'll get all the data, and compute inside Elm.
 -}
-computedDashboardEndpoint : ReadOnlyEndPoint Error HealthCenterId DashboardRaw ()
+computedDashboardEndpoint : ReadOnlyEndPoint Error HealthCenterId DashboardStats ()
 computedDashboardEndpoint =
-    swEndpoint "computed/health_center" decodeDashboardRaw
+    swEndpoint "statistics" decodeDashboardStats
 
 
 healthCenterEndpoint : ReadOnlyEndPoint Error HealthCenterId HealthCenter ()

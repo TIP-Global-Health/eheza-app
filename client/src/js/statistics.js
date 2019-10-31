@@ -16,59 +16,40 @@
 (function () {
     // This defines our URL scheme. A URL will look like
     //
-    // /sw/computed/
-    //
-    // ... where '/sw/computed/' is a prefix, and then the next part is
-    // the 'type' of the bundle we're looking for.
+    // /sw/statistics
 
-    var nodesUrlRegex = /\/sw\/computed\/([^/]+)/;
+    var nodesUrlRegex = /\/sw\/statistics/;
 
     self.addEventListener('fetch', function (event) {
         var url = new URL(event.request.url);
-        var matches = nodesUrlRegex.exec(url.pathname);
 
-        if (matches) {
-            var type = matches[1];
-
-            if (event.request.method === 'GET') {
-                return event.respondWith(index(url, type));
-            }
-
-            // If we get here, respond with a 404
-            var response = new Response('', {
-                status: 404,
-                statusText: 'Not Found'
-            });
-
-            return event.respondWith(response);
-
+        if (event.request.method === 'GET') {
+            return event.respondWith(index(url));
         }
+
+        // If we get here, respond with a 404
+        var response = new Response('', {
+            status: 404,
+            statusText: 'Not Found'
+        });
+
+        return event.respondWith(response);
+
     });
 
-    function index (url, type) {
+    function index (url) {
         var params = url.searchParams;
 
         return dbSync.open().catch(databaseError).then(function () {
-            var criteria = {type: type};
+            var query = dbSync.statistics;
+            var getStats = query.toArray();
 
-            var query = dbSync.nodes.where(criteria);
-            var getNodes = query.toArray();
-
-            // @todo: Here we will gather all the necessary `DashboardRaw` data.
-
-
-            return getNodes.catch(databaseError).then(function (nodes) {
-
-                var data = [];
-                 nodes.forEach(function (node, index) {
-                    node.computed_property = 'Custom ' + index;
-                    data.push(node);
-                });
+            return getStats.catch(databaseError).then(function (stats) {
 
                 var body = JSON.stringify({
                     offset: 0,
-                    count: nodes.length,
-                    data: data
+                    count: stats.length,
+                    data: stats
                 });
 
                 var response = new Response(body, {
@@ -103,15 +84,6 @@
         var response = new Response(JSON.stringify(err), {
             status: 500,
             statusText: 'Database Error'
-        });
-
-        return Promise.reject(response);
-    }
-
-    function jsonError (err) {
-        var response = new Response(JSON.stringify(err), {
-            status: 400,
-            statusText: 'Bad JSON'
         });
 
         return Promise.reject(response);
