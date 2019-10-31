@@ -233,9 +233,12 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     // @todo: Convert to real stats per Health center.
     // @todo: Calculate only when node from health center changed.
+    $wrapper = entity_metadata_wrapper('node', 7100);
+    $wrapper->field_uuid->value();
     $output[] = [
       'type' => 'statistics',
-      'health_center_id' => 7100,
+      // UUID of the health center.
+      'uuid' => $wrapper->field_uuid->value(),
       'total_measurements' => 100,
     ];
 
