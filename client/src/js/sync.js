@@ -532,7 +532,7 @@
                     // If the node references an image (or other file, for that
                     // matter), we'd like to decide immediately whether to
                     // cache it. Downloading to the cache will be async, and
-                    // our db tranasactions can't handle that ... IndexedDB
+                    // our db transactions can't handle that ... IndexedDB
                     // transactions can handle async db actions, but not other
                     // async actions (no "long" transactions). So, we'll need
                     // to handle this one-by-one. However, we'll wait to the
@@ -544,9 +544,18 @@
                     // our progress in downloading images.
                     //
                     // So, that's why we don't use `Promise.all` here ... it
-                    // would execute in parrallel rather than sequentially.
+                    // would execute in parallel rather than sequentially.
                     return json.data.batch.reduce(function (previous, item) {
                         return previous.then(function () {
+
+                            // Apart of the nodes we send statistics.
+                            if (!!item.statistics) {
+                                return table.put(item).then(function () {
+                                    saved.push(item);
+                                    return Promise.resolve();
+                                });
+                            }
+
                             return formatNode(table, item, shardUuid).then(function (formatted) {
                                 return table.put(formatted).then(function () {
                                     saved.push(formatted);

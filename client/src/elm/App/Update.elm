@@ -61,7 +61,9 @@ init flags url key =
                     English
 
         fragment =
-            pageToFragment PinCodePage
+            -- @todo: Temporary
+            -- pageToFragment PinCodePage
+            pageToFragment (UserPage DashboardPage)
 
         url_ =
             { url | fragment = fragment, query = Nothing }

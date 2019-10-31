@@ -95,7 +95,7 @@ viewLoadedClinicList language user selectedHealthCenterId ( clinics, sync ) =
             clinics
                 |> Dict.filter
                     (\_ clinic ->
-                        -- Group belongs to seleced health center.
+                        -- Group belongs to selected health center.
                         (clinic.healthCenterId == selectedHealthCenterId)
                             -- Health center is synced.
                             && Dict.member clinic.healthCenterId sync
