@@ -174,32 +174,17 @@ viewPregnancyDatingContent language currentDate assembled data =
             toLocalDateTime currentDate 0 0 0 0
 
         lmpDateInput =
-            form.lmpRange
-                |> unwrap
-                    []
-                    (\range ->
-                        let
-                            daysBack =
-                                case range of
-                                    OneMonth ->
-                                        -31
+            if isJust form.lmpRange then
+                DateSelector.SelectorDropdown.view
+                    ToggleDateSelector
+                    SetLmpDate
+                    form.isDateSelectorOpen
+                    (Date.add Day -280 today)
+                    today
+                    form.lmpDate
 
-                                    ThreeMonth ->
-                                        -92
-
-                                    SixMonth ->
-                                        -184
-                        in
-                        [ DateSelector.SelectorDropdown.view
-                            ToggleDateSelector
-                            SetLmpDate
-                            form.isDateSelectorOpen
-                            (Date.add Day daysBack today)
-                            today
-                            form.lmpDate
-                        ]
-                    )
-                |> div [ class "form-input date" ]
+            else
+                emptyNode
 
         ( edd, ega ) =
             Maybe.map fromLocalDateTime form.lmpDate
@@ -218,7 +203,8 @@ viewPregnancyDatingContent language currentDate assembled data =
                 [ viewQuestionLabel language Translate.LmpRangeHeader
                 , lmpRangeInput
                 , viewLabel language Translate.LmpDateHeader
-                , lmpDateInput
+                , div [ class "form-input date" ]
+                    [ lmpDateInput ]
                 , viewQuestionLabel language Translate.LmpDateConfidentHeader
                 , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
                 , div [ class "separator" ] []

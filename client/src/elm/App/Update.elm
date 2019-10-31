@@ -267,7 +267,7 @@ update msg model =
                                     data.prenatalActivityPages
                                         |> EveryDict.get ( id, activity )
                                         |> Maybe.withDefault Pages.PrenatalActivity.Model.emptyModel
-                                        |> Pages.PrenatalActivity.Update.update subMsg
+                                        |> Pages.PrenatalActivity.Update.update currentDate subMsg
                             in
                             ( { data | prenatalActivityPages = EveryDict.insert ( id, activity ) subModel data.prenatalActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalActivity id activity) subCmd
