@@ -110,7 +110,7 @@ dbSync.version(4).stores({
 });
 
 dbSync.version(5).stores({
-    statistics: '&health_center_id',
+    statistics: '&uuid',
 });
 
 function gatherWords (text) {
