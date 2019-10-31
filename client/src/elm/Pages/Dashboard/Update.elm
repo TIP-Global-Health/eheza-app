@@ -7,8 +7,14 @@ import Pages.Dashboard.Model exposing (..)
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update msg model =
     case msg of
-        NoOp ->
-            ( model
+        SetFilterGender gender ->
+            ( { model | beneficiariesGender = gender }
+            , Cmd.none
+            , []
+            )
+
+        SetFilterPeriod period ->
+            ( { model | period = period }
             , Cmd.none
             , []
             )

@@ -527,3 +527,10 @@ function hedley_update_7020() {
 function hedley_update_7021() {
   variable_set('file_private_path', 'sites/default/files/private');
 }
+
+/**
+ * Setup private files.
+ */
+function hedley_update_7022() {
+  module_enable(['hedley_stats']);
+}

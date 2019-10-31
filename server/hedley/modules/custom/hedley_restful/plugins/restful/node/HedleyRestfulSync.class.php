@@ -239,7 +239,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'type' => 'statistics',
       // UUID of the health center.
       'uuid' => $wrapper->field_uuid->value(),
-      'total_measurements' => 100,
+      'people' => hedley_stats_get_new_people_by_period(7100),
     ];
 
     return [

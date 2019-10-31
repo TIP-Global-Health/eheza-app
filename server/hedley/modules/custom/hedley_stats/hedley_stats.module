@@ -1,0 +1,166 @@
+<?php
+
+/**
+ * @file
+ * Code for the Hedley Statistics module.
+ */
+
+define('HEDLEY_STATS_PERIOD_THIS_MONTH', 'this_month');
+define('HEDLEY_STATS_PERIOD_LAST_MONTH', 'last_month');
+define('HEDLEY_STATS_PERIOD_THREE_MONTHS', 'three_months');
+define('HEDLEY_STATS_PERIOD_ONE_YEAR', 'one_year');
+
+/**
+ * Return all new people in a Health center.
+ *
+ * @param int $health_center_id
+ *   The Health center node ID.
+ * @param string $period
+ *   The period to calculate. Be default it is for one year, as on the client
+ *   side we could filter out items, if requested to show smaller periods of
+ *   time.
+ *
+ * @return array
+ *   Array with the result.
+ *
+ * @throws \Exception
+ */
+function hedley_stats_get_new_people_by_period($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
+  $query = db_select('node', 'node');
+  $query->fields('node', ['nid', 'created']);
+
+  $start_date = hedley_stats_get_period_start($period);
+
+  $query
+    ->condition('type', 'person')
+    ->condition('status', NODE_PUBLISHED)
+    ->condition('created', [$start_date, time()], 'BETWEEN');
+
+  // Filter by health center.
+  hedley_stats_join_field_to_query($query, 'node', 'field_health_center');
+  $query->condition('field_health_center.field_health_center_target_id', $health_center_id);
+
+  // Get gender and age.
+  hedley_stats_join_field_to_query($query, 'node', 'field_gender');
+  hedley_stats_join_field_to_query($query, 'node', 'field_birth_date');
+
+  // Currently our way of knowing who is kid, is checking they are under
+  // 13.
+  $birthdate_start = date('Y-m-d H:i:s', strtotime("13 years ago"));
+  $now_date = date('Y-m-d H:i:s');
+
+  $query->condition('field_birth_date.field_birth_date_value', [$birthdate_start, $now_date], 'BETWEEN');
+
+  $result = $query
+    ->execute()
+    ->fetchAllAssoc('nid');
+
+  // Prepare data to be consumed by client side.
+  foreach ($result as &$row) {
+    $row->created = hedley_stats_convert_timestamp_to_nominal($row->created);
+    $row->field_birth_date = hedley_stats_convert_timestamp_to_nominal(strtotime($row->field_birth_date));
+  }
+
+  return array_values($result);
+}
+
+/**
+ * Get the start date based on period of time.
+ *
+ * @param string $period
+ *   The period to calculate.
+ * @param bool $as_timestamp
+ *   Determine if date should be returned as string or timestamp. Defaults to
+ *   TRUE.
+ *
+ * @return false|string
+ *   The start date.
+ */
+function hedley_stats_get_period_start($period, $as_timestamp = TRUE) {
+  switch ($period) {
+    case HEDLEY_STATS_PERIOD_THIS_MONTH:
+      $date = date('01-m-Y', strtotime("first day of this month"));
+      break;
+
+    case HEDLEY_STATS_PERIOD_LAST_MONTH:
+      $date = date('d-m-Y', strtotime("first day of previous month"));
+      break;
+
+    case HEDLEY_STATS_PERIOD_THREE_MONTHS:
+      $date = date('d-m-Y', strtotime("3 months ago"));
+      break;
+
+    case HEDLEY_STATS_PERIOD_ONE_YEAR:
+      $date = date('d-m-Y', strtotime("last year"));
+      break;
+  }
+
+  return $as_timestamp ? strtotime($date) : $date;
+}
+
+/**
+ * Join a field to a DB Select query, and add its main value.
+ *
+ * @param SelectQuery $query
+ *   Query to join to.
+ * @param string $entity_type
+ *   Type of the host entity of the field. Or NULL to avoid filtering the field
+ *   table by entity type.
+ * @param string $field_name
+ *   Field name.
+ * @param bool $require
+ *   Whether filter out rows where this field would be NULL.
+ * @param string $entity_id_selector
+ *   SQL selector for the column by which the field is joined. The entity ID is
+ *   used by default.
+ *
+ * @throws Exception
+ */
+function hedley_stats_join_field_to_query(SelectQuery $query, $entity_type, $field_name, $require = TRUE, $entity_id_selector = NULL) {
+  $field = field_info_field($field_name);
+  $table_name = _field_sql_storage_tablename($field);
+
+  if (!$entity_id_selector) {
+    if (!$entity_type) {
+      throw new Exception('Entity type is required when ID selector is not specified');
+    }
+    // Set default entity ID selector.
+    switch ($entity_type) {
+      case 'user':
+        $entity_id_selector = 'users.uid';
+        break;
+
+      case 'node':
+        $entity_id_selector = 'node.nid';
+        break;
+
+      default:
+        throw new Exception(format_string('hedley_general_join_field_to_query() is not implemented for entity_type: "@type"', ['@type' => $entity_type]));
+    }
+  }
+
+  $join = $require ? 'innerJoin' : 'leftJoin';
+  $arguments = [':type' => $entity_type];
+  $conditions[] = "$entity_id_selector = $field_name.entity_id";
+  if ($entity_type) {
+    $conditions[] = "$field_name.entity_type = :type";
+  }
+  $query->$join($table_name, $field_name, implode(' AND ', $conditions), $arguments);
+
+  $column_suffix = $field['type'] == 'entityreference' ? 'target_id' : 'value';
+
+  $query->addField($field_name, $field_name . '_' . $column_suffix, $field_name);
+}
+
+/**
+ * Convert Unix timestamp to YYYYMMDD.
+ *
+ * @param int $timestamp
+ *   The Unix timestamp.
+ *
+ * @return false|string
+ *   The converted timestamp.
+ */
+function hedley_stats_convert_timestamp_to_nominal($timestamp) {
+  return date('Y-m-d', $timestamp);
+}

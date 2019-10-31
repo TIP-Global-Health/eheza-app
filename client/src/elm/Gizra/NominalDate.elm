@@ -5,7 +5,7 @@ module Gizra.NominalDate exposing
     , fromLocalDateTime
     , diffDays, diffCalendarMonthsAndDays
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
-    , compare
+    , compare, isDiffTruthy
     )
 
 {-| Some utilities for dealing with "pure" dates that have no time or
@@ -236,6 +236,14 @@ diffCalendarMonthsAndDays low high =
         { months = uncorrected.months - 1
         , days = uncorrected.days + daysInMonth (Date.year low) (Date.month low)
         }
+
+
+{-| Indicate of diff of nominal is a Truth value.
+-}
+isDiffTruthy : NominalDate -> NominalDate -> ({ months : Int, days : Int } -> Bool) -> Bool
+isDiffTruthy low high func =
+    diffCalendarMonthsAndDays low high
+        |> func
 
 
 daysInMonth : Int -> Month -> Int

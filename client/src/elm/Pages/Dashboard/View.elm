@@ -2,12 +2,16 @@ module Pages.Dashboard.View exposing (view)
 
 import Array exposing (Array)
 import AssocList as Dict
+import Backend.Dashboard.Model exposing (DashboardStats)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Person.Model
 import Color exposing (Color)
-import Gizra.NominalDate exposing (NominalDate)
+import Date exposing (Unit(..), fromCalendarDate, isBetween)
+import Gizra.NominalDate exposing (NominalDate, diffCalendarMonthsAndDays, isDiffTruthy)
 import Html exposing (..)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, classList)
+import Html.Events exposing (onClick)
 import Pages.Dashboard.Model exposing (..)
 import Path
 import Shape exposing (Arc, defaultPieConfig)
@@ -23,22 +27,15 @@ import TypedSvg.Types exposing (Fill(..), Transform(..))
 view : Language -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
 view language currentDate healthCenterId model db =
     let
-        debug =
-            ul [ class "ui segment" ]
-                (db.computedDashboard
-                    |> Dict.values
-                    |> List.take 5
-                    |> List.map
-                        (\row ->
-                            li []
-                                [ div [] [ text <| String.fromInt row.totalMeasurements ]
-                                ]
-                        )
-                )
+        stats =
+            Dict.get healthCenterId db.computedDashboard
+                |> Maybe.withDefault Backend.Dashboard.Model.emptyModel
     in
     div
         []
-        [ div
+        [ viewPeriodFilter language model
+        , viewBeneficiariesTable language currentDate stats model
+        , div
             [ class "ui placeholder segment" ]
             [ div [ class "ui two column stackable center aligned grid" ]
                 [ div [ class "middle aligned row" ]
@@ -47,8 +44,151 @@ view language currentDate healthCenterId model db =
                     ]
                 ]
             ]
-        , debug
+        , details [ class "ui segment" ] [ text <| Debug.toString db.computedDashboard ]
         ]
+
+
+viewPeriodFilter : Language -> Model -> Html Msg
+viewPeriodFilter language model =
+    let
+        renderButton period =
+            -- @todo: Translate
+            button
+                [ classList
+                    [ ( "primary", model.period == period )
+                    , ( "ui button", True )
+                    ]
+                , onClick <| SetFilterPeriod period
+                ]
+                [ text <| Debug.toString period
+                ]
+    in
+    div [ class "ui blue segment" ]
+        (List.map renderButton filterPeriods)
+
+
+viewBeneficiariesGenderFilter : Language -> Model -> Html Msg
+viewBeneficiariesGenderFilter language model =
+    let
+        renderButton gender =
+            -- @todo: Translate
+            button
+                [ classList
+                    [ ( "primary", model.beneficiariesGender == gender )
+                    , ( "ui button", True )
+                    ]
+                , onClick <| SetFilterGender gender
+                ]
+                [ text <| Debug.toString gender
+                ]
+    in
+    div []
+        (List.map renderButton filterGenders)
+
+
+viewBeneficiariesTable : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
+viewBeneficiariesTable language currentDate stats model =
+    let
+        statsFilteredByPeriod =
+            filterStatsByPeriodAndGender currentDate stats model
+
+        getRangeCount func =
+            getGroupedByAgeCount
+                currentDate
+                statsFilteredByPeriod
+                func
+                |> String.fromInt
+
+        range0_2 =
+            getRangeCount (\{ months } -> months >= 0 && months <= (2 * 12))
+
+        range3_7 =
+            getRangeCount (\{ months } -> months > (2 * 12) && months <= (7 * 12))
+
+        range8_11 =
+            getRangeCount (\{ months } -> months > (7 * 12) && months <= (11 * 12))
+
+        range12_plus =
+            getRangeCount (\{ months } -> months > (11 * 12))
+    in
+    div [ class "ui blue segment" ]
+        [ viewBeneficiariesGenderFilter language model
+        , table [ class "ui celled table" ]
+            [ thead []
+                [ tr []
+                    [ th [] [ text "Grouped by age (Years)" ]
+                    , th [] [ text "0-2" ]
+                    , th [] [ text "3-7" ]
+                    , th [] [ text "8-11" ]
+                    , th [] [ text "12+" ]
+                    ]
+                ]
+            , tbody []
+                [ tr []
+                    [ td [] [ text "New beneficiaries to program" ]
+                    , td [] [ text range0_2 ]
+                    , td [] [ text range3_7 ]
+                    , td [] [ text range8_11 ]
+                    , td [] [ text range12_plus ]
+                    ]
+                ]
+            ]
+        ]
+
+
+getGroupedByAgeCount : NominalDate -> DashboardStats -> ({ months : Int, days : Int } -> Bool) -> Int
+getGroupedByAgeCount currentDate stats func =
+    stats.people
+        |> List.filter (\personStats -> isDiffTruthy personStats.birthdate currentDate func)
+        |> List.length
+
+
+{-| Filter stats to match the selected period and gender.
+-}
+filterStatsByPeriodAndGender : NominalDate -> DashboardStats -> Model -> DashboardStats
+filterStatsByPeriodAndGender currentDate stats model =
+    let
+        startDate =
+            case model.period of
+                ThisMonth ->
+                    -- Beginning of current month.
+                    fromCalendarDate (Date.year currentDate) (Date.month currentDate) 1
+
+                LastMonth ->
+                    Date.add Months -1 currentDate
+
+                ThreeMonths ->
+                    Date.add Months -3 currentDate
+
+                OneYear ->
+                    Date.add Years -1 currentDate
+
+        peopleFilterPeriod =
+            stats.people
+                |> List.filter (\personStats -> isBetween startDate currentDate personStats.memberSince)
+
+        -- Filter by gender
+        peopleUpdated =
+            if model.beneficiariesGender == All then
+                -- No change
+                peopleFilterPeriod
+
+            else
+                peopleFilterPeriod
+                    |> List.filter
+                        (\personStats ->
+                            case ( personStats.gender, model.beneficiariesGender ) of
+                                ( Backend.Person.Model.Female, Pages.Dashboard.Model.Female ) ->
+                                    True
+
+                                ( Backend.Person.Model.Male, Pages.Dashboard.Model.Male ) ->
+                                    True
+
+                                _ ->
+                                    False
+                        )
+    in
+    { stats | people = peopleUpdated }
 
 
 
