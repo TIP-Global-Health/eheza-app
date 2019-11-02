@@ -231,15 +231,16 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       $output[] = $rendered;
     }
 
-    // @todo: Convert to real stats per Health center.
     // @todo: Calculate only when node from health center changed.
-    $wrapper = entity_metadata_wrapper('node', 7100);
+    $health_center_id = 7093;
+    $wrapper = entity_metadata_wrapper('node', $health_center_id);
     $wrapper->field_uuid->value();
     $output[] = [
       'type' => 'statistics',
       // UUID of the health center.
       'uuid' => $wrapper->field_uuid->value(),
-      'people' => hedley_stats_get_new_people_by_period(7100),
+      'children_beneficiaries' => hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id),
+      'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_id),
     ];
 
     return [

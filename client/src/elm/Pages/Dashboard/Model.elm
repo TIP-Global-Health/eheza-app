@@ -1,5 +1,6 @@
 module Pages.Dashboard.Model exposing
-    ( FilterGender(..)
+    ( FamilyPlanningSignsCounter
+    , FilterGender(..)
     , FilterPeriod(..)
     , Model
     , Msg(..)
@@ -10,6 +11,9 @@ module Pages.Dashboard.Model exposing
 
 {-| Filtering by period
 -}
+
+import AssocList as Dict exposing (Dict)
+import Backend.Measurement.Model exposing (FamilyPlanningSign)
 
 
 type FilterPeriod
@@ -55,6 +59,12 @@ emptyModel =
     { period = ThisMonth
     , beneficiariesGender = All
     }
+
+
+{-| A record to hold the count of total signs used.
+-}
+type alias FamilyPlanningSignsCounter =
+    Dict FamilyPlanningSign Int
 
 
 type Msg
