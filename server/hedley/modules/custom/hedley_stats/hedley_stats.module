@@ -84,6 +84,57 @@ function hedley_stats_get_family_planning_stats_by_period($health_center_id, $pe
   foreach ($result as &$row) {
     $row->created = hedley_stats_convert_timestamp_to_nominal($row->created);
     $row->signs = explode(',', $row->signs);
+
+    // Remove unused data, to save bandwidth.
+    unset($row->nid);
+    unset($row->field_shards);
+    unset($row->field_family_planning_signs);
+  }
+
+  return array_values($result);
+}
+
+/**
+ * Return Malnourished beneficiaries related states.
+ *
+ * @param int $health_center_id
+ *   The Health center node ID.
+ * @param string $period
+ *   The period to calculate. Be default it is for one year, as on the client
+ *   side we could filter out items, if requested to show smaller periods of
+ *   time.
+ *
+ * @return array
+ *   Array with the result.
+ *
+ * @throws \Exception
+ */
+function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
+  $query = hedley_stats_get_base_query($health_center_id, 'height', $period);
+
+  // Join `Z-scroe age`.
+  hedley_stats_join_field_to_query($query, 'node', 'field_zscore_age');
+
+  // Malnourished is defined as Z-score below -1.
+  $query->condition('field_zscore_age.field_zscore_age_value', -1, '<');
+
+  // Get child's gender, via the People content type.
+  hedley_stats_join_field_to_query($query, 'node', 'field_person');
+  hedley_stats_join_field_to_query($query, 'node', 'field_gender', TRUE, "field_person.field_person_target_id");
+
+  $result = $query
+    ->execute()
+    ->fetchAllAssoc('nid');
+
+  // Prepare data to be consumed by client side.
+  foreach ($result as &$row) {
+    $row->created = hedley_stats_convert_timestamp_to_nominal($row->created);
+    $row->field_zscore_age = floatval($row->field_zscore_age);
+
+    // Remove unused data, to save bandwidth.
+    unset($row->nid);
+    unset($row->field_shards);
+    unset($row->field_person);
   }
 
   return array_values($result);
@@ -119,7 +170,8 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period) {
 
   $health_center_field_name = 'field_health_center';
 
-  if ($node_type == 'family_planning') {
+  // Some node types have the Health center info under `Shards` field.
+  if (field_info_instance('node', 'field_shards', $node_type)) {
     $health_center_field_name = 'field_shards';
   }
 
@@ -211,6 +263,7 @@ function hedley_stats_join_field_to_query(SelectQuery $query, $entity_type, $fie
   if ($entity_type) {
     $conditions[] = "$field_name.entity_type = :type";
   }
+
   $query->$join($table_name, $field_name, implode(' AND ', $conditions), $arguments);
 
   $column_suffix = $field['type'] == 'entityreference' ? 'target_id' : 'value';

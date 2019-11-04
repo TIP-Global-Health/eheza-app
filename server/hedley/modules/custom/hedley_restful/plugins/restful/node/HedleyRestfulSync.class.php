@@ -240,6 +240,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       // UUID of the health center.
       'uuid' => $wrapper->field_uuid->value(),
       'children_beneficiaries' => hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id),
+      'malnourished_beneficiaries' => hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_center_id),
       'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_id),
     ];
 

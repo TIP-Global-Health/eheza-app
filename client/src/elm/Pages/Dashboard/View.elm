@@ -49,8 +49,7 @@ view language currentDate healthCenterId model db =
             ]
         , div [ class "ui segment" ]
             [ text <| Debug.toString <| getFamilyPlanningSignsCounter stats
-            , div [] [ text <| Debug.toString <| List.length stats.familyPlanning ]
-            , details [] [ text <| Debug.toString <| stats.familyPlanning ]
+            , details [] [ text <| Debug.toString <| stats ]
             ]
         ]
 
@@ -100,24 +99,33 @@ viewBeneficiariesTable language currentDate stats model =
             stats
                 |> filterStatsByGender currentDate model
 
-        getRangeCount func =
-            getGroupedByAgeCount
+        filterStatsByAgeDo func =
+            filterStatsByAge
                 currentDate
-                statsFilteredByGender
                 func
+                statsFilteredByGender
+
+        stats0_2 =
+            filterStatsByAgeDo (\{ months } -> months >= 0 && months <= (2 * 12))
+
+        stats3_7 =
+            filterStatsByAgeDo (\{ months } -> months > (2 * 12) && months <= (7 * 12))
+
+        stats8_11 =
+            filterStatsByAgeDo (\{ months } -> months > (7 * 12) && months <= (11 * 12))
+
+        stats12_plus =
+            filterStatsByAgeDo (\{ months } -> months > (11 * 12))
+
+        getNewBeneficiariesCount stats_ =
+            stats_.childrenBeneficiaries
+                |> List.length
                 |> String.fromInt
 
-        range0_2 =
-            getRangeCount (\{ months } -> months >= 0 && months <= (2 * 12))
-
-        range3_7 =
-            getRangeCount (\{ months } -> months > (2 * 12) && months <= (7 * 12))
-
-        range8_11 =
-            getRangeCount (\{ months } -> months > (7 * 12) && months <= (11 * 12))
-
-        range12_plus =
-            getRangeCount (\{ months } -> months > (11 * 12))
+        getTotalMalnourishedCount stats_ =
+            stats_.malnourished
+                |> List.length
+                |> String.fromInt
     in
     div [ class "ui blue segment" ]
         [ viewBeneficiariesGenderFilter language model
@@ -134,21 +142,38 @@ viewBeneficiariesTable language currentDate stats model =
             , tbody []
                 [ tr []
                     [ td [] [ text "New beneficiaries to program" ]
-                    , td [] [ text range0_2 ]
-                    , td [] [ text range3_7 ]
-                    , td [] [ text range8_11 ]
-                    , td [] [ text range12_plus ]
+                    , td [] [ text <| getNewBeneficiariesCount stats0_2 ]
+                    , td [] [ text <| getNewBeneficiariesCount stats3_7 ]
+                    , td [] [ text <| getNewBeneficiariesCount stats8_11 ]
+                    , td [] [ text <| getNewBeneficiariesCount stats12_plus ]
+                    ]
+                , tr []
+                    [ td [] [ text "Malnourished beneficiaries" ]
+                    , td [] [ text <| getTotalMalnourishedCount stats0_2 ]
+                    , td [] [ text <| getTotalMalnourishedCount stats3_7 ]
+                    , td [] [ text <| getTotalMalnourishedCount stats8_11 ]
+                    , td [] [ text <| getTotalMalnourishedCount stats12_plus ]
                     ]
                 ]
             ]
         ]
 
 
-getGroupedByAgeCount : NominalDate -> DashboardStats -> ({ months : Int, days : Int } -> Bool) -> Int
-getGroupedByAgeCount currentDate stats func =
-    stats.childrenBeneficiaries
-        |> List.filter (\personStats -> isDiffTruthy personStats.birthdate currentDate func)
-        |> List.length
+filterStatsByAge : NominalDate -> ({ months : Int, days : Int } -> Bool) -> DashboardStats -> DashboardStats
+filterStatsByAge currentDate func stats =
+    let
+        childrenBeneficiaries =
+            stats.childrenBeneficiaries
+                |> List.filter (\row -> isDiffTruthy row.birthdate currentDate func)
+
+        malnourished =
+            stats.malnourished
+                |> List.filter (\row -> isDiffTruthy row.created currentDate func)
+    in
+    { stats
+        | childrenBeneficiaries = childrenBeneficiaries
+        , malnourished = malnourished
+    }
 
 
 {-| Filter stats to match the selected period.
@@ -178,10 +203,15 @@ filterStatsByPeriod currentDate model stats =
         familyPlanningUpdated =
             stats.familyPlanning
                 |> List.filter (\familyPlanning -> isBetween startDate currentDate familyPlanning.created)
+
+        malnourishedUpdated =
+            stats.malnourished
+                |> List.filter (\malnourished -> isBetween startDate currentDate malnourished.created)
     in
     { stats
         | childrenBeneficiaries = childrenBeneficiariesUpdated
         , familyPlanning = familyPlanningUpdated
+        , malnourished = malnourishedUpdated
     }
 
 
@@ -191,13 +221,13 @@ filterStatsByGender : NominalDate -> Model -> DashboardStats -> DashboardStats
 filterStatsByGender currentDate model stats =
     let
         -- Filter by gender
-        peopleUpdated =
+        filterDo data =
             if model.beneficiariesGender == All then
                 -- No change
-                stats.childrenBeneficiaries
+                data
 
             else
-                stats.childrenBeneficiaries
+                data
                     |> List.filter
                         (\personStats ->
                             case ( personStats.gender, model.beneficiariesGender ) of
@@ -211,7 +241,10 @@ filterStatsByGender currentDate model stats =
                                     False
                         )
     in
-    { stats | childrenBeneficiaries = peopleUpdated }
+    { stats
+        | childrenBeneficiaries = filterDo stats.childrenBeneficiaries
+        , malnourished = filterDo stats.malnourished
+    }
 
 
 getFamilyPlanningSignsCounter : DashboardStats -> FamilyPlanningSignsCounter
@@ -255,25 +288,25 @@ familyPlanningSignToColor : FamilyPlanningSign -> Color
 familyPlanningSignToColor sign =
     case sign of
         Condoms ->
-            rgba255 31 119 180 1
+            Color.red
 
         IUD ->
-            rgba255 255 127 14 1
+            Color.orange
 
         Implant ->
-            rgba255 44 159 44 1
+            Color.yellow
 
         Injection ->
-            rgba255 214 39 40 1
+            Color.green
 
         Necklace ->
-            rgba255 148 103 189 1
+            Color.blue
 
         NoFamilyPlanning ->
-            rgba255 140 86 75 1
+            Color.black
 
         Pill ->
-            rgba255 227 119 194 1
+            Color.purple
 
 
 
