@@ -1,4 +1,4 @@
-module Backend.Clinic.Model exposing (Clinic)
+module Backend.Clinic.Model exposing (Clinic, ClinicType(..))
 
 import Backend.Entities exposing (..)
 
@@ -8,4 +8,11 @@ import Backend.Entities exposing (..)
 type alias Clinic =
     { name : String
     , healthCenterId : HealthCenterId
+    , clinicType : ClinicType
     }
+
+
+type ClinicType
+    = Fbf
+    | Pmtct
+    | Sorwathe
