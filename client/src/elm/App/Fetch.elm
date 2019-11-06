@@ -65,8 +65,16 @@ fetch model =
             Pages.Clinics.Fetch.fetch clinicId
                 |> List.map MsgIndexedDb
 
+        UserPage (ClinicalProgressReportPage prenatalEncounterId) ->
+            Pages.ClinicalProgressReport.Fetch.fetch prenatalEncounterId model.indexedDb
+                |> List.map MsgIndexedDb
+
         UserPage (CreatePersonPage relatedId) ->
             Pages.Person.Fetch.fetchForCreateForm relatedId
+                |> List.map MsgIndexedDb
+
+        UserPage (DemographicsReportPage personId) ->
+            Pages.DemographicsReport.Fetch.fetch personId
                 |> List.map MsgIndexedDb
 
         UserPage (PersonPage id) ->
