@@ -42,6 +42,7 @@ import Pages.Page exposing (Page)
 
 type Msg
     = SetActivePage Page
+    | SetAlertsDialogState Bool
       -- PregnancyDatingMsgs
     | ToggleDateSelector
     | SetLmpDate Date
@@ -119,6 +120,7 @@ type alias Model =
     , familyPlanningData : FamilyPlanningData
     , patientProvisionsData : PatientProvisionsData
     , dangerSignsData : DangerSignsData
+    , showAlertsDialog : Bool
     }
 
 
@@ -130,6 +132,7 @@ emptyModel =
     , familyPlanningData = emptyFamilyPlanningData
     , patientProvisionsData = emptyPatientProvisionsData
     , dangerSignsData = emptyDangerSignsData
+    , showAlertsDialog = False
     }
 
 

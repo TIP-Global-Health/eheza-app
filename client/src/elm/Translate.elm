@@ -34,7 +34,7 @@ import Form.Error exposing (ErrorValue(..))
 import Http
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model exposing (ExaminationTask(..), HistoryTask(..), LmpRange(..), PatientProvisionsTask(..))
-import PrenatalActivity.Model exposing (PrenatalActivity(..))
+import PrenatalActivity.Model exposing (HighRiskFactor(..), HighSeverityAlert(..), PrenatalActivity(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Translate.Model exposing (TranslationSet)
@@ -205,6 +205,7 @@ type TranslationId
     | Group
     | Groups
     | GroupUnauthorized
+    | Close
     | Closed
     | ConfirmationRequired
     | ConfirmDeleteTrainingGroupEncounters
@@ -282,7 +283,6 @@ type TranslationId
     | Gravida
     | Hands
     | HandsCPESign HandsCPESign
-    | HaveYouSynced
     | HeadHair
     | HealthCenter
     | Heart
@@ -290,6 +290,11 @@ type TranslationId
     | HeartCPESign HeartCPESign
     | HeartRate
     | Height
+    | High
+    | HighRiskFactor HighRiskFactor
+    | HighRiskFactors
+    | HighSeverityAlert HighSeverityAlert
+    | HighSeverityAlerts
     | HistoryTask HistoryTask
     | HIV
     | HIVStatus HIVStatus
@@ -310,6 +315,7 @@ type TranslationId
     | LmpRangeHeader
     | LmpRange LmpRange
     | LoginPhrase LoginPhrase
+    | Low
     | Lungs
     | LungsCPESign LungsCPESign
     | MakeSureYouAreConnected
@@ -394,6 +400,7 @@ type TranslationId
     | PlaceholderEnterParticipantName
     | PlaceholderEnterWeight
     | PleaseSelectGroup
+    | PleaseSync
     | PreeclampsiaPreviousPregnancy
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalEncounter
@@ -450,6 +457,10 @@ type TranslationId
     | SelectLanguage
     | SelectYourGroup
     | SelectYourHealthCenter
+    | SelectedHCDownloading
+    | SelectedHCNotSynced
+    | SelectedHCSyncing
+    | SelectedHCUploading
     | ServiceWorkerActive
     | ServiceWorkerCurrent
     | ServiceWorkerCheckForUpdates
@@ -1165,6 +1176,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Close ->
+            { english = "Close"
+            , kinyarwanda = Nothing
+            }
+
         Closed ->
             { english = "Closed"
             , kinyarwanda = Just "Gufunga"
@@ -1751,11 +1767,6 @@ translationSet trans =
                 NormalHands ->
                     translationSet Normal
 
-        HaveYouSynced ->
-            { english = "Have you synced data for the health center you are working with?"
-            , kinyarwanda = Nothing
-            }
-
         HeadHair ->
             { english = "Head/Hair"
             , kinyarwanda = Nothing
@@ -1801,6 +1812,65 @@ translationSet trans =
         Height ->
             { english = "Height"
             , kinyarwanda = Just "Uburebure"
+            }
+
+        High ->
+            { english = "High"
+            , kinyarwanda = Nothing
+            }
+
+        HighRiskFactor factor ->
+            case factor of
+                PrenatalActivity.Model.ConvulsionsAndUnconsciousPreviousDelivery ->
+                    { english = "Patient experienced convulsions in previous delivery and became unconscious after delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalActivity.Model.ConvulsionsPreviousDelivery ->
+                    { english = "Patient experienced convulsions in previous delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+        HighRiskFactors ->
+            { english = "High Risk Factors"
+            , kinyarwanda = Nothing
+            }
+
+        HighSeverityAlert alert ->
+            case alert of
+                PrenatalActivity.Model.BodyTemperature ->
+                    { english = "Body Temperature"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalActivity.Model.BloodPressure ->
+                    { english = "Blood Pressure"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalActivity.Model.FetalHeartRate ->
+                    { english = "No fetal heart rate noted"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalActivity.Model.FetalMovement ->
+                    { english = "No fetal movement noted"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalActivity.Model.HeartRate ->
+                    { english = "Heart Rate"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalActivity.Model.RespiratoryRate ->
+                    { english = "Respiratory Rate"
+                    , kinyarwanda = Nothing
+                    }
+
+        HighSeverityAlerts ->
+            { english = "High Severity Alerts"
+            , kinyarwanda = Nothing
             }
 
         HistoryTask task ->
@@ -1982,6 +2052,11 @@ translationSet trans =
 
         LoginPhrase phrase ->
             translateLoginPhrase phrase
+
+        Low ->
+            { english = "Low"
+            , kinyarwanda = Nothing
+            }
 
         Lungs ->
             { english = "Lungs"
@@ -2481,6 +2556,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PleaseSync ->
+            { english = "Please sync data for selected Health Center."
+            , kinyarwanda = Nothing
+            }
+
         PreeclampsiaPreviousPregnancy ->
             { english = "Preeclampsia in previous pregnancy "
             , kinyarwanda = Nothing
@@ -2802,6 +2882,26 @@ translationSet trans =
 
         SelectYourHealthCenter ->
             { english = "Select your Health Center"
+            , kinyarwanda = Nothing
+            }
+
+        SelectedHCDownloading ->
+            { english = "Downloading data for selected Health Center. Please wait until completed."
+            , kinyarwanda = Nothing
+            }
+
+        SelectedHCNotSynced ->
+            { english = "Data is not synced"
+            , kinyarwanda = Nothing
+            }
+
+        SelectedHCSyncing ->
+            { english = "Data is syncing"
+            , kinyarwanda = Nothing
+            }
+
+        SelectedHCUploading ->
+            { english = "Uploading data for selected Health Center. Please wait until completed."
             , kinyarwanda = Nothing
             }
 

@@ -223,7 +223,7 @@ viewUserPage page model configured =
                             |> flexPageWrapper model
 
                     PrenatalParticipantsPage ->
-                        Pages.PrenatalParticipants.View.view model.language currentDate loggedInModel.prenatalParticipantsPage model.indexedDb
+                        Pages.PrenatalParticipants.View.view model.language currentDate healthCenterId loggedInModel.prenatalParticipantsPage model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalParticipants)
                             |> flexPageWrapper model
 

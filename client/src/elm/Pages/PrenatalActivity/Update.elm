@@ -16,6 +16,8 @@ import Backend.Measurement.Model
         )
 import Backend.Model
 import Backend.PrenatalEncounter.Model
+import Date.Extra as Date exposing (Interval(Day))
+import Gizra.NominalDate exposing (NominalDate, toLocalDateTime)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
@@ -39,14 +41,17 @@ import Pages.PrenatalActivity.Utils
 import Result exposing (Result)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update msg model =
+update : NominalDate -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate msg model =
     case msg of
         SetActivePage page ->
             ( model
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
+
+        SetAlertsDialogState isOpen ->
+            ( { model | showAlertsDialog = isOpen }, Cmd.none, [] )
 
         ToggleDateSelector ->
             let
@@ -98,12 +103,22 @@ update msg model =
                 range =
                     decodeLmpRange value
 
-                ( lmpDate, isDateSelectorOpen ) =
-                    if isJust range then
-                        ( model.pregnancyDatingData.form.lmpDate, True )
+                today =
+                    toLocalDateTime currentDate 0 0 0 0
 
-                    else
-                        ( Nothing, False )
+                ( lmpDate, isDateSelectorOpen ) =
+                    case range of
+                        Just OneMonth ->
+                            ( Date.add Day -31 today |> Just, True )
+
+                        Just ThreeMonth ->
+                            ( Date.add Day -92 today |> Just, True )
+
+                        Just SixMonth ->
+                            ( Date.add Day -184 today |> Just, True )
+
+                        Nothing ->
+                            ( Nothing, False )
 
                 updatedForm =
                     model.pregnancyDatingData.form

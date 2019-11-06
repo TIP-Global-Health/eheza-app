@@ -36,6 +36,10 @@ div.page-content {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+
+    .ui.message.warning >.header {
+      margin-bottom: 20px;
+    }
 }
 
 div.language-switcher {
@@ -356,6 +360,10 @@ div.page-prenatal-encounter {
       }
     }
 
+    .form.history.obstetric.second .ui.grid{
+      min-height: 70px;
+    }
+
     .ui.full.segment {
       color: $color-text;
       margin-bottom: 20px;
@@ -600,6 +608,14 @@ div.page-prenatal-activity {
         .label.successive-abortions {
           margin-top: 30px
         }
+
+        &.medical,
+        &.social {
+
+          .alert img {
+            margin-top: -10px;
+          }
+        }
       }
 
       .form.examination {
@@ -614,6 +630,10 @@ div.page-prenatal-activity {
           &.self-guidance {
             font-size: 25px;
           }
+        }
+
+        .ui.grid.systolic img {
+          margin-top: -10px;
         }
 
         .title.dia {

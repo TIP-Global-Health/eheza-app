@@ -1017,6 +1017,61 @@ input::placeholder {
   margin-left: -213px !important; //temp
   box-shadow: 0 0 8px rgba(0,0,0,0.2);
 
+  &.alerts-dialog {
+    border-top: 7px solid $color-red-alert;
+    width: 700px !important;
+    margin-left: -350px !important;
+
+    > .content {
+      display: inline-block;
+      max-height: 600px;
+      min-height: 200px;
+      overflow-y: auto;
+
+      .section-label-wrapper {
+        height: 48px;
+
+        img {
+          float: left;
+          width: 48px;
+        }
+
+        .section-label {
+          color: $color-dark-gray;
+          float: left;
+          line-height: 48px;
+          margin-left: 30px;
+          text-align: left;
+          width: 430px;
+        }
+      }
+
+      .section-items {
+        color: $color-gray;
+        font-size: 20px;
+        padding-left: 6rem;
+        text-align: left;
+
+        .alert {
+          margin-bottom: 5px;
+
+          .alert-value {
+            color: $color-red-alert;
+            margin-left: 10px;
+          }
+        }
+      }
+
+      .high-risk-alerts {
+        margin-bottom: 20px;
+      }
+    }
+
+    > .actions > .button {
+      margin-left: 0;
+    }
+  }
+
   > .icon:first-child+*,
   >:first-child:not(.icon) {
     border-top-left-radius: 0;
