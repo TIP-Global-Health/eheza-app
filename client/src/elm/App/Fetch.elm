@@ -5,13 +5,17 @@ import App.Utils exposing (getLoggedInData)
 import Backend.Fetch
 import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
+import Pages.Clinical.Fetch
 import Pages.Clinics.Fetch
 import Pages.Device.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.People.Fetch
 import Pages.Person.Fetch
 import Pages.PinCode.Fetch
+import Pages.PrenatalActivity.Fetch
 import Pages.PrenatalEncounter.Fetch
+import Pages.PrenatalParticipant.Fetch
+import Pages.PrenatalParticipants.Fetch
 import Pages.Relationship.Fetch
 import Pages.Session.Fetch
 
@@ -44,6 +48,19 @@ fetch model =
         PinCodePage ->
             List.map MsgIndexedDb Pages.PinCode.Fetch.fetch
 
+        PageNotFound _ ->
+            []
+
+        ServiceWorkerPage ->
+            []
+
+        UserPage MyAccountPage ->
+            []
+
+        UserPage ClinicalPage ->
+            Pages.Clinical.Fetch.fetch
+                |> List.map MsgIndexedDb
+
         UserPage (ClinicsPage clinicId) ->
             Pages.Clinics.Fetch.fetch clinicId
                 |> List.map MsgIndexedDb
@@ -65,6 +82,24 @@ fetch model =
                     )
                 |> Maybe.withDefault []
 
+        UserPage (PrenatalParticipantPage personId) ->
+            getLoggedInData model
+                |> Maybe.map
+                    (\( _, loggedIn ) ->
+                        Pages.PrenatalParticipant.Fetch.fetch personId model.indexedDb
+                            |> List.map MsgIndexedDb
+                    )
+                |> Maybe.withDefault []
+
+        UserPage PrenatalParticipantsPage ->
+            getLoggedInData model
+                |> Maybe.map
+                    (\( _, loggedIn ) ->
+                        Pages.PrenatalParticipants.Fetch.fetch loggedIn.prenatalParticipantsPage
+                            |> List.map MsgIndexedDb
+                    )
+                |> Maybe.withDefault []
+
         UserPage (RelationshipPage id1 id2) ->
             Pages.Relationship.Fetch.fetch id1 id2 model.indexedDb
                 |> List.map MsgIndexedDb
@@ -77,8 +112,9 @@ fetch model =
             Pages.PrenatalEncounter.Fetch.fetch id model.indexedDb
                 |> List.map MsgIndexedDb
 
-        _ ->
-            []
+        UserPage (PrenatalActivityPage prenatalEncounterId _) ->
+            Pages.PrenatalActivity.Fetch.fetch prenatalEncounterId model.indexedDb
+                |> List.map MsgIndexedDb
 
 
 {-| Given a `Msg`, do we need to fetch the data it would fetch? We only answer

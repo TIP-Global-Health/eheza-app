@@ -39,9 +39,7 @@ ifEmpty value set =
 
 fromBreastExamValue : Maybe BreastExamValue -> BreastExamForm
 fromBreastExamValue saved =
-    -- The `List.head` is temporary, until BreastExamForm is redefined
-    -- to allow more than one.
-    { breast = Maybe.andThen (.exam >> EverySet.toList >> List.head) saved
+    { breast = Maybe.map (.exam >> EverySet.toList) saved
     , selfGuidance = Maybe.map .selfGuidance saved
     }
 
@@ -52,7 +50,7 @@ breastExamFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { breast = or form.breast (value.exam |> EverySet.toList |> List.head)
+                { breast = or form.breast (value.exam |> EverySet.toList |> Just)
                 , selfGuidance = or form.selfGuidance (Just value.selfGuidance)
                 }
             )
@@ -68,21 +66,21 @@ toBreastExamValue : BreastExamForm -> Maybe BreastExamValue
 toBreastExamValue form =
     -- The `EverySet.singleton` is temporary, until BresatExamForm is
     -- redefined to allow more than one.
-    Maybe.map BreastExamValue (Maybe.map EverySet.singleton form.breast)
+    Maybe.map BreastExamValue (Maybe.map EverySet.fromList form.breast)
         |> andMap form.selfGuidance
 
 
 fromCorePhysicalExamValue : Maybe CorePhysicalExamValue -> CorePhysicalExamForm
 fromCorePhysicalExamValue saved =
-    -- Most of this is temporary, until CorePhysicalExamForm is redefined
     { brittleHair = Maybe.map (.hairHead >> EverySet.member BrittleHairCPE) saved
     , paleConjuctiva = Maybe.map (.eyes >> EverySet.member PaleConjuctiva) saved
-    , neck = Maybe.andThen (.neck >> EverySet.toList >> List.head) saved
-    , abnormalHeart = Maybe.map (.heart >> EverySet.member AbnormalHeart) saved
-    , lungs = Maybe.andThen (.lungs >> EverySet.toList >> List.head) saved
-    , abdomen = Maybe.andThen (.abdomen >> EverySet.toList >> List.head) saved
-    , hands = Maybe.andThen (.hands >> EverySet.toList >> List.head) saved
-    , legs = Maybe.andThen (.legs >> EverySet.toList >> List.head) saved
+    , neck = Maybe.map (.neck >> EverySet.toList) saved
+    , heart = Maybe.andThen (.heart >> EverySet.toList >> List.head) saved
+    , heartMurmur = Maybe.map .heartMurmur saved
+    , lungs = Maybe.map (.lungs >> EverySet.toList) saved
+    , abdomen = Maybe.map (.abdomen >> EverySet.toList) saved
+    , hands = Maybe.map (.hands >> EverySet.toList) saved
+    , legs = Maybe.map (.legs >> EverySet.toList) saved
     }
 
 
@@ -94,12 +92,13 @@ corePhysicalExamFormWithDefault form saved =
             (\value ->
                 { brittleHair = or form.brittleHair (value.hairHead |> EverySet.member BrittleHairCPE |> Just)
                 , paleConjuctiva = or form.paleConjuctiva (value.eyes |> EverySet.member PaleConjuctiva |> Just)
-                , neck = or form.neck (value.neck |> EverySet.toList |> List.head)
-                , abnormalHeart = or form.abnormalHeart (value.heart |> EverySet.member AbnormalHeart |> Just)
-                , lungs = or form.lungs (value.lungs |> EverySet.toList |> List.head)
-                , abdomen = or form.abdomen (value.abdomen |> EverySet.toList |> List.head)
-                , hands = or form.hands (value.hands |> EverySet.toList |> List.head)
-                , legs = or form.legs (value.legs |> EverySet.toList |> List.head)
+                , neck = or form.neck (value.neck |> EverySet.toList |> Just)
+                , heart = or form.heart (value.heart |> EverySet.toList |> List.head)
+                , heartMurmur = or form.heartMurmur (Just value.heartMurmur)
+                , lungs = or form.lungs (value.lungs |> EverySet.toList |> Just)
+                , abdomen = or form.abdomen (value.abdomen |> EverySet.toList |> Just)
+                , hands = or form.hands (value.hands |> EverySet.toList |> Just)
+                , legs = or form.legs (value.legs |> EverySet.toList |> Just)
                 }
             )
 
@@ -115,12 +114,13 @@ toCorePhysicalExamValue form =
     -- Also, termporary things here, until CorePhysicalExamForm is redefined
     Maybe.map CorePhysicalExamValue (Maybe.map (toEverySet BrittleHairCPE NormalHairHead) form.brittleHair)
         |> andMap (Maybe.map (toEverySet PaleConjuctiva NormalEyes) form.paleConjuctiva)
-        |> andMap (Maybe.map (toEverySet AbnormalHeart NormalHeart) form.abnormalHeart)
-        |> andMap (Maybe.map EverySet.singleton form.neck)
-        |> andMap (Maybe.map EverySet.singleton form.lungs)
-        |> andMap (Maybe.map EverySet.singleton form.abdomen)
-        |> andMap (Maybe.map EverySet.singleton form.hands)
-        |> andMap (Maybe.map EverySet.singleton form.legs)
+        |> andMap (Maybe.map EverySet.singleton form.heart)
+        |> andMap form.heartMurmur
+        |> andMap (Maybe.map EverySet.fromList form.neck)
+        |> andMap (Maybe.map EverySet.fromList form.lungs)
+        |> andMap (Maybe.map EverySet.fromList form.abdomen)
+        |> andMap (Maybe.map EverySet.fromList form.hands)
+        |> andMap (Maybe.map EverySet.fromList form.legs)
 
 
 fromDangerSignsValue : Maybe (EverySet DangerSign) -> DangerSignsForm
@@ -283,7 +283,7 @@ toMedicationValue form =
 fromObstetricalExamValue : Maybe ObstetricalExamValue -> ObstetricalExamForm
 fromObstetricalExamValue saved =
     { fundalHeight = Maybe.map (.fundalHeight >> (\(HeightInCm cm) -> cm)) saved
-    , fetalPresentation = Maybe.map .fetalPresentation saved
+    , fetalPresentation = Maybe.map (.fetalPresentation >> EverySet.toList) saved
     , fetalMovement = Maybe.map .fetalMovement saved
     , fetalHeartRate = Maybe.map .fetalHeartRate saved
     , cSectionScar = Maybe.map .cSectionScar saved
@@ -297,7 +297,7 @@ obstetricalExamFormWithDefault form saved =
             form
             (\value ->
                 { fundalHeight = or form.fundalHeight (value.fundalHeight |> (\(HeightInCm cm) -> cm) |> Just)
-                , fetalPresentation = or form.fetalPresentation (Just value.fetalPresentation)
+                , fetalPresentation = or form.fetalPresentation (value.fetalPresentation |> EverySet.toList |> Just)
                 , fetalMovement = or form.fetalMovement (Just value.fetalMovement)
                 , fetalHeartRate = or form.fetalHeartRate (Just value.fetalHeartRate)
                 , cSectionScar = or form.cSectionScar (Just value.cSectionScar)
@@ -314,7 +314,7 @@ toObstetricalExamValueWithDefault saved form =
 toObstetricalExamValue : ObstetricalExamForm -> Maybe ObstetricalExamValue
 toObstetricalExamValue form =
     Maybe.map ObstetricalExamValue (Maybe.map HeightInCm form.fundalHeight)
-        |> andMap form.fetalPresentation
+        |> andMap (Maybe.map EverySet.fromList form.fetalPresentation)
         |> andMap form.fetalMovement
         |> andMap form.fetalHeartRate
         |> andMap form.cSectionScar

@@ -3,13 +3,21 @@ module Pages.PrenatalActivity.Update exposing (update)
 import App.Model
 import Backend.Measurement.Model
     exposing
-        ( CSectionReason(..)
+        ( AbdomenCPESign(..)
+        , BreastExamSign(..)
+        , CSectionReason(..)
         , DangerSign(..)
         , FamilyPlanningSign(..)
+        , HandsCPESign(..)
+        , LegsCPESign(..)
+        , LungsCPESign(..)
+        , NeckCPESign(..)
         , PreviousDeliveryPeriod(..)
         )
 import Backend.Model
 import Backend.PrenatalEncounter.Model
+import Date.Extra as Date exposing (Interval(Day))
+import Gizra.NominalDate exposing (NominalDate, toLocalDateTime)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
@@ -33,14 +41,17 @@ import Pages.PrenatalActivity.Utils
 import Result exposing (Result)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update msg model =
+update : NominalDate -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate msg model =
     case msg of
         SetActivePage page ->
             ( model
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
+
+        SetAlertsDialogState isOpen ->
+            ( { model | showAlertsDialog = isOpen }, Cmd.none, [] )
 
         ToggleDateSelector ->
             let
@@ -92,12 +103,22 @@ update msg model =
                 range =
                     decodeLmpRange value
 
-                ( lmpDate, isDateSelectorOpen ) =
-                    if isJust range then
-                        ( model.pregnancyDatingData.form.lmpDate, True )
+                today =
+                    toLocalDateTime currentDate 0 0 0 0
 
-                    else
-                        ( Nothing, False )
+                ( lmpDate, isDateSelectorOpen ) =
+                    case range of
+                        Just OneMonth ->
+                            ( Date.add Day -31 today |> Just, True )
+
+                        Just ThreeMonth ->
+                            ( Date.add Day -92 today |> Just, True )
+
+                        Just SixMonth ->
+                            ( Date.add Day -184 today |> Just, True )
+
+                        Nothing ->
+                            ( Nothing, False )
 
                 updatedForm =
                     model.pregnancyDatingData.form
@@ -154,18 +175,21 @@ update msg model =
                 updatedData =
                     case model.historyData.activeTask of
                         Obstetric ->
-                            case model.historyData.obstetricForm of
-                                FirstStep form ->
+                            case model.historyData.obstetricHistoryStep of
+                                ObstetricHistoryFirstStep ->
                                     let
+                                        form =
+                                            model.historyData.obstetricFormFirstStep
+
                                         updatedForm =
                                             { form | currentlyPregnant = Just value }
                                     in
                                     model.historyData
-                                        |> (\data -> { data | obstetricForm = FirstStep updatedForm })
+                                        |> (\data -> { data | obstetricFormFirstStep = updatedForm })
 
                                 -- We should never get here.
                                 -- Input is set on first step.
-                                SecondStep form ->
+                                ObstetricHistorySecondStep ->
                                     model.historyData
 
                         _ ->
@@ -181,9 +205,12 @@ update msg model =
                 updatedData =
                     case model.historyData.activeTask of
                         Obstetric ->
-                            case model.historyData.obstetricForm of
-                                FirstStep form ->
+                            case model.historyData.obstetricHistoryStep of
+                                ObstetricHistoryFirstStep ->
                                     let
+                                        form =
+                                            model.historyData.obstetricFormFirstStep
+
                                         updatedForm =
                                             case String.toInt value of
                                                 Ok number ->
@@ -193,11 +220,11 @@ update msg model =
                                                     formUpdateFunc Nothing form
                                     in
                                     model.historyData
-                                        |> (\data -> { data | obstetricForm = FirstStep updatedForm })
+                                        |> (\data -> { data | obstetricFormFirstStep = updatedForm })
 
                                 -- We should never get here.
                                 -- Input is set on first step.
-                                SecondStep form ->
+                                ObstetricHistorySecondStep ->
                                     model.historyData
 
                         _ ->
@@ -217,9 +244,9 @@ update msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 ( appMsgs, updatedData ) =
-                    case model.historyData.obstetricForm of
-                        FirstStep step1Form ->
-                            ( step1Form
+                    case model.historyData.obstetricHistoryStep of
+                        ObstetricHistoryFirstStep ->
+                            ( model.historyData.obstetricFormFirstStep
                                 |> toObstetricHistoryValueWithDefault measurement
                                 |> unwrap
                                     []
@@ -230,11 +257,11 @@ update msg model =
                                         ]
                                     )
                             , model.historyData
-                                |> (\data -> { data | obstetricForm = SecondStep emptyObstetricFormSecondStep })
+                                |> (\data -> { data | obstetricHistoryStep = ObstetricHistorySecondStep })
                             )
 
                         -- Satisfy compiler.
-                        SecondStep _ ->
+                        ObstetricHistorySecondStep ->
                             ( [], model.historyData )
             in
             ( { model | historyData = updatedData }
@@ -247,9 +274,12 @@ update msg model =
                 updatedData =
                     case model.historyData.activeTask of
                         Obstetric ->
-                            case model.historyData.obstetricForm of
-                                SecondStep form ->
+                            case model.historyData.obstetricHistoryStep of
+                                ObstetricHistorySecondStep ->
                                     let
+                                        form =
+                                            model.historyData.obstetricFormSecondStep
+
                                         updatedReason =
                                             if form.cSectionReason == Just reason then
                                                 Nothing
@@ -261,11 +291,11 @@ update msg model =
                                             { form | cSectionReason = updatedReason }
                                     in
                                     model.historyData
-                                        |> (\data -> { data | obstetricForm = SecondStep updatedForm })
+                                        |> (\data -> { data | obstetricFormSecondStep = updatedForm })
 
                                 -- We should never get here.
                                 -- Input is set on second step.
-                                FirstStep form ->
+                                ObstetricHistoryFirstStep ->
                                     model.historyData
 
                         _ ->
@@ -281,9 +311,12 @@ update msg model =
                 updatedData =
                     case model.historyData.activeTask of
                         Obstetric ->
-                            case model.historyData.obstetricForm of
-                                SecondStep form ->
+                            case model.historyData.obstetricHistoryStep of
+                                ObstetricHistorySecondStep ->
                                     let
+                                        form =
+                                            model.historyData.obstetricFormSecondStep
+
                                         updatedForm =
                                             case String.toInt value of
                                                 Ok number ->
@@ -293,11 +326,11 @@ update msg model =
                                                     form
                                     in
                                     model.historyData
-                                        |> (\data -> { data | obstetricForm = SecondStep updatedForm })
+                                        |> (\data -> { data | obstetricFormSecondStep = updatedForm })
 
                                 -- We should never get here.
                                 -- Input is set on first step.
-                                FirstStep form ->
+                                ObstetricHistoryFirstStep ->
                                     model.historyData
 
                         _ ->
@@ -313,18 +346,18 @@ update msg model =
                 updatedData =
                     case model.historyData.activeTask of
                         Obstetric ->
-                            case model.historyData.obstetricForm of
-                                SecondStep form ->
+                            case model.historyData.obstetricHistoryStep of
+                                ObstetricHistorySecondStep ->
                                     let
                                         updatedForm =
-                                            formUpdateFunc value form
+                                            formUpdateFunc value model.historyData.obstetricFormSecondStep
                                     in
                                     model.historyData
-                                        |> (\data -> { data | obstetricForm = SecondStep updatedForm })
+                                        |> (\data -> { data | obstetricFormSecondStep = updatedForm })
 
                                 -- We should never get here.
                                 -- Input is set on second step.
-                                FirstStep form ->
+                                ObstetricHistoryFirstStep ->
                                     model.historyData
 
                         _ ->
@@ -340,9 +373,12 @@ update msg model =
                 updatedData =
                     case model.historyData.activeTask of
                         Obstetric ->
-                            case model.historyData.obstetricForm of
-                                SecondStep form ->
+                            case model.historyData.obstetricHistoryStep of
+                                ObstetricHistorySecondStep ->
                                     let
+                                        form =
+                                            model.historyData.obstetricFormSecondStep
+
                                         updatedPeriod =
                                             if form.previousDeliveryPeriod == Just period then
                                                 Nothing
@@ -354,11 +390,11 @@ update msg model =
                                             { form | previousDeliveryPeriod = updatedPeriod }
                                     in
                                     model.historyData
-                                        |> (\data -> { data | obstetricForm = SecondStep updatedForm })
+                                        |> (\data -> { data | obstetricFormSecondStep = updatedForm })
 
                                 -- We should never get here.
                                 -- Input is set on second step.
-                                FirstStep form ->
+                                ObstetricHistoryFirstStep ->
                                     model.historyData
 
                         _ ->
@@ -373,7 +409,7 @@ update msg model =
             let
                 updatedData =
                     model.historyData
-                        |> (\data -> { data | obstetricForm = FirstStep emptyObstetricFormFirstStep })
+                        |> (\data -> { data | obstetricHistoryStep = ObstetricHistoryFirstStep })
             in
             ( { model | historyData = updatedData }
             , Cmd.none
@@ -389,13 +425,13 @@ update msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 ( appMsgs, updatedData ) =
-                    case model.historyData.obstetricForm of
+                    case model.historyData.obstetricHistoryStep of
                         -- Satisfy compiler.
-                        FirstStep _ ->
+                        ObstetricHistoryFirstStep ->
                             ( [], model.historyData )
 
-                        SecondStep step2Form ->
-                            ( step2Form
+                        ObstetricHistorySecondStep ->
+                            ( model.historyData.obstetricFormSecondStep
                                 |> toObstetricHistoryStep2ValueWithDefault measurement
                                 |> unwrap
                                     []
@@ -403,16 +439,15 @@ update msg model =
                                         [ Backend.PrenatalEncounter.Model.SaveObstetricHistoryStep2 personId measurementId value
                                             |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
                                             |> App.Model.MsgIndexedDb
-                                        , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
                                         ]
                                     )
                             , model.historyData
-                                |> (\data -> { data | obstetricForm = FirstStep emptyObstetricFormFirstStep })
+                                |> (\data -> { data | obstetricHistoryStep = ObstetricHistoryFirstStep, activeTask = Medical })
                             )
             in
             ( { model | historyData = updatedData }
             , Cmd.none
-            , appMsgs
+            , App.Model.ScrollToElement tasksBarId :: appMsgs
             )
 
         SetMedicalBoolInput formUpdateFunc value ->
@@ -648,13 +683,62 @@ update msg model =
             , []
             )
 
+        SetCorePhysicalExamHeart value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            model.examinationData.corePhysicalExamForm
+                                |> (\form -> { form | heart = Just value })
+                    in
+                    model.examinationData
+                        |> (\data -> { data | corePhysicalExamForm = updatedForm })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetCorePhysicalExamNeck value ->
             let
                 updatedData =
                     let
                         updatedForm =
                             model.examinationData.corePhysicalExamForm
-                                |> (\form -> { form | neck = Just value })
+                                |> (\form ->
+                                        case form.neck of
+                                            Just options ->
+                                                if List.member value options then
+                                                    let
+                                                        updatedOptions =
+                                                            if List.length options == 1 then
+                                                                Nothing
+
+                                                            else
+                                                                options |> List.filter ((/=) value) |> Just
+                                                    in
+                                                    { form | neck = updatedOptions }
+
+                                                else
+                                                    case value of
+                                                        NormalNeck ->
+                                                            { form | neck = Just [ value ] }
+
+                                                        _ ->
+                                                            let
+                                                                updatedOptions =
+                                                                    case options of
+                                                                        [ NormalNeck ] ->
+                                                                            Just [ value ]
+
+                                                                        _ ->
+                                                                            Just (value :: options)
+                                                            in
+                                                            { form | neck = updatedOptions }
+
+                                            Nothing ->
+                                                { form | neck = Just [ value ] }
+                                   )
                     in
                     model.examinationData
                         |> (\data -> { data | corePhysicalExamForm = updatedForm })
@@ -670,7 +754,40 @@ update msg model =
                     let
                         updatedForm =
                             model.examinationData.corePhysicalExamForm
-                                |> (\form -> { form | lungs = Just value })
+                                |> (\form ->
+                                        case form.lungs of
+                                            Just options ->
+                                                if List.member value options then
+                                                    let
+                                                        updatedOptions =
+                                                            if List.length options == 1 then
+                                                                Nothing
+
+                                                            else
+                                                                options |> List.filter ((/=) value) |> Just
+                                                    in
+                                                    { form | lungs = updatedOptions }
+
+                                                else
+                                                    case value of
+                                                        NormalLungs ->
+                                                            { form | lungs = Just [ value ] }
+
+                                                        _ ->
+                                                            let
+                                                                updatedOptions =
+                                                                    case options of
+                                                                        [ NormalLungs ] ->
+                                                                            Just [ value ]
+
+                                                                        _ ->
+                                                                            Just (value :: options)
+                                                            in
+                                                            { form | lungs = updatedOptions }
+
+                                            Nothing ->
+                                                { form | lungs = Just [ value ] }
+                                   )
                     in
                     model.examinationData
                         |> (\data -> { data | corePhysicalExamForm = updatedForm })
@@ -686,7 +803,40 @@ update msg model =
                     let
                         updatedForm =
                             model.examinationData.corePhysicalExamForm
-                                |> (\form -> { form | abdomen = Just value })
+                                |> (\form ->
+                                        case form.abdomen of
+                                            Just options ->
+                                                if List.member value options then
+                                                    let
+                                                        updatedOptions =
+                                                            if List.length options == 1 then
+                                                                Nothing
+
+                                                            else
+                                                                options |> List.filter ((/=) value) |> Just
+                                                    in
+                                                    { form | abdomen = updatedOptions }
+
+                                                else
+                                                    case value of
+                                                        NormalAbdomen ->
+                                                            { form | abdomen = Just [ value ] }
+
+                                                        _ ->
+                                                            let
+                                                                updatedOptions =
+                                                                    case options of
+                                                                        [ NormalAbdomen ] ->
+                                                                            Just [ value ]
+
+                                                                        _ ->
+                                                                            Just (value :: options)
+                                                            in
+                                                            { form | abdomen = updatedOptions }
+
+                                            Nothing ->
+                                                { form | abdomen = Just [ value ] }
+                                   )
                     in
                     model.examinationData
                         |> (\data -> { data | corePhysicalExamForm = updatedForm })
@@ -702,7 +852,40 @@ update msg model =
                     let
                         updatedForm =
                             model.examinationData.corePhysicalExamForm
-                                |> (\form -> { form | hands = Just value })
+                                |> (\form ->
+                                        case form.hands of
+                                            Just options ->
+                                                if List.member value options then
+                                                    let
+                                                        updatedOptions =
+                                                            if List.length options == 1 then
+                                                                Nothing
+
+                                                            else
+                                                                options |> List.filter ((/=) value) |> Just
+                                                    in
+                                                    { form | hands = updatedOptions }
+
+                                                else
+                                                    case value of
+                                                        NormalHands ->
+                                                            { form | hands = Just [ value ] }
+
+                                                        _ ->
+                                                            let
+                                                                updatedOptions =
+                                                                    case options of
+                                                                        [ NormalHands ] ->
+                                                                            Just [ value ]
+
+                                                                        _ ->
+                                                                            Just (value :: options)
+                                                            in
+                                                            { form | hands = updatedOptions }
+
+                                            Nothing ->
+                                                { form | hands = Just [ value ] }
+                                   )
                     in
                     model.examinationData
                         |> (\data -> { data | corePhysicalExamForm = updatedForm })
@@ -718,7 +901,40 @@ update msg model =
                     let
                         updatedForm =
                             model.examinationData.corePhysicalExamForm
-                                |> (\form -> { form | legs = Just value })
+                                |> (\form ->
+                                        case form.legs of
+                                            Just options ->
+                                                if List.member value options then
+                                                    let
+                                                        updatedOptions =
+                                                            if List.length options == 1 then
+                                                                Nothing
+
+                                                            else
+                                                                options |> List.filter ((/=) value) |> Just
+                                                    in
+                                                    { form | legs = updatedOptions }
+
+                                                else
+                                                    case value of
+                                                        NormalLegs ->
+                                                            { form | legs = Just [ value ] }
+
+                                                        _ ->
+                                                            let
+                                                                updatedOptions =
+                                                                    case options of
+                                                                        [ NormalLegs ] ->
+                                                                            Just [ value ]
+
+                                                                        _ ->
+                                                                            Just (value :: options)
+                                                            in
+                                                            { form | legs = updatedOptions }
+
+                                            Nothing ->
+                                                { form | legs = Just [ value ] }
+                                   )
                     in
                     model.examinationData
                         |> (\data -> { data | corePhysicalExamForm = updatedForm })
@@ -818,7 +1034,42 @@ update msg model =
                     let
                         updatedForm =
                             model.examinationData.obstetricalExamForm
-                                |> (\form -> { form | fetalPresentation = Just value })
+                                |> (\form ->
+                                        case form.fetalPresentation of
+                                            Just options ->
+                                                if List.member value options then
+                                                    let
+                                                        updatedOptions =
+                                                            if List.length options == 1 then
+                                                                Nothing
+
+                                                            else
+                                                                options |> List.filter ((/=) value) |> Just
+                                                    in
+                                                    { form | fetalPresentation = updatedOptions }
+
+                                                else
+                                                    { form | fetalPresentation = Just (value :: options) }
+
+                                            Nothing ->
+                                                { form | fetalPresentation = Just [ value ] }
+                                   )
+                    in
+                    model.examinationData
+                        |> (\data -> { data | obstetricalExamForm = updatedForm })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetObstetricalExamCSectionScar value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            model.examinationData.obstetricalExamForm
+                                |> (\form -> { form | cSectionScar = Just value })
                     in
                     model.examinationData
                         |> (\data -> { data | obstetricalExamForm = updatedForm })
@@ -878,7 +1129,40 @@ update msg model =
                     let
                         updatedForm =
                             model.examinationData.breastExamForm
-                                |> (\form -> { form | breast = Just value })
+                                |> (\form ->
+                                        case form.breast of
+                                            Just options ->
+                                                if List.member value options then
+                                                    let
+                                                        updatedOptions =
+                                                            if List.length options == 1 then
+                                                                Nothing
+
+                                                            else
+                                                                options |> List.filter ((/=) value) |> Just
+                                                    in
+                                                    { form | breast = updatedOptions }
+
+                                                else
+                                                    case value of
+                                                        NormalBreast ->
+                                                            { form | breast = Just [ value ] }
+
+                                                        _ ->
+                                                            let
+                                                                updatedOptions =
+                                                                    case options of
+                                                                        [ NormalBreast ] ->
+                                                                            Just [ value ]
+
+                                                                        _ ->
+                                                                            Just (value :: options)
+                                                            in
+                                                            { form | breast = updatedOptions }
+
+                                            Nothing ->
+                                                { form | breast = Just [ value ] }
+                                   )
                     in
                     model.examinationData
                         |> (\data -> { data | breastExamForm = updatedForm })

@@ -9,7 +9,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import Date.Extra as Date exposing (Interval(Day))
 import EveryDict
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -19,11 +19,11 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.Model exposing (..)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import PrenatalActivity.Model exposing (..)
-import PrenatalActivity.Utils exposing (getActivityIcon, getAllActivities)
+import PrenatalActivity.Utils exposing (generateHighRiskAlertData, generateHighSeverityAlertData, getActivityIcon, getAllActivities)
 import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date exposing (date)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (script, tabItem, thumbnailImage, viewLoading)
+import Utils.Html exposing (script, tabItem, thumbnailImage, viewLoading, viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -77,11 +77,14 @@ view language currentDate id db model =
                 |> RemoteData.andMap measurements
                 |> RemoteData.andMap (Success id)
 
+        header =
+            viewWebData language (viewHeader language) identity data
+
         content =
             viewWebData language (viewContent language currentDate model) identity data
     in
     div [ class "page-prenatal-encounter" ] <|
-        [ viewHeader language
+        [ header
         , content
         ]
 
@@ -89,12 +92,12 @@ view language currentDate id db model =
 viewContent : Language -> NominalDate -> Model -> FetchedData -> Html Msg
 viewContent language currentDate model data =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate data.person data.measurements
+        viewMotherAndMeasurements language currentDate data.person data.measurements model.showAlertsDialog SetAlertsDialogState
             ++ viewMainPageContent language currentDate data model
 
 
-viewHeader : Language -> Html Msg
-viewHeader language =
+viewHeader : Language -> FetchedData -> Html Msg
+viewHeader language data =
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -102,7 +105,7 @@ viewHeader language =
             [ text <| translate language Translate.PrenatalEncounter ]
         , a
             [ class "link-back"
-            , onClick <| SetActivePage PinCodePage
+            , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage data.participant.person
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -110,15 +113,35 @@ viewHeader language =
         ]
 
 
-viewMotherAndMeasurements : Language -> NominalDate -> Person -> PrenatalMeasurements -> List (Html any)
-viewMotherAndMeasurements language currentDate mother measurements =
-    [ viewMotherDetails language currentDate mother
+viewMotherAndMeasurements : Language -> NominalDate -> Person -> PrenatalMeasurements -> Bool -> (Bool -> msg) -> List (Html msg)
+viewMotherAndMeasurements language currentDate mother measurements isDialogOpen setAlertsDialogStateMsg =
+    [ viewMotherDetails language currentDate mother measurements isDialogOpen setAlertsDialogStateMsg
     , viewMeasurements language currentDate measurements
     ]
 
 
-viewMotherDetails : Language -> NominalDate -> Person -> Html any
-viewMotherDetails language currentDate mother =
+viewMotherDetails : Language -> NominalDate -> Person -> PrenatalMeasurements -> Bool -> (Bool -> msg) -> Html msg
+viewMotherDetails language currentDate mother measurements isDialogOpen setAlertsDialogStateMsg =
+    let
+        highRiskAlertsData =
+            allHighRiskFactors
+                |> List.filterMap (generateHighRiskAlertData language measurements)
+
+        highSeverityAlertsData =
+            allHighSeverityAlerts
+                |> List.filterMap (generateHighSeverityAlertData language currentDate measurements)
+
+        alertSign =
+            if List.isEmpty highRiskAlertsData && List.isEmpty highSeverityAlertsData then
+                emptyNode
+
+            else
+                div
+                    [ class "alerts"
+                    , onClick <| setAlertsDialogStateMsg True
+                    ]
+                    [ img [ src "assets/images/exclamation-red.png" ] [] ]
+    in
     div [ class "item" ]
         [ div [ class "ui image" ]
             [ thumbnailImage "mother" mother.avatarUrl mother.name thumbnailDimensions.height thumbnailDimensions.width ]
@@ -135,7 +158,73 @@ viewMotherDetails language currentDate mother =
                     )
                     (ageInYears currentDate mother)
             ]
+        , alertSign
+        , viewModal <| alertsDialog language highRiskAlertsData highSeverityAlertsData isDialogOpen setAlertsDialogStateMsg
         ]
+
+
+alertsDialog : Language -> List String -> List ( String, String ) -> Bool -> (Bool -> msg) -> Maybe (Html msg)
+alertsDialog language highRiskAlertsData highSeverityAlertsData isOpen setAlertsDialogStateMsg =
+    if isOpen then
+        let
+            sectionLabel title =
+                div [ class "section-label-wrapper" ]
+                    [ img [ src "assets/images/exclamation-red.png" ] []
+                    , div [ class "section-label" ] [ text <| translate language title ++ ":" ]
+                    ]
+
+            viewAlertWithValue message value =
+                div [ class "alert" ]
+                    [ span [ class "alert-text" ] [ text <| "- " ++ message ++ ":" ]
+                    , span [ class "alert-value" ] [ text value ]
+                    ]
+
+            viewAlertWithoutValue message =
+                div [ class "alert" ] [ text <| "- " ++ message ]
+
+            viewHighSeverityAlert ( message, value ) =
+                if value == "" then
+                    viewAlertWithoutValue message
+
+                else
+                    viewAlertWithValue message value
+
+            highRiskAlerts =
+                highRiskAlertsData
+                    |> List.map viewAlertWithoutValue
+
+            highSeverityAlerts =
+                highSeverityAlertsData
+                    |> List.map viewHighSeverityAlert
+        in
+        Just <|
+            div [ class "ui active modal alerts-dialog" ]
+                [ div [ class "content" ]
+                    [ div [ class "high-risk-alerts" ]
+                        [ sectionLabel Translate.HighRiskFactors
+                        , highRiskAlerts
+                            |> div [ class "section-items" ]
+                        ]
+                        |> showIf (List.isEmpty highRiskAlerts |> not)
+                    , div [ class "high-severity-alerts" ]
+                        [ sectionLabel Translate.HighSeverityAlerts
+                        , highSeverityAlerts
+                            |> div [ class "section-items" ]
+                        ]
+                        |> showIf (List.isEmpty highSeverityAlerts |> not)
+                    ]
+                , div
+                    [ class "actions" ]
+                    [ button
+                        [ class "ui primary fluid button"
+                        , onClick <| setAlertsDialogStateMsg False
+                        ]
+                        [ text <| translate language Translate.Close ]
+                    ]
+                ]
+
+    else
+        Nothing
 
 
 viewMeasurements : Language -> NominalDate -> PrenatalMeasurements -> Html any
@@ -144,7 +233,7 @@ viewMeasurements language currentDate measurements =
         ( edd, ega ) =
             measurements.lastMenstrualPeriod
                 |> Maybe.map (Tuple.second >> .value >> .date)
-                |> generateEDDandEGA language currentDate
+                |> generateEDDandEGA language currentDate ( "--/--/----", "----" )
 
         obstetricHistoryValue =
             measurements.obstetricHistory
@@ -152,9 +241,9 @@ viewMeasurements language currentDate measurements =
 
         ( gravida, para ) =
             unwrap
-                ( "", "" )
+                ( "----", "----" )
                 (\value ->
-                    ( generateGravida value.termPregnancy value.preTermPregnancy
+                    ( generateGravida value.termPregnancy value.preTermPregnancy value.currentlyPregnant
                     , generatePara value.termPregnancy value.preTermPregnancy value.abortions value.liveChildren
                     )
                 )
@@ -274,7 +363,7 @@ viewMainPageContent language currentDate data model =
                 , div [ class "actions" ]
                     [ button
                         [ class "ui fluid primary button"
-                        , onClick <| SetActivePage PinCodePage
+                        , onClick <| CloseEncounter data.id
                         ]
                         [ text <| translate language Translate.EndEncounter ]
                     ]

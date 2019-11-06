@@ -36,6 +36,10 @@ div.page-content {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+
+    .ui.message.warning >.header {
+      margin-bottom: 20px;
+    }
 }
 
 div.language-switcher {
@@ -153,6 +157,27 @@ div.page-pincode {
       width: 89%;
     }
 
+    // Maintaing margin from 'sign out' button when selecting health center.
+    button.health-center:last-child {
+        margin-bottom: 6rem !important;
+    }
+}
+
+div.page-clinical {
+    font-size: 1.72rem; //24px;
+    text-align: center;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    div.ui.basic.head.segment {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      margin-left: -40px;
+    }
+
     button.ui.primary.button.group-assessment,
     button.ui.primary.button.individual-assessment {
       padding: 0;
@@ -206,10 +231,6 @@ div.page-pincode {
       }
     }
 
-    // Maintaing margin from 'sign out' button when selecting health center.
-    button.health-center:last-child {
-        margin-bottom: 6rem !important;
-    }
 }
 
 div.page-person-create {
@@ -339,8 +360,13 @@ div.page-prenatal-encounter {
       }
     }
 
+    .form.history.obstetric.second .ui.grid{
+      min-height: 70px;
+    }
+
     .ui.full.segment {
       color: $color-text;
+      margin-bottom: 20px;
 
       .full.content {
         min-height: 430px;
@@ -513,6 +539,7 @@ div.page-prenatal-activity {
       }
 
       .results {
+        display: inline-block;
         width: 100%;
 
         .edd-result,
@@ -581,6 +608,14 @@ div.page-prenatal-activity {
         .label.successive-abortions {
           margin-top: 30px
         }
+
+        &.medical,
+        &.social {
+
+          .alert img {
+            margin-top: -10px;
+          }
+        }
       }
 
       .form.examination {
@@ -595,6 +630,10 @@ div.page-prenatal-activity {
           &.self-guidance {
             font-size: 25px;
           }
+        }
+
+        .ui.grid.systolic img {
+          margin-top: -10px;
         }
 
         .title.dia {

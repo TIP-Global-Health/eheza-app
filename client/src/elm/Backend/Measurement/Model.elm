@@ -5,6 +5,7 @@ module Backend.Measurement.Model exposing
     , BreastExamSign(..)
     , BreastExamValue
     , CSectionReason(..)
+    , CSectionScar(..)
     , ChildMeasurementList
     , ChildMeasurements
     , ChildNutrition
@@ -172,13 +173,20 @@ type alias Weight =
 
 
 type FamilyPlanningSign
-    = Condoms
+    = AutoObservation
+    | Condoms
+    | CycleBeads
+    | CycleCounting
+    | Hysterectomy
+    | Implants
+    | Injectables
     | IUD
-    | Implant
-    | Injection
-    | Necklace
+    | LactationAmenorrhea
     | NoFamilyPlanning
-    | Pill
+    | OralContraceptives
+    | Spermicide
+    | TubalLigatures
+    | Vasectomy
 
 
 type alias FamilyPlanning =
@@ -246,6 +254,7 @@ type alias CorePhysicalExamValue =
     { hairHead : EverySet HairHeadCPESign
     , eyes : EverySet EyesCPESign
     , heart : EverySet HeartCPESign
+    , heartMurmur : Bool
     , neck : EverySet NeckCPESign
     , lungs : EverySet LungsCPESign
     , abdomen : EverySet AbdomenCPESign
@@ -265,8 +274,9 @@ type EyesCPESign
 
 
 type HeartCPESign
-    = AbnormalHeart
-    | NormalHeart
+    = IrregularRhythm
+    | NormalRateAndRhythm
+    | SinusTachycardia
 
 
 type NeckCPESign
@@ -282,7 +292,7 @@ type LungsCPESign
 
 
 type AbdomenCPESign
-    = Heptomegaly
+    = Hepatomegaly
     | Splenomegaly
     | TPRightUpper
     | TPRightLower
@@ -359,10 +369,10 @@ type alias Medication =
 
 type alias ObstetricalExamValue =
     { fundalHeight : HeightInCm
-    , fetalPresentation : FetalPresentation
+    , fetalPresentation : EverySet FetalPresentation
     , fetalMovement : Bool
     , fetalHeartRate : Int
-    , cSectionScar : Bool
+    , cSectionScar : CSectionScar
     }
 
 
@@ -374,6 +384,13 @@ type FetalPresentation
     = Transverse
     | Breach
     | Cephalic
+    | Twins
+
+
+type CSectionScar
+    = Vertical
+    | Horizontal
+    | NoScar
 
 
 type alias ObstetricHistoryValue =

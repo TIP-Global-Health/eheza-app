@@ -8,10 +8,10 @@ import Maybe.Extra exposing (unwrap)
 import Translate exposing (Language, translate)
 
 
-generateEDDandEGA : Language -> NominalDate -> Maybe NominalDate -> ( String, String )
-generateEDDandEGA language currentDate maybeLmpDate =
+generateEDDandEGA : Language -> NominalDate -> ( String, String ) -> Maybe NominalDate -> ( String, String )
+generateEDDandEGA language currentDate defaults maybeLmpDate =
     unwrap
-        ( "", "" )
+        defaults
         (\lmpDate ->
             let
                 eddDate =
@@ -36,11 +36,17 @@ generateEDDandEGA language currentDate maybeLmpDate =
         maybeLmpDate
 
 
-generateGravida : Int -> Int -> String
-generateGravida termPregnancy preTermPregnancy =
+generateGravida : Int -> Int -> Bool -> String
+generateGravida termPregnancy preTermPregnancy currentlyPregnant =
     let
         total =
-            termPregnancy + preTermPregnancy
+            (termPregnancy + preTermPregnancy)
+                + (if currentlyPregnant then
+                    1
+
+                   else
+                    0
+                  )
     in
     if total < 10 then
         "0" ++ toString total

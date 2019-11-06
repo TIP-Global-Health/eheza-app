@@ -232,26 +232,47 @@ decodeFamilyPlanningSign =
         |> andThen
             (\sign ->
                 case sign of
-                    "pill" ->
-                        succeed Pill
+                    "auto-observation" ->
+                        succeed AutoObservation
 
                     "condoms" ->
                         succeed Condoms
 
+                    "necklace" ->
+                        succeed CycleBeads
+
+                    "cycle-counting" ->
+                        succeed CycleCounting
+
+                    "hysterectomy" ->
+                        succeed Hysterectomy
+
+                    "implant" ->
+                        succeed Implants
+
+                    "injection" ->
+                        succeed Injectables
+
                     "iud" ->
                         succeed IUD
 
-                    "implant" ->
-                        succeed Implant
-
-                    "injection" ->
-                        succeed Injection
-
-                    "necklace" ->
-                        succeed Necklace
+                    "lactation-amenorrhea" ->
+                        succeed LactationAmenorrhea
 
                     "none" ->
                         succeed NoFamilyPlanning
+
+                    "pill" ->
+                        succeed OralContraceptives
+
+                    "spermicide" ->
+                        succeed Spermicide
+
+                    "tubal-ligatures" ->
+                        succeed TubalLigatures
+
+                    "vasectomy" ->
+                        succeed Vasectomy
 
                     _ ->
                         fail <|
@@ -337,11 +358,14 @@ decodeHeartCPESign =
         |> andThen
             (\s ->
                 case s of
-                    "abnormal" ->
-                        succeed AbnormalHeart
+                    "irregular-rhythm" ->
+                        succeed IrregularRhythm
 
-                    "normal" ->
-                        succeed NormalHeart
+                    "normal-rate-and-rhythm" ->
+                        succeed NormalRateAndRhythm
+
+                    "sinus-tachycardia" ->
+                        succeed SinusTachycardia
 
                     _ ->
                         fail <|
@@ -398,8 +422,8 @@ decodeAbdomenCPESign =
         |> andThen
             (\s ->
                 case s of
-                    "heptomegaly" ->
-                        succeed Heptomegaly
+                    "hepatomegaly" ->
+                        succeed Hepatomegaly
 
                     "splenomegaly" ->
                         succeed Splenomegaly
@@ -473,6 +497,7 @@ decodeCorePhysicalExam =
         |> required "head_hair" (decodeEverySet decodeHairHeadCPESign)
         |> required "eyes" (decodeEverySet decodeEyesCPESign)
         |> required "heart" (decodeEverySet decodeHeartCPESign)
+        |> required "heart_murmur" bool
         |> required "neck" (decodeEverySet decodeNeckCPESign)
         |> required "lungs" (decodeEverySet decodeLungsCPESign)
         |> required "abdomen" (decodeEverySet decodeAbdomenCPESign)
@@ -622,6 +647,9 @@ decodeFetalPresentation =
                     "breach" ->
                         succeed Breach
 
+                    "twins" ->
+                        succeed Twins
+
                     _ ->
                         fail <| s ++ " is not a recognized FetalPresentation"
             )
@@ -631,10 +659,10 @@ decodeObstetricalExam : Decoder ObstetricalExam
 decodeObstetricalExam =
     succeed ObstetricalExamValue
         |> required "fundal_height" (map HeightInCm decodeFloat)
-        |> required "fetal_presentation" decodeFetalPresentation
+        |> required "fetal_presentation" (decodeEverySet decodeFetalPresentation)
         |> required "fetal_movement" bool
         |> required "fetal_heart_rate" decodeInt
-        |> required "c_section_scar" bool
+        |> required "c_section_scar" decodeCSectionScar
         |> decodePrenatalMeasurement
 
 
@@ -755,6 +783,26 @@ decodeCSectionReason =
 
                     _ ->
                         fail <| s ++ " is not a recognized CSectionReason"
+            )
+
+
+decodeCSectionScar : Decoder CSectionScar
+decodeCSectionScar =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "vertical" ->
+                        succeed Vertical
+
+                    "horizontal" ->
+                        succeed Horizontal
+
+                    "none" ->
+                        succeed NoScar
+
+                    _ ->
+                        fail <| s ++ " is not a recognized CSectionScar"
             )
 
 

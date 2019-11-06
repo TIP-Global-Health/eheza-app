@@ -17,7 +17,7 @@ module Pages.PrenatalActivity.Model exposing
     , NutritionAssessmentForm
     , ObstetricFormFirstStep
     , ObstetricFormSecondStep
-    , ObstetricHistoryFormType(..)
+    , ObstetricHistoryStep(..)
     , ObstetricalExamForm
     , PatientProvisionsData
     , PatientProvisionsTask(..)
@@ -31,6 +31,7 @@ module Pages.PrenatalActivity.Model exposing
     , emptyObstetricFormFirstStep
     , emptyObstetricFormSecondStep
     , encodeLmpRange
+    , tasksBarId
     )
 
 import Backend.Entities exposing (..)
@@ -41,6 +42,7 @@ import Pages.Page exposing (Page)
 
 type Msg
     = SetActivePage Page
+    | SetAlertsDialogState Bool
       -- PregnancyDatingMsgs
     | ToggleDateSelector
     | SetLmpDate Date
@@ -77,6 +79,7 @@ type Msg
     | SaveNutritionAssessment PrenatalEncounterId PersonId (Maybe ( PrenatalNutritionId, PrenatalNutrition ))
       -- ExaminationMsgs, Core Physical Exam
     | SetCorePhysicalExamBoolInput (Bool -> CorePhysicalExamForm -> CorePhysicalExamForm) Bool
+    | SetCorePhysicalExamHeart HeartCPESign
     | SetCorePhysicalExamNeck NeckCPESign
     | SetCorePhysicalExamLungs LungsCPESign
     | SetCorePhysicalExamAbdomen AbdomenCPESign
@@ -88,6 +91,7 @@ type Msg
     | SetObstetricalExamIntMeasurement (Maybe Int -> ObstetricalExamForm -> ObstetricalExamForm) String
     | SetObstetricalExamFloatMeasurement (Maybe Float -> ObstetricalExamForm -> ObstetricalExamForm) String
     | SetObstetricalExamFetalPresentation FetalPresentation
+    | SetObstetricalExamCSectionScar CSectionScar
     | SaveObstetricalExam PrenatalEncounterId PersonId (Maybe ( ObstetricalExamId, ObstetricalExam ))
       -- ExaminationMsgs, Breast Exam
     | SetBreastExamBoolInput (Bool -> BreastExamForm -> BreastExamForm) Bool
@@ -116,6 +120,7 @@ type alias Model =
     , familyPlanningData : FamilyPlanningData
     , patientProvisionsData : PatientProvisionsData
     , dangerSignsData : DangerSignsData
+    , showAlertsDialog : Bool
     }
 
 
@@ -127,6 +132,7 @@ emptyModel =
     , familyPlanningData = emptyFamilyPlanningData
     , patientProvisionsData = emptyPatientProvisionsData
     , dangerSignsData = emptyDangerSignsData
+    , showAlertsDialog = False
     }
 
 
@@ -142,7 +148,9 @@ emptyPregnancyDatingData =
 
 
 type alias HistoryData =
-    { obstetricForm : ObstetricHistoryFormType
+    { obstetricFormFirstStep : ObstetricFormFirstStep
+    , obstetricFormSecondStep : ObstetricFormSecondStep
+    , obstetricHistoryStep : ObstetricHistoryStep
     , medicalForm : MedicalHistoryForm
     , socialForm : SocialHistoryForm
     , activeTask : HistoryTask
@@ -151,7 +159,9 @@ type alias HistoryData =
 
 emptyHistoryData : HistoryData
 emptyHistoryData =
-    { obstetricForm = FirstStep emptyObstetricFormFirstStep
+    { obstetricFormFirstStep = emptyObstetricFormFirstStep
+    , obstetricFormSecondStep = emptyObstetricFormSecondStep
+    , obstetricHistoryStep = ObstetricHistoryFirstStep
     , medicalForm = emptyMedicalHistoryForm
     , socialForm = emptySocialHistoryForm
     , activeTask = Obstetric
@@ -216,9 +226,9 @@ emptyDangerSignsData =
     }
 
 
-type ObstetricHistoryFormType
-    = FirstStep ObstetricFormFirstStep
-    | SecondStep ObstetricFormSecondStep
+type ObstetricHistoryStep
+    = ObstetricHistoryFirstStep
+    | ObstetricHistorySecondStep
 
 
 type HistoryTask
@@ -426,12 +436,13 @@ type alias CorePhysicalExamForm =
     -- Needs to be redefined to use EverySet to allow multiple signs.
     { brittleHair : Maybe Bool
     , paleConjuctiva : Maybe Bool
-    , neck : Maybe NeckCPESign
-    , abnormalHeart : Maybe Bool
-    , lungs : Maybe LungsCPESign
-    , abdomen : Maybe AbdomenCPESign
-    , hands : Maybe HandsCPESign
-    , legs : Maybe LegsCPESign
+    , neck : Maybe (List NeckCPESign)
+    , heart : Maybe HeartCPESign
+    , heartMurmur : Maybe Bool
+    , lungs : Maybe (List LungsCPESign)
+    , abdomen : Maybe (List AbdomenCPESign)
+    , hands : Maybe (List HandsCPESign)
+    , legs : Maybe (List LegsCPESign)
     }
 
 
@@ -440,7 +451,8 @@ emptyCorePhysicalExamForm =
     { brittleHair = Nothing
     , paleConjuctiva = Nothing
     , neck = Nothing
-    , abnormalHeart = Nothing
+    , heart = Nothing
+    , heartMurmur = Nothing
     , lungs = Nothing
     , abdomen = Nothing
     , hands = Nothing
@@ -450,10 +462,10 @@ emptyCorePhysicalExamForm =
 
 type alias ObstetricalExamForm =
     { fundalHeight : Maybe Float
-    , fetalPresentation : Maybe FetalPresentation
+    , fetalPresentation : Maybe (List FetalPresentation)
     , fetalMovement : Maybe Bool
     , fetalHeartRate : Maybe Int
-    , cSectionScar : Maybe Bool
+    , cSectionScar : Maybe CSectionScar
     }
 
 
@@ -469,7 +481,7 @@ emptyObstetricalExamForm =
 
 type alias BreastExamForm =
     -- Should be EverySet, since you can have more than one sign.
-    { breast : Maybe BreastExamSign
+    { breast : Maybe (List BreastExamSign)
     , selfGuidance : Maybe Bool
     }
 
@@ -524,3 +536,8 @@ type alias DangerSignsForm =
 emptyDangerSignsForm : DangerSignsForm
 emptyDangerSignsForm =
     DangerSignsForm Nothing
+
+
+tasksBarId : String
+tasksBarId =
+    "tasks-bar"

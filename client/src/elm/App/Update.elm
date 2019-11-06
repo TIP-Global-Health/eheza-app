@@ -28,6 +28,8 @@ import Pages.PrenatalActivity.Model
 import Pages.PrenatalActivity.Update
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.Update
+import Pages.PrenatalParticipant.Update
+import Pages.PrenatalParticipants.Update
 import Pages.Relationship.Model
 import Pages.Relationship.Update
 import Pages.Session.Model
@@ -200,6 +202,26 @@ update msg model =
                             , appMsgs
                             )
 
+                        MsgPagePrenatalParticipant id subMsg ->
+                            let
+                                ( subCmd, appMsgs ) =
+                                    Pages.PrenatalParticipant.Update.update currentDate id subMsg
+                            in
+                            ( data
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalParticipant id) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPagePrenatalParticipants subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.PrenatalParticipants.Update.update subMsg data.prenatalParticipantsPage
+                            in
+                            ( { data | prenatalParticipantsPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalParticipants) subCmd
+                            , appMsgs
+                            )
+
                         MsgPageRelationship id1 id2 subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
@@ -245,7 +267,7 @@ update msg model =
                                     data.prenatalActivityPages
                                         |> EveryDict.get ( id, activity )
                                         |> Maybe.withDefault Pages.PrenatalActivity.Model.emptyModel
-                                        |> Pages.PrenatalActivity.Update.update subMsg
+                                        |> Pages.PrenatalActivity.Update.update currentDate subMsg
                             in
                             ( { data | prenatalActivityPages = EveryDict.insert ( id, activity ) subModel data.prenatalActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalActivity id activity) subCmd
@@ -365,6 +387,9 @@ update msg model =
             ( { model | zscores = subModel }
             , Cmd.map MsgZScore subCmd
             )
+
+        ScrollToElement elementId ->
+            ( model, scrollToElement elementId )
 
         SetActivePage page ->
             ( { model | activePage = page }
@@ -661,3 +686,6 @@ port storageQuota : (StorageQuota -> msg) -> Sub msg
 the browser is reloaded.
 -}
 port cacheHealthCenter : String -> Cmd msg
+
+
+port scrollToElement : String -> Cmd msg

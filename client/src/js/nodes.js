@@ -517,6 +517,20 @@
                     }
                 }
 
+                if (type === 'prenatal_encounter') {
+                  var prenatalSessionId = params.get('prenatal_participant');
+                  if (prenatalSessionId) {
+                    modifyQuery = modifyQuery.then(function () {
+                        criteria.prenatal_participant = prenatalSessionId;
+                        query = table.where(criteria);
+
+                        countQuery = query.clone();
+
+                        return Promise.resolve();
+                    });
+                  }
+                }
+
                 // For session endpoint, check child param and only return
                 // those sessions which the child was expected at.
                 if (type === 'session') {

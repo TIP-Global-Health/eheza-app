@@ -233,26 +233,47 @@ encodeFamilyPlanningSign =
 encodeFamilyPlanningSignAsString : FamilyPlanningSign -> String
 encodeFamilyPlanningSignAsString sign =
     case sign of
+        AutoObservation ->
+            "auto-observation"
+
         Condoms ->
             "condoms"
+
+        CycleBeads ->
+            "necklace"
+
+        CycleCounting ->
+            "cycle-counting"
+
+        Hysterectomy ->
+            "hysterectomy"
+
+        Implants ->
+            "implant"
+
+        Injectables ->
+            "injection"
 
         IUD ->
             "iud"
 
-        Implant ->
-            "implant"
-
-        Injection ->
-            "injection"
-
-        Necklace ->
-            "necklace"
+        LactationAmenorrhea ->
+            "lactation-amenorrhea"
 
         NoFamilyPlanning ->
             "none"
 
-        Pill ->
+        OralContraceptives ->
             "pill"
+
+        Spermicide ->
+            "spermicide"
+
+        TubalLigatures ->
+            "tubal-ligatures"
+
+        Vasectomy ->
+            "vasectomy"
 
 
 encodeBreastExamSign : BreastExamSign -> Value
@@ -310,11 +331,14 @@ encodeHeartCPESign : HeartCPESign -> Value
 encodeHeartCPESign sign =
     string <|
         case sign of
-            AbnormalHeart ->
-                "abnormal"
+            IrregularRhythm ->
+                "irregular-rhythm"
 
-            NormalHeart ->
-                "normal"
+            NormalRateAndRhythm ->
+                "normal-rate-and-rhythm"
+
+            SinusTachycardia ->
+                "sinus-tachycardia"
 
 
 encodeNeckCPESign : NeckCPESign -> Value
@@ -335,8 +359,8 @@ encodeAbdomenCPESign : AbdomenCPESign -> Value
 encodeAbdomenCPESign sign =
     string <|
         case sign of
-            Heptomegaly ->
-                "heptomegaly"
+            Hepatomegaly ->
+                "hepatomegaly"
 
             Splenomegaly ->
                 "splenomegaly"
@@ -407,6 +431,7 @@ encodeCorePhysicalExamValue value =
     [ ( "head_hair", encodeEverySet encodeHairHeadCPESign value.hairHead )
     , ( "eyes", encodeEverySet encodeEyesCPESign value.eyes )
     , ( "heart", encodeEverySet encodeHeartCPESign value.heart )
+    , ( "heart_murmur", bool value.heartMurmur )
     , ( "neck", encodeEverySet encodeNeckCPESign value.neck )
     , ( "lungs", encodeEverySet encodeLungsCPESign value.lungs )
     , ( "abdomen", encodeEverySet encodeAbdomenCPESign value.abdomen )
@@ -556,6 +581,9 @@ encodeFetalPresentation sign =
             Breach ->
                 "breach"
 
+            Twins ->
+                "twins"
+
 
 encodeHeightInCm : HeightInCm -> Value
 encodeHeightInCm (HeightInCm cm) =
@@ -575,10 +603,10 @@ encodeMuacInCm (MuacInCm cm) =
 encodeObstetricalExamValue : ObstetricalExamValue -> List ( String, Value )
 encodeObstetricalExamValue value =
     [ ( "fundal_height", encodeHeightInCm value.fundalHeight )
-    , ( "fetal_presentation", encodeFetalPresentation value.fetalPresentation )
+    , ( "fetal_presentation", encodeEverySet encodeFetalPresentation value.fetalPresentation )
     , ( "fetal_movement", bool value.fetalMovement )
     , ( "fetal_heart_rate", int value.fetalHeartRate )
-    , ( "c_section_scar", bool value.cSectionScar )
+    , ( "c_section_scar", encodeCSectionScar value.cSectionScar )
     ]
 
 
@@ -622,6 +650,20 @@ encodeCSectionReason sign =
 
             Other ->
                 "other"
+
+
+encodeCSectionScar : CSectionScar -> Value
+encodeCSectionScar sign =
+    string <|
+        case sign of
+            Vertical ->
+                "vertical"
+
+            Horizontal ->
+                "horizontal"
+
+            NoScar ->
+                "none"
 
 
 encodePreviousDeliveryPeriod : PreviousDeliveryPeriod -> Value

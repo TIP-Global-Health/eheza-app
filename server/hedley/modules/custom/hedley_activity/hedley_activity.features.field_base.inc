@@ -27,7 +27,7 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'heptomegaly' => 'Heptomegaly',
+        'hepatomegaly' => 'Hepatomegaly',
         'splenomegaly' => 'Splenomegaly',
         'tender-to-palpitation-right-upper' => 'Tender to Palpitation right upper',
         'tender-to-palpitation-left-upper' => 'Tender to Palpitation left upper',
@@ -212,13 +212,14 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        0 => '',
-        1 => '',
+        'vertical' => 'Vertical',
+        'horizontal' => 'Horizontal',
+        'none' => 'None',
       ),
       'allowed_values_function' => '',
     ),
     'translatable' => 0,
-    'type' => 'list_boolean',
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_c_sections'.
@@ -251,7 +252,10 @@ function hedley_activity_field_default_field_bases() {
     'locked' => 0,
     'module' => 'list',
     'settings' => array(
-      'allowed_values' => array(),
+      'allowed_values' => array(
+        0 => '',
+        1 => '',
+      ),
       'allowed_values_function' => '',
     ),
     'translatable' => 0,
@@ -401,13 +405,20 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'pill' => 'Pill',
+        'auto-observation' => 'Auto-observation',
         'condoms' => 'Condoms',
+        'necklace' => 'Cycle Beads',
+        'cycle-counting' => 'Cycle Counting',
+        'hysterectomy' => 'Hysterectomy',
+        'implant' => 'Implants',
+        'injection' => 'Injectables',
         'iud' => 'IUD',
-        'injection' => 'Injection',
-        'necklace' => 'Necklace',
-        'implant' => 'Implant',
+        'lactation-amenorrhea' => 'Lactation Amenorrhea',
         'none' => 'None of these',
+        'pill' => 'Oral Contraceptives',
+        'spermicide' => 'Spermicide',
+        'tubal-ligatures' => 'Tubal Ligatures',
+        'vasectomy' => 'Vasectomy',
       ),
       'allowed_values_function' => '',
     ),
@@ -458,7 +469,7 @@ function hedley_activity_field_default_field_bases() {
   // Exported field_base: 'field_fetal_presentation'.
   $field_bases['field_fetal_presentation'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_fetal_presentation',
@@ -474,6 +485,7 @@ function hedley_activity_field_default_field_bases() {
         'transverse' => 'Transverse',
         'cephalic' => 'Cephalic',
         'breach' => 'Breach',
+        'twins' => 'Twins',
       ),
       'allowed_values_function' => '',
     ),
@@ -565,13 +577,39 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'abnormal' => 'Abnormal',
-        'normal' => 'Normal',
+        'normal-rate-and-rhythm' => 'Normal Rate and Rhythm',
+        'sinus-tachycardia' => 'Sinus Tachycardia',
+        'irregular-rhythm' => 'Irregular Rhythm',
       ),
       'allowed_values_function' => '',
     ),
     'translatable' => 0,
     'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_heart_murmur'.
+  $field_bases['field_heart_murmur'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_heart_murmur',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        0 => '',
+        1 => '',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_boolean',
   );
 
   // Exported field_base: 'field_heart_rate'.

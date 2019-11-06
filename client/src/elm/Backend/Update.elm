@@ -462,12 +462,17 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
 
         MsgPrenatalEncounter encounterId subMsg ->
             let
+                encounter =
+                    EveryDict.get encounterId model.prenatalEncounters
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+
                 requests =
                     EveryDict.get encounterId model.prenatalEncounterRequests
                         |> Maybe.withDefault Backend.PrenatalEncounter.Model.emptyModel
 
                 ( subModel, subCmd ) =
-                    Backend.PrenatalEncounter.Update.update nurseId healthCenterId encounterId currentDate subMsg requests
+                    Backend.PrenatalEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
             in
             ( { model | prenatalEncounterRequests = EveryDict.insert encounterId subModel model.prenatalEncounterRequests }
             , Cmd.map (MsgPrenatalEncounter encounterId) subCmd
@@ -477,7 +482,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
         MsgSession sessionId subMsg ->
             let
                 session =
-                    AllDict.get sessionId model.editableSessions
+                    EveryDict.get sessionId model.editableSessions
                         |> Maybe.withDefault NotAsked
                         |> RemoteData.map (.offlineSession >> .session)
                         |> RemoteData.toMaybe
@@ -680,6 +685,40 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , []
             )
 
+        PostPrenatalSession prenatalSession ->
+            ( { model | postPrenatalSession = EveryDict.insert prenatalSession.person Loading model.postPrenatalSession }
+            , sw.post prenatalParticipantEndpoint prenatalSession
+                |> toCmd (RemoteData.fromResult >> HandlePostedPrenatalSession prenatalSession.person)
+            , []
+            )
+
+        HandlePostedPrenatalSession personId data ->
+            ( { model | postPrenatalSession = EveryDict.insert personId data model.postPrenatalSession }
+            , Cmd.none
+            , []
+            )
+
+        PostPrenatalEncounter prenatalEncounter ->
+            ( { model | postPrenatalEncounter = EveryDict.insert prenatalEncounter.participant Loading model.postPrenatalEncounter }
+            , sw.post prenatalEncounterEndpoint prenatalEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedPrenatalEncounter prenatalEncounter.participant)
+            , []
+            )
+
+        HandlePostedPrenatalEncounter participantId data ->
+            ( { model | postPrenatalEncounter = EveryDict.insert participantId data model.postPrenatalEncounter }
+            , Cmd.none
+            , RemoteData.map
+                (\( prenatalEncounterId, _ ) ->
+                    [ App.Model.SetActivePage <|
+                        UserPage <|
+                            Pages.Page.PrenatalEncounterPage prenatalEncounterId
+                    ]
+                )
+                data
+                |> RemoteData.withDefault []
+            )
+
 
 {-| The extra return value indicates whether we need to recalculate our
 successful EditableSessions. Ideally, we would handle this in a more
@@ -725,7 +764,12 @@ handleRevision revision (( model, recalc ) as noChange) =
             )
 
         CorePhysicalExamRevision uuid data ->
-            noChange
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | corePhysicalExam = Just ( uuid, data ) })
+                model
+            , recalc
+            )
 
         CounselingScheduleRevision uuid data ->
             -- Just invalidate our value ... if someone wants it, we'll refetch it.

@@ -33,6 +33,9 @@ delta2url previous current =
         -- These are pages that required a logged-in user
         UserPage userPage ->
             case userPage of
+                ClinicalPage ->
+                    Just <| UrlChange NewEntry "#clinical"
+
                 ClinicsPage clinicId ->
                     let
                         clinic =
@@ -68,6 +71,12 @@ delta2url previous current =
                                     "#relations/" ++ fromEntityUuid relatedId
                     in
                     Just <| UrlChange NewEntry url
+
+                PrenatalParticipantPage id ->
+                    Just <| UrlChange NewEntry <| "#prenatal-participant/" ++ fromEntityUuid id
+
+                PrenatalParticipantsPage ->
+                    Just <| UrlChange NewEntry "#prenatal-participants"
 
                 RelationshipPage id1 id2 ->
                     Just <|
@@ -128,12 +137,15 @@ parseUrl =
         , map PinCodePage (s "pincode")
         , map ServiceWorkerPage (s "deployment")
         , map (UserPage MyAccountPage) (s "my-account")
+        , map (UserPage ClinicalPage) (s "clinical")
         , map (\id page -> UserPage <| SessionPage id page) (s "session" </> parseUuid </> parseSessionPage)
         , map (UserPage <| PersonsPage Nothing) (s "persons")
         , map (\id -> UserPage <| PersonsPage (Just id)) (s "relations" </> parseUuid)
         , map (\id -> UserPage <| CreatePersonPage (Just id)) (s "person" </> s "new" </> parseUuid)
         , map (UserPage <| CreatePersonPage Nothing) (s "person" </> s "new")
         , map (\id -> UserPage <| PersonPage id) (s "person" </> parseUuid)
+        , map (UserPage PrenatalParticipantsPage) (s "prenatal-participants")
+        , map (\id -> UserPage <| PrenatalParticipantPage id) (s "prenatal-participant" </> parseUuid)
         , map (\id1 id2 -> UserPage <| RelationshipPage id1 id2) (s "relationship" </> parseUuid </> parseUuid)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
