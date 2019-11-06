@@ -12,4 +12,4 @@ import Translate exposing (Language, translate)
 
 view : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Html Msg
 view language currentDate prenatalEncounterId db =
-    div [] [ text "ClinicalProgressReport page" ]
+    div [ style [ ( "color", "white" ) ] ] [ text "ClinicalProgressReport page" ]

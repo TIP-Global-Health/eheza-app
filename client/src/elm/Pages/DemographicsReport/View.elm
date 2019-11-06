@@ -12,4 +12,4 @@ import Translate exposing (Language, translate)
 
 view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Html Msg
 view language currentDate personId db =
-    div [] [ text "DemographicsReport page" ]
+    div [ style [ ( "color", "white" ) ] ] [ text "DemographicsReport page" ]
