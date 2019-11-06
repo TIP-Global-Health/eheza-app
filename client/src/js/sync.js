@@ -43,6 +43,7 @@
 
     var integerFields = [
         'abortions',
+        'c_sections',
         'fetal_heart_rate',
         'heart_rate',
         'household_size',

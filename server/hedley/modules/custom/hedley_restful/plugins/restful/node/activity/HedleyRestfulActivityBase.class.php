@@ -28,11 +28,6 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
       'sub_property' => 'field_uuid',
     ];
 
-    $public_fields['session'] = [
-      'property' => 'field_session',
-      'sub_property' => 'field_uuid',
-    ];
-
     $public_fields['person'] = [
       'property' => 'field_person',
       'sub_property' => 'field_uuid',

@@ -165,6 +165,7 @@ makeCounselingSession when timing =
     , dateMeasured = when
     , value = ( timing, EverySet.empty )
     , nurse = Nothing
+    , healthCenter = Nothing
     }
 
 

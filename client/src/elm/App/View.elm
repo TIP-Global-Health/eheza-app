@@ -5,10 +5,12 @@ import App.Utils exposing (getLoggedInData)
 import Config.View
 import Date
 import EveryDict
+import EverySet
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
+import Pages.Clinical.View
 import Pages.Clinics.View
 import Pages.Device.View
 import Pages.MyAccount.View
@@ -21,6 +23,8 @@ import Pages.PrenatalActivity.Model
 import Pages.PrenatalActivity.View
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.View
+import Pages.PrenatalParticipant.View
+import Pages.PrenatalParticipants.View
 import Pages.Relationship.Model
 import Pages.Relationship.View
 import Pages.Session.Model
@@ -180,76 +184,101 @@ viewUserPage page model configured =
     in
     case getLoggedInData model of
         Just ( healthCenterId, loggedInModel ) ->
-            case page of
-                MyAccountPage ->
-                    Pages.MyAccount.View.view model.language loggedInModel.nurse
-                        |> oldPageWrapper model
+            let
+                selectedAuthorizedHealthCenter =
+                    Tuple.second loggedInModel.nurse
+                        |> .healthCenters
+                        |> EverySet.member healthCenterId
+            in
+            if selectedAuthorizedHealthCenter then
+                case page of
+                    MyAccountPage ->
+                        Pages.MyAccount.View.view model.language loggedInModel.nurse
+                            |> oldPageWrapper model
 
-                ClinicsPage clinicId ->
-                    Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) healthCenterId clinicId model.indexedDb
-                        |> flexPageWrapper model
+                    ClinicalPage ->
+                        Pages.Clinical.View.view model.language
+                            |> flexPageWrapper model
 
-                CreatePersonPage relation ->
-                    Pages.Person.View.viewCreateForm model.language currentDate relation loggedInModel.createPersonPage model.indexedDb
-                        |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
-                        |> flexPageWrapper model
+                    ClinicsPage clinicId ->
+                        Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) healthCenterId clinicId model.indexedDb
+                            |> flexPageWrapper model
 
-                PersonPage id ->
-                    Pages.Person.View.view model.language currentDate id model.indexedDb
-                        |> flexPageWrapper model
+                    CreatePersonPage relation ->
+                        Pages.Person.View.viewCreateForm model.language currentDate relation loggedInModel.createPersonPage model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
+                            |> flexPageWrapper model
 
-                PersonsPage relation ->
-                    Pages.People.View.view model.language currentDate relation loggedInModel.personsPage model.indexedDb
-                        |> Html.map (MsgLoggedIn << MsgPagePersons)
-                        |> flexPageWrapper model
+                    PersonPage id ->
+                        Pages.Person.View.view model.language currentDate id model.indexedDb
+                            |> flexPageWrapper model
 
-                RelationshipPage id1 id2 ->
-                    let
-                        page =
-                            EveryDict.get ( id1, id2 ) loggedInModel.relationshipPages
-                                |> Maybe.withDefault Pages.Relationship.Model.emptyModel
-                    in
-                    Pages.Relationship.View.view model.language currentDate id1 id2 model.indexedDb page
-                        |> Html.map (MsgLoggedIn << MsgPageRelationship id1 id2)
-                        |> flexPageWrapper model
+                    PersonsPage relation ->
+                        Pages.People.View.view model.language currentDate relation loggedInModel.personsPage model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPagePersons)
+                            |> flexPageWrapper model
 
-                SessionPage sessionId subPage ->
-                    let
-                        sessionPages =
-                            EveryDict.get sessionId loggedInModel.sessionPages
-                                |> Maybe.withDefault Pages.Session.Model.emptyModel
-                    in
-                    Pages.Session.View.view
-                        model.language
-                        currentDate
-                        model.zscores
-                        (Tuple.second loggedInModel.nurse)
-                        sessionId
-                        subPage
-                        sessionPages
-                        model.indexedDb
-                        |> Html.map (MsgLoggedIn << MsgPageSession sessionId)
-                        |> oldPageWrapper model
+                    PrenatalParticipantPage id ->
+                        Pages.PrenatalParticipant.View.view model.language currentDate id model.indexedDb
+                            |> flexPageWrapper model
 
-                PrenatalEncounterPage motherId ->
-                    let
-                        page =
-                            EveryDict.get motherId loggedInModel.prenatalEncounterPages
-                                |> Maybe.withDefault Pages.PrenatalEncounter.Model.emptyModel
-                    in
-                    Pages.PrenatalEncounter.View.view model.language currentDate motherId model.indexedDb page
-                        |> Html.map (MsgLoggedIn << MsgPagePrenatalEncounter motherId)
-                        |> flexPageWrapper model
+                    PrenatalParticipantsPage ->
+                        Pages.PrenatalParticipants.View.view model.language currentDate healthCenterId loggedInModel.prenatalParticipantsPage model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPagePrenatalParticipants)
+                            |> flexPageWrapper model
 
-                PrenatalActivityPage motherId activity ->
-                    let
-                        page =
-                            EveryDict.get ( motherId, activity ) loggedInModel.prenatalActivityPages
-                                |> Maybe.withDefault Pages.PrenatalActivity.Model.emptyModel
-                    in
-                    Pages.PrenatalActivity.View.view model.language currentDate motherId activity model.indexedDb page
-                        |> Html.map (MsgLoggedIn << MsgPagePrenatalActivity motherId activity)
-                        |> flexPageWrapper model
+                    RelationshipPage id1 id2 ->
+                        let
+                            page =
+                                EveryDict.get ( id1, id2 ) loggedInModel.relationshipPages
+                                    |> Maybe.withDefault Pages.Relationship.Model.emptyModel
+                        in
+                        Pages.Relationship.View.view model.language currentDate id1 id2 model.indexedDb page
+                            |> Html.map (MsgLoggedIn << MsgPageRelationship id1 id2)
+                            |> flexPageWrapper model
+
+                    SessionPage sessionId subPage ->
+                        let
+                            sessionPages =
+                                EveryDict.get sessionId loggedInModel.sessionPages
+                                    |> Maybe.withDefault Pages.Session.Model.emptyModel
+                        in
+                        Pages.Session.View.view
+                            model.language
+                            currentDate
+                            model.zscores
+                            (Tuple.second loggedInModel.nurse)
+                            sessionId
+                            subPage
+                            sessionPages
+                            model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPageSession sessionId)
+                            |> oldPageWrapper model
+
+                    PrenatalEncounterPage id ->
+                        let
+                            page =
+                                EveryDict.get id loggedInModel.prenatalEncounterPages
+                                    |> Maybe.withDefault Pages.PrenatalEncounter.Model.emptyModel
+                        in
+                        Pages.PrenatalEncounter.View.view model.language currentDate id model.indexedDb page
+                            |> Html.map (MsgLoggedIn << MsgPagePrenatalEncounter id)
+                            |> flexPageWrapper model
+
+                    PrenatalActivityPage id activity ->
+                        let
+                            page =
+                                EveryDict.get ( id, activity ) loggedInModel.prenatalActivityPages
+                                    |> Maybe.withDefault Pages.PrenatalActivity.Model.emptyModel
+                        in
+                        Pages.PrenatalActivity.View.view model.language currentDate id activity model.indexedDb page
+                            |> Html.map (MsgLoggedIn << MsgPagePrenatalActivity id activity)
+                            |> flexPageWrapper model
+
+            else
+                Pages.PinCode.View.view model.language model.activePage (Success loggedInModel.nurse) model.healthCenterId configured.pinCodePage model.indexedDb
+                    |> Html.map MsgPagePinCode
+                    |> flexPageWrapper model
 
         Nothing ->
             Pages.PinCode.View.view model.language model.activePage (RemoteData.map .nurse configured.loggedIn) model.healthCenterId configured.pinCodePage model.indexedDb

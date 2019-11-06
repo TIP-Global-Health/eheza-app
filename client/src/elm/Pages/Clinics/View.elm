@@ -21,6 +21,7 @@ import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Maybe.Extra exposing (unwrap)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import RemoteData exposing (RemoteData(..), WebData, isLoading)
@@ -62,7 +63,7 @@ viewClinicList language user healthCenterId db =
                 [ text <| translate language Translate.Groups ]
             , a
                 [ class "link-back"
-                , onClick <| SetActivePage PinCodePage
+                , onClick <| SetActivePage <| UserPage ClinicalPage
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []
@@ -85,45 +86,56 @@ up-to-date things are.
 viewLoadedClinicList : Language -> Nurse -> HealthCenterId -> ( EveryDictList ClinicId Clinic, EveryDictList HealthCenterId SyncData ) -> Html Msg
 viewLoadedClinicList language user selectedHealthCenterId ( clinics, sync ) =
     let
-        title =
-            p
-                [ class "centered" ]
-                [ text <| translate language Translate.SelectYourGroup
-                , text ":"
+        showWarningMessage header message =
+            div
+                [ class "ui message warning" ]
+                [ div [ class "header" ] [ text <| translate language header ]
+                , text <| translate language message
                 ]
-
-        synced =
-            clinics
-                |> EveryDictList.filter
-                    (\_ clinic ->
-                        -- Group belongs to seleced health center.
-                        (clinic.healthCenterId == selectedHealthCenterId)
-                            -- Health center is synced.
-                            && EveryDictList.member clinic.healthCenterId sync
-                    )
-                |> EveryDictList.sortBy .name
-
-        clinicView =
-            synced
-                |> EveryDictList.toList
-                |> List.map (viewClinicButton user)
-
-        message =
-            if EveryDictList.isEmpty synced then
-                div
-                    [ class "ui message warning" ]
-                    [ div [ class "header" ] [ text <| translate language Translate.NoGroupsFound ]
-                    , text <| translate language Translate.HaveYouSynced
-                    ]
-
-            else
-                emptyNode
     in
-    div []
-        [ title
-        , div [] clinicView
-        , message
-        ]
+    EveryDictList.get selectedHealthCenterId sync
+        |> unwrap
+            (showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync)
+            (\selectedHealthCenterSyncData ->
+                let
+                    isDownloading =
+                        selectedHealthCenterSyncData.downloadStatus
+                            |> Maybe.map (\status -> status.remaining > 0)
+                            |> Maybe.withDefault True
+
+                    isUploading =
+                        selectedHealthCenterSyncData.uploadStatus
+                            |> Maybe.map (\status -> status.remaining > 0)
+                            |> Maybe.withDefault False
+                in
+                if isDownloading then
+                    showWarningMessage Translate.SelectedHCSyncing Translate.SelectedHCDownloading
+
+                else if isUploading then
+                    showWarningMessage Translate.SelectedHCSyncing Translate.SelectedHCUploading
+
+                else
+                    let
+                        clinicsList =
+                            clinics
+                                |> EveryDictList.filter
+                                    (\_ clinic ->
+                                        -- Group belongs to seleced health center.
+                                        clinic.healthCenterId == selectedHealthCenterId
+                                    )
+                                |> EveryDictList.sortBy .name
+                                |> EveryDictList.toList
+                                |> List.map (viewClinicButton user)
+                                |> div []
+                    in
+                    div []
+                        [ p [ class "centered" ]
+                            [ text <| translate language Translate.SelectYourGroup
+                            , text ":"
+                            ]
+                        , clinicsList
+                        ]
+            )
 
 
 viewClinicButton : Nurse -> ( ClinicId, Clinic ) -> Html Msg

@@ -79,6 +79,31 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchPrenatalEncounter id ->
+            EveryDict.get id model.prenatalEncounters
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchPrenatalEncountersForParticipant id ->
+            EveryDict.get id model.prenatalEncountersByParticipant
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchPrenatalMeasurements id ->
+            EveryDict.get id model.prenatalMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchPrenatalParticipant id ->
+            EveryDict.get id model.prenatalParticipants
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchPrenatalParticipantsForPerson id ->
+            EveryDict.get id model.prenatalParticipantsByPerson
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchRelationshipsForPerson id ->
             EveryDict.get id model.relationshipsByPerson
                 |> Maybe.withDefault NotAsked
@@ -140,8 +165,23 @@ forget msg model =
         FetchPerson id ->
             { model | people = EveryDict.remove id model.people }
 
+        FetchPrenatalParticipantsForPerson id ->
+            { model | prenatalParticipantsByPerson = EveryDict.remove id model.prenatalParticipantsByPerson }
+
         FetchParticipantsForPerson id ->
             { model | participantsByPerson = EveryDict.remove id model.participantsByPerson }
+
+        FetchPrenatalEncounter id ->
+            { model | prenatalEncounters = EveryDict.remove id model.prenatalEncounters }
+
+        FetchPrenatalEncountersForParticipant id ->
+            { model | prenatalEncountersByParticipant = EveryDict.remove id model.prenatalEncountersByParticipant }
+
+        FetchPrenatalMeasurements id ->
+            { model | prenatalMeasurements = EveryDict.remove id model.prenatalMeasurements }
+
+        FetchPrenatalParticipant id ->
+            { model | prenatalParticipants = EveryDict.remove id model.prenatalParticipants }
 
         FetchRelationshipsForPerson id ->
             { model | relationshipsByPerson = EveryDict.remove id model.relationshipsByPerson }

@@ -57,6 +57,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     , dateMeasured = currentDate
                                     , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value = height
                                     }
                                         |> sw.post heightEndpoint
@@ -84,6 +85,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     , dateMeasured = currentDate
                                     , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value = weight
                                     }
                                         |> sw.post weightEndpoint
@@ -111,6 +113,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     , dateMeasured = currentDate
                                     , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value = muac
                                     }
                                         |> sw.post muacEndpoint
@@ -138,6 +141,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     , dateMeasured = currentDate
                                     , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value = ( timing, topics )
                                     }
                                         |> sw.post counselingSessionEndpoint
@@ -166,6 +170,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     , dateMeasured = currentDate
                                     , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value = signs
                                     }
                                         |> sw.post nutritionEndpoint
@@ -193,6 +198,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     , dateMeasured = currentDate
                                     , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value = photo
                                     }
                                         |> sw.post photoEndpoint
@@ -226,6 +232,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     , dateMeasured = currentDate
                                     , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value = attended
                                     }
                                         |> sw.post attendanceEndpoint
@@ -253,6 +260,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     , dateMeasured = currentDate
                                     , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value = signs
                                     }
                                         |> sw.post familyPlanningEndpoint
@@ -280,6 +288,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     , dateMeasured = currentDate
                                     , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value =
                                         { language = language
                                         , formId = formId

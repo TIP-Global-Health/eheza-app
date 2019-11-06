@@ -28,6 +28,8 @@ import Pages.PrenatalActivity.Model
 import Pages.PrenatalActivity.Update
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.Update
+import Pages.PrenatalParticipant.Update
+import Pages.PrenatalParticipants.Update
 import Pages.Relationship.Model
 import Pages.Relationship.Update
 import Pages.Session.Model
@@ -159,7 +161,7 @@ update msg model =
         MsgIndexedDb subMsg ->
             let
                 ( subModel, subCmd, extraMsgs ) =
-                    Backend.Update.updateIndexedDb currentDate nurseId subMsg model.indexedDb
+                    Backend.Update.updateIndexedDb currentDate nurseId model.healthCenterId subMsg model.indexedDb
 
                 -- Most revisions are handled at the IndexedDB level, but there
                 -- is at least one we need to catch here.
@@ -200,6 +202,26 @@ update msg model =
                             , appMsgs
                             )
 
+                        MsgPagePrenatalParticipant id subMsg ->
+                            let
+                                ( subCmd, appMsgs ) =
+                                    Pages.PrenatalParticipant.Update.update currentDate id subMsg
+                            in
+                            ( data
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalParticipant id) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPagePrenatalParticipants subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.PrenatalParticipants.Update.update subMsg data.prenatalParticipantsPage
+                            in
+                            ( { data | prenatalParticipantsPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalParticipants) subCmd
+                            , appMsgs
+                            )
+
                         MsgPageRelationship id1 id2 subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
@@ -226,29 +248,29 @@ update msg model =
                             , extraMsgs
                             )
 
-                        MsgPagePrenatalEncounter motherId subMsg ->
+                        MsgPagePrenatalEncounter id subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.prenatalEncounterPages
-                                        |> EveryDict.get motherId
+                                        |> EveryDict.get id
                                         |> Maybe.withDefault Pages.PrenatalEncounter.Model.emptyModel
-                                        |> Pages.PrenatalEncounter.Update.update motherId model.indexedDb subMsg
+                                        |> Pages.PrenatalEncounter.Update.update subMsg
                             in
-                            ( { data | prenatalEncounterPages = EveryDict.insert motherId subModel data.prenatalEncounterPages }
-                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalEncounter motherId) subCmd
+                            ( { data | prenatalEncounterPages = EveryDict.insert id subModel data.prenatalEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalEncounter id) subCmd
                             , extraMsgs
                             )
 
-                        MsgPagePrenatalActivity motherId activity subMsg ->
+                        MsgPagePrenatalActivity id activity subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.prenatalActivityPages
-                                        |> EveryDict.get ( motherId, activity )
+                                        |> EveryDict.get ( id, activity )
                                         |> Maybe.withDefault Pages.PrenatalActivity.Model.emptyModel
-                                        |> Pages.PrenatalActivity.Update.update motherId activity model.indexedDb subMsg
+                                        |> Pages.PrenatalActivity.Update.update currentDate subMsg
                             in
-                            ( { data | prenatalActivityPages = EveryDict.insert ( motherId, activity ) subModel data.prenatalActivityPages }
-                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalActivity motherId activity) subCmd
+                            ( { data | prenatalActivityPages = EveryDict.insert ( id, activity ) subModel data.prenatalActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalActivity id activity) subCmd
                             , extraMsgs
                             )
                 )
@@ -329,6 +351,9 @@ update msg model =
                                                 , [ cachePinCode "", cacheHealthCenter "" ]
                                                 )
 
+                                            Pages.PinCode.Model.GoToRandomPrenatalEncounter ->
+                                                ( [ MsgIndexedDb Backend.Model.GoToRandomPrenatalEncounter ], [] )
+
                                             Pages.PinCode.Model.SetActivePage page ->
                                                 ( [ SetActivePage page ], [] )
 
@@ -362,6 +387,9 @@ update msg model =
             ( { model | zscores = subModel }
             , Cmd.map MsgZScore subCmd
             )
+
+        ScrollToElement elementId ->
+            ( model, scrollToElement elementId )
 
         SetActivePage page ->
             ( { model | activePage = page }
@@ -658,3 +686,6 @@ port storageQuota : (StorageQuota -> msg) -> Sub msg
 the browser is reloaded.
 -}
 port cacheHealthCenter : String -> Cmd msg
+
+
+port scrollToElement : String -> Cmd msg

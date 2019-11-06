@@ -116,7 +116,8 @@ type Page
 the login page instead.
 -}
 type UserPage
-    = ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
+    = ClinicalPage -- shows a list of clinical options, allows you to choose one
+    | ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
     | SessionPage SessionId SessionPage -- pages that manipulate a group session
     | MyAccountPage -- shows information about the logged-in user
     | PersonPage PersonId -- Shows a particular person.
@@ -127,9 +128,11 @@ type UserPage
       -- Shows list of people using search string. If the PersonId is provided,
       -- then we're in a context in which we're looking to add a family member.
     | PersonsPage (Maybe PersonId)
+    | PrenatalParticipantPage PersonId
+    | PrenatalParticipantsPage
     | RelationshipPage PersonId PersonId -- create or edit a relationship between these persons.
-    | PrenatalEncounterPage PersonId -- prenatal activities index
-    | PrenatalActivityPage PersonId PrenatalActivity -- record prenatal activity
+    | PrenatalEncounterPage PrenatalEncounterId -- prenatal activities index
+    | PrenatalActivityPage PrenatalEncounterId PrenatalActivity -- record prenatal activity
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it

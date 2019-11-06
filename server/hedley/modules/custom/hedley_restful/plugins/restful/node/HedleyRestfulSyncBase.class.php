@@ -82,7 +82,7 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
     $bundle = $wrapper->getBundle();
     $resource_bundle = $this->getBundle();
     if ($resource_bundle && $bundle != $resource_bundle) {
-      throw new RestfulUnprocessableEntityException(format_string('The nid @id vid @vid is not a valid @resource.', $params));
+      throw new RestfulUnprocessableEntityException(format_string('The nid @nid vid @vid is not a valid @resource.', $params));
     }
 
     if ($this->checkEntityAccess('view', 'node', $node) === FALSE) {

@@ -27,7 +27,7 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'heptomegaly' => 'Heptomegaly',
+        'hepatomegaly' => 'Hepatomegaly',
         'splenomegaly' => 'Splenomegaly',
         'tender-to-palpitation-right-upper' => 'Tender to Palpitation right upper',
         'tender-to-palpitation-left-upper' => 'Tender to Palpitation left upper',
@@ -168,6 +168,34 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_boolean',
   );
 
+  // Exported field_base: 'field_c_section_reason'.
+  $field_bases['field_c_section_reason'] = array(
+    'active' => 1,
+    'cardinality' => 5,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_c_section_reason',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'breech' => 'Breech',
+        'emergency' => 'Emergency',
+        'failure-to-progress' => 'Failure To Progress',
+        'none' => 'None',
+        'other' => 'Other',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_c_section_scar'.
   $field_bases['field_c_section_scar'] = array(
     'active' => 1,
@@ -184,13 +212,29 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        0 => '',
-        1 => '',
+        'vertical' => 'Vertical',
+        'horizontal' => 'Horizontal',
+        'none' => 'None',
       ),
       'allowed_values_function' => '',
     ),
     'translatable' => 0,
-    'type' => 'list_boolean',
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_c_sections'.
+  $field_bases['field_c_sections'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_c_sections',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
   );
 
   // Exported field_base: 'field_confident'.
@@ -208,7 +252,10 @@ function hedley_activity_field_default_field_bases() {
     'locked' => 0,
     'module' => 'list',
     'settings' => array(
-      'allowed_values' => array(),
+      'allowed_values' => array(
+        0 => '',
+        1 => '',
+      ),
       'allowed_values_function' => '',
     ),
     'translatable' => 0,
@@ -358,13 +405,20 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'pill' => 'Pill',
+        'auto-observation' => 'Auto-observation',
         'condoms' => 'Condoms',
+        'necklace' => 'Cycle Beads',
+        'cycle-counting' => 'Cycle Counting',
+        'hysterectomy' => 'Hysterectomy',
+        'implant' => 'Implants',
+        'injection' => 'Injectables',
         'iud' => 'IUD',
-        'injection' => 'Injection',
-        'necklace' => 'Necklace',
-        'implant' => 'Implant',
+        'lactation-amenorrhea' => 'Lactation Amenorrhea',
         'none' => 'None of these',
+        'pill' => 'Oral Contraceptives',
+        'spermicide' => 'Spermicide',
+        'tubal-ligatures' => 'Tubal Ligatures',
+        'vasectomy' => 'Vasectomy',
       ),
       'allowed_values_function' => '',
     ),
@@ -415,7 +469,7 @@ function hedley_activity_field_default_field_bases() {
   // Exported field_base: 'field_fetal_presentation'.
   $field_bases['field_fetal_presentation'] = array(
     'active' => 1,
-    'cardinality' => 1,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_fetal_presentation',
@@ -431,6 +485,7 @@ function hedley_activity_field_default_field_bases() {
         'transverse' => 'Transverse',
         'cephalic' => 'Cephalic',
         'breach' => 'Breach',
+        'twins' => 'Twins',
       ),
       'allowed_values_function' => '',
     ),
@@ -522,13 +577,39 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'abnormal' => 'Abnormal',
-        'normal' => 'Normal',
+        'normal-rate-and-rhythm' => 'Normal Rate and Rhythm',
+        'sinus-tachycardia' => 'Sinus Tachycardia',
+        'irregular-rhythm' => 'Irregular Rhythm',
       ),
       'allowed_values_function' => '',
     ),
     'translatable' => 0,
     'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_heart_murmur'.
+  $field_bases['field_heart_murmur'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_heart_murmur',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        0 => '',
+        1 => '',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_boolean',
   );
 
   // Exported field_base: 'field_heart_rate'.
@@ -827,6 +908,36 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_obstetric_history'.
+  $field_bases['field_obstetric_history'] = array(
+    'active' => 1,
+    'cardinality' => 6,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_obstetric_history',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'successive-abortions' => 'Successive Abortions',
+        'successive-premature-deliveries' => 'Successive Premature Deliveries',
+        'preeclampsia-previous-pregnancy' => 'Preeclampsia Previous Pregnancy',
+        'gestational-diabetes-previous-pregnancy' => 'Gestational Diabetes Previous Pregnancy',
+        'incomplete-cervix-previous-pregnancy' => 'Incomplete Cervix Previous Pregnancy',
+        'rh-negative' => 'RH Negative',
+        'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_prenatal_encounter'.
   $field_bases['field_prenatal_encounter'] = array(
     'active' => 1,
@@ -875,6 +986,63 @@ function hedley_activity_field_default_field_bases() {
     'settings' => array(),
     'translatable' => 0,
     'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_previous_delivery'.
+  $field_bases['field_previous_delivery'] = array(
+    'active' => 1,
+    'cardinality' => 7,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_previous_delivery',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'c-section-in-previous-delivery' => 'C Section In Previous Delivery',
+        'stillborn-previous-delivery' => 'Stillborn Previous Delivery',
+        'baby-died-on-day-of-birth-previous-delivery' => 'Baby Died On Day Of Birth Previous Delivery',
+        'partial-placenta-previous-delivery' => 'Partial Placenta Previous Delivery',
+        'severe-hemorrhaging-previous-delivery' => 'Severe Hemorrhaging Previous Delivery',
+        'convulsions-previous-delivery' => 'Convulsions Previous Delivery',
+        'convulsions-and-unconscious-previous-delivery' => 'Convulsions And Unconscious Previous Delivery',
+        'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_previous_delivery_period'.
+  $field_bases['field_previous_delivery_period'] = array(
+    'active' => 1,
+    'cardinality' => 3,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_previous_delivery_period',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'less-than-18-month' => 'Less than 18 Month',
+        'more-than-5-years' => 'More Than 5 Years',
+        'neither' => 'Neither',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_resources'.

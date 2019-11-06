@@ -36,6 +36,10 @@ div.page-content {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+
+    .ui.message.warning >.header {
+      margin-bottom: 20px;
+    }
 }
 
 div.language-switcher {
@@ -153,15 +157,36 @@ div.page-pincode {
       width: 89%;
     }
 
-    button.ui.primary.button.group-assessment {
+    // Maintaing margin from 'sign out' button when selecting health center.
+    button.health-center:last-child {
+        margin-bottom: 6rem !important;
+    }
+}
+
+div.page-clinical {
+    font-size: 1.72rem; //24px;
+    text-align: center;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    div.ui.basic.head.segment {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      margin-left: -40px;
+    }
+
+    button.ui.primary.button.group-assessment,
+    button.ui.primary.button.individual-assessment {
       padding: 0;
       height: 60px;
       margin-left: auto;
       margin-right: auto;
       width: 80%;
 
-      .icon-group {
-        background-image: url(#{$img-path}icon-group-encounter.svg);
+      .icon {
         background-size: 50px 50px;
         display: block;
         height: 50px;
@@ -186,10 +211,26 @@ div.page-pincode {
       }
     }
 
-    // Maintaing margin from 'sign out' button when selecting health center.
-    button.health-center:last-child {
-        margin-bottom: 6rem !important;
+    button.ui.primary.button.group-assessment .icon {
+      background-image: url(#{$img-path}icon-group-encounter.svg);
     }
+
+    button.ui.primary.button.individual-assessment {
+
+      .icon {
+        background-image: url(#{$img-path}icon-individual-encounter.svg);
+        background-size: 40px 40px;
+        margin-left: 55px;
+        margin-top: 8px;
+        height: 40px;
+        width: 40px;
+      }
+
+      .icon-back {
+        margin-left: 71px;
+      }
+    }
+
 }
 
 div.page-person-create {
@@ -319,8 +360,13 @@ div.page-prenatal-encounter {
       }
     }
 
+    .form.history.obstetric.second .ui.grid{
+      min-height: 70px;
+    }
+
     .ui.full.segment {
       color: $color-text;
+      margin-bottom: 20px;
 
       .full.content {
         min-height: 430px;
@@ -493,6 +539,7 @@ div.page-prenatal-activity {
       }
 
       .results {
+        display: inline-block;
         width: 100%;
 
         .edd-result,
@@ -561,6 +608,14 @@ div.page-prenatal-activity {
         .label.successive-abortions {
           margin-top: 30px
         }
+
+        &.medical,
+        &.social {
+
+          .alert img {
+            margin-top: -10px;
+          }
+        }
       }
 
       .form.examination {
@@ -575,6 +630,10 @@ div.page-prenatal-activity {
           &.self-guidance {
             font-size: 25px;
           }
+        }
+
+        .ui.grid.systolic img {
+          margin-top: -10px;
         }
 
         .title.dia {

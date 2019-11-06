@@ -389,6 +389,12 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
         $sub_handler = restful_get_restful_handler($handler_name);
         $sub_handler->setAccount($account);
 
+        $date_fields = [
+          'date_measured',
+          'birth_date',
+          'last_menstrual_period',
+        ];
+
         $data = [];
         foreach (array_keys($item['data']) as $key) {
           $value = $item['data'][$key];
@@ -398,12 +404,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           if ($key != 'uuid' && is_string($value) && Uuid::isValid($value)) {
             $data[$key] = hedley_restful_uuid_to_nid($value);
           }
-          elseif ($key == 'date_measured' && !empty($value)) {
+          elseif (in_array($key, $date_fields) && !empty($value)) {
             // Restful seems to want date values as timestamps -- should
             // investigate if there are other possibilities.
-            $data[$key] = strtotime($value);
-          }
-          elseif ($key == 'birth_date' && !empty($value)) {
             $data[$key] = strtotime($value);
           }
           else {
@@ -418,6 +421,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'type',
           'status',
           'shard',
+          'health_center',
         ];
 
         foreach ($ignored as $i) {

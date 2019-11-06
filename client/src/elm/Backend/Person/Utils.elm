@@ -1,6 +1,6 @@
-module Backend.Person.Utils exposing (ageInYears, diffInYears, isAdult, isPersonAnAdult)
+module Backend.Person.Utils exposing (ageInYears, diffInYears, isAdult, isPersonAFertileWoman, isPersonAnAdult)
 
-import Backend.Person.Model exposing (Person)
+import Backend.Person.Model exposing (Gender(..), Person)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Time.Date
 
@@ -25,3 +25,15 @@ isAdult currentDate maybeBirthDate =
 isPersonAnAdult : NominalDate -> Person -> Maybe Bool
 isPersonAnAdult currentDate person =
     isAdult currentDate person.birthDate
+
+
+isPersonAFertileWoman : NominalDate -> Person -> Maybe Bool
+isPersonAFertileWoman currentDate person =
+    if person.gender == Male then
+        Just False
+
+    else
+        person.birthDate
+            |> diffInYears currentDate
+            |> Maybe.map
+                (\age -> age > 12 && age < 45)
