@@ -136,6 +136,7 @@ type Adherence
 
 type Dashboard
     = ModeratelyMalnourished
+    | NewBeneficiaries
     | SeverelyMalnourished
     | TotalMalnourished
 
@@ -2440,6 +2441,11 @@ translateChartPhrase phrase =
 translateDashboard : Dashboard -> TranslationSet String
 translateDashboard trans =
     case trans of
+        NewBeneficiaries ->
+            { english = "New Beneficiaries"
+            , kinyarwanda = Nothing
+            }
+
         ModeratelyMalnourished ->
             { english = "Moderately Malnourished"
             , kinyarwanda = Nothing

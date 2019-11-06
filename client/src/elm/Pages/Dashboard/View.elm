@@ -38,7 +38,8 @@ view language currentDate healthCenterId model db =
     div
         []
         [ viewPeriodFilter language model
-        , viewMalnourishedCards language currentDate stats model
+        , viewMalnourishedCards language stats
+        , viewMiscCards language stats
         , viewBeneficiariesTable language currentDate stats model
         , div
             [ class "ui placeholder segment" ]
@@ -74,8 +75,8 @@ viewPeriodFilter language model =
         (List.map renderButton filterPeriods)
 
 
-viewMalnourishedCards : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
-viewMalnourishedCards language currentDate stats model =
+viewMalnourishedCards : Language -> DashboardStats -> Html Msg
+viewMalnourishedCards language stats =
     if List.isEmpty stats.malnourished then
         div [ class "ui segment" ] [ text "No data for the selected period." ]
 
@@ -118,6 +119,30 @@ viewMalnourishedCards language currentDate stats model =
                 [ viewCard language totalCard
                 , viewCard language severeCard
                 , viewCard language moderateCard
+                ]
+            ]
+
+
+viewMiscCards : Language -> DashboardStats -> Html Msg
+viewMiscCards language stats =
+    if List.isEmpty stats.malnourished then
+        text ""
+
+    else
+        let
+            totalNewBeneficiaries =
+                stats.childrenBeneficiaries
+                    |> List.length
+
+            totalNewBeneficiariesCard =
+                { title = Translate.Dashboard Translate.NewBeneficiaries
+                , value = totalNewBeneficiaries
+                , valueSeverity = Neutral
+                }
+        in
+        div [ class "ui segment" ]
+            [ div [ class "ui cards" ]
+                [ viewCard language totalNewBeneficiariesCard
                 ]
             ]
 
