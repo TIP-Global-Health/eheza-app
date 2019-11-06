@@ -350,7 +350,7 @@ viewMainPageContent language currentDate data model =
         viewReportLink labelTransId redirectPage =
             div
                 [ class "report-wrapper"
-                , onclick <| SetActivePage redirectMsg
+                , onClick <| SetActivePage redirectPage
                 ]
                 [ div [ class "icon-progress-report" ] []
                 , div [ class "report-text" ]

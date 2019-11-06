@@ -6,7 +6,9 @@ import Backend.Fetch
 import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Pages.Clinical.Fetch
+import Pages.ClinicalProgressReport.Fetch
 import Pages.Clinics.Fetch
+import Pages.DemographicsReport.Fetch
 import Pages.Device.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.People.Fetch
