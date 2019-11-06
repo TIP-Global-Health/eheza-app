@@ -118,6 +118,8 @@ the login page instead.
 type UserPage
     = ClinicalPage -- shows a list of clinical options, allows you to choose one
     | ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
+    | ClinicalProgressReportPage PrenatalEncounterId
+    | DemographicsReportPage PersonId
     | SessionPage SessionId SessionPage -- pages that manipulate a group session
     | MyAccountPage -- shows information about the logged-in user
     | PersonPage PersonId -- Shows a particular person.

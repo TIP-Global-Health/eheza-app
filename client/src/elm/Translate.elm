@@ -3368,14 +3368,24 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                MyAccountPage ->
-                    { english = "My Account"
-                    , kinyarwanda = Just "Compte"
+                ClinicalProgressReportPage _ ->
+                    { english = "Clinical Progress Report"
+                    , kinyarwanda = Nothing
                     }
 
                 CreatePersonPage relationId ->
                     { english = "Create Person"
                     , kinyarwanda = Nothing
+                    }
+
+                DemographicsReportPage _ ->
+                    { english = "Demographics Report"
+                    , kinyarwanda = Nothing
+                    }
+
+                MyAccountPage ->
+                    { english = "My Account"
+                    , kinyarwanda = Just "Compte"
                     }
 
                 PersonPage id ->
