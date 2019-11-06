@@ -60,10 +60,10 @@ viewClinicList language user healthCenterId model db =
 
         ( titleTransId, goBackAction ) =
             if isJust model.clinicType then
-                ( Translate.Programs, SetClinicType Nothing )
+                ( Translate.Groups, SetClinicType Nothing )
 
             else
-                ( Translate.Groups, SetActivePage PinCodePage )
+                ( Translate.Programs, SetActivePage PinCodePage )
     in
     div [ class "wrap wrap-alt-2" ]
         [ div
