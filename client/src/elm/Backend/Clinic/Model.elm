@@ -1,4 +1,4 @@
-module Backend.Clinic.Model exposing (Clinic, ClinicType(..))
+module Backend.Clinic.Model exposing (Clinic, ClinicType(..), allClinicTypes)
 
 import Backend.Entities exposing (..)
 
@@ -16,3 +16,8 @@ type ClinicType
     = Fbf
     | Pmtct
     | Sorwathe
+
+
+allClinicTypes : List ClinicType
+allClinicTypes =
+    [ Pmtct, Fbf, Sorwathe ]

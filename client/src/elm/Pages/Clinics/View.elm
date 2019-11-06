@@ -8,7 +8,7 @@ available for data-entry.
 import AllDict
 import AllDictList
 import App.Model exposing (MsgLoggedIn(..))
-import Backend.Clinic.Model exposing (Clinic, ClinicType(..))
+import Backend.Clinic.Model exposing (Clinic, ClinicType(..), allClinicTypes)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse)
@@ -187,11 +187,8 @@ viewClinicTypeButtons language clinics =
             clinics
                 |> List.map .clinicType
 
-        allTypes =
-            [ Pmtct, Fbf, Sorwathe ]
-
         allowedTypes =
-            allTypes
+            allClinicTypes
                 |> List.filter (\type_ -> List.member type_ clinicsTypes)
     in
     allowedTypes
