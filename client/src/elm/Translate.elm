@@ -135,10 +135,12 @@ type Adherence
 
 
 type Dashboard
-    = ModeratelyMalnourished
+    = FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
+    | ModeratelyMalnourished
     | NewBeneficiaries
     | SeverelyMalnourished
     | TotalMalnourished
+    | UseFamilyPlanning
 
 
 type TranslationId
@@ -2441,6 +2443,11 @@ translateChartPhrase phrase =
 translateDashboard : Dashboard -> TranslationSet String
 translateDashboard trans =
     case trans of
+        FamilyPlanningOutOfWomen { total, useFamilyPlanning } ->
+            { english = String.fromInt useFamilyPlanning ++ " out of " ++ String.fromInt total ++ " women"
+            , kinyarwanda = Nothing
+            }
+
         NewBeneficiaries ->
             { english = "New Beneficiaries"
             , kinyarwanda = Nothing
@@ -2458,6 +2465,11 @@ translateDashboard trans =
 
         TotalMalnourished ->
             { english = "Total Malnourished"
+            , kinyarwanda = Nothing
+            }
+
+        UseFamilyPlanning ->
+            { english = "Use family planning"
             , kinyarwanda = Nothing
             }
 

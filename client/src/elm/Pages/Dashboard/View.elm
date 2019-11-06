@@ -4,6 +4,7 @@ import Array exposing (Array)
 import AssocList as Dict exposing (Dict)
 import Backend.Dashboard.Model exposing (DashboardStats)
 import Backend.Entities exposing (..)
+import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model
@@ -17,6 +18,8 @@ import List.Extra
 import Pages.Dashboard.Model exposing (..)
 import Path
 import Shape exposing (Arc, defaultPieConfig)
+import Svg
+import Svg.Attributes exposing (cx, cy, height, r, width)
 import Translate exposing (Language, translate, translateText)
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes exposing (fill, stroke, transform, viewBox)
@@ -38,20 +41,18 @@ view language currentDate healthCenterId model db =
     div
         []
         [ viewPeriodFilter language model
-        , viewMalnourishedCards language stats
-        , viewMiscCards language stats
+        , viewAllCards language stats
         , viewBeneficiariesTable language currentDate stats model
         , div
             [ class "ui placeholder segment" ]
             [ div [ class "ui two column stackable center aligned grid" ]
                 [ div [ class "middle aligned row" ]
-                    [ div [ class "column" ] [ viewDonutChart stats ]
+                    [ div [ class "column" ] [ viewDonutChart language stats ]
                     ]
                 ]
             ]
         , div [ class "ui segment" ]
             [ text <| Debug.toString <| getFamilyPlanningSignsCounter stats
-            , details [] [ text <| Debug.toString <| stats ]
             ]
         ]
 
@@ -75,76 +76,80 @@ viewPeriodFilter language model =
         (List.map renderButton filterPeriods)
 
 
-viewMalnourishedCards : Language -> DashboardStats -> Html Msg
-viewMalnourishedCards language stats =
+viewAllCards : Language -> DashboardStats -> Html Msg
+viewAllCards language stats =
     if List.isEmpty stats.malnourished then
         div [ class "ui segment" ] [ text "No data for the selected period." ]
 
     else
-        let
-            total =
-                stats.malnourished
-                    |> List.length
-
-            totalCard =
-                { title = Translate.Dashboard Translate.TotalMalnourished
-                , value = total
-                , valueSeverity = Neutral
-                }
-
-            severe =
-                stats.malnourished
-                    |> List.filter (\row -> row.zscore <= -2)
-                    |> List.length
-
-            severeCard =
-                { title = Translate.Dashboard Translate.SeverelyMalnourished
-                , value = severe
-                , valueSeverity = Severe
-                }
-
-            moderate =
-                stats.malnourished
-                    |> List.filter (\row -> row.zscore > -2)
-                    |> List.length
-
-            moderateCard =
-                { title = Translate.Dashboard Translate.ModeratelyMalnourished
-                , value = moderate
-                , valueSeverity = Moderate
-                }
-        in
         div [ class "ui segment" ]
-            [ div [ class "ui cards" ]
-                [ viewCard language totalCard
-                , viewCard language severeCard
-                , viewCard language moderateCard
-                ]
+            [ viewMalnourishedCards language stats
+            , viewMiscCards language stats
             ]
+
+
+viewMalnourishedCards : Language -> DashboardStats -> Html Msg
+viewMalnourishedCards language stats =
+    let
+        total =
+            stats.malnourished
+                |> List.length
+
+        totalCard =
+            { title = Translate.Dashboard Translate.TotalMalnourished
+            , value = total
+            , valueSeverity = Neutral
+            }
+
+        severe =
+            stats.malnourished
+                |> List.filter (\row -> row.zscore <= -2)
+                |> List.length
+
+        severeCard =
+            { title = Translate.Dashboard Translate.SeverelyMalnourished
+            , value = severe
+            , valueSeverity = Severe
+            }
+
+        moderate =
+            stats.malnourished
+                |> List.filter (\row -> row.zscore > -2)
+                |> List.length
+
+        moderateCard =
+            { title = Translate.Dashboard Translate.ModeratelyMalnourished
+            , value = moderate
+            , valueSeverity = Moderate
+            }
+    in
+    div [ class "ui segment" ]
+        [ div [ class "ui cards" ]
+            [ viewCard language totalCard
+            , viewCard language severeCard
+            , viewCard language moderateCard
+            ]
+        ]
 
 
 viewMiscCards : Language -> DashboardStats -> Html Msg
 viewMiscCards language stats =
-    if List.isEmpty stats.malnourished then
-        text ""
+    let
+        totalNewBeneficiaries =
+            stats.childrenBeneficiaries
+                |> List.length
 
-    else
-        let
-            totalNewBeneficiaries =
-                stats.childrenBeneficiaries
-                    |> List.length
-
-            totalNewBeneficiariesCard =
-                { title = Translate.Dashboard Translate.NewBeneficiaries
-                , value = totalNewBeneficiaries
-                , valueSeverity = Neutral
-                }
-        in
-        div [ class "ui segment" ]
-            [ div [ class "ui cards" ]
-                [ viewCard language totalNewBeneficiariesCard
-                ]
+        totalNewBeneficiariesCard =
+            { title = Translate.Dashboard Translate.NewBeneficiaries
+            , value = totalNewBeneficiaries
+            , valueSeverity = Neutral
+            }
+    in
+    div [ class "ui segment" ]
+        [ div [ class "ui cards" ]
+            [ viewCard language totalNewBeneficiariesCard
             ]
+        ]
 
 
 viewCard : Language -> Card -> Html Msg
@@ -425,11 +430,6 @@ h =
     504
 
 
-rgba255 : Int -> Int -> Int -> Float -> Color
-rgba255 r g b a =
-    Color.fromRgba { red = toFloat r / 255, green = toFloat g / 255, blue = toFloat b / 255, alpha = a }
-
-
 colors : Dict FamilyPlanningSign Color
 colors =
     Dict.fromList
@@ -448,8 +448,8 @@ radius =
     min (w / 2) h / 2 - 10
 
 
-viewDonutChart : DashboardStats -> Html Msg
-viewDonutChart stats =
+viewDonutChart : Language -> DashboardStats -> Html Msg
+viewDonutChart language stats =
     let
         dict =
             getFamilyPlanningSignsCounter stats
@@ -472,12 +472,53 @@ viewDonutChart stats =
             totalNoFamilyPlanning =
                 Dict.get NoFamilyPlanning dict
                     |> Maybe.withDefault 0
+
+            useFamilyPlanning =
+                totalCount - totalNoFamilyPlanning
+
+            totalPercent =
+                useFamilyPlanning * 100 // totalCount
         in
         div []
             [ viewChart dictWithoutNoFamilyPlanning
-            , div [] [ text <| "Total family plannings:" ++ String.fromInt totalCount ]
-            , div [] [ text <| "Total No family planning:" ++ String.fromInt totalNoFamilyPlanning ]
+            , div [ class "stats" ]
+                [ span [ class "neutral" ] [ text <| String.fromInt totalPercent ++ "%" ]
+                , text " "
+                , span [] [ translateText language <| Translate.Dashboard Translate.UseFamilyPlanning ]
+                ]
+            , div []
+                [ translateText language <|
+                    Translate.Dashboard <|
+                        Translate.FamilyPlanningOutOfWomen
+                            { total = totalCount
+                            , useFamilyPlanning = useFamilyPlanning
+                            }
+                ]
+            , viewFamilyPlanningChartLegend language dictWithoutNoFamilyPlanning
             ]
+
+
+viewFamilyPlanningChartLegend : Language -> FamilyPlanningSignsCounter -> Html Msg
+viewFamilyPlanningChartLegend language dict =
+    let
+        listSorted =
+            dict
+                |> Dict.toList
+                |> List.sortBy (\( _, val ) -> val)
+                |> List.reverse
+    in
+    div [ class "legend" ]
+        (List.map
+            (\( sign, _ ) ->
+                div []
+                    [ svg [ width "10", height "10", viewBox 0 0 100 100 ]
+                        [ Svg.circle [ cx "50", cy "50", r "40", fill <| Fill <| familyPlanningSignToColor sign ] []
+                        ]
+                    , span [] [ translateText language <| Translate.FamilyPlanningSignLabel sign ]
+                    ]
+            )
+            listSorted
+        )
 
 
 viewChart : FamilyPlanningSignsCounter -> Svg msg

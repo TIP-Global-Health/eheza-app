@@ -60,7 +60,7 @@ type alias Model =
 
 emptyModel : Model
 emptyModel =
-    { period = ThisMonth
+    { period = OneYear
     , beneficiariesGender = All
     }
 
