@@ -1,5 +1,7 @@
 module Pages.Dashboard.Model exposing
-    ( FamilyPlanningSignsCounter
+    ( Card
+    , CardValueSeverity(..)
+    , FamilyPlanningSignsCounter
     , FilterGender(..)
     , FilterPeriod(..)
     , Model
@@ -14,6 +16,8 @@ module Pages.Dashboard.Model exposing
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
+import Color exposing (Color)
+import Translate exposing (TranslationId)
 
 
 type FilterPeriod
@@ -65,6 +69,24 @@ emptyModel =
 -}
 type alias FamilyPlanningSignsCounter =
     Dict FamilyPlanningSign Int
+
+
+{-| This will define what color the `value` from a `Card` will appear in.
+-}
+type CardValueSeverity
+    = Neutral
+    | Good
+    | Moderate
+    | Severe
+
+
+{-| A `Card` that will appear in the dashboard.
+-}
+type alias Card =
+    { title : TranslationId
+    , value : Int
+    , valueSeverity : CardValueSeverity
+    }
 
 
 type Msg

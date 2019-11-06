@@ -1,6 +1,7 @@
 module Translate exposing
     ( Adherence(..)
     , ChartPhrase(..)
+    , Dashboard(..)
     , Language
     , LoginPhrase(..)
     , TranslationId(..)
@@ -14,6 +15,7 @@ module Translate exposing
     , translateFormField
     , translateHttpError
     , translateLoginPhrase
+    , translateText
     , translateValidationError
     , translationSet
     )
@@ -30,6 +32,7 @@ import Backend.Person.Model exposing (EducationLevel(..), Gender(..), HIVStatus(
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
+import Html exposing (Html, text)
 import Http
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -59,6 +62,12 @@ type alias Language =
 translate : Language -> TranslationId -> String
 translate lang trans =
     selectLanguage lang (translationSet trans)
+
+
+translateText : Language -> TranslationId -> Html msg
+translateText lang trans =
+    translate lang trans
+        |> text
 
 
 type LoginPhrase
@@ -125,6 +134,12 @@ type Adherence
     | Adhering
 
 
+type Dashboard
+    = ModeratelyMalnourished
+    | SeverelyMalnourished
+    | TotalMalnourished
+
+
 type TranslationId
     = AccessDenied
     | Activities
@@ -176,6 +191,7 @@ type TranslationId
     | Children
     | ClickTheCheckMark
     | Clinical
+    | Dashboard Dashboard
     | GroupNotFound
     | Group
     | Groups
@@ -195,7 +211,7 @@ type TranslationId
     | CreateRelationship
     | CreateTrainingGroupEncounters
     | DeleteTrainingGroupEncounters
-    | Dashboard
+    | DashboardLabel
     | DateOfLastAssessment
     | Day
     | DateOfBirth
@@ -860,6 +876,9 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Dashboard dashboard ->
+            translateDashboard dashboard
+
         GroupNotFound ->
             { english = "Group not found"
             , kinyarwanda = Nothing
@@ -953,7 +972,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        Dashboard ->
+        DashboardLabel ->
             { english = "Dashboard"
             , kinyarwanda = Just "Tabeau de bord"
             }
@@ -2415,6 +2434,25 @@ translateChartPhrase phrase =
         ZScoreChartsAvailableAt ->
             { english = "Z-score charts available at"
             , kinyarwanda = Just "Raporo ku mikurire y'umwana"
+            }
+
+
+translateDashboard : Dashboard -> TranslationSet String
+translateDashboard trans =
+    case trans of
+        ModeratelyMalnourished ->
+            { english = "Moderately Malnourished"
+            , kinyarwanda = Nothing
+            }
+
+        SeverelyMalnourished ->
+            { english = "Severely Malnourished"
+            , kinyarwanda = Nothing
+            }
+
+        TotalMalnourished ->
+            { english = "Total Malnourished"
+            , kinyarwanda = Nothing
             }
 
 

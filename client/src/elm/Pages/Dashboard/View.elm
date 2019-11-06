@@ -17,7 +17,7 @@ import List.Extra
 import Pages.Dashboard.Model exposing (..)
 import Path
 import Shape exposing (Arc, defaultPieConfig)
-import Translate exposing (Language)
+import Translate exposing (Language, translate, translateText)
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes exposing (fill, stroke, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
@@ -38,6 +38,7 @@ view language currentDate healthCenterId model db =
     div
         []
         [ viewPeriodFilter language model
+        , viewMalnourishedCards language currentDate stats model
         , viewBeneficiariesTable language currentDate stats model
         , div
             [ class "ui placeholder segment" ]
@@ -71,6 +72,79 @@ viewPeriodFilter language model =
     in
     div [ class "ui blue segment" ]
         (List.map renderButton filterPeriods)
+
+
+viewMalnourishedCards : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
+viewMalnourishedCards language currentDate stats model =
+    if List.isEmpty stats.malnourished then
+        div [ class "ui segment" ] [ text "No data for the selected period." ]
+
+    else
+        let
+            total =
+                stats.malnourished
+                    |> List.length
+
+            totalCard =
+                { title = Translate.Dashboard Translate.TotalMalnourished
+                , value = total
+                , valueSeverity = Neutral
+                }
+
+            severe =
+                stats.malnourished
+                    |> List.filter (\row -> row.zscore <= -2)
+                    |> List.length
+
+            severeCard =
+                { title = Translate.Dashboard Translate.SeverelyMalnourished
+                , value = severe
+                , valueSeverity = Severe
+                }
+
+            moderate =
+                stats.malnourished
+                    |> List.filter (\row -> row.zscore > -2)
+                    |> List.length
+
+            moderateCard =
+                { title = Translate.Dashboard Translate.ModeratelyMalnourished
+                , value = moderate
+                , valueSeverity = Moderate
+                }
+        in
+        div [ class "ui segment" ]
+            [ div [ class "ui cards" ]
+                [ viewCard language totalCard
+                , viewCard language severeCard
+                , viewCard language moderateCard
+                ]
+            ]
+
+
+viewCard : Language -> Card -> Html Msg
+viewCard language card =
+    let
+        severityClass =
+            case card.valueSeverity of
+                Neutral ->
+                    "neutral"
+
+                Good ->
+                    "good"
+
+                Moderate ->
+                    "moderate"
+
+                Severe ->
+                    "severe"
+    in
+    div [ class "card" ]
+        [ div [ class "content" ]
+            [ div [ class "header" ] [ translateText language card.title ]
+            , div [ class <| "severity severity-" ++ severityClass ] [ text <| String.fromInt card.value ]
+            ]
+        ]
 
 
 viewBeneficiariesGenderFilter : Language -> Model -> Html Msg
@@ -196,17 +270,20 @@ filterStatsByPeriod currentDate model stats =
                 OneYear ->
                     Date.add Years -1 currentDate
 
+        filterPartial =
+            isBetween startDate currentDate
+
         childrenBeneficiariesUpdated =
             stats.childrenBeneficiaries
-                |> List.filter (\child -> isBetween startDate currentDate child.memberSince)
+                |> List.filter (\child -> filterPartial child.memberSince)
 
         familyPlanningUpdated =
             stats.familyPlanning
-                |> List.filter (\familyPlanning -> isBetween startDate currentDate familyPlanning.created)
+                |> List.filter (\familyPlanning -> filterPartial familyPlanning.created)
 
         malnourishedUpdated =
             stats.malnourished
-                |> List.filter (\malnourished -> isBetween startDate currentDate malnourished.created)
+                |> List.filter (\malnourished -> filterPartial malnourished.created)
     in
     { stats
         | childrenBeneficiaries = childrenBeneficiariesUpdated

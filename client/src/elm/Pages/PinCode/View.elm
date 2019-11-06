@@ -181,7 +181,7 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                             , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage
                             ]
                             [ span [ class "icon-group" ] []
-                            , span [ class "text" ] [ text <| translate language Translate.Dashboard ]
+                            , span [ class "text" ] [ text <| translate language Translate.DashboardLabel ]
                             , span [ class "icon-back" ] []
                             ]
                 in
