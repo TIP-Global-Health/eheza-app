@@ -345,12 +345,26 @@ viewMainPageContent language currentDate data model =
                     ( completedActivities, translate language Translate.NoActivitiesCompleted )
 
                 Reports ->
-                    ( [], "Under construction..." )
+                    ( [], "" )
 
-        activities =
-            div [ class "ui full segment" ]
-                [ div
-                    [ class "full content" ]
+        viewReportLink labelTransId =
+            div [ class "report-wrapper" ]
+                [ div [ class "icon-progress-report" ] []
+                , div [ class "report-text" ]
+                    [ div [ class "report-label" ] [ text <| translate language labelTransId ]
+                    , div [ class "report-link" ] [ text <| translate language Translate.View ]
+                    ]
+                ]
+
+        innerContent =
+            if model.selectedTab == Reports then
+                div [ class "reports-wrapper" ]
+                    [ viewReportLink Translate.ClinicalProgressReport
+                    , viewReportLink Translate.DemographicsReport
+                    ]
+
+            else
+                div [ class "full content" ]
                     [ div [ class "wrap-cards" ]
                         [ div [ class "ui four cards" ] <|
                             if List.isEmpty selectedActivities then
@@ -360,6 +374,10 @@ viewMainPageContent language currentDate data model =
                                 List.map viewCard selectedActivities
                         ]
                     ]
+
+        content =
+            div [ class "ui full segment" ]
+                [ innerContent
                 , div [ class "actions" ]
                     [ button
                         [ class "ui fluid primary button"
@@ -370,5 +388,5 @@ viewMainPageContent language currentDate data model =
                 ]
     in
     [ tabs
-    , activities
+    , content
     ]

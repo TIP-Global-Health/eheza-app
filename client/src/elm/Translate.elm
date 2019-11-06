@@ -198,6 +198,7 @@ type TranslationId
     | Children
     | ClickTheCheckMark
     | Clinical
+    | ClinicalProgressReport
     | ConvulsionsAndUnconsciousPreviousDelivery
     | ConvulsionsPreviousDelivery
     | CSectionScar CSectionScar
@@ -234,6 +235,7 @@ type TranslationId
     | Delete
     | DeleteTrainingGroupEncounters
     | DemographicInformation
+    | DemographicsReport
     | Device
     | DeviceNotAuthorized
     | DeviceStatus
@@ -516,6 +518,7 @@ type TranslationId
     | UterineMyoma
     | ValidationErrors
     | Version
+    | View
     | ViewProgressReport
     | Village
     | WeekSinglePlural Int
@@ -1134,6 +1137,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        ClinicalProgressReport ->
+            { english = "Clinical Progress Report"
+            , kinyarwanda = Nothing
+            }
+
         ConvulsionsAndUnconsciousPreviousDelivery ->
             { english = "Experienced convulsions and resulted in becoming unconscious after delivery"
             , kinyarwanda = Nothing
@@ -1386,6 +1394,11 @@ translationSet trans =
 
         DemographicInformation ->
             { english = "Demographic Information"
+            , kinyarwanda = Nothing
+            }
+
+        DemographicsReport ->
+            { english = "Demographics Report"
             , kinyarwanda = Nothing
             }
 
@@ -3178,6 +3191,11 @@ translationSet trans =
         -- As in, the version the app
         Version ->
             { english = "Version"
+            , kinyarwanda = Nothing
+            }
+
+        View ->
+            { english = "View"
             , kinyarwanda = Nothing
             }
 

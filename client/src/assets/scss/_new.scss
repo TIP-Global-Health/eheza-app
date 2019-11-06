@@ -386,6 +386,30 @@ div.page-prenatal-encounter {
           white-space: unset;
         }
       }
+
+      .reports-wrapper {
+
+        .report-wrapper {
+          display: grid;
+          grid-column-gap: 35px;
+          grid-template-columns: 222px auto;
+
+          .report-text {
+            margin-top: 55px;
+
+            .report-label {
+              font-size: 28px;
+            }
+
+            .report-link {
+              color: $color-light-blue;
+              font-size: 22px;
+              line-height: 40px;
+              text-decoration: underline;
+            }
+          }
+        }
+      }
     }
 }
 
