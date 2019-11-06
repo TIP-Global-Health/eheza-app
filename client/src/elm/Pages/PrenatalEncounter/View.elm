@@ -347,8 +347,11 @@ viewMainPageContent language currentDate data model =
                 Reports ->
                     ( [], "" )
 
-        viewReportLink labelTransId =
-            div [ class "report-wrapper" ]
+        viewReportLink labelTransId redirectPage =
+            div
+                [ class "report-wrapper"
+                , onclick <| SetActivePage redirectMsg
+                ]
                 [ div [ class "icon-progress-report" ] []
                 , div [ class "report-text" ]
                     [ div [ class "report-label" ] [ text <| translate language labelTransId ]
@@ -359,8 +362,8 @@ viewMainPageContent language currentDate data model =
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
-                    [ viewReportLink Translate.ClinicalProgressReport
-                    , viewReportLink Translate.DemographicsReport
+                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| ClinicalProgressReportPage data.id)
+                    , viewReportLink Translate.DemographicsReport (UserPage <| DemographicsReportPage data.participant.person)
                     ]
 
             else
