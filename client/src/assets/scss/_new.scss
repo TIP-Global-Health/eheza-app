@@ -688,7 +688,7 @@ div.page-prenatal-activity {
     }
 }
 
-
+div.page-clinical-progress-report,
 div.page-demographics-report {
     background: $color-light-gray;
     padding: 0 20px 35px 20px;
@@ -712,7 +712,7 @@ div.page-demographics-report {
 
     .ui.unstackable.items {
 
-      .heading {
+      > .heading {
         background: $color-dark-background;
         font-size: 16px;
         font-weight: 700;
@@ -720,7 +720,7 @@ div.page-demographics-report {
         text-transform: uppercase;
       }
 
-      .content {
+      > .content {
         background: $color-white;
         color: $color-text;
         display: grid;
@@ -730,4 +730,78 @@ div.page-demographics-report {
         padding-left: 40px;
       }
     }
+}
+
+div.page-clinical-progress-report {
+
+    .header-pane {
+      background: $color-white;
+      padding: 40px 20px;
+
+      .mother-details {
+        display: grid;
+        grid-column-gap: 30px;
+        grid-template-columns: 120px 40% 40%;
+
+        .content {
+          color: $color-text;
+
+          .mother-name, .edd {
+            margin-top: 20px;
+            margin-bottom: 10px;
+          }
+        }
+
+        .label {
+          font-weight: bold;
+        }
+
+        .value {
+          margin-left: 10px;
+        }
+      }
+
+      .gravida-para {
+        color: $color-text;
+        display: grid;
+        grid-template-columns: 25% auto;
+        line-height: 40px;
+        margin-left: 150px;
+
+        .label {
+          font-weight: bold;
+          text-transform: uppercase;
+        }
+
+        .gravida {
+          border-left: 1px solid $color-light-gray;
+          border-right: 1px solid $color-light-gray;
+          text-align: center;
+        }
+
+        .para {
+
+          > .label {
+            margin-left: 30px;
+          }
+
+          .para-breakdown {
+            display: grid;
+            grid-template-columns: 20% 25% 25% 30%;
+            line-height: 28px;
+            text-align: center;
+
+            .label.small {
+              font-size: 13px;
+              font-weight: 600;
+            }
+
+            .term, .pre-term, .abortions {
+              border-right: 1px solid $color-light-gray;
+            }
+          }
+        }
+      }
+    }
+
 }

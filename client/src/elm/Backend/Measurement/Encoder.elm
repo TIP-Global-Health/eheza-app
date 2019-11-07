@@ -578,8 +578,8 @@ encodeFetalPresentation sign =
             Cephalic ->
                 "cephalic"
 
-            Breach ->
-                "breach"
+            FetalBreech ->
+                "breech"
 
             Twins ->
                 "twins"

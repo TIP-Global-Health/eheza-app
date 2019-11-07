@@ -1,4 +1,4 @@
-module Pages.DemographicsReport.View exposing (view)
+module Pages.DemographicsReport.View exposing (view, viewHeader, viewItemContent, viewItemHeading)
 
 import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
@@ -55,13 +55,10 @@ view language currentDate prenatalEncounterId db =
                 |> RemoteData.andMap (Success prenatalEncounterId)
 
         header =
-            viewHeader language prenatalEncounterId
+            viewHeader language prenatalEncounterId Translate.DemographicsReport
 
         content =
             viewWebData language (viewContent language currentDate) identity data
-
-        log =
-            Debug.log "" person
     in
     div [ class "page-demographics-report" ] <|
         [ header
@@ -69,8 +66,8 @@ view language currentDate prenatalEncounterId db =
         ]
 
 
-viewHeader : Language -> PrenatalEncounterId -> Html Msg
-viewHeader language prenatalEncounterId =
+viewHeader : Language -> PrenatalEncounterId -> TranslationId -> Html Msg
+viewHeader language prenatalEncounterId label =
     div
         [ class "ui basic segment head" ]
         [ a
@@ -79,7 +76,7 @@ viewHeader language prenatalEncounterId =
             ]
             []
         , h1 [ class "ui header" ]
-            [ text <| translate language Translate.DemographicsReport ]
+            [ text <| translate language label ]
         ]
 
 

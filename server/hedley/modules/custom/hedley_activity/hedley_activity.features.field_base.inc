@@ -484,7 +484,7 @@ function hedley_activity_field_default_field_bases() {
       'allowed_values' => array(
         'transverse' => 'Transverse',
         'cephalic' => 'Cephalic',
-        'breach' => 'Breach',
+        'breech' => 'Breech',
         'twins' => 'Twins',
       ),
       'allowed_values_function' => '',

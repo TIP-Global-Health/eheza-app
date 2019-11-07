@@ -382,7 +382,7 @@ type alias ObstetricalExam =
 
 type FetalPresentation
     = Transverse
-    | Breach
+    | FetalBreech
     | Cephalic
     | Twins
 

@@ -244,7 +244,7 @@ viewMeasurements language currentDate measurements =
                 ( "----", "----" )
                 (\value ->
                     ( generateGravida value.termPregnancy value.preTermPregnancy value.currentlyPregnant
-                    , generatePara value.termPregnancy value.preTermPregnancy value.abortions value.liveChildren
+                    , generatePara value
                     )
                 )
                 obstetricHistoryValue

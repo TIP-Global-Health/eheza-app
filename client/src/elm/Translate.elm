@@ -131,6 +131,7 @@ type TranslationId
     = Abdomen
     | AbdomenCPESign AbdomenCPESign
     | Abnormal
+    | Abortions
     | AccompaniedByPartner
     | AccessDenied
     | Activities
@@ -312,6 +313,7 @@ type TranslationId
     | LevelOfEducationLabel
     | LevelOfEducation EducationLevel
     | LinkToMother
+    | LiveChildren
     | LmpDateConfidentHeader
     | LmpDateHeader
     | LmpRangeHeader
@@ -348,6 +350,7 @@ type TranslationId
     | MyAccount
     | MyRelatedBy MyRelatedBy
     | MyRelatedByQuestion MyRelatedBy
+    | Name
     | NationalIdNumber
     | Neck
     | NeckCPESign NeckCPESign
@@ -407,6 +410,7 @@ type TranslationId
     | PreeclampsiaPreviousPregnancy
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalEncounter
+    | PreTerm
     | PreviousCSectionScar
     | PreviousDelivery
     | PreviousDeliveryPeriods PreviousDeliveryPeriod
@@ -503,6 +507,7 @@ type TranslationId
     | TakenCareOfBy
     | TasksCompleted Int Int
     | TelephoneNumber
+    | Term
     | TermPregnancy
     | ThisActionCannotBeUndone
     | ThisGroupHasNoMothers
@@ -587,6 +592,11 @@ translationSet trans =
 
         Abnormal ->
             { english = "Abnormal"
+            , kinyarwanda = Nothing
+            }
+
+        Abortions ->
+            { english = "Abortions"
             , kinyarwanda = Nothing
             }
 
@@ -1682,8 +1692,8 @@ translationSet trans =
 
         FetalPresentation option ->
             case option of
-                Breach ->
-                    { english = "Breach"
+                FetalBreech ->
+                    { english = "Breech"
                     , kinyarwanda = Nothing
                     }
 
@@ -2032,6 +2042,11 @@ translationSet trans =
             , kinyarwanda = Just "Guhuza n'amakuru y'umubyeyi"
             }
 
+        LiveChildren ->
+            { english = "Live Children"
+            , kinyarwanda = Nothing
+            }
+
         LmpDateConfidentHeader ->
             { english = "Is the Patient confident of LMP Date"
             , kinyarwanda = Nothing
@@ -2276,6 +2291,11 @@ translationSet trans =
 
         MyRelatedByQuestion relationship ->
             translateMyRelatedByQuestion relationship
+
+        Name ->
+            { english = "Name"
+            , kinyarwanda = Nothing
+            }
 
         NationalIdNumber ->
             { english = "National ID Number"
@@ -2622,6 +2642,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PreTerm ->
+            { english = "Pre Term"
+            , kinyarwanda = Nothing
+            }
+
         PreviousCSectionScar ->
             { english = "Previous C-section scar"
             , kinyarwanda = Nothing
@@ -2680,7 +2705,7 @@ translationSet trans =
             }
 
         PreTermPregnancy ->
-            { english = "Number of Pre Term Pregnancies"
+            { english = "Number of Pre-term Pregnancies (Live Birth)"
             , kinyarwanda = Nothing
             }
 
@@ -3119,8 +3144,13 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Term ->
+            { english = "Term"
+            , kinyarwanda = Nothing
+            }
+
         TermPregnancy ->
-            { english = "Number of Term Pregnancies"
+            { english = "Number of Term Pregnancies (Live Birth)"
             , kinyarwanda = Nothing
             }
 

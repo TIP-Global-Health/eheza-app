@@ -644,8 +644,8 @@ decodeFetalPresentation =
                     "cephalic" ->
                         succeed Cephalic
 
-                    "breach" ->
-                        succeed Breach
+                    "breech" ->
+                        succeed FetalBreech
 
                     "twins" ->
                         succeed Twins

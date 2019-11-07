@@ -33,6 +33,7 @@ import Pages.PrenatalActivity.Utils
         , prenatalNutritionFormWithDefault
         , resourceFormWithDefault
         , socialHistoryFormWithDefault
+        , toObstetricHistoryValue
         , vitalsFormWithDefault
         )
 import Pages.PrenatalEncounter.Utils exposing (..)
@@ -821,7 +822,7 @@ viewObstetricFormFirstStep language currentDate assembled form =
                 |> Maybe.withDefault ""
 
         para =
-            Maybe.map4 generatePara form.termPregnancy form.preTermPregnancy form.abortions form.liveChildren
+            Maybe.map generatePara (toObstetricHistoryValue form)
                 |> Maybe.withDefault ""
 
         termPregnancyUpdateFunc value form_ =
@@ -1826,7 +1827,7 @@ viewObstetricalExamForm language currentDate assembled form =
             ]
         , viewCheckBoxMultipleSelectInput language
             [ Transverse, Cephalic ]
-            [ Breach, Twins ]
+            [ FetalBreech, Twins ]
             (form.fetalPresentation |> Maybe.withDefault [])
             Nothing
             SetObstetricalExamFetalPresentation

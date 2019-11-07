@@ -55,6 +55,9 @@ generateGravida termPregnancy preTermPregnancy currentlyPregnant =
         toString total
 
 
-generatePara : Int -> Int -> Int -> Int -> String
-generatePara termPregnancy preTermPregnancy abortions liveChildren =
-    toString termPregnancy ++ toString preTermPregnancy ++ toString abortions ++ toString liveChildren
+generatePara : ObstetricHistoryValue -> String
+generatePara value =
+    toString (value.termPregnancy + value.stillbirthsAtTerm)
+        ++ toString (value.preTermPregnancy + value.stillbirthsPreTerm)
+        ++ toString value.abortions
+        ++ toString value.liveChildren
