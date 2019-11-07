@@ -712,21 +712,25 @@ div.page-demographics-report {
 
     .ui.unstackable.items {
 
-      > .heading {
-        background: $color-dark-background;
+      .pane-heading {
         font-size: 16px;
         font-weight: 700;
         padding: 5px 15px;
         text-transform: uppercase;
+
+        &.gray {
+          background: $color-dark-background;
+        }
+
+        &.red {
+          background: $color-red-alert;
+        }
       }
 
-      > .content {
+      .pane-content {
         background: $color-white;
         color: $color-text;
-        display: grid;
         font-size: 18px;
-        grid-template-columns: 25% auto;
-        line-height: 40px;
         padding-left: 40px;
       }
     }
@@ -736,6 +740,7 @@ div.page-clinical-progress-report {
 
     .header-pane {
       background: $color-white;
+      margin-bottom: 20px;
       padding: 40px 20px;
 
       .mother-details {
@@ -803,5 +808,23 @@ div.page-clinical-progress-report {
         }
       }
     }
+
+    .risk-factors {
+      background: $color-white;
+      margin-bottom: 20px;
+
+     .pane-content {
+       line-height: 32px;
+     }
+    }
+}
+
+div.page-demographics-report {
+
+  .pane-content {
+    display: grid;
+    grid-template-columns: 25% auto;
+    line-height: 40px;
+  }
 
 }

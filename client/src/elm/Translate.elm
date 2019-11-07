@@ -34,7 +34,7 @@ import Form.Error exposing (ErrorValue(..))
 import Http
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model exposing (ExaminationTask(..), HistoryTask(..), LmpRange(..), PatientProvisionsTask(..))
-import PrenatalActivity.Model exposing (HighRiskFactor(..), HighSeverityAlert(..), PrenatalActivity(..))
+import PrenatalActivity.Model exposing (HighRiskFactor(..), HighSeverityAlert(..), PrenatalActivity(..), RiskFactor(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Translate.Model exposing (TranslationSet)
@@ -328,6 +328,7 @@ type TranslationId
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
+    | MedicalDiagnosis
     | MedicalFormHelper
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MMHGUnit
@@ -377,6 +378,7 @@ type TranslationId
     | NumberOfLiveChildren
     | NumberOfStillbirthsAtTerm
     | NumberOfStillbirthsPreTerm
+    | ObstetricDiagnosis
     | OK
     | Old
     | OnceYouEndYourGroupEncounter
@@ -450,6 +452,8 @@ type TranslationId
     | RespiratoryRate
     | Retry
     | RhNegative
+    | RiskFactorAlert RiskFactor
+    | RiskFactors
     | Save
     | SaveAndNext
     | SaveError
@@ -2154,6 +2158,11 @@ translationSet trans =
             , kinyarwanda = Just <| "Kwiyongera " ++ toString amount
             }
 
+        MedicalDiagnosis ->
+            { english = "Medical Diagnosis"
+            , kinyarwanda = Nothing
+            }
+
         MedicalFormHelper ->
             { english = "Please record if the mother was diagnosed with the following medical issues"
             , kinyarwanda = Nothing
@@ -2434,6 +2443,11 @@ translationSet trans =
 
         NumberOfStillbirthsPreTerm ->
             { english = "Number of Stillbirths pre Term"
+            , kinyarwanda = Nothing
+            }
+
+        ObstetricDiagnosis ->
+            { english = "Obstetric Diagnosis"
             , kinyarwanda = Nothing
             }
 
@@ -2856,6 +2870,89 @@ translationSet trans =
 
         RhNegative ->
             { english = "RH Negative"
+            , kinyarwanda = Nothing
+            }
+
+        RiskFactorAlert factor ->
+            case factor of
+                FactorNumberOfCSections number ->
+                    if number == 1 then
+                        { english = "1 previous C-section"
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = toString number ++ " previous C-sections"
+                        , kinyarwanda = Nothing
+                        }
+
+                FactorCSectionInPreviousDelivery ->
+                    { english = "C-section in previous delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorCSectionReason ->
+                    { english = "C-section in previous delivery due to"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorPreviousDeliveryPeriod ->
+                    { english = "Previous delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorSuccessiveAbortions ->
+                    { english = "Patient experienced successive abortions"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorSuccessivePrematureDeliveries ->
+                    { english = "Patient experienced successive preterm deliveries"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorStillbornPreviousDelivery ->
+                    { english = "Stillbirth in previous delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorBabyDiedOnDayOfBirthPreviousDelivery ->
+                    { english = "Live Birth but the baby died the same day in previous delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorPartialPlacentaPreviousDelivery ->
+                    { english = "Patient had partial placenta in previous pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorSevereHemorrhagingPreviousDelivery ->
+                    { english = "Patient experienced severe hemorrhage in previous pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorPreeclampsiaPreviousPregnancy ->
+                    { english = "Patient had preeclampsia in previous pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorConvulsionsPreviousDelivery ->
+                    { english = "Patient experienced convulsions in previous delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorConvulsionsAndUnconsciousPreviousDelivery ->
+                    { english = "Patient experienced convulsions and resulted in becoming unconscious after delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorIncompleteCervixPreviousPregnancy ->
+                    { english = "Patient had an Incomplete Cervix in previous pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+        RiskFactors ->
+            { english = "Risk Factors"
             , kinyarwanda = Nothing
             }
 

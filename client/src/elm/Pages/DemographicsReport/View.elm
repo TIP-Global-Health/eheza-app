@@ -87,22 +87,22 @@ viewContent language currentDate data =
             value |> Maybe.withDefault ""
     in
     div [ class "ui unstackable items" ]
-        [ viewItemHeading language Translate.PatientInformation
+        [ viewItemHeading language Translate.PatientInformation "gray"
         , viewItemContent language Translate.FirstName data.person.firstName
         , viewItemContent language Translate.SecondName data.person.secondName
         , viewItemContent language Translate.NationalIdNumber (maybeString data.person.nationalIdNumber)
         ]
 
 
-viewItemHeading : Language -> TranslationId -> Html Msg
-viewItemHeading language label =
-    div [ class "heading" ]
+viewItemHeading : Language -> TranslationId -> String -> Html Msg
+viewItemHeading language label color =
+    div [ class <| "pane-heading " ++ color ]
         [ text <| translate language label ]
 
 
 viewItemContent : Language -> TranslationId -> String -> Html Msg
 viewItemContent language label value =
-    div [ class "content" ]
+    div [ class "pane-content" ]
         [ span [ class "label" ] [ text <| translate language label ++ ":" ]
         , span [ class "value" ] [ text value ]
         ]

@@ -4,6 +4,7 @@ module PrenatalActivity.Utils exposing
     , encodeActivityAsString
     , generateHighRiskAlertData
     , generateHighSeverityAlertData
+    , generateRiskFactorAlertData
     , getActivityIcon
     , getAllActivities
     )
@@ -293,6 +294,239 @@ generateHighSeverityAlertData language currentDate measurements alert =
                                 ( trans Translate.Low ++ " " ++ transAlert alert
                                 , toString value ++ trans Translate.BpmUnit
                                 )
+
+                        else
+                            Nothing
+                    )
+
+
+generateRiskFactorAlertData : Language -> NominalDate -> PrenatalMeasurements -> RiskFactor -> Maybe String
+generateRiskFactorAlertData language currentDate measurements factor =
+    let
+        trans =
+            translate language
+
+        transAlert alert =
+            trans (Translate.RiskFactorAlert alert)
+    in
+    case factor of
+        FactorNumberOfCSections dummy ->
+            measurements.obstetricHistoryStep2
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value |> .cSections
+                        in
+                        if value > 0 then
+                            Just (transAlert (FactorNumberOfCSections value))
+
+                        else
+                            Nothing
+                    )
+
+        FactorCSectionInPreviousDelivery ->
+            measurements.obstetricHistoryStep2
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            signs =
+                                Tuple.second measurement |> .value |> .previousDelivery
+                        in
+                        if EverySet.member Backend.Measurement.Model.CSectionInPreviousDelivery signs then
+                            Just (transAlert factor)
+
+                        else
+                            Nothing
+                    )
+
+        FactorCSectionReason ->
+            measurements.obstetricHistoryStep2
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                -- There must be only one value.
+                                Tuple.second measurement
+                                    |> .value
+                                    |> .cSectionReason
+                                    |> EverySet.toList
+                                    |> List.head
+                                    |> Maybe.withDefault Backend.Measurement.Model.None
+                        in
+                        if value /= Backend.Measurement.Model.None then
+                            Just (transAlert factor ++ " " ++ trans (Translate.CSectionReasons value))
+
+                        else
+                            Nothing
+                    )
+
+        FactorPreviousDeliveryPeriod ->
+            measurements.obstetricHistoryStep2
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                -- There must be only one value.
+                                Tuple.second measurement
+                                    |> .value
+                                    |> .previousDeliveryPeriod
+                                    |> EverySet.toList
+                                    |> List.head
+                                    |> Maybe.withDefault Backend.Measurement.Model.Neither
+                        in
+                        if value /= Backend.Measurement.Model.Neither then
+                            Just (transAlert factor ++ " " ++ trans (Translate.PreviousDeliveryPeriods value))
+
+                        else
+                            Nothing
+                    )
+
+        FactorSuccessiveAbortions ->
+            measurements.obstetricHistoryStep2
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            signs =
+                                Tuple.second measurement |> .value |> .obstetricHistory
+                        in
+                        if EverySet.member Backend.Measurement.Model.SuccessiveAbortions signs then
+                            Just (transAlert factor)
+
+                        else
+                            Nothing
+                    )
+
+        FactorSuccessivePrematureDeliveries ->
+            measurements.obstetricHistoryStep2
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            signs =
+                                Tuple.second measurement |> .value |> .obstetricHistory
+                        in
+                        if EverySet.member Backend.Measurement.Model.SuccessivePrematureDeliveries signs then
+                            Just (transAlert factor)
+
+                        else
+                            Nothing
+                    )
+
+        FactorStillbornPreviousDelivery ->
+            measurements.obstetricHistoryStep2
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            signs =
+                                Tuple.second measurement |> .value |> .previousDelivery
+                        in
+                        if EverySet.member Backend.Measurement.Model.StillbornPreviousDelivery signs then
+                            Just (transAlert factor)
+
+                        else
+                            Nothing
+                    )
+
+        FactorBabyDiedOnDayOfBirthPreviousDelivery ->
+            measurements.obstetricHistoryStep2
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            signs =
+                                Tuple.second measurement |> .value |> .previousDelivery
+                        in
+                        if EverySet.member Backend.Measurement.Model.BabyDiedOnDayOfBirthPreviousDelivery signs then
+                            Just (transAlert factor)
+
+                        else
+                            Nothing
+                    )
+
+        FactorPartialPlacentaPreviousDelivery ->
+            measurements.obstetricHistoryStep2
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            signs =
+                                Tuple.second measurement |> .value |> .previousDelivery
+                        in
+                        if EverySet.member Backend.Measurement.Model.PartialPlacentaPreviousDelivery signs then
+                            Just (transAlert factor)
+
+                        else
+                            Nothing
+                    )
+
+        FactorSevereHemorrhagingPreviousDelivery ->
+            measurements.obstetricHistoryStep2
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            signs =
+                                Tuple.second measurement |> .value |> .previousDelivery
+                        in
+                        if EverySet.member Backend.Measurement.Model.SevereHemorrhagingPreviousDelivery signs then
+                            Just (transAlert factor)
+
+                        else
+                            Nothing
+                    )
+
+        FactorPreeclampsiaPreviousPregnancy ->
+            measurements.obstetricHistoryStep2
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            signs =
+                                Tuple.second measurement |> .value |> .obstetricHistory
+                        in
+                        if EverySet.member Backend.Measurement.Model.PreeclampsiaPreviousPregnancy signs then
+                            Just (transAlert factor)
+
+                        else
+                            Nothing
+                    )
+
+        FactorConvulsionsPreviousDelivery ->
+            measurements.obstetricHistoryStep2
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            signs =
+                                Tuple.second measurement |> .value |> .previousDelivery
+                        in
+                        if EverySet.member Backend.Measurement.Model.ConvulsionsPreviousDelivery signs then
+                            Just (transAlert factor)
+
+                        else
+                            Nothing
+                    )
+
+        FactorConvulsionsAndUnconsciousPreviousDelivery ->
+            measurements.obstetricHistoryStep2
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            signs =
+                                Tuple.second measurement |> .value |> .previousDelivery
+                        in
+                        if EverySet.member Backend.Measurement.Model.ConvulsionsAndUnconsciousPreviousDelivery signs then
+                            Just (transAlert factor)
+
+                        else
+                            Nothing
+                    )
+
+        FactorIncompleteCervixPreviousPregnancy ->
+            measurements.obstetricHistoryStep2
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            signs =
+                                Tuple.second measurement |> .value |> .obstetricHistory
+                        in
+                        if EverySet.member Backend.Measurement.Model.IncompleteCervixPreviousPregnancy signs then
+                            Just (transAlert factor)
 
                         else
                             Nothing

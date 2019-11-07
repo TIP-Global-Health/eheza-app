@@ -15,9 +15,11 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (unwrap)
-import Pages.DemographicsReport.View exposing (viewHeader, viewItemContent, viewItemHeading)
+import Pages.DemographicsReport.View exposing (viewHeader, viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.Utils exposing (generateEDDandEGA, generateGravida, generatePara)
+import PrenatalActivity.Model exposing (allRiskFactors)
+import PrenatalActivity.Utils exposing (generateRiskFactorAlertData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage)
@@ -89,10 +91,12 @@ view language currentDate prenatalEncounterId db =
 viewContent : Language -> NominalDate -> FetchedData -> Html Msg
 viewContent language currentDate data =
     div [ class "ui unstackable items" ]
-        [ viewHeaderPane language currentDate data.person data.measurements ]
+        [ viewHeaderPane language currentDate data.person data.measurements
+        , viewRiskFactorsPane language currentDate data.measurements
+        ]
 
 
-viewHeaderPane : Language -> NominalDate -> Person -> PrenatalMeasurements -> Html msg
+viewHeaderPane : Language -> NominalDate -> Person -> PrenatalMeasurements -> Html Msg
 viewHeaderPane language currentDate mother measurements =
     let
         ( edd, ega ) =
@@ -166,3 +170,15 @@ viewHeaderPane language currentDate mother measurements =
                 ]
             ]
         ]
+
+
+viewRiskFactorsPane : Language -> NominalDate -> PrenatalMeasurements -> Html Msg
+viewRiskFactorsPane language currentDate measurements =
+    let
+        alerts =
+            allRiskFactors
+                |> List.filterMap (generateRiskFactorAlertData language currentDate measurements)
+                |> List.map (\alert -> div [ class "pane-content" ] [ text <| "- " ++ alert ])
+    in
+    (viewItemHeading language Translate.RiskFactors "red" :: alerts)
+        |> div [ class "risk-factors" ]
