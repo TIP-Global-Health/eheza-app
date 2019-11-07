@@ -392,6 +392,7 @@ type TranslationId
     | ParticipantDemographicInformation
     | ParticipantInformation
     | PartnerReceivedCounseling
+    | PatientInformation
     | PatientProvisionsTask PatientProvisionsTask
     | People
     | PersistentStorage Bool
@@ -2503,6 +2504,11 @@ translationSet trans =
 
         PartnerReceivedCounseling ->
             { english = "Did partner receive HIV Counseling and Testing during this pregnancy"
+            , kinyarwanda = Nothing
+            }
+
+        PatientInformation ->
+            { english = "Patient Information"
             , kinyarwanda = Nothing
             }
 

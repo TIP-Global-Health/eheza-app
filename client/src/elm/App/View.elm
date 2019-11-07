@@ -215,8 +215,8 @@ viewUserPage page model configured =
                             |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
                             |> flexPageWrapper model
 
-                    DemographicsReportPage personId ->
-                        Pages.DemographicsReport.View.view model.language currentDate personId model.indexedDb
+                    DemographicsReportPage prenatalEncounterId ->
+                        Pages.DemographicsReport.View.view model.language currentDate prenatalEncounterId model.indexedDb
                             |> flexPageWrapper model
 
                     PersonPage id ->

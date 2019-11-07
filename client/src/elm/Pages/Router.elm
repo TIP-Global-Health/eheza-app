@@ -48,8 +48,8 @@ delta2url previous current =
                 ClinicalProgressReportPage prenatalEncounterId ->
                     Just <| UrlChange NewEntry <| "#clinical-progress-report/" ++ fromEntityUuid prenatalEncounterId
 
-                DemographicsReportPage personId ->
-                    Just <| UrlChange NewEntry <| "#demographics-report/" ++ fromEntityUuid personId
+                DemographicsReportPage prenatalEncounterId ->
+                    Just <| UrlChange NewEntry <| "#demographics-report/" ++ fromEntityUuid prenatalEncounterId
 
                 MyAccountPage ->
                     Just <| UrlChange NewEntry "#my-account"

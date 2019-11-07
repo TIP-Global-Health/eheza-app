@@ -363,7 +363,7 @@ viewMainPageContent language currentDate data model =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
                     [ viewReportLink Translate.ClinicalProgressReport (UserPage <| ClinicalProgressReportPage data.id)
-                    , viewReportLink Translate.DemographicsReport (UserPage <| DemographicsReportPage data.participant.person)
+                    , viewReportLink Translate.DemographicsReport (UserPage <| DemographicsReportPage data.id)
                     ]
 
             else

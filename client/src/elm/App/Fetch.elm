@@ -75,8 +75,8 @@ fetch model =
             Pages.Person.Fetch.fetchForCreateForm relatedId
                 |> List.map MsgIndexedDb
 
-        UserPage (DemographicsReportPage personId) ->
-            Pages.DemographicsReport.Fetch.fetch personId
+        UserPage (DemographicsReportPage prenatalEncounterId) ->
+            Pages.DemographicsReport.Fetch.fetch prenatalEncounterId model.indexedDb
                 |> List.map MsgIndexedDb
 
         UserPage (PersonPage id) ->

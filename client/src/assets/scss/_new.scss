@@ -687,3 +687,47 @@ div.page-prenatal-activity {
       }
     }
 }
+
+
+div.page-demographics-report {
+    background: $color-light-gray;
+    padding: 0 20px 35px 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .ui.basic.segment.head {
+      padding: 25px;
+
+      .ui.header {
+        color: $color-text;
+      }
+
+      .icon-back {
+        background: url(#{$img-path}icon-back-dark.svg);
+        background-size: 34px 27px;
+        position: absolute;
+      }
+    }
+
+    .ui.unstackable.items {
+
+      .heading {
+        background: $color-dark-background;
+        font-size: 16px;
+        font-weight: 700;
+        padding: 5px 15px;
+        text-transform: uppercase;
+      }
+
+      .content {
+        background: $color-white;
+        color: $color-text;
+        display: grid;
+        font-size: 18px;
+        grid-template-columns: 25% auto;
+        line-height: 40px;
+        padding-left: 40px;
+      }
+    }
+}
