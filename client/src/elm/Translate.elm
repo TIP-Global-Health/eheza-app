@@ -329,6 +329,7 @@ type TranslationId
     | MeasurementGained Float
     | MeasurementLost Float
     | MedicalDiagnosis
+    | MedicalDiagnosisAlert MedicalDiagnosis
     | MedicalFormHelper
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MMHGUnit
@@ -379,6 +380,7 @@ type TranslationId
     | NumberOfStillbirthsAtTerm
     | NumberOfStillbirthsPreTerm
     | ObstetricDiagnosis
+    | ObstetricDiagnosisAlert
     | OK
     | Old
     | OnceYouEndYourGroupEncounter
@@ -2163,6 +2165,58 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        MedicalDiagnosisAlert diagnosis ->
+            case diagnosis of
+                DiagnosisUterineMyoma ->
+                    { english = "Uterine Myoma"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDiabetes ->
+                    { english = "Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisCardiacDisease ->
+                    { english = "Cardiac Disease"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisRenalDisease ->
+                    { english = "Renal Disease"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHypertensionBeforePregnancy ->
+                    { english = "Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisTuberculosis ->
+                    { english = "Tuberculosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisAsthma ->
+                    { english = "Asthma"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisBowedLegs ->
+                    { english = "Bowed Legs"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHIV ->
+                    { english = "HIV"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosMentalHealthHistory ->
+                    { english = "History of Mental Health Problems"
+                    , kinyarwanda = Nothing
+                    }
+
         MedicalFormHelper ->
             { english = "Please record if the mother was diagnosed with the following medical issues"
             , kinyarwanda = Nothing
@@ -2450,6 +2504,18 @@ translationSet trans =
             { english = "Obstetric Diagnosis"
             , kinyarwanda = Nothing
             }
+
+        ObstetricDiagnosisAlert diagnosis ->
+            case diagnosis of
+                DiagnosisGestationalDiabetesPreviousPregnancy ->
+                    { english = "Patient had Gestational Diabetes in previous pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisRhNegative ->
+                    { english = "Patient is RH Negative"
+                    , kinyarwanda = Nothing
+                    }
 
         OK ->
             { english = "OK"

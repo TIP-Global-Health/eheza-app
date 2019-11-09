@@ -1,10 +1,14 @@
 module PrenatalActivity.Model exposing
     ( HighRiskFactor(..)
     , HighSeverityAlert(..)
+    , MedicalDiagnosis(..)
+    , ObstetricDiagnosis(..)
     , PrenatalActivity(..)
     , RiskFactor(..)
     , allHighRiskFactors
     , allHighSeverityAlerts
+    , allMedicalDiagnosis
+    , allObstetricDiagnosis
     , allRiskFactors
     )
 
@@ -53,6 +57,24 @@ type HighSeverityAlert
     | RespiratoryRate
 
 
+type ObstetricDiagnosis
+    = DiagnosisGestationalDiabetesPreviousPregnancy
+    | DiagnosisRhNegative
+
+
+type MedicalDiagnosis
+    = DiagnosisUterineMyoma
+    | DiagnosisDiabetes
+    | DiagnosisCardiacDisease
+    | DiagnosisRenalDisease
+    | DiagnosisHypertensionBeforePregnancy
+    | DiagnosisTuberculosis
+    | DiagnosisAsthma
+    | DiagnosisBowedLegs
+    | DiagnosisHIV
+    | DiagnosMentalHealthHistory
+
+
 allHighRiskFactors : List HighRiskFactor
 allHighRiskFactors =
     [ ConvulsionsPreviousDelivery, ConvulsionsAndUnconsciousPreviousDelivery ]
@@ -79,4 +101,26 @@ allRiskFactors =
     , FactorConvulsionsPreviousDelivery
     , FactorConvulsionsAndUnconsciousPreviousDelivery
     , FactorIncompleteCervixPreviousPregnancy
+    ]
+
+
+allObstetricDiagnosis : List ObstetricDiagnosis
+allObstetricDiagnosis =
+    [ DiagnosisGestationalDiabetesPreviousPregnancy
+    , DiagnosisRhNegative
+    ]
+
+
+allMedicalDiagnosis : List MedicalDiagnosis
+allMedicalDiagnosis =
+    [ DiagnosisUterineMyoma
+    , DiagnosisDiabetes
+    , DiagnosisCardiacDisease
+    , DiagnosisRenalDisease
+    , DiagnosisHypertensionBeforePregnancy
+    , DiagnosisTuberculosis
+    , DiagnosisAsthma
+    , DiagnosisBowedLegs
+    , DiagnosisHIV
+    , DiagnosMentalHealthHistory
     ]
