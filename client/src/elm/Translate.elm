@@ -27,14 +27,36 @@ import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Person.Model exposing (EducationLevel(..), Gender(..), HIVStatus(..), MaritalStatus(..), ModeOfDelivery(..), VaginalDelivery(..))
+import Backend.Person.Model
+    exposing
+        ( EducationLevel(..)
+        , Gender(..)
+        , HIVStatus(..)
+        , MaritalStatus(..)
+        , ModeOfDelivery(..)
+        , VaginalDelivery(..)
+        )
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
 import Pages.Page exposing (..)
-import Pages.PrenatalActivity.Model exposing (ExaminationTask(..), HistoryTask(..), LmpRange(..), PatientProvisionsTask(..))
-import PrenatalActivity.Model exposing (HighRiskFactor(..), HighSeverityAlert(..), PrenatalActivity(..), RiskFactor(..))
+import Pages.PrenatalActivity.Model
+    exposing
+        ( ExaminationTask(..)
+        , HistoryTask(..)
+        , LmpRange(..)
+        , PatientProvisionsTask(..)
+        )
+import PrenatalActivity.Model
+    exposing
+        ( HighRiskFactor(..)
+        , HighSeverityAlert(..)
+        , MedicalDiagnosis(..)
+        , ObstetricDiagnosis(..)
+        , PrenatalActivity(..)
+        , RiskFactor(..)
+        )
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Translate.Model exposing (TranslationSet)
@@ -380,7 +402,7 @@ type TranslationId
     | NumberOfStillbirthsAtTerm
     | NumberOfStillbirthsPreTerm
     | ObstetricDiagnosis
-    | ObstetricDiagnosisAlert
+    | ObstetricDiagnosisAlert ObstetricDiagnosis
     | OK
     | Old
     | OnceYouEndYourGroupEncounter
