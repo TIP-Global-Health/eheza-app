@@ -21,6 +21,10 @@ class HedleyRestfulClinics extends HedleyRestfulSyncBase {
       'sub_property' => 'field_uuid',
     ];
 
+    $public_fields['group_type'] = [
+      'property' => 'field_group_type',
+    ];
+
     return $public_fields;
   }
 

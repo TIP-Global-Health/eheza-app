@@ -125,7 +125,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     $db_version = intval($request['db_version']);
 
-    if ($db_version < 2) {
+    if ($db_version < HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION) {
       throw new RestfulBadRequestException('Must update your client before syncing further.');
     }
 
@@ -251,7 +251,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     $db_version = intval($request['db_version']);
 
-    if ($db_version < 2) {
+    if ($db_version < HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION) {
       throw new RestfulBadRequestException('Must update your client before syncing further.');
     }
 

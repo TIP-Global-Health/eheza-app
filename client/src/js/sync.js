@@ -479,7 +479,9 @@
                         if (cachedResponse) {
                             return cachedResponse.blob().then(function (blob) {
                                 var formData = new FormData();
-                                formData.set('file', blob, 'image-file');
+                                var imageName = 'image-' + change.uuid.substring(0, 7) + '.jpg';
+
+                                formData.set('file', blob, imageName);
 
                                 var request = new Request(uploadUrl, {
                                     method: 'POST',
