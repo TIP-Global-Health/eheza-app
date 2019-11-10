@@ -711,6 +711,7 @@ div.page-demographics-report {
     }
 
     .ui.unstackable.items {
+      overflow-y: auto;
 
       .pane-heading {
         font-size: 16px;
@@ -725,13 +726,17 @@ div.page-demographics-report {
         &.red {
           background: $color-red-alert;
         }
+
+        &.blue {
+          background: $color-primary;
+        }
       }
 
       .pane-content {
         background: $color-white;
         color: $color-text;
         font-size: 18px;
-        padding-left: 40px;
+        padding: 20px 0 20px 40px
       }
     }
 }
@@ -809,13 +814,14 @@ div.page-clinical-progress-report {
       }
     }
 
-    .risk-factors {
+    .risk-factors, .medical-diagnosis, .obstetric-diagnosis {
       background: $color-white;
       margin-bottom: 20px;
 
-     .pane-content {
+     .pane-content p {
        line-height: 32px;
-     }
+       margin-bottom: 5px;
+      }
     }
 }
 

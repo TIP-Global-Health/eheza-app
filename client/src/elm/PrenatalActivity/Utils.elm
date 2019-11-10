@@ -4,6 +4,8 @@ module PrenatalActivity.Utils exposing
     , encodeActivityAsString
     , generateHighRiskAlertData
     , generateHighSeverityAlertData
+    , generateMedicalDiagnosisAlertData
+    , generateObstetricDiagnosisAlertData
     , generateRiskFactorAlertData
     , getActivityIcon
     , getAllActivities
