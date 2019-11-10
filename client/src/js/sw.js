@@ -110,12 +110,20 @@ dbSync.version(4).stores({
 });
 
 dbSync.version(5).stores({
-    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter'
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter',
 });
 
 dbSync.version(6).stores({
     nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+prenatal_participant],[type+adult]',
-})
+});
+
+dbSync.version(7).stores({
+    nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+prenatal_participant],[type+adult]',  
+}).upgrade(function (tx) {
+    return tx.nodes.where({
+        type: 'clinic'
+    }).delete();
+});
 
 function gatherWords (text) {
     // Split on spaces, and remove blanks from result.

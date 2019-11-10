@@ -199,10 +199,12 @@ viewUserPage page model configured =
                     ClinicalPage ->
                         Pages.Clinical.View.view model.language
                             |> flexPageWrapper model
-
+                            
+                            
                     ClinicsPage clinicId ->
-                        Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) healthCenterId clinicId model.indexedDb
-                            |> flexPageWrapper model
+                        Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) healthCenterId clinicId loggedInModel.clinicsPage model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPageClinics)
+                            |> flexPageWrapper model                            
 
                     CreatePersonPage relation ->
                         Pages.Person.View.viewCreateForm model.language currentDate relation loggedInModel.createPersonPage model.indexedDb
@@ -279,6 +281,7 @@ viewUserPage page model configured =
                 Pages.PinCode.View.view model.language model.activePage (Success loggedInModel.nurse) model.healthCenterId configured.pinCodePage model.indexedDb
                     |> Html.map MsgPagePinCode
                     |> flexPageWrapper model
+
 
         Nothing ->
             Pages.PinCode.View.view model.language model.activePage (RemoteData.map .nurse configured.loggedIn) model.healthCenterId configured.pinCodePage model.indexedDb
