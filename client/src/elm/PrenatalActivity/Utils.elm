@@ -531,3 +531,202 @@ generateRiskFactorAlertData language currentDate measurements factor =
                         else
                             Nothing
                     )
+
+
+generateMedicalDiagnosisAlertData : Language -> NominalDate -> PrenatalMeasurements -> MedicalDiagnosis -> Maybe String
+generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
+    let
+        transAlert diagnosis =
+            translate language (Translate.MedicalDiagnosisAlert diagnosis)
+    in
+    case diagnosis of
+        DiagnosisUterineMyoma ->
+            measurements.medicalHistory
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value
+                        in
+                        if EverySet.member Backend.Measurement.Model.UterineMyoma value then
+                            Just (transAlert diagnosis)
+
+                        else
+                            Nothing
+                    )
+
+        DiagnosisDiabetes ->
+            measurements.medicalHistory
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value
+                        in
+                        if EverySet.member Backend.Measurement.Model.Diabetes value then
+                            Just (transAlert diagnosis)
+
+                        else
+                            Nothing
+                    )
+
+        DiagnosisCardiacDisease ->
+            measurements.medicalHistory
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value
+                        in
+                        if EverySet.member Backend.Measurement.Model.CardiacDisease value then
+                            Just (transAlert diagnosis)
+
+                        else
+                            Nothing
+                    )
+
+        DiagnosisRenalDisease ->
+            measurements.medicalHistory
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value
+                        in
+                        if EverySet.member Backend.Measurement.Model.RenalDisease value then
+                            Just (transAlert diagnosis)
+
+                        else
+                            Nothing
+                    )
+
+        DiagnosisHypertensionBeforePregnancy ->
+            measurements.medicalHistory
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value
+                        in
+                        if EverySet.member Backend.Measurement.Model.HypertensionBeforePregnancy value then
+                            Just (transAlert diagnosis)
+
+                        else
+                            Nothing
+                    )
+
+        DiagnosisTuberculosis ->
+            measurements.medicalHistory
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value
+                        in
+                        if
+                            EverySet.member Backend.Measurement.Model.TuberculosisPast value
+                                || EverySet.member Backend.Measurement.Model.TuberculosisPresent value
+                        then
+                            Just (transAlert diagnosis)
+
+                        else
+                            Nothing
+                    )
+
+        DiagnosisAsthma ->
+            measurements.medicalHistory
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value
+                        in
+                        if EverySet.member Backend.Measurement.Model.Asthma value then
+                            Just (transAlert diagnosis)
+
+                        else
+                            Nothing
+                    )
+
+        DiagnosisBowedLegs ->
+            measurements.medicalHistory
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value
+                        in
+                        if EverySet.member Backend.Measurement.Model.BowedLegs value then
+                            Just (transAlert diagnosis)
+
+                        else
+                            Nothing
+                    )
+
+        DiagnosisHIV ->
+            measurements.medicalHistory
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value
+                        in
+                        if EverySet.member Backend.Measurement.Model.HIV value then
+                            Just (transAlert diagnosis)
+
+                        else
+                            Nothing
+                    )
+
+        DiagnosMentalHealthHistory ->
+            measurements.socialHistory
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value
+                        in
+                        if EverySet.member Backend.Measurement.Model.MentalHealthHistory value then
+                            Just (transAlert diagnosis)
+
+                        else
+                            Nothing
+                    )
+
+
+generateObstetricDiagnosisAlertData : Language -> NominalDate -> PrenatalMeasurements -> ObstetricDiagnosis -> Maybe String
+generateObstetricDiagnosisAlertData language currentDate measurements diagnosis =
+    let
+        transAlert diagnosis =
+            translate language (Translate.ObstetricDiagnosisAlert diagnosis)
+    in
+    case diagnosis of
+        DiagnosisGestationalDiabetesPreviousPregnancy ->
+            measurements.obstetricHistoryStep2
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            signs =
+                                Tuple.second measurement |> .value |> .obstetricHistory
+                        in
+                        if EverySet.member Backend.Measurement.Model.GestationalDiabetesPreviousPregnancy signs then
+                            Just (transAlert diagnosis)
+
+                        else
+                            Nothing
+                    )
+
+        DiagnosisRhNegative ->
+            measurements.obstetricHistoryStep2
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            signs =
+                                Tuple.second measurement |> .value |> .obstetricHistory
+                        in
+                        if EverySet.member Backend.Measurement.Model.GestationalDiabetesPreviousPregnancy signs then
+                            Just (transAlert diagnosis)
+
+                        else
+                            Nothing
+                    )
