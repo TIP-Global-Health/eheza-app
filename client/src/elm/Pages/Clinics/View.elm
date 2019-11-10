@@ -5,7 +5,7 @@ user to click on clinics the user is assigned to, to see the sessions which are
 available for data-entry.
 -}
 
-import App.Model exposing (Msg(..), MsgLoggedIn(..))
+import App.Model exposing (MsgLoggedIn(..))
 import Backend.Clinic.Model exposing (Clinic, ClinicType(..), allClinicTypes)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
@@ -91,8 +91,8 @@ we could show something about the sync status here ... might want to know how
 up-to-date things are.
 
 -}
-viewLoadedClinicList : Language -> Nurse -> HealthCenterId -> ( EveryDictList ClinicId Clinic, EveryDictList HealthCenterId SyncData ) -> Html Msg
-viewLoadedClinicList language user selectedHealthCenterId ( clinics, sync ) =
+viewLoadedClinicList : Language -> Nurse -> HealthCenterId -> Model -> ( EveryDictList ClinicId Clinic, EveryDictList HealthCenterId SyncData ) -> Html Msg
+viewLoadedClinicList language user selectedHealthCenterId model ( clinics, sync ) =
     let
         showWarningMessage header message =
             div
@@ -124,70 +124,56 @@ viewLoadedClinicList language user selectedHealthCenterId ( clinics, sync ) =
 
                 else
                     let
-                      titleTransId =
-                          if isJust model.clinicType then
-                              Translate.SelectYourGroup
+                        titleTransId =
+                            if isJust model.clinicType then
+                                Translate.SelectYourGroup
 
-                          else
-                              Translate.SelectProgram
+                            else
+                                Translate.SelectProgram
 
-                      title =
-                          p
-                              [ class "centered" ]
-                              [ text <| translate language titleTransId
-                              , text ":"
-                              ]
+                        title =
+                            p
+                                [ class "centered" ]
+                                [ text <| translate language titleTransId
+                                , text ":"
+                                ]
 
-                      synced =
-                          case model.clinicType of
-                              Just clinicType ->
-                                  clinics
-                                      |> EveryDictList.filter
-                                          (\_ clinic ->
-                                              -- Group belongs to seleced health center.
-                                              (clinic.healthCenterId == selectedHealthCenterId)
-                                                  -- Group is of selected type.
-                                                  && (clinic.clinicType == clinicType)
-                                          )
-                                      |> AllDictList.sortBy .name
+                        synced =
+                            case model.clinicType of
+                                Just clinicType ->
+                                    clinics
+                                        |> EveryDictList.filter
+                                            (\_ clinic ->
+                                                -- Group belongs to seleced health center.
+                                                (clinic.healthCenterId == selectedHealthCenterId)
+                                                    -- Group is of selected type.
+                                                    && (clinic.clinicType == clinicType)
+                                            )
+                                        |> EveryDictList.sortBy .name
 
-                              Nothing ->
-                                  clinics
-                                      |> AllDictList.filter
-                                          (\_ clinic ->
-                                              -- Group belongs to seleced health center.
-                                              (clinic.healthCenterId == selectedHealthCenterId)
-                                          )
+                                Nothing ->
+                                    clinics
+                                        |> EveryDictList.filter
+                                            (\_ clinic ->
+                                                -- Group belongs to seleced health center.
+                                                clinic.healthCenterId == selectedHealthCenterId
+                                            )
 
-                      buttonsView =
-                          if isJust model.clinicType then
-                              synced
-                                  |> EveryDictList.toList
-                                  |> List.map (viewClinicButton user)
+                        buttonsView =
+                            if isJust model.clinicType then
+                                synced
+                                    |> EveryDictList.toList
+                                    |> List.map (viewClinicButton user)
 
-                          else
-                              synced
-                                  |> EveryDictList.values
-                                  |> viewClinicTypeButtons language
-
-                      message =
-                          if AllDictList.isEmpty synced then
-                              div
-                                  [ class "ui message warning" ]
-                                  [ div [ class "header" ] [ text <| translate language Translate.NoGroupsFound ]
-                                  , text <| translate language Translate.HaveYouSynced
-                                  ]
-
-                          else
-                              emptyNode
-
-
+                            else
+                                synced
+                                    |> EveryDictList.values
+                                    |> viewClinicTypeButtons language
                     in
-                      div []
-                          [ title
-                          , div [] buttonsView
-                          , message
-                          ]
+                    div []
+                        [ title
+                        , div [] buttonsView
+                        ]
             )
 
 
