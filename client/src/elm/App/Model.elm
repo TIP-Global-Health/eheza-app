@@ -9,6 +9,7 @@ import Dict exposing (Dict)
 import EveryDict exposing (EveryDict)
 import Http
 import Json.Encode exposing (Value)
+import Pages.Clinics.Model
 import Pages.Device.Model
 import Pages.Page exposing (Page(..))
 import Pages.People.Model
@@ -140,6 +141,7 @@ type alias LoggedInModel =
     { createPersonPage : Pages.Person.Model.Model
     , relationshipPages : EveryDict ( PersonId, PersonId ) Pages.Relationship.Model.Model
     , personsPage : Pages.People.Model.Model
+    , clinicsPage : Pages.Clinics.Model.Model
 
     -- The nurse who has logged in.
     , nurse : ( NurseId, Nurse )
@@ -155,6 +157,7 @@ emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
 emptyLoggedInModel nurse =
     { createPersonPage = Pages.Person.Model.emptyModel
     , personsPage = Pages.People.Model.emptyModel
+    , clinicsPage = Pages.Clinics.Model.emptyModel
     , relationshipPages = EveryDict.empty
     , nurse = nurse
     , sessionPages = EntityUuidDict.empty
@@ -197,7 +200,8 @@ type Msg
 {-| Messages we can only handle if we're logged in.
 -}
 type MsgLoggedIn
-    = MsgPageCreatePerson Pages.Person.Model.Msg
+    = MsgPageClinics Pages.Clinics.Model.Msg
+    | MsgPageCreatePerson Pages.Person.Model.Msg
     | MsgPagePersons Pages.People.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg

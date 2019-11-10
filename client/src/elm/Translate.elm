@@ -24,6 +24,7 @@ general utilities, see `Translate.Model` and `Translate.Utils`.
 -}
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
+import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -197,6 +198,7 @@ type TranslationId
     | ChildOf
     | Children
     | ClickTheCheckMark
+    | ClinicType ClinicType
     | Clinical
     | ConvulsionsAndUnconciousPreviousDelivery
     | ConvulsionsPreviousDelivery
@@ -400,6 +402,7 @@ type TranslationId
     | PreviousFloatMeasurement Float
     | PreviousMeasurementNotFound
     | Profession
+    | Programs
     | ProgressReport
     | PreTermPregnancy
     | Province
@@ -442,6 +445,7 @@ type TranslationId
     | Sector
     | SelectDangerSigns
     | SelectGroup
+    | SelectProgram
     | SelectLanguage
     | SelectYourGroup
     | SelectYourHealthCenter
@@ -1112,6 +1116,23 @@ translationSet trans =
             { english = "Click the check mark if the mother / caregiver is in attendance. The check mark will appear green when a mother / caregiver has been signed in."
             , kinyarwanda = Just "Kanda (kuri) ku kazu niba umubyeyi ahari. Ku kazu harahita hahindura ibara habe icyaytsi niba wemeje ko umubyeyi ahari"
             }
+
+        ClinicType clinicType ->
+            case clinicType of
+                Fbf ->
+                    { english = "Fbf"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pmtct ->
+                    { english = "Pmtct"
+                    , kinyarwanda = Nothing
+                    }
+
+                Sorwathe ->
+                    { english = "Sorwathe"
+                    , kinyarwanda = Nothing
+                    }
 
         Clinical ->
             { english = "Clinical"
@@ -2481,6 +2502,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Programs ->
+            { english = "Programs"
+            , kinyarwanda = Nothing
+            }
+
         ProgressReport ->
             { english = "Progress Report"
             , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
@@ -2698,6 +2724,11 @@ translationSet trans =
 
         SelectGroup ->
             { english = "Select Group..."
+            , kinyarwanda = Nothing
+            }
+
+        SelectProgram ->
+            { english = "Select Program"
             , kinyarwanda = Nothing
             }
 
