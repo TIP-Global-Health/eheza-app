@@ -860,3 +860,24 @@ generateObstetricDiagnosisAlertData language currentDate measurements diagnosis 
                                         Nothing
                                 )
                     )
+
+        DisgnosisPeripheralEdema ->
+            measurements.corePhysicalExam
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            hands =
+                                Tuple.second measurement |> .value |> .hands
+
+                            legs =
+                                Tuple.second measurement |> .value |> .legs
+                        in
+                        if
+                            EverySet.member Backend.Measurement.Model.EdemaHands hands
+                                || EverySet.member Backend.Measurement.Model.EdemaLegs legs
+                        then
+                            Just (transAlert diagnosis)
+
+                        else
+                            Nothing
+                    )

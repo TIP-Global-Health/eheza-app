@@ -2580,6 +2580,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DisgnosisPeripheralEdema ->
+                    { english = "Peripheral Edema"
+                    , kinyarwanda = Nothing
+                    }
+
         OK ->
             { english = "OK"
             , kinyarwanda = Just "Nibyo, yego"

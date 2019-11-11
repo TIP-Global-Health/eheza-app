@@ -65,6 +65,7 @@ type ObstetricDiagnosis
     | DiagnosisSevereUnderweight
     | DiagnosisOverweight
     | DiagnosisObese
+    | DisgnosisPeripheralEdema
 
 
 type MedicalDiagnosis
@@ -118,6 +119,7 @@ allObstetricDiagnosis =
     , DiagnosisSevereUnderweight
     , DiagnosisOverweight
     , DiagnosisObese
+    , DisgnosisPeripheralEdema
     ]
 
 
