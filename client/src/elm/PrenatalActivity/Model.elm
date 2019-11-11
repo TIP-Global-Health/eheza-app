@@ -41,6 +41,7 @@ type RiskFactor
     | FactorConvulsionsPreviousDelivery
     | FactorConvulsionsAndUnconsciousPreviousDelivery
     | FactorIncompleteCervixPreviousPregnancy
+    | FactorVerticalCSectionScar
 
 
 type HighRiskFactor
@@ -101,6 +102,7 @@ allRiskFactors =
     , FactorConvulsionsPreviousDelivery
     , FactorConvulsionsAndUnconsciousPreviousDelivery
     , FactorIncompleteCervixPreviousPregnancy
+    , FactorVerticalCSectionScar
     ]
 
 

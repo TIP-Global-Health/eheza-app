@@ -534,6 +534,21 @@ generateRiskFactorAlertData language currentDate measurements factor =
                             Nothing
                     )
 
+        FactorVerticalCSectionScar ->
+            measurements.obstetricalExam
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            scar =
+                                Tuple.second measurement |> .value |> .cSectionScar
+                        in
+                        if scar == Backend.Measurement.Model.Vertical then
+                            Just (transAlert factor)
+
+                        else
+                            Nothing
+                    )
+
 
 generateMedicalDiagnosisAlertData : Language -> NominalDate -> PrenatalMeasurements -> MedicalDiagnosis -> Maybe String
 generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =

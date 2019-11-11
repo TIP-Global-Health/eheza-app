@@ -3065,6 +3065,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                FactorVerticalCSectionScar ->
+                    { english = "Vertical C-Section Scar"
+                    , kinyarwanda = Nothing
+                    }
+
         RiskFactors ->
             { english = "Risk Factors"
             , kinyarwanda = Nothing
