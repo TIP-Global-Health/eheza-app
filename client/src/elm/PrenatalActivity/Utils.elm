@@ -978,7 +978,7 @@ generateObstetricDiagnosisAlertData language currentDate measurements diagnosis 
                             dia =
                                 Tuple.second measurement |> .value |> .dia
                         in
-                        if sys < 100 || dia < 60 then
+                        if sys < 110 || dia < 70 then
                             Just (transAlert diagnosis)
 
                         else
