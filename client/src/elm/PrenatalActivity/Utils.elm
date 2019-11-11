@@ -881,3 +881,88 @@ generateObstetricDiagnosisAlertData language currentDate measurements diagnosis 
                         else
                             Nothing
                     )
+
+        DiagnosisFetusBreech ->
+            measurements.lastMenstrualPeriod
+                |> Maybe.andThen
+                    (\lastMenstrualPeriod ->
+                        let
+                            lmpDate =
+                                Tuple.second lastMenstrualPeriod |> .value |> .date
+
+                            egaInWeeks =
+                                diffDays lmpDate currentDate // 7 |> toFloat
+                        in
+                        if egaInWeeks < 32 then
+                            Nothing
+
+                        else
+                            measurements.obstetricalExam
+                                |> Maybe.andThen
+                                    (\measurement ->
+                                        let
+                                            presentation =
+                                                Tuple.second measurement |> .value |> .fetalPresentation
+                                        in
+                                        if EverySet.member Backend.Measurement.Model.FetalBreech presentation then
+                                            Just (transAlert diagnosis)
+
+                                        else
+                                            Nothing
+                                    )
+                    )
+
+        DiagnosisFetusTransverse ->
+            measurements.lastMenstrualPeriod
+                |> Maybe.andThen
+                    (\lastMenstrualPeriod ->
+                        let
+                            lmpDate =
+                                Tuple.second lastMenstrualPeriod |> .value |> .date
+
+                            egaInWeeks =
+                                diffDays lmpDate currentDate // 7 |> toFloat
+                        in
+                        if egaInWeeks < 32 then
+                            Nothing
+
+                        else
+                            measurements.obstetricalExam
+                                |> Maybe.andThen
+                                    (\measurement ->
+                                        let
+                                            presentation =
+                                                Tuple.second measurement |> .value |> .fetalPresentation
+                                        in
+                                        if EverySet.member Backend.Measurement.Model.Transverse presentation then
+                                            Just (transAlert diagnosis)
+
+                                        else
+                                            Nothing
+                                    )
+                    )
+
+        DiagnosisBreastExamination ->
+            measurements.breastExam
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            signs =
+                                Tuple.second measurement |> .value |> .exam
+                        in
+                        if
+                            EverySet.isEmpty signs
+                                || EverySet.member Backend.Measurement.Model.NormalBreast signs
+                        then
+                            Nothing
+
+                        else
+                            let
+                                transSigns =
+                                    EverySet.toList signs
+                                        |> List.map (\sign -> translate language (Translate.BreastExamSign sign))
+                                        |> List.intersperse ", "
+                                        |> String.concat
+                            in
+                            Just (transAlert diagnosis ++ " " ++ transSigns)
+                    )

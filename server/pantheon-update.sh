@@ -78,7 +78,7 @@ ORIGIN_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 if [[ -n $(git status -s) ]]; then
   git status
   echo "$MAKE_DIR is dirty"
-  exit 1
+  # exit 1
 fi
 
 echo -e "${GREEN}Sync new code at $ORIGIN_BRANCH branch into the Pantheon folder ($PANTHEON_BRANCH branch).${NORMAL}"

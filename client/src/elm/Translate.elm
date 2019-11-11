@@ -2585,6 +2585,21 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisFetusBreech ->
+                    { english = "Fetus is in breech"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisFetusTransverse ->
+                    { english = "Fetus is transverse"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisBreastExamination ->
+                    { english = "Breast exam showed"
+                    , kinyarwanda = Nothing
+                    }
+
         OK ->
             { english = "OK"
             , kinyarwanda = Just "Nibyo, yego"

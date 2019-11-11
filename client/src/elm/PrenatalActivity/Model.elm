@@ -66,6 +66,9 @@ type ObstetricDiagnosis
     | DiagnosisOverweight
     | DiagnosisObese
     | DisgnosisPeripheralEdema
+    | DiagnosisFetusBreech
+    | DiagnosisFetusTransverse
+    | DiagnosisBreastExamination
 
 
 type MedicalDiagnosis
@@ -120,6 +123,9 @@ allObstetricDiagnosis =
     , DiagnosisOverweight
     , DiagnosisObese
     , DisgnosisPeripheralEdema
+    , DiagnosisFetusBreech
+    , DiagnosisFetusTransverse
+    , DiagnosisBreastExamination
     ]
 
 
