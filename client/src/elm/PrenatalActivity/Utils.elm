@@ -21,9 +21,10 @@ expected (and not completed).
 
 -}
 
-import Backend.Measurement.Model exposing (PrenatalMeasurements, PreviousDeliverySign(..))
+import Backend.Measurement.Model exposing (HeightInCm(..), MuacInCm(..), PrenatalMeasurements, PreviousDeliverySign(..), WeightInKg(..))
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, diffDays)
+import Pages.PrenatalActivity.Utils exposing (calculateBmi)
 import PrenatalActivity.Model exposing (..)
 import Translate exposing (Language, TranslationId, translate)
 
@@ -746,4 +747,116 @@ generateObstetricDiagnosisAlertData language currentDate measurements diagnosis 
 
                         else
                             Nothing
+                    )
+
+        DiagnosisModerateUnderweight ->
+            measurements.nutrition
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            muac =
+                                Tuple.second measurement
+                                    |> .value
+                                    |> .muac
+                                    |> (\(MuacInCm cm) -> cm)
+                        in
+                        if muac >= 18.5 && muac < 22 then
+                            Just (transAlert diagnosis)
+
+                        else
+                            Nothing
+                    )
+
+        DiagnosisSevereUnderweight ->
+            measurements.nutrition
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            height =
+                                Tuple.second measurement
+                                    |> .value
+                                    |> .height
+                                    |> (\(HeightInCm cm) -> cm)
+
+                            weight =
+                                Tuple.second measurement
+                                    |> .value
+                                    |> .weight
+                                    |> (\(WeightInKg kg) -> kg)
+
+                            muac =
+                                Tuple.second measurement
+                                    |> .value
+                                    |> .muac
+                                    |> (\(MuacInCm cm) -> cm)
+                        in
+                        if muac < 18.5 then
+                            Just (transAlert diagnosis)
+
+                        else
+                            calculateBmi (Just height) (Just weight)
+                                |> Maybe.andThen
+                                    (\bmi_ ->
+                                        if bmi_ < 18.5 then
+                                            Just (transAlert diagnosis)
+
+                                        else
+                                            Nothing
+                                    )
+                    )
+
+        DiagnosisOverweight ->
+            measurements.nutrition
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            height =
+                                Tuple.second measurement
+                                    |> .value
+                                    |> .height
+                                    |> (\(HeightInCm cm) -> cm)
+
+                            weight =
+                                Tuple.second measurement
+                                    |> .value
+                                    |> .weight
+                                    |> (\(WeightInKg kg) -> kg)
+                        in
+                        calculateBmi (Just height) (Just weight)
+                            |> Maybe.andThen
+                                (\bmi_ ->
+                                    if bmi_ >= 25 && bmi_ <= 30 then
+                                        Just (transAlert diagnosis)
+
+                                    else
+                                        Nothing
+                                )
+                    )
+
+        DiagnosisObese ->
+            measurements.nutrition
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            height =
+                                Tuple.second measurement
+                                    |> .value
+                                    |> .height
+                                    |> (\(HeightInCm cm) -> cm)
+
+                            weight =
+                                Tuple.second measurement
+                                    |> .value
+                                    |> .weight
+                                    |> (\(WeightInKg kg) -> kg)
+                        in
+                        calculateBmi (Just height) (Just weight)
+                            |> Maybe.andThen
+                                (\bmi_ ->
+                                    if bmi_ > 30 then
+                                        Just (transAlert diagnosis)
+
+                                    else
+                                        Nothing
+                                )
                     )

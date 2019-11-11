@@ -2560,6 +2560,26 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisModerateUnderweight ->
+                    { english = "Moderate underweight"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSevereUnderweight ->
+                    { english = "Severe underweight"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisOverweight ->
+                    { english = "Overweight"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisObese ->
+                    { english = "Obese"
+                    , kinyarwanda = Nothing
+                    }
+
         OK ->
             { english = "OK"
             , kinyarwanda = Just "Nibyo, yego"

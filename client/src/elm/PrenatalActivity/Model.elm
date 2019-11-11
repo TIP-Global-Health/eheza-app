@@ -61,6 +61,10 @@ type HighSeverityAlert
 type ObstetricDiagnosis
     = DiagnosisGestationalDiabetesPreviousPregnancy
     | DiagnosisRhNegative
+    | DiagnosisModerateUnderweight
+    | DiagnosisSevereUnderweight
+    | DiagnosisOverweight
+    | DiagnosisObese
 
 
 type MedicalDiagnosis
@@ -110,6 +114,10 @@ allObstetricDiagnosis : List ObstetricDiagnosis
 allObstetricDiagnosis =
     [ DiagnosisGestationalDiabetesPreviousPregnancy
     , DiagnosisRhNegative
+    , DiagnosisModerateUnderweight
+    , DiagnosisSevereUnderweight
+    , DiagnosisOverweight
+    , DiagnosisObese
     ]
 
 
