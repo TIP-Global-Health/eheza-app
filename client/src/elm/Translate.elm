@@ -2255,7 +2255,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosMentalHealthHistory ->
+                DiagnosisMentalHealthHistory ->
                     { english = "History of Mental Health Problems"
                     , kinyarwanda = Nothing
                     }

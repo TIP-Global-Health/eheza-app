@@ -696,7 +696,7 @@ generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
                             Nothing
                     )
 
-        DiagnosMentalHealthHistory ->
+        DiagnosisMentalHealthHistory ->
             measurements.socialHistory
                 |> Maybe.andThen
                     (\measurement ->

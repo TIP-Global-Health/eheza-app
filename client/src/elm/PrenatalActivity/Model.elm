@@ -78,7 +78,7 @@ type MedicalDiagnosis
     | DiagnosisAsthma
     | DiagnosisBowedLegs
     | DiagnosisHIV
-    | DiagnosMentalHealthHistory
+    | DiagnosisMentalHealthHistory
 
 
 allHighRiskFactors : List HighRiskFactor
@@ -134,5 +134,5 @@ allMedicalDiagnosis =
     , DiagnosisAsthma
     , DiagnosisBowedLegs
     , DiagnosisHIV
-    , DiagnosMentalHealthHistory
+    , DiagnosisMentalHealthHistory
     ]
