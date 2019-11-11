@@ -966,3 +966,75 @@ generateObstetricDiagnosisAlertData language currentDate measurements diagnosis 
                             in
                             Just (transAlert diagnosis ++ " " ++ transSigns)
                     )
+
+        DiagnosisHypertension ->
+            measurements.vitals
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            sys =
+                                Tuple.second measurement |> .value |> .sys
+
+                            dia =
+                                Tuple.second measurement |> .value |> .dia
+                        in
+                        if sys < 100 || dia < 60 then
+                            Just (transAlert diagnosis)
+
+                        else
+                            Nothing
+                    )
+
+        DiagnosisPregnancyInducedHypertension ->
+            measurements.vitals
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            sys =
+                                Tuple.second measurement |> .value |> .sys
+
+                            dia =
+                                Tuple.second measurement |> .value |> .dia
+                        in
+                        if sys > 140 || dia > 90 then
+                            Just (transAlert diagnosis)
+
+                        else
+                            Nothing
+                    )
+
+        DiagnosisPreeclampsiaHighRisk ->
+            measurements.vitals
+                |> Maybe.andThen
+                    (\vitals ->
+                        let
+                            sys =
+                                Tuple.second vitals |> .value |> .sys
+
+                            dia =
+                                Tuple.second vitals |> .value |> .dia
+                        in
+                        if sys > 140 || dia > 90 then
+                            measurements.corePhysicalExam
+                                |> Maybe.andThen
+                                    (\corePhysicalExam ->
+                                        let
+                                            hands =
+                                                Tuple.second corePhysicalExam |> .value |> .hands
+
+                                            legs =
+                                                Tuple.second corePhysicalExam |> .value |> .legs
+                                        in
+                                        if
+                                            EverySet.member Backend.Measurement.Model.EdemaHands hands
+                                                || EverySet.member Backend.Measurement.Model.EdemaLegs legs
+                                        then
+                                            Just (transAlert diagnosis)
+
+                                        else
+                                            Nothing
+                                    )
+
+                        else
+                            Nothing
+                    )

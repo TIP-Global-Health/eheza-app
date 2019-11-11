@@ -2600,6 +2600,21 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisHypertension ->
+                    { english = "Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPregnancyInducedHypertension ->
+                    { english = "Pregnancy-induced hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPreeclampsiaHighRisk ->
+                    { english = "High Risk for Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
         OK ->
             { english = "OK"
             , kinyarwanda = Just "Nibyo, yego"

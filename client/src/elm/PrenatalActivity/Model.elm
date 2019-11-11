@@ -69,6 +69,9 @@ type ObstetricDiagnosis
     | DiagnosisFetusBreech
     | DiagnosisFetusTransverse
     | DiagnosisBreastExamination
+    | DiagnosisHypertension
+    | DiagnosisPregnancyInducedHypertension
+    | DiagnosisPreeclampsiaHighRisk
 
 
 type MedicalDiagnosis
@@ -126,6 +129,9 @@ allObstetricDiagnosis =
     , DiagnosisFetusBreech
     , DiagnosisFetusTransverse
     , DiagnosisBreastExamination
+    , DiagnosisHypertension
+    , DiagnosisPregnancyInducedHypertension
+    , DiagnosisPreeclampsiaHighRisk
     ]
 
 
