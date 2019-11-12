@@ -40,7 +40,7 @@ view language currentDate id db =
     in
     div
         [ class "wrap wrap-alt-2 page-prenatal-participant" ]
-        [ viewHeader language headerName
+        [ viewHeader language id headerName
         , div
             [ class "ui full segment blue" ]
             [ viewWebData language (viewPrenatalSessions language currentDate id db) identity prenatalSessions
@@ -48,8 +48,8 @@ view language currentDate id db =
         ]
 
 
-viewHeader : Language -> String -> Html App.Model.Msg
-viewHeader language name =
+viewHeader : Language -> PersonId -> String -> Html App.Model.Msg
+viewHeader language id name =
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -57,7 +57,7 @@ viewHeader language name =
             [ text name ]
         , a
             [ class "link-back"
-            , onClick <| App.Model.SetActivePage <| UserPage PrenatalParticipantsPage
+            , onClick <| App.Model.SetActivePage <| UserPage <| EncounterTypesPage id
             ]
             [ span [ class "icon-back" ] []
             , span [] []

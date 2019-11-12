@@ -29,6 +29,7 @@ import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model exposing (EducationLevel(..), Gender(..), HIVStatus(..), MaritalStatus(..), ModeOfDelivery(..), VaginalDelivery(..))
+import Backend.PrenatalParticipant.Model exposing (EncounterType(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
@@ -250,6 +251,7 @@ type TranslationId
     | Ega
     | EgaHeader
     | EmptyString
+    | EncounterType EncounterType
     | EndEncounter
     | EndGroupEncounter
     | EnterPairingCode
@@ -306,6 +308,7 @@ type TranslationId
     | HypertensionBeforePregnancy
     | IncompleteCervixPreviousPregnancy
     | IndividualEncounter
+    | IndividualEncounterTypes
     | KilogramShorthand
     | LastChecked
     | Legs
@@ -457,6 +460,7 @@ type TranslationId
     | SecondName
     | Sector
     | SelectDangerSigns
+    | SelectEncounterType
     | SelectGroup
     | SelectProgram
     | SelectLanguage
@@ -1486,6 +1490,23 @@ translationSet trans =
             , kinyarwanda = Just ""
             }
 
+        EncounterType type_ ->
+            case type_ of
+                AntenatalEncounter ->
+                    { english = "Antenatal"
+                    , kinyarwanda = Nothing
+                    }
+
+                InmmunizationEncounter ->
+                    { english = "Inmmunization"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounter ->
+                    { english = "Nutrition"
+                    , kinyarwanda = Nothing
+                    }
+
         EndEncounter ->
             { english = "End Encounter"
             , kinyarwanda = Nothing
@@ -1969,6 +1990,11 @@ translationSet trans =
 
         IndividualEncounter ->
             { english = "Individual Encounter"
+            , kinyarwanda = Nothing
+            }
+
+        IndividualEncounterTypes ->
+            { english = "Individual Encounter Types"
             , kinyarwanda = Nothing
             }
 
@@ -2897,6 +2923,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        SelectEncounterType ->
+            { english = "Select encounter type"
+            , kinyarwanda = Nothing
+            }
+
         SelectLanguage ->
             { english = "Select language"
             , kinyarwanda = Nothing
@@ -3466,6 +3497,11 @@ translateActivePage page =
 
                 PrenatalActivityPage _ _ ->
                     { english = "Antenatal Activity"
+                    , kinyarwanda = Nothing
+                    }
+
+                EncounterTypesPage _ ->
+                    { english = "Encounter Types"
                     , kinyarwanda = Nothing
                     }
 
