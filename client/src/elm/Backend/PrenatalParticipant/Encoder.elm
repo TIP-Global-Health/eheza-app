@@ -11,6 +11,7 @@ encodePrenatalParticipant : PrenatalParticipant -> Value
 encodePrenatalParticipant data =
     object
         [ ( "person", encodeEntityUuid data.person )
+        , ( "encounter_type", encodeEncounterType data.encounterType )
         , ( "expected"
           , object
                 [ ( "value", encodeYYYYMMDD data.startDate )
@@ -18,3 +19,16 @@ encodePrenatalParticipant data =
                 ]
           )
         ]
+
+
+encodeEncounterType : EncounterType -> Value
+encodeEncounterType type_ =
+    case type_ of
+        AntenatalEncounter ->
+            string "antenatal"
+
+        InmmunizationEncounter ->
+            string "inmmunization"
+
+        NutritionEncounter ->
+            string "nutrition"
