@@ -32,8 +32,8 @@ class HedleyRestfulHeights extends HedleyRestfulChildActivityBase {
     $query->fields('n', ['type', 'nid', 'vid', 'created']);
     $query->condition('n.nid',$node_ids, 'IN');
 
-    hedley_stats_join_field_to_query($query, 'node', 'field_height');
-    hedley_stats_join_field_to_query($query, 'node', 'field_zscore_age');
+    hedley_restful_join_field_to_query($query, 'node', 'field_height');
+    hedley_restful_join_field_to_query($query, 'node', 'field_zscore_age');
 
     $result = $query
       ->execute()

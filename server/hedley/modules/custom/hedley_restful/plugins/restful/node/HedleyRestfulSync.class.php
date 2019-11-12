@@ -283,10 +283,10 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $query = db_select('node', 'n');
 
     // Filter by Health center.
-    hedley_stats_join_field_to_query($query, 'node', 'field_shards');
+    hedley_restful_join_field_to_query($query, 'node', 'field_shards');
 
     // And the table which will give us the UUID of the shard.
-    hedley_stats_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_shards.field_shards_target_id");
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_shards.field_shards_target_id");
 
 
     $query
