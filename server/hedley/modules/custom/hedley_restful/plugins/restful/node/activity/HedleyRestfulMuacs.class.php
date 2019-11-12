@@ -27,4 +27,13 @@ class HedleyRestfulMuacs extends HedleyRestfulChildActivityBase {
     hedley_restful_join_field_to_query($query, 'node', 'field_muac');
   }
 
+  protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    foreach ($items as &$row) {
+      $row->muac = $row->field_muac;
+
+      unset($row->field_muac);
+    }
+    return $items;
+  }
+
 }

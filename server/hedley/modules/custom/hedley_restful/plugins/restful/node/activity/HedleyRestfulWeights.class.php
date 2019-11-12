@@ -53,4 +53,20 @@ class HedleyRestfulWeights extends HedleyRestfulChildActivityBase {
     }
   }
 
+  protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    $fields_info = $this->getPublicFields();
+
+    foreach ($items as &$row) {
+      foreach ($fields_info as $public_name => $field_info) {
+        if (strpos($field_info['property'], 'field_') !== 0) {
+          continue;
+        }
+
+        $row->{$public_name} = $row->{$field_info['property']};
+        unset($row->{$field_info['property']});
+      }
+    }
+    return $items;
+  }
+
 }

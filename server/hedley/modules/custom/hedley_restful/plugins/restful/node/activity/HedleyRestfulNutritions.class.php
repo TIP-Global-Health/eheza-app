@@ -26,4 +26,13 @@ class HedleyRestfulNutritions extends HedleyRestfulChildActivityBase {
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     hedley_restful_join_field_to_query($query, 'node', 'field_nutrition_signs');
   }
+
+  protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    foreach ($items as &$row) {
+      $row->nutrition_signs = $row->field_nutrition_signs;
+
+      unset($row->field_nutrition_signs);
+    }
+    return $items;
+  }
 }
