@@ -18,7 +18,6 @@ class HedleyRestfulPmtctParticipants extends HedleyRestfulSyncBase {
 
     $standard_fields_names = [
       'field_adult_activities',
-      'field_encounter_type',
     ];
 
     foreach ($standard_fields_names as $field_name) {
