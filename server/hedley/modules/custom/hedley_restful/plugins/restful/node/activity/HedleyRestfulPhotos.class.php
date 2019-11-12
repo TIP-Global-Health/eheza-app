@@ -27,10 +27,36 @@ class HedleyRestfulPhotos extends HedleyRestfulChildActivityBase {
     return $public_fields;
   }
 
-  public function alterQueryForViewWithDbSelect(SelectQuery $query) {
-    // @todo: Have image style saved on the node, so we could db_query()
-    // it.
+  protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     hedley_restful_join_field_to_query($query, 'node', 'field_photo');
+
+    // Get to the `file`. We'll convert the `uri` to `field_photo`
+    // in
+    $query->innerJoin('file_managed', 'f', 'f.fid = field_photo.field_photo_fid');
+    $query->addField('f', 'uri');
+  }
+
+  protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    foreach ($items as &$row) {
+      $fid = $row->field_photo;
+      $uri = $row->uri;
+
+      $image_style  = 'patient-photo';
+
+      $value = [
+        'id' => $fid,
+        'self' => file_create_url($uri),
+        'styles' => [
+          $image_style => image_style_url($image_style  , $uri),
+        ],
+      ];
+
+      $row->photo = $value;
+
+      unset($row->field_photo);
+    }
+
+    return $items;
   }
 
 }

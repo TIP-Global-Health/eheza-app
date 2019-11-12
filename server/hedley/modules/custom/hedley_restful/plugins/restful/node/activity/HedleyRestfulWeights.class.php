@@ -39,7 +39,7 @@ class HedleyRestfulWeights extends HedleyRestfulChildActivityBase {
     return $public_fields;
   }
 
-  public function alterQueryForViewWithDbSelect(SelectQuery $query) {
+  protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     $field_names = [
       'field_weight',
       'field_bmi',

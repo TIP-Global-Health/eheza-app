@@ -51,7 +51,8 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
 
     $this->alterQueryForViewWithDbSelect($query);
 
-    return $this->executeQueryForViewWithDbSelect($query);
+    $items = $this->executeQueryForViewWithDbSelect($query);
+    return $this->postExecuteQueryForViewWithDbSelect($items);
   }
 
 
@@ -73,6 +74,10 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
       ->fetchAllAssoc('nid');
 
     return $result;
+  }
+
+  protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    return $items;
   }
 
 }
