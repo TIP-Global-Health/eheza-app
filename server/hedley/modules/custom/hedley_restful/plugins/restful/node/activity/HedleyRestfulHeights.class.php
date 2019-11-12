@@ -27,21 +27,9 @@ class HedleyRestfulHeights extends HedleyRestfulChildActivityBase {
     return $public_fields;
   }
 
-  public function viewWithDbSelect($node_ids) {
-    $query = db_select('node', 'node');
-    $query->fields('node', ['type', 'nid', 'vid', 'created']);
-    $query->condition('node.nid',$node_ids, 'IN');
-
+  public function alterQueryForViewWithDbSelect(SelectQuery $query) {
     hedley_restful_join_field_to_query($query, 'node', 'field_height');
     hedley_restful_join_field_to_query($query, 'node', 'field_zscore_age');
-
-    $result = $query
-      ->execute()
-      ->fetchAllAssoc('node.nid');
-
-    dpm($result);
-
-    return $result;
   }
 
 }

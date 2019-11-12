@@ -46,4 +46,35 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
     return date("Y-m-d", $date);
   }
 
+  public function viewWithDbSelect(array $node_ids) {
+    $query = $this->getQueryForViewWithDbSelect($node_ids);db_select('node', 'node');
+
+    hedley_restful_join_field_to_query($query, 'node', 'field_height');
+    hedley_restful_join_field_to_query($query, 'node', 'field_zscore_age');
+
+
+    return $this->executeQueryForViewWithDbSelect($query);
+  }
+
+
+  protected function getQueryForViewWithDbSelect(array $node_ids) {
+    $query = db_select('node', 'node');
+    $query->fields('node', ['type', 'nid', 'vid', 'created']);
+    $query->condition('node.nid',$node_ids, 'IN');
+
+    return $query;
+  }
+
+  // @todo: Make abstract, so everyone must implement.
+  protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
+  }
+
+  protected function executeQueryForViewWithDbSelect(SelectQuery $query) {
+    $result = $query
+      ->execute()
+      ->fetchAllAssoc('nid');
+
+    return $result;
+  }
+
 }
