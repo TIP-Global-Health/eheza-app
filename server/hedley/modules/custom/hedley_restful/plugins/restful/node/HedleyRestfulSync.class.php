@@ -94,6 +94,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'muac' => 'muacs',
       'nutrition' => 'nutritions',
       'participant_consent' => 'participants-consent',
+      // @todo: We should save the image style on the node, so we could
+      // query it, without trying to create it while syncing - thus save
+      // syncing time.
       'photo' => 'photos',
       'weight' => 'weights',
     ];
@@ -254,7 +257,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    */
   public function getForHealthCenter($uuid) {
     $request = $this->getRequest();
-    $handlersForTypes = $this->entitiesForHealthCenters();
+    $handlers_by_Types = $this->entitiesForHealthCenters();
 
     // Note that 0 is fine, so we can't use `empty`.
     if (!isset($request['base_revision'])) {
@@ -277,29 +280,19 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       throw new RestfulBadRequestException('Must update your client before syncing further.');
     }
 
-    // Start building up a query, which we'll use in a couple of ways.
-    $query = db_select('node_revision', 'nr');
-    $query->join('node', 'n', 'n.nid = nr.nid');
+    $query = db_select('node', 'n');
 
-    // Join the table that tracks which shards the node should be sent to.
-    $query->join(
-      'field_revision_field_shards',
-      's',
-      's.entity_id = nr.nid AND s.revision_id = nr.vid'
-    );
+    // Filter by Health center.
+    hedley_stats_join_field_to_query($query, 'node', 'field_shards');
 
     // And the table which will give us the UUID of the shard.
-    $query->join(
-      'field_data_field_uuid',
-      'u',
-      'u.entity_id = s.field_shards_target_id'
-    );
+    hedley_stats_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_shards.field_shards_target_id");
+
 
     $query
-      ->fields('nr', ['nid', 'vid', 'timestamp'])
-      ->fields('n', ['type'])
+      ->fields('n', ['type', 'nid', 'vid', 'created'])
       ->condition('u.field_uuid_value', $uuid)
-      ->condition('n.type', array_keys($handlersForTypes), 'IN');
+      ->condition('n.type', array_keys($handlers_by_Types), 'IN');
 
     // Get the timestamp of the last revision. We'll also get a count of
     // remaining revisions, but the timestamp of the last revision will also
@@ -312,6 +305,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       ->execute()
       ->fetchObject();
 
+    // @todo: Remove, as I believe it doesn't really give us important data
     $last_timestamp = $last_revision ? $last_revision->timestamp : 0;
 
     // Restrict to revisions the client doesn't already have.
@@ -321,36 +315,29 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     // revision. This will help the client show progress. Note that this
     // includes the revisions in the batch we will return (but not earlier
     // revisions).
-    $count = $query->countQuery()->execute()->fetchField();
+    $count_query = clone $query;
+    $count = $count_query
+      ->countQuery()
+      ->execute()
+      ->fetchField();
+
+    // Group by the node type.
+    $query->getGroupBy('n.type');
 
     // Then, get one batch worth of results.
     $batch = $query
-      ->orderBy('nr.vid', 'ASC')
+      ->orderBy('n.vid', 'ASC')
+      // @todo: Change range.
       ->range(0, $this->getRange())
       ->execute()
       ->fetchAll();
 
-    // As an optimization, if the same node ID occurs multiple times in this
-    // batch, just send the last one. In principle, it would be nice to enable
-    // this optimization across multiple batches as well. That is, it would be
-    // nice to avoid sending a node now if it will be sent again in a later
-    // batch. However, the difficulty is that we can't be sure that the client
-    // will actually get to the later batch before being offline again. We
-    // could immediately send the later revision, but then we'd be sending
-    // changes out-of-order, which might have strange implications.  (For
-    // instance, a field might reference an entity the client doesn't have
-    // yet).  So, at least for the moment, it's better to do this optimization
-    // within a single batch only. (Items can be out-of-order within the batch,
-    // but that should be manageable, since we can at least be sure that the
-    // client will get the whole batch or nothing).
-    $optimized = [];
-    foreach ($batch as $item) {
-      $optimized[$item->nid] = $item;
-    }
-    $optimized = array_values($optimized);
+    // @todo: Remove.
+    $optimized = $batch;
+
 
     // Adjust the count if we've removed any items with our optimization.
-    $count = $count - count($batch) + count($optimized);
+    $count = $count - count($batch);
 
     // Now, we wish to get a restful representation of each revision in this
     // batch. We need to represent the specific revision, rather than the
@@ -361,15 +348,27 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $account = $this->getAccount();
 
     $output = [];
-    foreach ($optimized as $item) {
-      $handler_name = $handlersForTypes[$item->type];
+    foreach ($optimized as $node_type => $items) {
+      $handler_name = $handlers_by_Types[$node_type ];
       $sub_handler = restful_get_restful_handler($handler_name);
       $sub_handler->setAccount($account);
-      $rendered = $sub_handler->viewNodeRevision($item->nid, $item->vid);
 
-      // Also add in the timestamp.
-      $rendered['timestamp'] = $item->timestamp;
-      $output[] = $rendered;
+      $node_ids = [];
+      foreach ($items as $item) {
+        $node_ids[] = $item->nid;
+      }
+
+
+      $rendered_items = $sub_handler->viewWithDbSelect($node_ids);
+
+      // @todo: Use array_merge
+      foreach ($rendered_items as $rendered_item) {
+        // Also add in the timestamp.
+        // @todo: Convert to timestamp?
+        // $rendered['timestamp'] = $item->timestamp;
+
+        $output[] = $rendered_item;
+      }
     }
 
     return [
