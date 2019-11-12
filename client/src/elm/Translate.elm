@@ -305,6 +305,7 @@ type TranslationId
     | HttpError Http.Error
     | HypertensionBeforePregnancy
     | IncompleteCervixPreviousPregnancy
+    | IndividualEncounter
     | KilogramShorthand
     | LastChecked
     | Legs
@@ -1963,6 +1964,11 @@ translationSet trans =
 
         IncompleteCervixPreviousPregnancy ->
             { english = "Incomplete Cervix in previous pregnancy"
+            , kinyarwanda = Nothing
+            }
+
+        IndividualEncounter ->
+            { english = "Individual Encounter"
             , kinyarwanda = Nothing
             }
 
