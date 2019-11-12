@@ -183,7 +183,10 @@ viewRiskFactorsPane language currentDate measurements =
                 |> List.map (\alert -> p [] [ text <| "- " ++ alert ])
     in
     div [ class "risk-factors" ]
-        [ viewItemHeading language Translate.RiskFactors "red"
+        [ div [ class <| "pane-heading red" ]
+            [ img [ src "assets/images/exclamation-white-outline.png" ] []
+            , span [] [ text <| translate language Translate.RiskFactors ]
+            ]
         , div [ class "pane-content" ] alerts
         ]
 

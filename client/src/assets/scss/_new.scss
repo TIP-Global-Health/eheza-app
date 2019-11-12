@@ -823,6 +823,20 @@ div.page-clinical-progress-report {
        margin-bottom: 5px;
       }
     }
+
+    .risk-factors > .pane-heading {
+
+      img {
+        height: 24px;
+        width: 24px;
+        vertical-align: middle;
+      }
+
+      span {
+        vertical-align: middle;
+        margin-left: 10px;
+      }
+    }
 }
 
 div.page-demographics-report {
