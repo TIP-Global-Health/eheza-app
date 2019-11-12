@@ -62,6 +62,10 @@ class HedleyRestfulWeights extends HedleyRestfulChildActivityBase {
           continue;
         }
 
+        if (!isset($row->{$field_info['property']})) {
+          continue;
+        }
+
         $row->{$public_name} = $row->{$field_info['property']};
         unset($row->{$field_info['property']});
       }
