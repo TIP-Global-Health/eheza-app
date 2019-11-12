@@ -4,7 +4,7 @@ import App.Model
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
-import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
+import Backend.PrenatalParticipant.Model exposing (EncounterType(..), PrenatalParticipant)
 import EveryDict
 import EveryDictList exposing (EveryDictList)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
@@ -154,7 +154,7 @@ createSessionButton language currentDate id db =
             , ( "active", not isLoading )
             , ( "loading", isLoading )
             ]
-        , PrenatalParticipant id currentDate Nothing
+        , PrenatalParticipant id AntenatalEncounter currentDate Nothing
             |> Backend.Model.PostPrenatalSession
             |> App.Model.MsgIndexedDb
             |> onClick

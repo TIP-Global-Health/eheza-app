@@ -23,13 +23,13 @@ decodeEncounterType =
             (\s ->
                 case s of
                     "antenatal" ->
-                        succeed Antenatal
+                        succeed AntenatalEncounter
 
                     "inmmunization" ->
-                        succeed Inmmunization
+                        succeed InmmunizationEncounter
 
                     "nutrition" ->
-                        succeed Nutrition
+                        succeed NutritionEncounter
 
                     _ ->
                         fail <|
