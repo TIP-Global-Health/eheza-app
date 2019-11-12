@@ -39,4 +39,28 @@ class HedleyRestfulWeights extends HedleyRestfulChildActivityBase {
     return $public_fields;
   }
 
+  public function viewWithDbSelect($node_ids) {
+    $query = db_select('node', 'node');
+    $query->fields('node', ['type', 'nid', 'vid', 'created']);
+    $query->condition('node.nid',$node_ids, 'IN');
+
+    $field_names = [
+      'field_weight',
+      'field_bmi',
+      'field_zscore_age',
+      'field_zscore_length',
+      'field_zscore_bmi',
+    ];
+
+    foreach ($field_names as $field_name) {
+      hedley_restful_join_field_to_query($query, 'node', $field_name);
+    }
+
+    $result = $query
+      ->execute()
+      ->fetchAllAssoc('node.nid');
+
+    return $result;
+  }
+
 }

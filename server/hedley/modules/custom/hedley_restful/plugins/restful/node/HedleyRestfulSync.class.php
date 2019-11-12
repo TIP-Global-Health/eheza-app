@@ -21,6 +21,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
         \RestfulInterface::GET => 'getForAllDevices',
         \RestfulInterface::POST => 'handleChanges',
       ],
+      // The UUID of the Health center.
       '^.*$' => [
         \RestfulInterface::GET => 'getForHealthCenter',
         \RestfulInterface::POST => 'handleChanges',
@@ -306,7 +307,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       ->fetchObject();
 
     // @todo: Remove, as I believe it doesn't really give us important data
-    $last_timestamp = $last_revision ? $last_revision->timestamp : 0;
+    // $last_timestamp = $last_revision ? $last_revision->timestamp : 0;
+    $last_timestamp = 0;
 
     // Restrict to revisions the client doesn't already have.
     $query->condition('node.vid', $base, '>');
@@ -321,9 +323,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       ->execute()
       ->fetchField();
 
-    // Group by the node type.
-    $query->getGroupBy('node.type');
-
     // Then, get one batch worth of results.
     $batch = $query
       ->orderBy('node.vid', 'ASC')
@@ -331,9 +330,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       ->range(0, $this->getRange())
       ->execute()
       ->fetchAll();
-
-    // @todo: Remove.
-    $optimized = $batch;
 
 
     // Adjust the count if we've removed any items with our optimization.
@@ -347,8 +343,16 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     // doesn't have yet).
     $account = $this->getAccount();
 
+    $batch_by_node_type = [];
+
+    foreach ($batch as $item) {
+      $batch_by_node_type[$item->type][] = $item;
+    }
+
+    dpm($batch_by_node_type);
+
     $output = [];
-    foreach ($optimized as $node_type => $items) {
+    foreach ($batch_by_node_type as $node_type => $items) {
       $handler_name = $handlers_by_Types[$node_type ];
       $sub_handler = restful_get_restful_handler($handler_name);
       $sub_handler->setAccount($account);
