@@ -27,4 +27,10 @@ class HedleyRestfulPhotos extends HedleyRestfulChildActivityBase {
     return $public_fields;
   }
 
+  public function alterQueryForViewWithDbSelect(SelectQuery $query) {
+    // @todo: Have image style saved on the node, so we could db_query()
+    // it.
+    hedley_restful_join_field_to_query($query, 'node', 'field_photo');
+  }
+
 }

@@ -242,7 +242,21 @@ function hedley_restful_join_field_to_query(SelectQuery $query, $entity_type, $f
 
   $query->$join($table_name, $field_name, implode(' AND ', $conditions), $arguments);
 
-  $column_suffix = $field['type'] == 'entityreference' ? 'target_id' : 'value';
+
+  switch ($field['type']) {
+    case 'entityreference':
+      $column_suffix = 'target_id';
+      break;
+
+    case 'image':
+    case 'file':
+    $column_suffix = 'fid';
+    break;
+
+    default:
+      $column_suffix = 'value';
+
+  }
 
   $query->addField($field_name, $field_name . '_' . $column_suffix, $field_name);
 }

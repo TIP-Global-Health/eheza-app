@@ -49,9 +49,7 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
   public function viewWithDbSelect(array $node_ids) {
     $query = $this->getQueryForViewWithDbSelect($node_ids);db_select('node', 'node');
 
-    hedley_restful_join_field_to_query($query, 'node', 'field_height');
-    hedley_restful_join_field_to_query($query, 'node', 'field_zscore_age');
-
+    $this->alterQueryForViewWithDbSelect($query);
 
     return $this->executeQueryForViewWithDbSelect($query);
   }

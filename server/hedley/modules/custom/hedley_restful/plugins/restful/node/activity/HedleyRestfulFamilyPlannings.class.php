@@ -23,4 +23,8 @@ class HedleyRestfulFamilyPlannings extends HedleyRestfulMotherActivityBase {
     return $public_fields;
   }
 
+  public function alterQueryForViewWithDbSelect(SelectQuery $query) {
+    hedley_restful_join_field_to_query($query, 'node', 'field_family_planning_signs');
+  }
+
 }

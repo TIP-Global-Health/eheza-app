@@ -326,11 +326,10 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     // Then, get one batch worth of results.
     $batch = $query
       ->orderBy('node.vid', 'ASC')
-      // @todo: Change range.
-      ->range(0, $this->getRange())
+      // @todo: Make range configurable ($this->rangeForQueryWithDb)
+      ->range(0, 2000)
       ->execute()
       ->fetchAll();
-
 
     // Adjust the count if we've removed any items with our optimization.
     $count = $count - count($batch);
@@ -348,9 +347,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     foreach ($batch as $item) {
       $batch_by_node_type[$item->type][] = $item;
     }
-
-    dpm($batch_by_node_type);
-
     $output = [];
     foreach ($batch_by_node_type as $node_type => $items) {
       $handler_name = $handlers_by_Types[$node_type ];
