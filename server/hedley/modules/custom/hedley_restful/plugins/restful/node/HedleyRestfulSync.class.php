@@ -280,7 +280,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       throw new RestfulBadRequestException('Must update your client before syncing further.');
     }
 
-    $query = db_select('node', 'n');
+    $query = db_select('node', 'node');
 
     // Filter by Health center.
     hedley_restful_join_field_to_query($query, 'node', 'field_shards');
@@ -290,9 +290,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
 
     $query
-      ->fields('n', ['type', 'nid', 'vid', 'created'])
-      ->condition('u.field_uuid_value', $uuid)
-      ->condition('n.type', array_keys($handlers_by_Types), 'IN');
+      ->fields('node', ['type', 'nid', 'vid', 'created'])
+      ->condition('field_uuid.field_uuid_value', $uuid)
+      ->condition('node.type', array_keys($handlers_by_Types), 'IN');
 
     // Get the timestamp of the last revision. We'll also get a count of
     // remaining revisions, but the timestamp of the last revision will also
@@ -300,7 +300,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $last_revision_query = clone $query;
 
     $last_revision = $last_revision_query
-      ->orderBy('nr.vid', 'DESC')
+      ->orderBy('node.vid', 'DESC')
       ->range(0, 1)
       ->execute()
       ->fetchObject();
@@ -309,7 +309,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $last_timestamp = $last_revision ? $last_revision->timestamp : 0;
 
     // Restrict to revisions the client doesn't already have.
-    $query->condition('nr.vid', $base, '>');
+    $query->condition('node.vid', $base, '>');
 
     // First, get the total number of revisions that are greater than the base
     // revision. This will help the client show progress. Note that this
@@ -322,11 +322,11 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       ->fetchField();
 
     // Group by the node type.
-    $query->getGroupBy('n.type');
+    $query->getGroupBy('node.type');
 
     // Then, get one batch worth of results.
     $batch = $query
-      ->orderBy('n.vid', 'ASC')
+      ->orderBy('node.vid', 'ASC')
       // @todo: Change range.
       ->range(0, $this->getRange())
       ->execute()
@@ -357,7 +357,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       foreach ($items as $item) {
         $node_ids[] = $item->nid;
       }
-
 
       $rendered_items = $sub_handler->viewWithDbSelect($node_ids);
 
