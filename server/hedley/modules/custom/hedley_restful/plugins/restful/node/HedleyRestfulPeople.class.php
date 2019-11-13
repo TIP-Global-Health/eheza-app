@@ -133,6 +133,9 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
       'field_photo',
       'field_birth_date',
       'field_health_center',
+
+      // Other fields.
+      'field_uuid',
     ];
 
     foreach ($items as &$row) {
@@ -145,6 +148,8 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
         $row->{$public_name} = $row->{$field_name};
         unset($row->{$field_name});
       }
+
+      $row->birth_date_estimated = (bool) intval($row->birth_date_estimated);
 
       if (!empty($row->photo) && !empty($row->uri)) {
         $fid = $row->photo;

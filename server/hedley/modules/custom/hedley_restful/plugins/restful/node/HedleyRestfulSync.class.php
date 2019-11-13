@@ -190,7 +190,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $batch = $query
       ->orderBy('node.vid', 'ASC')
       // @todo: change
-      ->range(0, 1)
+      ->range(0, 2000)
       ->execute()
       ->fetchAll();
 
