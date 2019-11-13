@@ -132,7 +132,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    */
   public function getForAllDevices() {
     $request = $this->getRequest();
-    $handlersForTypes = $this->entitiesForAllDevices();
+    $handlers_by_types = $this->entitiesForAllDevices();
 
     // Note that 0 is fine, so we can't use `empty`.
     if (!isset($request['base_revision'])) {
@@ -156,13 +156,11 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     }
 
     // Start building up a query, which we'll use in a couple of ways.
-    $query = db_select('node_revision', 'nr');
-    $query->join('node', 'n', 'n.nid = nr.nid');
+    $query = db_select('node', 'node');
 
     $query
-      ->fields('nr', ['nid', 'vid', 'timestamp'])
-      ->fields('n', ['type'])
-      ->condition('n.type', array_keys($handlersForTypes), 'IN');
+      ->fields('node', ['nid', 'vid', 'timestamp', 'type'])
+      ->condition('node.type', array_keys($handlers_by_types), 'IN');
 
     // Get the timestamp of the last revision. We'll also get a count of
     // remaining revisions, but the timestamp of the last revision will also
@@ -170,7 +168,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $last_revision_query = clone $query;
 
     $last_revision = $last_revision_query
-      ->orderBy('nr.vid', 'DESC')
+      ->orderBy('node.vid', 'DESC')
       ->range(0, 1)
       ->execute()
       ->fetchObject();
@@ -178,7 +176,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $last_timestamp = $last_revision ? $last_revision->timestamp : 0;
 
     // Restrict to revisions the client doesn't already have.
-    $query->condition('nr.vid', $base, '>');
+    $query->condition('node.vid', $base, '>');
 
     // Get the total number of revisions that are greater than the base
     // revision. This will help the client show progress. Note that this
@@ -188,32 +186,14 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     // Then, get one batch worth of results.
     $batch = $query
-      ->orderBy('nr.vid', 'ASC')
-      ->range(0, $this->getRange())
+      ->orderBy('node.vid', 'ASC')
+      ->range(0, 2000)
       ->execute()
       ->fetchAll();
 
-    // As an optimization, if the same node ID occurs multiple times in this
-    // batch, just send the last one. In principle, it would be nice to enable
-    // this optimization across multiple batches as well. That is, it would be
-    // nice to avoid sending a node now if it will be sent again in a later
-    // batch. However, the difficulty is that we can't be sure that the client
-    // will actually get to the later batch before being offline again. We
-    // could immediately send the later revision, but then we'd be sending
-    // changes out-of-order, which might have strange implications.  (For
-    // instance, a field might reference an entity the client doesn't have
-    // yet).  So, at least for the moment, it's better to do this optimization
-    // within a single batch only. (Items can be out-of-order within the batch,
-    // but that should be manageable, since we can at least be sure that the
-    // client will get the whole batch or nothing).
-    $optimized = [];
-    foreach ($batch as $item) {
-      $optimized[$item->nid] = $item;
-    }
-    $optimized = array_values($optimized);
 
     // Adjust the count if we've removed any items with our optimization.
-    $count = $count - count($batch) + count($optimized);
+    $count = $count - count($batch);
 
     // Now, we wish to get a restful representation of each revision in this
     // batch. We need to represent the specific revision, rather than the
@@ -223,16 +203,32 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     // doesn't have yet).
     $account = $this->getAccount();
 
+    $batch_by_node_type = [];
+
+    foreach ($batch as $item) {
+      $batch_by_node_type[$item->type][] = $item;
+    }
     $output = [];
-    foreach ($optimized as $item) {
-      $handler_name = $handlersForTypes[$item->type];
+    foreach ($batch_by_node_type as $node_type => $items) {
+      $handler_name = $handler_name = $handlers_by_types[$item->type];
       $sub_handler = restful_get_restful_handler($handler_name);
       $sub_handler->setAccount($account);
-      $rendered = $sub_handler->viewNodeRevision($item->nid, $item->vid);
 
-      // Also add in the timestamp.
-      $rendered['timestamp'] = $item->timestamp;
-      $output[] = $rendered;
+      $node_ids = [];
+      foreach ($items as $item) {
+        $node_ids[] = $item->nid;
+      }
+
+      $rendered_items = $sub_handler->viewWithDbSelect($node_ids);
+
+      // @todo: Use array_merge
+      foreach ($rendered_items as $rendered_item) {
+        // Also add in the timestamp.
+        // @todo: Convert to timestamp?
+        // $rendered['timestamp'] = $item->timestamp;
+
+        $output[] = $rendered_item;
+      }
     }
 
     return [
