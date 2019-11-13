@@ -109,23 +109,41 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
   }
 
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
-    $fields_info = $this->getPublicFields();
+    $field_names = [
+      'field_birth_date_estimated',
+      'field_cell',
+      'field_district',
+      'field_education_level',
+      'field_first_name',
+      'field_gender',
+      'field_marital_status',
+      'field_national_id_number',
+      'field_phone_number',
+      'field_province',
+      'field_second_name',
+      'field_sector',
+      'field_ubudehe',
+      'field_village',
+      'field_hiv_status',
+      'field_number_of_children',
+      'field_mode_of_delivery',
+      'field_hmis_number',
+
+      // Other fields.
+      'field_photo',
+      'field_birth_date',
+      'field_health_center',
+    ];
 
     foreach ($items as &$row) {
       $birth_date = explode(' ', $row->field_birth_date);
       $row->field_birth_date = $birth_date[0];
 
-      foreach ($fields_info as $public_name => $field_info) {
-        if (strpos($field_info['property'], 'field_') !== 0) {
-          continue;
-        }
+      foreach ($field_names as $field_name) {
+        $public_name = str_replace('field_', '', $field_name);
 
-        if (!isset($row->{$field_info['property']})) {
-          continue;
-        }
-
-        $row->{$public_name} = $row->{$field_info['property']};
-        unset($row->{$field_info['property']});
+        $row->{$public_name} = $row->{$field_name};
+        unset($row->{$field_name});
       }
 
       if (!empty($row->photo) && !empty($row->uri)) {
