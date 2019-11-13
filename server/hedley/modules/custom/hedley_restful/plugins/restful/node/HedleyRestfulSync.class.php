@@ -63,17 +63,17 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    */
   public function entitiesForAllDevices() {
     return [
-      'catchment_area' => 'catchment_areas',
-      'clinic' => 'clinics',
-      'counseling_schedule' => 'counseling-schedule',
-      'counseling_topic' => 'counseling-topics',
-      'health_center' => 'health_centers',
-      'nurse' => 'nurses',
-      'participant_form' => 'participants-form',
+//      'catchment_area' => 'catchment_areas',
+//      'clinic' => 'clinics',
+//      'counseling_schedule' => 'counseling-schedule',
+//      'counseling_topic' => 'counseling-topics',
+//      'health_center' => 'health_centers',
+//      'nurse' => 'nurses',
+//      'participant_form' => 'participants-form',
       'person' => 'people',
-      'pmtct_participant' => 'pmtct-participants',
-      'relationship' => 'relationships',
-      'session' => 'sessions',
+//      'pmtct_participant' => 'pmtct-participants',
+//      'relationship' => 'relationships',
+//      'session' => 'sessions',
     ];
   }
 
@@ -159,7 +159,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $query = db_select('node', 'node');
 
     $query
-      ->fields('node', ['nid', 'vid', 'timestamp', 'type'])
+      ->fields('node', ['nid', 'vid', 'created', 'type'])
       ->condition('node.type', array_keys($handlers_by_types), 'IN');
 
     // Get the timestamp of the last revision. We'll also get a count of
@@ -173,7 +173,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       ->execute()
       ->fetchObject();
 
-    $last_timestamp = $last_revision ? $last_revision->timestamp : 0;
+    // @todo
+    // $last_timestamp = $last_revision ? $last_revision->timestamp : 0;
+    $last_timestamp = 0;
 
     // Restrict to revisions the client doesn't already have.
     $query->condition('node.vid', $base, '>');
@@ -187,7 +189,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     // Then, get one batch worth of results.
     $batch = $query
       ->orderBy('node.vid', 'ASC')
-      ->range(0, 2000)
+      // @todo: change
+      ->range(0, 20)
       ->execute()
       ->fetchAll();
 

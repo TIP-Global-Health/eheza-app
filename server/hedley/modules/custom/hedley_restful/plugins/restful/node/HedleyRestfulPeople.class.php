@@ -95,12 +95,12 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
     ];
 
     foreach ($field_names as $field_name) {
-      hedley_restful_join_field_to_query($query, 'node', $field_name);
+      hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
     }
 
     // For the Photo, get to the `file`. We'll convert the `uri` to `field_photo`
     // in
-    $query->innerJoin('file_managed', 'f', 'f.fid = field_photo.field_photo_fid');
+    $query->leftJoin('file_managed', 'f', 'f.fid = field_photo.field_photo_fid');
     $query->addField('f', 'uri');
 
     // Get the UUID of the health center.
@@ -112,6 +112,9 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
     $fields_info = $this->getPublicFields();
 
     foreach ($items as &$row) {
+      $birth_date = explode(' ', $row->field_birth_date);
+      $row->field_birth_date = $birth_date[0];
+
       foreach ($fields_info as $public_name => $field_info) {
         if (strpos($field_info['property'], 'field_') !== 0) {
           continue;
@@ -125,22 +128,23 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
         unset($row->{$field_info['property']});
       }
 
-      $row->birth_date = $this->convertTimestampToYmd($row->birth_date);
+      if (!empty($row->photo) && !empty($row->uri)) {
+        $fid = $row->photo;
+        $uri = $row->uri;
 
-      $fid = $row->photo;
-      $uri = $row->uri;
+        $image_style  = 'patient-photo';
 
-      $image_style  = 'patient-photo';
+        $value = [
+          'id' => $fid,
+          'self' => file_create_url($uri),
+          'styles' => [
+            $image_style => image_style_url($image_style  , $uri),
+          ],
+        ];
 
-      $value = [
-        'id' => $fid,
-        'self' => file_create_url($uri),
-        'styles' => [
-          $image_style => image_style_url($image_style  , $uri),
-        ],
-      ];
+        $row->photo = $value;
+      }
 
-      $row->photo = $value;
     }
 
     return $items;
