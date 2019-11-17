@@ -283,7 +283,7 @@ viewPatientProgressPane language currentDate measurements =
                     expectedVisits - actualVisists_
 
                 visitsView =
-                    List.repeat actualVisists_ "icon-checked-green-circle.png"
+                    List.repeat actualVisists_ "icon-gray-circle-small.png"
                         ++ List.repeat missingVisits "icon-uncompleted-circle.svg"
                         |> List.map (\icon -> img [ src <| "assets/images/" ++ icon ] [])
             in
