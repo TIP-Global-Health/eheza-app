@@ -18,8 +18,21 @@ import Maybe.Extra exposing (unwrap)
 import Pages.DemographicsReport.View exposing (viewHeader, viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.Utils exposing (generateEDDandEGA, generateGravida, generatePara)
-import PrenatalActivity.Model exposing (allMedicalDiagnosis, allObstetricDiagnosis, allRiskFactors)
-import PrenatalActivity.Utils exposing (generateMedicalDiagnosisAlertData, generateObstetricDiagnosisAlertData, generateRiskFactorAlertData)
+import PrenatalActivity.Model
+    exposing
+        ( PregnancyTrimester(..)
+        , allMedicalDiagnosis
+        , allObstetricDiagnosis
+        , allRiskFactors
+        , allTrimesters
+        )
+import PrenatalActivity.Utils
+    exposing
+        ( generateMedicalDiagnosisAlertData
+        , generateObstetricDiagnosisAlertData
+        , generateRiskFactorAlertData
+        , getEncounterTrimester
+        )
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage)
@@ -95,6 +108,7 @@ viewContent language currentDate data =
         , viewRiskFactorsPane language currentDate data.measurements
         , viewMedicalDiagnosisPane language currentDate data.measurements
         , viewObstetricDiagnosisPane language currentDate data.measurements
+        , viewPatientProgressPane language currentDate data.measurements
         ]
 
 
@@ -216,4 +230,77 @@ viewObstetricDiagnosisPane language currentDate measurements =
     div [ class "obstetric-diagnosis" ]
         [ viewItemHeading language Translate.ObstetricDiagnosis "blue"
         , div [ class "pane-content" ] alerts
+        ]
+
+
+viewPatientProgressPane : Language -> NominalDate -> PrenatalMeasurements -> Html Msg
+viewPatientProgressPane language currentDate measurements =
+    let
+        -- Right now we have only the current encounter to display.
+        encountersTrimesters =
+            [ ( currentDate
+              , measurements.lastMenstrualPeriod
+                    |> Maybe.map (Tuple.second >> .value >> .date)
+              )
+            ]
+                |> List.map (\( current, lmp ) -> getEncounterTrimester current lmp)
+
+        countTrimesterEncounters trimester =
+            encountersTrimesters
+                |> List.filter (\t -> t == Just trimester)
+                |> List.length
+
+        encountersFirstTrimester =
+            countTrimesterEncounters FirstTrimester
+
+        encountersSecondTrimester =
+            countTrimesterEncounters SecondTrimester
+
+        encountersThirdTrimester =
+            countTrimesterEncounters ThirdTrimester
+
+        viewTrimesterVisits trimester =
+            let
+                ( expectedVisits, actualVisists, visitsLabel ) =
+                    case trimester of
+                        FirstTrimester ->
+                            ( 1, encountersFirstTrimester, Translate.OneVisit )
+
+                        SecondTrimester ->
+                            ( 2, encountersSecondTrimester, Translate.TwoVisits )
+
+                        ThirdTrimester ->
+                            ( 5, encountersThirdTrimester, Translate.FiveVisits )
+
+                actualVisists_ =
+                    if actualVisists > expectedVisits then
+                        expectedVisits
+
+                    else
+                        actualVisists
+
+                missingVisits =
+                    expectedVisits - actualVisists_
+
+                visitsView =
+                    List.repeat actualVisists_ "icon-checked-green-circle.png"
+                        ++ List.repeat missingVisits "icon-uncompleted-circle.svg"
+                        |> List.map (\icon -> img [ src <| "assets/images/" ++ icon ] [])
+            in
+            div [ class "trimester-visits" ]
+                [ div [ class "label-trimester" ] [ text <| translate language <| Translate.PregnancyTrimester trimester ]
+                , div [ class "details" ]
+                    [ div [ class "label-visit" ] [ text <| translate language visitsLabel ]
+                    , div [ class "visits" ] visitsView
+                    ]
+                ]
+    in
+    div [ class "patient-progress" ]
+        [ viewItemHeading language Translate.PatientProgress "blue"
+        , div [ class "pane-content" ]
+            [ div [ class "caption timeline" ] [ text <| translate language Translate.ProgressTimeline ++ ":" ]
+            , allTrimesters
+                |> List.map viewTrimesterVisits
+                |> div [ class "visits-section" ]
+            ]
         ]

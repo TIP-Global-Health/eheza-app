@@ -3,6 +3,7 @@ module PrenatalActivity.Model exposing
     , HighSeverityAlert(..)
     , MedicalDiagnosis(..)
     , ObstetricDiagnosis(..)
+    , PregnancyTrimester(..)
     , PrenatalActivity(..)
     , RiskFactor(..)
     , allHighRiskFactors
@@ -10,6 +11,7 @@ module PrenatalActivity.Model exposing
     , allMedicalDiagnosis
     , allObstetricDiagnosis
     , allRiskFactors
+    , allTrimesters
     )
 
 {-| This module provides types relating to the UI for presenting
@@ -87,6 +89,12 @@ type MedicalDiagnosis
     | DiagnosisMentalHealthHistory
 
 
+type PregnancyTrimester
+    = FirstTrimester
+    | SecondTrimester
+    | ThirdTrimester
+
+
 allHighRiskFactors : List HighRiskFactor
 allHighRiskFactors =
     [ ConvulsionsPreviousDelivery, ConvulsionsAndUnconsciousPreviousDelivery ]
@@ -148,3 +156,8 @@ allMedicalDiagnosis =
     , DiagnosisHIV
     , DiagnosisMentalHealthHistory
     ]
+
+
+allTrimesters : List PregnancyTrimester
+allTrimesters =
+    [ FirstTrimester, SecondTrimester, ThirdTrimester ]

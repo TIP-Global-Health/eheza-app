@@ -9,6 +9,7 @@ module PrenatalActivity.Utils exposing
     , generateRiskFactorAlertData
     , getActivityIcon
     , getAllActivities
+    , getEncounterTrimester
     )
 
 {-| Various utilities that deal with "activities". An activity represents the
@@ -1038,3 +1039,23 @@ generateObstetricDiagnosisAlertData language currentDate measurements diagnosis 
                         else
                             Nothing
                     )
+
+
+getEncounterTrimester : NominalDate -> Maybe NominalDate -> Maybe PregnancyTrimester
+getEncounterTrimester currentDate maybeLmpDate =
+    maybeLmpDate
+        |> Maybe.map
+            (\lmpDate ->
+                let
+                    diffInWeeks =
+                        diffDays lmpDate currentDate // 7
+                in
+                if diffInWeeks < 12 then
+                    FirstTrimester
+
+                else if diffInWeeks < 25 then
+                    SecondTrimester
+
+                else
+                    ThirdTrimester
+            )

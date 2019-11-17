@@ -55,6 +55,7 @@ import PrenatalActivity.Model
         , HighSeverityAlert(..)
         , MedicalDiagnosis(..)
         , ObstetricDiagnosis(..)
+        , PregnancyTrimester(..)
         , PrenatalActivity(..)
         , RiskFactor(..)
         )
@@ -299,6 +300,7 @@ type TranslationId
     | FatherNationalId
     | FilterByName
     | FirstName
+    | FiveVisits
     | FormError (ErrorValue ValidationError)
     | FormField String
     | FundalHeight
@@ -407,6 +409,7 @@ type TranslationId
     | ObstetricDiagnosisAlert ObstetricDiagnosis
     | OK
     | Old
+    | OneVisit
     | OnceYouEndYourGroupEncounter
     | Page
     | Page404
@@ -423,6 +426,7 @@ type TranslationId
     | ParticipantDemographicInformation
     | ParticipantInformation
     | PartnerReceivedCounseling
+    | PatientProgress
     | PatientInformation
     | PatientProvisionsTask PatientProvisionsTask
     | People
@@ -436,6 +440,7 @@ type TranslationId
     | PleaseSelectGroup
     | PleaseSync
     | PreeclampsiaPreviousPregnancy
+    | PregnancyTrimester PregnancyTrimester
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalEncounter
     | PreTerm
@@ -447,6 +452,7 @@ type TranslationId
     | Profession
     | Programs
     | ProgressReport
+    | ProgressTimeline
     | PrenatalParticipant
     | PrenatalParticipants
     | PreTermPregnancy
@@ -549,6 +555,7 @@ type TranslationId
     | TrySyncing
     | TuberculosisPast
     | TuberculosisPresent
+    | TwoVisits
     | UbudeheLabel
     | Unknown
     | Update
@@ -1776,6 +1783,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        FiveVisits ->
+            { english = "Five visits"
+            , kinyarwanda = Nothing
+            }
+
         FormError errorValue ->
             translateFormError errorValue
 
@@ -2625,6 +2637,11 @@ translationSet trans =
             , kinyarwanda = Just "imyaka"
             }
 
+        OneVisit ->
+            { english = "One visit"
+            , kinyarwanda = Nothing
+            }
+
         OnceYouEndYourGroupEncounter ->
             { english = "Once you end your Group Encounter, you will no longer be able to edit or add data."
             , kinyarwanda = Nothing
@@ -2705,6 +2722,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PatientProgress ->
+            { english = "Patient Progress"
+            , kinyarwanda = Nothing
+            }
+
         PatientInformation ->
             { english = "Patient Information"
             , kinyarwanda = Nothing
@@ -2782,6 +2804,23 @@ translationSet trans =
             { english = "Preeclampsia in previous pregnancy "
             , kinyarwanda = Nothing
             }
+
+        PregnancyTrimester trimester ->
+            case trimester of
+                FirstTrimester ->
+                    { english = "First Trimester"
+                    , kinyarwanda = Nothing
+                    }
+
+                SecondTrimester ->
+                    { english = "Second Trimester"
+                    , kinyarwanda = Nothing
+                    }
+
+                ThirdTrimester ->
+                    { english = "Third Trimester"
+                    , kinyarwanda = Nothing
+                    }
 
         PrenatalActivitiesTitle activity ->
             case activity of
@@ -2875,6 +2914,11 @@ translationSet trans =
         ProgressReport ->
             { english = "Progress Report"
             , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
+            }
+
+        ProgressTimeline ->
+            { english = "Progress Timeline"
+            , kinyarwanda = Nothing
             }
 
         PrenatalParticipant ->
@@ -3467,6 +3511,11 @@ translationSet trans =
 
         TuberculosisPresent ->
             { english = "Tuberculosis in the present"
+            , kinyarwanda = Nothing
+            }
+
+        TwoVisits ->
+            { english = "Two visits"
             , kinyarwanda = Nothing
             }
 

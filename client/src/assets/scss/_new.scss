@@ -837,6 +837,50 @@ div.page-clinical-progress-report {
         margin-left: 10px;
       }
     }
+
+    .patient-progress {
+
+      .caption.timeline {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 30px;
+        margin-top: 20px;
+        text-transform: uppercase;
+      }
+
+      .visits-section {
+        display: grid;
+        grid-column-gap: 20px;
+        grid-template-columns: 25% 25% 40%;
+
+        .trimester-visits {
+          border-left: 1px solid $color-light-gray;
+          padding-left: 10px;
+          padding-top: 50px;
+          font-size: 16px;
+
+          .label-trimester {
+            font-weight: bold;
+          }
+
+          .details {
+            display: grid;
+            grid-template-columns: 50% 50%;
+
+            .visits {
+              text-align: right;
+
+              img {
+                height: 20px;
+                margin-right: 5px;
+                width: 20px;
+              }
+            }
+          }
+        }
+
+      }
+    }
 }
 
 div.page-demographics-report {

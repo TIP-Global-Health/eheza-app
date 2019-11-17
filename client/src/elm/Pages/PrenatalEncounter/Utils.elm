@@ -1,4 +1,4 @@
-module Pages.PrenatalEncounter.Utils exposing (generateEDDandEGA, generateGravida, generatePara)
+module Pages.PrenatalEncounter.Utils exposing (calculateEDDandEGADays, generateEDDandEGA, generateGravida, generatePara)
 
 import Backend.Measurement.Model exposing (..)
 import Date.Extra as Date exposing (Interval(Day))
@@ -8,19 +8,23 @@ import Maybe.Extra exposing (unwrap)
 import Translate exposing (Language, translate)
 
 
+calculateEDDandEGADays : NominalDate -> NominalDate -> ( NominalDate, Int )
+calculateEDDandEGADays currentDate lmpDate =
+    ( toLocalDateTime lmpDate 12 0 0 0
+        |> Date.add Day 280
+        |> fromLocalDateTime
+    , diffDays lmpDate currentDate
+    )
+
+
 generateEDDandEGA : Language -> NominalDate -> ( String, String ) -> Maybe NominalDate -> ( String, String )
 generateEDDandEGA language currentDate defaults maybeLmpDate =
     unwrap
         defaults
         (\lmpDate ->
             let
-                eddDate =
-                    toLocalDateTime lmpDate 12 0 0 0
-                        |> Date.add Day 280
-                        |> fromLocalDateTime
-
-                diffInDays =
-                    diffDays lmpDate currentDate
+                ( eddDate, diffInDays ) =
+                    calculateEDDandEGADays currentDate lmpDate
 
                 diffInWeeks =
                     diffInDays // 7
