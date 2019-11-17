@@ -1047,16 +1047,13 @@ getEncounterTrimesterData encounterDate maybeLmpDate =
         |> Maybe.map
             (\lmpDate ->
                 let
-                    diffInDays =
-                        diffDays lmpDate encounterDate
-
                     diffInWeeks =
-                        diffInDays // 7
+                        diffDays lmpDate encounterDate // 7
                 in
                 if diffInWeeks < 12 then
                     FirstTrimester
 
-                else if diffInWeeks < 25 then
+                else if diffInWeeks < 28 then
                     SecondTrimester
 
                 else
