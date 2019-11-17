@@ -9,7 +9,7 @@ import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import EveryDict
-import Gizra.Html exposing (showMaybe)
+import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -31,7 +31,7 @@ import PrenatalActivity.Utils
         ( generateMedicalDiagnosisAlertData
         , generateObstetricDiagnosisAlertData
         , generateRiskFactorAlertData
-        , getEncounterTrimester
+        , getEncounterTrimesterData
         )
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
@@ -236,18 +236,25 @@ viewObstetricDiagnosisPane language currentDate measurements =
 viewPatientProgressPane : Language -> NominalDate -> PrenatalMeasurements -> Html Msg
 viewPatientProgressPane language currentDate measurements =
     let
+        currentEncounterDate =
+            currentDate
+
         -- Right now we have only the current encounter to display.
-        encountersTrimesters =
-            [ ( currentDate
+        encountersTrimestersData =
+            [ ( currentEncounterDate
               , measurements.lastMenstrualPeriod
                     |> Maybe.map (Tuple.second >> .value >> .date)
               )
             ]
-                |> List.map (\( current, lmp ) -> getEncounterTrimester current lmp)
+                |> List.map
+                    (\( encounterDate, lmp ) ->
+                        getEncounterTrimesterData encounterDate lmp
+                    )
 
         countTrimesterEncounters trimester =
-            encountersTrimesters
-                |> List.filter (\t -> t == Just trimester)
+            encountersTrimestersData
+                |> List.filter
+                    (\t -> t == Just trimester)
                 |> List.length
 
         encountersFirstTrimester =
@@ -258,6 +265,88 @@ viewPatientProgressPane language currentDate measurements =
 
         encountersThirdTrimester =
             countTrimesterEncounters ThirdTrimester
+
+        viewTrimesterTimeline trimester =
+            let
+                encounterIconWidth =
+                    16
+
+                ( dueDateIcon, extraClass ) =
+                    if trimester == ThirdTrimester then
+                        ( span [ class "due-date" ] [ img [ src "assets/images/icon-baby-due-date.png" ] [] ]
+                        , " third"
+                        )
+
+                    else
+                        ( emptyNode, "" )
+
+                currentEncounterTrimester =
+                    if encountersThirdTrimester > 0 then
+                        ThirdTrimester
+
+                    else if encountersSecondTrimester > 0 then
+                        SecondTrimester
+
+                    else
+                        FirstTrimester
+
+                periodWidth =
+                    case trimester of
+                        FirstTrimester ->
+                            (180 - encounterIconWidth * encountersFirstTrimester) // (encountersFirstTrimester + 1)
+
+                        SecondTrimester ->
+                            (180 - encounterIconWidth * encountersSecondTrimester) // (encountersSecondTrimester + 1)
+
+                        ThirdTrimester ->
+                            (210 - encounterIconWidth * encountersThirdTrimester) // (encountersThirdTrimester + 1)
+
+                trimesterPeriodsColors =
+                    case trimester of
+                        FirstTrimester ->
+                            if currentEncounterTrimester == FirstTrimester then
+                                List.repeat encountersFirstTrimester "blue" ++ [ "gray" ]
+
+                            else
+                                List.repeat (encountersFirstTrimester + 1) "blue"
+
+                        SecondTrimester ->
+                            if currentEncounterTrimester == SecondTrimester then
+                                List.repeat encountersSecondTrimester "blue" ++ [ "gray" ]
+
+                            else if currentEncounterTrimester == FirstTrimester then
+                                List.repeat (encountersSecondTrimester + 1) "gray"
+
+                            else
+                                List.repeat (encountersSecondTrimester + 1) "blue"
+
+                        ThirdTrimester ->
+                            if currentEncounterTrimester == ThirdTrimester then
+                                List.repeat encountersThirdTrimester "blue" ++ [ "gray" ]
+
+                            else
+                                List.repeat (encountersThirdTrimester + 1) "gray"
+            in
+            trimesterPeriodsColors
+                |> List.map
+                    (\color ->
+                        p
+                            [ class <| "period " ++ color
+                            , style [ ( "width", toString periodWidth ++ "px" ) ]
+                            ]
+                            []
+                    )
+                |> List.intersperse
+                    (span []
+                        [ img
+                            [ src "assets/images/icon-blue-circle.png"
+                            , style [ ( "width", toString encounterIconWidth ++ "px" ) ]
+                            ]
+                            []
+                        ]
+                    )
+                |> List.append [ dueDateIcon ]
+                |> div [ class <| "trimester-timeline" ++ extraClass ]
 
         viewTrimesterVisits trimester =
             let
@@ -283,8 +372,8 @@ viewPatientProgressPane language currentDate measurements =
                     expectedVisits - actualVisists_
 
                 visitsView =
-                    List.repeat actualVisists_ "icon-gray-circle-small.png"
-                        ++ List.repeat missingVisits "icon-uncompleted-circle.svg"
+                    List.repeat actualVisists_ "icon-checked-green-circle.png"
+                        ++ List.repeat missingVisits "icon-gray-circle-small.png"
                         |> List.map (\icon -> img [ src <| "assets/images/" ++ icon ] [])
             in
             div [ class "trimester-visits" ]
@@ -299,6 +388,9 @@ viewPatientProgressPane language currentDate measurements =
         [ viewItemHeading language Translate.PatientProgress "blue"
         , div [ class "pane-content" ]
             [ div [ class "caption timeline" ] [ text <| translate language Translate.ProgressTimeline ++ ":" ]
+            , allTrimesters
+                |> List.map viewTrimesterTimeline
+                |> div [ class "timeline-section" ]
             , allTrimesters
                 |> List.map viewTrimesterVisits
                 |> div [ class "visits-section" ]
