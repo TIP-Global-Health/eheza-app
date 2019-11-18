@@ -871,14 +871,25 @@ div.page-clinical-progress-report {
             margin-top: -7px;
           }
 
-          .due-date {
+          .due-date-info {
             float: right;
             margin-top: -15px;
+            width: 40px;
 
-            img {
-              height: 40px;
-              width: 40px;
+            .due-date-icon {
+
+              img {
+                height: 40px;
+                width: 40px;
+              }
             }
+
+            .due-date-label {
+              font-size: 14px;
+              line-height: 20px;
+              width: 100px;
+            }
+
           }
 
         }
@@ -892,9 +903,9 @@ div.page-clinical-progress-report {
 
         .trimester-visits {
           border-left: 1px solid $color-light-gray;
+          font-size: 16px;
           padding-left: 10px;
           padding-top: 30px;
-          font-size: 16px;
 
           .label-trimester {
             font-weight: bold;

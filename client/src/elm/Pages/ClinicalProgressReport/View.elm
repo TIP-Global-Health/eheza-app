@@ -8,9 +8,11 @@ import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
+import Date
+import Date.Extra exposing (Interval(Day))
 import EveryDict
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, toLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -239,11 +241,14 @@ viewPatientProgressPane language currentDate measurements =
         currentEncounterDate =
             currentDate
 
+        maybeLmpDate =
+            measurements.lastMenstrualPeriod
+                |> Maybe.map (Tuple.second >> .value >> .date)
+
         -- Right now we have only the current encounter to display.
         encountersTrimestersData =
             [ ( currentEncounterDate
-              , measurements.lastMenstrualPeriod
-                    |> Maybe.map (Tuple.second >> .value >> .date)
+              , maybeLmpDate
               )
             ]
                 |> List.map
@@ -253,8 +258,7 @@ viewPatientProgressPane language currentDate measurements =
 
         countTrimesterEncounters trimester =
             encountersTrimestersData
-                |> List.filter
-                    (\t -> t == Just trimester)
+                |> List.filter (\t -> t == Just trimester)
                 |> List.length
 
         encountersFirstTrimester =
@@ -270,15 +274,6 @@ viewPatientProgressPane language currentDate measurements =
             let
                 encounterIconWidth =
                     18
-
-                ( dueDateIcon, extraClass ) =
-                    if trimester == ThirdTrimester then
-                        ( span [ class "due-date" ] [ img [ src "assets/images/icon-baby-due-date.png" ] [] ]
-                        , " third"
-                        )
-
-                    else
-                        ( emptyNode, "" )
 
                 currentEncounterTrimester =
                     if encountersThirdTrimester > 0 then
@@ -387,6 +382,37 @@ viewPatientProgressPane language currentDate measurements =
 
                     else
                         emptyNode
+
+                eddLabel =
+                    maybeLmpDate
+                        |> Maybe.map
+                            (\lmpDate ->
+                                let
+                                    eddDate =
+                                        toLocalDateTime lmpDate 12 0 0 0
+                                            |> Date.Extra.add Day 280
+                                in
+                                div [ class "due-date-label" ]
+                                    [ div [] [ text <| translate language Translate.DueDate ++ ":" ]
+                                    , div []
+                                        [ text <|
+                                            (Date.day eddDate |> toString)
+                                                ++ " "
+                                                ++ translate language (Date.month eddDate |> Translate.ResolveMonth)
+                                        ]
+                                    ]
+                            )
+                        |> Maybe.withDefault emptyNode
+
+                dueDateInfo =
+                    if trimester == ThirdTrimester then
+                        div [ class "due-date-info" ]
+                            [ span [ class "due-date-icon" ] [ img [ src "assets/images/icon-baby-due-date.png" ] [] ]
+                            , eddLabel
+                            ]
+
+                    else
+                        emptyNode
             in
             trimesterPeriodsColors
                 |> List.map
@@ -407,8 +433,8 @@ viewPatientProgressPane language currentDate measurements =
                         , timelineIcons
                         ]
                     )
-                |> List.append [ dueDateIcon ]
-                |> div [ class <| "trimester-timeline" ++ extraClass ]
+                |> List.append [ dueDateInfo ]
+                |> div [ class "trimester-timeline" ]
 
         viewTrimesterVisits trimester =
             let

@@ -269,6 +269,7 @@ type TranslationId
     | District
     | DOB
     | DropzoneDefaultMessage
+    | DueDate
     | Edd
     | EddHeader
     | Edema
@@ -1507,6 +1508,11 @@ translationSet trans =
         DropzoneDefaultMessage ->
             { english = "Touch here to take a photo, or drop a photo file here."
             , kinyarwanda = Just "Kanda hano niba ushaka gufotora cg ukure ifoto mu bubiko hano."
+            }
+
+        DueDate ->
+            { english = "Due Date"
+            , kinyarwanda = Nothing
             }
 
         Edd ->
