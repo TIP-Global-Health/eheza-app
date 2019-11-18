@@ -60,9 +60,8 @@ fetchEditableSession sessionId db =
     in
     List.concat
         [ alwaysFetch
-
-        -- , fetchMotherMeasurements
-        -- , fetchChildMeasurements
+        , fetchMotherMeasurements
+        , fetchChildMeasurements
         , fetchMothers
         , fetchChildren
         ]

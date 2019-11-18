@@ -98,6 +98,17 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchPeople ids ->
+            -- @todo: Improve
+            case List.head ids of
+                Nothing ->
+                    True
+
+                Just id ->
+                    Dict.get id model.people
+                        |> Maybe.withDefault NotAsked
+                        |> isNotAsked
+
         FetchParticipantsForPerson id ->
             Dict.get id model.participantsByPerson
                 |> Maybe.withDefault NotAsked

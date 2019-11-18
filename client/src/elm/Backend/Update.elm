@@ -370,7 +370,11 @@ updateIndexedDb currentDate nurseId msg model =
             )
 
         FetchPeople ids ->
-            ( model
+            let
+                peopleUpdated =
+                    List.foldl (\id accum -> Dict.insert id Loading accum) model.people ids
+            in
+            ( { model | people = peopleUpdated }
             , sw.getMany personEndpoint ids
                 |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchPeople)
             , []
