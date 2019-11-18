@@ -933,10 +933,29 @@ div.page-clinical-progress-report {
 
 div.page-demographics-report {
 
-  .pane-content {
-    display: grid;
-    grid-template-columns: 25% auto;
-    line-height: 40px;
+  .patient-information, .family-information, .address-information {
+    margin-bottom: 20px;
   }
 
+  .pane-content  {
+
+    .ui.image {
+      margin-bottom: 15px;
+    }
+
+    p {
+      line-height: 26px;
+      margin-bottom: 5px;
+
+      .label {
+        font-weight: bold;
+        width: 40%;
+      }
+
+      .value {
+        float: right;
+        width: 60%;
+      }
+    }
+  }
 }
