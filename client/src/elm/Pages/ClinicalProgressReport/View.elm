@@ -269,7 +269,7 @@ viewPatientProgressPane language currentDate measurements =
         viewTrimesterTimeline trimester =
             let
                 encounterIconWidth =
-                    16
+                    18
 
                 ( dueDateIcon, extraClass ) =
                     if trimester == ThirdTrimester then
@@ -326,6 +326,67 @@ viewPatientProgressPane language currentDate measurements =
 
                             else
                                 List.repeat (encountersThirdTrimester + 1) "gray"
+
+                fetalMovementsIcon =
+                    span [ class "fetal-movements" ]
+                        [ img
+                            [ src "assets/images/icon-fetal-movement.png"
+                            , style [ ( "height", "30px" ) ]
+                            ]
+                            []
+                        ]
+
+                fetalHeartRateIcon rightMargin =
+                    span
+                        [ class "fetal-heart-rate"
+                        , style [ ( "margin-right", rightMargin ) ]
+                        ]
+                        [ img
+                            [ src "assets/images/icon-fetal-heartrate.png"
+                            , style [ ( "height", "30px" ) ]
+                            ]
+                            []
+                        ]
+
+                fetalMovementsDetected =
+                    measurements.obstetricalExam
+                        |> Maybe.map
+                            (\measurement ->
+                                let
+                                    value =
+                                        Tuple.second measurement |> .value |> .fetalMovement
+                                in
+                                value == True
+                            )
+                        |> Maybe.withDefault False
+
+                fetalHeartRateDetected =
+                    measurements.obstetricalExam
+                        |> Maybe.map
+                            (\measurement ->
+                                let
+                                    value =
+                                        Tuple.second measurement |> .value |> .fetalHeartRate
+                                in
+                                value > 0
+                            )
+                        |> Maybe.withDefault False
+
+                timelineIcons =
+                    if fetalMovementsDetected && fetalHeartRateDetected then
+                        div [ style [ ( "margin-left", "-25px" ), ( "width", "65px" ) ] ]
+                            [ fetalHeartRateIcon "5px"
+                            , fetalMovementsIcon
+                            ]
+
+                    else if fetalHeartRateDetected then
+                        div [ style [ ( "margin-left", "-6px" ), ( "width", "35px" ) ] ] [ fetalHeartRateIcon "0" ]
+
+                    else if fetalMovementsDetected then
+                        div [ style [ ( "margin-left", "-2px" ), ( "width", "30px" ) ] ] [ fetalMovementsIcon ]
+
+                    else
+                        emptyNode
             in
             trimesterPeriodsColors
                 |> List.map
@@ -337,12 +398,13 @@ viewPatientProgressPane language currentDate measurements =
                             []
                     )
                 |> List.intersperse
-                    (span []
+                    (span [ style [ ( "width", toString encounterIconWidth ++ "px" ) ] ]
                         [ img
                             [ src "assets/images/icon-blue-circle.png"
                             , style [ ( "width", toString encounterIconWidth ++ "px" ) ]
                             ]
                             []
+                        , timelineIcons
                         ]
                     )
                 |> List.append [ dueDateIcon ]
