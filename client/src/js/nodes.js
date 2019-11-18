@@ -484,7 +484,7 @@
                                 if (session) {
                                     criteria.clinic = session.clinic;
 
-                                    query = table.where(criteria).and(function (participation) {
+                                    query = table.where(criteria).limit(50).and(function (participation) {
                                         return expectedOnDate(participation, session.scheduled_date.value);
                                     });
 

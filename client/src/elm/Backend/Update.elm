@@ -394,12 +394,12 @@ updateIndexedDb currentDate nurseId msg model =
                 Nothing ->
                     noChange
 
-                Just data ->
+                Just dict ->
                     let
-                        dataUpdated =
-                            Dict.map (\_ v -> RemoteData.Success v) data
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
                     in
-                    ( { model | people = Dict.union dataUpdated model.people }
+                    ( { model | people = Dict.union dictUpdated model.people }
                     , Cmd.none
                     , []
                     )
