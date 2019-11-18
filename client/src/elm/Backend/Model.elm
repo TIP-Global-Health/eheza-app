@@ -152,6 +152,7 @@ type MsgIndexedDb
     | FetchParticipantForms
     | FetchParticipantsForPerson PersonId
     | FetchPeopleByName String
+    | FetchPeople (List PersonId)
     | FetchPerson PersonId
     | FetchRelationshipsForPerson PersonId
     | FetchSession SessionId
@@ -169,6 +170,7 @@ type MsgIndexedDb
     | HandleFetchedParticipantsForPerson PersonId (WebData (Dict PmtctParticipantId PmtctParticipant))
     | HandleFetchedPeopleByName String (WebData (Dict PersonId Person))
     | HandleFetchedPerson PersonId (WebData Person)
+    | HandleFetchPeople (WebData (Dict PersonId Person))
     | HandleFetchedRelationshipsForPerson PersonId (WebData (Dict RelationshipId MyRelationship))
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (Dict SessionId Session))

@@ -32,12 +32,12 @@ fetchEditableSession sessionId db =
         -- practice. We could look at it if there is any perceptible delay.
         fetchChildren =
             childrenIdData
-                |> RemoteData.map (List.map FetchPerson)
+                |> RemoteData.map (\ids -> [ FetchPeople ids ])
                 |> RemoteData.withDefault []
 
         fetchMothers =
             motherIdData
-                |> RemoteData.map (List.map FetchPerson)
+                |> RemoteData.map (\ids -> [ FetchPeople ids ])
                 |> RemoteData.withDefault []
 
         fetchChildMeasurements =
@@ -60,8 +60,9 @@ fetchEditableSession sessionId db =
     in
     List.concat
         [ alwaysFetch
-        , fetchMotherMeasurements
-        , fetchChildMeasurements
+
+        -- , fetchMotherMeasurements
+        -- , fetchChildMeasurements
         , fetchMothers
         , fetchChildren
         ]

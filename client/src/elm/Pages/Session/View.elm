@@ -37,10 +37,12 @@ view language currentDate zscores nurse sessionId page model db =
             Dict.get sessionId db.sessions
                 |> Maybe.withDefault NotAsked
     in
-    viewWebData language
-        (\session -> viewFoundSession language currentDate zscores nurse ( sessionId, session ) page model db)
-        (wrapError language sessionId)
-        sessionData
+    div []
+        [ viewWebData language
+            (\session -> viewFoundSession language currentDate zscores nurse ( sessionId, session ) page model db)
+            (wrapError language sessionId)
+            sessionData
+        ]
 
 
 wrapError : Language -> SessionId -> Html Msg -> Html Msg
@@ -51,7 +53,7 @@ wrapError language sessionId errorHtml =
             [ class "ui basic head segment" ]
             [ h1
                 [ class "ui header" ]
-                [ text <| translate language <| Translate.GroupEncounterLoading sessionId ]
+                [ text <| translate language Translate.GroupEncounterLoading ]
             , a
                 [ class "link-back"
                 , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Nothing

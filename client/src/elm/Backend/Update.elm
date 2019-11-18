@@ -369,6 +369,13 @@ updateIndexedDb currentDate nurseId msg model =
             , []
             )
 
+        FetchPeople ids ->
+            ( model
+            , sw.getMany personEndpoint ids
+                |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchPeople)
+            , []
+            )
+
         FetchPerson id ->
             ( { model | people = Dict.insert id Loading model.people }
             , sw.get personEndpoint id
@@ -381,6 +388,21 @@ updateIndexedDb currentDate nurseId msg model =
             , Cmd.none
             , []
             )
+
+        HandleFetchPeople webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just data ->
+                    let
+                        dataUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) data
+                    in
+                    ( { model | people = Dict.union dataUpdated model.people }
+                    , Cmd.none
+                    , []
+                    )
 
         FetchSession sessionId ->
             ( { model | sessions = Dict.insert sessionId Loading model.sessions }
