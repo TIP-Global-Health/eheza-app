@@ -180,7 +180,7 @@ getCurrentAndPrevious sessionId =
                         { acc | previous = Just ( id, value ) }
 
                     Just ( _, previousValue ) ->
-                        if compare value.dateMeasured previousValue.dateMeasured == GT then
+                        if Gizra.NominalDate.compare value.dateMeasured previousValue.dateMeasured == GT then
                             { acc | previous = Just ( id, value ) }
 
                         else
