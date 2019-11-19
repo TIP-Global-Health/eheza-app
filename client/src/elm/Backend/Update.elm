@@ -1361,6 +1361,9 @@ calculateOfflineSessionMeasurements sessionId offlineSession db =
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.map (\data -> ( childId, data ))
                     )
+                -- @todo: Without these, some items that are `Loading` are preventing seeing.
+                -- But should be removed?
+                |> List.filter RemoteData.isSuccess
                 |> RemoteData.fromList
                 |> RemoteData.map Dict.fromList
 
@@ -1372,6 +1375,7 @@ calculateOfflineSessionMeasurements sessionId offlineSession db =
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.map (\data -> ( motherId, data ))
                     )
+                |> List.filter RemoteData.isSuccess
                 |> RemoteData.fromList
                 |> RemoteData.map Dict.fromList
 
@@ -1405,6 +1409,10 @@ calculateOfflineSessionMeasurements sessionId offlineSession db =
 
         previousMeasurementData =
             RemoteData.map .previous currentAndPrevious
+
+        _ =
+            Debug.log ""
+                ( RemoteData.toMaybe childMeasurementListData, RemoteData.toMaybe adultMeasurementListData )
     in
     RemoteData.map3
         (\historical current previous ->
