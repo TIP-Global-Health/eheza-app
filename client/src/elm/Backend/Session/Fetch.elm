@@ -12,20 +12,23 @@ order to successfully construct an `EditableSession`?
 fetchEditableSession : SessionId -> ModelIndexedDb -> List MsgIndexedDb
 fetchEditableSession sessionId db =
     let
-        fetchPeople =
+        peopleIds =
             Dict.foldl
                 (\k v accum ->
-                    if List.length accum >= 3 then
+                    if List.length accum >= 1000 then
                         accum
 
                     else if RemoteData.isNotAsked v then
-                        FetchPerson k :: accum
+                        k :: accum
 
                     else
                         accum
                 )
                 []
                 db.people
+
+        fetchPeople =
+            [ FetchPeople peopleIds ]
 
         --        fetchChildMeasurements =
         --            childrenIdData
