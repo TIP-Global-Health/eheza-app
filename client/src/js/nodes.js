@@ -407,14 +407,19 @@
                     data[node.person] = data[node.person] || {};
                     if (data[node.person][node.type]) {
                         data[node.person][node.type].push(node);
+                        data[node.person].uuid = node.person;
                     } else {
                         data[node.person] = data[node.person] || {};
                         data[node.person][node.type] = [node];
+                        data[node.person].uuid = node.person;
                     }
                 });
 
+
+
                 var body = JSON.stringify({
-                    data: data
+                    // Decoder is expecting a list, so we use Object.values().
+                    data: Object.values(data)
                 });
 
                 var response = new Response(body, {
