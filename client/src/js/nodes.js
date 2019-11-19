@@ -340,42 +340,36 @@
 
     function view (url, type, uuid) {
         return dbSync.open().catch(databaseError).then(function () {
-            if (type === 'child-measurements') {
-                return viewMeasurements('person', uuid);
-            } else if (type === 'mother-measurements') {
-                return viewMeasurements('person', uuid);
-            } else {
-                return getTableForType(type).then(function (table) {
-                    // UUID may be multiple list of UUIDs, so we split by it.
-                    var uuids = uuid.split(',');
+            return getTableForType(type).then(function (table) {
+                // UUID may be multiple list of UUIDs, so we split by it.
+                var uuids = uuid.split(',');
 
-                    return table.where('uuid').anyOf(uuids).toArray().catch(databaseError).then(function (nodes) {
-                        // We could also check that the type is the expected type.
-                        if (nodes) {
-                            var body = JSON.stringify({
-                                data: nodes
-                            });
+                return table.where('uuid').anyOf(uuids).toArray().catch(databaseError).then(function (nodes) {
+                    // We could also check that the type is the expected type.
+                    if (nodes) {
+                        var body = JSON.stringify({
+                            data: nodes
+                        });
 
-                            var response = new Response(body, {
-                                status: 200,
-                                statusText: 'OK',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                }
-                            });
+                        var response = new Response(body, {
+                            status: 200,
+                            statusText: 'OK',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
 
-                            return Promise.resolve(response);
-                        } else {
-                            response = new Response('', {
-                                status: 404,
-                                statusText: 'Not found'
-                            });
+                        return Promise.resolve(response);
+                    } else {
+                        response = new Response('', {
+                            status: 404,
+                            statusText: 'Not found'
+                        });
 
-                            return Promise.reject(response);
-                        }
-                    });
+                        return Promise.reject(response);
+                    }
                 });
-            }
+            });
         }).catch(sendErrorResponses);
     }
 

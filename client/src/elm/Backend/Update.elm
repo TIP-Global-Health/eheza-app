@@ -272,13 +272,22 @@ updateIndexedDb currentDate nurseId msg model =
                 peopleIds =
                     List.concat [ childrenIds, motherIds ]
 
-                -- Mark persons to load
+                -- Mark people to load.
                 people =
                     List.foldl (\id accum -> Dict.insert id RemoteData.NotAsked accum) model.people peopleIds
+
+                -- Mark Mothers and Children measurements to load.
+                motherMeasurements =
+                    List.foldl (\id accum -> Dict.insert id RemoteData.NotAsked accum) model.motherMeasurements motherIds
+
+                childMeasurements =
+                    List.foldl (\id accum -> Dict.insert id RemoteData.NotAsked accum) model.childMeasurements childrenIds
             in
             ( { model
                 | expectedParticipants = expectedParticipants
                 , people = people
+                , motherMeasurements = motherMeasurements
+                , childMeasurements = childMeasurements
               }
             , Cmd.none
             , []

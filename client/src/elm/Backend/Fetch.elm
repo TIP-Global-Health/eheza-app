@@ -23,6 +23,17 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchChildrenMeasurements ids ->
+            -- @todo: Improve
+            case List.head ids of
+                Nothing ->
+                    True
+
+                Just id ->
+                    Dict.get id model.childMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> isNotAsked
+
         FetchClinics ->
             isNotAsked model.clinics
 
@@ -85,6 +96,17 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchMothersMeasurements ids ->
+            -- @todo: Improve
+            case List.head ids of
+                Nothing ->
+                    True
+
+                Just id ->
+                    Dict.get id model.motherMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> isNotAsked
+
         FetchParticipantForms ->
             isNotAsked model.participantForms
 
@@ -98,7 +120,6 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
-        -- @todo: Remove
         FetchPeople ids ->
             -- @todo: Improve
             case List.head ids of

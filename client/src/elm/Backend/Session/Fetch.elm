@@ -12,7 +12,7 @@ order to successfully construct an `EditableSession`?
 fetchEditableSession : SessionId -> ModelIndexedDb -> List MsgIndexedDb
 fetchEditableSession sessionId db =
     let
-        peopleIds =
+        getIds property =
             Dict.foldl
                 (\k v accum ->
                     if List.length accum >= 1000 then
@@ -25,20 +25,17 @@ fetchEditableSession sessionId db =
                         accum
                 )
                 []
-                db.people
+                property
 
         fetchPeople =
-            [ FetchPeople peopleIds ]
+            [ FetchPeople <| getIds db.people ]
 
-        --        fetchChildMeasurements =
-        --            childrenIdData
-        --                |> RemoteData.map (List.map FetchChildMeasurements)
-        --                |> RemoteData.withDefault []
-        --
-        --        fetchMotherMeasurements =
-        --            motherIdData
-        --                |> RemoteData.map (List.map FetchMotherMeasurements)
-        --                |> RemoteData.withDefault []
+        fetchChildrenMeasurements =
+            [ FetchChildrenMeasurements <| getIds db.childMeasurements ]
+
+        fetchMothersMeasurements =
+            [ FetchMothersMeasurements <| getIds db.motherMeasurements ]
+
         alwaysFetch =
             [ FetchSession sessionId
             , FetchClinics
@@ -49,8 +46,7 @@ fetchEditableSession sessionId db =
     in
     List.concat
         [ alwaysFetch
-
-        --        , fetchMotherMeasurements
-        --        , fetchChildMeasurements
+        , fetchMothersMeasurements
+        , fetchChildrenMeasurements
         , fetchPeople
         ]
