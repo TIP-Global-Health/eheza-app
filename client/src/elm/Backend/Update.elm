@@ -400,10 +400,6 @@ updateIndexedDb currentDate nurseId msg model =
             )
 
         FetchPeople ids ->
-            let
-                _ =
-                    Debug.log "FetchPeople IDS" ids
-            in
             if List.isEmpty ids then
                 noChange
 

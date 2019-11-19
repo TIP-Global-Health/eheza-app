@@ -33,8 +33,6 @@
             var type = matches[1];
             var uuid = matches[2]; // May be null
 
-            console.log(uuid, type);
-
             if (event.request.method === 'GET') {
                 if (uuid) {
                     return event.respondWith(view(url, type, uuid));
@@ -351,10 +349,7 @@
                     // UUID may be multiple list of UUIDs, so we split by it.
                     var uuids = uuid.split(',');
 
-                    console.log(uuids);
-
                     return table.where('uuid').anyOf(uuids).toArray().catch(databaseError).then(function (nodes) {
-                        console.log(nodes);
                         // We could also check that the type is the expected type.
                         if (nodes) {
                             var body = JSON.stringify({
@@ -492,7 +487,7 @@
                                 if (session) {
                                     criteria.clinic = session.clinic;
 
-                                    query = table.where(criteria).limit(5000).and(function (participation) {
+                                    query = table.where(criteria).and(function (participation) {
                                         return expectedOnDate(participation, session.scheduled_date.value);
                                     });
 
