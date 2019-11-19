@@ -404,15 +404,14 @@
 
                 var data = {};
                 nodes.forEach(function (node) {
-                    if (data[node.type]) {
-                        data[node.type].push(node);
+                    data[node.person] = data[node.person] || {};
+                    if (data[node.person][node.type]) {
+                        data[node.person][node.type].push(node);
                     } else {
-                        data[node.type] = [node];
+                        data[node.person] = data[node.person] || {};
+                        data[node.person][node.type] = [node];
                     }
                 });
-
-                console.log(data);
-
 
                 var body = JSON.stringify({
                     data: data
