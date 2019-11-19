@@ -49,11 +49,41 @@ updateIndexedDb currentDate nurseId msg model =
             , []
             )
 
+        FetchChildrenMeasurements ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    childMeasurements =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.childMeasurements ids
+                in
+                ( { model | childMeasurements = childMeasurements }
+                , sw.getMany childMeasurementListEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedChildrenMeasurements)
+                , []
+                )
+
         HandleFetchedChildMeasurements childId data ->
             ( { model | childMeasurements = Dict.insert childId data model.childMeasurements }
             , Cmd.none
             , []
             )
+
+        HandleFetchedChildrenMeasurements webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | childMeasurements = Dict.union dictUpdated model.childMeasurements }
+                    , Cmd.none
+                    , []
+                    )
 
         FetchClinics ->
             ( { model | clinics = Loading }
@@ -380,11 +410,41 @@ updateIndexedDb currentDate nurseId msg model =
             , []
             )
 
+        FetchMothersMeasurements ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    motherMeasurements =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.motherMeasurements ids
+                in
+                ( { model | motherMeasurements = motherMeasurements }
+                , sw.getMany motherMeasurementListEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedMothersMeasurements)
+                , []
+                )
+
         HandleFetchedMotherMeasurements motherId data ->
             ( { model | motherMeasurements = Dict.insert motherId data model.motherMeasurements }
             , Cmd.none
             , []
             )
+
+        HandleFetchedMothersMeasurements webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | motherMeasurements = Dict.union dictUpdated model.motherMeasurements }
+                    , Cmd.none
+                    , []
+                    )
 
         FetchParticipantForms ->
             ( { model | participantForms = Loading }
