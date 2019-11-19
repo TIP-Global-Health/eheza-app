@@ -34,8 +34,15 @@
             var uuid = matches[2]; // May be null
 
             if (event.request.method === 'GET') {
+                var isMeasurementType = type === 'child-measurements' || type === 'mother-measurements';
                 if (uuid) {
-                    return event.respondWith(view(url, type, uuid));
+                    if (isMeasurementType) {
+                        return event.respondWith(viewMeasurements(url, type, uuid));
+                    }
+                    else {
+                        return event.respondWith(view(url, type, uuid));
+                    }
+
                 } else {
                     return event.respondWith(index(url, type));
                 }
@@ -344,9 +351,13 @@
                 // UUID may be multiple list of UUIDs, so we split by it.
                 var uuids = uuid.split(',');
 
-                return table.where('uuid').anyOf(uuids).toArray().catch(databaseError).then(function (nodes) {
+                // The key to query by.
+                var key = 'uuid';
+
+                return table.where(key).anyOf(uuids).toArray().catch(databaseError).then(function (nodes) {
                     // We could also check that the type is the expected type.
                     if (nodes) {
+
                         var body = JSON.stringify({
                             data: nodes
                         });
@@ -379,36 +390,51 @@
     // Ultimately, it would be better to make this more generic here and do the
     // processing on the client side, but this mirrors the pre-existing
     // division of labour between client and server, so it's easier for now.
-    function viewMeasurements (key, uuid) {
-        var criteria = {};
-        criteria[key] = uuid;
+    function viewMeasurements (url, type, uuid) {
+        // UUID may be multiple list of UUIDs, so we split by it.
+        var uuids = uuid.split(',');
 
-        var query = dbSync.shards.where(criteria);
+        // The key to query by.
+        var key = 'person';
+        var query = dbSync.shards.where(key).anyOf(uuids);
 
         return query.toArray().catch(databaseError).then(function (nodes) {
-            var indexed = {};
+            // We could also check that the type is the expected type.
+            if (nodes) {
 
-            nodes.forEach(function (node) {
-                if (indexed[node.type]) {
-                    indexed[node.type].push(node);
-                } else {
-                    indexed[node.type] = [node];
-                }
-            });
+                var data = {};
+                nodes.forEach(function (node) {
+                    if (data[node.type]) {
+                        data[node.type].push(node);
+                    } else {
+                        data[node.type] = [node];
+                    }
+                });
 
-            var body = JSON.stringify({
-                data: [indexed]
-            });
+                console.log(data);
 
-            var response = new Response(body, {
-                status: 200,
-                statusText: 'OK',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
 
-            return Promise.resolve(response);
+                var body = JSON.stringify({
+                    data: data
+                });
+
+                var response = new Response(body, {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                return Promise.resolve(response);
+            } else {
+                response = new Response('', {
+                    status: 404,
+                    statusText: 'Not found'
+                });
+
+                return Promise.reject(response);
+            }
         });
     }
 
