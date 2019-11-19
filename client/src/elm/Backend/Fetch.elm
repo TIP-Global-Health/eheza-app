@@ -38,18 +38,39 @@ shouldFetch model msg =
             isNotAsked model.clinics
 
         FetchEditableSession id _ ->
+            let
+                -- Make sure we don't still have measurements being lazy loaded. If we do, allow rebuilding the
+                -- `EditableSession`.
+                hasMeasurementsNotSuccess dict =
+                    dict
+                        |> Dict.values
+                        |> List.filter (not << RemoteData.isSuccess)
+                        |> List.isEmpty
+                        |> not
+
+                hasMothersMeasurementsNotSuccess =
+                    hasMeasurementsNotSuccess model.motherMeasurements
+
+                hasChildrenMeasurementsNotSuccess =
+                    hasMeasurementsNotSuccess model.childMeasurements
+
+                sessionNotSuccess =
+                    Dict.get id model.editableSessions
+                        |> Maybe.withDefault NotAsked
+                        |> isSuccess
+                        |> not
+            in
             -- This one is a bit special because it is synthetic ...  what
             -- we're asking for here is not the fetch itself, but a certain
             -- organization of the fetched data. We want to re-run the
-            -- organiztion in every case unless we have a success here.
+            -- organization in every case unless we have a success here.
             -- Which means, once we have a success, it's important to
             -- invalidate or modify our successful data if underlying data
             -- changes. (That is, our `handleRevisions` needs to keep the
             -- editable sessions in mind).
-            Dict.get id model.editableSessions
-                |> Maybe.withDefault NotAsked
-                |> isSuccess
-                |> not
+            sessionNotSuccess
+                || hasMothersMeasurementsNotSuccess
+                || hasChildrenMeasurementsNotSuccess
 
         FetchEditableSessionCheckedIn id ->
             Dict.get id model.editableSessions

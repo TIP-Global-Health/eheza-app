@@ -398,25 +398,28 @@
         var key = 'person';
         var query = dbSync.shards.where(key).anyOf(uuids);
 
+        // Build an empty list of measurements, so we return some value, even
+        // if no measurements were ever taken.
+        var data = {};
+        uuids.forEach(function(uuid) {
+            data[uuid] = {};
+            // Decoder is expecting to have the Person's UUID.
+            data[uuid].uuid = uuid;
+        });
+
         return query.toArray().catch(databaseError).then(function (nodes) {
             // We could also check that the type is the expected type.
             if (nodes) {
 
-                var data = {};
                 nodes.forEach(function (node) {
                     data[node.person] = data[node.person] || {};
                     if (data[node.person][node.type]) {
                         data[node.person][node.type].push(node);
-                        // Decoder is expecting to have the Person's UUID.
-                        data[node.person].uuid = node.person;
                     } else {
                         data[node.person] = data[node.person] || {};
                         data[node.person][node.type] = [node];
-                        data[node.person].uuid = node.person;
                     }
                 });
-
-
 
                 var body = JSON.stringify({
                     // Decoder is expecting a list, so we use Object.values().

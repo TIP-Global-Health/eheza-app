@@ -12,10 +12,13 @@ order to successfully construct an `EditableSession`?
 fetchEditableSession : SessionId -> ModelIndexedDb -> List MsgIndexedDb
 fetchEditableSession sessionId db =
     let
-        getIds property =
+        -- We allow passing the `batch`, so we could more easily, while developing, mimic slower lazy loading
+        -- of measurements.
+        -- @todo: Remove batch?
+        getIds property batch =
             Dict.foldl
                 (\k v accum ->
-                    if List.length accum >= 1000 then
+                    if List.length accum >= batch then
                         accum
 
                     else if RemoteData.isNotAsked v then
@@ -28,13 +31,13 @@ fetchEditableSession sessionId db =
                 property
 
         fetchPeople =
-            [ FetchPeople <| getIds db.people ]
+            [ FetchPeople <| getIds db.people 1000 ]
 
         fetchChildrenMeasurements =
-            [ FetchChildrenMeasurements <| getIds db.childMeasurements ]
+            [ FetchChildrenMeasurements <| getIds db.childMeasurements 1000 ]
 
         fetchMothersMeasurements =
-            [ FetchMothersMeasurements <| getIds db.motherMeasurements ]
+            [ FetchMothersMeasurements <| getIds db.motherMeasurements 1000 ]
 
         alwaysFetch =
             [ FetchSession sessionId
