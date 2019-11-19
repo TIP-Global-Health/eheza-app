@@ -219,7 +219,37 @@ updateIndexedDb currentDate nurseId msg model =
             )
 
         HandleFetchedExpectedParticipants sessionId data ->
-            ( { model | expectedParticipants = Dict.insert sessionId data model.expectedParticipants }
+            let
+                expectedParticipants =
+                    Dict.insert sessionId data model.expectedParticipants
+
+                childrenIds =
+                    case RemoteData.toMaybe data of
+                        Just dict ->
+                            Dict.keys dict.byChildId
+
+                        Nothing ->
+                            []
+
+                motherIds =
+                    case RemoteData.toMaybe data of
+                        Just dict ->
+                            Dict.keys dict.byMotherId
+
+                        Nothing ->
+                            []
+
+                peopleIds =
+                    List.concat [ childrenIds, motherIds ]
+
+                -- Mark persons to load
+                people =
+                    List.foldl (\id accum -> Dict.insert id RemoteData.NotAsked accum) model.people peopleIds
+            in
+            ( { model
+                | expectedParticipants = expectedParticipants
+                , people = people
+              }
             , Cmd.none
             , []
             )

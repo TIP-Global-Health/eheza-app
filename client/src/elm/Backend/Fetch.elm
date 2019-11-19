@@ -98,6 +98,7 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        -- @todo: Remove
         FetchPeople ids ->
             -- @todo: Improve
             case List.head ids of
