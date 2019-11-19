@@ -1409,10 +1409,6 @@ calculateOfflineSessionMeasurements sessionId offlineSession db =
 
         previousMeasurementData =
             RemoteData.map .previous currentAndPrevious
-
-        _ =
-            Debug.log ""
-                ( RemoteData.toMaybe childMeasurementListData, RemoteData.toMaybe adultMeasurementListData )
     in
     RemoteData.map3
         (\historical current previous ->

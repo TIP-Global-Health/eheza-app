@@ -43,7 +43,7 @@ view language currentDate zscores nurse sessionId page model db =
             (wrapError language sessionId)
             sessionData
 
-        -- , div [ class "ui segment" ] [ text <| Debug.toString db.people ]
+        -- , div [ class "ui segment" ] [ text <| Debug.toString db.motherMeasurements ]
         ]
 
 
