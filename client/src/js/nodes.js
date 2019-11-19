@@ -407,6 +407,7 @@
                     data[node.person] = data[node.person] || {};
                     if (data[node.person][node.type]) {
                         data[node.person][node.type].push(node);
+                        // Decoder is expecting to have the Person's UUID.
                         data[node.person].uuid = node.person;
                     } else {
                         data[node.person] = data[node.person] || {};
