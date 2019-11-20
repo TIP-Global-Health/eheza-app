@@ -24,14 +24,14 @@ import PrenatalActivity.Model
     exposing
         ( PregnancyTrimester(..)
         , allMedicalDiagnosis
-        , allObstetricDiagnosis
+        , allObstetricalDiagnosis
         , allRiskFactors
         , allTrimesters
         )
 import PrenatalActivity.Utils
     exposing
         ( generateMedicalDiagnosisAlertData
-        , generateObstetricDiagnosisAlertData
+        , generateObstetricalDiagnosisAlertData
         , generateRiskFactorAlertData
         , getEncounterTrimesterData
         )
@@ -109,7 +109,7 @@ viewContent language currentDate data =
         [ viewHeaderPane language currentDate data.person data.measurements
         , viewRiskFactorsPane language currentDate data.measurements
         , viewMedicalDiagnosisPane language currentDate data.measurements
-        , viewObstetricDiagnosisPane language currentDate data.measurements
+        , viewObstetricalDiagnosisPane language currentDate data.measurements
         , viewPatientProgressPane language currentDate data.measurements
         ]
 
@@ -221,16 +221,16 @@ viewMedicalDiagnosisPane language currentDate measurements =
         ]
 
 
-viewObstetricDiagnosisPane : Language -> NominalDate -> PrenatalMeasurements -> Html Msg
-viewObstetricDiagnosisPane language currentDate measurements =
+viewObstetricalDiagnosisPane : Language -> NominalDate -> PrenatalMeasurements -> Html Msg
+viewObstetricalDiagnosisPane language currentDate measurements =
     let
         alerts =
-            allObstetricDiagnosis
-                |> List.filterMap (generateObstetricDiagnosisAlertData language currentDate measurements)
+            allObstetricalDiagnosis
+                |> List.filterMap (generateObstetricalDiagnosisAlertData language currentDate measurements)
                 |> List.map (\alert -> p [] [ text <| "- " ++ alert ])
     in
     div [ class "obstetric-diagnosis" ]
-        [ viewItemHeading language Translate.ObstetricDiagnosis "blue"
+        [ viewItemHeading language Translate.ObstetricalDiagnosis "blue"
         , div [ class "pane-content" ] alerts
         ]
 

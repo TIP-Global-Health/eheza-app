@@ -5,7 +5,7 @@ module PrenatalActivity.Utils exposing
     , generateHighRiskAlertData
     , generateHighSeverityAlertData
     , generateMedicalDiagnosisAlertData
-    , generateObstetricDiagnosisAlertData
+    , generateObstetricalDiagnosisAlertData
     , generateRiskFactorAlertData
     , getActivityIcon
     , getAllActivities
@@ -713,11 +713,11 @@ generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
                     )
 
 
-generateObstetricDiagnosisAlertData : Language -> NominalDate -> PrenatalMeasurements -> ObstetricDiagnosis -> Maybe String
-generateObstetricDiagnosisAlertData language currentDate measurements diagnosis =
+generateObstetricalDiagnosisAlertData : Language -> NominalDate -> PrenatalMeasurements -> ObstetricalDiagnosis -> Maybe String
+generateObstetricalDiagnosisAlertData language currentDate measurements diagnosis =
     let
         transAlert diagnosis =
-            translate language (Translate.ObstetricDiagnosisAlert diagnosis)
+            translate language (Translate.ObstetricalDiagnosisAlert diagnosis)
     in
     case diagnosis of
         DiagnosisGestationalDiabetesPreviousPregnancy ->

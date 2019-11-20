@@ -54,7 +54,7 @@ import PrenatalActivity.Model
         ( HighRiskFactor(..)
         , HighSeverityAlert(..)
         , MedicalDiagnosis(..)
-        , ObstetricDiagnosis(..)
+        , ObstetricalDiagnosis(..)
         , PregnancyTrimester(..)
         , PrenatalActivity(..)
         , RiskFactor(..)
@@ -408,8 +408,8 @@ type TranslationId
     | NumberOfLiveChildren
     | NumberOfStillbirthsAtTerm
     | NumberOfStillbirthsPreTerm
-    | ObstetricDiagnosis
-    | ObstetricDiagnosisAlert ObstetricDiagnosis
+    | ObstetricalDiagnosis
+    | ObstetricalDiagnosisAlert ObstetricalDiagnosis
     | OK
     | Old
     | OneVisit
@@ -2573,12 +2573,12 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        ObstetricDiagnosis ->
-            { english = "Obstetric Diagnosis"
+        ObstetricalDiagnosis ->
+            { english = "Obstetrical Diagnosis"
             , kinyarwanda = Nothing
             }
 
-        ObstetricDiagnosisAlert diagnosis ->
+        ObstetricalDiagnosisAlert diagnosis ->
             case diagnosis of
                 DiagnosisGestationalDiabetesPreviousPregnancy ->
                     { english = "Patient had Gestational Diabetes in previous pregnancy"

@@ -2,14 +2,14 @@ module PrenatalActivity.Model exposing
     ( HighRiskFactor(..)
     , HighSeverityAlert(..)
     , MedicalDiagnosis(..)
-    , ObstetricDiagnosis(..)
+    , ObstetricalDiagnosis(..)
     , PregnancyTrimester(..)
     , PrenatalActivity(..)
     , RiskFactor(..)
     , allHighRiskFactors
     , allHighSeverityAlerts
     , allMedicalDiagnosis
-    , allObstetricDiagnosis
+    , allObstetricalDiagnosis
     , allRiskFactors
     , allTrimesters
     )
@@ -60,7 +60,7 @@ type HighSeverityAlert
     | RespiratoryRate
 
 
-type ObstetricDiagnosis
+type ObstetricalDiagnosis
     = DiagnosisGestationalDiabetesPreviousPregnancy
     | DiagnosisRhNegative
     | DiagnosisModerateUnderweight
@@ -125,8 +125,8 @@ allRiskFactors =
     ]
 
 
-allObstetricDiagnosis : List ObstetricDiagnosis
-allObstetricDiagnosis =
+allObstetricalDiagnosis : List ObstetricalDiagnosis
+allObstetricalDiagnosis =
     [ DiagnosisGestationalDiabetesPreviousPregnancy
     , DiagnosisRhNegative
     , DiagnosisModerateUnderweight
