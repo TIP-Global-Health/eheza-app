@@ -221,6 +221,8 @@ type TranslationId
     | ChildNutritionSignReport ChildNutritionSign
     | ChildOf
     | Children
+    | ChildrenNames
+    | ChildrenNationalId
     | ClickTheCheckMark
     | ClinicType ClinicType
     | Clinical
@@ -1171,6 +1173,16 @@ translationSet trans =
         Children ->
             { english = "Children"
             , kinyarwanda = Just "Abana"
+            }
+
+        ChildrenNames ->
+            { english = "Children's names"
+            , kinyarwanda = Nothing
+            }
+
+        ChildrenNationalId ->
+            { english = "Children's National ID"
+            , kinyarwanda = Nothing
             }
 
         ChildOf ->

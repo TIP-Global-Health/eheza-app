@@ -937,6 +937,42 @@ div.page-demographics-report {
     margin-bottom: 20px;
   }
 
+  .family-information .children-table {
+    margin-bottom: 40px;
+    margin-top: 20px;
+
+    .thead {
+      border-bottom: 2px solid $color-light-gray;
+      width: 95%;
+
+      .label {
+        width: 50%;
+
+        &.first {
+          float: left;
+        }
+      }
+    }
+
+    .row {
+      border-bottom: 1px solid $color-light-gray;
+      height: 24px;
+      width: 95%;
+
+      &:last-child {
+        border-bottom: 0;
+      }
+
+      .value {
+        width: 50%;
+
+        &.first {
+          float: left;
+        }
+      }
+    }
+  }
+
   .pane-content  {
 
     .ui.image {

@@ -10,6 +10,7 @@ import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import EveryDict
 import EveryDictList
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatMMDDYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -173,15 +174,40 @@ viewFamilyInformationPane language currentDate db data =
                 |> RemoteData.map
                     (EveryDictList.values
                         >> List.filter (\person -> person.relatedBy == MyChild)
-                        >> List.map (\person -> EveryDict.get person.relatedTo db.people)
+                        >> List.filterMap (\person -> EveryDict.get person.relatedTo db.people)
                     )
                 |> RemoteData.withDefault []
+
+        childrenView =
+            if List.isEmpty children then
+                viewLineItem language Translate.Children (translate language Translate.NoChildrenRegisteredInTheSystem)
+
+            else
+                children
+                    |> List.map
+                        (RemoteData.map
+                            (\child ->
+                                p [ class "row" ]
+                                    [ span [ class "value first" ] [ text child.name ]
+                                    , span [ class "value" ] [ child.nationalIdNumber |> Maybe.withDefault " --- " |> text ]
+                                    ]
+                            )
+                            >> RemoteData.withDefault emptyNode
+                        )
+                    |> List.append
+                        [ p [ class "thead" ]
+                            [ span [ class "label first" ] [ text <| translate language Translate.ChildrenNames ]
+                            , span [ class "label" ] [ text <| translate language Translate.ChildrenNationalId ]
+                            ]
+                        ]
+                    |> div [ class "children-table" ]
     in
     div [ class "family-information" ]
         [ viewItemHeading language Translate.FamilyInformation "gray"
         , div [ class "pane-content" ]
             [ viewLineItem language Translate.FamilyUbudehe ubudehe
             , viewLineItem language Translate.NumberOfChildrenUnder5 numberOfChildren
+            , childrenView
             ]
         ]
 
