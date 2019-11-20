@@ -2,11 +2,12 @@ module Pages.DemographicsReport.View exposing (view, viewHeader, viewItemHeading
 
 import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
-import Backend.Model exposing (ModelIndexedDb)
+import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
+import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import EveryDict
 import EveryDictList
 import Gizra.NominalDate exposing (NominalDate, formatMMDDYYYY)
@@ -95,7 +96,7 @@ viewContent : Language -> NominalDate -> ModelIndexedDb -> FetchedData -> Html M
 viewContent language currentDate db data =
     div [ class "ui unstackable items" ]
         [ viewPatientInformationPane language currentDate data
-        , viewFamilyInformationPane language currentDate data
+        , viewFamilyInformationPane language currentDate db data
         , viewAddressInformationPane language currentDate data
         , viewContactInformationPane language currentDate db data
         ]
@@ -153,8 +154,8 @@ viewPatientInformationPane language currentDate data =
         ]
 
 
-viewFamilyInformationPane : Language -> NominalDate -> FetchedData -> Html Msg
-viewFamilyInformationPane language currentDate data =
+viewFamilyInformationPane : Language -> NominalDate -> ModelIndexedDb -> FetchedData -> Html Msg
+viewFamilyInformationPane language currentDate db data =
     let
         ubudehe =
             data.person.ubudehe
@@ -165,6 +166,16 @@ viewFamilyInformationPane language currentDate data =
             data.person.numberOfChildren
                 |> Maybe.map toString
                 |> Maybe.withDefault ""
+
+        children =
+            EveryDict.get data.participant.person db.relationshipsByPerson
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map
+                    (EveryDictList.values
+                        >> List.filter (\person -> person.relatedBy == MyChild)
+                        >> List.map (\person -> EveryDict.get person.relatedTo db.people)
+                    )
+                |> RemoteData.withDefault []
     in
     div [ class "family-information" ]
         [ viewItemHeading language Translate.FamilyInformation "gray"
