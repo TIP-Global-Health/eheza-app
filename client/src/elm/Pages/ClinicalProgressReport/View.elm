@@ -17,6 +17,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (unwrap)
+import Pages.ClinicalProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
 import Pages.DemographicsReport.View exposing (viewHeader, viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.Utils exposing (generateEDDandEGA, generateGravida, generatePara)
@@ -482,5 +483,8 @@ viewPatientProgressPane language currentDate measurements =
             , allTrimesters
                 |> List.map viewTrimesterVisits
                 |> div [ class "visits-section" ]
+            , div [ class "caption trends" ] [ text <| translate language Translate.ProgressTrends ++ ":" ]
+            , viewBMIForEGA language
+            , viewFundalHeightForEGA language
             ]
         ]

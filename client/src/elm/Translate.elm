@@ -456,6 +456,7 @@ type TranslationId
     | Programs
     | ProgressReport
     | ProgressTimeline
+    | ProgressTrends
     | PrenatalParticipant
     | PrenatalParticipants
     | PreTermPregnancy
@@ -2936,6 +2937,11 @@ translationSet trans =
 
         ProgressTimeline ->
             { english = "Progress Timeline"
+            , kinyarwanda = Nothing
+            }
+
+        ProgressTrends ->
+            { english = "Progress Trends"
             , kinyarwanda = Nothing
             }
 
