@@ -25,36 +25,27 @@ import Utils.WebData exposing (viewWebData)
 view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
 view language currentDate id db =
     let
-        person =
-            EveryDict.get id db.people
-                |> Maybe.withDefault NotAsked
-
-        headerName =
-            person
-                |> RemoteData.map .name
-                |> RemoteData.withDefault (translate language Translate.PrenatalParticipant ++ " " ++ fromEntityUuid id)
-
         prenatalSessions =
             EveryDict.get id db.prenatalParticipantsByPerson
                 |> Maybe.withDefault NotAsked
     in
     div
         [ class "wrap wrap-alt-2 page-prenatal-participant" ]
-        [ viewHeader language id headerName
+        [ viewHeader language id
         , div
             [ class "ui full segment blue" ]
-            [ viewWebData language (viewPrenatalSessions language currentDate id db) identity prenatalSessions
+            [ viewWebData language (viewPrenatalActions language currentDate id db) identity prenatalSessions
             ]
         ]
 
 
-viewHeader : Language -> PersonId -> String -> Html App.Model.Msg
-viewHeader language id name =
+viewHeader : Language -> PersonId -> Html App.Model.Msg
+viewHeader language id =
     div
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text name ]
+            [ text <| translate language Translate.PrenatalEncounter ]
         , a
             [ class "link-back"
             , onClick <| App.Model.SetActivePage <| UserPage <| EncounterTypesPage id
@@ -65,98 +56,91 @@ viewHeader language id name =
         ]
 
 
-viewPrenatalSessions : Language -> NominalDate -> PersonId -> ModelIndexedDb -> EveryDictList PrenatalParticipantId PrenatalParticipant -> Html App.Model.Msg
-viewPrenatalSessions language currentDate id db prenatalSessions =
+viewPrenatalActions : Language -> NominalDate -> PersonId -> ModelIndexedDb -> EveryDictList PrenatalParticipantId PrenatalParticipant -> Html App.Model.Msg
+viewPrenatalActions language currentDate id db prenatalSessions =
     let
-        sessionInProgress =
-            not <| EveryDictList.isEmpty prenatalSessions
-    in
-    div [ class "ui table session-list" ]
-        [ table
-            [ class "ui table session-list" ]
-            [ thead []
-                [ tr []
-                    [ th [] [ text <| translate language Translate.StartDate ]
-                    , th [] [ text <| translate language Translate.EndDate ]
-                    ]
-                ]
-            , prenatalSessions
-                |> EveryDictList.map (viewPrenatalSession language currentDate db)
-                |> EveryDictList.values
-                |> tbody []
-            ]
-        , createSessionButton language currentDate id db |> showIf (not sessionInProgress)
-        ]
+        maybeSessionId =
+            prenatalSessions
+                |> EveryDictList.toList
+                |> List.filter (\( _, session ) -> isNothing session.endDate)
+                |> List.head
+                |> Maybe.map Tuple.first
 
-
-viewPrenatalSession : Language -> NominalDate -> ModelIndexedDb -> PrenatalParticipantId -> PrenatalParticipant -> Html App.Model.Msg
-viewPrenatalSession language currentDate db sessionId session =
-    let
-        enableLink =
-            True
-
-        action =
-            EveryDict.get sessionId db.prenatalEncountersByParticipant
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.map
-                    (EveryDictList.toList
-                        >> List.filter (\( _, encounter ) -> isNothing encounter.endDate)
-                        >> List.head
-                        >> Maybe.map
-                            (\( encounterId, _ ) ->
-                                [ onClick <|
-                                    App.Model.SetActivePage <|
-                                        UserPage <|
-                                            Pages.Page.PrenatalEncounterPage encounterId
-                                ]
-                            )
-                        >> Maybe.withDefault
-                            [ PrenatalEncounter sessionId currentDate Nothing
-                                |> Backend.Model.PostPrenatalEncounter
-                                |> App.Model.MsgIndexedDb
-                                |> onClick
-                            ]
+        maybeEncounterId =
+            maybeSessionId
+                |> Maybe.andThen
+                    (\sessionId ->
+                        EveryDict.get sessionId db.prenatalEncountersByParticipant
+                            |> Maybe.withDefault NotAsked
+                            |> RemoteData.map
+                                (EveryDictList.toList
+                                    >> List.filter (\( _, encounter ) -> isNothing encounter.endDate)
+                                    >> List.head
+                                    >> Maybe.map Tuple.first
+                                )
+                            |> RemoteData.withDefault Nothing
                     )
-                |> RemoteData.withDefault []
 
-        link =
-            button
-                (classList
-                    [ ( "ui button", True )
-                    , ( "disabled", not enableLink )
-                    , ( "active", enableLink )
+        firstVisitAction =
+            maybeSessionId
+                |> Maybe.map
+                    (\sessionId ->
+                        [ PrenatalEncounter sessionId currentDate Nothing
+                            |> Backend.Model.PostPrenatalEncounter
+                            |> App.Model.MsgIndexedDb
+                            |> onClick
+                        ]
+                    )
+                |> Maybe.withDefault
+                    [ PrenatalParticipant id AntenatalEncounter currentDate Nothing
+                        |> Backend.Model.PostPrenatalSession
+                        |> App.Model.MsgIndexedDb
+                        |> onClick
                     ]
-                    :: action
-                )
-                [ text <| translate language Translate.Continue ]
+
+        subsequentVisitAction =
+            maybeEncounterId
+                |> Maybe.map
+                    (\encounterId ->
+                        [ onClick <|
+                            App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.PrenatalEncounterPage encounterId
+                        ]
+                    )
+                |> Maybe.withDefault []
     in
-    tr []
-        [ td [] [ text <| formatYYYYMMDD session.startDate ]
-        , td [] [ text <| Maybe.withDefault "" <| Maybe.map formatYYYYMMDD session.endDate ]
-        , td [] [ link ]
-        ]
-
-
-createSessionButton : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
-createSessionButton language currentDate id db =
-    let
-        isLoading =
-            case EveryDict.get id db.postPrenatalSession of
-                Just Loading ->
-                    True
-
-                _ ->
-                    False
-    in
-    button
-        [ classList
-            [ ( "ui button", True )
-            , ( "active", not isLoading )
-            , ( "loading", isLoading )
+    div []
+        [ p [ class "label-antenatal-visit" ] [ text <| translate language Translate.SelectAntenatalVisit ]
+        , button
+            (classList
+                [ ( "ui primary button", True )
+                , ( "disabled", isJust maybeEncounterId )
+                ]
+                :: firstVisitAction
+            )
+            [ span [ class "text" ] [ text <| translate language Translate.FirstAntenatalVisit ]
+            , span [ class "icon-back" ] []
             ]
-        , PrenatalParticipant id AntenatalEncounter currentDate Nothing
-            |> Backend.Model.PostPrenatalSession
-            |> App.Model.MsgIndexedDb
-            |> onClick
+        , button
+            (classList
+                [ ( "ui primary button", True )
+                , ( "disabled", isNothing maybeSessionId || isNothing maybeEncounterId )
+                ]
+                :: subsequentVisitAction
+            )
+            [ span [ class "text" ] [ text <| translate language Translate.SubsequentAntenatalVisit ]
+            , span [ class "icon-back" ] []
+            ]
+        , div [ class "separator" ] []
+        , p [ class "label-pregnancy-concluded" ] [ text <| translate language Translate.PregnancyConcludedLabel ]
+        , button
+            [ classList
+                [ ( "ui primary button", True )
+                , ( "disabled", isNothing maybeSessionId )
+                ]
+            ]
+            [ span [ class "text" ] [ text <| translate language Translate.RecordPregnancyOutcome ]
+            , span [ class "icon-back" ] []
+            ]
         ]
-        [ text "Track new pregnancy" ]
