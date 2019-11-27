@@ -603,7 +603,7 @@ encodeMuacInCm (MuacInCm cm) =
 encodeObstetricalExamValue : ObstetricalExamValue -> List ( String, Value )
 encodeObstetricalExamValue value =
     [ ( "fundal_height", encodeHeightInCm value.fundalHeight )
-    , ( "fetal_presentation", encodeEverySet encodeFetalPresentation value.fetalPresentation )
+    , ( "fetal_presentation", encodeFetalPresentation value.fetalPresentation )
     , ( "fetal_movement", bool value.fetalMovement )
     , ( "fetal_heart_rate", int value.fetalHeartRate )
     , ( "c_section_scar", encodeCSectionScar value.cSectionScar )

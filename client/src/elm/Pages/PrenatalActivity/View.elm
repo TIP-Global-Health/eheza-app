@@ -1748,14 +1748,14 @@ viewObstetricalExamForm language currentDate assembled form =
 
                             fetalPresentationAlert =
                                 if egaInWeeks > 36 then
-                                    viewRedAlertForSelect
-                                        (form.fetalPresentation |> Maybe.withDefault [])
-                                        [ Cephalic, Twins ]
+                                    viewConditionalAlert form.fetalPresentation
+                                        [ [ (==) Cephalic ], [ (==) Twins ] ]
+                                        []
 
                                 else if egaInWeeks > 31 then
-                                    viewYellowAlertForSelect
-                                        (form.fetalPresentation |> Maybe.withDefault [])
-                                        [ Cephalic, Twins ]
+                                    viewConditionalAlert form.fetalPresentation
+                                        []
+                                        [ [ (==) Cephalic ], [ (==) Twins ] ]
 
                                 else
                                     emptyNode
@@ -1825,11 +1825,10 @@ viewObstetricalExamForm language currentDate assembled form =
             , div [ class "four wide column" ]
                 [ alerts.fetalPresentation ]
             ]
-        , viewCheckBoxMultipleSelectInput language
+        , viewCheckBoxSelectInput language
             [ Transverse, Cephalic ]
             [ FetalBreech, Twins ]
-            (form.fetalPresentation |> Maybe.withDefault [])
-            Nothing
+            form.fetalPresentation
             SetObstetricalExamFetalPresentation
             Translate.FetalPresentation
         , div [ class "separator" ] []
@@ -2227,10 +2226,6 @@ viewConditionalAlert maybeActual redConditions yellowConditions =
                         (\conditions ->
                             List.all
                                 (\condition ->
-                                    let
-                                        _ =
-                                            Debug.log " " condition
-                                    in
                                     condition actual
                                 )
                                 conditions

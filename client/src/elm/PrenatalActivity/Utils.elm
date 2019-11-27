@@ -902,10 +902,10 @@ generateObstetricalDiagnosisAlertData language currentDate measurements diagnosi
                                 |> Maybe.andThen
                                     (\measurement ->
                                         let
-                                            presentation =
+                                            value =
                                                 Tuple.second measurement |> .value |> .fetalPresentation
                                         in
-                                        if EverySet.member Backend.Measurement.Model.FetalBreech presentation then
+                                        if value == Backend.Measurement.Model.FetalBreech then
                                             Just (transAlert diagnosis)
 
                                         else
@@ -932,10 +932,10 @@ generateObstetricalDiagnosisAlertData language currentDate measurements diagnosi
                                 |> Maybe.andThen
                                     (\measurement ->
                                         let
-                                            presentation =
+                                            value =
                                                 Tuple.second measurement |> .value |> .fetalPresentation
                                         in
-                                        if EverySet.member Backend.Measurement.Model.Transverse presentation then
+                                        if value == Backend.Measurement.Model.Transverse then
                                             Just (transAlert diagnosis)
 
                                         else

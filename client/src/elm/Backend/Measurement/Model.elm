@@ -369,7 +369,7 @@ type alias Medication =
 
 type alias ObstetricalExamValue =
     { fundalHeight : HeightInCm
-    , fetalPresentation : EverySet FetalPresentation
+    , fetalPresentation : FetalPresentation
     , fetalMovement : Bool
     , fetalHeartRate : Int
     , cSectionScar : CSectionScar

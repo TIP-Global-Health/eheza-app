@@ -462,7 +462,7 @@ emptyCorePhysicalExamForm =
 
 type alias ObstetricalExamForm =
     { fundalHeight : Maybe Float
-    , fetalPresentation : Maybe (List FetalPresentation)
+    , fetalPresentation : Maybe FetalPresentation
     , fetalMovement : Maybe Bool
     , fetalHeartRate : Maybe Int
     , cSectionScar : Maybe CSectionScar
