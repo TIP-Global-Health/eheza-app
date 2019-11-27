@@ -17,7 +17,6 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalParticipant.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.WebData exposing (viewWebData)
 
@@ -33,7 +32,7 @@ view language currentDate id db =
         [ class "wrap wrap-alt-2 page-prenatal-participant" ]
         [ viewHeader language id
         , div
-            [ class "ui full segment blue" ]
+            [ class "ui full segment" ]
             [ viewWebData language (viewPrenatalActions language currentDate id db) identity prenatalSessions
             ]
         ]
@@ -100,7 +99,20 @@ viewPrenatalActions language currentDate id db prenatalSessions =
 
         subsequentVisitAction =
             maybeEncounterId
-                |> Maybe.map
+                |> unwrap
+                    -- When there's no encounter, we'll create new one.
+                    (maybeSessionId
+                        |> Maybe.map
+                            (\sessionId ->
+                                [ PrenatalEncounter sessionId currentDate Nothing
+                                    |> Backend.Model.PostPrenatalEncounter
+                                    |> App.Model.MsgIndexedDb
+                                    |> onClick
+                                ]
+                            )
+                        |> Maybe.withDefault []
+                    )
+                    -- When there's an encounrer, we'll view it.
                     (\encounterId ->
                         [ onClick <|
                             App.Model.SetActivePage <|
@@ -108,14 +120,13 @@ viewPrenatalActions language currentDate id db prenatalSessions =
                                     Pages.Page.PrenatalEncounterPage encounterId
                         ]
                     )
-                |> Maybe.withDefault []
     in
     div []
         [ p [ class "label-antenatal-visit" ] [ text <| translate language Translate.SelectAntenatalVisit ]
         , button
             (classList
                 [ ( "ui primary button", True )
-                , ( "disabled", isJust maybeEncounterId )
+                , ( "disabled", isJust maybeSessionId )
                 ]
                 :: firstVisitAction
             )
@@ -125,7 +136,7 @@ viewPrenatalActions language currentDate id db prenatalSessions =
         , button
             (classList
                 [ ( "ui primary button", True )
-                , ( "disabled", isNothing maybeSessionId || isNothing maybeEncounterId )
+                , ( "disabled", isNothing maybeSessionId )
                 ]
                 :: subsequentVisitAction
             )
