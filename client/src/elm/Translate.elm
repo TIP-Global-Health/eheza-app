@@ -275,6 +275,7 @@ type TranslationId
     | FatherName
     | FatherNationalId
     | FilterByName
+    | FirstAntenatalVisit
     | FirstName
     | FormError (ErrorValue ValidationError)
     | FormField String
@@ -410,6 +411,7 @@ type TranslationId
     | PreeclampsiaPreviousPregnancy
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalEncounter
+    | PregnancyConcludedLabel
     | PreviousCSectionScar
     | PreviousDelivery
     | PreviousDeliveryPeriods PreviousDeliveryPeriod
@@ -426,6 +428,7 @@ type TranslationId
     | ReceivedDewormingPill
     | ReceivedIronFolicAcid
     | ReceivedMosquitoNet
+    | RecordPregnancyOutcome
     | Register
     | RegisterAParticipant
     | RegisterHelper
@@ -459,6 +462,7 @@ type TranslationId
     | SearchHelperFamilyMember
     | SecondName
     | Sector
+    | SelectAntenatalVisit
     | SelectDangerSigns
     | SelectEncounterType
     | SelectGroup
@@ -488,6 +492,7 @@ type TranslationId
     | ServiceWorkerStatus
     | SevereHemorrhagingPreviousDelivery
     | StillbornPreviousDelivery
+    | SubsequentAntenatalVisit
     | SuccessiveAbortions
     | SuccessivePrematureDeliveries
     | GroupEncounterClosed
@@ -1741,6 +1746,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        FirstAntenatalVisit ->
+            { english = "First Antenatal Visit"
+            , kinyarwanda = Nothing
+            }
+
         FirstName ->
             { english = "First Name"
             , kinyarwanda = Nothing
@@ -2656,6 +2666,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PregnancyConcludedLabel ->
+            { english = "or Pregnancy Concluded"
+            , kinyarwanda = Nothing
+            }
+
         PreviousCSectionScar ->
             { english = "Previous C-section scar"
             , kinyarwanda = Nothing
@@ -2745,6 +2760,11 @@ translationSet trans =
 
         ReceivedMosquitoNet ->
             { english = "Has the mother received a mosquito net"
+            , kinyarwanda = Nothing
+            }
+
+        RecordPregnancyOutcome ->
+            { english = "Record Pregnancy Outcome"
             , kinyarwanda = Nothing
             }
 
@@ -2918,6 +2938,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        SelectAntenatalVisit ->
+            { english = "Select Antenatal Visit"
+            , kinyarwanda = Nothing
+            }
+
         SelectDangerSigns ->
             { english = "Please select one or more of the danger signs the patient is experiencing"
             , kinyarwanda = Nothing
@@ -3060,6 +3085,11 @@ translationSet trans =
 
         StillbornPreviousDelivery ->
             { english = "Stillborn in previous delivery"
+            , kinyarwanda = Nothing
+            }
+
+        SubsequentAntenatalVisit ->
+            { english = "Subsequent Antenatal Visit"
             , kinyarwanda = Nothing
             }
 
