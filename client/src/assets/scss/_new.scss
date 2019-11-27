@@ -843,55 +843,73 @@ div.page-clinical-progress-report {
       .caption {
         font-size: 16px;
         font-weight: bold;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
         margin-top: 20px;
         text-transform: uppercase;
       }
 
       .timeline-section {
-        display: grid;
-        grid-column-gap: 20px;
-        grid-template-columns: 25% 25% 35%;
 
-        .trimester-timeline {
+        .indicators {
+          font-size: 16px;
+          line-height: 20px;
+          margin-bottom: 30px;
+          margin-left: 20px;
 
-          > p, > span {
-            float: left;
+          .heart-rate-label, .movements-label {
+
+            span {
+              margin-right: 25px;
+            }
           }
+        }
 
-          p.blue {
-            border-top: 10px solid $color-primary;
-          }
+        .timeline {
 
-          p.gray {
-            border-top: 10px solid $color-light-gray;
-          }
+          display: grid;
+          grid-column-gap: 20px;
+          grid-template-columns: 25% 25% 35%;
 
-          span {
-            margin-top: -7px;
-          }
+          .trimester-timeline {
 
-          .due-date-info {
-            float: right;
-            margin-top: -15px;
-            width: 40px;
+            > p, > span {
+              float: left;
+            }
 
-            .due-date-icon {
+            p.blue {
+              border-top: 10px solid $color-primary;
+            }
 
-              img {
-                height: 40px;
-                width: 40px;
+            p.gray {
+              border-top: 10px solid $color-light-gray;
+            }
+
+            span {
+              margin-top: -7px;
+            }
+
+            .due-date-info {
+              float: right;
+              margin-top: -15px;
+              width: 40px;
+
+              .due-date-icon {
+
+                img {
+                  height: 40px;
+                  width: 40px;
+                }
               }
-            }
 
-            .due-date-label {
-              font-size: 14px;
-              line-height: 20px;
-              width: 100px;
+              .due-date-label {
+                font-size: 14px;
+                line-height: 20px;
+                width: 100px;
+              }
+
             }
 
           }
-
         }
 
       }

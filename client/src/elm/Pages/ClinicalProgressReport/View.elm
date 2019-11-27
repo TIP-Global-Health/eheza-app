@@ -20,7 +20,7 @@ import Maybe.Extra exposing (unwrap)
 import Pages.ClinicalProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
 import Pages.DemographicsReport.View exposing (viewHeader, viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalEncounter.Utils exposing (generateEDDandEGA, generateGravida, generatePara)
+import Pages.PrenatalEncounter.Utils exposing (calculateEDDandEGADays, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generatePara)
 import PrenatalActivity.Model
     exposing
         ( PregnancyTrimester(..)
@@ -271,6 +271,73 @@ viewPatientProgressPane language currentDate measurements =
         encountersThirdTrimester =
             countTrimesterEncounters ThirdTrimester
 
+        fetalMovementsDetected =
+            measurements.obstetricalExam
+                |> Maybe.map
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value |> .fetalMovement
+                        in
+                        value == True
+                    )
+                |> Maybe.withDefault False
+
+        fetalHeartRateDetected =
+            measurements.obstetricalExam
+                |> Maybe.map
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value |> .fetalHeartRate
+                        in
+                        value > 0
+                    )
+                |> Maybe.withDefault False
+
+        ( eddLabel, fetalHeartRateLabel, fetalMovementsLabel ) =
+            maybeLmpDate
+                |> Maybe.map
+                    (\lmpDate ->
+                        let
+                            ( eddDate_, diffDays ) =
+                                calculateEDDandEGADays currentDate lmpDate
+
+                            eddDate =
+                                toLocalDateTime eddDate_ 12 0 0 0
+
+                            egaWeeksDaysLabel =
+                                generateEGAWeeksDaysLabel language diffDays
+                        in
+                        ( div [ class "due-date-label" ]
+                            [ div [] [ text <| translate language Translate.DueDate ++ ":" ]
+                            , div []
+                                [ text <|
+                                    (Date.day eddDate |> toString)
+                                        ++ " "
+                                        ++ translate language (Date.month eddDate |> Translate.ResolveMonth)
+                                ]
+                            ]
+                        , if fetalHeartRateDetected then
+                            div [ class "heart-rate-label" ]
+                                [ span [] [ text <| translate language Translate.FetalHeartRate ++ ": " ]
+                                , span [] [ text egaWeeksDaysLabel ]
+                                ]
+
+                          else
+                            emptyNode
+                        , if fetalMovementsDetected then
+                            div [ class "movements-label" ]
+                                [ span [] [ text <| translate language Translate.FetalMovement ++ ": " ]
+                                , span [] [ text egaWeeksDaysLabel ]
+                                ]
+
+                          else
+                            emptyNode
+                        )
+                    )
+                |> Maybe.withDefault ( emptyNode, emptyNode, emptyNode )
+
         viewTrimesterTimeline trimester =
             let
                 encounterIconWidth =
@@ -344,30 +411,6 @@ viewPatientProgressPane language currentDate measurements =
                             []
                         ]
 
-                fetalMovementsDetected =
-                    measurements.obstetricalExam
-                        |> Maybe.map
-                            (\measurement ->
-                                let
-                                    value =
-                                        Tuple.second measurement |> .value |> .fetalMovement
-                                in
-                                value == True
-                            )
-                        |> Maybe.withDefault False
-
-                fetalHeartRateDetected =
-                    measurements.obstetricalExam
-                        |> Maybe.map
-                            (\measurement ->
-                                let
-                                    value =
-                                        Tuple.second measurement |> .value |> .fetalHeartRate
-                                in
-                                value > 0
-                            )
-                        |> Maybe.withDefault False
-
                 timelineIcons =
                     if fetalMovementsDetected && fetalHeartRateDetected then
                         div [ style [ ( "margin-left", "-25px" ), ( "width", "65px" ) ] ]
@@ -383,27 +426,6 @@ viewPatientProgressPane language currentDate measurements =
 
                     else
                         emptyNode
-
-                eddLabel =
-                    maybeLmpDate
-                        |> Maybe.map
-                            (\lmpDate ->
-                                let
-                                    eddDate =
-                                        toLocalDateTime lmpDate 12 0 0 0
-                                            |> Date.Extra.add Day 280
-                                in
-                                div [ class "due-date-label" ]
-                                    [ div [] [ text <| translate language Translate.DueDate ++ ":" ]
-                                    , div []
-                                        [ text <|
-                                            (Date.day eddDate |> toString)
-                                                ++ " "
-                                                ++ translate language (Date.month eddDate |> Translate.ResolveMonth)
-                                        ]
-                                    ]
-                            )
-                        |> Maybe.withDefault emptyNode
 
                 dueDateInfo =
                     if trimester == ThirdTrimester then
@@ -477,14 +499,22 @@ viewPatientProgressPane language currentDate measurements =
         [ viewItemHeading language Translate.PatientProgress "blue"
         , div [ class "pane-content" ]
             [ div [ class "caption timeline" ] [ text <| translate language Translate.ProgressTimeline ++ ":" ]
-            , allTrimesters
-                |> List.map viewTrimesterTimeline
-                |> div [ class "timeline-section" ]
+            , div [ class "timeline-section" ]
+                [ div [ class "indicators" ]
+                    [ fetalHeartRateLabel
+                    , fetalMovementsLabel
+                    ]
+                , allTrimesters
+                    |> List.map viewTrimesterTimeline
+                    |> div [ class "timeline" ]
+                ]
             , allTrimesters
                 |> List.map viewTrimesterVisits
                 |> div [ class "visits-section" ]
             , div [ class "caption trends" ] [ text <| translate language Translate.ProgressTrends ++ ":" ]
-            , viewBMIForEGA language
-            , viewFundalHeightForEGA language
+            , div [ class "trends-section" ]
+                [ div [ class "bmi-info" ] [ viewBMIForEGA language ]
+                , div [ class "fundal-height-info" ] [ viewFundalHeightForEGA language ]
+                ]
             ]
         ]
