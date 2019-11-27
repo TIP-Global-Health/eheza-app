@@ -693,9 +693,24 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             )
 
         HandlePostedPrenatalSession personId data ->
+            let
+                -- We automatically create new encounter for newly created prenatal session.
+                -- We'll probably need to change this once we allow to end prenatal session,
+                -- but for now, this is sufficient.
+                appMsgs =
+                    RemoteData.map
+                        (\( sessionId, _ ) ->
+                            [ Backend.PrenatalEncounter.Model.PrenatalEncounter sessionId currentDate Nothing
+                                |> Backend.Model.PostPrenatalEncounter
+                                |> App.Model.MsgIndexedDb
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
             ( { model | postPrenatalSession = EveryDict.insert personId data model.postPrenatalSession }
             , Cmd.none
-            , []
+            , appMsgs
             )
 
         PostPrenatalEncounter prenatalEncounter ->
