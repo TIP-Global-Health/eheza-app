@@ -679,11 +679,58 @@ div.page-encounter-types {
     }
 
     button.ui.primary.button {
-      padding: 0;
       height: 60px;
       margin-left: auto;
       margin-right: auto;
+      padding: 0;
       width: 80%;
+
+      .text {
+        float: left;
+        line-height: 60px;
+        margin-left: 40px;
+        text-align: left;
+        width: 80%;
+      }
+
+      .icon-back {
+        float: left;
+        margin-top: 17px;
+        transform: rotate(180deg);
+      }
+    }
+}
+
+div.page-prenatal-participant {
+
+    p {
+      font-size: 25px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .label-antenatal-visit {
+      margin-bottom: 30px;
+      margin-top: 40px;
+    }
+
+    .label-pregnancy-concluded {
+      margin-bottom: 30px;
+    }
+
+    .separator {
+      border: 1px solid;
+      margin-bottom: 40px;
+      margin-top: 100px;
+    }
+
+    button.ui.primary.button {
+      height: 60px;
+      margin-bottom: 20px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 0;
+      width: 100%;
 
       .text {
         float: left;
