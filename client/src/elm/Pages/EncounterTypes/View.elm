@@ -14,10 +14,11 @@ import Translate exposing (Language, translate)
 view : Language -> NominalDate -> PersonId -> Html App.Model.Msg
 view language currentDate personId =
     div
-        [ class "ui basic segment page-encounter-types" ]
-    <|
-        viewHeader language
-            :: viewContent language personId
+        [ class "wrap wrap-alt-2 page-encounter-types" ]
+        [ viewHeader language
+        , viewContent language personId
+            |> div [ class "ui full segment" ]
+        ]
 
 
 viewHeader : Language -> Html Msg

@@ -664,18 +664,13 @@ div.page-prenatal-activity {
 }
 
 div.page-encounter-types {
-    font-size: 1.72rem; //24px;
-    text-align: center;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
 
-    div.ui.basic.head.segment {
-      position: absolute;
-      top: 0;
-      width: 100%;
-      margin-left: -40px;
+    p {
+      font-size: 25px;
+      font-weight: bold;
+      margin-bottom: 30px;
+      margin-top: 40px;
+      text-align: center;
     }
 
     button.ui.primary.button {
@@ -683,7 +678,7 @@ div.page-encounter-types {
       margin-left: auto;
       margin-right: auto;
       padding: 0;
-      width: 80%;
+      width: 100%;
 
       .text {
         float: left;
