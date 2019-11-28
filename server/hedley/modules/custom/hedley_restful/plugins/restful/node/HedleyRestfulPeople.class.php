@@ -109,6 +109,8 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
   }
 
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    $items = parent::postExecuteQueryForViewWithDbSelect($items);
+
     $field_names = [
       'field_birth_date_estimated',
       'field_cell',
@@ -140,7 +142,7 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
 
     foreach ($items as &$row) {
       $birth_date = explode(' ', $row->field_birth_date);
-      $row->field_birth_date = $birth_date[0];
+      $row->field_birth_date = !empty($birth_date[0]) ? $birth_date[0] : '1970-01-01';
 
       foreach ($field_names as $field_name) {
         $public_name = str_replace('field_', '', $field_name);

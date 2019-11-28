@@ -32,6 +32,8 @@ class HedleyRestfulHealthCenters extends HedleyRestfulSyncBase {
   }
 
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    $items = parent::postExecuteQueryForViewWithDbSelect($items);
+
     foreach ($items as &$row) {
       $row->catchment_area = $row->field_catchment_area;
       $row->uuid = $row->field_uuid;

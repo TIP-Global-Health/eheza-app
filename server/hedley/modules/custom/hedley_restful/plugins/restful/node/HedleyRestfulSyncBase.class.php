@@ -50,7 +50,7 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
 
   protected function getQueryForViewWithDbSelect(array $node_ids) {
     $query = db_select('node', 'node');
-    $query->fields('node', ['type', 'nid', 'vid', 'created']);
+    $query->fields('node', ['type', 'nid', 'vid', 'created', 'title']);
     $query->condition('node.nid',$node_ids, 'IN');
 
     return $query;
@@ -69,6 +69,11 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
   }
 
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    foreach ($items as &$item) {
+      $item->label = $item->title;
+      unset($item->title);
+    }
+
     return $items;
   }
 
