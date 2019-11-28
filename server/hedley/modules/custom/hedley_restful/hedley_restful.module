@@ -251,7 +251,7 @@ function hedley_restful_join_field_to_query(SelectQuery $query, $entity_type, $f
   }
 
   $field_alias = $field_alias ?: $field_name;
-  $query->addField($field_name, $field_name . '_' . $column_suffix, $field_alias);
+  $query->addField($field_alias, $field_name . '_' . $column_suffix, $field_alias);
 
   $join = $require ? 'innerJoin' : 'leftJoin';
   $arguments = [':type' => $entity_type];
