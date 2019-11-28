@@ -28,6 +28,8 @@ class HedleyRestfulMuacs extends HedleyRestfulChildActivityBase {
   }
 
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    $items = parent::postExecuteQueryForViewWithDbSelect($items);
+
     foreach ($items as &$row) {
       $row->muac = $row->field_muac;
 

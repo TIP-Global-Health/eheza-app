@@ -207,10 +207,12 @@ function hedley_restful_query_in_batches(\EntityFieldQuery $base_query, $batch_s
  * @param string $entity_id_selector
  *   SQL selector for the column by which the field is joined. The entity ID is
  *   used by default.
+ * @param string $field_alias
+ *   The field alias.
  *
  * @throws Exception
  */
-function hedley_restful_join_field_to_query(SelectQuery $query, $entity_type, $field_name, $require = TRUE, $entity_id_selector = NULL) {
+function hedley_restful_join_field_to_query(SelectQuery $query, $entity_type, $field_name, $require = TRUE, $entity_id_selector = NULL, $field_alias = NULL) {
   $field = field_info_field($field_name);
   $table_name = _field_sql_storage_tablename($field);
 
@@ -233,16 +235,6 @@ function hedley_restful_join_field_to_query(SelectQuery $query, $entity_type, $f
     }
   }
 
-  $join = $require ? 'innerJoin' : 'leftJoin';
-  $arguments = [':type' => $entity_type];
-  $conditions[] = "$entity_id_selector = $field_name.entity_id";
-  if ($entity_type) {
-    $conditions[] = "$field_name.entity_type = :type";
-  }
-
-  $query->$join($table_name, $field_name, implode(' AND ', $conditions), $arguments);
-
-
   switch ($field['type']) {
     case 'entityreference':
       $column_suffix = 'target_id';
@@ -250,13 +242,24 @@ function hedley_restful_join_field_to_query(SelectQuery $query, $entity_type, $f
 
     case 'image':
     case 'file':
-    $column_suffix = 'fid';
-    break;
+      $column_suffix = 'fid';
+      break;
 
     default:
       $column_suffix = 'value';
 
   }
 
-  $query->addField($field_name, $field_name . '_' . $column_suffix, $field_name);
+  $field_alias = $field_alias ?: $field_name;
+  $query->addField($field_name, $field_name . '_' . $column_suffix, $field_alias);
+
+  $join = $require ? 'innerJoin' : 'leftJoin';
+  $arguments = [':type' => $entity_type];
+  $conditions[] = "$entity_id_selector = $field_alias.entity_id";
+  if ($entity_type) {
+    $conditions[] = "$field_alias.entity_type = :type";
+  }
+
+  $query->$join($table_name, $field_alias, implode(' AND ', $conditions), $arguments);
+
 }

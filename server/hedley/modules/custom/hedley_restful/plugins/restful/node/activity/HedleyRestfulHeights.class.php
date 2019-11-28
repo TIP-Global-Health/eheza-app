@@ -33,6 +33,8 @@ class HedleyRestfulHeights extends HedleyRestfulChildActivityBase {
   }
 
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    $items = parent::postExecuteQueryForViewWithDbSelect($items);
+
     foreach ($items as &$row) {
       $row->height = $row->field_height;
       $row->zscore_age = $row->field_zscore_age;

@@ -28,6 +28,8 @@ class HedleyRestfulFamilyPlannings extends HedleyRestfulMotherActivityBase {
   }
 
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    $items = parent::postExecuteQueryForViewWithDbSelect($items);
+
     foreach ($items as &$row) {
       $row->family_planning_signs = $row->field_family_planning_signs;
 

@@ -54,6 +54,8 @@ class HedleyRestfulWeights extends HedleyRestfulChildActivityBase {
   }
 
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    $items = parent::postExecuteQueryForViewWithDbSelect($items);
+
     $fields_info = $this->getPublicFields();
 
     foreach ($items as &$row) {

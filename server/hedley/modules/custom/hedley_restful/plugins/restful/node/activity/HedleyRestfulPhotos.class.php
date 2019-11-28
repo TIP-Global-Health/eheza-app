@@ -37,6 +37,8 @@ class HedleyRestfulPhotos extends HedleyRestfulChildActivityBase {
   }
 
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    $items = parent::postExecuteQueryForViewWithDbSelect($items);
+
     foreach ($items as &$row) {
       $fid = $row->field_photo;
       $uri = $row->uri;

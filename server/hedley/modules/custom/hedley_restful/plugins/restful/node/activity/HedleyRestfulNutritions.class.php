@@ -28,6 +28,8 @@ class HedleyRestfulNutritions extends HedleyRestfulChildActivityBase {
   }
 
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    $items = parent::postExecuteQueryForViewWithDbSelect($items);
+
     foreach ($items as &$row) {
       $row->nutrition_signs = $row->field_nutrition_signs;
 
