@@ -1,4 +1,4 @@
-module LocalData exposing (LocalData(..), ReadyStatus(..), isNotNeeded, map, toMaybe, unwrap, withDefault)
+module LocalData exposing (LocalData(..), ReadyStatus(..), isNotNeeded, map, setRecalculate, toMaybe, unwrap, withDefault)
 
 {-| Data which we have locally, but takes time to calculate.
 -}
@@ -58,3 +58,15 @@ isNotNeeded data =
 
         _ ->
             False
+
+
+{-| Mark as needs re-calculate.
+-}
+setRecalculate : LocalData a -> LocalData a
+setRecalculate data =
+    case data of
+        Ready val _ ->
+            Ready val Recalculate
+
+        _ ->
+            data

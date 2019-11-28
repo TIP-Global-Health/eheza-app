@@ -1059,27 +1059,25 @@ makeEditableSession sessionId db =
                 |> RemoteData.andMap childrenData
                 |> RemoteData.andMap measurementData
 
-        previousCheckedIn =
+        ( previousCheckedIn, previousSummaryByParticipant, previousSummaryByActivity ) =
             Dict.get sessionId db.editableSessions
                 |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map
                     (\editableSessions ->
-                        case editableSessions.checkedIn of
-                            Ready val _ ->
-                                Ready val Recalculate
-
-                            _ ->
-                                NotNeeded
+                        ( LocalData.setRecalculate editableSessions.checkedIn
+                        , LocalData.setRecalculate editableSessions.summaryByParticipant
+                        , LocalData.setRecalculate editableSessions.summaryByActivity
+                        )
                     )
-                |> Maybe.withDefault NotNeeded
+                |> Maybe.withDefault ( NotNeeded, NotNeeded, NotNeeded )
     in
     RemoteData.map
         (\offline ->
             { offlineSession = offline
             , update = NotAsked
             , checkedIn = previousCheckedIn
-            , summaryByParticipant = NotNeeded
-            , summaryByActivity = NotNeeded
+            , summaryByParticipant = previousSummaryByParticipant
+            , summaryByActivity = previousSummaryByActivity
             }
         )
         offlineSession
