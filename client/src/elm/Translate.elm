@@ -278,6 +278,7 @@ type TranslationId
     | EditRelationship
     | Ega
     | EgaHeader
+    | EgaWeeks
     | EmptyString
     | EndEncounter
     | EndGroupEncounter
@@ -1555,6 +1556,11 @@ translationSet trans =
 
         EgaHeader ->
             { english = "Estimated Gestational Age"
+            , kinyarwanda = Nothing
+            }
+
+        EgaWeeks ->
+            { english = "EGA (Weeks)"
             , kinyarwanda = Nothing
             }
 

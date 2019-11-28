@@ -37,20 +37,68 @@ viewMarkers =
         ]
 
 
+dimensionsPx =
+    { left = 110.9
+    , top = 119.9
+    , right = 737.7
+    , bottom = 506.7
+    }
+
+
+widthPx =
+    dimensionsPx.right - dimensionsPx.left
+
+
+heightPx =
+    dimensionsPx.bottom - dimensionsPx.top
+
+
 viewBMIForEGA : Language -> Html any
 viewBMIForEGA language =
     let
+        verticalParts =
+            18
+
+        verticalMin =
+            10
+
+        verticalMax =
+            46
+
+        verticalStep =
+            heightPx / toFloat (verticalMax - verticalMin)
+
         bottomRedPoints =
-            [ ( 110.9, 506.7 ), ( 110.9, 394.88 ), ( 737.7, 394.88 ), ( 737.7, 506.7 ), ( 110.9, 506.7 ) ]
+            [ ( dimensionsPx.left, dimensionsPx.bottom )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (18.5 - verticalMin) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - (18.5 - verticalMin) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom )
+            , ( dimensionsPx.left, dimensionsPx.bottom )
+            ]
 
         greenPoints =
-            [ ( 110.9, 394.88 ), ( 110.9, 350.8 ), ( 737.7, 350.8 ), ( 737.7, 394.88 ), ( 110.9, 394.88 ) ]
+            [ ( dimensionsPx.left, dimensionsPx.bottom - (18.5 - verticalMin) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (25 - verticalMin) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - (25 - verticalMin) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - (18.5 - verticalMin) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (18.5 - verticalMin) * verticalStep )
+            ]
 
         yellowPoints =
-            [ ( 110.9, 350.8 ), ( 110.9, 316.9 ), ( 737.7, 316.9 ), ( 737.7, 350.8 ), ( 110.9, 350.8 ) ]
+            [ ( dimensionsPx.left, dimensionsPx.bottom - (25 - verticalMin) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (30 - verticalMin) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - (30 - verticalMin) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - (25 - verticalMin) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (25 - verticalMin) * verticalStep )
+            ]
 
         topRedPoints =
-            [ ( 110.9, 316.9 ), ( 110.9, 119.9 ), ( 737.7, 119.9 ), ( 737.7, 316.9 ), ( 110.9, 316.9 ) ]
+            [ ( dimensionsPx.left, dimensionsPx.bottom - (30 - verticalMin) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.top )
+            , ( dimensionsPx.right, dimensionsPx.top )
+            , ( dimensionsPx.right, dimensionsPx.bottom - (30 - verticalMin) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (30 - verticalMin) * verticalStep )
+            ]
     in
     svg
         [ class "z-score boys"
@@ -58,100 +106,98 @@ viewBMIForEGA language =
         , y "0px"
         , viewBox "25 25 841.9 595.3"
         ]
-        [ frame2 language
-        , labels2 language Translate.Yes Translate.Yes
-        , (referenceVerticalLines
-            ++ referenceVerticalNumbers 55 5 "95.425"
-            ++ referenceVerticalNumbers 55 5 "745.0155"
+        [ frame
+        , g []
+            [ text_
+                [ transform "matrix(1 0 0 1 373 541)"
+                , class "z-score-semibold chart-label"
+                ]
+                [ text <| translate language Translate.EgaWeeks ]
+            , text_
+                [ transform "matrix(0 -1 1 0 81 350)"
+                , class "z-score-semibold chart-label"
+                ]
+                [ text <| translate language Translate.BMI ]
+            ]
+        , g []
+            [ drawPolygon topRedPoints "red-area"
+            , drawPolygon yellowPoints "yellow-area"
+            , drawPolygon greenPoints "green-area"
+            , drawPolygon bottomRedPoints "red-area"
+            ]
+        , (referenceVerticalLines verticalParts
+            ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> toString)
+            ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.right + 7.5 |> toString)
           )
             |> g []
-        , referenceHorizontalLines 20 ++ referenceHorizontalNumbers 20 2 |> g []
-        , g []
-            [ drawPolygon topRedPoints "below-neg-three"
-            , drawPolygon yellowPoints "neg-two-to-neg-three"
-            , drawPolygon greenPoints "above-neg-two"
-            , drawPolygon bottomRedPoints "below-neg-three"
-            ]
+        , referenceHorizontalLines 21 ++ referenceHorizontalNumbers 21 0 2 |> g []
         ]
 
 
 viewFundalHeightForEGA : Language -> Html any
 viewFundalHeightForEGA language =
     let
-        leftXpx =
-            110.9
+        verticalParts =
+            15
 
-        topYpx =
-            119.9
+        verticalMin =
+            16
 
-        rightXpx =
-            737.7
+        verticalMax =
+            46
 
-        bottomYpx =
-            506.7
+        verticalStep =
+            heightPx / toFloat (verticalMax - verticalMin)
 
-        leftX =
-            0
+        horizontalParts =
+            14
 
-        topY =
-            49
+        horizontalMin =
+            16
 
-        rightX =
-            42
+        horizontalMax =
+            44
 
-        bottomY =
-            2
+        horizontalStep =
+            widthPx / toFloat (horizontalMax - horizontalMin)
 
-        xSteps =
-            rightX - leftX
-
-        ySteps =
-            topY - bottomY
-
-        xStepPx =
-            (rightXpx - leftXpx) / xSteps
-
-        yStepPx =
-            (bottomYpx - topYpx) / ySteps
-
-        leftRedPoints =
-            [ ( leftXpx, bottomYpx - 4 * yStepPx )
-            , ( leftXpx, topYpx )
-            , ( rightXpx, topYpx )
-            , ( rightXpx, bottomYpx - 46 * yStepPx )
-            , ( leftXpx, bottomYpx - 4 * yStepPx )
+        bottomRedPoints =
+            [ ( dimensionsPx.left + (20 - horizontalMin) * horizontalStep, dimensionsPx.bottom )
+            , ( dimensionsPx.right, dimensionsPx.bottom - (40 - verticalMin) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom )
+            , ( dimensionsPx.left + (20 - horizontalMin) * horizontalStep, dimensionsPx.bottom )
             ]
 
-        leftYellowPoints =
-            [ ( leftXpx, bottomYpx - 2 * yStepPx )
-            , ( leftXpx, bottomYpx - 4 * yStepPx )
-            , ( rightXpx, bottomYpx - 46 * yStepPx )
-            , ( rightXpx, bottomYpx - 44 * yStepPx )
-            , ( leftXpx, bottomYpx - 2 * yStepPx )
+        bottomYellowPoints =
+            [ ( dimensionsPx.left + (20 - horizontalMin) * horizontalStep, dimensionsPx.bottom )
+            , ( dimensionsPx.left + (18 - horizontalMin) * horizontalStep, dimensionsPx.bottom )
+            , ( dimensionsPx.right, dimensionsPx.bottom - (42 - verticalMin) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - (40 - verticalMin) * verticalStep )
+            , ( dimensionsPx.left + (20 - horizontalMin) * horizontalStep, dimensionsPx.bottom )
             ]
 
         greenPoints =
-            [ ( leftXpx, bottomYpx )
-            , ( leftXpx, bottomYpx - 2 * yStepPx )
-            , ( rightXpx, bottomYpx - 44 * yStepPx )
-            , ( rightXpx, bottomYpx - 40 * yStepPx )
-            , ( leftXpx + 2 * xStepPx, bottomYpx )
-            , ( leftXpx, bottomYpx )
+            [ ( dimensionsPx.left + (18 - horizontalMin) * horizontalStep, dimensionsPx.bottom )
+            , ( dimensionsPx.left, dimensionsPx.bottom )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (18 - verticalMin) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.top )
+            , ( dimensionsPx.right, dimensionsPx.bottom - (42 - verticalMin) * verticalStep )
+            , ( dimensionsPx.left + (18 - horizontalMin) * horizontalStep, dimensionsPx.bottom )
             ]
 
-        rightYellowPoints =
-            [ ( leftXpx + 2 * xStepPx, bottomYpx )
-            , ( rightXpx, bottomYpx - 40 * yStepPx )
-            , ( rightXpx, bottomYpx - 38 * yStepPx )
-            , ( leftXpx + 4 * xStepPx, bottomYpx )
-            , ( leftXpx + 2 * xStepPx, bottomYpx )
+        topYellowPoints =
+            [ ( dimensionsPx.left, dimensionsPx.bottom - (18 - verticalMin) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (20 - verticalMin) * verticalStep )
+            , ( dimensionsPx.left + (42 - horizontalMin) * horizontalStep, dimensionsPx.top )
+            , ( dimensionsPx.right, dimensionsPx.top )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (18 - verticalMin) * verticalStep )
             ]
 
-        rightRedPoints =
-            [ ( leftXpx + 4 * xStepPx, bottomYpx )
-            , ( rightXpx, bottomYpx - 38 * yStepPx )
-            , ( rightXpx, bottomYpx )
-            , ( leftXpx + 4 * xStepPx, bottomYpx )
+        topRedPoints =
+            [ ( dimensionsPx.left, dimensionsPx.bottom - (20 - verticalMin) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.top )
+            , ( dimensionsPx.left + (42 - horizontalMin) * horizontalStep, dimensionsPx.top )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (20 - verticalMin) * verticalStep )
             ]
     in
     svg
@@ -160,22 +206,125 @@ viewFundalHeightForEGA language =
         , y "0px"
         , viewBox "25 25 841.9 595.3"
         ]
-        [ frame2 language
-        , labels2 language Translate.No Translate.No
-        , (referenceVerticalLines
-            ++ referenceVerticalNumbers 45 4 "95.425"
-            ++ referenceVerticalNumbers 45 4 "745.0155"
+        [ frame
+        , g []
+            [ text_
+                [ transform "matrix(1 0 0 1 373 541)"
+                , class "z-score-semibold chart-label"
+                ]
+                [ text <| translate language Translate.EgaWeeks ]
+            , text_
+                [ transform "matrix(0 -1 1 0 81 380)"
+                , class "z-score-semibold chart-label"
+                ]
+                [ text <| translate language Translate.FundalHeight ]
+            ]
+        , g []
+            [ drawPolygon bottomRedPoints "red-area"
+            , drawPolygon bottomYellowPoints "yellow-area"
+            , drawPolygon greenPoints "green-area"
+            , drawPolygon topYellowPoints "yellow-area"
+            , drawPolygon topRedPoints "red-area"
+            ]
+        , (referenceVerticalLines verticalParts
+            ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> toString)
+            ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.right + 7.5 |> toString)
           )
             |> g []
-        , referenceHorizontalLines 20 ++ referenceHorizontalNumbers 20 2 |> g []
-        , g []
-            [ drawPolygon leftRedPoints "below-neg-three"
-            , drawPolygon leftYellowPoints "neg-two-to-neg-three"
-            , drawPolygon greenPoints "above-neg-two"
-            , drawPolygon rightYellowPoints "neg-two-to-neg-three"
-            , drawPolygon rightRedPoints "below-neg-three"
-            ]
+        , referenceHorizontalLines horizontalParts ++ referenceHorizontalNumbers horizontalParts horizontalMin 2 |> g []
         ]
+
+
+referenceHorizontalLines : Int -> List (Svg any)
+referenceHorizontalLines parts =
+    let
+        margin =
+            widthPx / toFloat parts
+    in
+    List.repeat (parts - 1) ""
+        |> List.indexedMap
+            (\index _ ->
+                let
+                    posX =
+                        dimensionsPx.left + (toFloat (index + 1) * margin) |> toString
+                in
+                line [ class "refference-line", x1 posX, y1 (toString dimensionsPx.bottom), x2 posX, y2 (toString dimensionsPx.top) ] []
+            )
+
+
+referenceHorizontalNumbers : Int -> Int -> Int -> List (Svg any)
+referenceHorizontalNumbers parts min gap =
+    let
+        margin =
+            widthPx / toFloat parts
+    in
+    List.repeat (parts - 1) ""
+        |> List.indexedMap
+            (\index _ ->
+                let
+                    posX =
+                        dimensionsPx.left + (toFloat (index + 1) * margin)
+
+                    number =
+                        min + (index + 1) * gap
+
+                    posX_ =
+                        (if number > 9 then
+                            posX - 4
+
+                         else
+                            posX - 2.5
+                        )
+                            |> toString
+
+                    number_ =
+                        number |> toString
+                in
+                text_ [ transform <| "matrix(1 0 0 1 " ++ posX_ ++ " 520)", class "z-score-semibold st17" ] [ text number_ ]
+            )
+
+
+referenceVerticalLines : Int -> List (Svg any)
+referenceVerticalLines parts =
+    let
+        margin =
+            heightPx / toFloat parts
+    in
+    List.repeat (parts - 1) ""
+        |> List.indexedMap
+            (\index _ ->
+                let
+                    posY =
+                        dimensionsPx.top + (toFloat (index + 1) * margin) |> toString
+                in
+                line [ class "refference-line", x1 (toString dimensionsPx.left), y1 posY, x2 (toString dimensionsPx.right), y2 posY ] []
+            )
+
+
+referenceVerticalNumbers : Int -> Int -> Int -> String -> List (Svg any)
+referenceVerticalNumbers parts min gap posX =
+    let
+        margin =
+            heightPx / toFloat parts
+    in
+    List.repeat (parts - 1) ""
+        |> List.indexedMap
+            (\index _ ->
+                let
+                    posY =
+                        dimensionsPx.top + (toFloat (index + 1) * margin)
+
+                    number =
+                        min + (parts - index - 1) * gap
+
+                    posY_ =
+                        posY + 2 |> toString
+
+                    number_ =
+                        number |> toString
+                in
+                text_ [ transform <| "matrix(1 0 0 1 " ++ posX ++ " " ++ posY_ ++ ")", class "z-score-semibold st17" ] [ text number_ ]
+            )
 
 
 drawPolygon : List ( Float, Float ) -> String -> Svg any
@@ -196,40 +345,12 @@ drawPolygon points_ class_ =
            )
 
 
-labels2 : Language -> TranslationId -> TranslationId -> Svg any
-labels2 language xAxis yAxis =
-    let
-        xAxisLabel =
-            if xAxis == Translate.Yes then
-                "Bmi"
-
-            else
-                "Fundal Height"
-    in
-    g []
-        [ text_
-            [ transform "matrix(1 0 0 1 400 540.9924)"
-            , class "z-score-white z-score-semibold st17"
-            ]
-            [ text "EGA (Weeks)" ]
-
-        -- [ text <| translate language xAxis ]
-        , text_
-            [ transform "matrix(0 -1 1 0 80.8497 350)"
-            , class "z-score-white z-score-semibold st17"
-            ]
-            [ text xAxisLabel ]
-
-        -- [ text <| translate language yAxis ]
-        ]
-
-
-frame2 : Language -> Svg any
-frame2 language =
+frame : Svg any
+frame =
     g
         []
         [ rect
-            [ class "z-score-grey"
+            [ class "chart-outer-frame"
             , height "447.9"
             , width "728.5"
             , x "56.7"
@@ -237,137 +358,10 @@ frame2 language =
             ]
             []
         , rect
-            [ class "z-score-white"
-            , height "386.8"
+            [ height "386.8"
             , width "626.8"
             , x "110.9"
             , y "119.9"
             ]
             []
         ]
-
-
-referenceVerticalLines : List (Svg any)
-referenceVerticalLines =
-    [ line [ class "st18", x1 "110.8", y1 "486.3", x2 "737.6", y2 "486.3" ] []
-    , line [ class "st18", x1 "110.8", y1 "452.4", x2 "737.6", y2 "452.4" ] []
-    , line [ class "st18", x1 "110.8", y1 "418.5", x2 "737.6", y2 "418.5" ] []
-    , line [ class "st18", x1 "110.8", y1 "384.5", x2 "737.6", y2 "384.5" ] []
-    , line [ class "st18", x1 "110.8", y1 "350.6", x2 "737.6", y2 "350.6" ] []
-    , line [ class "st18", x1 "110.8", y1 "316.7", x2 "737.6", y2 "316.7" ] []
-    , line [ class "st18", x1 "110.8", y1 "282.8", x2 "737.6", y2 "282.8" ] []
-    , line [ class "st18", x1 "110.8", y1 "248.8", x2 "737.6", y2 "248.8" ] []
-    , line [ class "st18", x1 "110.8", y1 "214.9", x2 "737.6", y2 "214.9" ] []
-    , line [ class "st18", x1 "110.8", y1 "181", x2 "737.6", y2 "181" ] []
-    , line [ class "st18", x1 "110.8", y1 "147.1", x2 "737.6", y2 "147.1" ] []
-    , line [ class "st19", x1 "110.8", y1 "499.9", x2 "737.6", y2 "499.9" ] []
-    , line [ class "st19", x1 "110.8", y1 "493.1", x2 "737.6", y2 "493.1" ] []
-    , line [ class "st19", x1 "110.8", y1 "479.5", x2 "737.6", y2 "479.5" ] []
-    , line [ class "st19", x1 "110.8", y1 "472.8", x2 "737.6", y2 "472.8" ] []
-    , line [ class "st19", x1 "110.8", y1 "466", x2 "737.6", y2 "466" ] []
-    , line [ class "st19", x1 "110.8", y1 "459.2", x2 "737.6", y2 "459.2" ] []
-    , line [ class "st19", x1 "110.8", y1 "445.6", x2 "737.6", y2 "445.6" ] []
-    , line [ class "st19", x1 "110.8", y1 "438.8", x2 "737.6", y2 "438.8" ] []
-    , line [ class "st19", x1 "110.8", y1 "432", x2 "737.6", y2 "432" ] []
-    , line [ class "st19", x1 "110.8", y1 "425.3", x2 "737.6", y2 "425.3" ] []
-    , line [ class "st19", x1 "110.8", y1 "411.7", x2 "737.6", y2 "411.7" ] []
-    , line [ class "st19", x1 "110.8", y1 "404.9", x2 "737.6", y2 "404.9" ] []
-    , line [ class "st19", x1 "110.8", y1 "398.1", x2 "737.6", y2 "398.1" ] []
-    , line [ class "st19", x1 "110.8", y1 "391.3", x2 "737.6", y2 "391.3" ] []
-    , line [ class "st19", x1 "110.8", y1 "377.8", x2 "737.6", y2 "377.8" ] []
-    , line [ class "st19", x1 "110.8", y1 "371", x2 "737.6", y2 "371" ] []
-    , line [ class "st19", x1 "110.8", y1 "364.2", x2 "737.6", y2 "364.2" ] []
-    , line [ class "st19", x1 "110.8", y1 "357.4", x2 "737.6", y2 "357.4" ] []
-    , line [ class "st19", x1 "110.8", y1 "343.8", x2 "737.6", y2 "343.8" ] []
-    , line [ class "st19", x1 "110.8", y1 "337.1", x2 "737.6", y2 "337.1" ] []
-    , line [ class "st19", x1 "110.8", y1 "330.3", x2 "737.6", y2 "330.3" ] []
-    , line [ class "st19", x1 "110.8", y1 "323.5", x2 "737.6", y2 "323.5" ] []
-    , line [ class "st19", x1 "110.8", y1 "309.9", x2 "737.6", y2 "309.9" ] []
-    , line [ class "st19", x1 "110.8", y1 "303.1", x2 "737.6", y2 "303.1" ] []
-    , line [ class "st19", x1 "110.8", y1 "296.3", x2 "737.6", y2 "296.3" ] []
-    , line [ class "st19", x1 "110.8", y1 "289.6", x2 "737.6", y2 "289.6" ] []
-    , line [ class "st19", x1 "110.8", y1 "276", x2 "737.6", y2 "276" ] []
-    , line [ class "st19", x1 "110.8", y1 "269.2", x2 "737.6", y2 "269.2" ] []
-    , line [ class "st19", x1 "110.8", y1 "262.4", x2 "737.6", y2 "262.4" ] []
-    , line [ class "st19", x1 "110.8", y1 "255.6", x2 "737.6", y2 "255.6" ] []
-    , line [ class "st19", x1 "110.8", y1 "242.1", x2 "737.6", y2 "242.1" ] []
-    , line [ class "st19", x1 "110.8", y1 "235.3", x2 "737.6", y2 "235.3" ] []
-    , line [ class "st19", x1 "110.8", y1 "228.5", x2 "737.6", y2 "228.5" ] []
-    , line [ class "st19", x1 "110.8", y1 "221.7", x2 "737.6", y2 "221.7" ] []
-    , line [ class "st19", x1 "110.8", y1 "208.1", x2 "737.6", y2 "208.1" ] []
-    , line [ class "st19", x1 "110.8", y1 "201.4", x2 "737.6", y2 "201.4" ] []
-    , line [ class "st19", x1 "110.8", y1 "194.6", x2 "737.6", y2 "194.6" ] []
-    , line [ class "st19", x1 "110.8", y1 "187.8", x2 "737.6", y2 "187.8" ] []
-    , line [ class "st19", x1 "110.8", y1 "174.2", x2 "737.6", y2 "174.2" ] []
-    , line [ class "st19", x1 "110.8", y1 "167.4", x2 "737.6", y2 "167.4" ] []
-    , line [ class "st19", x1 "110.8", y1 "160.6", x2 "737.6", y2 "160.6" ] []
-    , line [ class "st19", x1 "110.8", y1 "153.9", x2 "737.6", y2 "153.9" ] []
-    , line [ class "st19", x1 "110.8", y1 "140.3", x2 "737.6", y2 "140.3" ] []
-    , line [ class "st19", x1 "110.8", y1 "133.5", x2 "737.6", y2 "133.5" ] []
-    , line [ class "st19", x1 "110.8", y1 "126.7", x2 "737.6", y2 "126.7" ] []
-    ]
-
-
-referenceVerticalNumbers : Int -> Int -> String -> List (Svg any)
-referenceVerticalNumbers max gap posX =
-    List.repeat 11 ""
-        |> List.indexedMap
-            (\index _ ->
-                let
-                    number =
-                        max - (index * gap) |> toString
-
-                    posY =
-                        149.63 + (toFloat index * 33.926) |> toString
-                in
-                text_ [ transform <| "matrix(1 0 0 1 " ++ posX ++ " " ++ posY ++ ")", class "z-score-white z-score-semibold st16" ] [ text number ]
-            )
-
-
-referenceHorizontalLines : Int -> List (Svg any)
-referenceHorizontalLines parts =
-    let
-        margin =
-            604.8 / toFloat parts
-    in
-    List.repeat parts ""
-        |> List.indexedMap
-            (\index _ ->
-                let
-                    posX =
-                        136 + (toFloat index * margin) |> toString
-                in
-                line [ class "month-line", x1 posX, y1 "506.5", x2 posX, y2 "119.5" ] []
-            )
-
-
-referenceHorizontalNumbers : Int -> Int -> List (Svg any)
-referenceHorizontalNumbers parts gap =
-    let
-        margin =
-            604.8 / toFloat parts
-    in
-    List.repeat parts ""
-        |> List.indexedMap
-            (\index _ ->
-                let
-                    posX =
-                        133.967 + (toFloat index * margin)
-
-                    number =
-                        (index + 1) * gap
-
-                    posX_ =
-                        (if number > 9 then
-                            posX - 1.5
-
-                         else
-                            posX
-                        )
-                            |> toString
-
-                    number_ =
-                        number |> toString
-                in
-                text_ [ transform <| "matrix(1 0 0 1 " ++ posX_ ++ " 516.5436)", class "z-score-white z-score-semibold st16" ] [ text number_ ]
-            )
