@@ -12,9 +12,7 @@ order to successfully construct an `EditableSession`?
 fetchEditableSession : SessionId -> ModelIndexedDb -> List MsgIndexedDb
 fetchEditableSession sessionId db =
     let
-        -- We allow passing the `batch`, so we could more easily, while developing, mimic slower lazy loading
-        -- of measurements.
-        -- @todo: Remove batch?
+        -- We allow passing the `batch`, so we could lazy load items, without trying to get them all at once.
         getIds property batch =
             Dict.foldl
                 (\k v accum ->

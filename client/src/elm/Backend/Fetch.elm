@@ -36,7 +36,6 @@ shouldFetch model msg =
                 False
 
             else
-                -- @todo: We don't compare it to the passed IDs. Should we?
                 hasNoSuccessValues model.childMeasurements
 
         FetchClinics ->
@@ -120,7 +119,6 @@ shouldFetch model msg =
                 False
 
             else
-                -- @todo: We don't compare it to the passed IDs. Should we?
                 hasNoSuccessValues model.motherMeasurements
 
         FetchParticipantForms ->
@@ -141,7 +139,6 @@ shouldFetch model msg =
                 False
 
             else
-                -- @todo: We don't compare it to the passed IDs. Should we?
                 hasNoSuccessValues model.people
 
         FetchParticipantsForPerson id ->
