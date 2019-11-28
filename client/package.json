@@ -55,7 +55,9 @@
     "wdio-spec-reporter": "^0.1.5",
     "wiredep": "^4.0.0"
   },
-  "engines": {},
+  "engines": {
+    "node": ">10.0"
+  },
   "scripts": {
     "test": "gulp zscore && gulp version && elm-test"
   }
