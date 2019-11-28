@@ -1202,8 +1202,8 @@ urlForManyKeys backendUrl (EndPoint endpoint_) keys =
             List.map endpoint_.keyToUrlPart keys
                 |> endpoint_.backend.manyKeys
     in
-    appendUrl backendUrl endpoint_.path
-        |> appendUrl ids
+    appendUrl endpoint_.path ids
+        |> appendUrl backendUrl
 
 
 {-| Cast String to Int.

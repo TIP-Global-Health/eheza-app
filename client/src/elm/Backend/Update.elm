@@ -22,7 +22,7 @@ import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
-import LocalData exposing (LocalData(..))
+import LocalData exposing (LocalData(..), ReadyStatus(..))
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model
@@ -49,11 +49,41 @@ updateIndexedDb currentDate nurseId msg model =
             , []
             )
 
+        FetchChildrenMeasurements ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    childMeasurements =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.childMeasurements ids
+                in
+                ( { model | childMeasurements = childMeasurements }
+                , sw.getMany childMeasurementListEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedChildrenMeasurements)
+                , []
+                )
+
         HandleFetchedChildMeasurements childId data ->
             ( { model | childMeasurements = Dict.insert childId data model.childMeasurements }
             , Cmd.none
             , []
             )
+
+        HandleFetchedChildrenMeasurements webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | childMeasurements = Dict.union dictUpdated model.childMeasurements }
+                    , Cmd.none
+                    , []
+                    )
 
         FetchClinics ->
             ( { model | clinics = Loading }
@@ -219,7 +249,46 @@ updateIndexedDb currentDate nurseId msg model =
             )
 
         HandleFetchedExpectedParticipants sessionId data ->
-            ( { model | expectedParticipants = Dict.insert sessionId data model.expectedParticipants }
+            let
+                expectedParticipants =
+                    Dict.insert sessionId data model.expectedParticipants
+
+                childrenIds =
+                    case RemoteData.toMaybe data of
+                        Just dict ->
+                            Dict.keys dict.byChildId
+
+                        Nothing ->
+                            []
+
+                motherIds =
+                    case RemoteData.toMaybe data of
+                        Just dict ->
+                            Dict.keys dict.byMotherId
+
+                        Nothing ->
+                            []
+
+                peopleIds =
+                    List.concat [ childrenIds, motherIds ]
+
+                -- Mark people to load.
+                people =
+                    List.foldl (\id accum -> Dict.insert id RemoteData.NotAsked accum) model.people peopleIds
+
+                -- Mark Mothers and Children measurements to load.
+                motherMeasurements =
+                    List.foldl (\id accum -> Dict.insert id RemoteData.NotAsked accum) model.motherMeasurements motherIds
+
+                childMeasurements =
+                    List.foldl (\id accum -> Dict.insert id RemoteData.NotAsked accum) model.childMeasurements childrenIds
+            in
+            ( { model
+                | expectedParticipants = expectedParticipants
+                , people = people
+                , motherMeasurements = motherMeasurements
+                , childMeasurements = childMeasurements
+              }
             , Cmd.none
             , []
             )
@@ -350,11 +419,41 @@ updateIndexedDb currentDate nurseId msg model =
             , []
             )
 
+        FetchMothersMeasurements ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    motherMeasurements =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.motherMeasurements ids
+                in
+                ( { model | motherMeasurements = motherMeasurements }
+                , sw.getMany motherMeasurementListEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedMothersMeasurements)
+                , []
+                )
+
         HandleFetchedMotherMeasurements motherId data ->
             ( { model | motherMeasurements = Dict.insert motherId data model.motherMeasurements }
             , Cmd.none
             , []
             )
+
+        HandleFetchedMothersMeasurements webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | motherMeasurements = Dict.union dictUpdated model.motherMeasurements }
+                    , Cmd.none
+                    , []
+                    )
 
         FetchParticipantForms ->
             ( { model | participantForms = Loading }
@@ -369,6 +468,21 @@ updateIndexedDb currentDate nurseId msg model =
             , []
             )
 
+        FetchPeople ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    peopleUpdated =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.people ids
+                in
+                ( { model | people = peopleUpdated }
+                , sw.getMany personEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchPeople)
+                , []
+                )
+
         FetchPerson id ->
             ( { model | people = Dict.insert id Loading model.people }
             , sw.get personEndpoint id
@@ -381,6 +495,21 @@ updateIndexedDb currentDate nurseId msg model =
             , Cmd.none
             , []
             )
+
+        HandleFetchPeople webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | people = Dict.union dictUpdated model.people }
+                    , Cmd.none
+                    , []
+                    )
 
         FetchSession sessionId ->
             ( { model | sessions = Dict.insert sessionId Loading model.sessions }
@@ -929,14 +1058,26 @@ makeEditableSession sessionId db =
                 |> RemoteData.andMap mothersData
                 |> RemoteData.andMap childrenData
                 |> RemoteData.andMap measurementData
+
+        ( previousCheckedIn, previousSummaryByParticipant, previousSummaryByActivity ) =
+            Dict.get sessionId db.editableSessions
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (\editableSessions ->
+                        ( LocalData.setRecalculate editableSessions.checkedIn
+                        , LocalData.setRecalculate editableSessions.summaryByParticipant
+                        , LocalData.setRecalculate editableSessions.summaryByActivity
+                        )
+                    )
+                |> Maybe.withDefault ( NotNeeded, NotNeeded, NotNeeded )
     in
     RemoteData.map
         (\offline ->
             { offlineSession = offline
             , update = NotAsked
-            , checkedIn = NotNeeded
-            , summaryByParticipant = NotNeeded
-            , summaryByActivity = NotNeeded
+            , checkedIn = previousCheckedIn
+            , summaryByParticipant = previousSummaryByParticipant
+            , summaryByActivity = previousSummaryByActivity
             }
         )
         offlineSession
@@ -1179,7 +1320,7 @@ summarizeByActivity session checkedIn_ =
 {-| Who is checked in, considering both explicit check in and anyone who has
 any completed activity?
 
-It depdends on Measurements at OfflineSession being fully loaded,
+It depends on Measurements at OfflineSession being fully loaded,
 and for this reason we start with 'LocalData.map'
 
 -}
@@ -1189,7 +1330,7 @@ cacheCheckedIn session =
         (\_ ->
             let
                 -- A mother is checked in if explicitly checked in or has any completed
-                -- activites.
+                -- activities.
                 mothers =
                     Dict.filter
                         (\motherId _ -> motherIsCheckedIn motherId session)
@@ -1232,6 +1373,7 @@ calculateOfflineSessionMeasurements sessionId offlineSession db =
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.map (\data -> ( childId, data ))
                     )
+                |> List.filter RemoteData.isSuccess
                 |> RemoteData.fromList
                 |> RemoteData.map Dict.fromList
 
@@ -1243,6 +1385,7 @@ calculateOfflineSessionMeasurements sessionId offlineSession db =
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.map (\data -> ( motherId, data ))
                     )
+                |> List.filter RemoteData.isSuccess
                 |> RemoteData.fromList
                 |> RemoteData.map Dict.fromList
 
@@ -1284,6 +1427,7 @@ calculateOfflineSessionMeasurements sessionId offlineSession db =
                 , current = current
                 , previous = previous
                 }
+                NoRecalculate
         )
         historicalMeasurementData
         currentMeasurementData

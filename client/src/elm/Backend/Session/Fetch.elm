@@ -12,43 +12,30 @@ order to successfully construct an `EditableSession`?
 fetchEditableSession : SessionId -> ModelIndexedDb -> List MsgIndexedDb
 fetchEditableSession sessionId db =
     let
-        participantData =
-            Dict.get sessionId db.expectedParticipants
-                |> Maybe.withDefault NotAsked
+        -- We allow passing the `batch`, so we could lazy load items, without trying to get them all at once.
+        getIds property batch =
+            Dict.foldl
+                (\k v accum ->
+                    if List.length accum >= batch then
+                        accum
 
-        childrenIdData =
-            RemoteData.map
-                (.byChildId >> Dict.keys)
-                participantData
+                    else if RemoteData.isNotAsked v then
+                        k :: accum
 
-        motherIdData =
-            RemoteData.map
-                (.byMotherId >> Dict.keys)
-                participantData
+                    else
+                        accum
+                )
+                []
+                property
 
-        -- It would be more efficient here to have messages that could fetch a
-        -- whole bunch of people at once. However, since we're talking to
-        -- IndexedDb, it's unlikely to make any noticeable difference in
-        -- practice. We could look at it if there is any perceptible delay.
-        fetchChildren =
-            childrenIdData
-                |> RemoteData.map (List.map FetchPerson)
-                |> RemoteData.withDefault []
+        fetchPeople =
+            [ FetchPeople <| getIds db.people 1000 ]
 
-        fetchMothers =
-            motherIdData
-                |> RemoteData.map (List.map FetchPerson)
-                |> RemoteData.withDefault []
+        fetchChildrenMeasurements =
+            [ FetchChildrenMeasurements <| getIds db.childMeasurements 1000 ]
 
-        fetchChildMeasurements =
-            childrenIdData
-                |> RemoteData.map (List.map FetchChildMeasurements)
-                |> RemoteData.withDefault []
-
-        fetchMotherMeasurements =
-            motherIdData
-                |> RemoteData.map (List.map FetchMotherMeasurements)
-                |> RemoteData.withDefault []
+        fetchMothersMeasurements =
+            [ FetchMothersMeasurements <| getIds db.motherMeasurements 1000 ]
 
         alwaysFetch =
             [ FetchSession sessionId
@@ -60,8 +47,7 @@ fetchEditableSession sessionId db =
     in
     List.concat
         [ alwaysFetch
-        , fetchMotherMeasurements
-        , fetchChildMeasurements
-        , fetchMothers
-        , fetchChildren
+        , fetchMothersMeasurements
+        , fetchChildrenMeasurements
+        , fetchPeople
         ]

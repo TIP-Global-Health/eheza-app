@@ -1,7 +1,7 @@
 module LocalConfig exposing (localConfigs)
 
-import Config.Model as Config exposing (Model)
 import AssocList as Dict exposing (..)
+import Config.Model as Config exposing (Model)
 import Pusher.Model exposing (Cluster(..), PusherAppKey)
 import Rollbar
 
