@@ -213,7 +213,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     }
     $output = [];
     foreach ($batch_by_node_type as $node_type => $items) {
-      $handler_name = $handler_name = $handlers_by_types[$item->type];
+      $handler_name = $handlers_by_types[$node_type];
       $sub_handler = restful_get_restful_handler($handler_name);
       $sub_handler->setAccount($account);
 

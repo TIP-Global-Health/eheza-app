@@ -39,7 +39,7 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
   }
 
   public function viewWithDbSelect(array $node_ids) {
-    $query = $this->getQueryForViewWithDbSelect($node_ids);db_select('node', 'node');
+    $query = $this->getQueryForViewWithDbSelect($node_ids);
 
     $this->alterQueryForViewWithDbSelect($query);
 
