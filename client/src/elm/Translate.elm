@@ -2939,7 +2939,7 @@ translationSet trans =
             }
 
         SelectAntenatalVisit ->
-            { english = "Select Antenatal Visit"
+            { english = "Select an Antenatal Visit"
             , kinyarwanda = Nothing
             }
 
