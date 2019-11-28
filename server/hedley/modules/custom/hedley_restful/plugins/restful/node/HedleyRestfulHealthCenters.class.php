@@ -28,7 +28,7 @@ class HedleyRestfulHealthCenters extends HedleyRestfulSyncBase {
     hedley_restful_join_field_to_query($query, 'node', 'field_catchment_area');
 
     // Get the UUID of the health center.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_catchment_area.field_catchment_area_target_id");
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid');
   }
 
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
