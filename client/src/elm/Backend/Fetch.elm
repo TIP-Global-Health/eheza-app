@@ -17,6 +17,14 @@ or we will enter an infinite loop.
 -}
 shouldFetch : ModelIndexedDb -> MsgIndexedDb -> Bool
 shouldFetch model msg =
+    let
+        hasNoSuccessValues dict =
+            dict
+                |> Dict.values
+                |> List.filter (\v -> RemoteData.isLoading v || RemoteData.isNotAsked v)
+                |> List.isEmpty
+                |> not
+    in
     case msg of
         FetchChildMeasurements childId ->
             Dict.get childId model.childMeasurements
@@ -24,15 +32,12 @@ shouldFetch model msg =
                 |> isNotAsked
 
         FetchChildrenMeasurements ids ->
-            -- @todo: Improve
-            case List.head ids of
-                Nothing ->
-                    True
+            if List.isEmpty ids then
+                False
 
-                Just id ->
-                    Dict.get id model.childMeasurements
-                        |> Maybe.withDefault NotAsked
-                        |> isNotAsked
+            else
+                -- @todo: We don't compare it to the passed IDs. Should we?
+                hasNoSuccessValues model.childMeasurements
 
         FetchClinics ->
             isNotAsked model.clinics
@@ -41,18 +46,11 @@ shouldFetch model msg =
             let
                 -- Make sure we don't still have measurements being lazy loaded. If we do, allow rebuilding the
                 -- `EditableSession`.
-                hasMeasurementsNotSuccess dict =
-                    dict
-                        |> Dict.values
-                        |> List.filter (not << RemoteData.isSuccess)
-                        |> List.isEmpty
-                        |> not
-
                 hasMothersMeasurementsNotSuccess =
-                    hasMeasurementsNotSuccess model.motherMeasurements
+                    hasNoSuccessValues model.motherMeasurements
 
                 hasChildrenMeasurementsNotSuccess =
-                    hasMeasurementsNotSuccess model.childMeasurements
+                    hasNoSuccessValues model.childMeasurements
 
                 sessionNotSuccess =
                     Dict.get id model.editableSessions
@@ -118,15 +116,12 @@ shouldFetch model msg =
                 |> isNotAsked
 
         FetchMothersMeasurements ids ->
-            -- @todo: Improve
-            case List.head ids of
-                Nothing ->
-                    True
+            if List.isEmpty ids then
+                False
 
-                Just id ->
-                    Dict.get id model.motherMeasurements
-                        |> Maybe.withDefault NotAsked
-                        |> isNotAsked
+            else
+                -- @todo: We don't compare it to the passed IDs. Should we?
+                hasNoSuccessValues model.motherMeasurements
 
         FetchParticipantForms ->
             isNotAsked model.participantForms
@@ -142,15 +137,12 @@ shouldFetch model msg =
                 |> isNotAsked
 
         FetchPeople ids ->
-            -- @todo: Improve
-            case List.head ids of
-                Nothing ->
-                    True
+            if List.isEmpty ids then
+                False
 
-                Just id ->
-                    Dict.get id model.people
-                        |> Maybe.withDefault NotAsked
-                        |> isNotAsked
+            else
+                -- @todo: We don't compare it to the passed IDs. Should we?
+                hasNoSuccessValues model.people
 
         FetchParticipantsForPerson id ->
             Dict.get id model.participantsByPerson
