@@ -9,6 +9,8 @@ type LocalData a
     | Ready a ReadyStatus
 
 
+{-| When LocalData was calculated, and we want to re-calculate it, we will mark it as `Ready a Recalculate`.
+-}
 type ReadyStatus
     = Recalculate
     | NoRecalculate
@@ -17,7 +19,7 @@ type ReadyStatus
 toMaybe : LocalData a -> Maybe a
 toMaybe data =
     case data of
-        Ready a status ->
+        Ready a _ ->
             Just a
 
         _ ->

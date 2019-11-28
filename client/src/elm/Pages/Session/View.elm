@@ -42,8 +42,6 @@ view language currentDate zscores nurse sessionId page model db =
             (\session -> viewFoundSession language currentDate zscores nurse ( sessionId, session ) page model db)
             (wrapError language sessionId)
             sessionData
-
-        -- , div [ class "ui segment" ] [ text <| Debug.toString db.motherMeasurements ]
         ]
 
 
