@@ -1,16 +1,23 @@
-module LocalData exposing (LocalData(..), isNotNeeded, map, toMaybe, unwrap, withDefault)
+module LocalData exposing (LocalData(..), ReadyStatus(..), isNotNeeded, map, toMaybe, unwrap, withDefault)
+
+{-| Data which we have locally, but takes time to calculate.
+-}
 
 
 type LocalData a
     = NotNeeded
-    | Calcualting
-    | Ready a
+    | Ready a ReadyStatus
+
+
+type ReadyStatus
+    = Recalculate
+    | NoRecalculate
 
 
 toMaybe : LocalData a -> Maybe a
 toMaybe data =
     case data of
-        Ready a ->
+        Ready a status ->
             Just a
 
         _ ->
@@ -25,14 +32,11 @@ withDefault default data =
 map : (a -> b) -> LocalData a -> LocalData b
 map func data =
     case data of
-        Ready a ->
-            func a |> Ready
+        Ready a status ->
+            Ready (func a) status
 
         NotNeeded ->
             NotNeeded
-
-        Calcualting ->
-            Calcualting
 
 
 unwrap : b -> (a -> b) -> LocalData a -> b
@@ -43,4 +47,12 @@ unwrap default func data =
 
 isNotNeeded : LocalData a -> Bool
 isNotNeeded data =
-    data == NotNeeded
+    case data of
+        Ready _ Recalculate ->
+            True
+
+        NotNeeded ->
+            True
+
+        _ ->
+            False

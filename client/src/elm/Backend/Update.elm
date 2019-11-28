@@ -22,7 +22,7 @@ import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
-import LocalData exposing (LocalData(..))
+import LocalData exposing (LocalData(..), ReadyStatus(..))
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model
@@ -1058,12 +1058,26 @@ makeEditableSession sessionId db =
                 |> RemoteData.andMap mothersData
                 |> RemoteData.andMap childrenData
                 |> RemoteData.andMap measurementData
+
+        previousCheckedIn =
+            Dict.get sessionId db.editableSessions
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (\editableSessions ->
+                        case editableSessions.checkedIn of
+                            Ready val _ ->
+                                Ready val Recalculate
+
+                            _ ->
+                                NotNeeded
+                    )
+                |> Maybe.withDefault NotNeeded
     in
     RemoteData.map
         (\offline ->
             { offlineSession = offline
             , update = NotAsked
-            , checkedIn = NotNeeded
+            , checkedIn = previousCheckedIn
             , summaryByParticipant = NotNeeded
             , summaryByActivity = NotNeeded
             }
@@ -1308,7 +1322,7 @@ summarizeByActivity session checkedIn_ =
 {-| Who is checked in, considering both explicit check in and anyone who has
 any completed activity?
 
-It depdends on Measurements at OfflineSession being fully loaded,
+It depends on Measurements at OfflineSession being fully loaded,
 and for this reason we start with 'LocalData.map'
 
 -}
@@ -1318,7 +1332,7 @@ cacheCheckedIn session =
         (\_ ->
             let
                 -- A mother is checked in if explicitly checked in or has any completed
-                -- activites.
+                -- activities.
                 mothers =
                     Dict.filter
                         (\motherId _ -> motherIsCheckedIn motherId session)
@@ -1417,6 +1431,7 @@ calculateOfflineSessionMeasurements sessionId offlineSession db =
                 , current = current
                 , previous = previous
                 }
+                NoRecalculate
         )
         historicalMeasurementData
         currentMeasurementData
