@@ -56,7 +56,7 @@ viewBMIForEGA language =
         [ class "z-score boys"
         , x "0px"
         , y "0px"
-        , viewBox "0 0 841.9 595.3"
+        , viewBox "25 25 841.9 595.3"
         ]
         [ frame2 language
         , labels2 language Translate.Yes Translate.Yes
@@ -158,7 +158,7 @@ viewFundalHeightForEGA language =
         [ class "z-score boys"
         , x "0px"
         , y "0px"
-        , viewBox "0 0 841.9 595.3"
+        , viewBox "25 25 841.9 595.3"
         ]
         [ frame2 language
         , labels2 language Translate.No Translate.No
