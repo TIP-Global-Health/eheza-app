@@ -199,7 +199,7 @@ viewParticipant language currentDate db id person =
                 [ div [ class "action-icon-wrapper" ]
                     [ span
                         [ class "action-icon forward"
-                        , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage id
+                        , onClick <| SetActivePage <| UserPage <| EncounterTypesPage id
                         ]
                         []
                     ]

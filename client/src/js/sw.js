@@ -118,10 +118,18 @@ dbSync.version(6).stores({
 });
 
 dbSync.version(7).stores({
-    nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+prenatal_participant],[type+adult]',  
+    nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+prenatal_participant],[type+adult]',
 }).upgrade(function (tx) {
     return tx.nodes.where({
         type: 'clinic'
+    }).delete();
+});
+
+dbSync.version(8).stores({
+    nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+prenatal_participant],[type+adult]',
+}).upgrade(function (tx) {
+    return tx.nodes.where({
+        type: 'prenatal_participant'
     }).delete();
 });
 

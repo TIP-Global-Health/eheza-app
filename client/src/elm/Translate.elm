@@ -29,6 +29,7 @@ import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model exposing (EducationLevel(..), Gender(..), HIVStatus(..), MaritalStatus(..), ModeOfDelivery(..), VaginalDelivery(..))
+import Backend.PrenatalParticipant.Model exposing (EncounterType(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
@@ -250,6 +251,7 @@ type TranslationId
     | Ega
     | EgaHeader
     | EmptyString
+    | EncounterType EncounterType
     | EndEncounter
     | EndGroupEncounter
     | EnterPairingCode
@@ -273,6 +275,7 @@ type TranslationId
     | FatherName
     | FatherNationalId
     | FilterByName
+    | FirstAntenatalVisit
     | FirstName
     | FormError (ErrorValue ValidationError)
     | FormField String
@@ -305,6 +308,8 @@ type TranslationId
     | HttpError Http.Error
     | HypertensionBeforePregnancy
     | IncompleteCervixPreviousPregnancy
+    | IndividualEncounter
+    | IndividualEncounterTypes
     | KilogramShorthand
     | LastChecked
     | Legs
@@ -406,6 +411,7 @@ type TranslationId
     | PreeclampsiaPreviousPregnancy
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalEncounter
+    | PregnancyConcludedLabel
     | PreviousCSectionScar
     | PreviousDelivery
     | PreviousDeliveryPeriods PreviousDeliveryPeriod
@@ -422,6 +428,7 @@ type TranslationId
     | ReceivedDewormingPill
     | ReceivedIronFolicAcid
     | ReceivedMosquitoNet
+    | RecordPregnancyOutcome
     | Register
     | RegisterAParticipant
     | RegisterHelper
@@ -455,7 +462,9 @@ type TranslationId
     | SearchHelperFamilyMember
     | SecondName
     | Sector
+    | SelectAntenatalVisit
     | SelectDangerSigns
+    | SelectEncounterType
     | SelectGroup
     | SelectProgram
     | SelectLanguage
@@ -483,6 +492,7 @@ type TranslationId
     | ServiceWorkerStatus
     | SevereHemorrhagingPreviousDelivery
     | StillbornPreviousDelivery
+    | SubsequentAntenatalVisit
     | SuccessiveAbortions
     | SuccessivePrematureDeliveries
     | GroupEncounterClosed
@@ -1485,6 +1495,23 @@ translationSet trans =
             , kinyarwanda = Just ""
             }
 
+        EncounterType type_ ->
+            case type_ of
+                AntenatalEncounter ->
+                    { english = "Antenatal"
+                    , kinyarwanda = Nothing
+                    }
+
+                InmmunizationEncounter ->
+                    { english = "Inmmunization"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounter ->
+                    { english = "Nutrition"
+                    , kinyarwanda = Nothing
+                    }
+
         EndEncounter ->
             { english = "End Encounter"
             , kinyarwanda = Nothing
@@ -1716,6 +1743,11 @@ translationSet trans =
 
         FilterByName ->
             { english = "Filter by name"
+            , kinyarwanda = Nothing
+            }
+
+        FirstAntenatalVisit ->
+            { english = "First Antenatal Visit"
             , kinyarwanda = Nothing
             }
 
@@ -1963,6 +1995,16 @@ translationSet trans =
 
         IncompleteCervixPreviousPregnancy ->
             { english = "Incomplete Cervix in previous pregnancy"
+            , kinyarwanda = Nothing
+            }
+
+        IndividualEncounter ->
+            { english = "Individual Encounter"
+            , kinyarwanda = Nothing
+            }
+
+        IndividualEncounterTypes ->
+            { english = "Individual Encounter Types"
             , kinyarwanda = Nothing
             }
 
@@ -2624,6 +2666,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PregnancyConcludedLabel ->
+            { english = "or Pregnancy Concluded"
+            , kinyarwanda = Nothing
+            }
+
         PreviousCSectionScar ->
             { english = "Previous C-section scar"
             , kinyarwanda = Nothing
@@ -2713,6 +2760,11 @@ translationSet trans =
 
         ReceivedMosquitoNet ->
             { english = "Has the mother received a mosquito net"
+            , kinyarwanda = Nothing
+            }
+
+        RecordPregnancyOutcome ->
+            { english = "Record Pregnancy Outcome"
             , kinyarwanda = Nothing
             }
 
@@ -2886,8 +2938,18 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        SelectAntenatalVisit ->
+            { english = "Select an Antenatal Visit"
+            , kinyarwanda = Nothing
+            }
+
         SelectDangerSigns ->
             { english = "Please select one or more of the danger signs the patient is experiencing"
+            , kinyarwanda = Nothing
+            }
+
+        SelectEncounterType ->
+            { english = "Select encounter type"
             , kinyarwanda = Nothing
             }
 
@@ -3023,6 +3085,11 @@ translationSet trans =
 
         StillbornPreviousDelivery ->
             { english = "Stillborn in previous delivery"
+            , kinyarwanda = Nothing
+            }
+
+        SubsequentAntenatalVisit ->
+            { english = "Subsequent Antenatal Visit"
             , kinyarwanda = Nothing
             }
 
@@ -3460,6 +3527,11 @@ translateActivePage page =
 
                 PrenatalActivityPage _ _ ->
                     { english = "Antenatal Activity"
+                    , kinyarwanda = Nothing
+                    }
+
+                EncounterTypesPage _ ->
+                    { english = "Encounter Types"
                     , kinyarwanda = Nothing
                     }
 

@@ -13,6 +13,7 @@ import Html.Events exposing (onClick)
 import Pages.Clinical.View
 import Pages.Clinics.View
 import Pages.Device.View
+import Pages.EncounterTypes.View
 import Pages.MyAccount.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
@@ -274,6 +275,10 @@ viewUserPage page model configured =
                         in
                         Pages.PrenatalActivity.View.view model.language currentDate id activity model.indexedDb page
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalActivity id activity)
+                            |> flexPageWrapper model
+
+                    EncounterTypesPage id ->
+                        Pages.EncounterTypes.View.view model.language currentDate id
                             |> flexPageWrapper model
 
             else
