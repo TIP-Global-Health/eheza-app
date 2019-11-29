@@ -513,7 +513,8 @@ viewPatientProgressPane language currentDate measurements =
                 |> div [ class "visits-section" ]
             , div [ class "caption trends" ] [ text <| translate language Translate.ProgressTrends ++ ":" ]
             , div [ class "trends-section" ]
-                [ div [ class "bmi-info" ] [ viewBMIForEGA language ]
+                [ viewMarkers
+                , div [ class "bmi-info" ] [ viewBMIForEGA language ]
                 , div [ class "fundal-height-info" ] [ viewFundalHeightForEGA language ]
                 ]
             ]

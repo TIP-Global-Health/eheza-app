@@ -199,6 +199,18 @@ viewFundalHeightForEGA language =
             , ( dimensionsPx.left + (42 - horizontalMin) * horizontalStep, dimensionsPx.top )
             , ( dimensionsPx.left, dimensionsPx.bottom - (20 - verticalMin) * verticalStep )
             ]
+
+        measurements =
+            [ ( dimensionsPx.left + (28 - horizontalMin) * horizontalStep
+              , dimensionsPx.bottom - (30 - verticalMin) * verticalStep
+              )
+            , ( dimensionsPx.left + (32 - horizontalMin) * horizontalStep
+              , dimensionsPx.bottom - (34 - verticalMin) * verticalStep
+              )
+            , ( dimensionsPx.left + (38 - horizontalMin) * horizontalStep
+              , dimensionsPx.bottom - (35.5 - verticalMin) * verticalStep
+              )
+            ]
     in
     svg
         [ class "z-score boys"
@@ -225,6 +237,7 @@ viewFundalHeightForEGA language =
             , drawPolygon greenPoints "green-area"
             , drawPolygon topYellowPoints "yellow-area"
             , drawPolygon topRedPoints "red-area"
+            , drawPolyline measurements "child-data"
             ]
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> toString)
@@ -328,7 +341,16 @@ referenceVerticalNumbers parts min gap posX =
 
 
 drawPolygon : List ( Float, Float ) -> String -> Svg any
-drawPolygon points_ class_ =
+drawPolygon =
+    drawPolyshape polygon
+
+
+drawPolyline : List ( Float, Float ) -> String -> Svg any
+drawPolyline =
+    drawPolyshape polyline
+
+
+drawPolyshape shape points_ class_ =
     points_
         |> List.map
             (\( x, y ) ->
@@ -337,7 +359,7 @@ drawPolygon points_ class_ =
         |> String.join " "
         |> points
         |> (\pointList ->
-                polygon
+                shape
                     [ class class_
                     , pointList
                     ]
