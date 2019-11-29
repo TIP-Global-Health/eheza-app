@@ -47,17 +47,17 @@ viewContent language =
                 , span [ class "icon-back" ] []
                 ]
 
-        prenatalEncounterButton =
+        individualEncounterButton =
             button
                 [ class "ui primary button individual-assessment"
                 , onClick <| SetActivePage <| UserPage PrenatalParticipantsPage
                 ]
                 [ span [ class "icon" ] []
-                , span [ class "text" ] [ text <| translate language Translate.PrenatalEncounter ]
+                , span [ class "text" ] [ text <| translate language Translate.IndividualEncounter ]
                 , span [ class "icon-back" ] []
                 ]
     in
     [ p [] [ text <| translate language Translate.WhatDoYouWantToDo ]
+    , individualEncounterButton
     , groupAssessmentButton
-    , prenatalEncounterButton
     ]

@@ -21,6 +21,10 @@ class HedleyRestfulPrenatalParticipants extends HedleyRestfulSyncBase {
       'sub_property' => 'field_uuid',
     ];
 
+    $public_fields['encounter_type'] = [
+      'property' => 'field_encounter_type',
+    ];
+
     $public_fields['expected'] = [
       'property' => 'field_expected',
       'process_callbacks' => [

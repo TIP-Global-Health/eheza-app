@@ -135,6 +135,7 @@ type UserPage
     | RelationshipPage PersonId PersonId -- create or edit a relationship between these persons.
     | PrenatalEncounterPage PrenatalEncounterId -- prenatal activities index
     | PrenatalActivityPage PrenatalEncounterId PrenatalActivity -- record prenatal activity
+    | EncounterTypesPage PersonId -- this is where we select the type of encounter we're interested in.
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it
