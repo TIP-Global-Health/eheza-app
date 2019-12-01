@@ -90,6 +90,9 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
       $item->person = $item->field_uuid_of_person;
 
       unset($item->field_date_measured);
+      unset($item->field_nurse);
+      unset($item->field_session);
+      unset($item->field_person);
       unset($item->field_uuid_of_nurse);
       unset($item->field_uuid_of_session);
       unset($item->field_uuid_of_person);
