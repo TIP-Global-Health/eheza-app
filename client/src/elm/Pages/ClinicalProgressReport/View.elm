@@ -504,6 +504,63 @@ viewPatientProgressPane language currentDate measurements =
 
         allEncountersMeasurements =
             [ measurements ]
+
+        egaBmiValues =
+            allEncountersMeasurements
+                |> List.filterMap
+                    (\measurements ->
+                        getLmpMeasurement measurements
+                            |> Maybe.map
+                                (\lmpDate ->
+                                    let
+                                        bmi =
+                                            measurements.nutrition
+                                                |> Maybe.map
+                                                    (\measurement ->
+                                                        let
+                                                            height =
+                                                                Tuple.second measurement
+                                                                    |> .value
+                                                                    |> .height
+                                                                    |> (\(Backend.Measurement.Model.HeightInCm cm) -> cm)
+
+                                                            weight =
+                                                                Tuple.second measurement
+                                                                    |> .value
+                                                                    |> .weight
+                                                                    |> (\(Backend.Measurement.Model.WeightInKg kg) -> kg)
+                                                        in
+                                                        calculateBmi (Just height) (Just weight)
+                                                            |> Maybe.withDefault 0
+                                                    )
+                                                |> Maybe.withDefault 0
+                                    in
+                                    ( diffDays lmpDate currentDate, bmi )
+                                )
+                    )
+
+        egaFundalHeightValues =
+            allEncountersMeasurements
+                |> List.filterMap
+                    (\measurements ->
+                        getLmpMeasurement measurements
+                            |> Maybe.map
+                                (\lmpDate ->
+                                    let
+                                        fundalHeight =
+                                            measurements.obstetricalExam
+                                                |> Maybe.map
+                                                    (\measurement ->
+                                                        Tuple.second measurement
+                                                            |> .value
+                                                            |> .fundalHeight
+                                                            |> (\(Backend.Measurement.Model.HeightInCm cm) -> cm)
+                                                    )
+                                                |> Maybe.withDefault 0
+                                    in
+                                    ( diffDays lmpDate currentDate, fundalHeight )
+                                )
+                    )
     in
     div [ class "patient-progress" ]
         [ viewItemHeading language Translate.PatientProgress "blue"
@@ -527,13 +584,13 @@ viewPatientProgressPane language currentDate measurements =
                 , div [ class "bmi-info" ]
                     [ viewChartHeading Translate.BMI
                     , heightWeightBMITable language currentDate allEncountersMeasurements
-                    , viewBMIForEGA language
+                    , viewBMIForEGA language egaBmiValues
                     , illustrativePurposes language
                     ]
                 , div [ class "fundal-height-info" ]
                     [ viewChartHeading Translate.FundalHeight
                     , fundalHeightTable language currentDate allEncountersMeasurements
-                    , viewFundalHeightForEGA language
+                    , viewFundalHeightForEGA language egaFundalHeightValues
                     , illustrativePurposes language
                     ]
                 ]

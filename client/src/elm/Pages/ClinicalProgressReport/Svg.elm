@@ -53,8 +53,8 @@ heightPx =
     dimensionsPx.bottom - dimensionsPx.top
 
 
-viewBMIForEGA : Language -> Html any
-viewBMIForEGA language =
+viewBMIForEGA : Language -> List ( Int, Float ) -> Html any
+viewBMIForEGA language points =
     let
         verticalParts =
             18
@@ -67,6 +67,15 @@ viewBMIForEGA language =
 
         verticalStep =
             heightPx / toFloat (verticalMax - verticalMin)
+
+        horizontalMin =
+            0
+
+        horizontalMax =
+            42
+
+        horizontalStep =
+            widthPx / toFloat (horizontalMax - horizontalMin)
 
         bottomRedPoints =
             [ ( dimensionsPx.left, dimensionsPx.bottom )
@@ -99,6 +108,24 @@ viewBMIForEGA language =
             , ( dimensionsPx.right, dimensionsPx.bottom - (30 - verticalMin) * verticalStep )
             , ( dimensionsPx.left, dimensionsPx.bottom - (30 - verticalMin) * verticalStep )
             ]
+
+        measurements =
+            points
+                |> List.filterMap
+                    (\( egaDays, bmi_ ) ->
+                        let
+                            ega =
+                                toFloat egaDays / 7 - horizontalMin
+
+                            bmi =
+                                bmi_ - verticalMin
+                        in
+                        if withinRange ega horizontalMin horizontalMax && withinRange bmi verticalMin verticalMax then
+                            Just ( dimensionsPx.left + ega * horizontalStep, dimensionsPx.bottom - bmi * verticalStep )
+
+                        else
+                            Nothing
+                    )
     in
     svg
         [ class "z-score boys"
@@ -124,6 +151,7 @@ viewBMIForEGA language =
             , drawPolygon yellowPoints "yellow-area"
             , drawPolygon greenPoints "green-area"
             , drawPolygon bottomRedPoints "red-area"
+            , drawPolyline measurements "child-data"
             ]
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> toString)
@@ -134,8 +162,8 @@ viewBMIForEGA language =
         ]
 
 
-viewFundalHeightForEGA : Language -> Html any
-viewFundalHeightForEGA language =
+viewFundalHeightForEGA : Language -> List ( Int, Float ) -> Html any
+viewFundalHeightForEGA language points =
     let
         verticalParts =
             15
@@ -201,16 +229,22 @@ viewFundalHeightForEGA language =
             ]
 
         measurements =
-            [ ( dimensionsPx.left + (28 - horizontalMin) * horizontalStep
-              , dimensionsPx.bottom - (30 - verticalMin) * verticalStep
-              )
-            , ( dimensionsPx.left + (32 - horizontalMin) * horizontalStep
-              , dimensionsPx.bottom - (34 - verticalMin) * verticalStep
-              )
-            , ( dimensionsPx.left + (38 - horizontalMin) * horizontalStep
-              , dimensionsPx.bottom - (35.5 - verticalMin) * verticalStep
-              )
-            ]
+            points
+                |> List.filterMap
+                    (\( egaDays, height_ ) ->
+                        let
+                            ega =
+                                toFloat egaDays / 7 - horizontalMin
+
+                            height =
+                                height_ - verticalMin
+                        in
+                        if withinRange ega horizontalMin horizontalMax && withinRange height verticalMin verticalMax then
+                            Just ( dimensionsPx.left + ega * horizontalStep, dimensionsPx.bottom - height * verticalStep )
+
+                        else
+                            Nothing
+                    )
     in
     svg
         [ class "z-score boys"
@@ -387,3 +421,12 @@ frame =
             ]
             []
         ]
+
+
+withinRange : comparable -> comparable -> comparable -> Bool
+withinRange value min max =
+    if value < 0 || value > (max - min) then
+        False
+
+    else
+        True
