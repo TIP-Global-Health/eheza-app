@@ -385,6 +385,7 @@ type FetalPresentation
     | FetalBreech
     | Cephalic
     | Twins
+    | Unknown
 
 
 type CSectionScar

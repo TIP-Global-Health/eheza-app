@@ -486,6 +486,7 @@ function hedley_activity_field_default_field_bases() {
         'cephalic' => 'Cephalic',
         'breech' => 'Breech',
         'twins' => 'Twins',
+        'unknown' => 'Unknown',
       ),
       'allowed_values_function' => '',
     ),

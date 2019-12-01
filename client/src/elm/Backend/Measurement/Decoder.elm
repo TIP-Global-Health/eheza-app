@@ -650,6 +650,9 @@ decodeFetalPresentation =
                     "twins" ->
                         succeed Twins
 
+                    "unknown" ->
+                        succeed Unknown
+
                     _ ->
                         fail <| s ++ " is not a recognized FetalPresentation"
             )

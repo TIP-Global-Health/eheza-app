@@ -1821,6 +1821,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Backend.Measurement.Model.Unknown ->
+                    { english = "Unknown"
+                    , kinyarwanda = Nothing
+                    }
+
         Fetch ->
             { english = "Fetch"
             , kinyarwanda = Just "Gushakisha"

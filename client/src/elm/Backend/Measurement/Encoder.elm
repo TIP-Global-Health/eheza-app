@@ -584,6 +584,9 @@ encodeFetalPresentation sign =
             Twins ->
                 "twins"
 
+            Unknown ->
+                "unknown"
+
 
 encodeHeightInCm : HeightInCm -> Value
 encodeHeightInCm (HeightInCm cm) =

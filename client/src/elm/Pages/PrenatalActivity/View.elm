@@ -1826,7 +1826,7 @@ viewObstetricalExamForm language currentDate assembled form =
                 [ alerts.fetalPresentation ]
             ]
         , viewCheckBoxSelectInput language
-            [ Transverse, Cephalic ]
+            [ Transverse, Cephalic, Unknown ]
             [ FetalBreech, Twins ]
             form.fetalPresentation
             SetObstetricalExamFetalPresentation
