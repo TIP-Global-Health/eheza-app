@@ -53,7 +53,7 @@ wrapError language sessionId errorHtml =
             [ class "ui basic head segment" ]
             [ h1
                 [ class "ui header" ]
-                [ text <| translate language <| Translate.GroupEncounterLoading sessionId ]
+                [ text <| translate language Translate.GroupEncounterLoading ]
             , a
                 [ class "link-back"
                 , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Nothing
