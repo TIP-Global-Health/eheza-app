@@ -1,4 +1,4 @@
-module Pages.PrenatalEncounter.Utils exposing (calculateEDDandEGADays, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generatePara)
+module Pages.PrenatalEncounter.Utils exposing (calculateEDDandEGADays, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generatePara, getLmpMeasurement)
 
 import Backend.Measurement.Model exposing (..)
 import Date.Extra as Date exposing (Interval(Day))
@@ -71,3 +71,9 @@ generatePara value =
         ++ toString (value.preTermPregnancy + value.stillbirthsPreTerm)
         ++ toString value.abortions
         ++ toString value.liveChildren
+
+
+getLmpMeasurement : PrenatalMeasurements -> Maybe NominalDate
+getLmpMeasurement measurements =
+    measurements.lastMenstrualPeriod
+        |> Maybe.map (Tuple.second >> .value >> .date)

@@ -12,15 +12,17 @@ import Date
 import Date.Extra exposing (Interval(Day))
 import EveryDict
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, toLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, diffDays, toLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (unwrap)
 import Pages.ClinicalProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
 import Pages.DemographicsReport.View exposing (viewHeader, viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalEncounter.Utils exposing (calculateEDDandEGADays, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generatePara)
+import Pages.PrenatalActivity.Utils exposing (calculateBmi)
+import Pages.PrenatalEncounter.Utils exposing (calculateEDDandEGADays, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generatePara, getLmpMeasurement)
 import PrenatalActivity.Model
     exposing
         ( PregnancyTrimester(..)
@@ -37,6 +39,7 @@ import PrenatalActivity.Utils
         , getEncounterTrimesterData
         )
 import RemoteData exposing (RemoteData(..), WebData)
+import Round
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.WebData exposing (viewWebData)
@@ -119,8 +122,7 @@ viewHeaderPane : Language -> NominalDate -> Person -> PrenatalMeasurements -> Ht
 viewHeaderPane language currentDate mother measurements =
     let
         ( edd, ega ) =
-            measurements.lastMenstrualPeriod
-                |> Maybe.map (Tuple.second >> .value >> .date)
+            getLmpMeasurement measurements
                 |> generateEDDandEGA language currentDate ( "--/--/----", "----" )
 
         obstetricHistoryValue =
@@ -243,8 +245,7 @@ viewPatientProgressPane language currentDate measurements =
             currentDate
 
         maybeLmpDate =
-            measurements.lastMenstrualPeriod
-                |> Maybe.map (Tuple.second >> .value >> .date)
+            getLmpMeasurement measurements
 
         -- Right now we have only the current encounter to display.
         encountersTrimestersData =
@@ -494,6 +495,15 @@ viewPatientProgressPane language currentDate measurements =
                     , div [ class "visits" ] visitsView
                     ]
                 ]
+
+        viewChartHeading transId =
+            div [ class "chart-heading" ]
+                [ img [ src <| "assets/images/icon-gray-circle-small.png" ] []
+                , span [] [ text <| translate language transId ]
+                ]
+
+        allEncountersMeasurements =
+            [ measurements ]
     in
     div [ class "patient-progress" ]
         [ viewItemHeading language Translate.PatientProgress "blue"
@@ -514,8 +524,194 @@ viewPatientProgressPane language currentDate measurements =
             , div [ class "caption trends" ] [ text <| translate language Translate.ProgressTrends ++ ":" ]
             , div [ class "trends-section" ]
                 [ viewMarkers
-                , div [ class "bmi-info" ] [ viewBMIForEGA language ]
-                , div [ class "fundal-height-info" ] [ viewFundalHeightForEGA language ]
+                , div [ class "bmi-info" ]
+                    [ viewChartHeading Translate.BMI
+                    , heightWeightBMITable language currentDate allEncountersMeasurements
+                    , viewBMIForEGA language
+                    ]
+                , div [ class "fundal-height-info" ]
+                    [ viewChartHeading Translate.FundalHeight
+                    , fundalHeightTable language currentDate allEncountersMeasurements
+                    , viewFundalHeightForEGA language
+                    ]
                 ]
             ]
         ]
+
+
+tableEgaHeading : Language -> NominalDate -> List PrenatalMeasurements -> Html any
+tableEgaHeading language currentDate measurements =
+    measurements
+        |> List.map
+            (getLmpMeasurement
+                >> Maybe.map
+                    (\lmpDate ->
+                        diffDays lmpDate currentDate
+                            |> generateEGAWeeksDaysLabel language
+                            |> String.toLower
+                            |> text
+                            |> List.singleton
+                    )
+                >> Maybe.withDefault [ text "--" ]
+                >> th
+                    [ classList
+                        [ ( "center", True )
+                        , ( "bottom", True )
+                        , ( "aligned", True )
+                        , ( "ega-header", True )
+                        ]
+                    ]
+            )
+        |> (::)
+            (th
+                [ class "uppercase" ]
+                [ text <| translate language Translate.Ega ]
+            )
+        |> tr []
+
+
+heightWeightBMITable : Language -> NominalDate -> List PrenatalMeasurements -> Html any
+heightWeightBMITable language currentDate allEncounetrsMeasurements =
+    let
+        cell language transId =
+            td [ class "uppercase" ]
+                [ text <| translate language transId ]
+    in
+    allEncounetrsMeasurements
+        |> greedyGroupsOf 6
+        |> List.map
+            (\groupOfSix ->
+                let
+                    egas =
+                        tableEgaHeading language currentDate groupOfSix
+
+                    heights =
+                        groupOfSix
+                            |> List.map
+                                (.nutrition
+                                    >> Maybe.map
+                                        (\measurement ->
+                                            let
+                                                height =
+                                                    Tuple.second measurement
+                                                        |> .value
+                                                        |> .height
+                                                        |> (\(Backend.Measurement.Model.HeightInCm cm) -> cm)
+                                            in
+                                            [ text <| toString height ++ translate language Translate.CentimeterShorthand ]
+                                        )
+                                    >> Maybe.withDefault [ text "--" ]
+                                    >> td [ class "center aligned" ]
+                                )
+                            |> (::) (cell language Translate.Height)
+                            |> tr []
+
+                    weights =
+                        groupOfSix
+                            |> List.map
+                                (.nutrition
+                                    >> Maybe.map
+                                        (\measurement ->
+                                            let
+                                                weight =
+                                                    Tuple.second measurement
+                                                        |> .value
+                                                        |> .weight
+                                                        |> (\(Backend.Measurement.Model.WeightInKg kg) -> kg)
+                                            in
+                                            [ text <| toString weight ++ translate language Translate.KilogramShorthand ]
+                                        )
+                                    >> Maybe.withDefault [ text "--" ]
+                                    >> td [ class "center aligned" ]
+                                )
+                            |> (::) (cell language Translate.Weight)
+                            |> tr []
+
+                    bmis =
+                        groupOfSix
+                            |> List.map
+                                (.nutrition
+                                    >> Maybe.map
+                                        (\measurement ->
+                                            let
+                                                height =
+                                                    Tuple.second measurement
+                                                        |> .value
+                                                        |> .height
+                                                        |> (\(Backend.Measurement.Model.HeightInCm cm) -> cm)
+
+                                                weight =
+                                                    Tuple.second measurement
+                                                        |> .value
+                                                        |> .weight
+                                                        |> (\(Backend.Measurement.Model.WeightInKg kg) -> kg)
+
+                                                bmi =
+                                                    calculateBmi (Just height) (Just weight)
+                                                        |> Maybe.withDefault 0
+                                                        |> Round.round 1
+                                            in
+                                            [ text bmi ]
+                                        )
+                                    >> Maybe.withDefault [ text "--" ]
+                                    >> td [ class "center aligned" ]
+                                )
+                            |> (::) (cell language Translate.BMI)
+                            |> tr []
+                in
+                [ egas
+                , heights
+                , weights
+                , bmis
+                ]
+            )
+        |> List.concat
+        |> tbody []
+        |> List.singleton
+        |> table [ class "ui collapsing celled table" ]
+
+
+fundalHeightTable : Language -> NominalDate -> List PrenatalMeasurements -> Html any
+fundalHeightTable language currentDate allEncounetrsMeasurements =
+    let
+        cell language transId =
+            td [ class "uppercase" ]
+                [ text <| translate language transId ]
+    in
+    allEncounetrsMeasurements
+        |> greedyGroupsOf 6
+        |> List.map
+            (\groupOfSix ->
+                let
+                    egas =
+                        tableEgaHeading language currentDate groupOfSix
+
+                    heights =
+                        groupOfSix
+                            |> List.map
+                                (.obstetricalExam
+                                    >> Maybe.map
+                                        (\measurement ->
+                                            let
+                                                height =
+                                                    Tuple.second measurement
+                                                        |> .value
+                                                        |> .fundalHeight
+                                                        |> (\(Backend.Measurement.Model.HeightInCm cm) -> cm)
+                                            in
+                                            [ text <| toString height ++ translate language Translate.CentimeterShorthand ]
+                                        )
+                                    >> Maybe.withDefault [ text "--" ]
+                                    >> td [ class "center aligned" ]
+                                )
+                            |> (::) (cell language Translate.FundalHeight)
+                            |> tr []
+                in
+                [ egas
+                , heights
+                ]
+            )
+        |> List.concat
+        |> tbody []
+        |> List.singleton
+        |> table [ class "ui collapsing celled table" ]

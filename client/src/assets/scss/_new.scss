@@ -845,6 +845,11 @@ div.page-clinical-progress-report {
         margin-bottom: 20px;
         margin-top: 20px;
         text-transform: uppercase;
+
+        &.trends {
+          margin-bottom: 0;
+          margin-top: 50px;
+        }
       }
 
       .timeline-section {
@@ -945,6 +950,49 @@ div.page-clinical-progress-report {
         }
 
       }
+
+      .trends-section {
+
+        .chart-heading {
+          margin-left: 25px;
+
+          img {
+            vertical-align: middle;
+            width: 20px;
+          }
+
+          span {
+            font-size: 16px;
+            font-weight: 600;
+            margin-left: 10px;
+            text-transform: uppercase;
+            vertical-align: middle;
+          }
+        }
+
+        table {
+          color: $color-darker-gray;
+          margin-bottom: -20px;
+
+          th, td {
+            font-size: 16px;
+            line-height: 24px;
+            padding: 5px;
+            text-align: center;
+            width: 97px;
+          }
+
+          th {
+            background-color: $color-light-gray;
+          }
+
+          td {
+            line-height: 24px;
+          }
+
+        }
+      }
+
     }
 }
 
