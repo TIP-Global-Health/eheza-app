@@ -528,11 +528,13 @@ viewPatientProgressPane language currentDate measurements =
                     [ viewChartHeading Translate.BMI
                     , heightWeightBMITable language currentDate allEncountersMeasurements
                     , viewBMIForEGA language
+                    , illustrativePurposes language
                     ]
                 , div [ class "fundal-height-info" ]
                     [ viewChartHeading Translate.FundalHeight
                     , fundalHeightTable language currentDate allEncountersMeasurements
                     , viewFundalHeightForEGA language
+                    , illustrativePurposes language
                     ]
                 ]
             ]
@@ -715,3 +717,8 @@ fundalHeightTable language currentDate allEncounetrsMeasurements =
         |> tbody []
         |> List.singleton
         |> table [ class "ui collapsing celled table" ]
+
+
+illustrativePurposes : Language -> Html any
+illustrativePurposes language =
+    div [ class "illustrative-purposes" ] [ text <| translate language Translate.ForIllustrativePurposesOnly ]

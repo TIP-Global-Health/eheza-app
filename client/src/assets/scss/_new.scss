@@ -980,16 +980,30 @@ div.page-clinical-progress-report {
             padding: 5px;
             text-align: center;
             width: 97px;
+
+            &.uppercase {
+              text-transform: uppercase;
+            }
           }
 
           th {
             background-color: $color-light-gray;
           }
 
-          td {
-            line-height: 24px;
-          }
+        }
 
+        .illustrative-purposes {
+          color: $color-darker-gray;
+          margin-bottom: 50px;
+          margin-top: -90px;
+          font-size: 12px;
+          margin-left: 60px;
+
+          &:before {
+            content: '*';
+            margin-left: -15px;
+            padding-right: 5px;
+          }
         }
       }
 

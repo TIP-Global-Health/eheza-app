@@ -308,6 +308,7 @@ type TranslationId
     | FirstAntenatalVisit
     | FirstName
     | FiveVisits
+    | ForIllustrativePurposesOnly
     | FormError (ErrorValue ValidationError)
     | FormField String
     | FundalHeight
@@ -1842,6 +1843,11 @@ translationSet trans =
 
         FiveVisits ->
             { english = "Five visits"
+            , kinyarwanda = Nothing
+            }
+
+        ForIllustrativePurposesOnly ->
+            { english = "For illustrative purposes only"
             , kinyarwanda = Nothing
             }
 
