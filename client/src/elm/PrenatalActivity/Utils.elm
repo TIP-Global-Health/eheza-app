@@ -551,6 +551,21 @@ generateRiskFactorAlertData language currentDate measurements factor =
                             Nothing
                     )
 
+        FactorGestationalDiabetesPreviousPregnancy ->
+            measurements.obstetricHistoryStep2
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            signs =
+                                Tuple.second measurement |> .value |> .obstetricHistory
+                        in
+                        if EverySet.member Backend.Measurement.Model.GestationalDiabetesPreviousPregnancy signs then
+                            Just (transAlert factor)
+
+                        else
+                            Nothing
+                    )
+
 
 generateMedicalDiagnosisAlertData : Language -> NominalDate -> PrenatalMeasurements -> MedicalDiagnosis -> Maybe String
 generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
@@ -720,21 +735,6 @@ generateObstetricalDiagnosisAlertData language currentDate measurements diagnosi
             translate language (Translate.ObstetricalDiagnosisAlert diagnosis)
     in
     case diagnosis of
-        DiagnosisGestationalDiabetesPreviousPregnancy ->
-            measurements.obstetricHistoryStep2
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            signs =
-                                Tuple.second measurement |> .value |> .obstetricHistory
-                        in
-                        if EverySet.member Backend.Measurement.Model.GestationalDiabetesPreviousPregnancy signs then
-                            Just (transAlert diagnosis)
-
-                        else
-                            Nothing
-                    )
-
         DiagnosisRhNegative ->
             measurements.obstetricHistoryStep2
                 |> Maybe.andThen

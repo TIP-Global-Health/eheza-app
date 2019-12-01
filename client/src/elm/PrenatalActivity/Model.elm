@@ -44,6 +44,7 @@ type RiskFactor
     | FactorConvulsionsAndUnconsciousPreviousDelivery
     | FactorIncompleteCervixPreviousPregnancy
     | FactorVerticalCSectionScar
+    | FactorGestationalDiabetesPreviousPregnancy
 
 
 type HighRiskFactor
@@ -61,8 +62,7 @@ type HighSeverityAlert
 
 
 type ObstetricalDiagnosis
-    = DiagnosisGestationalDiabetesPreviousPregnancy
-    | DiagnosisRhNegative
+    = DiagnosisRhNegative
     | DiagnosisModerateUnderweight
     | DiagnosisSevereUnderweight
     | DiagnosisOverweight
@@ -122,13 +122,13 @@ allRiskFactors =
     , FactorConvulsionsAndUnconsciousPreviousDelivery
     , FactorIncompleteCervixPreviousPregnancy
     , FactorVerticalCSectionScar
+    , FactorGestationalDiabetesPreviousPregnancy
     ]
 
 
 allObstetricalDiagnosis : List ObstetricalDiagnosis
 allObstetricalDiagnosis =
-    [ DiagnosisGestationalDiabetesPreviousPregnancy
-    , DiagnosisRhNegative
+    [ DiagnosisRhNegative
     , DiagnosisModerateUnderweight
     , DiagnosisSevereUnderweight
     , DiagnosisOverweight

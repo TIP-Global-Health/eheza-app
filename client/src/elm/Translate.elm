@@ -2640,11 +2640,6 @@ translationSet trans =
 
         ObstetricalDiagnosisAlert diagnosis ->
             case diagnosis of
-                DiagnosisGestationalDiabetesPreviousPregnancy ->
-                    { english = "Patient had Gestational Diabetes in previous pregnancy"
-                    , kinyarwanda = Nothing
-                    }
-
                 DiagnosisRhNegative ->
                     { english = "Patient is RH Negative"
                     , kinyarwanda = Nothing
@@ -3259,6 +3254,11 @@ translationSet trans =
 
                 FactorVerticalCSectionScar ->
                     { english = "Vertical C-Section Scar"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorGestationalDiabetesPreviousPregnancy ->
+                    { english = "Patient had Gestational Diabetes in previous pregnancy"
                     , kinyarwanda = Nothing
                     }
 
