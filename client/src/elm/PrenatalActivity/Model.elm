@@ -28,6 +28,10 @@ type PrenatalActivity
     | PregnancyDating
 
 
+
+-- | PrenatalPicture
+
+
 type RiskFactor
     = FactorNumberOfCSections Int
     | FactorCSectionInPreviousDelivery

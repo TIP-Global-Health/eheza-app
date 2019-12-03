@@ -59,6 +59,7 @@ module Backend.Measurement.Model exposing
     , PrenatalMeasurements
     , PrenatalNutrition
     , PrenatalNutritionValue
+    , PrenatalPhoto
     , PreviousDeliveryPeriod(..)
     , PreviousDeliverySign(..)
     , Resource
@@ -477,6 +478,10 @@ type ResourceSign
     | NoResource
 
 
+type alias PrenatalPhoto =
+    PrenatalMeasurement PhotoUrl
+
+
 type alias Resource =
     PrenatalMeasurement (EverySet ResourceSign)
 
@@ -591,6 +596,7 @@ type alias PrenatalMeasurements =
     , resource : Maybe ( ResourceId, Resource )
     , socialHistory : Maybe ( SocialHistoryId, SocialHistory )
     , vitals : Maybe ( VitalsId, Vitals )
+    , prenatalPhotos : Maybe ( PrenatalPhotoId, PrenatalPhoto )
     }
 
 

@@ -1,4 +1,4 @@
-module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), attendanceEndpoint, breastExamEndpoint, childMeasurementListEndpoint, clinicEndpoint, corePhysicalExamEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, dangerSignsEndpoint, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodePrenatalEncounterParams, encodePrenatalParticipantParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, lastMenstrualPeriodEndpoint, medicalHistoryEndpoint, medicationEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, obstetricHistoryEndpoint, obstetricHistoryStep2Endpoint, obstetricalExamEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, prenatalEncounterEndpoint, prenatalFamilyPlanningEndpoint, prenatalMeasurementsEndpoint, prenatalNutritionEndpoint, prenatalParticipantEndpoint, relationshipEndpoint, resourceEndpoint, sessionEndpoint, socialHistoryEndpoint, swEndpoint, syncDataEndpoint, vitalsEndpoint, weightEndpoint)
+module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), attendanceEndpoint, breastExamEndpoint, childMeasurementListEndpoint, clinicEndpoint, corePhysicalExamEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, dangerSignsEndpoint, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodePrenatalEncounterParams, encodePrenatalParticipantParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, lastMenstrualPeriodEndpoint, medicalHistoryEndpoint, medicationEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, obstetricHistoryEndpoint, obstetricHistoryStep2Endpoint, obstetricalExamEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, prenatalEncounterEndpoint, prenatalFamilyPlanningEndpoint, prenatalMeasurementsEndpoint, prenatalNutritionEndpoint, prenatalParticipantEndpoint, prenatalPhotoEndpoint, relationshipEndpoint, resourceEndpoint, sessionEndpoint, socialHistoryEndpoint, swEndpoint, syncDataEndpoint, vitalsEndpoint, weightEndpoint)
 
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
@@ -154,6 +154,12 @@ photoEndpoint : ReadWriteEndPoint Error PhotoId Photo Photo ()
 photoEndpoint =
     swEndpoint "nodes/photo" decodePhoto
         |> withValueEncoder (object << encodePhoto)
+
+
+prenatalPhotoEndpoint : ReadWriteEndPoint Error PrenatalPhotoId PrenatalPhoto PrenatalPhoto ()
+prenatalPhotoEndpoint =
+    swEndpoint "nodes/photo" decodePrenatalPhoto
+        |> withValueEncoder (object << encodePrenatalPhoto)
 
 
 familyPlanningEndpoint : ReadWriteEndPoint Error FamilyPlanningId FamilyPlanning FamilyPlanning ()

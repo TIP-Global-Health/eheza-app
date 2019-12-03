@@ -269,6 +269,7 @@ type Revision
     | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
     | PrenatalParticipantRevision PrenatalParticipantId PrenatalParticipant
     | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
+    | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto
     | RelationshipRevision RelationshipId Relationship
     | ResourceRevision ResourceId Resource
     | SessionRevision SessionId Session

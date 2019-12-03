@@ -993,6 +993,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        PrenatalPhotoRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | prenatalPhotos = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         RelationshipRevision uuid data ->
             ( { model | relationshipsByPerson = EveryDict.empty }
             , True
