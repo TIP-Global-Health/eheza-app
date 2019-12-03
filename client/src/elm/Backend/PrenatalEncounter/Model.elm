@@ -33,6 +33,7 @@ type alias Model =
     , saveResource : WebData ()
     , saveSocialHistory : WebData ()
     , saveVitals : WebData ()
+    , savePrenatalPhoto : WebData ()
     }
 
 
@@ -53,6 +54,7 @@ emptyModel =
     , saveResource = NotAsked
     , saveSocialHistory = NotAsked
     , saveVitals = NotAsked
+    , savePrenatalPhoto = NotAsked
     }
 
 
@@ -72,6 +74,7 @@ type Msg
     | SaveResource PersonId (Maybe ResourceId) (EverySet ResourceSign)
     | SaveSocialHistory PersonId (Maybe SocialHistoryId) (EverySet SocialHistorySign)
     | SaveVitals PersonId (Maybe VitalsId) VitalsValue
+    | SavePrenatalPhoto PersonId (Maybe PrenatalPhotoId) PhotoUrl
     | HandleClosedPrenatalEncounter (WebData ())
     | HandleSavedBreastExam (WebData ())
     | HandleSavedCorePhysicalExam (WebData ())
@@ -87,3 +90,4 @@ type Msg
     | HandleSavedResource (WebData ())
     | HandleSavedSocialHistory (WebData ())
     | HandleSavedVitals (WebData ())
+    | HandleSavedPrenatalPhoto (WebData ())

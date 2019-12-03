@@ -15,7 +15,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
-import Maybe.Extra exposing (isJust, unwrap)
+import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
@@ -826,14 +826,20 @@ viewPrenatalPhotoContent language currentDate assembled data =
         -- If we have a photo that we've just taken, but not saved, that is in
         -- `data.url`. We show that if we have it. Otherwise, we'll show the saved
         -- measurement, if we have that.
-        displayPhoto =
+        ( displayPhoto, saveMsg, isDisabled ) =
             case data.url of
                 Just url ->
-                    Just url
+                    ( Just url
+                    , [ onClick <| SavePrenatalPhoto assembled.id assembled.participant.person photoId url ]
+                    , False
+                    )
 
                 Nothing ->
-                    Maybe.map (Tuple.second >> .value)
+                    ( Maybe.map (Tuple.second >> .value)
                         assembled.measurements.prenatalPhoto
+                    , []
+                    , True
+                    )
     in
     [ divKeyed
         [ class "ui full segment photo" ]
@@ -876,85 +882,22 @@ viewPrenatalPhotoContent language currentDate assembled data =
                 ]
             ]
         , keyed "button" <|
-            div [ class "actions" ] []
-
-        -- <|
-        --     saveButton language
-        --         (Maybe.map (SendOutMsgChild << SavePhoto photoId) photo)
-        --         measurement
-        --         (Just "column")
+            div [ class "actions" ]
+                [ button
+                    ([ classList
+                        [ ( "ui fluid primary button", True )
+                        , ( "disabled", isDisabled )
+                        ]
+                     ]
+                        ++ saveMsg
+                    )
+                    [ text <| translate language Translate.Save ]
+                ]
         ]
     ]
 
 
 
--- viewPhoto : Language -> MeasurementData (Maybe ( PhotoId, Photo )) -> Maybe PhotoUrl -> Html MsgChild
--- viewPhoto language measurement photo =
---     let
---         activity =
---             ChildActivity ChildPicture
---
---         photoId =
---             Maybe.map Tuple.first measurement.current
---
---         -- If we have a photo that we've just taken, but not saved, that is in
---         -- `photo`. We show that if we have it. Otherwise, we'll show the saved
---         -- measurement, if we have that.
---         displayPhoto =
---             case photo of
---                 Just url ->
---                     Just url
---
---                 Nothing ->
---                     Maybe.map (Tuple.second >> .value)
---                         measurement.current
---     in
---     divKeyed
---         [ class "ui full segment photo" ]
---         [ keyedDivKeyed "content"
---             [ class "content" ]
---             [ h3
---                 [ class "ui header" ]
---                 [ text <| translate language (Trans.ActivitiesTitle activity) ]
---                 |> keyed "title"
---             , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
---                 |> keyed "help"
---             , keyedDivKeyed "grid"
---                 [ class "ui grid" ]
---                 [ Maybe.map viewPhotoThumb displayPhoto
---                     |> showMaybe
---                     |> List.singleton
---                     |> div [ class "eight wide column" ]
---                     |> keyed "thumbnail"
---                 , div
---                     [ id "dropzone"
---                     , class "eight wide column dropzone"
---                     , on "dropzonecomplete" (Json.Decode.map DropZoneComplete decodeDropZoneFile)
---                     ]
---                     [ div
---                         [ class "dz-message"
---                         , attribute "data-dz-message" ""
---                         ]
---                         [ span
---                             []
---                             [ text <| translate language Trans.DropzoneDefaultMessage ]
---                         ]
---                     ]
---                     |> keyed "dropzone"
---
---                 -- This runs the function from our `app.js` at the precise moment this gets
---                 -- written to the DOM. Isn't that convenient?
---                 , script "bindDropZone()"
---                     |> keyed "script"
---                 ]
---             ]
---         , keyed "button" <|
---             div [ class "actions" ] <|
---                 saveButton language
---                     (Maybe.map (SendOutMsgChild << SavePhoto photoId) photo)
---                     measurement
---                     (Just "column")
---         ]
 -- Forms
 
 

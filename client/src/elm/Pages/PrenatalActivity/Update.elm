@@ -47,9 +47,6 @@ update currentDate msg model =
     case msg of
         DropZoneComplete result ->
             let
-                log =
-                    Debug.log "" result
-
                 updatedData =
                     model.prenatalPhotoData
                         |> (\data -> { data | url = Just (PhotoUrl result.url) })
@@ -1444,4 +1441,19 @@ update currentDate msg model =
             ( model
             , Cmd.none
             , appMsgs
+            )
+
+        SavePrenatalPhoto prenatalEncounterId personId maybePhotoId photoUrl ->
+            let
+                updatedData =
+                    model.prenatalPhotoData
+                        |> (\data -> { data | url = Nothing })
+            in
+            ( { model | prenatalPhotoData = updatedData }
+            , Cmd.none
+            , [ Backend.PrenatalEncounter.Model.SavePrenatalPhoto personId maybePhotoId photoUrl
+                    |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
+                    |> App.Model.MsgIndexedDb
+              , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
+              ]
             )

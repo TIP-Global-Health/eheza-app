@@ -546,3 +546,39 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveVitals = data }
             , Cmd.none
             )
+
+        SavePrenatalPhoto personId valueId value ->
+            let
+                cmd =
+                    case valueId of
+                        Nothing ->
+                            { participantId = personId
+                            , dateMeasured = currentDate
+                            , encounterId = Just encounterId
+                            , nurse = nurseId
+                            , healthCenter = healthCenterId
+                            , value = value
+                            }
+                                |> sw.post prenatalPhotoEndpoint
+                                |> withoutDecoder
+                                |> toCmd (RemoteData.fromResult >> HandleSavedPrenatalPhoto)
+
+                        Just id ->
+                            encodePhotoUrl value
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
+                                |> object
+                                |> sw.patchAny prenatalPhotoEndpoint id
+                                |> withoutDecoder
+                                |> toCmd (RemoteData.fromResult >> HandleSavedPrenatalPhoto)
+            in
+            ( { model | savePrenatalPhoto = Loading }
+            , cmd
+            )
+
+        HandleSavedPrenatalPhoto data ->
+            ( { model | savePrenatalPhoto = data }
+            , Cmd.none
+            )

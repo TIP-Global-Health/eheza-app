@@ -158,7 +158,7 @@ photoEndpoint =
 
 prenatalPhotoEndpoint : ReadWriteEndPoint Error PrenatalPhotoId PrenatalPhoto PrenatalPhoto ()
 prenatalPhotoEndpoint =
-    swEndpoint "nodes/photo" decodePrenatalPhoto
+    swEndpoint "nodes/prenatal_photo" decodePrenatalPhoto
         |> withValueEncoder (object << encodePrenatalPhoto)
 
 

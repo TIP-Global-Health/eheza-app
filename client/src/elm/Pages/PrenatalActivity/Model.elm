@@ -114,6 +114,8 @@ type Msg
       -- DangerSignsMsgs
     | SetDangerSign DangerSign
     | SaveDangerSigns PrenatalEncounterId PersonId (Maybe ( DangerSignsId, DangerSigns ))
+      -- PrenatalPhotoMsgs
+    | SavePrenatalPhoto PrenatalEncounterId PersonId (Maybe PrenatalPhotoId) PhotoUrl
 
 
 type alias Model =
