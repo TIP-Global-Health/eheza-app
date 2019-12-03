@@ -596,7 +596,7 @@ type alias PrenatalMeasurements =
     , resource : Maybe ( ResourceId, Resource )
     , socialHistory : Maybe ( SocialHistoryId, SocialHistory )
     , vitals : Maybe ( VitalsId, Vitals )
-    , prenatalPhotos : Maybe ( PrenatalPhotoId, PrenatalPhoto )
+    , prenatalPhoto : Maybe ( PrenatalPhotoId, PrenatalPhoto )
     }
 
 

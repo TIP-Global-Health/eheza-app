@@ -12,6 +12,7 @@ import Backend.Measurement.Model
         , LegsCPESign(..)
         , LungsCPESign(..)
         , NeckCPESign(..)
+        , PhotoUrl(..)
         , PreviousDeliveryPeriod(..)
         )
 import Backend.Model
@@ -44,6 +45,20 @@ import Result exposing (Result)
 update : NominalDate -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate msg model =
     case msg of
+        DropZoneComplete result ->
+            let
+                log =
+                    Debug.log "" result
+
+                updatedData =
+                    model.prenatalPhotoData
+                        |> (\data -> { data | url = Just (PhotoUrl result.url) })
+            in
+            ( { model | prenatalPhotoData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetActivePage page ->
             ( model
             , Cmd.none

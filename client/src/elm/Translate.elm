@@ -2927,6 +2927,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                PrenatalPhoto ->
+                    { english = "Photo"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalEncounter ->
             { english = "Antenatal Encounter"
             , kinyarwanda = Nothing

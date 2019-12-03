@@ -996,7 +996,7 @@ handleRevision revision (( model, recalc ) as noChange) =
         PrenatalPhotoRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | prenatalPhotos = Just ( uuid, data ) })
+                (\measurements -> { measurements | prenatalPhoto = Just ( uuid, data ) })
                 model
             , recalc
             )
