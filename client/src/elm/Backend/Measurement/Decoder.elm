@@ -111,7 +111,7 @@ decodePrenatalMeasurements =
         |> optional "resource" (decodeHead decodeResource) Nothing
         |> optional "social_history" (decodeHead decodeSocialHistory) Nothing
         |> optional "vitals" (decodeHead decodeVitals) Nothing
-        |> optional "prenatal_photos" (decodeHead decodePrenatalPhoto) Nothing
+        |> optional "prenatal_photo" (decodeHead decodePrenatalPhoto) Nothing
 
 
 decodePhoto : Decoder Photo
