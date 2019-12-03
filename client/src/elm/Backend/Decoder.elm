@@ -115,6 +115,9 @@ decodeRevision =
                     "prenatal_participant" ->
                         decodeWithUuid PrenatalParticipantRevision decodePrenatalParticipant
 
+                    "prenatal_photo" ->
+                        decodeWithUuid PrenatalPhotoRevision decodePrenatalPhoto
+
                     "relationship" ->
                         decodeWithUuid RelationshipRevision decodeRelationship
 
