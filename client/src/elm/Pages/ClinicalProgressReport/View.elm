@@ -23,6 +23,7 @@ import Pages.DemographicsReport.View exposing (viewHeader, viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Utils exposing (calculateBmi)
 import Pages.PrenatalEncounter.Utils exposing (calculateEDDandEGADays, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generatePara, getLmpMeasurement)
+import Pages.Utils exposing (viewPhotoThumb)
 import PrenatalActivity.Model
     exposing
         ( PregnancyTrimester(..)
@@ -502,8 +503,13 @@ viewPatientProgressPane language currentDate measurements =
                 , span [] [ text <| translate language transId ]
                 ]
 
+        allEncountersData =
+            [ ( currentEncounterDate, measurements )
+            ]
+
         allEncountersMeasurements =
-            [ measurements ]
+            allEncountersData
+                |> List.map Tuple.second
 
         egaBmiValues =
             allEncountersMeasurements
@@ -561,6 +567,30 @@ viewPatientProgressPane language currentDate measurements =
                                     ( diffDays lmpDate currentDate, fundalHeight )
                                 )
                     )
+
+        progressPhotos =
+            allEncountersData
+                |> List.filterMap
+                    (\( date, measurements ) ->
+                        measurements.prenatalPhoto
+                            |> Maybe.map
+                                (Tuple.second
+                                    >> .value
+                                    >> (\photoUrl ->
+                                            let
+                                                egaLabel =
+                                                    getLmpMeasurement measurements
+                                                        |> Maybe.map (\lmpDate -> diffDays lmpDate date |> generateEGAWeeksDaysLabel language)
+                                                        |> Maybe.withDefault ""
+                                            in
+                                            div [ class "progress-photo" ]
+                                                [ viewPhotoThumb photoUrl
+                                                , div [ class "ega" ] [ text egaLabel ]
+                                                ]
+                                       )
+                                )
+                    )
+                |> div [ class "photos-section" ]
     in
     div [ class "patient-progress" ]
         [ viewItemHeading language Translate.PatientProgress "blue"
@@ -578,6 +608,8 @@ viewPatientProgressPane language currentDate measurements =
             , allTrimesters
                 |> List.map viewTrimesterVisits
                 |> div [ class "visits-section" ]
+            , div [ class "caption photos" ] [ text <| translate language Translate.ProgressPhotos ++ ":" ]
+            , progressPhotos
             , div [ class "caption trends" ] [ text <| translate language Translate.ProgressTrends ++ ":" ]
             , div [ class "trends-section" ]
                 [ viewMarkers

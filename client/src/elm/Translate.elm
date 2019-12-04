@@ -462,6 +462,7 @@ type TranslationId
     | PreviousMeasurementNotFound
     | Profession
     | Programs
+    | ProgressPhotos
     | ProgressReport
     | ProgressTimeline
     | ProgressTrends
@@ -2991,6 +2992,11 @@ translationSet trans =
 
         Programs ->
             { english = "Programs"
+            , kinyarwanda = Nothing
+            }
+
+        ProgressPhotos ->
+            { english = "Progress Photos"
             , kinyarwanda = Nothing
             }
 
