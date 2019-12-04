@@ -848,7 +848,11 @@ div.page-clinical-progress-report {
 
         &.trends {
           margin-bottom: 0;
-          margin-top: 50px;
+          margin-top: 100px;
+        }
+
+        &.photos {
+          margin-top: 70px;
         }
       }
 
@@ -949,6 +953,20 @@ div.page-clinical-progress-report {
           }
         }
 
+      }
+
+      .photos-section {
+        display: grid;
+        grid-gap: 28px;
+        grid-template-columns: 150px 150px 150px 150px;
+
+        .progress-photo .ega {
+          background-color: $color-gray;
+          color: $color-white;
+          font-size: 16px;
+          font-weight: bold;
+          text-align: center;
+        }
       }
 
       .trends-section {
