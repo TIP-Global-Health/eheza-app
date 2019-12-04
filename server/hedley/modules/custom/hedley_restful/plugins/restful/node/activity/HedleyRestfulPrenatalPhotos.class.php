@@ -21,7 +21,7 @@ class HedleyRestfulPrenatalPhotos extends HedleyRestfulPrenatalActivityBase {
       'process_callbacks' => [
         [$this, 'imageProcess'],
       ],
-      'image_styles' => ['patient-photo'],
+      'image_styles' => ['prenatal-photo'],
     ];
 
     return $public_fields;
