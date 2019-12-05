@@ -194,6 +194,7 @@ type TranslationId
     | BabyName String
     | Back
     | BackendError
+    | BegingNewEncounter
     | BloodPressure
     | BloodPressureDiaLabel
     | BloodPressureSysLabel
@@ -505,6 +506,7 @@ type TranslationId
     | SaveError
     | Search
     | SearchByName
+    | SearchExistingParticipants
     | SearchHelper
     | SearchHelperFamilyMember
     | SecondName
@@ -982,6 +984,11 @@ translationSet trans =
         BackendError ->
             { english = "Error contacting backend"
             , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
+            }
+
+        BegingNewEncounter ->
+            { english = "Beging a New Encounter"
+            , kinyarwanda = Nothing
             }
 
         BloodPressure ->
@@ -3290,6 +3297,11 @@ translationSet trans =
         SearchByName ->
             { english = "Search by Name"
             , kinyarwanda = Just "Gushakisha izina"
+            }
+
+        SearchExistingParticipants ->
+            { english = "Search Existing Participants"
+            , kinyarwanda = Nothing
             }
 
         SearchHelper ->
