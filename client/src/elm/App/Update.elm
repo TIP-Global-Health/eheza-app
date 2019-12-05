@@ -19,6 +19,7 @@ import Http exposing (Error(..))
 import HttpBuilder
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
+import Pages.Clinics.Update
 import Pages.Device.Model
 import Pages.Device.Update
 import Pages.Page exposing (..)
@@ -188,6 +189,16 @@ update msg model =
             updateLoggedIn
                 (\data ->
                     case loggedInMsg of
+                        MsgPageClinics subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.Clinics.Update.update subMsg data.clinicsPage
+                            in
+                            ( { data | clinicsPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageClinics) subCmd
+                            , appMsgs
+                            )
+
                         MsgPageCreatePerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
