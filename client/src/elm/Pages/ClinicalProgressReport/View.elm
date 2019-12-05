@@ -242,21 +242,20 @@ viewObstetricalDiagnosisPane language currentDate measurements =
 viewPatientProgressPane : Language -> NominalDate -> PrenatalMeasurements -> Html Msg
 viewPatientProgressPane language currentDate measurements =
     let
-        currentEncounterDate =
-            currentDate
-
-        maybeLmpDate =
-            getLmpMeasurement measurements
-
-        -- Right now we have only the current encounter to display.
-        encountersTrimestersData =
-            [ ( currentEncounterDate
-              , maybeLmpDate
-              )
+        allEncountersData =
+            [ ( currentDate, measurements )
             ]
+
+        allEncountersMeasurements =
+            allEncountersData
+                |> List.map Tuple.second
+
+        encountersTrimestersData =
+            allEncountersData
                 |> List.map
-                    (\( encounterDate, lmp ) ->
-                        getEncounterTrimesterData encounterDate lmp
+                    (\( date, measurements ) ->
+                        getLmpMeasurement measurements
+                            |> getEncounterTrimesterData date
                     )
 
         countTrimesterEncounters trimester =
@@ -298,7 +297,7 @@ viewPatientProgressPane language currentDate measurements =
                 |> Maybe.withDefault False
 
         ( eddLabel, fetalHeartRateLabel, fetalMovementsLabel ) =
-            maybeLmpDate
+            getLmpMeasurement measurements
                 |> Maybe.map
                     (\lmpDate ->
                         let
@@ -502,14 +501,6 @@ viewPatientProgressPane language currentDate measurements =
                 [ img [ src <| "assets/images/icon-gray-circle-small.png" ] []
                 , span [] [ text <| translate language transId ]
                 ]
-
-        allEncountersData =
-            [ ( currentEncounterDate, measurements )
-            ]
-
-        allEncountersMeasurements =
-            allEncountersData
-                |> List.map Tuple.second
 
         egaBmiValues =
             allEncountersMeasurements
