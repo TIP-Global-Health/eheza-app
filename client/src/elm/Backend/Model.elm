@@ -136,6 +136,7 @@ emptyModelIndexedDb =
 type MsgIndexedDb
     = -- Messages which fetch various kinds of data.
       FetchChildMeasurements PersonId
+    | FetchChildrenMeasurements (List PersonId)
     | FetchClinics
       -- For `FetchEditableSession`, you'll also need to send the messages
       -- you get from `Backend.Session.Fetch.fetchEditableSession`
@@ -149,9 +150,11 @@ type MsgIndexedDb
     | FetchExpectedSessions PersonId
     | FetchHealthCenters
     | FetchMotherMeasurements PersonId
+    | FetchMothersMeasurements (List PersonId)
     | FetchParticipantForms
     | FetchParticipantsForPerson PersonId
     | FetchPeopleByName String
+    | FetchPeople (List PersonId)
     | FetchPerson PersonId
     | FetchRelationshipsForPerson PersonId
     | FetchSession SessionId
@@ -159,8 +162,10 @@ type MsgIndexedDb
     | FetchSyncData
       -- Messages which handle responses to data
     | HandleFetchedChildMeasurements PersonId (WebData ChildMeasurementList)
+    | HandleFetchedChildrenMeasurements (WebData (Dict PersonId ChildMeasurementList))
     | HandleFetchedEveryCounselingSchedule (WebData EveryCounselingSchedule)
     | HandleFetchedMotherMeasurements PersonId (WebData MotherMeasurementList)
+    | HandleFetchedMothersMeasurements (WebData (Dict PersonId MotherMeasurementList))
     | HandleFetchedClinics (WebData (Dict ClinicId Clinic))
     | HandleFetchedExpectedParticipants SessionId (WebData ExpectedParticipants)
     | HandleFetchedExpectedSessions PersonId (WebData (Dict SessionId Session))
@@ -169,6 +174,7 @@ type MsgIndexedDb
     | HandleFetchedParticipantsForPerson PersonId (WebData (Dict PmtctParticipantId PmtctParticipant))
     | HandleFetchedPeopleByName String (WebData (Dict PersonId Person))
     | HandleFetchedPerson PersonId (WebData Person)
+    | HandleFetchPeople (WebData (Dict PersonId Person))
     | HandleFetchedRelationshipsForPerson PersonId (WebData (Dict RelationshipId MyRelationship))
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (Dict SessionId Session))

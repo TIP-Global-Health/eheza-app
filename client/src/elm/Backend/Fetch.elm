@@ -17,28 +17,57 @@ or we will enter an infinite loop.
 -}
 shouldFetch : ModelIndexedDb -> MsgIndexedDb -> Bool
 shouldFetch model msg =
+    let
+        hasNoSuccessValues dict =
+            dict
+                |> Dict.values
+                |> List.filter (\v -> RemoteData.isLoading v || RemoteData.isNotAsked v)
+                |> List.isEmpty
+                |> not
+    in
     case msg of
         FetchChildMeasurements childId ->
             Dict.get childId model.childMeasurements
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchChildrenMeasurements ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                hasNoSuccessValues model.childMeasurements
+
         FetchClinics ->
             isNotAsked model.clinics
 
         FetchEditableSession id _ ->
+            let
+                -- Make sure we don't still have measurements being lazy loaded. If we do, allow rebuilding the
+                -- `EditableSession`.
+                hasMothersMeasurementsNotSuccess =
+                    hasNoSuccessValues model.motherMeasurements
+
+                hasChildrenMeasurementsNotSuccess =
+                    hasNoSuccessValues model.childMeasurements
+
+                sessionNotSuccess =
+                    Dict.get id model.editableSessions
+                        |> Maybe.withDefault NotAsked
+                        |> isSuccess
+                        |> not
+            in
             -- This one is a bit special because it is synthetic ...  what
             -- we're asking for here is not the fetch itself, but a certain
             -- organization of the fetched data. We want to re-run the
-            -- organiztion in every case unless we have a success here.
+            -- organization in every case unless we have a success here.
             -- Which means, once we have a success, it's important to
             -- invalidate or modify our successful data if underlying data
             -- changes. (That is, our `handleRevisions` needs to keep the
             -- editable sessions in mind).
-            Dict.get id model.editableSessions
-                |> Maybe.withDefault NotAsked
-                |> isSuccess
-                |> not
+            sessionNotSuccess
+                || hasMothersMeasurementsNotSuccess
+                || hasChildrenMeasurementsNotSuccess
 
         FetchEditableSessionCheckedIn id ->
             Dict.get id model.editableSessions
@@ -85,6 +114,13 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchMothersMeasurements ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                hasNoSuccessValues model.motherMeasurements
+
         FetchParticipantForms ->
             isNotAsked model.participantForms
 
@@ -97,6 +133,13 @@ shouldFetch model msg =
             Dict.get id model.people
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
+
+        FetchPeople ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                hasNoSuccessValues model.people
 
         FetchParticipantsForPerson id ->
             Dict.get id model.participantsByPerson

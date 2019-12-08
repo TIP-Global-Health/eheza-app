@@ -1,4 +1,4 @@
-module Backend.Session.Model exposing (CheckedIn, EditableSession, ExpectedParticipants, Model, Msg(..), OfflineSession, Session, emptyModel)
+module Backend.Session.Model exposing (CheckedIn, EditableSession, ExpectedParticipants, Model, Msg(..), OfflineSession, Session, batchSize, emptyModel)
 
 {-| A "session" refers to a group session with mothers and babies ... that is,
 an occasion on which measurements are taken in a group setting.
@@ -163,3 +163,8 @@ type Msg
     | HandleSaveParticipantConsent PersonId (WebData ())
     | HandleSavePhoto PersonId (WebData ())
     | HandleSaveWeight PersonId (WebData ())
+
+
+batchSize : Int
+batchSize =
+    1000
