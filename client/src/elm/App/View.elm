@@ -16,6 +16,7 @@ import Pages.MyAccount.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.People.View
+import Pages.Person.Model exposing (ParticipantDirectoryOperation(..))
 import Pages.Person.View
 import Pages.PinCode.View
 import Pages.Relationship.Model
@@ -191,8 +192,13 @@ viewUserPage page model configured =
                         |> flexPageWrapper model
 
                 CreatePersonPage relation ->
-                    Pages.Person.View.viewCreateForm model.language currentDate relation loggedInModel.createPersonPage model.indexedDb
+                    Pages.Person.View.viewCreateEditForm model.language currentDate relation CreatePerson loggedInModel.createPersonPage model.indexedDb
                         |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
+                        |> flexPageWrapper model
+
+                EditPersonPage id ->
+                    Pages.Person.View.viewCreateEditForm model.language currentDate (Just id) EditPerson loggedInModel.editPersonPage model.indexedDb
+                        |> Html.map (MsgLoggedIn << MsgPageEditPerson)
                         |> flexPageWrapper model
 
                 PersonPage id ->

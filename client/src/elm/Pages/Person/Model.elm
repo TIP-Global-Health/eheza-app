@@ -1,4 +1,4 @@
-module Pages.Person.Model exposing (Model, Msg(..), emptyModel)
+module Pages.Person.Model exposing (Model, Msg(..), ParticipantDirectoryOperation(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.Person.Form exposing (PersonForm)
@@ -30,3 +30,8 @@ emptyModel =
     { form = Backend.Person.Form.emptyForm
     , isDateSelectorOpen = False
     }
+
+
+type ParticipantDirectoryOperation
+    = CreatePerson
+    | EditPerson

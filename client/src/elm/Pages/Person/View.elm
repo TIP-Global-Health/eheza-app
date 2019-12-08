@@ -1,11 +1,19 @@
-module Pages.Person.View exposing (view, viewCreateForm)
+module Pages.Person.View exposing (view, viewCreateEditForm)
 
 import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Encoder exposing (encodeEducationLevel, encodeHivStatus, encodeMaritalStatus, encodeModeOfDelivery, encodeUbudehe)
+import Backend.Person.Encoder
+    exposing
+        ( encodeEducationLevel
+        , encodeGender
+        , encodeHivStatus
+        , encodeMaritalStatus
+        , encodeModeOfDelivery
+        , encodeUbudehe
+        )
 import Backend.Person.Form exposing (ExpectedAge(..), PersonForm, expectedAgeFromForm, validatePerson)
 import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allHivStatuses, allMaritalStatuses, allModesOfDelivery, allUbudehes)
 import Backend.Person.Utils exposing (isPersonAnAdult)
@@ -17,7 +25,7 @@ import Form exposing (Form)
 import Form.Field
 import Form.Input
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -235,6 +243,19 @@ viewPerson language currentDate id person =
                 Nothing ->
                     "mother"
 
+        action =
+            div
+                [ class "action" ]
+                [ div
+                    [ class "action-icon-wrapper" ]
+                    [ span
+                        [ class "action-icon edit"
+                        , onClick <| App.Model.SetActivePage <| UserPage <| EditPersonPage id
+                        ]
+                        []
+                    ]
+                ]
+
         content =
             div [ class "content" ]
                 [ div
@@ -255,6 +276,7 @@ viewPerson language currentDate id person =
                         , span [] [ person.village |> Maybe.withDefault "" |> text ]
                         ]
                     ]
+                , action
                 ]
     in
     div
@@ -365,9 +387,12 @@ viewPhotoThumb url =
         ]
 
 
-applyDefaultValues : Maybe Person -> NominalDate -> PersonForm -> PersonForm
-applyDefaultValues maybeRelatedPerson currentDate form =
+applyDefaultValues : Maybe Person -> ParticipantDirectoryOperation -> NominalDate -> PersonForm -> PersonForm
+applyDefaultValues maybeRelatedPerson operation currentDate form =
     let
+        validation =
+            validatePerson maybeRelatedPerson (Just currentDate)
+
         defaultProvinceId =
             maybeRelatedPerson
                 |> Maybe.andThen .province
@@ -408,7 +433,7 @@ applyDefaultValues maybeRelatedPerson currentDate form =
                         |> (\useDefault ->
                                 if useDefault then
                                     Form.update
-                                        (validatePerson maybeRelatedPerson (Just currentDate))
+                                        validation
                                         (Form.Input fieldName Form.Select (Form.Field.String (Debug.toString <| fromEntityId defaultId)))
                                         form_
 
@@ -419,59 +444,172 @@ applyDefaultValues maybeRelatedPerson currentDate form =
                 Nothing ->
                     form_
 
-        applyDefaultUbudehe form_ =
+        defaultUbudehe =
             maybeRelatedPerson
                 |> Maybe.andThen .ubudehe
+
+        defaultHealthCenter =
+            maybeRelatedPerson
+                |> Maybe.andThen .healthCenterId
+
+        defaultHmisNumber =
+            maybeRelatedPerson
+                |> Maybe.andThen .hmisNumber
+
+        defaultModeOfDelivery =
+            maybeRelatedPerson
+                |> Maybe.andThen .modeOfDelivery
+
+        defaultHivStatus =
+            maybeRelatedPerson
+                |> Maybe.andThen .hivStatus
+
+        defaultlEducationLevel =
+            maybeRelatedPerson
+                |> Maybe.andThen .educationLevel
+
+        defaultlNumberOfChildrenl =
+            maybeRelatedPerson
+                |> Maybe.andThen .numberOfChildren
+
+        defaultMaritalStatus =
+            maybeRelatedPerson
+                |> Maybe.andThen .maritalStatus
+
+        applyDefaultSelectInput fieldName maybeDefault toStringFunc form_ =
+            maybeDefault
                 |> unwrap
                     form_
-                    (\ubudehe ->
+                    (\default ->
                         Form.update
-                            (validatePerson maybeRelatedPerson (Just currentDate))
-                            (Form.Input Backend.Person.Form.ubudehe Form.Select (Form.Field.String (Debug.toString <| encodeUbudehe ubudehe)))
+                            validation
+                            (Form.Input fieldName Form.Select (Form.Field.String (toStringFunc default)))
                             form_
                     )
 
-        applyDefaultHealthCenter form_ =
+        applyDefaultGender form_ =
             maybeRelatedPerson
-                |> Maybe.andThen .healthCenterId
+                |> Maybe.map .gender
                 |> unwrap
                     form_
-                    (\healthCenterId ->
+                    (\gender ->
                         Form.update
-                            (validatePerson maybeRelatedPerson (Just currentDate))
-                            (Form.Input Backend.Person.Form.healthCenter Form.Select (Form.Field.String (fromEntityUuid healthCenterId)))
+                            validation
+                            (Form.Input Backend.Person.Form.gender Form.Radio (Form.Field.String (encodeGender gender)))
+                            form_
+                    )
+
+        applyDefaultIsDateOfBirthEstimated form_ =
+            maybeRelatedPerson
+                |> Maybe.map .isDateOfBirthEstimated
+                |> unwrap
+                    form_
+                    (\isEstimated ->
+                        Form.update
+                            validation
+                            (Form.Input Backend.Person.Form.birthDateEstimated Form.Checkbox (Form.Field.Bool isEstimated))
+                            form_
+                    )
+
+        defaultFirstName =
+            maybeRelatedPerson |> Maybe.map .firstName
+
+        defaultSecondName =
+            maybeRelatedPerson |> Maybe.map .secondName
+
+        defaultNationalIdNumber =
+            maybeRelatedPerson |> Maybe.andThen .nationalIdNumber
+
+        defaultBirthDate =
+            maybeRelatedPerson |> Maybe.andThen .birthDate
+
+        defaultTelephoneNumber =
+            maybeRelatedPerson |> Maybe.andThen .telephoneNumber
+
+        applyDefaultTextInput fieldName maybeDefault toStringFunc form_ =
+            maybeDefault
+                |> unwrap
+                    form_
+                    (\default ->
+                        Form.update
+                            validation
+                            (Form.Input fieldName Form.Text (Form.Field.String (toStringFunc default)))
                             form_
                     )
     in
-    form
-        |> applyDefaultLocation Backend.Person.Form.province defaultProvinceId
-        |> applyDefaultLocation Backend.Person.Form.district defaultDistrictId
-        |> applyDefaultLocation Backend.Person.Form.sector defaultSectorId
-        |> applyDefaultLocation Backend.Person.Form.cell defaultCellId
-        |> applyDefaultLocation Backend.Person.Form.village defaultVillageId
-        |> applyDefaultUbudehe
-        |> applyDefaultHealthCenter
+    case operation of
+        CreatePerson ->
+            form
+                |> applyDefaultSelectInput Backend.Person.Form.ubudehe defaultUbudehe (encodeUbudehe >> Debug.toString)
+                |> applyDefaultSelectInput Backend.Person.Form.healthCenter defaultHealthCenter fromEntityUuid
+                |> applyDefaultLocation Backend.Person.Form.province defaultProvinceId
+                |> applyDefaultLocation Backend.Person.Form.district defaultDistrictId
+                |> applyDefaultLocation Backend.Person.Form.sector defaultSectorId
+                |> applyDefaultLocation Backend.Person.Form.cell defaultCellId
+                |> applyDefaultLocation Backend.Person.Form.village defaultVillageId
+
+        EditPerson ->
+            form
+                |> applyDefaultTextInput Backend.Person.Form.firstName defaultFirstName identity
+                |> applyDefaultTextInput Backend.Person.Form.secondName defaultSecondName identity
+                |> applyDefaultTextInput Backend.Person.Form.nationalIdNumber defaultNationalIdNumber identity
+                |> applyDefaultTextInput Backend.Person.Form.birthDate defaultBirthDate formatYYYYMMDD
+                |> applyDefaultIsDateOfBirthEstimated
+                |> applyDefaultSelectInput Backend.Person.Form.hmisNumber defaultHmisNumber identity
+                |> applyDefaultGender
+                |> applyDefaultSelectInput Backend.Person.Form.hivStatus defaultHivStatus encodeHivStatus
+                |> applyDefaultSelectInput Backend.Person.Form.educationLevel defaultlEducationLevel (encodeEducationLevel >> Debug.toString)
+                |> applyDefaultSelectInput Backend.Person.Form.maritalStatus defaultMaritalStatus encodeMaritalStatus
+                |> applyDefaultSelectInput Backend.Person.Form.modeOfDelivery defaultModeOfDelivery encodeModeOfDelivery
+                |> applyDefaultSelectInput Backend.Person.Form.numberOfChildren defaultlNumberOfChildrenl Debug.toString
+                |> applyDefaultSelectInput Backend.Person.Form.ubudehe defaultUbudehe (encodeUbudehe >> Debug.toString)
+                |> applyDefaultLocation Backend.Person.Form.province defaultProvinceId
+                |> applyDefaultLocation Backend.Person.Form.district defaultDistrictId
+                |> applyDefaultLocation Backend.Person.Form.sector defaultSectorId
+                |> applyDefaultLocation Backend.Person.Form.cell defaultCellId
+                |> applyDefaultLocation Backend.Person.Form.village defaultVillageId
+                |> applyDefaultTextInput Backend.Person.Form.phoneNumber defaultTelephoneNumber identity
+                |> applyDefaultSelectInput Backend.Person.Form.healthCenter defaultHealthCenter fromEntityUuid
 
 
-viewCreateForm : Language -> NominalDate -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
-viewCreateForm language currentDate relationId model db =
+viewCreateEditForm : Language -> NominalDate -> Maybe PersonId -> ParticipantDirectoryOperation -> Model -> ModelIndexedDb -> Html Msg
+viewCreateEditForm language currentDate personId operation model db =
     let
         formBeforeDefaults =
             model.form
 
+        -- When we create new person, this is a person that we want to associate
+        -- new person with.
+        -- When editing, this is the person that is being edited.
+        maybeRelatedPerson =
+            personId
+                |> Maybe.andThen (\id -> Dict.get id db.people)
+                |> Maybe.andThen RemoteData.toMaybe
+
         personForm =
-            applyDefaultValues maybeRelatedPerson currentDate formBeforeDefaults
+            applyDefaultValues maybeRelatedPerson operation currentDate formBeforeDefaults
 
         request =
             db.postPerson
 
-        maybeRelatedPerson =
-            relationId
-                |> Maybe.andThen (\id -> Dict.get id db.people)
-                |> Maybe.andThen RemoteData.toMaybe
+        log =
+            Debug.log "" maybeRelatedPerson
 
         emptyOption =
             ( "", "" )
+
+        goBackAction =
+            case operation of
+                CreatePerson ->
+                    SetActivePage <| UserPage <| PersonsPage personId
+
+                EditPerson ->
+                    personId
+                        |> Maybe.map
+                            (\personId_ ->
+                                SetActivePage <| UserPage <| PersonPage personId_
+                            )
+                        |> Maybe.withDefault (SetActivePage PinCodePage)
 
         header =
             div [ class "ui basic segment head" ]
@@ -480,7 +618,7 @@ viewCreateForm language currentDate relationId model db =
                     [ text <| translate language Translate.People ]
                 , a
                     [ class "link-back"
-                    , onClick <| SetActivePage PinCodePage
+                    , onClick goBackAction
                     ]
                     [ span [ class "icon-back" ] []
                     , span [] []
@@ -559,7 +697,7 @@ viewCreateForm language currentDate relationId model db =
                     , br [] []
                     , DateSelector.SelectorDropdown.view
                         ToggleDateSelector
-                        (DateSelected relationId)
+                        (DateSelected personId)
                         model.isDateSelectorOpen
                         (Date.add Years -60 currentDate)
                         currentDate
@@ -575,7 +713,7 @@ viewCreateForm language currentDate relationId model db =
                             , ( "field", True )
                             ]
                         ]
-                        |> Html.map (MsgForm relationId)
+                        |> Html.map (MsgForm personId)
                     ]
                 ]
 
@@ -674,7 +812,7 @@ viewCreateForm language currentDate relationId model db =
                 , div
                     [ id "dropzone"
                     , class "eight wide column dropzone"
-                    , on "dropzonecomplete" (Json.Decode.map (DropZoneComplete relationId) decodeDropZoneFile)
+                    , on "dropzonecomplete" (Json.Decode.map (DropZoneComplete personId) decodeDropZoneFile)
                     ]
                     [ div
                         [ class "dz-message"
@@ -715,14 +853,14 @@ viewCreateForm language currentDate relationId model db =
 
         demographicFields =
             viewPhoto
-                :: (List.map (Html.map (MsgForm relationId)) <|
+                :: (List.map (Html.map (MsgForm personId)) <|
                         [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName False personForm
                         , viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
                         , viewNumberInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
                         ]
                    )
                 ++ [ birthDateInput ]
-                ++ (List.map (Html.map (MsgForm relationId)) <|
+                ++ (List.map (Html.map (MsgForm personId)) <|
                         case expectedAge of
                             ExpectAdult ->
                                 [ genderInput
@@ -937,7 +1075,7 @@ viewCreateForm language currentDate relationId model db =
                     [ text <| translate language Translate.ContactInformation ++ ":" ]
                 , [ viewTextInput language Translate.TelephoneNumber Backend.Person.Form.phoneNumber False personForm ]
                     |> fieldset [ class "registration-form address-info" ]
-                    |> Html.map (MsgForm relationId)
+                    |> Html.map (MsgForm personId)
                 ]
 
             else
@@ -968,7 +1106,7 @@ viewCreateForm language currentDate relationId model db =
                 [ text <| translate language Translate.RegistratingHealthCenter ++ ":" ]
             , [ viewSelectInput language Translate.HealthCenter options Backend.Person.Form.healthCenter "ten" "select-input" True personForm ]
                 |> fieldset [ class "registration-form health-center" ]
-                |> Html.map (MsgForm relationId)
+                |> Html.map (MsgForm personId)
             ]
 
         submitButton =
@@ -994,19 +1132,19 @@ viewCreateForm language currentDate relationId model db =
                 [ text <| translate language Translate.FamilyInformation ++ ":" ]
             , familyInformationFields
                 |> fieldset [ class "registration-form family-info" ]
-                |> Html.map (MsgForm relationId)
+                |> Html.map (MsgForm personId)
             , h3
                 [ class "ui header" ]
                 [ text <| translate language Translate.AddressInformation ++ ":" ]
             , addressFields
                 |> fieldset [ class "registration-form address-info" ]
-                |> Html.map (MsgForm relationId)
+                |> Html.map (MsgForm personId)
             ]
                 ++ contactInformationSection
                 ++ healthCenterSection
                 ++ [ p [] []
                    , submitButton
-                        |> Html.map (MsgForm relationId)
+                        |> Html.map (MsgForm personId)
 
                    -- Note that these are hidden by deafult by semantic-ui ... the
                    -- class of the "form" controls whether they are shown.
