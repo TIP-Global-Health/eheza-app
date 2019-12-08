@@ -5,7 +5,7 @@ user to click on clinics the user is assigned to, to see the sessions which are
 available for data-entry.
 -}
 
-import App.Model exposing (Msg(..), MsgLoggedIn(..))
+import App.Model exposing (MsgLoggedIn(..))
 import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic, ClinicType(..), allClinicTypes)
 import Backend.Entities exposing (..)
@@ -120,7 +120,9 @@ viewLoadedClinicList language user selectedHealthCenterId model ( clinics, sync 
                                     -- Group is of selected type.
                                     && (clinic.clinicType == clinicType)
                             )
-                        |> Dict.sortBy .name
+                        |> Dict.toList
+                        |> List.sortBy (Tuple.second >> .name)
+                        |> Dict.fromList
 
                 Nothing ->
                     clinics
