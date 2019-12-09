@@ -1,6 +1,5 @@
 module Backend.Person.Form exposing
-    ( ExpectedAge(..)
-    , PersonForm
+    ( PersonForm
     , allDigitsPattern
     , birthDate
     , birthDateEstimated
@@ -8,7 +7,7 @@ module Backend.Person.Form exposing
     , district
     , educationLevel
     , emptyForm
-    , expectedAgeFromForm
+    , expectedAgeByForm
     , firstName
     , gender
     , healthCenter
@@ -48,7 +47,7 @@ import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeHivStatus, decodeMaritalStatus, decodeModeOfDelivery, decodeUbudehe)
 import Backend.Person.Model exposing (..)
-import Backend.Person.Utils exposing (diffInYears, isAdult, isPersonAnAdult)
+import Backend.Person.Utils exposing (diffInYears, expectedAgeByPerson, isAdult, isPersonAnAdult, resolveExpectedAge)
 import Date
 import Form exposing (..)
 import Form.Init exposing (..)
@@ -67,72 +66,34 @@ type alias PersonForm =
     Form ValidationError Person
 
 
-{-| Sometimes, we are in a state where we are expecting the user to enter an
-adult or a child, and sometimes we don't care -- they could be entering either.
-
-This controls various aspects of validation. If set to `ExpectAdultOrChild`, we
-also check the birth date actually entered in the form, and validate the rest
-according that birth date.
-
--}
-type ExpectedAge
-    = ExpectAdult
-    | ExpectChild
-    | ExpectAdultOrChild
-
-
-{-| Given the birth date actually entered into the form, what age range are we
-looking at?
--}
-expectedAgeFromForm : NominalDate -> PersonForm -> ExpectedAge
-expectedAgeFromForm currentDate form =
-    Form.getFieldAsString birthDate form
-        |> .value
-        |> Maybe.andThen (Date.fromIsoString >> Result.toMaybe)
-        |> isAdult currentDate
-        |> (\adult ->
-                case adult of
-                    Just True ->
-                        ExpectAdult
-
-                    Just False ->
-                        ExpectChild
-
-                    Nothing ->
-                        ExpectAdultOrChild
-           )
-
-
 emptyForm : PersonForm
 emptyForm =
     initial
         [ setBool birthDateEstimated False
         ]
-        (validatePerson Nothing Nothing)
+        (validatePerson Nothing CreatePerson Nothing)
+
+
+{-| Given the birth date actually entered into the form, what age range are we
+looking at?
+-}
+expectedAgeByForm : NominalDate -> PersonForm -> ParticipantDirectoryOperation -> ExpectedAge
+expectedAgeByForm currentDate form operation =
+    Form.getFieldAsString birthDate form
+        |> .value
+        |> Maybe.andThen (Date.fromIsoString >> Result.toMaybe)
+        |> (\birthDate_ -> resolveExpectedAge currentDate birthDate_ operation)
 
 
 {-| The person supplied here is the related person, if we're constructing someone
 who is the child or parent of a person we know.
 -}
-validatePerson : Maybe Person -> Maybe NominalDate -> Validation ValidationError Person
-validatePerson maybeRelated maybeCurrentDate =
+validatePerson : Maybe Person -> ParticipantDirectoryOperation -> Maybe NominalDate -> Validation ValidationError Person
+validatePerson maybeRelated operation maybeCurrentDate =
     let
         externalExpectedAge =
             Maybe.map2
-                (\related currentDate ->
-                    case isPersonAnAdult currentDate related of
-                        Just True ->
-                            -- If the related person is an adult, we expect a child
-                            ExpectChild
-
-                        Just False ->
-                            -- If they are a child, we expect an adult
-                            ExpectAdult
-
-                        Nothing ->
-                            -- If we don't know, we expect either
-                            ExpectAdultOrChild
-                )
+                (\related currentDate -> expectedAgeByPerson currentDate related operation)
                 maybeRelated
                 maybeCurrentDate
                 |> Maybe.withDefault ExpectAdultOrChild

@@ -3,6 +3,7 @@ module App.View exposing (view)
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
+import Backend.Person.Model exposing (ParticipantDirectoryOperation(..))
 import Browser
 import Config.View
 import Date
@@ -16,7 +17,6 @@ import Pages.MyAccount.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.People.View
-import Pages.Person.Model exposing (ParticipantDirectoryOperation(..))
 import Pages.Person.View
 import Pages.PinCode.View
 import Pages.Relationship.Model

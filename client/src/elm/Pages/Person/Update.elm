@@ -4,8 +4,8 @@ import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PersonId)
 import Backend.Model
-import Backend.Person.Form exposing (ExpectedAge(..), birthDate, validatePerson)
-import Backend.Person.Model exposing (Person)
+import Backend.Person.Form exposing (birthDate, validatePerson)
+import Backend.Person.Model exposing (ExpectedAge(..), Person)
 import Date exposing (toRataDie)
 import Form
 import Form.Field
@@ -17,7 +17,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 update : NominalDate -> Msg -> Dict PersonId (WebData Person) -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate msg people model =
     case msg of
-        MsgForm relation subMsg ->
+        MsgForm relation operation subMsg ->
             let
                 log =
                     Debug.log "subMsg" subMsg
@@ -28,7 +28,7 @@ update currentDate msg people model =
                         |> Maybe.andThen RemoteData.toMaybe
 
                 newForm =
-                    Form.update (validatePerson related (Just currentDate)) subMsg model.form
+                    Form.update (validatePerson related operation (Just currentDate)) subMsg model.form
 
                 appMsgs =
                     case subMsg of
@@ -58,12 +58,12 @@ update currentDate msg people model =
             , appMsgs
             )
 
-        DropZoneComplete relation result ->
+        DropZoneComplete relation operation result ->
             let
                 subMsg =
                     Form.Input Backend.Person.Form.photo Form.Text (Form.Field.String result.url)
             in
-            update currentDate (MsgForm relation subMsg) people model
+            update currentDate (MsgForm relation operation subMsg) people model
 
         ResetCreateForm ->
             ( Pages.Person.Model.emptyModel
@@ -83,12 +83,12 @@ update currentDate msg people model =
             , []
             )
 
-        DateSelected relation date ->
+        DateSelected relation operation date ->
             let
                 dateAsString =
                     Date.format "yyyy-MM-dd" date
 
                 setFieldMsg =
-                    Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm relation
+                    Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm relation operation
             in
             update currentDate setFieldMsg people model

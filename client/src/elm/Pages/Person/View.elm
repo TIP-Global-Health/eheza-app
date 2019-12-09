@@ -14,9 +14,9 @@ import Backend.Person.Encoder
         , encodeModeOfDelivery
         , encodeUbudehe
         )
-import Backend.Person.Form exposing (ExpectedAge(..), PersonForm, expectedAgeFromForm, validatePerson)
-import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allHivStatuses, allMaritalStatuses, allModesOfDelivery, allUbudehes)
-import Backend.Person.Utils exposing (isPersonAnAdult)
+import Backend.Person.Form exposing (PersonForm, expectedAgeByForm, validatePerson)
+import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), ParticipantDirectoryOperation(..), Person, allEducationLevels, allHivStatuses, allMaritalStatuses, allModesOfDelivery, allUbudehes)
+import Backend.Person.Utils exposing (expectedAgeByPerson, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Date exposing (Unit(..))
@@ -390,9 +390,6 @@ viewPhotoThumb url =
 applyDefaultValues : Maybe Person -> ParticipantDirectoryOperation -> NominalDate -> PersonForm -> PersonForm
 applyDefaultValues maybeRelatedPerson operation currentDate form =
     let
-        validation =
-            validatePerson maybeRelatedPerson (Just currentDate)
-
         defaultProvinceId =
             maybeRelatedPerson
                 |> Maybe.andThen .province
@@ -422,27 +419,6 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
                 |> Maybe.andThen .village
                 |> Maybe.andThen (getGeoLocation defaultCellId)
                 |> Maybe.map Tuple.first
-
-        applyDefaultLocation fieldName maybeDefault form_ =
-            case maybeDefault of
-                Just defaultId ->
-                    Form.getFieldAsString fieldName form_
-                        |> .value
-                        |> Maybe.map String.isEmpty
-                        |> Maybe.withDefault True
-                        |> (\useDefault ->
-                                if useDefault then
-                                    Form.update
-                                        validation
-                                        (Form.Input fieldName Form.Select (Form.Field.String (Debug.toString <| fromEntityId defaultId)))
-                                        form_
-
-                                else
-                                    form_
-                           )
-
-                Nothing ->
-                    form_
 
         defaultUbudehe =
             maybeRelatedPerson
@@ -476,41 +452,6 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
             maybeRelatedPerson
                 |> Maybe.andThen .maritalStatus
 
-        applyDefaultSelectInput fieldName maybeDefault toStringFunc form_ =
-            maybeDefault
-                |> unwrap
-                    form_
-                    (\default ->
-                        Form.update
-                            validation
-                            (Form.Input fieldName Form.Select (Form.Field.String (toStringFunc default)))
-                            form_
-                    )
-
-        applyDefaultGender form_ =
-            maybeRelatedPerson
-                |> Maybe.map .gender
-                |> unwrap
-                    form_
-                    (\gender ->
-                        Form.update
-                            validation
-                            (Form.Input Backend.Person.Form.gender Form.Radio (Form.Field.String (encodeGender gender)))
-                            form_
-                    )
-
-        applyDefaultIsDateOfBirthEstimated form_ =
-            maybeRelatedPerson
-                |> Maybe.map .isDateOfBirthEstimated
-                |> unwrap
-                    form_
-                    (\isEstimated ->
-                        Form.update
-                            validation
-                            (Form.Input Backend.Person.Form.birthDateEstimated Form.Checkbox (Form.Field.Bool isEstimated))
-                            form_
-                    )
-
         defaultFirstName =
             maybeRelatedPerson |> Maybe.map .firstName
 
@@ -526,16 +467,96 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
         defaultTelephoneNumber =
             maybeRelatedPerson |> Maybe.andThen .telephoneNumber
 
+        validation =
+            validatePerson maybeRelatedPerson operation (Just currentDate)
+
+        formFieldEmpty fieldName form_ =
+            Form.getFieldAsString fieldName form_
+                |> .value
+                |> Maybe.map String.isEmpty
+                |> Maybe.withDefault True
+
+        applyDefaultGender form_ =
+            maybeRelatedPerson
+                |> Maybe.map .gender
+                |> unwrap
+                    form_
+                    (\gender ->
+                        if formFieldEmpty Backend.Person.Form.gender form_ then
+                            Form.update
+                                validation
+                                (Form.Input Backend.Person.Form.gender Form.Radio (Form.Field.String (encodeGender gender)))
+                                form_
+
+                        else
+                            form_
+                    )
+
+        applyDefaultIsDateOfBirthEstimated form_ =
+            maybeRelatedPerson
+                |> Maybe.map .isDateOfBirthEstimated
+                |> unwrap
+                    form_
+                    (\isEstimated ->
+                        Form.getFieldAsBool Backend.Person.Form.birthDateEstimated form_
+                            |> .value
+                            |> Maybe.withDefault True
+                            |> (\useDefault ->
+                                    if useDefault then
+                                        Form.update
+                                            validation
+                                            (Form.Input Backend.Person.Form.birthDateEstimated Form.Checkbox (Form.Field.Bool isEstimated))
+                                            form_
+
+                                    else
+                                        form_
+                               )
+                    )
+
         applyDefaultTextInput fieldName maybeDefault toStringFunc form_ =
             maybeDefault
                 |> unwrap
                     form_
                     (\default ->
-                        Form.update
-                            validation
-                            (Form.Input fieldName Form.Text (Form.Field.String (toStringFunc default)))
+                        if formFieldEmpty fieldName form_ then
+                            Form.update
+                                validation
+                                (Form.Input fieldName Form.Text (Form.Field.String (toStringFunc default)))
+                                form_
+
+                        else
                             form_
                     )
+
+        applyDefaultSelectInput fieldName maybeDefault toStringFunc form_ =
+            maybeDefault
+                |> unwrap
+                    form_
+                    (\default ->
+                        if formFieldEmpty fieldName form_ then
+                            Form.update
+                                validation
+                                (Form.Input fieldName Form.Select (Form.Field.String (toStringFunc default)))
+                                form_
+
+                        else
+                            form_
+                    )
+
+        applyDefaultLocation fieldName maybeDefault form_ =
+            case maybeDefault of
+                Just defaultId ->
+                    if formFieldEmpty fieldName form_ then
+                        Form.update
+                            validation
+                            (Form.Input fieldName Form.Select (Form.Field.String (Debug.toString <| fromEntityId defaultId)))
+                            form_
+
+                    else
+                        form_
+
+                Nothing ->
+                    form_
     in
     case operation of
         CreatePerson ->
@@ -575,6 +596,9 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
 viewCreateEditForm : Language -> NominalDate -> Maybe PersonId -> ParticipantDirectoryOperation -> Model -> ModelIndexedDb -> Html Msg
 viewCreateEditForm language currentDate personId operation model db =
     let
+        log2 =
+            Debug.log "model" model
+
         formBeforeDefaults =
             model.form
 
@@ -591,9 +615,6 @@ viewCreateEditForm language currentDate personId operation model db =
 
         request =
             db.postPerson
-
-        log =
-            Debug.log "" maybeRelatedPerson
 
         emptyOption =
             ( "", "" )
@@ -658,24 +679,17 @@ viewCreateEditForm language currentDate personId operation model db =
         birthDateField =
             Form.getFieldAsString Backend.Person.Form.birthDate personForm
 
+        log =
+            Debug.log "" birthDateField
+
         expectedAge =
             maybeRelatedPerson
-                |> Maybe.andThen
-                    (\related ->
-                        case isPersonAnAdult currentDate related of
-                            Just True ->
-                                Just ExpectChild
-
-                            Just False ->
-                                Just ExpectAdult
-
-                            Nothing ->
-                                Nothing
-                    )
+                |> Maybe.map
+                    (\related -> expectedAgeByPerson currentDate related operation)
                 -- If we don't have a related person, or don't know whether
                 -- that person is an adult, then we check whether a birthdate
                 -- has been entered into the form so far.
-                |> Maybe.withDefault (expectedAgeFromForm currentDate personForm)
+                |> Maybe.withDefault (expectedAgeByForm currentDate personForm operation)
 
         birthDateEstimatedField =
             Form.getFieldAsBool Backend.Person.Form.birthDateEstimated personForm
@@ -697,7 +711,7 @@ viewCreateEditForm language currentDate personId operation model db =
                     , br [] []
                     , DateSelector.SelectorDropdown.view
                         ToggleDateSelector
-                        (DateSelected personId)
+                        (DateSelected personId operation)
                         model.isDateSelectorOpen
                         (Date.add Years -60 currentDate)
                         currentDate
@@ -713,7 +727,7 @@ viewCreateEditForm language currentDate personId operation model db =
                             , ( "field", True )
                             ]
                         ]
-                        |> Html.map (MsgForm personId)
+                        |> Html.map (MsgForm personId operation)
                     ]
                 ]
 
@@ -812,7 +826,7 @@ viewCreateEditForm language currentDate personId operation model db =
                 , div
                     [ id "dropzone"
                     , class "eight wide column dropzone"
-                    , on "dropzonecomplete" (Json.Decode.map (DropZoneComplete personId) decodeDropZoneFile)
+                    , on "dropzonecomplete" (Json.Decode.map (DropZoneComplete personId operation) decodeDropZoneFile)
                     ]
                     [ div
                         [ class "dz-message"
@@ -853,14 +867,14 @@ viewCreateEditForm language currentDate personId operation model db =
 
         demographicFields =
             viewPhoto
-                :: (List.map (Html.map (MsgForm personId)) <|
+                :: (List.map (Html.map (MsgForm personId operation)) <|
                         [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName False personForm
                         , viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
                         , viewNumberInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
                         ]
                    )
                 ++ [ birthDateInput ]
-                ++ (List.map (Html.map (MsgForm personId)) <|
+                ++ (List.map (Html.map (MsgForm personId operation)) <|
                         case expectedAge of
                             ExpectAdult ->
                                 [ genderInput
@@ -1075,7 +1089,7 @@ viewCreateEditForm language currentDate personId operation model db =
                     [ text <| translate language Translate.ContactInformation ++ ":" ]
                 , [ viewTextInput language Translate.TelephoneNumber Backend.Person.Form.phoneNumber False personForm ]
                     |> fieldset [ class "registration-form address-info" ]
-                    |> Html.map (MsgForm personId)
+                    |> Html.map (MsgForm personId operation)
                 ]
 
             else
@@ -1106,7 +1120,7 @@ viewCreateEditForm language currentDate personId operation model db =
                 [ text <| translate language Translate.RegistratingHealthCenter ++ ":" ]
             , [ viewSelectInput language Translate.HealthCenter options Backend.Person.Form.healthCenter "ten" "select-input" True personForm ]
                 |> fieldset [ class "registration-form health-center" ]
-                |> Html.map (MsgForm personId)
+                |> Html.map (MsgForm personId operation)
             ]
 
         submitButton =
@@ -1132,19 +1146,19 @@ viewCreateEditForm language currentDate personId operation model db =
                 [ text <| translate language Translate.FamilyInformation ++ ":" ]
             , familyInformationFields
                 |> fieldset [ class "registration-form family-info" ]
-                |> Html.map (MsgForm personId)
+                |> Html.map (MsgForm personId operation)
             , h3
                 [ class "ui header" ]
                 [ text <| translate language Translate.AddressInformation ++ ":" ]
             , addressFields
                 |> fieldset [ class "registration-form address-info" ]
-                |> Html.map (MsgForm personId)
+                |> Html.map (MsgForm personId operation)
             ]
                 ++ contactInformationSection
                 ++ healthCenterSection
                 ++ [ p [] []
                    , submitButton
-                        |> Html.map (MsgForm personId)
+                        |> Html.map (MsgForm personId operation)
 
                    -- Note that these are hidden by deafult by semantic-ui ... the
                    -- class of the "form" controls whether they are shown.

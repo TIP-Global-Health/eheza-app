@@ -1,6 +1,6 @@
-module Backend.Person.Utils exposing (ageInYears, diffInYears, isAdult, isPersonAnAdult)
+module Backend.Person.Utils exposing (ageInYears, diffInYears, expectedAgeByPerson, isAdult, isPersonAnAdult, resolveExpectedAge)
 
-import Backend.Person.Model exposing (Person)
+import Backend.Person.Model exposing (ExpectedAge(..), ParticipantDirectoryOperation(..), Person)
 import Date
 import Gizra.NominalDate exposing (NominalDate)
 
@@ -25,3 +25,31 @@ isAdult currentDate maybeBirthDate =
 isPersonAnAdult : NominalDate -> Person -> Maybe Bool
 isPersonAnAdult currentDate person =
     isAdult currentDate person.birthDate
+
+
+expectedAgeByPerson : NominalDate -> Person -> ParticipantDirectoryOperation -> ExpectedAge
+expectedAgeByPerson currentDate person operation =
+    resolveExpectedAge currentDate person.birthDate operation
+
+
+resolveExpectedAge : NominalDate -> Maybe NominalDate -> ParticipantDirectoryOperation -> ExpectedAge
+resolveExpectedAge currentDate birthDate operation =
+    case isAdult currentDate birthDate of
+        Just True ->
+            case operation of
+                CreatePerson ->
+                    ExpectChild
+
+                EditPerson ->
+                    ExpectAdult
+
+        Just False ->
+            case operation of
+                CreatePerson ->
+                    ExpectAdult
+
+                EditPerson ->
+                    ExpectChild
+
+        Nothing ->
+            ExpectAdultOrChild
