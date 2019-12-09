@@ -30,7 +30,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
-import Maybe.Extra exposing (isJust, unwrap)
+import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model exposing (..)
@@ -498,9 +498,15 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
                 |> unwrap
                     form_
                     (\isEstimated ->
+                        let
+                            log =
+                                Form.getFieldAsBool Backend.Person.Form.birthDateEstimated form_
+                                    |> .value
+                                    |> Debug.log "isEstimated"
+                        in
                         Form.getFieldAsBool Backend.Person.Form.birthDateEstimated form_
                             |> .value
-                            |> Maybe.withDefault True
+                            |> isNothing
                             |> (\useDefault ->
                                     if useDefault then
                                         Form.update

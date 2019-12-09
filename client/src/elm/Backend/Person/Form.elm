@@ -68,9 +68,7 @@ type alias PersonForm =
 
 emptyForm : PersonForm
 emptyForm =
-    initial
-        [ setBool birthDateEstimated False
-        ]
+    initial []
         (validatePerson Nothing CreatePerson Nothing)
 
 

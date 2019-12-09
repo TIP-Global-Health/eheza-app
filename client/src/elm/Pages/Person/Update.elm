@@ -19,9 +19,6 @@ update currentDate msg people model =
     case msg of
         MsgForm relation operation subMsg ->
             let
-                log =
-                    Debug.log "subMsg" subMsg
-
                 related =
                     relation
                         |> Maybe.andThen (\personId -> Dict.get personId people)
