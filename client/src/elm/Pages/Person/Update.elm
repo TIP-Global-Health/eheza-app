@@ -5,12 +5,13 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PersonId)
 import Backend.Model
 import Backend.Person.Form exposing (birthDate, validatePerson)
-import Backend.Person.Model exposing (ExpectedAge(..), Person)
+import Backend.Person.Model exposing (ExpectedAge(..), ParticipantDirectoryOperation(..), Person)
 import Date exposing (toRataDie)
 import Form
 import Form.Field
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD, fromLocalDateTime)
 import Pages.Person.Model exposing (..)
+import Pages.Person.View exposing (applyDefaultValues)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
@@ -30,22 +31,52 @@ update currentDate msg people model =
                 appMsgs =
                     case subMsg of
                         Form.Submit ->
-                            Form.getOutput model.form
-                                |> Maybe.map
-                                    (\person ->
-                                        [ person
-                                            |> Backend.Model.PostPerson relation
-                                            |> App.Model.MsgIndexedDb
-                                        ]
-                                    )
-                                -- If we submit, but can't actually submit,
-                                -- then change the request status to
-                                -- `NotAsked` (to reset network errors
-                                -- etc.)
-                                |> Maybe.withDefault
-                                    [ Backend.Model.HandlePostedPerson relation NotAsked
-                                        |> App.Model.MsgIndexedDb
-                                    ]
+                            case operation of
+                                CreatePerson ->
+                                    -- applyDefaultValues related operation currentDate model.form
+                                    model.form
+                                        |> Form.getOutput
+                                        |> Maybe.map
+                                            (\person ->
+                                                [ person
+                                                    |> Backend.Model.PostPerson relation
+                                                    |> App.Model.MsgIndexedDb
+                                                ]
+                                            )
+                                        -- If we submit, but can't actually submit,
+                                        -- then change the request status to
+                                        -- `NotAsked` (to reset network errors
+                                        -- etc.)
+                                        |> Maybe.withDefault
+                                            [ Backend.Model.HandlePostedPerson relation NotAsked
+                                                |> App.Model.MsgIndexedDb
+                                            ]
+
+                                EditPerson ->
+                                    relation
+                                        |> Maybe.map
+                                            (\personId ->
+                                                applyDefaultValues related operation currentDate model.form
+                                                    |> Form.getOutput
+                                                    |> Maybe.map
+                                                        (\person ->
+                                                            [ person
+                                                                |> Backend.Model.PatchPerson personId
+                                                                |> App.Model.MsgIndexedDb
+                                                            ]
+                                                        )
+                                                    -- If we submit, but can't actually submit,
+                                                    -- then change the request status to
+                                                    -- `NotAsked` (to reset network errors
+                                                    -- etc.)
+                                                    |> Maybe.withDefault
+                                                        [ Backend.Model.HandlePatchedPerson personId NotAsked
+                                                            |> App.Model.MsgIndexedDb
+                                                        ]
+                                            )
+                                        -- We should never get here, because when editing,
+                                        -- we always have the ID of person being edited.
+                                        |> Maybe.withDefault []
 
                         _ ->
                             []
@@ -63,7 +94,13 @@ update currentDate msg people model =
             update currentDate (MsgForm relation operation subMsg) people model
 
         ResetCreateForm ->
-            ( Pages.Person.Model.emptyModel
+            ( Pages.Person.Model.emptyCreateModel
+            , Cmd.none
+            , []
+            )
+
+        ResetEditForm ->
+            ( Pages.Person.Model.emptyEditModel
             , Cmd.none
             , []
             )

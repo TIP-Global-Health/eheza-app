@@ -154,8 +154,8 @@ type alias LoggedInModel =
 
 emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
 emptyLoggedInModel nurse =
-    { createPersonPage = Pages.Person.Model.emptyModel
-    , editPersonPage = Pages.Person.Model.emptyModel
+    { createPersonPage = Pages.Person.Model.emptyCreateModel
+    , editPersonPage = Pages.Person.Model.emptyEditModel
     , personsPage = Pages.People.Model.emptyModel
     , clinicsPage = Pages.Clinics.Model.emptyModel
     , relationshipPages = Dict.empty

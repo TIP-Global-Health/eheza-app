@@ -1,4 +1,4 @@
-module Pages.Person.Model exposing (Model, Msg(..), emptyModel)
+module Pages.Person.Model exposing (Model, Msg(..), emptyCreateModel, emptyEditModel)
 
 import Backend.Entities exposing (..)
 import Backend.Person.Form exposing (PersonForm)
@@ -20,14 +20,22 @@ type Msg
       -- a relationship with.
       MsgForm (Maybe PersonId) ParticipantDirectoryOperation Form.Msg
     | ResetCreateForm
+    | ResetEditForm
     | SetActivePage Page
     | DropZoneComplete (Maybe PersonId) ParticipantDirectoryOperation DropZoneFile
     | ToggleDateSelector
     | DateSelected (Maybe PersonId) ParticipantDirectoryOperation Date
 
 
-emptyModel : Model
-emptyModel =
-    { form = Backend.Person.Form.emptyForm
+emptyCreateModel : Model
+emptyCreateModel =
+    { form = Backend.Person.Form.emptyCreateForm
+    , isDateSelectorOpen = False
+    }
+
+
+emptyEditModel : Model
+emptyEditModel =
+    { form = Backend.Person.Form.emptyCreateForm
     , isDateSelectorOpen = False
     }

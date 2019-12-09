@@ -1,4 +1,4 @@
-module Pages.Person.View exposing (view, viewCreateEditForm)
+module Pages.Person.View exposing (applyDefaultValues, view, viewCreateEditForm)
 
 import App.Model
 import AssocList as Dict exposing (Dict)
@@ -678,7 +678,13 @@ viewCreateEditForm language currentDate personId operation model db =
                     emptyNode
 
         expectedAge =
-            expectedAgeByForm currentDate personForm operation
+            maybeRelatedPerson
+                |> Maybe.map
+                    (\related -> expectedAgeByPerson currentDate related operation)
+                -- If we don't have a related person, or don't know whether
+                -- that person is an adult, then we check whether a birthdate
+                -- has been entered into the form so far.
+                |> Maybe.withDefault (expectedAgeByForm currentDate personForm operation)
 
         birthDateEstimatedField =
             Form.getFieldAsBool Backend.Person.Form.birthDateEstimated personForm

@@ -6,7 +6,8 @@ module Backend.Person.Form exposing
     , cell
     , district
     , educationLevel
-    , emptyForm
+    , emptyCreateForm
+    , emptyEditForm
     , expectedAgeByForm
     , firstName
     , gender
@@ -66,10 +67,16 @@ type alias PersonForm =
     Form ValidationError Person
 
 
-emptyForm : PersonForm
-emptyForm =
+emptyCreateForm : PersonForm
+emptyCreateForm =
     initial []
         (validatePerson Nothing CreatePerson Nothing)
+
+
+emptyEditForm : PersonForm
+emptyEditForm =
+    initial []
+        (validatePerson Nothing EditPerson Nothing)
 
 
 {-| Given the birth date actually entered into the form, what age range are we
