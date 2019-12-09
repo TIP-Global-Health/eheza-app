@@ -16,7 +16,7 @@ import Backend.Person.Encoder
         )
 import Backend.Person.Form exposing (PersonForm, expectedAgeByForm, validatePerson)
 import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), ParticipantDirectoryOperation(..), Person, allEducationLevels, allHivStatuses, allMaritalStatuses, allModesOfDelivery, allUbudehes)
-import Backend.Person.Utils exposing (expectedAgeByPerson, isPersonAnAdult)
+import Backend.Person.Utils exposing (expectedAgeByPerson, isAdult, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Date exposing (Unit(..))
@@ -677,28 +677,18 @@ viewCreateEditForm language currentDate personId operation model db =
                 NotAsked ->
                     emptyNode
 
-        birthDateField =
-            Form.getFieldAsString Backend.Person.Form.birthDate personForm
-
         expectedAge =
-            maybeRelatedPerson
-                |> Maybe.map
-                    (\related -> expectedAgeByPerson currentDate related operation)
-                -- If we don't have a related person, or don't know whether
-                -- that person is an adult, then we check whether a birthdate
-                -- has been entered into the form so far.
-                |> Maybe.withDefault (expectedAgeByForm currentDate personForm operation)
+            expectedAgeByForm currentDate personForm operation
 
         birthDateEstimatedField =
             Form.getFieldAsBool Backend.Person.Form.birthDateEstimated personForm
 
+        selectedBirthDate =
+            Form.getFieldAsString Backend.Person.Form.birthDate personForm
+                |> .value
+                |> Maybe.andThen (Date.fromIsoString >> Result.toMaybe)
+
         birthDateInput =
-            let
-                selectedDate =
-                    Form.getFieldAsString Backend.Person.Form.birthDate personForm
-                        |> .value
-                        |> Maybe.andThen (Date.fromIsoString >> Result.toMaybe)
-            in
             div [ class "ui grid" ]
                 [ div
                     [ class "six wide column" ]
@@ -713,7 +703,7 @@ viewCreateEditForm language currentDate personId operation model db =
                         model.isDateSelectorOpen
                         (Date.add Years -60 currentDate)
                         currentDate
-                        selectedDate
+                        selectedBirthDate
                     ]
                 , div
                     [ class "three wide column" ]
@@ -1051,6 +1041,13 @@ viewCreateEditForm language currentDate personId operation model db =
 
         viewVillage =
             let
+                disabled =
+                    (operation == EditPerson)
+                        && (isAdult currentDate selectedBirthDate
+                                |> Maybe.map not
+                                |> Maybe.withDefault False
+                           )
+
                 options =
                     emptyOption
                         :: (case getValueAsInt cell of
@@ -1068,7 +1065,7 @@ viewCreateEditForm language currentDate personId operation model db =
                 options
                 Backend.Person.Form.village
                 "ten"
-                (geoLocationInputClass False)
+                (geoLocationInputClass disabled)
                 True
                 personForm
 
@@ -1095,6 +1092,16 @@ viewCreateEditForm language currentDate personId operation model db =
 
         healthCenterSection =
             let
+                inputClass =
+                    "select-input"
+                        ++ (case operation of
+                                CreatePerson ->
+                                    ""
+
+                                EditPerson ->
+                                    " disabled"
+                           )
+
                 options =
                     emptyOption
                         :: (db.healthCenters
@@ -1116,7 +1123,7 @@ viewCreateEditForm language currentDate personId operation model db =
             [ h3
                 [ class "ui header" ]
                 [ text <| translate language Translate.RegistratingHealthCenter ++ ":" ]
-            , [ viewSelectInput language Translate.HealthCenter options Backend.Person.Form.healthCenter "ten" "select-input" True personForm ]
+            , [ viewSelectInput language Translate.HealthCenter options Backend.Person.Form.healthCenter "ten" inputClass True personForm ]
                 |> fieldset [ class "registration-form health-center" ]
                 |> Html.map (MsgForm personId operation)
             ]
