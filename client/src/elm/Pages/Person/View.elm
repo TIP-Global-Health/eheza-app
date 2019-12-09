@@ -464,6 +464,9 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
         defaultBirthDate =
             maybeRelatedPerson |> Maybe.andThen .birthDate
 
+        defaultAvatarUrl =
+            maybeRelatedPerson |> Maybe.andThen .avatarUrl
+
         defaultTelephoneNumber =
             maybeRelatedPerson |> Maybe.andThen .telephoneNumber
 
@@ -498,12 +501,6 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
                 |> unwrap
                     form_
                     (\isEstimated ->
-                        let
-                            log =
-                                Form.getFieldAsBool Backend.Person.Form.birthDateEstimated form_
-                                    |> .value
-                                    |> Debug.log "isEstimated"
-                        in
                         Form.getFieldAsBool Backend.Person.Form.birthDateEstimated form_
                             |> .value
                             |> isNothing
@@ -577,6 +574,7 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
 
         EditPerson ->
             form
+                |> applyDefaultTextInput Backend.Person.Form.photo defaultAvatarUrl identity
                 |> applyDefaultTextInput Backend.Person.Form.firstName defaultFirstName identity
                 |> applyDefaultTextInput Backend.Person.Form.secondName defaultSecondName identity
                 |> applyDefaultTextInput Backend.Person.Form.nationalIdNumber defaultNationalIdNumber identity
@@ -602,9 +600,6 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
 viewCreateEditForm : Language -> NominalDate -> Maybe PersonId -> ParticipantDirectoryOperation -> Model -> ModelIndexedDb -> Html Msg
 viewCreateEditForm language currentDate personId operation model db =
     let
-        log2 =
-            Debug.log "model" model
-
         formBeforeDefaults =
             model.form
 
@@ -684,9 +679,6 @@ viewCreateEditForm language currentDate personId operation model db =
 
         birthDateField =
             Form.getFieldAsString Backend.Person.Form.birthDate personForm
-
-        log =
-            Debug.log "" birthDateField
 
         expectedAge =
             maybeRelatedPerson

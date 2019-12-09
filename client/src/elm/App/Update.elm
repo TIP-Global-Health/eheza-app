@@ -375,20 +375,11 @@ update msg model =
                     model.url
                         |> (\url -> { url | fragment = fragment, query = Nothing })
 
-                cmds =
+                cmd =
                     Nav.pushUrl model.navigationKey (Url.toString redirectUrl)
-                        :: (case page of
-                                -- When switching to registration form, bind
-                                -- DropZone to be able to take pictures.
-                                UserPage (CreatePersonPage _) ->
-                                    [ App.Ports.bindDropZone () ]
-
-                                _ ->
-                                    []
-                           )
             in
             ( { model | activePage = page }
-            , Cmd.batch cmds
+            , cmd
             )
 
         SendRollbar level message data ->
@@ -584,9 +575,22 @@ update msg model =
             let
                 activePage =
                     activePageByUrl url
+
+                cmd =
+                    case activePage of
+                        -- When at 'create / edit person' oage, bind
+                        -- DropZone to be able to take pictures.
+                        UserPage (CreatePersonPage _) ->
+                            App.Ports.bindDropZone ()
+
+                        UserPage (EditPersonPage _) ->
+                            App.Ports.bindDropZone ()
+
+                        _ ->
+                            Cmd.none
             in
             ( { model | url = url, activePage = activePage }
-            , Cmd.none
+            , cmd
             )
 
 
