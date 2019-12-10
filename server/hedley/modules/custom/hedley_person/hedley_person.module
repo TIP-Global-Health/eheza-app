@@ -32,19 +32,19 @@ function hedley_person_node_update($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
 
   // Verify we're working with an adult.
-  $age_in_years = (time() - $wrapper->field_birth_date-> value()) / (365 * 24 * 3600);
-  if($age_in_years < 13) {
+  $age_in_years = (time() - $wrapper->field_birth_date->value()) / (365 * 24 * 3600);
+  if ($age_in_years < 13) {
     return;
   }
 
   $original_wrapper = entity_metadata_wrapper('node', $node->original);
 
   if ($original_wrapper->field_province->value() == $wrapper->field_province->value()
-     && $original_wrapper->field_district->value() == $wrapper->field_district->value()
-     && $original_wrapper->field_sector->value() == $wrapper->field_sector->value()
-     && $original_wrapper->field_cell->value() == $wrapper->field_cell->value()
-     && $original_wrapper->field_village->value() == $wrapper->field_village->value() ) {
-     return;
+      && $original_wrapper->field_district->value() == $wrapper->field_district->value()
+      && $original_wrapper->field_sector->value() == $wrapper->field_sector->value()
+      && $original_wrapper->field_cell->value() == $wrapper->field_cell->value()
+      && $original_wrapper->field_village->value() == $wrapper->field_village->value()) {
+    return;
   }
 
   // Load all children for mother.
