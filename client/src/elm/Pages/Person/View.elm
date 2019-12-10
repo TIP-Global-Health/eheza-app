@@ -853,6 +853,7 @@ viewCreateEditForm language currentDate personId operation model db =
                                 |> Maybe.map not
                                 |> Maybe.withDefault False
                            )
+                        && isFormFieldSet village
 
                 options =
                     emptyOption
@@ -896,16 +897,18 @@ viewCreateEditForm language currentDate personId operation model db =
             else
                 []
 
+        healthCenter =
+            Form.getFieldAsString Backend.Person.Form.healthCenter personForm
+
         healthCenterSection =
             let
                 inputClass =
                     "select-input"
-                        ++ (case operation of
-                                CreatePerson ->
-                                    ""
+                        ++ (if operation == EditPerson && isFormFieldSet healthCenter then
+                                " disabled"
 
-                                EditPerson ->
-                                    " disabled"
+                            else
+                                ""
                            )
 
                 options =
@@ -916,9 +919,9 @@ viewCreateEditForm language currentDate personId operation model db =
                                         dict
                                             |> Dict.toList
                                             |> List.map
-                                                (\( id, healthCenter ) ->
+                                                (\( id, healthCenter_ ) ->
                                                     ( fromEntityUuid id
-                                                    , healthCenter.name
+                                                    , healthCenter_.name
                                                     )
                                                 )
                                             |> List.sortBy (\( id, name ) -> name)
