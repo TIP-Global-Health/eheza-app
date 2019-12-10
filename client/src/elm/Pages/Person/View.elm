@@ -1,4 +1,4 @@
-module Pages.Person.View exposing (applyDefaultValues, view, viewCreateEditForm)
+module Pages.Person.View exposing (view, viewCreateEditForm)
 
 import App.Model
 import AssocList as Dict exposing (Dict)
@@ -8,13 +8,12 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Encoder
     exposing
         ( encodeEducationLevel
-        , encodeGender
         , encodeHivStatus
         , encodeMaritalStatus
         , encodeModeOfDelivery
         , encodeUbudehe
         )
-import Backend.Person.Form exposing (PersonForm, expectedAgeByForm, validatePerson)
+import Backend.Person.Form exposing (PersonForm, applyDefaultValues, expectedAgeByForm, validatePerson)
 import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), ParticipantDirectoryOperation(..), Person, allEducationLevels, allHivStatuses, allMaritalStatuses, allModesOfDelivery, allUbudehes)
 import Backend.Person.Utils exposing (expectedAgeByPerson, isAdult, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
@@ -39,7 +38,7 @@ import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Set
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
-import Utils.GeoLocation exposing (GeoInfo, geoInfo, getGeoLocation)
+import Utils.GeoLocation exposing (GeoInfo, geoInfo)
 import Utils.Html exposing (thumbnailImage, viewLoading)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
@@ -385,216 +384,6 @@ viewPhotoThumb url =
             ]
             []
         ]
-
-
-applyDefaultValues : Maybe Person -> ParticipantDirectoryOperation -> NominalDate -> PersonForm -> PersonForm
-applyDefaultValues maybeRelatedPerson operation currentDate form =
-    let
-        defaultProvinceId =
-            maybeRelatedPerson
-                |> Maybe.andThen .province
-                |> Maybe.andThen (getGeoLocation Nothing)
-                |> Maybe.map Tuple.first
-
-        defaultDistrictId =
-            maybeRelatedPerson
-                |> Maybe.andThen .district
-                |> Maybe.andThen (getGeoLocation defaultProvinceId)
-                |> Maybe.map Tuple.first
-
-        defaultSectorId =
-            maybeRelatedPerson
-                |> Maybe.andThen .sector
-                |> Maybe.andThen (getGeoLocation defaultDistrictId)
-                |> Maybe.map Tuple.first
-
-        defaultCellId =
-            maybeRelatedPerson
-                |> Maybe.andThen .cell
-                |> Maybe.andThen (getGeoLocation defaultSectorId)
-                |> Maybe.map Tuple.first
-
-        defaultVillageId =
-            maybeRelatedPerson
-                |> Maybe.andThen .village
-                |> Maybe.andThen (getGeoLocation defaultCellId)
-                |> Maybe.map Tuple.first
-
-        defaultUbudehe =
-            maybeRelatedPerson
-                |> Maybe.andThen .ubudehe
-
-        defaultHealthCenter =
-            maybeRelatedPerson
-                |> Maybe.andThen .healthCenterId
-
-        defaultHmisNumber =
-            maybeRelatedPerson
-                |> Maybe.andThen .hmisNumber
-
-        defaultModeOfDelivery =
-            maybeRelatedPerson
-                |> Maybe.andThen .modeOfDelivery
-
-        defaultHivStatus =
-            maybeRelatedPerson
-                |> Maybe.andThen .hivStatus
-
-        defaultlEducationLevel =
-            maybeRelatedPerson
-                |> Maybe.andThen .educationLevel
-
-        defaultlNumberOfChildrenl =
-            maybeRelatedPerson
-                |> Maybe.andThen .numberOfChildren
-
-        defaultMaritalStatus =
-            maybeRelatedPerson
-                |> Maybe.andThen .maritalStatus
-
-        defaultFirstName =
-            maybeRelatedPerson |> Maybe.map .firstName
-
-        defaultSecondName =
-            maybeRelatedPerson |> Maybe.map .secondName
-
-        defaultNationalIdNumber =
-            maybeRelatedPerson |> Maybe.andThen .nationalIdNumber
-
-        defaultBirthDate =
-            maybeRelatedPerson |> Maybe.andThen .birthDate
-
-        defaultAvatarUrl =
-            maybeRelatedPerson |> Maybe.andThen .avatarUrl
-
-        defaultTelephoneNumber =
-            maybeRelatedPerson |> Maybe.andThen .telephoneNumber
-
-        validation =
-            validatePerson maybeRelatedPerson operation (Just currentDate)
-
-        formFieldEmpty fieldName form_ =
-            Form.getFieldAsString fieldName form_
-                |> .value
-                |> Maybe.map String.isEmpty
-                |> Maybe.withDefault True
-
-        applyDefaultGender form_ =
-            maybeRelatedPerson
-                |> Maybe.map .gender
-                |> unwrap
-                    form_
-                    (\gender ->
-                        if formFieldEmpty Backend.Person.Form.gender form_ then
-                            Form.update
-                                validation
-                                (Form.Input Backend.Person.Form.gender Form.Radio (Form.Field.String (encodeGender gender)))
-                                form_
-
-                        else
-                            form_
-                    )
-
-        applyDefaultIsDateOfBirthEstimated form_ =
-            maybeRelatedPerson
-                |> Maybe.map .isDateOfBirthEstimated
-                |> unwrap
-                    form_
-                    (\isEstimated ->
-                        Form.getFieldAsBool Backend.Person.Form.birthDateEstimated form_
-                            |> .value
-                            |> isNothing
-                            |> (\useDefault ->
-                                    if useDefault then
-                                        Form.update
-                                            validation
-                                            (Form.Input Backend.Person.Form.birthDateEstimated Form.Checkbox (Form.Field.Bool isEstimated))
-                                            form_
-
-                                    else
-                                        form_
-                               )
-                    )
-
-        applyDefaultTextInput fieldName maybeDefault toStringFunc form_ =
-            maybeDefault
-                |> unwrap
-                    form_
-                    (\default ->
-                        if formFieldEmpty fieldName form_ then
-                            Form.update
-                                validation
-                                (Form.Input fieldName Form.Text (Form.Field.String (toStringFunc default)))
-                                form_
-
-                        else
-                            form_
-                    )
-
-        applyDefaultSelectInput fieldName maybeDefault toStringFunc form_ =
-            maybeDefault
-                |> unwrap
-                    form_
-                    (\default ->
-                        if formFieldEmpty fieldName form_ then
-                            Form.update
-                                validation
-                                (Form.Input fieldName Form.Select (Form.Field.String (toStringFunc default)))
-                                form_
-
-                        else
-                            form_
-                    )
-
-        applyDefaultLocation fieldName maybeDefault form_ =
-            case maybeDefault of
-                Just defaultId ->
-                    if formFieldEmpty fieldName form_ then
-                        Form.update
-                            validation
-                            (Form.Input fieldName Form.Select (Form.Field.String (Debug.toString <| fromEntityId defaultId)))
-                            form_
-
-                    else
-                        form_
-
-                Nothing ->
-                    form_
-    in
-    case operation of
-        CreatePerson ->
-            form
-                |> applyDefaultSelectInput Backend.Person.Form.ubudehe defaultUbudehe (encodeUbudehe >> Debug.toString)
-                |> applyDefaultSelectInput Backend.Person.Form.healthCenter defaultHealthCenter fromEntityUuid
-                |> applyDefaultLocation Backend.Person.Form.province defaultProvinceId
-                |> applyDefaultLocation Backend.Person.Form.district defaultDistrictId
-                |> applyDefaultLocation Backend.Person.Form.sector defaultSectorId
-                |> applyDefaultLocation Backend.Person.Form.cell defaultCellId
-                |> applyDefaultLocation Backend.Person.Form.village defaultVillageId
-
-        EditPerson ->
-            form
-                |> applyDefaultTextInput Backend.Person.Form.photo defaultAvatarUrl identity
-                |> applyDefaultTextInput Backend.Person.Form.firstName defaultFirstName identity
-                |> applyDefaultTextInput Backend.Person.Form.secondName defaultSecondName identity
-                |> applyDefaultTextInput Backend.Person.Form.nationalIdNumber defaultNationalIdNumber identity
-                |> applyDefaultTextInput Backend.Person.Form.birthDate defaultBirthDate formatYYYYMMDD
-                |> applyDefaultIsDateOfBirthEstimated
-                |> applyDefaultSelectInput Backend.Person.Form.hmisNumber defaultHmisNumber identity
-                |> applyDefaultGender
-                |> applyDefaultSelectInput Backend.Person.Form.hivStatus defaultHivStatus encodeHivStatus
-                |> applyDefaultSelectInput Backend.Person.Form.educationLevel defaultlEducationLevel (encodeEducationLevel >> Debug.toString)
-                |> applyDefaultSelectInput Backend.Person.Form.maritalStatus defaultMaritalStatus encodeMaritalStatus
-                |> applyDefaultSelectInput Backend.Person.Form.modeOfDelivery defaultModeOfDelivery encodeModeOfDelivery
-                |> applyDefaultSelectInput Backend.Person.Form.numberOfChildren defaultlNumberOfChildrenl Debug.toString
-                |> applyDefaultSelectInput Backend.Person.Form.ubudehe defaultUbudehe (encodeUbudehe >> Debug.toString)
-                |> applyDefaultLocation Backend.Person.Form.province defaultProvinceId
-                |> applyDefaultLocation Backend.Person.Form.district defaultDistrictId
-                |> applyDefaultLocation Backend.Person.Form.sector defaultSectorId
-                |> applyDefaultLocation Backend.Person.Form.cell defaultCellId
-                |> applyDefaultLocation Backend.Person.Form.village defaultVillageId
-                |> applyDefaultTextInput Backend.Person.Form.phoneNumber defaultTelephoneNumber identity
-                |> applyDefaultSelectInput Backend.Person.Form.healthCenter defaultHealthCenter fromEntityUuid
 
 
 viewCreateEditForm : Language -> NominalDate -> Maybe PersonId -> ParticipantDirectoryOperation -> Model -> ModelIndexedDb -> Html Msg

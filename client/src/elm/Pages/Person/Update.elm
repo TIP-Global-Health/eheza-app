@@ -4,14 +4,13 @@ import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PersonId)
 import Backend.Model
-import Backend.Person.Form exposing (birthDate, validatePerson)
+import Backend.Person.Form exposing (applyDefaultValues, birthDate, validatePerson)
 import Backend.Person.Model exposing (ExpectedAge(..), ParticipantDirectoryOperation(..), Person)
 import Date exposing (toRataDie)
 import Form
 import Form.Field
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD, fromLocalDateTime)
 import Pages.Person.Model exposing (..)
-import Pages.Person.View exposing (applyDefaultValues)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
