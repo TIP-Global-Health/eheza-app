@@ -483,6 +483,17 @@ viewCreateEditForm language currentDate personId operation model db =
                 |> .value
                 |> Maybe.andThen (Date.fromIsoString >> Result.toMaybe)
 
+        ( birthDateSelectorFrom, birthDateSelectorTo ) =
+            case expectedAge of
+                ExpectChild ->
+                    ( Date.add Years -13 currentDate, currentDate )
+
+                ExpectAdult ->
+                    ( Date.add Years -60 currentDate, Date.add Years -13 currentDate )
+
+                ExpectAdultOrChild ->
+                    ( Date.add Years -60 currentDate, currentDate )
+
         birthDateInput =
             div [ class "ui grid" ]
                 [ div
@@ -496,8 +507,8 @@ viewCreateEditForm language currentDate personId operation model db =
                         ToggleDateSelector
                         (DateSelected personId operation)
                         model.isDateSelectorOpen
-                        (Date.add Years -60 currentDate)
-                        currentDate
+                        birthDateSelectorFrom
+                        birthDateSelectorTo
                         selectedBirthDate
                     ]
                 , div
