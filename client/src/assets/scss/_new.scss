@@ -20,6 +20,10 @@ body {
     &.no-bg {
         background-image: none;
     }
+
+    img.rotate-90 {
+      transform: rotate(90deg);
+    }
 }
 
 // This is our wrapper for the whole page.
