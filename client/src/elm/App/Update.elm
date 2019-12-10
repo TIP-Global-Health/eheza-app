@@ -198,6 +198,16 @@ update msg model =
                             , appMsgs
                             )
 
+                        MsgPageEditPerson subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.Person.Update.update currentDate subMsg model.indexedDb.people data.editPersonPage
+                            in
+                            ( { data | editPersonPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageEditPerson) subCmd
+                            , appMsgs
+                            )
+
                         MsgPagePersons subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =

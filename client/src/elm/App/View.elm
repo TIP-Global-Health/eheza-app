@@ -3,6 +3,7 @@ module App.View exposing (view)
 import AllDict
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInData)
+import Backend.Person.Model exposing (ParticipantDirectoryOperation(..))
 import Config.View
 import Date
 import EveryDict
@@ -188,8 +189,13 @@ viewUserPage page model configured =
                         |> flexPageWrapper model
 
                 CreatePersonPage relation ->
-                    Pages.Person.View.viewCreateForm model.language currentDate relation loggedInModel.createPersonPage model.indexedDb
+                    Pages.Person.View.viewCreateEditForm model.language currentDate relation CreatePerson loggedInModel.createPersonPage model.indexedDb
                         |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
+                        |> flexPageWrapper model
+
+                EditPersonPage id ->
+                    Pages.Person.View.viewCreateEditForm model.language currentDate (Just id) EditPerson loggedInModel.editPersonPage model.indexedDb
+                        |> Html.map (MsgLoggedIn << MsgPageEditPerson)
                         |> flexPageWrapper model
 
                 PersonPage id ->

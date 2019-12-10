@@ -20,3 +20,59 @@ define('HEDLEY_PERSON_GENDER_FEMALE', 'female');
 
 define('HEDLEY_PERSON_RELATED_BY_PARENT_OF', 'parent');
 define('HEDLEY_PERSON_RELATED_BY_CAREGIVER_FOR', 'caregiver');
+
+/**
+ * Implements hook_node_update().
+ */
+function hedley_person_node_update($node) {
+  if ($node->type != 'person' || $node->status != NODE_PUBLISHED) {
+    return;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+
+  // Verify we're working with an adult.
+  $age_in_years = (time() - $wrapper->field_birth_date-> value()) / (365 * 24 * 3600);
+  if($age_in_years < 13) {
+    return;
+  }
+
+  $original_wrapper = entity_metadata_wrapper('node', $node->original);
+
+  if ($original_wrapper->field_province->value() == $wrapper->field_province->value()
+     && $original_wrapper->field_district->value() == $wrapper->field_district->value()
+     && $original_wrapper->field_sector->value() == $wrapper->field_sector->value()
+     && $original_wrapper->field_cell->value() == $wrapper->field_cell->value()
+     && $original_wrapper->field_village->value() == $wrapper->field_village->value() ) {
+     return;
+  }
+
+  // Load all children for mother.
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->propertyCondition('type', 'relationship')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_person', 'target_id', $node->nid);
+  $result = $query->execute();
+
+  if (empty($result['node'])) {
+    // There're no children associated with this adult.
+    return;
+  }
+
+  $relationships_ids = array_keys($result['node']);
+  $relationships = node_load_multiple($relationships_ids);
+  foreach ($relationships as $relationship) {
+    $relationship_wrapper = entity_metadata_wrapper('node', $relationship);
+
+    $child_wrapper = entity_metadata_wrapper('node', $relationship_wrapper->field_related_to->value());
+    $child_wrapper->field_province->set($wrapper->field_province->value());
+    $child_wrapper->field_district->set($wrapper->field_district->value());
+    $child_wrapper->field_sector->set($wrapper->field_sector->value());
+    $child_wrapper->field_cell->set($wrapper->field_cell->value());
+    $child_wrapper->field_village->set($wrapper->field_village->value());
+
+    $child_wrapper->save();
+  }
+}

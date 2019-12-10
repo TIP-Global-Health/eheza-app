@@ -1,4 +1,4 @@
-module Pages.Person.Fetch exposing (fetch, fetchForCreateForm)
+module Pages.Person.Fetch exposing (fetch, fetchForCreateOrEdit)
 
 import AllDict
 import AllDictList
@@ -47,8 +47,8 @@ fetch id db =
            ]
 
 
-fetchForCreateForm : Maybe PersonId -> List MsgIndexedDb
-fetchForCreateForm related =
+fetchForCreateOrEdit : Maybe PersonId -> List MsgIndexedDb
+fetchForCreateOrEdit related =
     FetchHealthCenters
         :: List.filterMap identity
             [ Maybe.map FetchPerson related
