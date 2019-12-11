@@ -104,7 +104,7 @@ thumbnailImage subClass maybeAvatarUrl label height width =
                     [ ( "height", toString height ++ "px" )
                     , ( "width", toString width ++ "px" )
                     ]
-                , class <| "photo-participant " ++ subClass
+                , class <| "photo-participant " ++ subClass ++ " rotate-90"
                 ]
                 []
 
