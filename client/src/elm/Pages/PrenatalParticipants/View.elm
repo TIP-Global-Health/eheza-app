@@ -143,7 +143,7 @@ viewSearchForm language currentDate selectedHealthCenterId model db =
                     |> RemoteData.map
                         (EveryDictList.filter
                             (\_ person ->
-                                (isPersonAFertileWoman currentDate person |> Maybe.withDefault False)
+                                isPersonAFertileWoman currentDate person
                                     -- Show only mothers that belong to selected health center
                                     && (person.healthCenterId == Just selectedHealthCenterId)
                             )

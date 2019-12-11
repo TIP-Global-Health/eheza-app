@@ -2,22 +2,26 @@ module Pages.EncounterTypes.View exposing (view)
 
 import App.Model exposing (Msg(SetActivePage))
 import Backend.Entities exposing (..)
+import Backend.Model exposing (ModelIndexedDb)
+import Backend.Person.Utils exposing (isPersonAFertileWoman)
 import Backend.PrenatalParticipant.Model exposing (EncounterType(..))
+import EveryDict
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Pages.Page exposing (Page(..), UserPage(..))
+import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 
 
-view : Language -> NominalDate -> PersonId -> Html App.Model.Msg
-view language currentDate personId =
+view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
+view language currentDate personId db =
     div
         [ class "wrap wrap-alt-2 page-encounter-types" ]
         [ viewHeader language
-        , viewContent language currentDate personId
+        , viewContent language currentDate personId db
             |> div [ class "ui full segment" ]
         ]
 
@@ -38,11 +42,11 @@ viewHeader language =
         ]
 
 
-viewContent : Language -> NominalDate -> PersonId -> List (Html App.Model.Msg)
-viewContent language currentDate personId =
+viewContent : Language -> NominalDate -> PersonId -> ModelIndexedDb -> List (Html App.Model.Msg)
+viewContent language currentDate personId db =
     let
         antenatalButton =
-            EveryDict.get relationId db.people
+            EveryDict.get personId db.people
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.map
                     (\person ->
@@ -58,8 +62,7 @@ viewContent language currentDate personId =
                         else
                             emptyNode
                     )
-                |> RemoteData.withDefault (fromEntityUuid relationId)
-                |> (\name -> translate language (Translate.AddFamilyMemberFor name))
+                |> RemoteData.withDefault emptyNode
     in
     [ p [] [ text <| translate language Translate.SelectEncounterType ++ ":" ]
     , antenatalButton

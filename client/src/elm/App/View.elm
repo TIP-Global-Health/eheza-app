@@ -288,7 +288,7 @@ viewUserPage page model configured =
                             |> flexPageWrapper model
 
                     EncounterTypesPage id ->
-                        Pages.EncounterTypes.View.view model.language currentDate id
+                        Pages.EncounterTypes.View.view model.language currentDate id model.indexedDb
                             |> flexPageWrapper model
 
             else
