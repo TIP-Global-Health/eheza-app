@@ -54,6 +54,9 @@ encodeActivityAsString activity =
         PregnancyDating ->
             "pregnancy-dating"
 
+        PrenatalPhoto ->
+            "photo"
+
 
 {-| The inverse of encodeActivityTypeAsString
 -}
@@ -78,6 +81,9 @@ decodeActivityFromString s =
         "pregnancy-dating" ->
             Just PregnancyDating
 
+        "photo" ->
+            Just PrenatalPhoto
+
         _ ->
             Nothing
 
@@ -99,7 +105,7 @@ getActivityIcon activity =
 
 getAllActivities : List PrenatalActivity
 getAllActivities =
-    [ PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, DangerSigns ]
+    [ PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, DangerSigns, PrenatalPhoto ]
 
 
 generateHighRiskAlertData : Language -> PrenatalMeasurements -> HighRiskFactor -> Maybe String

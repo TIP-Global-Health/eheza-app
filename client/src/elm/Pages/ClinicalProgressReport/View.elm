@@ -23,6 +23,7 @@ import Pages.DemographicsReport.View exposing (viewHeader, viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Utils exposing (calculateBmi)
 import Pages.PrenatalEncounter.Utils exposing (calculateEDDandEGADays, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generatePara, getLmpMeasurement)
+import Pages.Utils exposing (viewPhotoThumb)
 import PrenatalActivity.Model
     exposing
         ( PregnancyTrimester(..)
@@ -241,21 +242,20 @@ viewObstetricalDiagnosisPane language currentDate measurements =
 viewPatientProgressPane : Language -> NominalDate -> PrenatalMeasurements -> Html Msg
 viewPatientProgressPane language currentDate measurements =
     let
-        currentEncounterDate =
-            currentDate
-
-        maybeLmpDate =
-            getLmpMeasurement measurements
-
-        -- Right now we have only the current encounter to display.
-        encountersTrimestersData =
-            [ ( currentEncounterDate
-              , maybeLmpDate
-              )
+        allEncountersData =
+            [ ( currentDate, measurements )
             ]
+
+        allEncountersMeasurements =
+            allEncountersData
+                |> List.map Tuple.second
+
+        encountersTrimestersData =
+            allEncountersData
                 |> List.map
-                    (\( encounterDate, lmp ) ->
-                        getEncounterTrimesterData encounterDate lmp
+                    (\( date, measurements ) ->
+                        getLmpMeasurement measurements
+                            |> getEncounterTrimesterData date
                     )
 
         countTrimesterEncounters trimester =
@@ -297,7 +297,7 @@ viewPatientProgressPane language currentDate measurements =
                 |> Maybe.withDefault False
 
         ( eddLabel, fetalHeartRateLabel, fetalMovementsLabel ) =
-            maybeLmpDate
+            getLmpMeasurement measurements
                 |> Maybe.map
                     (\lmpDate ->
                         let
@@ -502,9 +502,6 @@ viewPatientProgressPane language currentDate measurements =
                 , span [] [ text <| translate language transId ]
                 ]
 
-        allEncountersMeasurements =
-            [ measurements ]
-
         egaBmiValues =
             allEncountersMeasurements
                 |> List.filterMap
@@ -561,6 +558,30 @@ viewPatientProgressPane language currentDate measurements =
                                     ( diffDays lmpDate currentDate, fundalHeight )
                                 )
                     )
+
+        progressPhotos =
+            allEncountersData
+                |> List.filterMap
+                    (\( date, measurements ) ->
+                        measurements.prenatalPhoto
+                            |> Maybe.map
+                                (Tuple.second
+                                    >> .value
+                                    >> (\photoUrl ->
+                                            let
+                                                egaLabel =
+                                                    getLmpMeasurement measurements
+                                                        |> Maybe.map (\lmpDate -> diffDays lmpDate date |> generateEGAWeeksDaysLabel language)
+                                                        |> Maybe.withDefault ""
+                                            in
+                                            div [ class "progress-photo" ]
+                                                [ viewPhotoThumb photoUrl
+                                                , div [ class "ega" ] [ text egaLabel ]
+                                                ]
+                                       )
+                                )
+                    )
+                |> div [ class "photos-section" ]
     in
     div [ class "patient-progress" ]
         [ viewItemHeading language Translate.PatientProgress "blue"
@@ -578,6 +599,8 @@ viewPatientProgressPane language currentDate measurements =
             , allTrimesters
                 |> List.map viewTrimesterVisits
                 |> div [ class "visits-section" ]
+            , div [ class "caption photos" ] [ text <| translate language Translate.ProgressPhotos ++ ":" ]
+            , progressPhotos
             , div [ class "caption trends" ] [ text <| translate language Translate.ProgressTrends ++ ":" ]
             , div [ class "trends-section" ]
                 [ viewMarkers

@@ -463,6 +463,7 @@ type TranslationId
     | PreviousMeasurementNotFound
     | Profession
     | Programs
+    | ProgressPhotos
     | ProgressReport
     | ProgressTimeline
     | ProgressTrends
@@ -2934,6 +2935,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                PrenatalPhoto ->
+                    { english = "Photo"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalEncounter ->
             { english = "Antenatal Encounter"
             , kinyarwanda = Nothing
@@ -2993,6 +2999,11 @@ translationSet trans =
 
         Programs ->
             { english = "Programs"
+            , kinyarwanda = Nothing
+            }
+
+        ProgressPhotos ->
+            { english = "Progress Photos"
             , kinyarwanda = Nothing
             }
 

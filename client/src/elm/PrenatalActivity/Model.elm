@@ -26,6 +26,7 @@ type PrenatalActivity
     | History
     | PatientProvisions
     | PregnancyDating
+    | PrenatalPhoto
 
 
 type RiskFactor

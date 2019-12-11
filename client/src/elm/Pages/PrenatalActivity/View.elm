@@ -9,12 +9,14 @@ import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import Date.Extra as Date exposing (Interval(Day, Month))
 import DateSelector.SelectorDropdown
 import EveryDict
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime, toLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust, unwrap)
+import Json.Decode
+import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils
@@ -38,10 +40,12 @@ import Pages.PrenatalActivity.Utils
         )
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
+import Pages.Utils exposing (viewPhotoThumb)
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Translate exposing (Language, TranslationId, translate)
+import Utils.Html exposing (script)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -143,6 +147,9 @@ viewActivity language currentDate data model =
 
         DangerSigns ->
             viewDangerSignsContent language currentDate data model.dangerSignsData
+
+        PrenatalPhoto ->
+            viewPrenatalPhotoContent language currentDate data model.prenatalPhotoData
 
 
 viewPregnancyDatingContent : Language -> NominalDate -> AssembledData -> PregnancyDatingData -> List (Html Msg)
@@ -806,6 +813,79 @@ viewDangerSignsContent language currentDate assembled data =
                 ]
                 [ text <| translate language Translate.Save ]
             ]
+        ]
+    ]
+
+
+viewPrenatalPhotoContent : Language -> NominalDate -> AssembledData -> PrenatalPhotoData -> List (Html Msg)
+viewPrenatalPhotoContent language currentDate assembled data =
+    let
+        photoId =
+            Maybe.map Tuple.first assembled.measurements.prenatalPhoto
+
+        -- If we have a photo that we've just taken, but not saved, that is in
+        -- `data.url`. We show that if we have it. Otherwise, we'll show the saved
+        -- measurement, if we have that.
+        ( displayPhoto, saveMsg, isDisabled ) =
+            case data.url of
+                Just url ->
+                    ( Just url
+                    , [ onClick <| SavePrenatalPhoto assembled.id assembled.participant.person photoId url ]
+                    , False
+                    )
+
+                Nothing ->
+                    ( Maybe.map (Tuple.second >> .value)
+                        assembled.measurements.prenatalPhoto
+                    , []
+                    , True
+                    )
+    in
+    [ divKeyed
+        [ class "ui full segment photo" ]
+        [ keyedDivKeyed "content"
+            [ class "content" ]
+            [ keyedDivKeyed "grid"
+                [ class "ui grid" ]
+                [ Maybe.map viewPhotoThumb displayPhoto
+                    |> showMaybe
+                    |> List.singleton
+                    |> div [ class "eight wide column" ]
+                    |> keyed "thumbnail"
+                , div
+                    [ id "dropzone"
+                    , class "eight wide column dropzone"
+                    , on "dropzonecomplete" (Json.Decode.map DropZoneComplete decodeDropZoneFile)
+                    ]
+                    [ div
+                        [ class "dz-message"
+                        , attribute "data-dz-message" ""
+                        ]
+                        [ span
+                            []
+                            [ text <| translate language Translate.DropzoneDefaultMessage ]
+                        ]
+                    ]
+                    |> keyed "dropzone"
+
+                -- This runs the function from our `app.js` at the precise moment this gets
+                -- written to the DOM. Isn't that convenient?
+                , script "bindDropZone()"
+                    |> keyed "script"
+                ]
+            ]
+        , keyed "button" <|
+            div [ class "actions" ]
+                [ button
+                    ([ classList
+                        [ ( "ui fluid primary button", True )
+                        , ( "disabled", isDisabled )
+                        ]
+                     ]
+                        ++ saveMsg
+                    )
+                    [ text <| translate language Translate.Save ]
+                ]
         ]
     ]
 

@@ -1,6 +1,7 @@
-module Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
+module Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter, viewPhotoThumb)
 
 import Backend.Entities exposing (PersonId)
+import Backend.Measurement.Model exposing (PhotoUrl(..))
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
@@ -74,4 +75,17 @@ viewNameFilter language filterInput setFilterMsg =
             , onClick <| setFilterMsg ""
             ]
             [ text <| translate language Translate.ShowAll ]
+        ]
+
+
+{-| Show a photo thumbnail.
+-}
+viewPhotoThumb : PhotoUrl -> Html any
+viewPhotoThumb (PhotoUrl url) =
+    div []
+        [ img
+            [ src url
+            , class "ui small image"
+            ]
+            []
         ]

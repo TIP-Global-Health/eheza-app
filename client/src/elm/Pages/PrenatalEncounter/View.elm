@@ -300,6 +300,9 @@ viewMainPageContent language currentDate data model =
 
                         DangerSigns ->
                             isJust data.measurements.dangerSigns
+
+                        PrenatalPhoto ->
+                            isJust data.measurements.prenatalPhoto
                 )
                 getAllActivities
 

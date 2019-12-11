@@ -57,6 +57,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'resource' => 'resources',
   'social_history' => 'social-histories',
   'photo' => 'photos',
+  'prenatal_photo' => 'prenatal-photos',
   'vitals' => 'vitals',
   'weight' => 'weights',
 ];

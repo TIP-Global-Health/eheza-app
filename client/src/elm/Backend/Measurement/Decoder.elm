@@ -21,6 +21,7 @@ module Backend.Measurement.Decoder exposing
     , decodePrenatalFamilyPlanning
     , decodePrenatalMeasurements
     , decodePrenatalNutrition
+    , decodePrenatalPhoto
     , decodeResource
     , decodeSocialHistory
     , decodeVitals
@@ -110,6 +111,7 @@ decodePrenatalMeasurements =
         |> optional "resource" (decodeHead decodeResource) Nothing
         |> optional "social_history" (decodeHead decodeSocialHistory) Nothing
         |> optional "vitals" (decodeHead decodeVitals) Nothing
+        |> optional "prenatal_photo" (decodeHead decodePrenatalPhoto) Nothing
 
 
 decodePhoto : Decoder Photo
@@ -117,6 +119,13 @@ decodePhoto =
     field "photo" string
         |> map PhotoUrl
         |> decodeGroupMeasurement
+
+
+decodePrenatalPhoto : Decoder PrenatalPhoto
+decodePrenatalPhoto =
+    field "photo" string
+        |> map PhotoUrl
+        |> decodePrenatalMeasurement
 
 
 decodeHeight : Decoder Height

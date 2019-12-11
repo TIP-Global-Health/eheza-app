@@ -38,6 +38,7 @@ module Backend.Measurement.Encoder exposing
     , encodePrenatalFamilyPlanning
     , encodePrenatalNutrition
     , encodePrenatalNutritionValue
+    , encodePrenatalPhoto
     , encodeResource
     , encodeResourceValue
     , encodeSocialHistory
@@ -101,6 +102,11 @@ encodeWeightValue (WeightInKg weight) =
 encodePhoto : Photo -> List ( String, Value )
 encodePhoto =
     encodeGroupMeasurement encodePhotoUrl
+
+
+encodePrenatalPhoto : PrenatalPhoto -> List ( String, Value )
+encodePrenatalPhoto =
+    encodePrenatalMeasurement encodePhotoUrl
 
 
 encodePhotoUrl : PhotoUrl -> List ( String, Value )
