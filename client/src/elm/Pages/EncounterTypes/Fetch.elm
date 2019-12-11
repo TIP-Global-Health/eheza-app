@@ -6,4 +6,6 @@ import Backend.Model exposing (MsgIndexedDb(..))
 
 fetch : PersonId -> List MsgIndexedDb
 fetch id =
-    [ FetchSyncData ]
+    [ FetchSyncData
+    , FetchPerson id
+    ]

@@ -3,6 +3,7 @@ module Pages.EncounterTypes.View exposing (view)
 import App.Model exposing (Msg(SetActivePage))
 import Backend.Entities exposing (..)
 import Backend.PrenatalParticipant.Model exposing (EncounterType(..))
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -16,7 +17,7 @@ view language currentDate personId =
     div
         [ class "wrap wrap-alt-2 page-encounter-types" ]
         [ viewHeader language
-        , viewContent language personId
+        , viewContent language currentDate personId
             |> div [ class "ui full segment" ]
         ]
 
@@ -37,14 +38,29 @@ viewHeader language =
         ]
 
 
-viewContent : Language -> PersonId -> List (Html App.Model.Msg)
-viewContent language personId =
+viewContent : Language -> NominalDate -> PersonId -> List (Html App.Model.Msg)
+viewContent language currentDate personId =
+    let
+        antenatalButton =
+            EveryDict.get relationId db.people
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map
+                    (\person ->
+                        if isPersonAFertileWoman currentDate person then
+                            button
+                                [ class "ui primary button encounter-type"
+                                , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage personId
+                                ]
+                                [ span [ class "text" ] [ text <| translate language <| Translate.EncounterType AntenatalEncounter ]
+                                , span [ class "icon-back" ] []
+                                ]
+
+                        else
+                            emptyNode
+                    )
+                |> RemoteData.withDefault (fromEntityUuid relationId)
+                |> (\name -> translate language (Translate.AddFamilyMemberFor name))
+    in
     [ p [] [ text <| translate language Translate.SelectEncounterType ++ ":" ]
-    , button
-        [ class "ui primary button encounter-type"
-        , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage personId
-        ]
-        [ span [ class "text" ] [ text <| translate language <| Translate.EncounterType AntenatalEncounter ]
-        , span [ class "icon-back" ] []
-        ]
+    , antenatalButton
     ]
