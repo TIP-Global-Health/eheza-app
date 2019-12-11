@@ -188,6 +188,20 @@ viewSearchForm language currentDate selectedHealthCenterId model db =
                 [ class "ui unstackable items participants-list" ]
                 searchResultsParticipants
             ]
+        , div
+            [ class "search-bottom" ]
+            [ div
+                [ class "register-helper" ]
+                [ text <| translate language Translate.RegisterHelper ]
+            , div
+                [ class "register-actions" ]
+                [ button
+                    [ class "ui primary button fluid"
+                    , onClick <| SetActivePage <| UserPage <| CreatePersonPage Nothing
+                    ]
+                    [ text <| translate language Translate.RegisterNewParticipant ]
+                ]
+            ]
         ]
 
 
