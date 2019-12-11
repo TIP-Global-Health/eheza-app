@@ -29,6 +29,7 @@ class HedleyMigratePeople extends HedleyMigrateBase {
     'field_gender',
     'field_birth_date',
     'field_clinic',
+    'field_health_center',
   ];
 
   /**
@@ -48,6 +49,7 @@ class HedleyMigratePeople extends HedleyMigrateBase {
 
     $this->dependencies = [
       'HedleyMigrateClinics',
+      'HedleyMigrateHealthCenters',
     ];
 
     $this
@@ -57,6 +59,10 @@ class HedleyMigratePeople extends HedleyMigrateBase {
     $this
       ->addFieldMapping('field_clinic', 'field_clinic')
       ->sourceMigration('HedleyMigrateClinics');
+
+    $this
+      ->addFieldMapping('field_health_center', 'field_health_center')
+      ->sourceMigration('HedleyMigrateHealthCenters');
   }
 
   /**

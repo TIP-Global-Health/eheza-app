@@ -405,7 +405,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
         viewPhotoUrl (PhotoUrl url) =
             div
                 [ class "image" ]
-                [ img [ src url ] [] ]
+                [ img [ src url, class "rotate-90" ] [] ]
 
         photos =
             photoValues

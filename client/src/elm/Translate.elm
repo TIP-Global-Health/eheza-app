@@ -471,7 +471,7 @@ type TranslationId
     | SuccessivePrimatureDeliveries
     | GroupEncounterClosed
     | GroupEncounterClosed2 SessionId
-    | GroupEncounterLoading SessionId
+    | GroupEncounterLoading
     | GroupEncounterUnauthorized
     | GroupEncounterUnauthorized2
     | ShowAll
@@ -2859,8 +2859,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        GroupEncounterLoading sessionId ->
-            { english = "Loading Group Encounter " ++ fromEntityUuid sessionId
+        GroupEncounterLoading ->
+            { english = "Loading Group Encounter"
             , kinyarwanda = Nothing
             }
 
