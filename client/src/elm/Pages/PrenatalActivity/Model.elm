@@ -23,6 +23,7 @@ module Pages.PrenatalActivity.Model exposing
     , PatientProvisionsTask(..)
     , PregnancyDatingData
     , PregnancyDatingForm
+    , PrenatalPhotoData
     , ResourcesForm
     , SocialHistoryForm
     , VitalsForm
@@ -37,11 +38,13 @@ module Pages.PrenatalActivity.Model exposing
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
+import Measurement.Model exposing (DropZoneFile)
 import Pages.Page exposing (Page)
 
 
 type Msg
-    = SetActivePage Page
+    = DropZoneComplete DropZoneFile
+    | SetActivePage Page
     | SetAlertsDialogState Bool
       -- PregnancyDatingMsgs
     | ToggleDateSelector
@@ -111,6 +114,8 @@ type Msg
       -- DangerSignsMsgs
     | SetDangerSign DangerSign
     | SaveDangerSigns PrenatalEncounterId PersonId (Maybe ( DangerSignsId, DangerSigns ))
+      -- PrenatalPhotoMsgs
+    | SavePrenatalPhoto PrenatalEncounterId PersonId (Maybe PrenatalPhotoId) PhotoUrl
 
 
 type alias Model =
@@ -120,6 +125,7 @@ type alias Model =
     , familyPlanningData : FamilyPlanningData
     , patientProvisionsData : PatientProvisionsData
     , dangerSignsData : DangerSignsData
+    , prenatalPhotoData : PrenatalPhotoData
     , showAlertsDialog : Bool
     }
 
@@ -132,6 +138,7 @@ emptyModel =
     , familyPlanningData = emptyFamilyPlanningData
     , patientProvisionsData = emptyPatientProvisionsData
     , dangerSignsData = emptyDangerSignsData
+    , prenatalPhotoData = emptyPrenatalPhotoData
     , showAlertsDialog = False
     }
 
@@ -462,7 +469,7 @@ emptyCorePhysicalExamForm =
 
 type alias ObstetricalExamForm =
     { fundalHeight : Maybe Float
-    , fetalPresentation : Maybe (List FetalPresentation)
+    , fetalPresentation : Maybe FetalPresentation
     , fetalMovement : Maybe Bool
     , fetalHeartRate : Maybe Int
     , cSectionScar : Maybe CSectionScar
@@ -536,6 +543,15 @@ type alias DangerSignsForm =
 emptyDangerSignsForm : DangerSignsForm
 emptyDangerSignsForm =
     DangerSignsForm Nothing
+
+
+type alias PrenatalPhotoData =
+    { url : Maybe PhotoUrl }
+
+
+emptyPrenatalPhotoData : PrenatalPhotoData
+emptyPrenatalPhotoData =
+    { url = Nothing }
 
 
 tasksBarId : String

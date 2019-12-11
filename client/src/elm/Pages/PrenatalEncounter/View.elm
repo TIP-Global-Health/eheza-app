@@ -244,7 +244,7 @@ viewMeasurements language currentDate measurements =
                 ( "----", "----" )
                 (\value ->
                     ( generateGravida value.termPregnancy value.preTermPregnancy value.currentlyPregnant
-                    , generatePara value.termPregnancy value.preTermPregnancy value.abortions value.liveChildren
+                    , generatePara value
                     )
                 )
                 obstetricHistoryValue
@@ -300,6 +300,9 @@ viewMainPageContent language currentDate data model =
 
                         DangerSigns ->
                             isJust data.measurements.dangerSigns
+
+                        PrenatalPhoto ->
+                            isJust data.measurements.prenatalPhoto
                 )
                 getAllActivities
 
@@ -345,12 +348,29 @@ viewMainPageContent language currentDate data model =
                     ( completedActivities, translate language Translate.NoActivitiesCompleted )
 
                 Reports ->
-                    ( [], "Under construction..." )
+                    ( [], "" )
 
-        activities =
-            div [ class "ui full segment" ]
-                [ div
-                    [ class "full content" ]
+        viewReportLink labelTransId redirectPage =
+            div
+                [ class "report-wrapper"
+                , onClick <| SetActivePage redirectPage
+                ]
+                [ div [ class "icon-progress-report" ] []
+                , div [ class "report-text" ]
+                    [ div [ class "report-label" ] [ text <| translate language labelTransId ]
+                    , div [ class "report-link" ] [ text <| translate language Translate.View ]
+                    ]
+                ]
+
+        innerContent =
+            if model.selectedTab == Reports then
+                div [ class "reports-wrapper" ]
+                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| ClinicalProgressReportPage data.id)
+                    , viewReportLink Translate.DemographicsReport (UserPage <| DemographicsReportPage data.id)
+                    ]
+
+            else
+                div [ class "full content" ]
                     [ div [ class "wrap-cards" ]
                         [ div [ class "ui four cards" ] <|
                             if List.isEmpty selectedActivities then
@@ -360,6 +380,10 @@ viewMainPageContent language currentDate data model =
                                 List.map viewCard selectedActivities
                         ]
                     ]
+
+        content =
+            div [ class "ui full segment" ]
+                [ innerContent
                 , div [ class "actions" ]
                     [ button
                         [ class "ui fluid primary button"
@@ -370,5 +394,5 @@ viewMainPageContent language currentDate data model =
                 ]
     in
     [ tabs
-    , activities
+    , content
     ]

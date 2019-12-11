@@ -26,7 +26,7 @@ viewHeader language =
     div [ class "ui basic head segment" ]
         [ h1
             [ class "ui header" ]
-            [ text <| translate language Translate.IndividualEncounterTypes ]
+            [ text <| translate language Translate.BegingNewEncounter ]
         , a
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage PrenatalParticipantsPage

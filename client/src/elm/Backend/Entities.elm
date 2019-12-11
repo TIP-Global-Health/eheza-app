@@ -1,4 +1,4 @@
-module Backend.Entities exposing (AttendanceId, AttendanceUuidType(..), BreastExamId, BreastExamUuidType(..), CatchmentAreaId, CatchmentAreaUuidType(..), ChildNutritionId, ChildNutritionUuidType(..), ClinicId, ClinicUuidType(..), CorePhysicalExamId, CorePhysicalExamUuidType(..), CounselingScheduleId, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicUuidType(..), DangerSignsId, DangerSignsUuidType(..), FamilyPlanningId, FamilyPlanningUuidType(..), HealthCenterId, HealthCenterUuidType(..), HeightId, HeightUuidType(..), LastMenstrualPeriodId, LastMenstrualPeriodUuidType(..), MedicalHistoryId, MedicalHistoryUuidType(..), MedicationId, MedicationUuidType(..), MuacId, MuacUuidType(..), NurseId, NurseUuidType(..), ObstetricHistoryId, ObstetricHistoryStep2Id, ObstetricHistoryStep2UuidType(..), ObstetricHistoryUuidType(..), ObstetricalExamId, ObstetricalExamUuidType(..), ParticipantConsentId, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormUuidType(..), PersonId, PersonUuidType(..), PhotoId, PhotoUuidType(..), PmtctParticipantId, PmtctParticipantUuidType(..), PrenatalEncounterId, PrenatalEncounterIdType(..), PrenatalFamilyPlanningId, PrenatalFamilyPlanningUuidType(..), PrenatalNutritionId, PrenatalNutritionUuidType(..), PrenatalParticipantId, PrenatalParticipantIdType(..), RelationshipId, RelationshipUuidType(..), ResourceId, ResourceUuidType(..), SessionId, SessionUuidType(..), SocialHistoryId, SocialHistoryUuidType(..), VitalsId, VitalsUuidType(..), WeightId, WeightUuidType(..))
+module Backend.Entities exposing (AttendanceId, AttendanceUuidType(..), BreastExamId, BreastExamUuidType(..), CatchmentAreaId, CatchmentAreaUuidType(..), ChildNutritionId, ChildNutritionUuidType(..), ClinicId, ClinicUuidType(..), CorePhysicalExamId, CorePhysicalExamUuidType(..), CounselingScheduleId, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicUuidType(..), DangerSignsId, DangerSignsUuidType(..), FamilyPlanningId, FamilyPlanningUuidType(..), HealthCenterId, HealthCenterUuidType(..), HeightId, HeightUuidType(..), LastMenstrualPeriodId, LastMenstrualPeriodUuidType(..), MedicalHistoryId, MedicalHistoryUuidType(..), MedicationId, MedicationUuidType(..), MuacId, MuacUuidType(..), NurseId, NurseUuidType(..), ObstetricHistoryId, ObstetricHistoryStep2Id, ObstetricHistoryStep2UuidType(..), ObstetricHistoryUuidType(..), ObstetricalExamId, ObstetricalExamUuidType(..), ParticipantConsentId, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormUuidType(..), PersonId, PersonUuidType(..), PhotoId, PhotoUuidType(..), PmtctParticipantId, PmtctParticipantUuidType(..), PrenatalEncounterId, PrenatalEncounterIdType(..), PrenatalFamilyPlanningId, PrenatalFamilyPlanningUuidType(..), PrenatalNutritionId, PrenatalNutritionUuidType(..), PrenatalParticipantId, PrenatalParticipantIdType(..), PrenatalPhotoId, RelationshipId, RelationshipUuidType(..), ResourceId, ResourceUuidType(..), SessionId, SessionUuidType(..), SocialHistoryId, SocialHistoryUuidType(..), VitalsId, VitalsUuidType(..), WeightId, WeightUuidType(..))
 
 {-|
 
@@ -341,6 +341,14 @@ type alias PrenatalEncounterId =
 
 type PrenatalEncounterIdType
     = PrenatalEncounterIdType
+
+
+type alias PrenatalPhotoId =
+    EntityUuid PrenatalPhotoUuidType
+
+
+type PrenatalPhotoUuidType
+    = PrenatalPhotoUuidType
 
 
 type alias PmtctParticipantId =

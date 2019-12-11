@@ -23,6 +23,7 @@ import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
+import Pages.Utils exposing (viewPhotoThumb)
 import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
@@ -361,19 +362,6 @@ viewMuacIndication language muac =
         [ translate language (Trans.MuacIndication muac)
             |> String.toUpper
             |> text
-        ]
-
-
-{-| Show a photo thumbnail.
--}
-viewPhotoThumb : PhotoUrl -> Html any
-viewPhotoThumb (PhotoUrl url) =
-    div []
-        [ img
-            [ src url
-            , class "ui small image rotate-90"
-            ]
-            []
         ]
 
 

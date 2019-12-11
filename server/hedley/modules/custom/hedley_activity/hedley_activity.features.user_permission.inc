@@ -167,6 +167,17 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create prenatal_photo content'.
+  $permissions['create prenatal_photo content'] = array(
+    'name' => 'create prenatal_photo content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create prenatal_family_planning content'.
   $permissions['create prenatal_family_planning content'] = array(
     'name' => 'create prenatal_family_planning content',
@@ -363,6 +374,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any prenatal_photo content'.
+  $permissions['delete any prenatal_photo content'] = array(
+    'name' => 'delete any prenatal_photo content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any prenatal_family_planning content'.
   $permissions['delete any prenatal_family_planning content'] = array(
     'name' => 'delete any prenatal_family_planning content',
@@ -546,6 +566,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own photo content'.
   $permissions['delete own photo content'] = array(
     'name' => 'delete own photo content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own prenatal_photo content'.
+  $permissions['delete own prenatal_photo content'] = array(
+    'name' => 'delete own prenatal_photo content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -754,6 +783,17 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit any photo content'.
   $permissions['edit any photo content'] = array(
     'name' => 'edit any photo content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any prenatal_photo content'.
+  $permissions['edit any prenatal_photo content'] = array(
+    'name' => 'edit any prenatal_photo content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
@@ -971,6 +1011,17 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit own photo content'.
   $permissions['edit own photo content'] = array(
     'name' => 'edit own photo content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own prenatal_photo content'.
+  $permissions['edit own prenatal_photo content'] = array(
+    'name' => 'edit own prenatal_photo content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',

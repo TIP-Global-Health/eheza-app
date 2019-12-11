@@ -21,6 +21,7 @@ module Backend.Measurement.Decoder exposing
     , decodePrenatalFamilyPlanning
     , decodePrenatalMeasurements
     , decodePrenatalNutrition
+    , decodePrenatalPhoto
     , decodeResource
     , decodeSocialHistory
     , decodeVitals
@@ -110,6 +111,7 @@ decodePrenatalMeasurements =
         |> optional "resource" (decodeHead decodeResource) Nothing
         |> optional "social_history" (decodeHead decodeSocialHistory) Nothing
         |> optional "vitals" (decodeHead decodeVitals) Nothing
+        |> optional "prenatal_photo" (decodeHead decodePrenatalPhoto) Nothing
 
 
 decodePhoto : Decoder Photo
@@ -117,6 +119,13 @@ decodePhoto =
     field "photo" string
         |> map PhotoUrl
         |> decodeGroupMeasurement
+
+
+decodePrenatalPhoto : Decoder PrenatalPhoto
+decodePrenatalPhoto =
+    field "photo" string
+        |> map PhotoUrl
+        |> decodePrenatalMeasurement
 
 
 decodeHeight : Decoder Height
@@ -644,11 +653,14 @@ decodeFetalPresentation =
                     "cephalic" ->
                         succeed Cephalic
 
-                    "breach" ->
-                        succeed Breach
+                    "breech" ->
+                        succeed FetalBreech
 
                     "twins" ->
                         succeed Twins
+
+                    "unknown" ->
+                        succeed Unknown
 
                     _ ->
                         fail <| s ++ " is not a recognized FetalPresentation"
@@ -659,7 +671,7 @@ decodeObstetricalExam : Decoder ObstetricalExam
 decodeObstetricalExam =
     succeed ObstetricalExamValue
         |> required "fundal_height" (map HeightInCm decodeFloat)
-        |> required "fetal_presentation" (decodeEverySet decodeFetalPresentation)
+        |> required "fetal_presentation" decodeFetalPresentation
         |> required "fetal_movement" bool
         |> required "fetal_heart_rate" decodeInt
         |> required "c_section_scar" decodeCSectionScar

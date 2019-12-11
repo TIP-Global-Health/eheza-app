@@ -11,7 +11,9 @@ import Html exposing (..)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
 import Pages.Clinical.View
+import Pages.ClinicalProgressReport.View
 import Pages.Clinics.View
+import Pages.DemographicsReport.View
 import Pages.Device.View
 import Pages.EncounterTypes.View
 import Pages.MyAccount.View
@@ -206,9 +208,17 @@ viewUserPage page model configured =
                             |> Html.map (MsgLoggedIn << MsgPageClinics)
                             |> flexPageWrapper model
 
+                    ClinicalProgressReportPage prenatalEncounterId ->
+                        Pages.ClinicalProgressReport.View.view model.language currentDate prenatalEncounterId model.indexedDb
+                            |> flexPageWrapper model
+
                     CreatePersonPage relation ->
                         Pages.Person.View.viewCreateForm model.language currentDate relation loggedInModel.createPersonPage model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
+                            |> flexPageWrapper model
+
+                    DemographicsReportPage prenatalEncounterId ->
+                        Pages.DemographicsReport.View.view model.language currentDate prenatalEncounterId model.indexedDb
                             |> flexPageWrapper model
 
                     PersonPage id ->

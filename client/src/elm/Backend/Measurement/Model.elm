@@ -59,6 +59,7 @@ module Backend.Measurement.Model exposing
     , PrenatalMeasurements
     , PrenatalNutrition
     , PrenatalNutritionValue
+    , PrenatalPhoto
     , PreviousDeliveryPeriod(..)
     , PreviousDeliverySign(..)
     , Resource
@@ -369,7 +370,7 @@ type alias Medication =
 
 type alias ObstetricalExamValue =
     { fundalHeight : HeightInCm
-    , fetalPresentation : EverySet FetalPresentation
+    , fetalPresentation : FetalPresentation
     , fetalMovement : Bool
     , fetalHeartRate : Int
     , cSectionScar : CSectionScar
@@ -382,9 +383,10 @@ type alias ObstetricalExam =
 
 type FetalPresentation
     = Transverse
-    | Breach
+    | FetalBreech
     | Cephalic
     | Twins
+    | Unknown
 
 
 type CSectionScar
@@ -474,6 +476,10 @@ type alias PrenatalNutrition =
 type ResourceSign
     = MosquitoNet
     | NoResource
+
+
+type alias PrenatalPhoto =
+    PrenatalMeasurement PhotoUrl
 
 
 type alias Resource =
@@ -590,6 +596,7 @@ type alias PrenatalMeasurements =
     , resource : Maybe ( ResourceId, Resource )
     , socialHistory : Maybe ( SocialHistoryId, SocialHistory )
     , vitals : Maybe ( VitalsId, Vitals )
+    , prenatalPhoto : Maybe ( PrenatalPhotoId, PrenatalPhoto )
     }
 
 

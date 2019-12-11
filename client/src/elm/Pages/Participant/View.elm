@@ -1,4 +1,4 @@
-module Pages.Participant.View exposing (viewChild, viewMother)
+module Pages.Participant.View exposing (viewChild, viewMother, viewUbudehe)
 
 import Activity.Model exposing (Activity(..), ChildActivity, CompletedAndPending, MotherActivity(..))
 import Activity.Utils exposing (getActivityIcon, summarizeChildParticipant, summarizeMotherParticipant)

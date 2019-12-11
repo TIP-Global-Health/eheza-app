@@ -38,6 +38,7 @@ module Backend.Measurement.Encoder exposing
     , encodePrenatalFamilyPlanning
     , encodePrenatalNutrition
     , encodePrenatalNutritionValue
+    , encodePrenatalPhoto
     , encodeResource
     , encodeResourceValue
     , encodeSocialHistory
@@ -101,6 +102,11 @@ encodeWeightValue (WeightInKg weight) =
 encodePhoto : Photo -> List ( String, Value )
 encodePhoto =
     encodeGroupMeasurement encodePhotoUrl
+
+
+encodePrenatalPhoto : PrenatalPhoto -> List ( String, Value )
+encodePrenatalPhoto =
+    encodePrenatalMeasurement encodePhotoUrl
 
 
 encodePhotoUrl : PhotoUrl -> List ( String, Value )
@@ -578,11 +584,14 @@ encodeFetalPresentation sign =
             Cephalic ->
                 "cephalic"
 
-            Breach ->
-                "breach"
+            FetalBreech ->
+                "breech"
 
             Twins ->
                 "twins"
+
+            Unknown ->
+                "unknown"
 
 
 encodeHeightInCm : HeightInCm -> Value
@@ -603,7 +612,7 @@ encodeMuacInCm (MuacInCm cm) =
 encodeObstetricalExamValue : ObstetricalExamValue -> List ( String, Value )
 encodeObstetricalExamValue value =
     [ ( "fundal_height", encodeHeightInCm value.fundalHeight )
-    , ( "fetal_presentation", encodeEverySet encodeFetalPresentation value.fetalPresentation )
+    , ( "fetal_presentation", encodeFetalPresentation value.fetalPresentation )
     , ( "fetal_movement", bool value.fetalMovement )
     , ( "fetal_heart_rate", int value.fetalHeartRate )
     , ( "c_section_scar", encodeCSectionScar value.cSectionScar )

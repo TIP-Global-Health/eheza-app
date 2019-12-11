@@ -37,7 +37,7 @@ view : Language -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> H
 view language currentDate healthCenterId model db =
     let
         title =
-            translate language Translate.PrenatalParticipants
+            translate language Translate.SearchExistingParticipants
     in
     div
         [ class "wrap wrap-alt-2 page-prenatal-participants" ]

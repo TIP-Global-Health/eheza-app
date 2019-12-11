@@ -421,8 +421,13 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'type',
           'status',
           'shard',
-          'health_center',
         ];
+
+        // Do not ignore 'health center' field for person,
+        // as this is what actually associates person with health center.
+        if ($item['type'] != 'person') {
+          $ignored[] = 'health_center';
+        }
 
         foreach ($ignored as $i) {
           unset($data[$i]);

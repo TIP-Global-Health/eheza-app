@@ -45,6 +45,12 @@ delta2url previous current =
                     in
                     Just <| UrlChange NewEntry ("#clinics" ++ clinic)
 
+                ClinicalProgressReportPage prenatalEncounterId ->
+                    Just <| UrlChange NewEntry <| "#clinical-progress-report/" ++ fromEntityUuid prenatalEncounterId
+
+                DemographicsReportPage prenatalEncounterId ->
+                    Just <| UrlChange NewEntry <| "#demographics-report/" ++ fromEntityUuid prenatalEncounterId
+
                 MyAccountPage ->
                     Just <| UrlChange NewEntry "#my-account"
 
@@ -152,6 +158,8 @@ parseUrl =
         , map (\id1 id2 -> UserPage <| RelationshipPage id1 id2) (s "relationship" </> parseUuid </> parseUuid)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
+        , map (\id -> UserPage <| ClinicalProgressReportPage id) (s "clinical-progress-report" </> parseUuid)
+        , map (\id -> UserPage <| DemographicsReportPage id) (s "demographics-report" </> parseUuid)
         , map (\id -> UserPage <| EncounterTypesPage id) (s "encounter-types" </> parseUuid)
 
         -- `top` represents the page without any segements ... i.e. the

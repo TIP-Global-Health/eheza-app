@@ -6,7 +6,9 @@ import Backend.Fetch
 import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Pages.Clinical.Fetch
+import Pages.ClinicalProgressReport.Fetch
 import Pages.Clinics.Fetch
+import Pages.DemographicsReport.Fetch
 import Pages.Device.Fetch
 import Pages.EncounterTypes.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
@@ -66,8 +68,16 @@ fetch model =
             Pages.Clinics.Fetch.fetch clinicId
                 |> List.map MsgIndexedDb
 
+        UserPage (ClinicalProgressReportPage prenatalEncounterId) ->
+            Pages.ClinicalProgressReport.Fetch.fetch prenatalEncounterId model.indexedDb
+                |> List.map MsgIndexedDb
+
         UserPage (CreatePersonPage relatedId) ->
             Pages.Person.Fetch.fetchForCreateForm relatedId
+                |> List.map MsgIndexedDb
+
+        UserPage (DemographicsReportPage prenatalEncounterId) ->
+            Pages.DemographicsReport.Fetch.fetch prenatalEncounterId model.indexedDb
                 |> List.map MsgIndexedDb
 
         UserPage (PersonPage id) ->

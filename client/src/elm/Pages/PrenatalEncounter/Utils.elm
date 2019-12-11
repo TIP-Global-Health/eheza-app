@@ -1,4 +1,4 @@
-module Pages.PrenatalEncounter.Utils exposing (generateEDDandEGA, generateGravida, generatePara)
+module Pages.PrenatalEncounter.Utils exposing (calculateEDDandEGADays, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generatePara, getLmpMeasurement)
 
 import Backend.Measurement.Model exposing (..)
 import Date.Extra as Date exposing (Interval(Day))
@@ -8,30 +8,40 @@ import Maybe.Extra exposing (unwrap)
 import Translate exposing (Language, translate)
 
 
+calculateEDDandEGADays : NominalDate -> NominalDate -> ( NominalDate, Int )
+calculateEDDandEGADays currentDate lmpDate =
+    ( toLocalDateTime lmpDate 12 0 0 0
+        |> Date.add Day 280
+        |> fromLocalDateTime
+    , diffDays lmpDate currentDate
+    )
+
+
+generateEGAWeeksDaysLabel : Language -> Int -> String
+generateEGAWeeksDaysLabel language diffInDays =
+    let
+        diffInWeeks =
+            diffInDays // 7
+
+        egaWeeks =
+            translate language <| Translate.WeekSinglePlural diffInWeeks
+
+        egaDays =
+            translate language <| Translate.DaySinglePlural (diffInDays - 7 * diffInWeeks)
+    in
+    egaWeeks ++ ", " ++ egaDays
+
+
 generateEDDandEGA : Language -> NominalDate -> ( String, String ) -> Maybe NominalDate -> ( String, String )
 generateEDDandEGA language currentDate defaults maybeLmpDate =
     unwrap
         defaults
         (\lmpDate ->
             let
-                eddDate =
-                    toLocalDateTime lmpDate 12 0 0 0
-                        |> Date.add Day 280
-                        |> fromLocalDateTime
-
-                diffInDays =
-                    diffDays lmpDate currentDate
-
-                diffInWeeks =
-                    diffInDays // 7
-
-                egaWeeks =
-                    translate language <| Translate.WeekSinglePlural diffInWeeks
-
-                egaDays =
-                    translate language <| Translate.DaySinglePlural (diffInDays - 7 * diffInWeeks)
+                ( eddDate, diffInDays ) =
+                    calculateEDDandEGADays currentDate lmpDate
             in
-            ( formatMMDDYYYY eddDate, egaWeeks ++ ", " ++ egaDays )
+            ( formatMMDDYYYY eddDate, generateEGAWeeksDaysLabel language diffInDays )
         )
         maybeLmpDate
 
@@ -55,6 +65,15 @@ generateGravida termPregnancy preTermPregnancy currentlyPregnant =
         toString total
 
 
-generatePara : Int -> Int -> Int -> Int -> String
-generatePara termPregnancy preTermPregnancy abortions liveChildren =
-    toString termPregnancy ++ toString preTermPregnancy ++ toString abortions ++ toString liveChildren
+generatePara : ObstetricHistoryValue -> String
+generatePara value =
+    toString (value.termPregnancy + value.stillbirthsAtTerm)
+        ++ toString (value.preTermPregnancy + value.stillbirthsPreTerm)
+        ++ toString value.abortions
+        ++ toString value.liveChildren
+
+
+getLmpMeasurement : PrenatalMeasurements -> Maybe NominalDate
+getLmpMeasurement measurements =
+    measurements.lastMenstrualPeriod
+        |> Maybe.map (Tuple.second >> .value >> .date)

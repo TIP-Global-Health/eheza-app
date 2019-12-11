@@ -100,6 +100,7 @@
         participant_form: 'nodes',
         person: 'nodes',
         photo: 'shards',
+        prenatal_photo: 'shards',
         pmtct_participant: 'nodes',
         prenatal_family_planning: 'shards',
         prenatal_nutrition: 'shards',
