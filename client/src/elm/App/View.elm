@@ -212,8 +212,8 @@ viewUserPage page model configured =
                         Pages.ClinicalProgressReport.View.view model.language currentDate prenatalEncounterId model.indexedDb
                             |> flexPageWrapper model
 
-                    CreatePersonPage relation ->
-                        Pages.Person.View.viewCreateForm model.language currentDate relation loggedInModel.createPersonPage model.indexedDb
+                    CreatePersonPage relation initiator ->
+                        Pages.Person.View.viewCreateForm model.language currentDate relation initiator loggedInModel.createPersonPage model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
                             |> flexPageWrapper model
 

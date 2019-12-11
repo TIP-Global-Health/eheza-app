@@ -3,7 +3,7 @@ module Pages.People.View exposing (view)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form exposing (ExpectedAge(..))
-import Backend.Person.Model exposing (Person)
+import Backend.Person.Model exposing (Person, RegistrationInitiator(..))
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Dict
 import EveryDict
@@ -229,7 +229,7 @@ viewSearchForm language currentDate relation model db =
                 [ class "register-actions" ]
                 [ button
                     [ class "ui primary button fluid"
-                    , onClick <| SetActivePage <| UserPage <| CreatePersonPage relation
+                    , onClick <| SetActivePage <| UserPage <| CreatePersonPage relation ParticipantDirectoryOrigin
                     ]
                     [ text <| translate language Translate.RegisterNewParticipant ]
                 ]

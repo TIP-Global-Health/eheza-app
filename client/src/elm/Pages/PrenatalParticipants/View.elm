@@ -3,7 +3,7 @@ module Pages.PrenatalParticipants.View exposing (view)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form exposing (ExpectedAge(..))
-import Backend.Person.Model exposing (Person)
+import Backend.Person.Model exposing (Person, RegistrationInitiator(..))
 import Backend.Person.Utils exposing (ageInYears, isPersonAFertileWoman)
 import Dict
 import EveryDict
@@ -197,7 +197,7 @@ viewSearchForm language currentDate selectedHealthCenterId model db =
                 [ class "register-actions" ]
                 [ button
                     [ class "ui primary button fluid"
-                    , onClick <| SetActivePage <| UserPage <| CreatePersonPage Nothing
+                    , onClick <| SetActivePage <| UserPage <| CreatePersonPage Nothing IndividualEncounterOrigin
                     ]
                     [ text <| translate language Translate.RegisterNewParticipant ]
                 ]

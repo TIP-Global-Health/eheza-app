@@ -3865,7 +3865,7 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                CreatePersonPage relationId ->
+                CreatePersonPage _ _ ->
                     { english = "Create Person"
                     , kinyarwanda = Nothing
                     }
