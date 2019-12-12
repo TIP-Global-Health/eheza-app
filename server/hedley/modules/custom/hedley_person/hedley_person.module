@@ -20,3 +20,31 @@ define('HEDLEY_PERSON_GENDER_FEMALE', 'female');
 
 define('HEDLEY_PERSON_RELATED_BY_PARENT_OF', 'parent');
 define('HEDLEY_PERSON_RELATED_BY_CAREGIVER_FOR', 'caregiver');
+
+/**
+ * Implementation of hook_menu().
+ */
+function hedley_person_menu() {
+  $items = array();
+
+  $items['admin/content/import'] = array(
+    'type' => MENU_LOCAL_TASK,
+    'title' => 'Import',
+    'description' => 'Import participants form CSV',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hedley_person_import_form'),
+    'access callback' => TRUE,
+  );
+
+  return $items;
+}
+
+function hedley_person_import_form($form, &$form_state) {
+
+  $form['submit_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Click Here!'),
+  );
+
+  return $form;
+}
