@@ -100,8 +100,6 @@ function hedley_person_get_data($form, $form_state) {
   $form['spreadsheet_id'] = [
     '#title' => 'Please enter Google spreadsheet ID you wish to import',
     '#type' => 'textfield',
-    '#default_value' => '1AywJcgLQIxTDW9k_a_j4sZiRxI76RiPX_VbpeRm2KcU',
-//    '#default_value' => '1hJ8bo9GNu-6mPf22VYiISle86WMLv0MhF2rXyNJH3O4',
     '#size' => 60,
     '#required' => TRUE,
   ];
@@ -171,7 +169,6 @@ function hedley_person_summary($form, $form_state) {
 }
 
 function hedley_person_import_get_data($form, &$form_state) {
-  dpm('Hello');
   $spreadsheet_id = $form_state['input']['spreadsheet_id'];
   $spreadsheet_uri = "https://docs.google.com/spreadsheets/d/" . $spreadsheet_id . "/export?format=csv";
 
@@ -352,7 +349,7 @@ function hedley_person_populate_patient_fields($patient_type, $values, $node, &$
       break;
 
     default:
-      $errors[] = 'Birth Date Estimated: unexpected value';
+      $errors[] = 'Birth Date Estimated: invalid value';
   }
 
   // National ID
@@ -413,7 +410,7 @@ function hedley_person_populate_patient_fields($patient_type, $values, $node, &$
       break;
       
     default:
-      $errors[] = 'Ubudehe: Invalid value';
+      $errors[] = 'HIV status: Invalid value';
   }
 
   // Location
