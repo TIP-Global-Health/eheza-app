@@ -68,7 +68,7 @@ function hedley_person_menu() {
 
   $items['admin/content/import'] = [
     'type' => MENU_LOCAL_TASK,
-    'title' => 'Import',
+    'title' => 'Import patients',
     'description' => 'Import participants form spreadsheet on Google Drive',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['hedley_person_import_form'],
@@ -223,6 +223,7 @@ function hedley_person_execute_import($form, &$form_state) {
     $values = explode(',', $line);
     $unique_id = trim($values[HEDLEY_PERSON_COLUMN_UNIQUE_ID]);
 
+    // Todo: remove this
     if ($unique_id  > 7) {
       break;
     }
@@ -284,7 +285,7 @@ function hedley_person_execute_import($form, &$form_state) {
   }
 
   $message = empty($err_message) && empty($wrn_message) ?
-    'Import completed sucessfully!' : $err_message . $wrn_message;
+    'Import completed successfully!' : $err_message . $wrn_message;
 
   $form_state['storage']['message'] = $message;
   $form_state['storage']['step'] = 'summary';
