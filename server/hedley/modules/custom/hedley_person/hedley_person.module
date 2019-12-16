@@ -79,20 +79,24 @@ function hedley_person_menu() {
 }
 
 function hedley_person_import_form($form, &$form_state) {
-  if (empty($form_state['hidden'])) {
-    return hedley_person_get_data_form($form, $form_state);
+  if (empty($form_state['storage'])) {
+    return hedley_person_get_data($form, $form_state);
   }
 
-  switch  ($form_state['hidden']['step']) {
+  switch  ($form_state['storage']['step']) {
     case 'confirmation':
-      return hedley_person_confirmation_form($form, $form_state);
+      return hedley_person_confirmation($form, $form_state);
 
     case 'summary':
-      return hedley_person_summary_form($form, $form_state);
+      return hedley_person_summary($form, $form_state);
   }
 }
 
-function hedley_person_get_data_form($form, &$form_state) {
+function hedley_person_get_data($form, $form_state) {
+  $form['#prefix'] = '<div id="get-data-form-wrapper">';
+  $form['#suffix'] = '</div>';
+  $form['#tree'] = TRUE;
+
   $form['spreadsheet_id'] = [
     '#title' => 'Please enter Google spreadsheet ID you wish to import',
     '#type' => 'textfield',
@@ -102,17 +106,27 @@ function hedley_person_get_data_form($form, &$form_state) {
     '#required' => TRUE,
   ];
 
-  $form['submit_button'] = [
+  $form['actions']['submit'] = [
     '#type' => 'submit',
     '#value' => t('Submit'),
+    '#submit' => ['hedley_person_import_get_data'],
+    '#limit_validation_errors' => [],
+    '#ajax' => array(
+      'wrapper' => 'get-data-form-wrapper',
+      'callback' => 'hedley_person_import_form_callback',
+      'effect' => 'fade',
+    ),
   ];
 
   return $form;
 }
 
-function hedley_person_confirmation_form($form, &$form_state) {
+function hedley_person_confirmation($form, $form_state) {
+  $form['#prefix'] = '<div id="confirmation-form-wrapper">';
+  $form['#suffix'] = '</div>';
+
   $form['message'] = [
-    '#title' => $form_state['hidden']['message'],
+    '#title' => $form_state['storage']['message'],
     '#type' => 'item',
     '#size' => 60,
   ];
@@ -122,6 +136,11 @@ function hedley_person_confirmation_form($form, &$form_state) {
     '#value'  => t('Yes'),
     '#submit' => ['hedley_person_execute_import'],
     '#limit_validation_errors' => [],
+    '#ajax' => array(
+      'wrapper' => 'confirmation-form-wrapper',
+      'callback' => 'hedley_person_import_form_callback',
+      'effect' => 'fade',
+    ),
   ];
 
   $form['actions']['cancel'] = [
@@ -134,9 +153,9 @@ function hedley_person_confirmation_form($form, &$form_state) {
   return $form;
 }
 
-function hedley_person_summary_form($form, &$form_state) {
+function hedley_person_summary($form, $form_state) {
   $form['message'] = [
-    '#title' => $form_state['hidden']['message'],
+    '#markup' => $form_state['storage']['message'],
     '#type' => 'item',
     '#size' => 60,
   ];
@@ -151,8 +170,9 @@ function hedley_person_summary_form($form, &$form_state) {
   return $form;
 }
 
-function hedley_person_import_form_submit($form, &$form_state) {
-  $spreadsheet_id = $form_state['values']['spreadsheet_id'];
+function hedley_person_import_get_data($form, &$form_state) {
+  dpm('Hello');
+  $spreadsheet_id = $form_state['input']['spreadsheet_id'];
   $spreadsheet_uri = "https://docs.google.com/spreadsheets/d/" . $spreadsheet_id . "/export?format=csv";
 
   $file_content = file_get_contents($spreadsheet_uri);
@@ -186,16 +206,16 @@ function hedley_person_import_form_submit($form, &$form_state) {
   $patients = $patient_type == 'child' ? 'children' : 'adults';
   $message = 'You are about to import ' . $patients_count . ' ' .  $patients . '. Proceed?';
 
-  $form_state['hidden']['message'] = $message;
-  $form_state['hidden']['$patient_type'] = $patient_type;
-  $form_state['hidden']['file_uri'] = $file->uri;
-  $form_state['hidden']['step'] = 'confirmation';
+  $form_state['storage']['message'] = $message;
+  $form_state['storage']['$patient_type'] = $patient_type;
+  $form_state['storage']['file_uri'] = $file->uri;
+  $form_state['storage']['step'] = 'confirmation';
   $form_state['rebuild'] = TRUE;
 }
 
 function hedley_person_execute_import($form, &$form_state) {
-  $file_uri = $form_state['hidden']['file_uri'];
-  $patient_type = $form_state['hidden']['$patient_type'];
+  $file_uri = $form_state['storage']['file_uri'];
+  $patient_type = $form_state['storage']['$patient_type'];
 
   $fp = fopen($file_uri,'r');
   // Skip field names line.
@@ -233,26 +253,49 @@ function hedley_person_execute_import($form, &$form_state) {
     hedley_person_populate_patient_fields($patient_type, $values, $node,$errs,$wrns);
 
     if (!empty($errs)) {
-      $errors[$unique_id ] = $errs;
+      $errors[$unique_id] = $errs;
     }
 
     if (!empty($wrns)) {
-      $warnings[$unique_id ] = $wrns;
+      $warnings[$unique_id] = $wrns;
     }
   }
 
   fclose($fp);
 
-  dpm($errors);
-  dpm($warnings);
+  $err_message = '';
+  if (!empty($errors)) {
+    $err_message = '<div>ERRORS:</div>';
+    foreach ($errors as $id => $errs) {
+      $err_message .= "<div style=\"margin-left: 10px\">Unique ID $id:</div>";
+      foreach ($errs as $err) {
+        $err_message .= "<div style=\"margin-left: 20px\">$err</div>";
+      }
+    }
+  }
 
-  $form_state['hidden']['message'] = 'Dummy import completed';
-  $form_state['hidden']['step'] = 'summary';
+  $wrn_message = '';
+  if (!empty($warnings)) {
+    $wrn_message = '<div>WARNINGS:</div>';
+
+    foreach ($warnings as $id => $wrns) {
+      $wrn_message .= "<div style=\"margin-left: 10px\">Unique ID $id:</div>";
+      foreach ($wrns as $wrn) {
+        $wrn_message .= "<div style=\"margin-left: 20px\">$wrn</div>";
+      }
+    }
+  }
+
+  $message = empty($err_message) && empty($wrn_message) ?
+    'Import completed sucessfully!' : $err_message . $wrn_message;
+
+  $form_state['storage']['message'] = $message;
+  $form_state['storage']['step'] = 'summary';
   $form_state['rebuild'] = TRUE;
 }
 
 function hedley_person_reset_form($form, &$form_state) {
-  $form_state['hidden'] = [];
+  $form_state['storage'] = [];
   $form_state['rebuild'] = TRUE;
 }
 
@@ -536,9 +579,8 @@ function hedley_person_create_relationship($child_nid, $values) {
   }
 
   // If we got so far, we failed to create a relationship.
-  return 'Failed to resolve ' . $relation . ' for child';
+  return "Failed to resolve $relation for child";
 }
-
 
 function hedley_person_create_basic_node($type, $title = '') {
   global $user;
@@ -558,5 +600,7 @@ function hedley_person_create_basic_node($type, $title = '') {
   return $node;
 }
 
-function hedley_person_import_form_validate($form, &$form_state) {
+function hedley_person_import_form_callback($form, $form_state) {
+  return $form;
 }
+
