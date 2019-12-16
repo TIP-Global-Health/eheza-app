@@ -78,6 +78,17 @@ function hedley_person_menu() {
   return $items;
 }
 
+/**
+ * Patients import form. Form content changes based on step we're at.
+ *
+ * @param array $form
+ *   Form API form.
+ * @param array $form_state
+ *   Form API form.
+ *
+ * @return array
+ *   Form array.
+ */
 function hedley_person_import_form($form, &$form_state) {
   if (empty($form_state['storage'])) {
     return hedley_person_get_data($form, $form_state);
@@ -92,6 +103,19 @@ function hedley_person_import_form($form, &$form_state) {
   }
 }
 
+/**
+ * Patients import form - step 1.
+ *
+ * Presents input for Google spreadsheet ID, with patients data.
+ *
+ * @param array $form
+ *   Form API form.
+ * @param array $form_state
+ *   Form API form.
+ *
+ * @return array
+ *   Form array.
+ */
 function hedley_person_get_data($form, $form_state) {
   $form['#prefix'] = '<div id="get-data-form-wrapper">';
   $form['#suffix'] = '</div>';
@@ -100,6 +124,8 @@ function hedley_person_get_data($form, $form_state) {
   $form['spreadsheet_id'] = [
     '#title' => 'Please enter Google spreadsheet ID you wish to import',
     '#type' => 'textfield',
+    '#default_value' => '1AywJcgLQIxTDW9k_a_j4sZiRxI76RiPX_VbpeRm2KcU',
+//    '#default_value' => '1hJ8bo9GNu-6mPf22VYiISle86WMLv0MhF2rXyNJH3O4',
     '#size' => 60,
     '#required' => TRUE,
   ];
@@ -119,6 +145,19 @@ function hedley_person_get_data($form, $form_state) {
   return $form;
 }
 
+/**
+ * Patients import form - step 2.
+ *
+ * Presents summary of fetched CSV, and asks for confirmation to proceed.
+ *
+ * @param array $form
+ *   Form API form.
+ * @param array $form_state
+ *   Form API form.
+ *
+ * @return array
+ *   Form array.
+ */
 function hedley_person_confirmation($form, $form_state) {
   $form['#prefix'] = '<div id="confirmation-form-wrapper">';
   $form['#suffix'] = '</div>';
@@ -151,6 +190,19 @@ function hedley_person_confirmation($form, $form_state) {
   return $form;
 }
 
+/**
+ * Patients import form - step 3.
+ *
+ * Presents summary for result of performed import.
+ *
+ * @param array $form
+ *   Form API form.
+ * @param array $form_state
+ *   Form API form.
+ *
+ * @return array
+ *   Form array.
+ */
 function hedley_person_summary($form, $form_state) {
   $form['message'] = [
     '#markup' => $form_state['storage']['message'],
