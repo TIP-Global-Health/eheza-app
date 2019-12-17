@@ -304,6 +304,11 @@ h1.ui.header.report {
 .ui.cards .report.card .image {
   margin-bottom: 0;
   width: 100%;
+
+  &.cache-upload img {
+    height: 128px;
+    width: 128px;
+  }
 }
 
 .ui.cards .report.card .content {
