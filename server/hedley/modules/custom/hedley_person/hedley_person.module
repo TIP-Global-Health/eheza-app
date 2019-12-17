@@ -124,15 +124,13 @@ function hedley_person_get_data($form, $form_state) {
   $form['spreadsheet_id'] = [
     '#title' => 'Please enter Google spreadsheet ID you wish to import',
     '#type' => 'textfield',
-    '#default_value' => '1AywJcgLQIxTDW9k_a_j4sZiRxI76RiPX_VbpeRm2KcU',
-//    '#default_value' => '1hJ8bo9GNu-6mPf22VYiISle86WMLv0MhF2rXyNJH3O4',
     '#size' => 60,
     '#required' => TRUE,
   ];
 
   $form['actions']['submit'] = [
     '#type' => 'submit',
-    '#value' => t('Submit'),
+    '#value' => t('Process'),
     '#submit' => ['hedley_person_import_get_data'],
     '#limit_validation_errors' => [],
     '#ajax' => array(
@@ -220,6 +218,20 @@ function hedley_person_summary($form, $form_state) {
   return $form;
 }
 
+/**
+ * Submit callback for first step.
+ *
+ * - Pulls the spreadsheet as a CSV file.
+ * - Validates CSV file structure.
+ * - Validates rows (patients data), and returns errors & warnings.
+ * - When there're errors, forwards form to 'Summary' step.
+ * - If there're no errors, forwards form to 'Confirmation' step.
+ *
+ * @param array $form
+ *   Form API form.
+ * @param array $form_state
+ *   Form API form.
+ */
 function hedley_person_import_get_data($form, &$form_state) {
   $spreadsheet_id = $form_state['input']['spreadsheet_id'];
   $spreadsheet_uri = "https://docs.google.com/spreadsheets/d/" . $spreadsheet_id . "/export?format=csv";
@@ -256,13 +268,6 @@ function hedley_person_import_get_data($form, &$form_state) {
     $values = explode(',', $line);
     $unique_id = trim($values[HEDLEY_PERSON_COLUMN_UNIQUE_ID]);
 
-    // Todo: remove this
-    $unique_id = trim($values[HEDLEY_PERSON_COLUMN_UNIQUE_ID]);
-    if ($unique_id  > 7) {
-      break;
-    }
-
-    $patients_count++;
     $patient_errors = $patient_warnings = [];
     hedley_person_validate_patient_fields($patient_type, $values,$patient_errors,$patient_warnings);
 
@@ -273,6 +278,8 @@ function hedley_person_import_get_data($form, &$form_state) {
     if (!empty($patient_warnings)) {
       $warnings[$unique_id] = $patient_warnings;
     }
+
+    $patients_count++;
   }
 
   fclose($fp);
@@ -316,6 +323,17 @@ function hedley_person_import_get_data($form, &$form_state) {
   $form_state['rebuild'] = TRUE;
 }
 
+/**
+ * Submit callback for step 2.
+ *
+ * Performs import of patients.
+ * When completed, forwards form to'Summary' step.
+ *
+ * @param array $form
+ *   Form API form.
+ * @param array $form_state
+ *   Form API form.
+ */
 function hedley_person_execute_import($form, &$form_state) {
   $file_uri = $form_state['storage']['file_uri'];
   $patient_type = $form_state['storage']['$patient_type'];
@@ -324,70 +342,49 @@ function hedley_person_execute_import($form, &$form_state) {
   // Skip field names line.
   fgets($fp);
 
-  $errors = $warnings = [];
   while (($line = fgets($fp)) !== FALSE) {
     $values = explode(',', $line);
 
-    // Todo: remove this
-    $unique_id = trim($values[HEDLEY_PERSON_COLUMN_UNIQUE_ID]);
-    if ($unique_id  > 7) {
-      break;
-    }
-
-    $first_name = $patient_type == 'child' ?
-      $values[HEDLEY_PERSON_COLUMN_CHILD_FIRST_NAME] :
-      $values[HEDLEY_PERSON_COLUMN_ADULT_FIRST_NAME];
-
-    $second_name = $patient_type == 'child' ?
-      $values[HEDLEY_PERSON_COLUMN_CHILD_SECOND_NAME] :
-      $values[HEDLEY_PERSON_COLUMN_ADULT_SECOND_NAME];
-
-    $title = empty($first_name) ? $second_name : "$second_name $first_name";
-    $node = hedley_person_create_basic_node('person', $title);
-    $node->field_first_name[$node->language][]['value'] = $first_name;
-    $node->field_second_name[$node->language][]['value'] = $second_name;
-
-    hedley_person_populate_patient_fields($patient_type, $values, $node);
+    hedley_person_import_patient($patient_type, $values);
   }
 
   fclose($fp);
 
-  $err_message = '';
-  if (!empty($errors)) {
-    $err_message = '<div>ERRORS:</div>';
-    foreach ($errors as $id => $errs) {
-      $err_message .= "<div style=\"margin-left: 10px\">Unique ID $id:</div>";
-      foreach ($errs as $err) {
-        $err_message .= "<div style=\"margin-left: 20px\">$err</div>";
-      }
-    }
-  }
-
-  $wrn_message = '';
-  if (!empty($warnings)) {
-    $wrn_message = '<div>WARNINGS:</div>';
-
-    foreach ($warnings as $id => $wrns) {
-      $wrn_message .= "<div style=\"margin-left: 10px\">Unique ID $id:</div>";
-      foreach ($wrns as $wrn) {
-        $wrn_message .= "<div style=\"margin-left: 20px\">$wrn</div>";
-      }
-    }
-  }
-
-  $message = empty($err_message) && empty($wrn_message) ?
-    'Import completed successfully!' : $err_message . $wrn_message;
-
-  $form_state['storage']['message'] = $message;
+  $form_state['storage']['message'] = 'Import completed successfully!';
   $form_state['storage']['step'] = 'summary';
   $form_state['rebuild'] = TRUE;
 }
 
+/**
+ * Reset form callback.
+ *
+ * Used for confirmation decline ('No' button), and summary 'Ok' submit.
+ *
+ * @param array $form
+ *   Form API form.
+ * @param array $form_state
+ *   Form API form.
+ */
 function hedley_person_reset_form($form, &$form_state) {
   $form_state['storage'] = [];
   $form_state['rebuild'] = TRUE;
 }
 
+
+/**
+ * Performs validation of patient data (row in CSV file).
+ *
+ * Accumulates all errors and warnings discovered during validation.
+ *
+ * @param string $patient_type
+ *   Child oe Adult.
+ * @param array $values
+ *   Data values.
+ * @param array $errors
+ *   Accumulating errors.
+ * @param array $warnings
+ *   Accumulating warnings.
+ */
 function hedley_person_validate_patient_fields($patient_type, $values, &$errors, &$warnings) {
   // Common logic
   if ($patient_type == 'child') {
@@ -500,11 +497,19 @@ function hedley_person_validate_patient_fields($patient_type, $values, &$errors,
   }
 }
 
-function hedley_person_populate_patient_fields($patient_type, $values, $node) {
-  $wrapper = entity_metadata_wrapper('node', $node);
-
+/**
+ * Creates patient using supplied data.
+ *
+ * @param string $patient_type
+ *   Child oe Adult.
+ * @param array $values
+ *   Data values.
+ */
+function hedley_person_import_patient($patient_type, $values) {
   // Common logic
   if ($patient_type == 'child') {
+    $first_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_FIRST_NAME]);
+    $second_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_SECOND_NAME]);
     $birth_date =  trim($values[HEDLEY_PERSON_COLUMN_CHILD_BIRTH_DATE]);
     $estimated = trim($values[HEDLEY_PERSON_COLUMN_CHILD_ESTIMATED]);
     $national_id = trim($values[HEDLEY_PERSON_COLUMN_CHILD_NATIONAL_ID]);
@@ -519,6 +524,8 @@ function hedley_person_populate_patient_fields($patient_type, $values, $node) {
     $health_center = trim($values[HEDLEY_PERSON_COLUMN_CHILD_HEALTH_CENTER]);
   }
   else {
+    $first_name = trim($values[HEDLEY_PERSON_COLUMN_ADULT_FIRST_NAME]);
+    $second_name = trim($values[HEDLEY_PERSON_COLUMN_ADULT_SECOND_NAME]);
     $birth_date =  trim($values[HEDLEY_PERSON_COLUMN_ADULT_BIRTH_DATE]);
     $estimated = trim($values[HEDLEY_PERSON_COLUMN_ADULT_ESTIMATED]);
     $national_id = trim($values[HEDLEY_PERSON_COLUMN_ADULT_NATIONAL_ID]);
@@ -533,8 +540,23 @@ function hedley_person_populate_patient_fields($patient_type, $values, $node) {
     $health_center = trim($values[HEDLEY_PERSON_COLUMN_ADULT_HEALTH_CENTER]);
   }
 
+  $node = hedley_person_create_basic_node('person', '');
+  $wrapper = entity_metadata_wrapper('node', $node);
+
+  // Title
+  $title = empty($first_name) ? $second_name : "$second_name $first_name";
+  $wrapper->title->set($title);
+
+  // First name
+  if (!empty($first_name)) {
+    $wrapper->field_first_name->set($first_name);
+  }
+
+  // Second name
+  $wrapper->field_second_name->set($second_name);
+
   // Birth date
-  $birth_date =  hedley_person_date_process($birth_date);
+  $birth_date = hedley_person_date_process($birth_date);
   $wrapper->field_birth_date->set($birth_date);
 
   // Birth date estimated
@@ -565,7 +587,7 @@ function hedley_person_populate_patient_fields($patient_type, $values, $node) {
   }
 
   // Ubudehe
-  $wrapper->field_ubudehe->set((int) $ubudehe);
+  $wrapper->field_ubudehe->set((int)$ubudehe);
 
   // HIV status
   switch ($hiv_status) {
@@ -599,7 +621,7 @@ function hedley_person_populate_patient_fields($patient_type, $values, $node) {
 
   // Health center
   $health_center_id = hedley_person_resolve_health_center_by_name($health_center);
-  if (empty($health_center_id)) {
+  if (!empty($health_center_id)) {
     $wrapper->field_health_center->set($health_center_id);
   }
 
@@ -608,7 +630,7 @@ function hedley_person_populate_patient_fields($patient_type, $values, $node) {
   if ($patient_type == 'child') {
     $mode_of_delivery = trim($values[HEDLEY_PERSON_COLUMN_CHILD_MODE_OF_DELIVERY]);
 
-    switch (strtolower($mode_of_delivery)) {
+    switch ($mode_of_delivery) {
       case '1':
         $wrapper->field_mode_of_delivery->set('svd-episiotomy');
         break;
@@ -627,6 +649,7 @@ function hedley_person_populate_patient_fields($patient_type, $values, $node) {
     }
 
     hedley_person_create_relationship($wrapper->getIdentifier(), $values);
+    $wrapper->save();
 
     return;
   }
