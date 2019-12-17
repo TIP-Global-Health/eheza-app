@@ -69,8 +69,8 @@ function hedley_person_menu() {
     'description' => 'Import participants form spreadsheet on Google Drive',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['hedley_person_import_form'],
-    'access callback' => TRUE,
-  ];
+    'access arguments' => array(MIGRATE_ACCESS_BASIC),
+    'access callback' => 'user_access',  ];
 
   return $items;
 }
@@ -121,7 +121,8 @@ function hedley_person_get_data(array $form, array $form_state) {
   $form['spreadsheet_id'] = [
     '#title' => 'Please enter Google spreadsheet ID you wish to import',
     '#type' => 'textfield',
-    '#size' => 60,
+    '#default_value' => '',
+    '#maxlength' => 60,
     '#required' => TRUE,
   ];
 
@@ -156,11 +157,11 @@ function hedley_person_get_data(array $form, array $form_state) {
 function hedley_person_confirmation(array $form, array $form_state) {
   $form['#prefix'] = '<div id="confirmation-form-wrapper">';
   $form['#suffix'] = '</div>';
+  $form['#tree'] = TRUE;
 
   $form['message'] = [
     '#markup' => $form_state['storage']['message'],
     '#type' => 'item',
-    '#size' => 60,
   ];
 
   $form['actions']['submit'] = [
@@ -202,7 +203,6 @@ function hedley_person_summary(array $form, array $form_state) {
   $form['message'] = [
     '#markup' => $form_state['storage']['message'],
     '#type' => 'item',
-    '#size' => 60,
   ];
 
   $form['actions']['submit'] = [
@@ -230,7 +230,7 @@ function hedley_person_summary(array $form, array $form_state) {
  *   Form API form.
  */
 function hedley_person_import_get_data(array $form, array &$form_state) {
-  $spreadsheet_id = $form_state['input']['spreadsheet_id'];
+  $spreadsheet_id = $form['spreadsheet_id']['#value'];
   $spreadsheet_uri = "https://docs.google.com/spreadsheets/d/" . $spreadsheet_id . "/export?format=csv";
 
   $file_content = file_get_contents($spreadsheet_uri);
@@ -407,7 +407,7 @@ function hedley_person_reset_form(array $form, array &$form_state) {
  * @param array $warnings
  *   Accumulating warnings.
  */
-function hedley_person_validate_patient_fields($patient_type, $values, &$errors, &$warnings) {
+function hedley_person_validate_patient_fields($patient_type, array $values, array &$errors, array &$warnings) {
   // Common logic.
   if ($patient_type == 'child') {
     $second_name = $values[HEDLEY_PERSON_COLUMN_CHILD_SECOND_NAME];
@@ -529,7 +529,7 @@ function hedley_person_validate_patient_fields($patient_type, $values, &$errors,
  * @return bool|string
  *   TRUE on success, error message otherwise.
  */
-function hedley_person_import_patient($patient_type, $values) {
+function hedley_person_import_patient($patient_type, array $values) {
   // Common logic.
   if ($patient_type == 'child') {
     $first_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_FIRST_NAME]);
@@ -815,7 +815,7 @@ function hedley_person_create_basic_node($type) {
  * @param string $health_center
  *   Health center name.
  *
- * @return int|NULL
+ * @return int|null
  *   Node ID. Null, if not found.
  */
 function hedley_person_resolve_health_center_by_name($health_center) {
@@ -837,7 +837,7 @@ function hedley_person_resolve_health_center_by_name($health_center) {
  * @param string $adult_name
  *   Name of adult person (13 years of age, or more).
  *
- * @return int|NULL
+ * @return int|null
  *   Node ID. Null, if not found.
  */
 function hedley_person_resolve_adult_by_name($adult_name) {
@@ -847,7 +847,7 @@ function hedley_person_resolve_adult_by_name($adult_name) {
     ->propertyCondition('type', 'person')
     ->propertyCondition('title', $adult_name)
     ->propertyCondition('status', 1)
-    ->propertyOrderBy('nid','DESC')
+    ->propertyOrderBy('nid', 'DESC')
     ->execute();
 
   if (empty($result['node'])) {
