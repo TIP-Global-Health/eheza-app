@@ -69,10 +69,29 @@ function hedley_person_menu() {
     'description' => 'Import participants form spreadsheet on Google Drive',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['hedley_person_import_form'],
-    'access arguments' => array(MIGRATE_ACCESS_BASIC),
-    'access callback' => 'user_access',  ];
+    'access callback' => 'hedley_person_import_form_access',
+  ];
 
   return $items;
+}
+
+/**
+ * Determines if the user may perform patients import. Only Admins are allowed.
+ *
+ * @return bool
+ *   TRUE if allowed, FALSE otherwise.
+ */
+function hedley_person_import_form_access() {
+  global $user;
+
+  // Always give access to the admin user.
+  if ($user->uid == 1) {
+    return TRUE;
+  }
+
+  $admin_role = user_role_load_by_name('administrator');
+
+  return user_has_role($admin_role->rid);
 }
 
 /**
