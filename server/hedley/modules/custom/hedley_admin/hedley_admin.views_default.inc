@@ -2158,6 +2158,83 @@ function hedley_admin_views_default_views() {
       ),
     ),
   );
+  /* Field: Content: Title */
+  $handler->display->display_options['fields']['title']['id'] = 'title';
+  $handler->display->display_options['fields']['title']['table'] = 'node';
+  $handler->display->display_options['fields']['title']['field'] = 'title';
+  $handler->display->display_options['fields']['title']['relationship'] = 'field_person_target_id';
+  $handler->display->display_options['fields']['title']['label'] = 'Name of child';
+  /* Field: Content: Gender */
+  $handler->display->display_options['fields']['field_gender']['id'] = 'field_gender';
+  $handler->display->display_options['fields']['field_gender']['table'] = 'field_data_field_gender';
+  $handler->display->display_options['fields']['field_gender']['field'] = 'field_gender';
+  $handler->display->display_options['fields']['field_gender']['relationship'] = 'field_person_target_id';
+  $handler->display->display_options['fields']['field_gender']['label'] = 'Sex';
+  /* Field: Content: Birth date */
+  $handler->display->display_options['fields']['field_birth_date']['id'] = 'field_birth_date';
+  $handler->display->display_options['fields']['field_birth_date']['table'] = 'field_data_field_birth_date';
+  $handler->display->display_options['fields']['field_birth_date']['field'] = 'field_birth_date';
+  $handler->display->display_options['fields']['field_birth_date']['relationship'] = 'field_person_target_id';
+  $handler->display->display_options['fields']['field_birth_date']['label'] = 'DOB';
+  $handler->display->display_options['fields']['field_birth_date']['settings'] = array(
+    'format_type' => 'custom',
+    'custom_date_format' => 'd/m/Y',
+    'fromto' => 'both',
+    'multiple_number' => '',
+    'multiple_from' => '',
+    'multiple_to' => '',
+    'show_remaining_days' => 0,
+  );
+  /* Field: Content: Post date */
+  $handler->display->display_options['fields']['created']['id'] = 'created';
+  $handler->display->display_options['fields']['created']['table'] = 'node';
+  $handler->display->display_options['fields']['created']['field'] = 'created';
+  $handler->display->display_options['fields']['created']['relationship'] = 'field_person_target_id';
+  $handler->display->display_options['fields']['created']['label'] = 'Program entry date';
+  $handler->display->display_options['fields']['created']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['created']['date_format'] = 'custom';
+  $handler->display->display_options['fields']['created']['custom_date_format'] = 'd/m/Y';
+  $handler->display->display_options['fields']['created']['second_date_format'] = 'long';
+  /* Field: MIN(Content: Title) */
+  $handler->display->display_options['fields']['title_1']['id'] = 'title_1';
+  $handler->display->display_options['fields']['title_1']['table'] = 'node';
+  $handler->display->display_options['fields']['title_1']['field'] = 'title';
+  $handler->display->display_options['fields']['title_1']['relationship'] = 'field_person_target_id_1';
+  $handler->display->display_options['fields']['title_1']['group_type'] = 'min';
+  $handler->display->display_options['fields']['title_1']['label'] = 'Name of Mother';
+  $handler->display->display_options['fields']['title_1']['element_label_colon'] = FALSE;
+  /* Field: Content: Ubudehe */
+  $handler->display->display_options['fields']['field_ubudehe']['id'] = 'field_ubudehe';
+  $handler->display->display_options['fields']['field_ubudehe']['table'] = 'field_data_field_ubudehe';
+  $handler->display->display_options['fields']['field_ubudehe']['field'] = 'field_ubudehe';
+  $handler->display->display_options['fields']['field_ubudehe']['relationship'] = 'field_person_target_id';
+  $handler->display->display_options['fields']['field_ubudehe']['label'] = 'Ubudege Category';
+  $handler->display->display_options['fields']['field_ubudehe']['element_label_colon'] = FALSE;
+  /* Field: Content: Phone number */
+  $handler->display->display_options['fields']['field_phone_number']['id'] = 'field_phone_number';
+  $handler->display->display_options['fields']['field_phone_number']['table'] = 'field_data_field_phone_number';
+  $handler->display->display_options['fields']['field_phone_number']['field'] = 'field_phone_number';
+  $handler->display->display_options['fields']['field_phone_number']['relationship'] = 'field_person_target_id_1';
+  $handler->display->display_options['fields']['field_phone_number']['label'] = 'Mother\'s telephone number';
+  $handler->display->display_options['fields']['field_phone_number']['element_label_colon'] = FALSE;
+  /* Field: Content: Sector */
+  $handler->display->display_options['fields']['field_sector']['id'] = 'field_sector';
+  $handler->display->display_options['fields']['field_sector']['table'] = 'field_data_field_sector';
+  $handler->display->display_options['fields']['field_sector']['field'] = 'field_sector';
+  $handler->display->display_options['fields']['field_sector']['relationship'] = 'field_person_target_id';
+  $handler->display->display_options['fields']['field_sector']['element_label_colon'] = FALSE;
+  /* Field: Content: Cell */
+  $handler->display->display_options['fields']['field_cell']['id'] = 'field_cell';
+  $handler->display->display_options['fields']['field_cell']['table'] = 'field_data_field_cell';
+  $handler->display->display_options['fields']['field_cell']['field'] = 'field_cell';
+  $handler->display->display_options['fields']['field_cell']['relationship'] = 'field_person_target_id';
+  $handler->display->display_options['fields']['field_cell']['element_label_colon'] = FALSE;
+  /* Field: Content: Village */
+  $handler->display->display_options['fields']['field_village']['id'] = 'field_village';
+  $handler->display->display_options['fields']['field_village']['table'] = 'field_data_field_village';
+  $handler->display->display_options['fields']['field_village']['field'] = 'field_village';
+  $handler->display->display_options['fields']['field_village']['relationship'] = 'field_person_target_id';
+  $handler->display->display_options['fields']['field_village']['element_label_colon'] = FALSE;
   /* Field: Content: Nid */
   $handler->display->display_options['fields']['nid']['id'] = 'nid';
   $handler->display->display_options['fields']['nid']['table'] = 'node';
@@ -2168,11 +2245,11 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_date_measured']['id'] = 'field_date_measured';
   $handler->display->display_options['fields']['field_date_measured']['table'] = 'field_data_field_date_measured';
   $handler->display->display_options['fields']['field_date_measured']['field'] = 'field_date_measured';
-  $handler->display->display_options['fields']['field_date_measured']['label'] = 'Date';
+  $handler->display->display_options['fields']['field_date_measured']['label'] = 'Date the child received FBF';
   $handler->display->display_options['fields']['field_date_measured']['element_class'] = 'nowrap';
   $handler->display->display_options['fields']['field_date_measured']['settings'] = array(
     'format_type' => 'custom',
-    'custom_date_format' => 'd-m-Y',
+    'custom_date_format' => 'd/m/Y',
     'fromto' => 'both',
     'multiple_number' => '',
     'multiple_from' => '',
@@ -2194,38 +2271,6 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_2']['field'] = 'title';
   $handler->display->display_options['fields']['title_2']['relationship'] = 'field_nurse_target_id';
   $handler->display->display_options['fields']['title_2']['label'] = 'Nurse';
-  /* Field: MIN(Content: Title) */
-  $handler->display->display_options['fields']['title_1']['id'] = 'title_1';
-  $handler->display->display_options['fields']['title_1']['table'] = 'node';
-  $handler->display->display_options['fields']['title_1']['field'] = 'title';
-  $handler->display->display_options['fields']['title_1']['relationship'] = 'field_person_target_id_1';
-  $handler->display->display_options['fields']['title_1']['group_type'] = 'min';
-  $handler->display->display_options['fields']['title_1']['label'] = 'Parent/Caregiver Name';
-  /* Field: Content: Title */
-  $handler->display->display_options['fields']['title']['id'] = 'title';
-  $handler->display->display_options['fields']['title']['table'] = 'node';
-  $handler->display->display_options['fields']['title']['field'] = 'title';
-  $handler->display->display_options['fields']['title']['relationship'] = 'field_person_target_id';
-  $handler->display->display_options['fields']['title']['label'] = 'Child Name';
-  /* Field: Content: Gender */
-  $handler->display->display_options['fields']['field_gender']['id'] = 'field_gender';
-  $handler->display->display_options['fields']['field_gender']['table'] = 'field_data_field_gender';
-  $handler->display->display_options['fields']['field_gender']['field'] = 'field_gender';
-  $handler->display->display_options['fields']['field_gender']['relationship'] = 'field_person_target_id';
-  /* Field: Content: Birth date */
-  $handler->display->display_options['fields']['field_birth_date']['id'] = 'field_birth_date';
-  $handler->display->display_options['fields']['field_birth_date']['table'] = 'field_data_field_birth_date';
-  $handler->display->display_options['fields']['field_birth_date']['field'] = 'field_birth_date';
-  $handler->display->display_options['fields']['field_birth_date']['relationship'] = 'field_person_target_id';
-  $handler->display->display_options['fields']['field_birth_date']['settings'] = array(
-    'format_type' => 'custom',
-    'custom_date_format' => 'd-m-Y',
-    'fromto' => 'both',
-    'multiple_number' => '',
-    'multiple_from' => '',
-    'multiple_to' => '',
-    'show_remaining_days' => 0,
-  );
   /* Field: Content: Type */
   $handler->display->display_options['fields']['type']['id'] = 'type';
   $handler->display->display_options['fields']['type']['table'] = 'node';
@@ -2394,58 +2439,6 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['nid']['expose']['operator'] = 'nid_op';
   $handler->display->display_options['filters']['nid']['expose']['identifier'] = 'nid';
   $handler->display->display_options['filters']['nid']['expose']['remember_roles'] = array(
-    2 => '2',
-    1 => 0,
-    3 => 0,
-    4 => 0,
-  );
-  /* Filter criterion: Content: Title */
-  $handler->display->display_options['filters']['title']['id'] = 'title';
-  $handler->display->display_options['filters']['title']['table'] = 'node';
-  $handler->display->display_options['filters']['title']['field'] = 'title';
-  $handler->display->display_options['filters']['title']['relationship'] = 'field_person_target_id';
-  $handler->display->display_options['filters']['title']['operator'] = 'word';
-  $handler->display->display_options['filters']['title']['group'] = 1;
-  $handler->display->display_options['filters']['title']['exposed'] = TRUE;
-  $handler->display->display_options['filters']['title']['expose']['operator_id'] = 'title_op';
-  $handler->display->display_options['filters']['title']['expose']['label'] = 'Child';
-  $handler->display->display_options['filters']['title']['expose']['operator'] = 'title_op';
-  $handler->display->display_options['filters']['title']['expose']['identifier'] = 'title';
-  $handler->display->display_options['filters']['title']['expose']['remember_roles'] = array(
-    2 => '2',
-    1 => 0,
-    4 => 0,
-    3 => 0,
-    5 => 0,
-  );
-  /* Filter criterion: Content: Group (field_clinic) */
-  $handler->display->display_options['filters']['field_clinic_target_id']['id'] = 'field_clinic_target_id';
-  $handler->display->display_options['filters']['field_clinic_target_id']['table'] = 'field_data_field_clinic';
-  $handler->display->display_options['filters']['field_clinic_target_id']['field'] = 'field_clinic_target_id';
-  $handler->display->display_options['filters']['field_clinic_target_id']['relationship'] = 'field_session_target_id';
-  $handler->display->display_options['filters']['field_clinic_target_id']['group'] = 1;
-  $handler->display->display_options['filters']['field_clinic_target_id']['exposed'] = TRUE;
-  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator_id'] = 'field_clinic_target_id_op';
-  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['label'] = 'Group';
-  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['operator'] = 'field_clinic_target_id_op';
-  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['identifier'] = 'field_clinic_target_id';
-  $handler->display->display_options['filters']['field_clinic_target_id']['expose']['remember_roles'] = array(
-    2 => '2',
-    1 => 0,
-    3 => 0,
-    4 => 0,
-  );
-  /* Filter criterion: Content: Date Measured (field_date_measured) */
-  $handler->display->display_options['filters']['field_date_measured_value']['id'] = 'field_date_measured_value';
-  $handler->display->display_options['filters']['field_date_measured_value']['table'] = 'field_data_field_date_measured';
-  $handler->display->display_options['filters']['field_date_measured_value']['field'] = 'field_date_measured_value';
-  $handler->display->display_options['filters']['field_date_measured_value']['operator'] = 'between';
-  $handler->display->display_options['filters']['field_date_measured_value']['exposed'] = TRUE;
-  $handler->display->display_options['filters']['field_date_measured_value']['expose']['operator_id'] = 'field_date_measured_value_op';
-  $handler->display->display_options['filters']['field_date_measured_value']['expose']['label'] = 'Date Measured';
-  $handler->display->display_options['filters']['field_date_measured_value']['expose']['operator'] = 'field_date_measured_value_op';
-  $handler->display->display_options['filters']['field_date_measured_value']['expose']['identifier'] = 'field_date_measured_value';
-  $handler->display->display_options['filters']['field_date_measured_value']['expose']['remember_roles'] = array(
     2 => '2',
     1 => 0,
     3 => 0,
