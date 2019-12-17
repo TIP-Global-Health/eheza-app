@@ -342,15 +342,41 @@ function hedley_person_execute_import($form, &$form_state) {
   // Skip field names line.
   fgets($fp);
 
+  $patients_count = 0;
+  $errors = [];
   while (($line = fgets($fp)) !== FALSE) {
     $values = explode(',', $line);
+    $unique_id = trim($values[HEDLEY_PERSON_COLUMN_UNIQUE_ID]);
 
-    hedley_person_import_patient($patient_type, $values);
+    $result = hedley_person_import_patient($patient_type, $values);
+    if ($result !== TRUE) {
+      $errors[$unique_id] = $result;
+    }
+
+    $patients_count++;
   }
 
   fclose($fp);
 
-  $form_state['storage']['message'] = 'Import completed successfully!';
+  $errors_count = count($errors);
+  $patients = $patient_type == 'child' ? 'children' : 'adults';
+  $summary_message = "Completed import for $patients_count $patients.";
+  if ($errors_count > 0) {
+    $summary_message .= " $errors_count $patients generated following notices:";
+  }
+
+  $message = "<div style=\"margin-bottom: 20px\">$summary_message</div>";
+
+  if (!empty($errors)) {
+    $error_message = '';
+    foreach ($errors as $id => $err) {
+      $error_message .= "<div style=\"margin-left: 10px\">Unique ID $id: $err</div>";
+    }
+
+    $message .= $error_message;
+  }
+
+  $form_state['storage']['message'] = $message;
   $form_state['storage']['step'] = 'summary';
   $form_state['rebuild'] = TRUE;
 }
@@ -369,7 +395,6 @@ function hedley_person_reset_form($form, &$form_state) {
   $form_state['storage'] = [];
   $form_state['rebuild'] = TRUE;
 }
-
 
 /**
  * Performs validation of patient data (row in CSV file).
@@ -504,6 +529,9 @@ function hedley_person_validate_patient_fields($patient_type, $values, &$errors,
  *   Child oe Adult.
  * @param array $values
  *   Data values.
+ *
+ * @return bool|string
+ *   TRUE on success, error message otherwise.
  */
 function hedley_person_import_patient($patient_type, $values) {
   // Common logic
@@ -540,8 +568,14 @@ function hedley_person_import_patient($patient_type, $values) {
     $health_center = trim($values[HEDLEY_PERSON_COLUMN_ADULT_HEALTH_CENTER]);
   }
 
-  $node = hedley_person_create_basic_node('person', '');
-  $wrapper = entity_metadata_wrapper('node', $node);
+  try {
+    $person = hedley_person_create_basic_node('person');
+  }
+  catch (Exception $e) {
+    return 'Failed to create person node';
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $person);
 
   // Title
   $title = empty($first_name) ? $second_name : "$second_name $first_name";
@@ -640,7 +674,7 @@ function hedley_person_import_patient($patient_type, $values) {
         break;
 
       case '3':
-        $wrapper->field_mode_of_delivery->set('negative-dc');
+        $wrapper->field_mode_of_delivery->set('vd-vacuum');
         break;
 
       case '4':
@@ -648,10 +682,23 @@ function hedley_person_import_patient($patient_type, $values) {
         break;
     }
 
-    hedley_person_create_relationship($wrapper->getIdentifier(), $values);
     $wrapper->save();
 
-    return;
+    // Try to create relationship with parent/caregiver.
+
+    $relation = strtolower(trim($values[HEDLEY_PERSON_COLUMN_CHILD_RELATION]));
+    $adult_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_PARENT_NAME]);
+
+    // Resolve parent/caregiver.
+    $adult_id = hedley_person_resolve_adult_by_name($adult_name);
+
+    if (!empty($adult_id)) {
+      if (!hedley_person_create_relationship($wrapper->getIdentifier(), $adult_id, $relation)) {
+        return "Import was successful, but failed to create $relation relationship with $adult_name";
+      }
+    }
+
+    return TRUE;
   }
 
   // Type specific logic - adult
@@ -673,8 +720,19 @@ function hedley_person_import_patient($patient_type, $values) {
   }
 
   $wrapper->save();
+
+  return TRUE;
 }
 
+/**
+ * Convert a date string to a timestamp.
+ *
+ * @param string $trimmed
+ *   A string containing a date.
+ *
+ * @return bool|int
+ *   FALSE on failure, timestamp on success.
+ */
 function hedley_person_date_process($trimmed) {
   if (empty($trimmed)) {
     return $trimmed;
@@ -700,34 +758,53 @@ function hedley_person_date_process($trimmed) {
   return FALSE;
 }
 
-function hedley_person_create_relationship($child_id, $values) {
-  $relation = strtolower(trim($values[HEDLEY_PERSON_COLUMN_CHILD_RELATION]));
-  if (!in_array($relation, ['parent', 'caregiver'])) {
-    return;
+/**
+ * Creates a relationship between child and adult.
+ *
+ * @param int $child_id
+ *   Child node ID.
+ * @param int $adult_id
+ *   Adult node ID.
+ * @param string $relation
+ *   Parent or Caregiver.
+ *
+ * @return bool
+ *   TRUE on success, FALSE otherwise.
+ */
+function hedley_person_create_relationship($child_id, $adult_id, $relation) {
+  try {
+    $relationship = hedley_person_create_basic_node('relationship');
   }
-  
-  // Resolve parent/caregiver.
-  $adult_name = trim($values[HEDLEY_PERSON_COLUMN_CHILD_PARENT_NAME]);
-  $adult_id = hedley_person_resolve_adult_by_name($adult_name);
-
-  if (empty($adult_id)) {
-    return;
+  catch (Exception $e) {
+    return FALSE;
   }
 
-  $relationship = hedley_person_create_basic_node('relationship');
   $wrapper = entity_metadata_wrapper('node', $relationship);
   $wrapper->field_person->set($adult_id);
   $wrapper->field_related_by->set($relation);
   $wrapper->field_related_to->set($child_id);
 
   $wrapper->save();
+
+  return TRUE;
 }
 
-function hedley_person_create_basic_node($type, $title = '') {
+/**
+ * Creates a node of provided type.
+ *
+ * @param string $type
+ *   Node bundle.
+ *
+ * @return stdClass
+ *   Neely created node.
+ *
+ * @throws \Exception
+ *   In case Save operation fails.
+ */
+function hedley_person_create_basic_node($type) {
   global $user;
 
   $node = new stdClass();
-  $node->title = $title;
   $node->type = $type;
   node_object_prepare($node);
 
