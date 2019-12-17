@@ -14,10 +14,8 @@ define('HEDLEY_PERSON_EDUCATION_SECONDARY', 3);
 define('HEDLEY_PERSON_EDUCATION_DIPLOMA', 4);
 define('HEDLEY_PERSON_EDUCATION_UNIVERSITY', 5);
 define('HEDLEY_PERSON_EDUCATION_ADVANCED', 6);
-
 define('HEDLEY_PERSON_GENDER_MALE', 'male');
 define('HEDLEY_PERSON_GENDER_FEMALE', 'female');
-
 define('HEDLEY_PERSON_RELATED_BY_PARENT_OF', 'parent');
 define('HEDLEY_PERSON_RELATED_BY_CAREGIVER_FOR', 'caregiver');
 
@@ -58,7 +56,6 @@ define('HEDLEY_PERSON_COLUMN_CHILD_SECTOR', 14);
 define('HEDLEY_PERSON_COLUMN_CHILD_CELL', 15);
 define('HEDLEY_PERSON_COLUMN_CHILD_VILLAGE', 16);
 define('HEDLEY_PERSON_COLUMN_CHILD_HEALTH_CENTER', 17);
-
 
 /**
  * Implementation of hook_menu().
@@ -818,6 +815,15 @@ function hedley_person_create_basic_node($type) {
   return $node;
 }
 
+/**
+ * Resolves Health Center node ID by it's name.
+ *
+ * @param string $health_center
+ *   Health center name.
+ *
+ * @return int|null
+ *   Node ID. Null, if not found.
+ */
 function hedley_person_resolve_health_center_by_name($health_center) {
   $query = new EntityFieldQuery();
 
@@ -831,6 +837,15 @@ function hedley_person_resolve_health_center_by_name($health_center) {
   return empty($result['node']) ? null : key($result['node']);
 }
 
+/**
+ * Resolves Health Center node ID by it's name.
+ *
+ * @param string $adult_name
+ *   Name of adult person (13 years of age, or more).
+ *
+ * @return int|null
+ *   Node ID. Null, if not found.
+ */
 function hedley_person_resolve_adult_by_name($adult_name) {
   $query = new EntityFieldQuery();
 
@@ -850,6 +865,7 @@ function hedley_person_resolve_adult_by_name($adult_name) {
     $wrapper = entity_metadata_wrapper('node', $candidate);
     $birth_date = $wrapper->field_birth_date->value();
 
+    // Is person over age of 13?
     if ((time() - strtotime($birth_date)) / (365 * 24 * 3600) > 13) {
       return $wrapper->getIdentifier();
     }
@@ -859,6 +875,17 @@ function hedley_person_resolve_adult_by_name($adult_name) {
   return null;
 }
 
+/**
+ * Import form AJAX callback.
+ *
+ * @param array $form
+ *   Form API form.
+ * @param array $form_state
+ *   Form API form.
+ *
+ * @return array
+ *   The form.
+ */
 function hedley_person_import_form_callback($form, $form_state) {
   return $form;
 }
