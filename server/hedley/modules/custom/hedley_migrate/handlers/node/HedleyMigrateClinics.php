@@ -26,7 +26,15 @@ class HedleyMigrateClinics extends HedleyMigrateBase {
   protected $csvColumns = [
     'id',
     'title',
+    'field_group_type',
     'field_health_center',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $simpleMappings = [
+    'field_group_type',
   ];
 
   /**
