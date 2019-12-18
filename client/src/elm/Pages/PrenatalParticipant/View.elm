@@ -84,13 +84,11 @@ viewPrenatalActions language currentDate id db prenatalSessions =
             maybeSessionId
                 |> Maybe.map
                     (\sessionId ->
-                        -- Temporary comnmented out, and replaces with `subsequentVisitAction` for customer demo.
-                        subsequentVisitAction
-                     -- [ PrenatalEncounter sessionId currentDate Nothing
-                     --     |> Backend.Model.PostPrenatalEncounter
-                     --     |> App.Model.MsgIndexedDb
-                     --     |> onClick
-                     -- ]
+                        [ PrenatalEncounter sessionId currentDate Nothing
+                            |> Backend.Model.PostPrenatalEncounter
+                            |> App.Model.MsgIndexedDb
+                            |> onClick
+                        ]
                     )
                 |> Maybe.withDefault
                     [ PrenatalParticipant id AntenatalEncounter currentDate Nothing
@@ -128,9 +126,7 @@ viewPrenatalActions language currentDate id db prenatalSessions =
         , button
             (classList
                 [ ( "ui primary button", True )
-
-                -- Temporary comnmented out, for customer demo
-                -- , ( "disabled", isJust maybeSessionId )
+                , ( "disabled", isJust maybeSessionId )
                 ]
                 :: firstVisitAction
             )
