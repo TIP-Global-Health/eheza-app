@@ -27,6 +27,14 @@ class HedleyMigratePrenatalParticipants extends HedleyMigrateBase {
     'id',
     'field_person',
     'field_expected',
+    'field_encounter_type',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
+  protected $simpleMappings = [
+    'field_encounter_type',
   ];
 
   /**
