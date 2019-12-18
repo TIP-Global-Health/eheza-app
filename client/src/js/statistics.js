@@ -18,10 +18,15 @@
     //
     // /sw/statistics
 
-    var nodesUrlRegex = /\/sw\/statistics/;
+    var statsUrlRegex = /\/sw\/statistics/;
 
     self.addEventListener('fetch', function (event) {
         var url = new URL(event.request.url);
+        var matches = statsUrlRegex.exec(url.pathname);
+
+        if (!matches) {
+          return;
+        }
 
         if (event.request.method === 'GET') {
             return event.respondWith(index(url));
@@ -34,7 +39,6 @@
         });
 
         return event.respondWith(response);
-
     });
 
     function index (url) {
