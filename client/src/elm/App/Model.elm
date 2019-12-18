@@ -10,8 +10,8 @@ import Config.Model
 import Device.Model exposing (Device)
 import Http
 import Json.Encode exposing (Value)
-import Pages.Dashboard.Model
 import Pages.Clinics.Model
+import Pages.Dashboard.Model
 import Pages.Device.Model
 import Pages.Page exposing (Page(..))
 import Pages.People.Model

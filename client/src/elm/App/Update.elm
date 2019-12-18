@@ -19,8 +19,8 @@ import Http exposing (Error(..))
 import HttpBuilder
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
-import Pages.Dashboard.Update
 import Pages.Clinics.Update
+import Pages.Dashboard.Update
 import Pages.Device.Model
 import Pages.Device.Update
 import Pages.Page exposing (..)

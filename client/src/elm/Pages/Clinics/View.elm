@@ -90,7 +90,6 @@ we could show something about the sync status here ... might want to know how
 up-to-date things are.
 
 -}
-
 viewLoadedClinicList : Language -> Nurse -> HealthCenterId -> Model -> ( Dict ClinicId Clinic, Dict HealthCenterId SyncData ) -> Html Msg
 viewLoadedClinicList language user selectedHealthCenterId model ( clinics, sync ) =
     let
