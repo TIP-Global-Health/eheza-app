@@ -243,7 +243,7 @@ viewMeasurements language currentDate measurements =
             unwrap
                 ( "----", "----" )
                 (\value ->
-                    ( generateGravida value.termPregnancy value.preTermPregnancy value.currentlyPregnant
+                    ( generateGravida value
                     , generatePara value
                     )
                 )
