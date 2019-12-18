@@ -2198,6 +2198,13 @@ function hedley_admin_views_default_views() {
       ),
     ),
   );
+  /* Field: Global: View result counter */
+  $handler->display->display_options['fields']['counter']['id'] = 'counter';
+  $handler->display->display_options['fields']['counter']['table'] = 'views';
+  $handler->display->display_options['fields']['counter']['field'] = 'counter';
+  $handler->display->display_options['fields']['counter']['label'] = 'Register number';
+  $handler->display->display_options['fields']['counter']['counter_start'] = '1';
+  $handler->display->display_options['fields']['counter']['reverse'] = 0;
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title_1']['id'] = 'title_1';
   $handler->display->display_options['fields']['title_1']['table'] = 'node';
@@ -2240,19 +2247,39 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_2']['field'] = 'title';
   $handler->display->display_options['fields']['title_2']['relationship'] = 'field_person_target_id_1';
   $handler->display->display_options['fields']['title_2']['label'] = 'Name of Mother';
+  /* Field: Content: National ID number */
+  $handler->display->display_options['fields']['field_national_id_number']['id'] = 'field_national_id_number';
+  $handler->display->display_options['fields']['field_national_id_number']['table'] = 'field_data_field_national_id_number';
+  $handler->display->display_options['fields']['field_national_id_number']['field'] = 'field_national_id_number';
+  $handler->display->display_options['fields']['field_national_id_number']['relationship'] = 'field_person_target_id_1';
+  $handler->display->display_options['fields']['field_national_id_number']['label'] = 'Mother\'s ID';
   /* Field: Content: Ubudehe */
   $handler->display->display_options['fields']['field_ubudehe']['id'] = 'field_ubudehe';
   $handler->display->display_options['fields']['field_ubudehe']['table'] = 'field_data_field_ubudehe';
   $handler->display->display_options['fields']['field_ubudehe']['field'] = 'field_ubudehe';
   $handler->display->display_options['fields']['field_ubudehe']['relationship'] = 'field_person_target_id';
   $handler->display->display_options['fields']['field_ubudehe']['label'] = 'Ubudege Category';
-  /* Field: Content: Title */
-  $handler->display->display_options['fields']['title']['id'] = 'title';
-  $handler->display->display_options['fields']['title']['table'] = 'node';
-  $handler->display->display_options['fields']['title']['field'] = 'title';
-  $handler->display->display_options['fields']['title']['label'] = '';
-  $handler->display->display_options['fields']['title']['alter']['word_boundary'] = FALSE;
-  $handler->display->display_options['fields']['title']['alter']['ellipsis'] = FALSE;
+  /* Field: Content: Phone number */
+  $handler->display->display_options['fields']['field_phone_number']['id'] = 'field_phone_number';
+  $handler->display->display_options['fields']['field_phone_number']['table'] = 'field_data_field_phone_number';
+  $handler->display->display_options['fields']['field_phone_number']['field'] = 'field_phone_number';
+  $handler->display->display_options['fields']['field_phone_number']['relationship'] = 'field_person_target_id_1';
+  $handler->display->display_options['fields']['field_phone_number']['label'] = 'Mother\'s telephone number';
+  /* Field: Content: Sector */
+  $handler->display->display_options['fields']['field_sector']['id'] = 'field_sector';
+  $handler->display->display_options['fields']['field_sector']['table'] = 'field_data_field_sector';
+  $handler->display->display_options['fields']['field_sector']['field'] = 'field_sector';
+  $handler->display->display_options['fields']['field_sector']['relationship'] = 'field_person_target_id';
+  /* Field: Content: Cell */
+  $handler->display->display_options['fields']['field_cell']['id'] = 'field_cell';
+  $handler->display->display_options['fields']['field_cell']['table'] = 'field_data_field_cell';
+  $handler->display->display_options['fields']['field_cell']['field'] = 'field_cell';
+  $handler->display->display_options['fields']['field_cell']['relationship'] = 'field_person_target_id';
+  /* Field: Content: Village */
+  $handler->display->display_options['fields']['field_village']['id'] = 'field_village';
+  $handler->display->display_options['fields']['field_village']['table'] = 'field_data_field_village';
+  $handler->display->display_options['fields']['field_village']['field'] = 'field_village';
+  $handler->display->display_options['fields']['field_village']['relationship'] = 'field_person_target_id';
   /* Field: Content: Weight */
   $handler->display->display_options['fields']['field_weight']['id'] = 'field_weight';
   $handler->display->display_options['fields']['field_weight']['table'] = 'field_data_field_weight';
@@ -2286,6 +2313,42 @@ function hedley_admin_views_default_views() {
     'scale' => '2',
     'prefix_suffix' => 1,
   );
+  /* Field: Content: ZScore Length */
+  $handler->display->display_options['fields']['field_zscore_length']['id'] = 'field_zscore_length';
+  $handler->display->display_options['fields']['field_zscore_length']['table'] = 'field_data_field_zscore_length';
+  $handler->display->display_options['fields']['field_zscore_length']['field'] = 'field_zscore_length';
+  $handler->display->display_options['fields']['field_zscore_length']['relationship'] = 'reverse_field_session_node';
+  $handler->display->display_options['fields']['field_zscore_length']['label'] = 'W/H (z-score)';
+  $handler->display->display_options['fields']['field_zscore_length']['settings'] = array(
+    'thousand_separator' => '',
+    'decimal_separator' => '.',
+    'scale' => '2',
+    'prefix_suffix' => 1,
+  );
+  /* Field: Content: ZScore Age */
+  $handler->display->display_options['fields']['field_zscore_age']['id'] = 'field_zscore_age';
+  $handler->display->display_options['fields']['field_zscore_age']['table'] = 'field_data_field_zscore_age';
+  $handler->display->display_options['fields']['field_zscore_age']['field'] = 'field_zscore_age';
+  $handler->display->display_options['fields']['field_zscore_age']['relationship'] = 'reverse_field_session_node';
+  $handler->display->display_options['fields']['field_zscore_age']['label'] = 'W/A (z-score)';
+  $handler->display->display_options['fields']['field_zscore_age']['settings'] = array(
+    'thousand_separator' => '',
+    'decimal_separator' => '.',
+    'scale' => '2',
+    'prefix_suffix' => 1,
+  );
+  /* Field: Content: ZScore Age */
+  $handler->display->display_options['fields']['field_zscore_age_1']['id'] = 'field_zscore_age_1';
+  $handler->display->display_options['fields']['field_zscore_age_1']['table'] = 'field_data_field_zscore_age';
+  $handler->display->display_options['fields']['field_zscore_age_1']['field'] = 'field_zscore_age';
+  $handler->display->display_options['fields']['field_zscore_age_1']['relationship'] = 'reverse_field_session_node_1';
+  $handler->display->display_options['fields']['field_zscore_age_1']['label'] = 'H/A (z-score)';
+  $handler->display->display_options['fields']['field_zscore_age_1']['settings'] = array(
+    'thousand_separator' => '',
+    'decimal_separator' => '.',
+    'scale' => '2',
+    'prefix_suffix' => 1,
+  );
   /* Sort criterion: Content: Post date */
   $handler->display->display_options['sorts']['created']['id'] = 'created';
   $handler->display->display_options['sorts']['created']['table'] = 'node';
@@ -2300,7 +2363,6 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['arguments']['nid']['summary']['number_of_records'] = '0';
   $handler->display->display_options['arguments']['nid']['summary']['format'] = 'default_summary';
   $handler->display->display_options['arguments']['nid']['summary_options']['items_per_page'] = '25';
-  $handler->display->display_options['arguments']['nid']['specify_validation'] = TRUE;
   $handler->display->display_options['arguments']['nid']['validate']['type'] = 'node';
   $handler->display->display_options['arguments']['nid']['validate_options']['types'] = array(
     'person' => 'person',
