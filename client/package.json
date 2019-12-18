@@ -5,7 +5,6 @@
   "description": "Generated elm",
   "dependencies": {
     "sw-precache": "^5.2.1",
-    "elm": "^0.19.0-no-deps",
     "include-media": "^1.4.9",
     "webdriverio": "^5.9.1"
   },

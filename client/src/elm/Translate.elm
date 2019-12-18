@@ -25,6 +25,7 @@ general utilities, see `Translate.Model` and `Translate.Utils`.
 -}
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
+import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
@@ -193,6 +194,7 @@ type TranslationId
     | ChildOf
     | Children
     | ClickTheCheckMark
+    | ClinicType ClinicType
     | Clinical
     | Dashboard Dashboard
     | GroupNotFound
@@ -326,6 +328,7 @@ type TranslationId
     | PleaseSelectGroup
     | PreviousFloatMeasurement Float
     | Profession
+    | Programs
     | ProgressReport
     | Province
     | Register
@@ -357,6 +360,7 @@ type TranslationId
     | SecondName
     | Sector
     | SelectGroup
+    | SelectProgram
     | SelectLanguage
     | SelectYourGroup
     | SelectYourHealthCenter
@@ -378,7 +382,7 @@ type TranslationId
     | ServiceWorkerStatus
     | GroupEncounterClosed
     | GroupEncounterClosed2 SessionId
-    | GroupEncounterLoading SessionId
+    | GroupEncounterLoading
     | GroupEncounterUnauthorized
     | GroupEncounterUnauthorized2
     | ShowAll
@@ -873,6 +877,23 @@ translationSet trans =
             { english = "Click the check mark if the mother / caregiver is in attendance. The check mark will appear green when a mother / caregiver has been signed in."
             , kinyarwanda = Just "Kanda (kuri) ku kazu niba umubyeyi ahari. Ku kazu harahita hahindura ibara habe icyaytsi niba wemeje ko umubyeyi ahari"
             }
+
+        ClinicType clinicType ->
+            case clinicType of
+                Fbf ->
+                    { english = "Fbf"
+                    , kinyarwanda = Nothing
+                    }
+
+                Pmtct ->
+                    { english = "Pmtct"
+                    , kinyarwanda = Nothing
+                    }
+
+                Sorwathe ->
+                    { english = "Sorwathe"
+                    , kinyarwanda = Nothing
+                    }
 
         Clinical ->
             { english = "Clinical"
@@ -1691,6 +1712,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Programs ->
+            { english = "Programs"
+            , kinyarwanda = Nothing
+            }
+
         ProgressReport ->
             { english = "Progress Report"
             , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
@@ -1856,6 +1882,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        SelectProgram ->
+            { english = "Select Program"
+            , kinyarwanda = Nothing
+            }
+
         SelectYourGroup ->
             { english = "Select your Group"
             , kinyarwanda = Nothing
@@ -1963,8 +1994,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        GroupEncounterLoading sessionId ->
-            { english = "Loading Group Encounter " ++ fromEntityUuid sessionId
+        GroupEncounterLoading ->
+            { english = "Loading Group Encounter"
             , kinyarwanda = Nothing
             }
 

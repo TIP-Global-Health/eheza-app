@@ -11,6 +11,7 @@ import Device.Model exposing (Device)
 import Http
 import Json.Encode exposing (Value)
 import Pages.Dashboard.Model
+import Pages.Clinics.Model
 import Pages.Device.Model
 import Pages.Page exposing (Page(..))
 import Pages.People.Model
@@ -142,6 +143,7 @@ type alias LoggedInModel =
     , dashboardPage : Pages.Dashboard.Model.Model
     , relationshipPages : Dict ( PersonId, PersonId ) Pages.Relationship.Model.Model
     , personsPage : Pages.People.Model.Model
+    , clinicsPage : Pages.Clinics.Model.Model
 
     -- The nurse who has logged in.
     , nurse : ( NurseId, Nurse )
@@ -156,6 +158,7 @@ emptyLoggedInModel nurse =
     { createPersonPage = Pages.Person.Model.emptyModel
     , dashboardPage = Pages.Dashboard.Model.emptyModel
     , personsPage = Pages.People.Model.emptyModel
+    , clinicsPage = Pages.Clinics.Model.emptyModel
     , relationshipPages = Dict.empty
     , nurse = nurse
     , sessionPages = Dict.empty
@@ -198,7 +201,8 @@ type Msg
 {-| Messages we can only handle if we're logged in.
 -}
 type MsgLoggedIn
-    = MsgPageCreatePerson Pages.Person.Model.Msg
+    = MsgPageClinics Pages.Clinics.Model.Msg
+    | MsgPageCreatePerson Pages.Person.Model.Msg
     | MsgPageDashboard Pages.Dashboard.Model.Msg
     | MsgPagePersons Pages.People.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
