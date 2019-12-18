@@ -34,7 +34,7 @@ shouldFetch model msg =
         FetchComputedDashboard healthCenterId ->
             Dict.member healthCenterId model.computedDashboard
                 |> not
-                
+
         FetchChildrenMeasurements ids ->
             if List.isEmpty ids then
                 False
@@ -72,30 +72,6 @@ shouldFetch model msg =
             sessionNotSuccess
                 || hasMothersMeasurementsNotSuccess
                 || hasChildrenMeasurementsNotSuccess
-
-        FetchEditableSessionCheckedIn id ->
-            Dict.get id model.editableSessions
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.map (.checkedIn >> isNotNeeded)
-                |> RemoteData.withDefault False
-
-        FetchEditableSessionMeasurements id ->
-            Dict.get id model.editableSessions
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.map (.offlineSession >> .measurements >> isNotNeeded)
-                |> RemoteData.withDefault False
-
-        FetchEditableSessionSummaryByActivity id ->
-            Dict.get id model.editableSessions
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.map (.summaryByActivity >> isNotNeeded)
-                |> RemoteData.withDefault False
-
-        FetchEditableSessionSummaryByParticipant id ->
-            Dict.get id model.editableSessions
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.map (.summaryByParticipant >> isNotNeeded)
-                |> RemoteData.withDefault False
 
         FetchEditableSessionCheckedIn id ->
             Dict.get id model.editableSessions

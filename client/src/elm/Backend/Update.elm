@@ -23,7 +23,6 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
->>>>>> elm-0.19--1
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model
@@ -1339,7 +1338,6 @@ summarizeByActivity session checkedIn_ =
 
 {-| Who is checked in, considering both explicit check in and anyone who has
 any completed activity?
-
 
 It depends on Measurements at OfflineSession being fully loaded,
 and for this reason we start with 'LocalData.map'
