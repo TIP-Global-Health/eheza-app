@@ -2162,6 +2162,18 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['relationships']['reverse_field_session_node_2']['table'] = 'node';
   $handler->display->display_options['relationships']['reverse_field_session_node_2']['field'] = 'reverse_field_session_node';
   $handler->display->display_options['relationships']['reverse_field_session_node_2']['label'] = 'muac';
+  /* Relationship: Entity Reference: Referencing entity */
+  $handler->display->display_options['relationships']['reverse_field_related_to_node']['id'] = 'reverse_field_related_to_node';
+  $handler->display->display_options['relationships']['reverse_field_related_to_node']['table'] = 'node';
+  $handler->display->display_options['relationships']['reverse_field_related_to_node']['field'] = 'reverse_field_related_to_node';
+  $handler->display->display_options['relationships']['reverse_field_related_to_node']['relationship'] = 'field_person_target_id';
+  $handler->display->display_options['relationships']['reverse_field_related_to_node']['label'] = 'Relationship';
+  /* Relationship: Entity Reference: Referenced Entity */
+  $handler->display->display_options['relationships']['field_person_target_id_1']['id'] = 'field_person_target_id_1';
+  $handler->display->display_options['relationships']['field_person_target_id_1']['table'] = 'field_data_field_person';
+  $handler->display->display_options['relationships']['field_person_target_id_1']['field'] = 'field_person_target_id';
+  $handler->display->display_options['relationships']['field_person_target_id_1']['relationship'] = 'reverse_field_related_to_node';
+  $handler->display->display_options['relationships']['field_person_target_id_1']['label'] = 'mother';
   /* Field: Bulk operations: Content */
   $handler->display->display_options['fields']['views_bulk_operations']['id'] = 'views_bulk_operations';
   $handler->display->display_options['fields']['views_bulk_operations']['table'] = 'views_entity_node';
@@ -2222,6 +2234,12 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['created']['date_format'] = 'custom';
   $handler->display->display_options['fields']['created']['custom_date_format'] = 'd/m/Y';
   $handler->display->display_options['fields']['created']['second_date_format'] = 'long';
+  /* Field: Content: Title */
+  $handler->display->display_options['fields']['title_2']['id'] = 'title_2';
+  $handler->display->display_options['fields']['title_2']['table'] = 'node';
+  $handler->display->display_options['fields']['title_2']['field'] = 'title';
+  $handler->display->display_options['fields']['title_2']['relationship'] = 'field_person_target_id_1';
+  $handler->display->display_options['fields']['title_2']['label'] = 'Name of Mother';
   /* Field: Content: Ubudehe */
   $handler->display->display_options['fields']['field_ubudehe']['id'] = 'field_ubudehe';
   $handler->display->display_options['fields']['field_ubudehe']['table'] = 'field_data_field_ubudehe';
