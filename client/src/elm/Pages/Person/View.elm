@@ -359,7 +359,7 @@ viewPhotoThumb url =
     div []
         [ img
             [ src url
-            , class "ui small image"
+            , class "ui small image rotate-90"
             ]
             []
         ]

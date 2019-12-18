@@ -395,8 +395,12 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
 
         viewPhotoUrl (PhotoUrl url) =
             div
-                [ class "image" ]
-                [ img [ src url ] [] ]
+                [ classList
+                    [ ( "image", True )
+                    , ( "cache-upload", String.contains "cache-upload/images" url )
+                    ]
+                ]
+                [ img [ src url, class "rotate-90" ] [] ]
 
         photos =
             photoValues
