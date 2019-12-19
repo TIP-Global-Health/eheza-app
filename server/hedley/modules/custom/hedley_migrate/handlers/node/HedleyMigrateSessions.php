@@ -56,8 +56,10 @@ class HedleyMigrateSessions extends HedleyMigrateBase {
    * @param string $date
    *   A string containing a date.
    *
-   * @return int
+   * @return array
    *   A timestamp.
+   *
+   * @throws \Exception
    */
   public function dateProcess($date) {
     // The source material uses several date formats.
@@ -67,16 +69,36 @@ class HedleyMigrateSessions extends HedleyMigrateBase {
       return $trimmed;
     }
 
-    if (preg_match('/^\\d\\d\\d\\d-\\d\\d-\\d\\d$/', $trimmed)) {
-      $stamp = DateTime::createFromFormat('!Y-m-d', $trimmed)->getTimestamp();
+    $values = explode('|', $trimmed);
+    $count = count($values);
 
+    if ($count == 0 || $count > 2) {
+      throw new Exception("$trimmed is not a valid value.");
+    }
+
+    if (!preg_match('/^\\d\\d\\d\\d-\\d\\d-\\d\\d$/', $values[0])) {
+      throw new Exception("$values[0] was not a recognized date format.");
+    }
+
+    $value1 = DateTime::createFromFormat('!Y-m-d', $values[0])->getTimestamp();
+
+    if ($count == 1) {
       return [
-        'value' => $stamp,
-        'value2' => $stamp,
+        'value' => $value1,
+        'value2' => $value1,
       ];
     }
 
-    throw new Exception("$date was not a recognized date format.");
+    if (preg_match('/^\\d\\d\\d\\d-\\d\\d-\\d\\d$/', $values[1])) {
+      throw new Exception("$values[1] was not a recognized date format.");
+    }
+
+    $value2 = DateTime::createFromFormat('!Y-m-d', $trimmed)->getTimestamp();
+
+    return [
+      'value' => $value1,
+      'value2' => $value2,
+    ];
   }
 
 }

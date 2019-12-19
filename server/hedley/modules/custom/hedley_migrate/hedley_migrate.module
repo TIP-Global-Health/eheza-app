@@ -621,3 +621,29 @@ function _hedley_migrate_preprocess_muac($node) {
 function hedley_migrate_query_random_alter($query) {
   $query->orderRandom();
 }
+
+
+function hedley_migrate_get_xx_for_yy($type, $field, $values) {
+  $query = new EntityFieldQuery();
+
+  $result = $query->entityCondition('entity_type', 'node')
+    ->propertyCondition('type', $type)
+    ->propertyCondition('status', 1)
+    ->fieldCondition($field, 'target_id', $values, 'IN')
+    ->execute();
+
+  return empty($result['node']) ? NULL : array_keys($result['node']);
+}
+
+function hedley_migrate_export_date_field($date) {
+  $time1 = strtotime($date['value']);
+
+  if (empty($date['value2'])) {
+    return date('Y-m-d', $time1);;
+  }
+
+  $time2 = strtotime($date['value2']);
+
+  return date('Y-m-d', $time1) . '|' . date('Y-m-d', $time2);
+}
+

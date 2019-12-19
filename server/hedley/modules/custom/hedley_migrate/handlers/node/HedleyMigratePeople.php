@@ -25,10 +25,10 @@ class HedleyMigratePeople extends HedleyMigrateBase {
    */
   protected $csvColumns = [
     'id',
-    'title',
+    'field_first_name',
+    'field_second_name',
     'field_gender',
     'field_birth_date',
-    'field_clinic',
     'field_health_center',
   ];
 
@@ -36,6 +36,8 @@ class HedleyMigratePeople extends HedleyMigrateBase {
    * {@inheritdoc}
    */
   protected $simpleMappings = [
+    'field_first_name',
+    'field_second_name',
     'field_gender',
   ];
 
@@ -48,17 +50,12 @@ class HedleyMigratePeople extends HedleyMigrateBase {
     parent::__construct($arguments);
 
     $this->dependencies = [
-      'HedleyMigrateClinics',
       'HedleyMigrateHealthCenters',
     ];
 
     $this
       ->addFieldMapping('field_birth_date', 'field_birth_date')
       ->callbacks([$this, 'dateProcess']);
-
-    $this
-      ->addFieldMapping('field_clinic', 'field_clinic')
-      ->sourceMigration('HedleyMigrateClinics');
 
     $this
       ->addFieldMapping('field_health_center', 'field_health_center')
