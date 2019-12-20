@@ -2490,6 +2490,23 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['field_related_by_value_3']['relationship'] = 'reverse_field_related_to_node_1';
   $handler->display->display_options['filters']['field_related_by_value_3']['operator'] = 'empty';
   $handler->display->display_options['filters']['field_related_by_value_3']['group'] = 3;
+  /* Filter criterion: Content: Scheduled Date -  start date (field_scheduled_date) */
+  $handler->display->display_options['filters']['field_scheduled_date_value']['id'] = 'field_scheduled_date_value';
+  $handler->display->display_options['filters']['field_scheduled_date_value']['table'] = 'field_data_field_scheduled_date';
+  $handler->display->display_options['filters']['field_scheduled_date_value']['field'] = 'field_scheduled_date_value';
+  $handler->display->display_options['filters']['field_scheduled_date_value']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['field_scheduled_date_value']['expose']['operator_id'] = 'field_scheduled_date_value_op';
+  $handler->display->display_options['filters']['field_scheduled_date_value']['expose']['label'] = 'Group Encounter Date';
+  $handler->display->display_options['filters']['field_scheduled_date_value']['expose']['operator'] = 'field_scheduled_date_value_op';
+  $handler->display->display_options['filters']['field_scheduled_date_value']['expose']['identifier'] = 'field_scheduled_date_value';
+  $handler->display->display_options['filters']['field_scheduled_date_value']['expose']['remember_roles'] = array(
+    2 => '2',
+    1 => 0,
+    4 => 0,
+    3 => 0,
+    5 => 0,
+  );
+  $handler->display->display_options['filters']['field_scheduled_date_value']['granularity'] = 'month';
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
