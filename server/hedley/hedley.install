@@ -215,7 +215,12 @@ function hedley_standard_install() {
   // Set this as the administrator role.
   variable_set('user_admin_role', $admin_role->rid);
 
-  // Creating a Nurse role and add the
+  // Creating a Health worker role and add the permissions.
+  $health_worker_role = new stdClass();
+  $health_worker_role->name = 'health worker';
+  user_role_save($health_worker_role);
+
+  // Creating a Nurse role and add the permissions.
   $nurse_role = new stdClass();
   $nurse_role->name = 'nurse';
   user_role_save($nurse_role);
