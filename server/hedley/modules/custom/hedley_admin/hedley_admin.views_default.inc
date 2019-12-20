@@ -2174,6 +2174,18 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['relationships']['field_person_target_id_1']['field'] = 'field_person_target_id';
   $handler->display->display_options['relationships']['field_person_target_id_1']['relationship'] = 'reverse_field_related_to_node';
   $handler->display->display_options['relationships']['field_person_target_id_1']['label'] = 'mother';
+  /* Relationship: Entity Reference: Referencing entity */
+  $handler->display->display_options['relationships']['reverse_field_related_to_node_1']['id'] = 'reverse_field_related_to_node_1';
+  $handler->display->display_options['relationships']['reverse_field_related_to_node_1']['table'] = 'node';
+  $handler->display->display_options['relationships']['reverse_field_related_to_node_1']['field'] = 'reverse_field_related_to_node';
+  $handler->display->display_options['relationships']['reverse_field_related_to_node_1']['relationship'] = 'field_person_target_id';
+  $handler->display->display_options['relationships']['reverse_field_related_to_node_1']['label'] = 'Relationship caregiver';
+  /* Relationship: Entity Reference: Referenced Entity */
+  $handler->display->display_options['relationships']['field_person_target_id_2']['id'] = 'field_person_target_id_2';
+  $handler->display->display_options['relationships']['field_person_target_id_2']['table'] = 'field_data_field_person';
+  $handler->display->display_options['relationships']['field_person_target_id_2']['field'] = 'field_person_target_id';
+  $handler->display->display_options['relationships']['field_person_target_id_2']['relationship'] = 'reverse_field_related_to_node_1';
+  $handler->display->display_options['relationships']['field_person_target_id_2']['label'] = 'Caregiver';
   /* Field: Bulk operations: Content */
   $handler->display->display_options['fields']['views_bulk_operations']['id'] = 'views_bulk_operations';
   $handler->display->display_options['fields']['views_bulk_operations']['table'] = 'views_entity_node';
@@ -2211,6 +2223,12 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['title_1']['field'] = 'title';
   $handler->display->display_options['fields']['title_1']['relationship'] = 'field_person_target_id';
   $handler->display->display_options['fields']['title_1']['label'] = 'Name of child';
+  /* Field: Content: Gender */
+  $handler->display->display_options['fields']['field_gender']['id'] = 'field_gender';
+  $handler->display->display_options['fields']['field_gender']['table'] = 'field_data_field_gender';
+  $handler->display->display_options['fields']['field_gender']['field'] = 'field_gender';
+  $handler->display->display_options['fields']['field_gender']['relationship'] = 'field_person_target_id';
+  $handler->display->display_options['fields']['field_gender']['label'] = 'Sex';
   /* Field: Content: Birth date */
   $handler->display->display_options['fields']['field_birth_date']['id'] = 'field_birth_date';
   $handler->display->display_options['fields']['field_birth_date']['table'] = 'field_data_field_birth_date';
@@ -2226,12 +2244,6 @@ function hedley_admin_views_default_views() {
     'multiple_to' => '',
     'show_remaining_days' => 0,
   );
-  /* Field: Content: Gender */
-  $handler->display->display_options['fields']['field_gender']['id'] = 'field_gender';
-  $handler->display->display_options['fields']['field_gender']['table'] = 'field_data_field_gender';
-  $handler->display->display_options['fields']['field_gender']['field'] = 'field_gender';
-  $handler->display->display_options['fields']['field_gender']['relationship'] = 'field_person_target_id';
-  $handler->display->display_options['fields']['field_gender']['label'] = 'Sex';
   /* Field: Content: Post date */
   $handler->display->display_options['fields']['created']['id'] = 'created';
   $handler->display->display_options['fields']['created']['table'] = 'node';
@@ -2265,6 +2277,12 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_phone_number']['field'] = 'field_phone_number';
   $handler->display->display_options['fields']['field_phone_number']['relationship'] = 'field_person_target_id_1';
   $handler->display->display_options['fields']['field_phone_number']['label'] = 'Mother\'s telephone number';
+  /* Field: Content: Title */
+  $handler->display->display_options['fields']['title']['id'] = 'title';
+  $handler->display->display_options['fields']['title']['table'] = 'node';
+  $handler->display->display_options['fields']['title']['field'] = 'title';
+  $handler->display->display_options['fields']['title']['relationship'] = 'field_person_target_id_2';
+  $handler->display->display_options['fields']['title']['label'] = 'Other name of other person that represent the Child\'s parent(Care give)';
   /* Field: Content: Sector */
   $handler->display->display_options['fields']['field_sector']['id'] = 'field_sector';
   $handler->display->display_options['fields']['field_sector']['table'] = 'field_data_field_sector';
@@ -2280,6 +2298,14 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_village']['table'] = 'field_data_field_village';
   $handler->display->display_options['fields']['field_village']['field'] = 'field_village';
   $handler->display->display_options['fields']['field_village']['relationship'] = 'field_person_target_id';
+  /* Field: Content: Post date */
+  $handler->display->display_options['fields']['created_1']['id'] = 'created_1';
+  $handler->display->display_options['fields']['created_1']['table'] = 'node';
+  $handler->display->display_options['fields']['created_1']['field'] = 'created';
+  $handler->display->display_options['fields']['created_1']['label'] = 'Date the child received FBF';
+  $handler->display->display_options['fields']['created_1']['date_format'] = 'custom';
+  $handler->display->display_options['fields']['created_1']['custom_date_format'] = 'd/m/Y';
+  $handler->display->display_options['fields']['created_1']['second_date_format'] = 'long';
   /* Field: Content: Weight */
   $handler->display->display_options['fields']['field_weight']['id'] = 'field_weight';
   $handler->display->display_options['fields']['field_weight']['table'] = 'field_data_field_weight';
@@ -2385,6 +2411,11 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['arguments']['field_person_target_id_1']['summary']['number_of_records'] = '0';
   $handler->display->display_options['arguments']['field_person_target_id_1']['summary']['format'] = 'default_summary';
   $handler->display->display_options['arguments']['field_person_target_id_1']['summary_options']['items_per_page'] = '25';
+  $handler->display->display_options['filter_groups']['groups'] = array(
+    1 => 'AND',
+    3 => 'OR',
+    2 => 'OR',
+  );
   /* Filter criterion: Content: Published */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'node';
@@ -2399,6 +2430,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['type']['value'] = array(
     'session' => 'session',
   );
+  $handler->display->display_options['filters']['type']['group'] = 1;
   /* Filter criterion: Content: Type */
   $handler->display->display_options['filters']['type_1']['id'] = 'type_1';
   $handler->display->display_options['filters']['type_1']['table'] = 'node';
@@ -2407,6 +2439,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['type_1']['value'] = array(
     'weight' => 'weight',
   );
+  $handler->display->display_options['filters']['type_1']['group'] = 1;
   /* Filter criterion: Content: Type */
   $handler->display->display_options['filters']['type_2']['id'] = 'type_2';
   $handler->display->display_options['filters']['type_2']['table'] = 'node';
@@ -2415,6 +2448,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['type_2']['value'] = array(
     'height' => 'height',
   );
+  $handler->display->display_options['filters']['type_2']['group'] = 1;
   /* Filter criterion: Content: Type */
   $handler->display->display_options['filters']['type_3']['id'] = 'type_3';
   $handler->display->display_options['filters']['type_3']['table'] = 'node';
@@ -2423,6 +2457,39 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['type_3']['value'] = array(
     'muac' => 'muac',
   );
+  $handler->display->display_options['filters']['type_3']['group'] = 1;
+  /* Filter criterion: Content: Related by (field_related_by) */
+  $handler->display->display_options['filters']['field_related_by_value']['id'] = 'field_related_by_value';
+  $handler->display->display_options['filters']['field_related_by_value']['table'] = 'field_data_field_related_by';
+  $handler->display->display_options['filters']['field_related_by_value']['field'] = 'field_related_by_value';
+  $handler->display->display_options['filters']['field_related_by_value']['relationship'] = 'reverse_field_related_to_node';
+  $handler->display->display_options['filters']['field_related_by_value']['value'] = array(
+    'parent' => 'parent',
+  );
+  $handler->display->display_options['filters']['field_related_by_value']['group'] = 2;
+  /* Filter criterion: Content: Related by (field_related_by) */
+  $handler->display->display_options['filters']['field_related_by_value_2']['id'] = 'field_related_by_value_2';
+  $handler->display->display_options['filters']['field_related_by_value_2']['table'] = 'field_data_field_related_by';
+  $handler->display->display_options['filters']['field_related_by_value_2']['field'] = 'field_related_by_value';
+  $handler->display->display_options['filters']['field_related_by_value_2']['relationship'] = 'reverse_field_related_to_node';
+  $handler->display->display_options['filters']['field_related_by_value_2']['operator'] = 'empty';
+  $handler->display->display_options['filters']['field_related_by_value_2']['group'] = 2;
+  /* Filter criterion: Content: Related by (field_related_by) */
+  $handler->display->display_options['filters']['field_related_by_value_1']['id'] = 'field_related_by_value_1';
+  $handler->display->display_options['filters']['field_related_by_value_1']['table'] = 'field_data_field_related_by';
+  $handler->display->display_options['filters']['field_related_by_value_1']['field'] = 'field_related_by_value';
+  $handler->display->display_options['filters']['field_related_by_value_1']['relationship'] = 'reverse_field_related_to_node_1';
+  $handler->display->display_options['filters']['field_related_by_value_1']['value'] = array(
+    'caregiver' => 'caregiver',
+  );
+  $handler->display->display_options['filters']['field_related_by_value_1']['group'] = 3;
+  /* Filter criterion: Content: Related by (field_related_by) */
+  $handler->display->display_options['filters']['field_related_by_value_3']['id'] = 'field_related_by_value_3';
+  $handler->display->display_options['filters']['field_related_by_value_3']['table'] = 'field_data_field_related_by';
+  $handler->display->display_options['filters']['field_related_by_value_3']['field'] = 'field_related_by_value';
+  $handler->display->display_options['filters']['field_related_by_value_3']['relationship'] = 'reverse_field_related_to_node_1';
+  $handler->display->display_options['filters']['field_related_by_value_3']['operator'] = 'empty';
+  $handler->display->display_options['filters']['field_related_by_value_3']['group'] = 3;
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
