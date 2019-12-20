@@ -2367,6 +2367,24 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['arguments']['nid']['validate_options']['types'] = array(
     'person' => 'person',
   );
+  /* Contextual filter: Content: Person (field_person) */
+  $handler->display->display_options['arguments']['field_person_target_id']['id'] = 'field_person_target_id';
+  $handler->display->display_options['arguments']['field_person_target_id']['table'] = 'field_data_field_person';
+  $handler->display->display_options['arguments']['field_person_target_id']['field'] = 'field_person_target_id';
+  $handler->display->display_options['arguments']['field_person_target_id']['relationship'] = 'reverse_field_session_node_1';
+  $handler->display->display_options['arguments']['field_person_target_id']['default_argument_type'] = 'fixed';
+  $handler->display->display_options['arguments']['field_person_target_id']['summary']['number_of_records'] = '0';
+  $handler->display->display_options['arguments']['field_person_target_id']['summary']['format'] = 'default_summary';
+  $handler->display->display_options['arguments']['field_person_target_id']['summary_options']['items_per_page'] = '25';
+  /* Contextual filter: Content: Person (field_person) */
+  $handler->display->display_options['arguments']['field_person_target_id_1']['id'] = 'field_person_target_id_1';
+  $handler->display->display_options['arguments']['field_person_target_id_1']['table'] = 'field_data_field_person';
+  $handler->display->display_options['arguments']['field_person_target_id_1']['field'] = 'field_person_target_id';
+  $handler->display->display_options['arguments']['field_person_target_id_1']['relationship'] = 'reverse_field_session_node';
+  $handler->display->display_options['arguments']['field_person_target_id_1']['default_argument_type'] = 'fixed';
+  $handler->display->display_options['arguments']['field_person_target_id_1']['summary']['number_of_records'] = '0';
+  $handler->display->display_options['arguments']['field_person_target_id_1']['summary']['format'] = 'default_summary';
+  $handler->display->display_options['arguments']['field_person_target_id_1']['summary_options']['items_per_page'] = '25';
   /* Filter criterion: Content: Published */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'node';

@@ -129,6 +129,21 @@ function hedley_admin_node_delete($node) {
 }
 
 /**
+ * Implements hook_views_pre_view().
+ */
+function hedley_admin_views_pre_view(&$view) {
+  if ($view->name != 'ledger') {
+
+  }
+  if (empty($view->args[0])) {
+    return;
+  }
+  $view->args[1] = $view->args[0];
+  $view->args[2] = $view->args[0];
+  $view->args[3] = $view->args[0];
+}
+
+/**
  * Implements hook_query_TAG_alter().
  *
  * Adds the proper grouping to the ledger.
