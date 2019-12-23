@@ -54,7 +54,7 @@ $measurements = [
   )],
   'weight' => [array_merge(
     $measurements_fields,
-    ['field_bmi', 'field_zscore_age', 'field_zscore_length', 'field_zscore_bmi']
+    ['field_weight', 'field_bmi', 'field_zscore_age', 'field_zscore_length', 'field_zscore_bmi']
   )],
   'muac' => [array_merge(
     $measurements_fields,
@@ -173,6 +173,7 @@ foreach ($health_centers_ids as $health_center_id) {
 
         case 'weight':
           $type_based_values = [
+            $wrapper->field_weight->value(),
             $wrapper->field_bmi->value(),
             $wrapper->field_zscore_age->value(),
             $wrapper->field_zscore_length->value(),
@@ -207,7 +208,7 @@ $mapping = [
   'pmtct_participants' => $participants,
   'people' => $people,
   'attendances' => $measurements['attendance'],
-  'families_planning' => $measurements['family_planning'],
+  'family_plannings' => $measurements['family_planning'],
   'heights' => $measurements['height'],
   'weights' => $measurements['weight'],
   'muacs' => $measurements['muac'],
