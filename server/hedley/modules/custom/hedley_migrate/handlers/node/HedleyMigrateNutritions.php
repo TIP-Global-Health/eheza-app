@@ -13,7 +13,7 @@ class HedleyMigrateNutritions extends HedleyMigrateMeasurementBase {
   /**
    * {@inheritdoc}
    */
-  protected $bundle = 'family_nutrition';
+  protected $bundle = 'nutrition';
 
   /**
    * {@inheritdoc}

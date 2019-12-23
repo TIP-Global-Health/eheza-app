@@ -70,6 +70,7 @@ abstract class HedleyMigrateMeasurementBase extends HedleyMigrateBase {
 
     $this
       ->addFieldMapping('field_shards', 'field_shards')
+      ->separator('|')
       ->sourceMigration('HedleyMigrateHealthCenters');
   }
 

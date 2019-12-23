@@ -140,6 +140,24 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateNurses' => [
         'class_name' => 'HedleyMigrateNurses',
       ],
+      'HedleyMigrateAttendances' => [
+        'class_name' => 'HedleyMigrateAttendances',
+      ],
+      'HedleyMigrateFamilyPlannings' => [
+        'class_name' => 'HedleyMigrateFamilyPlannings',
+      ],
+      'HedleyMigrateHeights' => [
+        'class_name' => 'HedleyMigrateHeights',
+      ],
+      'HedleyMigrateMuacs' => [
+        'class_name' => 'HedleyMigrateMuacs',
+      ],
+      'HedleyMigrateNutritions' => [
+        'class_name' => 'HedleyMigrateNutritions',
+      ],
+      'HedleyMigrateWeights' => [
+        'class_name' => 'HedleyMigrateWeights',
+      ],
       'HedleyMigrateMissingHeights' => [
         'class_name' => 'HedleyMigrateMissingHeights',
         'group_name' => 'missing',

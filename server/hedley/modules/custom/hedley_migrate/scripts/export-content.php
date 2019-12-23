@@ -17,9 +17,9 @@ drush_print('Starting export!');
 
 
 $health_centers_ids = [
-    7091, // Rukura
+//    7091, // Rukura
 //  7092, // Rwankuba
-//    28589, // Test
+    28589, // Test
 ];
 
 $health_centers = [['id', 'title', 'field_catchment_area']];
@@ -201,18 +201,18 @@ foreach ($health_centers_ids as $health_center_id) {
 }
 
 $mapping = [
-  'health_centers' => $health_centers,
-  'clinics' => $groups,
-  'nurses' => $nurses,
-  'group_encounters' => $group_encounters,
-  'pmtct_participants' => $participants,
-  'people' => $people,
-  'attendances' => $measurements['attendance'],
-  'family_plannings' => $measurements['family_planning'],
-  'heights' => $measurements['height'],
-  'weights' => $measurements['weight'],
-  'muacs' => $measurements['muac'],
-  'nutritions' => $measurements['nutrition'],
+  'health_center' => $health_centers,
+  'clinic' => $groups,
+  'nurse' => $nurses,
+  'group_encounter' => $group_encounters,
+  'pmtct_participant' => $participants,
+  'person' => $people,
+  'attendance' => $measurements['attendance'],
+  'family_planning' => $measurements['family_planning'],
+  'height' => $measurements['height'],
+  'weight' => $measurements['weight'],
+  'muac' => $measurements['muac'],
+  'nutrition' => $measurements['nutrition'],
   //Todo: 'photo',
 ];
 
@@ -222,7 +222,7 @@ foreach ($mapping as $name => $rows) {
     $content[] = implode(',', $row);
   }
 
-  $path = drupal_get_path('module', 'hedley_migrate') . '/csv/export';
+  $path = drupal_get_path('module', 'hedley_migrate') . '/csv';
   $fp = fopen("$path/$name.csv", 'w');
   fwrite($fp, implode(PHP_EOL, $content));
 
