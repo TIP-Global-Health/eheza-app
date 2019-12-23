@@ -20,19 +20,6 @@ abstract class HedleyMigrateMeasurementBase extends HedleyMigrateBase {
   /**
    * {@inheritdoc}
    */
-  protected $csvColumns = [
-    'id',
-    'field_person',
-    'field_date_measured',
-    'field_nurse',
-    'field_uuid',
-    'field_session',
-    'field_shards',
-  ];
-
-  /**
-   * {@inheritdoc}
-   */
   protected $simpleMappings = [
     'field_uuid',
   ];

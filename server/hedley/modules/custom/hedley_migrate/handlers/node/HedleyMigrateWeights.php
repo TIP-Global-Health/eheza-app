@@ -18,12 +18,30 @@ class HedleyMigrateWeights extends HedleyMigrateMeasurementBase {
   /**
    * {@inheritdoc}
    */
+  protected $csvColumns = [
+    'id',
+    'field_person',
+    'field_date_measured',
+    'field_nurse',
+    'field_uuid',
+    'field_session',
+    'field_shards',
+    'field_weight',
+    'field_bmi',
+    'field_zscore_age',
+    'field_zscore_length',
+    'field_zscore_bmi',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
   protected $simpleMappings = [
     'field_weight',
     'field_bmi',
     'field_zscore_age',
     'field_zscore_length',
-    'field_zscore_bmi,'
+    'field_zscore_bmi',
   ];
 
 }

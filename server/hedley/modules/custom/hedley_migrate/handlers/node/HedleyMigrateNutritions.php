@@ -18,6 +18,20 @@ class HedleyMigrateNutritions extends HedleyMigrateMeasurementBase {
   /**
    * {@inheritdoc}
    */
+  protected $csvColumns = [
+    'id',
+    'field_person',
+    'field_date_measured',
+    'field_nurse',
+    'field_uuid',
+    'field_session',
+    'field_shards',
+    'field_nutrition_signs',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
   protected $simpleMultipleMappings = [
     'field_nutrition_signs',
   ];

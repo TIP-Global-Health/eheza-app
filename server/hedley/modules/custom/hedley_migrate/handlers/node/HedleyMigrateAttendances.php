@@ -18,6 +18,20 @@ class HedleyMigrateAttendances extends HedleyMigrateMeasurementBase {
   /**
    * {@inheritdoc}
    */
+  protected $csvColumns = [
+    'id',
+    'field_person',
+    'field_date_measured',
+    'field_nurse',
+    'field_uuid',
+    'field_session',
+    'field_shards',
+    'field_attended',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
   protected $simpleMappings = [
     'field_attended',
   ];

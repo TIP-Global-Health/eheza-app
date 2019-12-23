@@ -66,35 +66,7 @@ class HedleyMigratePmtctParticipants extends HedleyMigrateBase {
 
     $this
       ->addFieldMapping('field_expected', 'field_expected')
-      ->callbacks([$this, 'dateProcess']);
-  }
-
-  /**
-   * Convert a date string to a timestamp.
-   *
-   * @param string $date
-   *   A string containing a date.
-   *
-   * @return array
-   *   A start date.
-   */
-  public function dateProcess($date) {
-    $trimmed = trim($date);
-
-    if (empty($trimmed)) {
-      return $trimmed;
-    }
-
-    if (preg_match('/^\\d\\d\\d\\d-\\d\\d-\\d\\d$/', $trimmed)) {
-      $stamp = DateTime::createFromFormat('!Y-m-d', $trimmed)->getTimestamp();
-
-      return [
-        'value' => $stamp,
-        'value2' => NULL,
-      ];
-    }
-
-    throw new Exception("$date was not a recognized date format.");
+      ->callbacks([$this, 'date2Process']);
   }
 
 }
