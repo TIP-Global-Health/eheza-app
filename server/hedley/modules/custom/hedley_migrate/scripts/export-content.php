@@ -22,12 +22,14 @@ $health_centers_ids = [
     28589, // Test
 ];
 
+$catchment_areas =  [['id', 'title']];
 $health_centers = [['id', 'title', 'field_catchment_area']];
 $groups = [['id','title','field_group_type','field_health_center']];
 $nurses = [['id','title', 'field_role', 'field_health_centers', 'field_pin_code']];
 $group_encounters = [['id', 'field_clinic', 'field_scheduled_date']];
 $participants = [['id', 'field_person', 'field_adult', 'field_adult_activities', 'field_expected', 'field_clinic']];
 $people = [['id', 'field_first_name', 'field_second_name', 'field_gender', 'field_birth_date', 'field_health_center']];
+$relationships = [['id', 'field_person', 'field_related_by', 'field_related_to']];
 
 $measurements_fields = [
   'id',
@@ -35,7 +37,6 @@ $measurements_fields = [
   'field_date_measured',
   'field_nurse',
   'field_session',
-  'field_uuid',
   'field_shards',
 ];
 
@@ -67,6 +68,7 @@ $measurements = [
   //Todo: 'photo',
 ];
 
+$catchment_area_ids = [];
 foreach ($health_centers_ids as $health_center_id) {
   $wrapper = entity_metadata_wrapper('node', $health_center_id);
   $health_centers[] = [
@@ -74,6 +76,16 @@ foreach ($health_centers_ids as $health_center_id) {
     $wrapper->label(),
     $wrapper->field_catchment_area->getIdentifier(),
   ];
+
+  $catchment_area_id = $wrapper->	field_catchment_area->value(['identifier' => TRUE]);
+  if (!in_array($catchment_area_id, $catchment_area_ids)) {
+    $wrapper = entity_metadata_wrapper('node', $catchment_area_id);
+    $catchment_areas[] = [
+      $wrapper->getIdentifier(),
+      $wrapper->label(),
+    ];
+    $catchment_area_ids[] = $catchment_area_id;
+  }
 
   $groups_ids = hedley_migrate_get_xx_for_yy('clinic', 'field_health_center', [$health_center_id]);
   foreach ($groups_ids as $group_id) {
@@ -98,7 +110,7 @@ foreach ($health_centers_ids as $health_center_id) {
     ];
   }
 
-  $group_encounters_ids = hedley_migrate_get_xx_for_yy('session', 'field_clinic', [$groups_ids]);
+  $group_encounters_ids = hedley_migrate_get_xx_for_yy('session', 'field_clinic', $groups_ids);
   foreach ($group_encounters_ids as $group_encounter_id) {
     $wrapper = entity_metadata_wrapper('node', $group_encounter_id);
     $group_encounters[] = [
@@ -108,7 +120,7 @@ foreach ($health_centers_ids as $health_center_id) {
     ];
   }
 
-  $participants_ids = hedley_migrate_get_xx_for_yy('pmtct_participant', 'field_clinic', [$groups_ids]);
+  $participants_ids = hedley_migrate_get_xx_for_yy('pmtct_participant', 'field_clinic', $groups_ids);
   $mothers_ids = $children_ids = [];
   foreach ($participants_ids as $participant_id) {
     $wrapper = entity_metadata_wrapper('node', $participant_id);
@@ -125,7 +137,8 @@ foreach ($health_centers_ids as $health_center_id) {
     ];
   }
 
-  $people_ids = array_merge(array_unique($mothers_ids), array_unique($children_ids));
+  $unique_mothers_ids = array_unique($mothers_ids);
+  $people_ids = array_merge($unique_mothers_ids, array_unique($children_ids));
   foreach ($people_ids as $person_id) {
     $wrapper = entity_metadata_wrapper('node', $person_id);
     $people[] = [
@@ -138,8 +151,19 @@ foreach ($health_centers_ids as $health_center_id) {
     ];
   }
 
+  $relationships_ids = hedley_migrate_get_xx_for_yy('relationship', 'field_person', $unique_mothers_ids);
+  foreach ($relationships_ids as $relationship_id) {
+    $wrapper = entity_metadata_wrapper('node', $relationship_id);
+    $relationships[] = [
+      $wrapper->getIdentifier(),
+      $wrapper->field_person->getIdentifier(),
+      $wrapper->field_related_by->value(),
+      $wrapper->field_related_to->getIdentifier(),
+    ];
+  }
+
   foreach ($measurements as $type => $values) {
-    $ids = hedley_migrate_get_xx_for_yy($type, 'field_session', [$group_encounters_ids]);
+    $ids = hedley_migrate_get_xx_for_yy($type, 'field_session', $group_encounters_ids);
 
     foreach ($ids as $id) {
       $wrapper = entity_metadata_wrapper('node', $id);
@@ -149,7 +173,6 @@ foreach ($health_centers_ids as $health_center_id) {
         date('Y-m-d', $wrapper->field_date_measured->value()),
         $wrapper->field_nurse->getIdentifier(),
         $wrapper->field_session->getIdentifier(),
-        $wrapper->field_uuid->value(),
         implode('|', $wrapper->field_shards->value(['identifier' => TRUE])),
       ];
 
@@ -201,12 +224,14 @@ foreach ($health_centers_ids as $health_center_id) {
 }
 
 $mapping = [
+  'catchment_area' => $catchment_areas,
   'health_center' => $health_centers,
   'clinic' => $groups,
   'nurse' => $nurses,
   'group_encounter' => $group_encounters,
   'session' => $participants,
   'person' => $people,
+  'relationship' => $relationships,
   'attendance' => $measurements['attendance'],
   'family_planning' => $measurements['family_planning'],
   'height' => $measurements['height'],
