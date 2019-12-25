@@ -15,6 +15,8 @@ if (!drupal_is_cli()) {
 
 drush_print('Starting export!');
 
+$faker = hedley_faker_create();
+
 // Rukura, Rwankuba, Test.
 $health_centers_ids = [7091, 7092, 28589];
 
@@ -212,12 +214,16 @@ foreach ($health_centers_ids as $health_center_id) {
   $people_ids = array_merge($unique_mothers_ids, array_unique($children_ids));
   foreach ($people_ids as $person_id) {
     $wrapper = entity_metadata_wrapper('node', $person_id);
+    $gender = $wrapper->field_gender->value();
+    $first_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
+    $second_name = $faker->lastName;
+
     $people[] = [
       $wrapper->getIdentifier(),
-      $wrapper->label(),
-      $wrapper->field_first_name->value(),
-      $wrapper->field_second_name->value(),
-      $wrapper->field_gender->value(),
+      "$second_name $first_name",
+      $first_name,
+      $second_name,
+      $gender,
       date('Y-m-d', $wrapper->field_birth_date->value()),
       $wrapper->field_health_center->getIdentifier(),
     ];
