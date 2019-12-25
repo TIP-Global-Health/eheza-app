@@ -214,7 +214,6 @@ abstract class HedleyMigrateBase extends Migration {
     if ($count == 1) {
       return [
         'value' => $value1,
-        'value2' => $value1,
       ];
     }
 
@@ -226,7 +225,7 @@ abstract class HedleyMigrateBase extends Migration {
 
     return [
       'value' => $value1,
-      'value2' => $value2,
+      'arguments' => ['to' => $value2],
     ];
   }
 
