@@ -50,6 +50,13 @@ class HedleyMigratePmtctParticipants extends HedleyMigrateBase {
     $this->dependencies = [
       'HedleyMigratePeople',
       'HedleyMigrateClinics',
+      'HedleyMigrateAttendances',
+      'HedleyMigrateFamilyPlannings',
+      'HedleyMigrateHeights',
+      'HedleyMigrateMuacs',
+      'HedleyMigrateNutritions',
+      'HedleyMigrateWeights',
+      // Todo: add photos
     ];
 
     $this
