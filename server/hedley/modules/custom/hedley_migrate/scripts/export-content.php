@@ -15,7 +15,6 @@ if (!drupal_is_cli()) {
 
 drush_print('Starting export!');
 
-
 $health_centers_ids = [
 //    7091, // Rukura
 //  7092, // Rwankuba
