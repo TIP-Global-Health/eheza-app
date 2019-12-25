@@ -643,7 +643,20 @@ function hedley_migrate_query_random_alter($query) {
   $query->orderRandom();
 }
 
-function hedley_migrate_get_xx_for_yy($type, $field, $values) {
+/**
+ * Resolves the IDs of nodes which value at '$field' is withing '$values'.
+ *
+ * @param string $type
+ *   Node type.
+ * @param string $field
+ *   Name of the field.
+ * @param array $values
+ *   List of values.
+ *
+ * @return array
+ *   Nodes IDS, or empty array, if none found.
+ */
+function hedley_migrate_resolve_for_export($type, $field, $values) {
   $query = new EntityFieldQuery();
 
   $result = $query->entityCondition('entity_type', 'node')
@@ -652,9 +665,20 @@ function hedley_migrate_get_xx_for_yy($type, $field, $values) {
     ->fieldCondition($field, 'target_id', $values, 'IN')
     ->execute();
 
-  return empty($result['node']) ? NULL : array_keys($result['node']);
+  return empty($result['node']) ? [] : array_keys($result['node']);
 }
 
+/**
+ * Generates Date field for export.
+ *
+ * Supports start and end dates.
+ *
+ * @param array $date
+ *   Input date.
+ *
+ * @return string
+ *   Date at  'yyyy-mm-dd' format.
+ */
 function hedley_migrate_export_date_field($date) {
   $time1 = strtotime($date['value']);
 

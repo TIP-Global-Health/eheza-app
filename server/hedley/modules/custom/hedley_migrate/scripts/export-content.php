@@ -144,7 +144,7 @@ foreach ($health_centers_ids as $health_center_id) {
     $catchment_area_ids[] = $catchment_area_id;
   }
 
-  $groups_ids = hedley_migrate_get_xx_for_yy('clinic', 'field_health_center', [$health_center_id]);
+  $groups_ids = hedley_migrate_resolve_for_export('clinic', 'field_health_center', [$health_center_id]);
   foreach ($groups_ids as $group_id) {
     $wrapper = entity_metadata_wrapper('node', $group_id);
     $groups[] = [
@@ -155,7 +155,7 @@ foreach ($health_centers_ids as $health_center_id) {
     ];
   }
 
-  $nurses_ids = hedley_migrate_get_xx_for_yy('nurse', 'field_health_centers', [$health_center_id]);
+  $nurses_ids = hedley_migrate_resolve_for_export('nurse', 'field_health_centers', [$health_center_id]);
   foreach ($nurses_ids as $nurse_id) {
     $wrapper = entity_metadata_wrapper('node', $nurse_id);
 
@@ -175,7 +175,7 @@ foreach ($health_centers_ids as $health_center_id) {
     ];
   }
 
-  $group_encounters_ids = hedley_migrate_get_xx_for_yy('session', 'field_clinic', $groups_ids);
+  $group_encounters_ids = hedley_migrate_resolve_for_export('session', 'field_clinic', $groups_ids);
   foreach ($group_encounters_ids as $group_encounter_id) {
     $wrapper = entity_metadata_wrapper('node', $group_encounter_id);
     $group_encounters[] = [
@@ -185,7 +185,7 @@ foreach ($health_centers_ids as $health_center_id) {
     ];
   }
 
-  $participants_ids = hedley_migrate_get_xx_for_yy('pmtct_participant', 'field_clinic', $groups_ids);
+  $participants_ids = hedley_migrate_resolve_for_export('pmtct_participant', 'field_clinic', $groups_ids);
   $mothers_ids = $children_ids = [];
   foreach ($participants_ids as $participant_id) {
     $wrapper = entity_metadata_wrapper('node', $participant_id);
@@ -217,7 +217,7 @@ foreach ($health_centers_ids as $health_center_id) {
     ];
   }
 
-  $relationships_ids = hedley_migrate_get_xx_for_yy('relationship', 'field_person', $unique_mothers_ids);
+  $relationships_ids = hedley_migrate_resolve_for_export('relationship', 'field_person', $unique_mothers_ids);
   foreach ($relationships_ids as $relationship_id) {
     $wrapper = entity_metadata_wrapper('node', $relationship_id);
     $relationships[] = [
@@ -229,7 +229,7 @@ foreach ($health_centers_ids as $health_center_id) {
   }
 
   foreach ($measurements as $type => $values) {
-    $ids = hedley_migrate_get_xx_for_yy($type, 'field_session', $group_encounters_ids);
+    $ids = hedley_migrate_resolve_for_export($type, 'field_session', $group_encounters_ids);
 
     foreach ($ids as $id) {
       $wrapper = entity_metadata_wrapper('node', $id);
