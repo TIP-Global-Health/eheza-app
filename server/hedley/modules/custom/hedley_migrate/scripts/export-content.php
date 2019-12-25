@@ -19,25 +19,29 @@ drush_print('Starting export!');
 $health_centers_ids = [7091, 7092, 28589];
 
 $catchment_areas = [
-  [ 'id',
+  [
+    'id',
     'title',
   ],
 ];
 $health_centers = [
-  [ 'id',
+  [
+    'id',
     'title',
     'field_catchment_area',
   ],
 ];
 $groups = [
-  [ 'id',
+  [
+    'id',
     'title',
     'field_group_type',
     'field_health_center',
   ],
 ];
 $nurses = [
-  [ 'id',
+  [
+    'id',
     'title',
     'field_role',
     'field_health_centers',
@@ -45,22 +49,25 @@ $nurses = [
   ],
 ];
 $group_encounters = [
-  [ 'id',
+  [
+    'id',
     'field_clinic',
     'field_scheduled_date',
   ],
 ];
 $participants = [
-  ['id',
-  'field_person',
-  'field_adult',
-  'field_adult_activities',
-  'field_expected',
-  'field_clinic',
+  [
+    'id',
+    'field_person',
+    'field_adult',
+    'field_adult_activities',
+    'field_expected',
+    'field_clinic',
   ],
 ];
 $people = [
-  [ 'id',
+  [
+    'id',
     'title',
     'field_first_name',
     'field_second_name',
@@ -70,7 +77,8 @@ $people = [
   ],
 ];
 $relationships = [
-  [ 'id',
+  [
+    'id',
     'field_person',
     'field_related_by',
     'field_related_to',
@@ -100,7 +108,8 @@ $measurements = [
   'weight' => [
     array_merge(
       $measurements_fields,
-      [ 'field_weight',
+      [
+        'field_weight',
         'field_bmi',
         'field_zscore_age',
         'field_zscore_length',

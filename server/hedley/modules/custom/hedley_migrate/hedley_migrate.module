@@ -656,7 +656,7 @@ function hedley_migrate_query_random_alter($query) {
  * @return array
  *   Nodes IDS, or empty array, if none found.
  */
-function hedley_migrate_resolve_for_export($type, $field, $values) {
+function hedley_migrate_resolve_for_export($type, $field, array $values) {
   $query = new EntityFieldQuery();
 
   $result = $query->entityCondition('entity_type', 'node')
@@ -679,7 +679,7 @@ function hedley_migrate_resolve_for_export($type, $field, $values) {
  * @return string
  *   Date at  'yyyy-mm-dd' format.
  */
-function hedley_migrate_export_date_field($date) {
+function hedley_migrate_export_date_field(array $date) {
   $time1 = strtotime($date['value']);
 
   if (empty($date['value2'])) {
