@@ -80,7 +80,7 @@ class HedleyMigratePeople extends HedleyMigrateBase {
     }
 
     if (preg_match('/^\\d\\d\\d\\d-\\d\\d-\\d\\d$/', $trimmed)) {
-      return DateTime::createFromFormat('!Y-m-d', $trimmed)->getTimestamp();
+      return DateTime::createFromFormat('!Y-m-d', $trimmed, new DateTimeZone("UTC"))->getTimestamp();
     }
 
     throw new Exception("$date was not a recognized date format.");

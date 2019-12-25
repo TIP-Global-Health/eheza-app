@@ -208,7 +208,8 @@ abstract class HedleyMigrateBase extends Migration {
       throw new Exception("$values[0] was not a recognized date format.");
     }
 
-    $value1 = DateTime::createFromFormat('!Y-m-d', $values[0])->getTimestamp();
+    $timezone = new DateTimeZone("UTC");
+    $value1 = DateTime::createFromFormat('!Y-m-d', $values[0], $timezone)->getTimestamp();
 
     if ($count == 1) {
       return [
@@ -221,7 +222,7 @@ abstract class HedleyMigrateBase extends Migration {
       throw new Exception("$values[1] was not a recognized date format.");
     }
 
-    $value2 = DateTime::createFromFormat('!Y-m-d', $values[1])->getTimestamp();
+    $value2 = DateTime::createFromFormat('!Y-m-d', $values[1], $timezone)->getTimestamp();
 
     return [
       'value' => $value1,
