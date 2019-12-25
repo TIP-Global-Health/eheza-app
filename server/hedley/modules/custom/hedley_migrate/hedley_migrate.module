@@ -640,7 +640,6 @@ function hedley_migrate_query_random_alter($query) {
   $query->orderRandom();
 }
 
-
 function hedley_migrate_get_xx_for_yy($type, $field, $values) {
   $query = new EntityFieldQuery();
 
@@ -664,4 +663,3 @@ function hedley_migrate_export_date_field($date) {
 
   return date('Y-m-d', $time1) . '|' . date('Y-m-d', $time2);
 }
-

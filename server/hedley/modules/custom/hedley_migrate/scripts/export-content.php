@@ -22,15 +22,56 @@ $health_centers_ids = [
     28589, // Test
 ];
 
-$catchment_areas =  [['id', 'title']];
-$health_centers = [['id', 'title', 'field_catchment_area']];
-$groups = [['id','title','field_group_type','field_health_center']];
-$nurses = [['id','title', 'field_role', 'field_health_centers', 'field_pin_code']];
-$group_encounters = [['id', 'field_clinic', 'field_scheduled_date']];
-$participants = [['id', 'field_person', 'field_adult', 'field_adult_activities', 'field_expected', 'field_clinic']];
-$people = [['id', 'field_first_name', 'field_second_name', 'field_gender', 'field_birth_date', 'field_health_center']];
-$relationships = [['id', 'field_person', 'field_related_by', 'field_related_to']];
-
+$catchment_areas = [[
+  'id',
+  'title',
+]];
+$health_centers = [[
+  'id',
+  'title',
+  'field_catchment_area',
+]];
+$groups = [[
+  'id',
+  'title',
+  'field_group_type',
+  'field_health_center',
+]];
+$nurses = [[
+  'id',
+  'title',
+  'field_role',
+  'field_health_centers',
+  'field_pin_code',
+]];
+$group_encounters = [[
+  'id',
+  'field_clinic',
+  'field_scheduled_date',
+]];
+$participants = [[
+  'id',
+  'field_person',
+  'field_adult',
+  'field_adult_activities',
+  'field_expected',
+  'field_clinic',
+  ]];
+$people = [[
+  'id',
+  'title',
+  'field_first_name',
+  'field_second_name',
+  'field_gender',
+  'field_birth_date',
+  'field_health_center',
+  ]];
+$relationships = [[
+  'id',
+  'field_person',
+  'field_related_by',
+  'field_related_to',
+  ]];
 $measurements_fields = [
   'id',
   'field_person',
@@ -39,31 +80,30 @@ $measurements_fields = [
   'field_session',
   'field_shards',
 ];
-
 $measurements = [
   'attendance' => [array_merge(
-    $measurements_fields,
-    ['field_attended']
+    $measurements_fields, ['field_attended']
   )],
   'family_planning' => [array_merge(
-    $measurements_fields,
-    ['field_family_planning_signs']
+    $measurements_fields, ['field_family_planning_signs']
   )],
   'height' => [array_merge(
-    $measurements_fields,
-    ['field_height', 'field_zscore_age']
+    $measurements_fields, ['field_height', 'field_zscore_age']
   )],
   'weight' => [array_merge(
-    $measurements_fields,
-    ['field_weight', 'field_bmi', 'field_zscore_age', 'field_zscore_length', 'field_zscore_bmi']
+    $measurements_fields, [
+      'field_weight',
+      'field_bmi',
+      'field_zscore_age',
+      'field_zscore_length',
+      'field_zscore_bmi',
+    ]
   )],
   'muac' => [array_merge(
-    $measurements_fields,
-    ['field_muac']
+    $measurements_fields, ['field_muac']
   )],
   'nutrition' => [array_merge(
-    $measurements_fields,
-    ['field_nutrition_signs']
+    $measurements_fields, ['field_nutrition_signs']
   )],
   //Todo: 'photo',
 ];
@@ -143,6 +183,7 @@ foreach ($health_centers_ids as $health_center_id) {
     $wrapper = entity_metadata_wrapper('node', $person_id);
     $people[] = [
       $wrapper->getIdentifier(),
+      $wrapper->label(),
       $wrapper->field_first_name->value(),
       $wrapper->field_second_name->value(),
       $wrapper->field_gender->value(),

@@ -229,7 +229,6 @@ abstract class HedleyMigrateBase extends Migration {
     ];
   }
 
-
   /**
    * Add date fields.
    *
