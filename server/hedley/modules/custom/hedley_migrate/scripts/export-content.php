@@ -15,42 +15,39 @@ if (!drupal_is_cli()) {
 
 drush_print('Starting export!');
 
-$health_centers_ids = [
-//    7091, // Rukura
-//  7092, // Rwankuba
-    28589, // Test
-];
+// Rukura, Rwankuba, Test.
+$health_centers_ids = [7091, 7092, 28589];
 
 $catchment_areas = [
-  ['id',
-  'title',
+  [ 'id',
+    'title',
   ],
 ];
 $health_centers = [
-  ['id',
-  'title',
-  'field_catchment_area',
+  [ 'id',
+    'title',
+    'field_catchment_area',
   ],
 ];
 $groups = [
-  ['id',
-  'title',
-  'field_group_type',
-  'field_health_center',
+  [ 'id',
+    'title',
+    'field_group_type',
+    'field_health_center',
   ],
 ];
 $nurses = [
-  ['id',
-  'title',
-  'field_role',
-  'field_health_centers',
-  'field_pin_code',
+  [ 'id',
+    'title',
+    'field_role',
+    'field_health_centers',
+    'field_pin_code',
   ],
 ];
 $group_encounters = [
-  ['id',
-  'field_clinic',
-  'field_scheduled_date',
+  [ 'id',
+    'field_clinic',
+    'field_scheduled_date',
   ],
 ];
 $participants = [
@@ -63,20 +60,20 @@ $participants = [
   ],
 ];
 $people = [
-  ['id',
-  'title',
-  'field_first_name',
-  'field_second_name',
-  'field_gender',
-  'field_birth_date',
-  'field_health_center',
+  [ 'id',
+    'title',
+    'field_first_name',
+    'field_second_name',
+    'field_gender',
+    'field_birth_date',
+    'field_health_center',
   ],
 ];
 $relationships = [
-  ['id',
-  'field_person',
-  'field_related_by',
-  'field_related_to',
+  [ 'id',
+    'field_person',
+    'field_related_by',
+    'field_related_to',
   ],
 ];
 $measurements_fields = [
@@ -92,24 +89,24 @@ $measurements = [
     array_merge(
       $measurements_fields,
       ['field_family_planning_signs']
-    )
+    ),
   ],
   'height' => [
     array_merge(
       $measurements_fields,
       ['field_height', 'field_zscore_age']
-    )
+    ),
   ],
   'weight' => [
     array_merge(
       $measurements_fields,
-      ['field_weight',
-       'field_bmi',
-       'field_zscore_age',
-       'field_zscore_length',
-       'field_zscore_bmi',
+      [ 'field_weight',
+        'field_bmi',
+        'field_zscore_age',
+        'field_zscore_length',
+        'field_zscore_bmi',
       ]
-    )
+    ),
   ],
   'muac' => [array_merge($measurements_fields, ['field_muac'])],
   'nutrition' => [array_merge($measurements_fields, ['field_nutrition_signs'])],
