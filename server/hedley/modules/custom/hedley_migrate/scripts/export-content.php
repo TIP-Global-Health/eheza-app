@@ -119,14 +119,23 @@ $measurements = [
 
 $catchment_area_ids = [];
 foreach ($health_centers_ids as $health_center_id) {
-  $wrapper = entity_metadata_wrapper('node', $health_center_id);
+  $node = node_load($health_center_id);
+
+  if (!$node) {
+    drush_print("Error: can't find health center with ID $health_center_id!");
+    exit;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+
+  $catchment_area_id = $wrapper->field_catchment_area->getIdentifier();
+
   $health_centers[] = [
     $wrapper->getIdentifier(),
     $wrapper->label(),
-    $wrapper->field_catchment_area->getIdentifier(),
+    $catchment_area_id,
   ];
 
-  $catchment_area_id = $wrapper->	field_catchment_area->value(['identifier' => TRUE]);
   if (!in_array($catchment_area_id, $catchment_area_ids)) {
     $wrapper = entity_metadata_wrapper('node', $catchment_area_id);
     $catchment_areas[] = [
