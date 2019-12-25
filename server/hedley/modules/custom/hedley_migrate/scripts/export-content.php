@@ -86,7 +86,6 @@ $measurements_fields = [
   'field_date_measured',
   'field_nurse',
   'field_session',
-  'field_shards',
 ];
 $measurements = [
   'attendance' => [array_merge($measurements_fields, ['field_attended'])],
@@ -230,7 +229,6 @@ foreach ($health_centers_ids as $health_center_id) {
         date('Y-m-d', $wrapper->field_date_measured->value()),
         $wrapper->field_nurse->getIdentifier(),
         $wrapper->field_session->getIdentifier(),
-        implode('|', $wrapper->field_shards->value(['identifier' => TRUE])),
       ];
 
       switch ($type) {
@@ -310,6 +308,5 @@ foreach ($mapping as $name => $rows) {
 
   fclose($fp);
 }
-
 
 drush_print('Done!');

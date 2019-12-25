@@ -24,7 +24,6 @@ class HedleyMigrateAttendances extends HedleyMigrateMeasurementBase {
     'field_date_measured',
     'field_nurse',
     'field_session',
-    'field_shards',
     'field_attended',
   ];
 

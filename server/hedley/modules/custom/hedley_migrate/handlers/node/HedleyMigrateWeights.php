@@ -24,7 +24,6 @@ class HedleyMigrateWeights extends HedleyMigrateMeasurementBase {
     'field_date_measured',
     'field_nurse',
     'field_session',
-    'field_shards',
     'field_weight',
     'field_bmi',
     'field_zscore_age',
