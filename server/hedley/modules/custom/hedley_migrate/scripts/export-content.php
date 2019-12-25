@@ -149,11 +149,19 @@ foreach ($health_centers_ids as $health_center_id) {
   $nurses_ids = hedley_migrate_get_xx_for_yy('nurse', 'field_health_centers', [$health_center_id]);
   foreach ($nurses_ids as $nurse_id) {
     $wrapper = entity_metadata_wrapper('node', $nurse_id);
+
+    $hc_ids = $wrapper->field_health_centers->value(['identifier' => TRUE]);
+    foreach ($hc_ids as $key => $hc_id) {
+      if (!in_array($hc_id, $health_centers_ids)) {
+        unset($hc_ids[$key]);
+      }
+    }
+
     $nurses[] = [
       $wrapper->getIdentifier(),
       $wrapper->label(),
       implode('|', $wrapper->field_role->value()),
-      implode('|', $wrapper->field_health_centers->value(['identifier' => TRUE])),
+      implode('|', array_values($hc_ids)),
       $wrapper->field_pin_code->value(),
     ];
   }
@@ -257,7 +265,7 @@ foreach ($health_centers_ids as $health_center_id) {
           $type_based_values = [$wrapper->field_muac->value()];
           break;
 
-        case 'field_nutrition_signs':
+        case 'nutrition':
           $type_based_values = [
             implode('|', $wrapper->field_nutrition_signs->value()),
           ];

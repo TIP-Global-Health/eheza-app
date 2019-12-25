@@ -25,6 +25,7 @@ class HedleyMigratePeople extends HedleyMigrateBase {
    */
   protected $csvColumns = [
     'id',
+    'title',
     'field_first_name',
     'field_second_name',
     'field_gender',

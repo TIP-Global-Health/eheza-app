@@ -18,13 +18,6 @@ abstract class HedleyMigrateMeasurementBase extends HedleyMigrateBase {
   protected $entityType = 'node';
 
   /**
-   * {@inheritdoc}
-   */
-  protected $simpleMappings = [
-    'field_uuid',
-  ];
-
-  /**
    * HedleyMigrateSessions constructor.
    *
    * {@inheritdoc}

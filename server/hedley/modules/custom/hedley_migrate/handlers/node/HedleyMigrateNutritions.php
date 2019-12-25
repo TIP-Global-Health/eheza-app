@@ -23,7 +23,6 @@ class HedleyMigrateNutritions extends HedleyMigrateMeasurementBase {
     'field_person',
     'field_date_measured',
     'field_nurse',
-    'field_uuid',
     'field_session',
     'field_shards',
     'field_nutrition_signs',
