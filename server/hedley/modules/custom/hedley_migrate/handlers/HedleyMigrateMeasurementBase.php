@@ -18,7 +18,7 @@ abstract class HedleyMigrateMeasurementBase extends HedleyMigrateBase {
   protected $entityType = 'node';
 
   /**
-   * HedleyMigrateSessions constructor.
+   * HedleyMigrateMeasurementBase constructor.
    *
    * {@inheritdoc}
    */

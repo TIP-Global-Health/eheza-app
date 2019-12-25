@@ -33,6 +33,7 @@ files[] = handlers/node/HedleyMigrateFamilyPlannings.php
 files[] = handlers/node/HedleyMigrateHeights.php
 files[] = handlers/node/HedleyMigrateMuacs.php
 files[] = handlers/node/HedleyMigrateNutritions.php
+files[] = handlers/node/HedleyMigratePhotos.php
 files[] = handlers/node/HedleyMigrateWeights.php
 files[] = handlers/node/2019-02/HedleyMigrateClinics201902.php
 files[] = handlers/node/2019-02/HedleyMigrateMothers201902.php

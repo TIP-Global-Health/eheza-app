@@ -40,7 +40,7 @@ class HedleyMigratePmtctParticipants extends HedleyMigrateBase {
   ];
 
   /**
-   * HedleyMigrateRelationships constructor.
+   * HedleyMigratePmtctParticipants constructor.
    *
    * {@inheritdoc}
    */
@@ -56,7 +56,7 @@ class HedleyMigratePmtctParticipants extends HedleyMigrateBase {
       'HedleyMigrateMuacs',
       'HedleyMigrateNutritions',
       'HedleyMigrateWeights',
-      // Todo: add photos
+      'HedleyMigratePhotos',
     ];
 
     $this

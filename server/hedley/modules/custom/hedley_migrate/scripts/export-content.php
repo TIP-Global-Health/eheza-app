@@ -89,9 +89,11 @@ $measurements_fields = [
 ];
 $measurements = [
   'attendance' => [array_merge($measurements_fields, ['field_attended'])],
-  'family_planning' => [array_merge($measurements_fields, [
-    'field_family_planning_signs',
-    ])
+  'family_planning' => [
+    array_merge(
+      $measurements_fields,
+      ['field_family_planning_signs']
+    )
   ],
   'height' => [
     array_merge(
@@ -112,7 +114,7 @@ $measurements = [
   ],
   'muac' => [array_merge($measurements_fields, ['field_muac'])],
   'nutrition' => [array_merge($measurements_fields, ['field_nutrition_signs'])],
-  //Todo: 'photo',
+  'photo' => [array_merge($measurements_fields, ['field_photo'])],
 ];
 
 $catchment_area_ids = [];
@@ -269,6 +271,11 @@ foreach ($health_centers_ids as $health_center_id) {
           ];
           break;
 
+        case 'photo':
+          $id = rand(1, 5);
+          $type_based_values = ["$id.jpg"];
+          break;
+
         default:
           $type_based_values = [];
       }
@@ -293,7 +300,7 @@ $mapping = [
   'weight' => $measurements['weight'],
   'muac' => $measurements['muac'],
   'nutrition' => $measurements['nutrition'],
-  //Todo: 'photo',
+  'photo' => $measurements['photo'],
 ];
 
 foreach ($mapping as $name => $rows) {
