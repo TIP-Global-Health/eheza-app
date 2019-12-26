@@ -484,8 +484,8 @@ div.page-prenatal-activity {
           margin-bottom: 10px;
 
           input {
-            border: 0;
-            background: $color-light-gray;
+            border: 2px solid $color-gray-border;
+            background-color: $color-white;
             width: 100%;
             text-align: -webkit-center;
             font-weight: bold;
@@ -509,14 +509,14 @@ div.page-prenatal-activity {
           }
 
           input {
+            border: 2px solid $color-gray-border;
+            background-color: $color-white;
             float: left;
             width: 60%;
           }
 
           &.bmi input {
             pointer-events: none;
-            border: 1px solid;
-            background: white;
           }
         }
 
