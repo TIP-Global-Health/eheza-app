@@ -27,13 +27,14 @@ isPersonAnAdult currentDate person =
     isAdult currentDate person.birthDate
 
 
-isPersonAFertileWoman : NominalDate -> Person -> Maybe Bool
+isPersonAFertileWoman : NominalDate -> Person -> Bool
 isPersonAFertileWoman currentDate person =
     if person.gender == Male then
-        Just False
+        False
 
     else
         person.birthDate
             |> diffInYears currentDate
             |> Maybe.map
                 (\age -> age > 12 && age < 45)
+            |> Maybe.withDefault False

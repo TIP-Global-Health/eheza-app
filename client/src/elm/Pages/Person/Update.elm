@@ -16,7 +16,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 update : NominalDate -> Msg -> EveryDict PersonId (WebData Person) -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate msg people model =
     case msg of
-        MsgForm relation subMsg ->
+        MsgForm relation initiator subMsg ->
             let
                 related =
                     relation
@@ -33,7 +33,7 @@ update currentDate msg people model =
                                 |> Maybe.map
                                     (\person ->
                                         [ person
-                                            |> Backend.Model.PostPerson relation
+                                            |> Backend.Model.PostPerson relation initiator
                                             |> App.Model.MsgIndexedDb
                                         ]
                                     )
@@ -42,7 +42,7 @@ update currentDate msg people model =
                                 -- `NotAsked` (to reset network errors
                                 -- etc.)
                                 |> Maybe.withDefault
-                                    [ Backend.Model.HandlePostedPerson relation NotAsked
+                                    [ Backend.Model.HandlePostedPerson relation initiator NotAsked
                                         |> App.Model.MsgIndexedDb
                                     ]
 
@@ -54,12 +54,12 @@ update currentDate msg people model =
             , appMsgs
             )
 
-        DropZoneComplete relation result ->
+        DropZoneComplete relation initiator result ->
             let
                 subMsg =
                     Form.Input Backend.Person.Form.photo Form.Text (Form.Field.String result.url)
             in
-            update currentDate (MsgForm relation subMsg) people model
+            update currentDate (MsgForm relation initiator subMsg) people model
 
         ResetCreateForm ->
             ( Pages.Person.Model.emptyModel
@@ -79,12 +79,12 @@ update currentDate msg people model =
             , []
             )
 
-        DateSelected relation date ->
+        DateSelected relation initiator date ->
             let
                 dateAsString =
                     fromLocalDateTime date |> formatYYYYMMDD
 
                 setFieldMsg =
-                    Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm relation
+                    Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm relation initiator
             in
             update currentDate setFieldMsg people model

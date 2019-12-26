@@ -9,6 +9,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (HistoricalMeasurements)
 import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMeasurements)
 import Backend.Model exposing (..)
+import Backend.Person.Model exposing (RegistrationInitiator(..))
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Update
@@ -633,14 +634,14 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , appMsgs
             )
 
-        PostPerson relation person ->
+        PostPerson relation initiator person ->
             ( { model | postPerson = Loading }
             , sw.post personEndpoint person
-                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedPerson relation)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedPerson relation initiator)
             , []
             )
 
-        HandlePostedPerson relation data ->
+        HandlePostedPerson relation initiator data ->
             let
                 appMsgs =
                     -- If we succeed, we reset the form, and go to the page
@@ -650,12 +651,17 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                             (\personId ->
                                 let
                                     nextPage =
-                                        case relation of
-                                            Just id ->
-                                                RelationshipPage id personId
+                                        case initiator of
+                                            ParticipantDirectoryOrigin ->
+                                                case relation of
+                                                    Just id ->
+                                                        RelationshipPage id personId
 
-                                            Nothing ->
-                                                PersonPage personId
+                                                    Nothing ->
+                                                        PersonPage personId
+
+                                            IndividualEncounterOrigin ->
+                                                EncounterTypesPage personId
                                 in
                                 [ Pages.Person.Model.ResetCreateForm
                                     |> App.Model.MsgPageCreatePerson

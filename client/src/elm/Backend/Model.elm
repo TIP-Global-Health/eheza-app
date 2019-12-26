@@ -24,7 +24,7 @@ import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.Measurement.Model exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
-import Backend.Person.Model exposing (Person)
+import Backend.Person.Model exposing (Person, RegistrationInitiator)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
@@ -206,14 +206,14 @@ type MsgIndexedDb
     | HandleFetchedSessionsByClinic ClinicId (WebData (EveryDictList SessionId Session))
     | HandleFetchedSyncData (WebData (EveryDictList HealthCenterId SyncData))
       -- Messages which mutate data
-    | PostPerson (Maybe PersonId) Person -- The first person is a person we ought to offer setting a relationship to.
+    | PostPerson (Maybe PersonId) RegistrationInitiator Person -- The first parameter is a person we ought to offer setting a relationship to.
     | PostRelationship PersonId MyRelationship (Maybe ClinicId)
     | PostPmtctParticipant PmtctParticipant
     | PostSession Session
     | PostPrenatalSession PrenatalParticipant
     | PostPrenatalEncounter PrenatalEncounter
       -- Messages which handle responses to mutating data
-    | HandlePostedPerson (Maybe PersonId) (WebData PersonId)
+    | HandlePostedPerson (Maybe PersonId) RegistrationInitiator (WebData PersonId)
     | HandlePostedRelationship PersonId (WebData MyRelationship)
     | HandlePostedPmtctParticipant PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
     | HandlePostedSession (WebData SessionId)

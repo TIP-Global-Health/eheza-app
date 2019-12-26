@@ -3,7 +3,7 @@ module Pages.PrenatalParticipants.View exposing (view)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form exposing (ExpectedAge(..))
-import Backend.Person.Model exposing (Person)
+import Backend.Person.Model exposing (Person, RegistrationInitiator(..))
 import Backend.Person.Utils exposing (ageInYears, isPersonAFertileWoman)
 import Dict
 import EveryDict
@@ -143,7 +143,7 @@ viewSearchForm language currentDate selectedHealthCenterId model db =
                     |> RemoteData.map
                         (EveryDictList.filter
                             (\_ person ->
-                                (isPersonAFertileWoman currentDate person |> Maybe.withDefault False)
+                                isPersonAFertileWoman currentDate person
                                     -- Show only mothers that belong to selected health center
                                     && (person.healthCenterId == Just selectedHealthCenterId)
                             )
@@ -187,6 +187,20 @@ viewSearchForm language currentDate selectedHealthCenterId model db =
             , div
                 [ class "ui unstackable items participants-list" ]
                 searchResultsParticipants
+            ]
+        , div
+            [ class "search-bottom" ]
+            [ div
+                [ class "register-helper" ]
+                [ text <| translate language Translate.RegisterHelper ]
+            , div
+                [ class "register-actions" ]
+                [ button
+                    [ class "ui primary button fluid"
+                    , onClick <| SetActivePage <| UserPage <| CreatePersonPage Nothing IndividualEncounterOrigin
+                    ]
+                    [ text <| translate language Translate.RegisterNewParticipant ]
+                ]
             ]
         ]
 

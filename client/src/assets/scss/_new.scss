@@ -257,19 +257,19 @@ div.page-people {
 
         > div.ui.segment {
             height: 100%;
-        }
-    }
 
-    div.search {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        overflow-y: hidden;
+            div.search {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                overflow-y: hidden;
 
-        div.search-middle {
-            height: 100%;
-            flex: 1 1 auto;
-            overflow-y: auto;
+                div.search-middle {
+                    height: 100%;
+                    flex: 1 1 auto;
+                    overflow-y: auto;
+                }
+            }
         }
     }
 }
@@ -1128,6 +1128,32 @@ div.page-encounter-types {
         transform: rotate(180deg);
       }
     }
+}
+
+div.page-prenatal-participants {
+
+  div.search-wrapper {
+      flex: 1 1 auto;
+      height: 100%;
+      overflow-y: hidden;
+
+      > div.ui.segment {
+          height: 100%;
+
+          div.search {
+              display: flex;
+              flex-direction: column;
+              height: 100%;
+              overflow-y: hidden;
+
+              div.search-middle {
+                  height: 100%;
+                  flex: 1 1 auto;
+                  overflow-y: auto;
+              }
+          }
+      }
+  }
 }
 
 div.page-prenatal-participant {

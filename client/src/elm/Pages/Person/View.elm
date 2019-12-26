@@ -8,7 +8,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Encoder exposing (encodeEducationLevel, encodeHivStatus, encodeMaritalStatus, encodeModeOfDelivery, encodeUbudehe)
 import Backend.Person.Form exposing (ExpectedAge(..), PersonForm, expectedAgeFromForm, validatePerson)
-import Backend.Person.Model exposing (Gender(..), Person, allEducationLevels, allHivStatuses, allMaritalStatuses, allModesOfDelivery, allUbudehes)
+import Backend.Person.Model exposing (Gender(..), Person, RegistrationInitiator(..), allEducationLevels, allHivStatuses, allMaritalStatuses, allModesOfDelivery, allUbudehes)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
@@ -459,8 +459,8 @@ applyDefaultValues maybeRelatedPerson currentDate form =
         |> applyDefaultHealthCenter
 
 
-viewCreateForm : Language -> NominalDate -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
-viewCreateForm language currentDate relationId model db =
+viewCreateForm : Language -> NominalDate -> Maybe PersonId -> RegistrationInitiator -> Model -> ModelIndexedDb -> Html Msg
+viewCreateForm language currentDate relationId initiator model db =
     let
         formBeforeDefaults =
             model.form
@@ -479,6 +479,14 @@ viewCreateForm language currentDate relationId model db =
         emptyOption =
             ( "", "" )
 
+        goBackAction =
+            case initiator of
+                ParticipantDirectoryOrigin ->
+                    SetActivePage PinCodePage
+
+                IndividualEncounterOrigin ->
+                    SetActivePage <| UserPage PrenatalParticipantsPage
+
         header =
             div [ class "ui basic segment head" ]
                 [ h1
@@ -486,7 +494,7 @@ viewCreateForm language currentDate relationId model db =
                     [ text <| translate language Translate.People ]
                 , a
                     [ class "link-back"
-                    , onClick <| SetActivePage PinCodePage
+                    , onClick goBackAction
                     ]
                     [ span [ class "icon-back" ] []
                     , span [] []
@@ -569,7 +577,7 @@ viewCreateForm language currentDate relationId model db =
                     , br [] []
                     , DateSelector.SelectorDropdown.view
                         ToggleDateSelector
-                        (DateSelected relationId)
+                        (DateSelected relationId initiator)
                         model.isDateSelectorOpen
                         (Date.add Year -60 today)
                         today
@@ -585,7 +593,7 @@ viewCreateForm language currentDate relationId model db =
                             , ( "field", True )
                             ]
                         ]
-                        |> Html.map (MsgForm relationId)
+                        |> Html.map (MsgForm relationId initiator)
                     ]
                 ]
 
@@ -684,7 +692,7 @@ viewCreateForm language currentDate relationId model db =
                 , div
                     [ id "dropzone"
                     , class "eight wide column dropzone"
-                    , on "dropzonecomplete" (Json.Decode.map (DropZoneComplete relationId) decodeDropZoneFile)
+                    , on "dropzonecomplete" (Json.Decode.map (DropZoneComplete relationId initiator) decodeDropZoneFile)
                     ]
                     [ div
                         [ class "dz-message"
@@ -730,14 +738,14 @@ viewCreateForm language currentDate relationId model db =
 
         demographicFields =
             viewPhoto
-                :: (List.map (Html.map (MsgForm relationId)) <|
+                :: (List.map (Html.map (MsgForm relationId initiator)) <|
                         [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName False personForm
                         , viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
                         , viewNumberInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
                         ]
                    )
                 ++ [ birthDateInput ]
-                ++ (List.map (Html.map (MsgForm relationId)) <|
+                ++ (List.map (Html.map (MsgForm relationId initiator)) <|
                         case expectedAge of
                             ExpectAdult ->
                                 [ genderInput
@@ -952,7 +960,7 @@ viewCreateForm language currentDate relationId model db =
                     [ text <| translate language Translate.ContactInformation ++ ":" ]
                 , [ viewTextInput language Translate.TelephoneNumber Backend.Person.Form.phoneNumber False personForm ]
                     |> fieldset [ class "registration-form address-info" ]
-                    |> Html.map (MsgForm relationId)
+                    |> Html.map (MsgForm relationId initiator)
                 ]
 
             else
@@ -983,7 +991,7 @@ viewCreateForm language currentDate relationId model db =
                 [ text <| translate language Translate.RegistratingHealthCenter ++ ":" ]
             , [ viewSelectInput language Translate.HealthCenter options Backend.Person.Form.healthCenter "ten" "select-input" True personForm ]
                 |> fieldset [ class "registration-form health-center" ]
-                |> Html.map (MsgForm relationId)
+                |> Html.map (MsgForm relationId initiator)
             ]
 
         submitButton =
@@ -1009,19 +1017,19 @@ viewCreateForm language currentDate relationId model db =
                 [ text <| translate language Translate.FamilyInformation ++ ":" ]
             , familyInformationFields
                 |> fieldset [ class "registration-form family-info" ]
-                |> Html.map (MsgForm relationId)
+                |> Html.map (MsgForm relationId initiator)
             , h3
                 [ class "ui header" ]
                 [ text <| translate language Translate.AddressInformation ++ ":" ]
             , addressFields
                 |> fieldset [ class "registration-form address-info" ]
-                |> Html.map (MsgForm relationId)
+                |> Html.map (MsgForm relationId initiator)
             ]
                 ++ contactInformationSection
                 ++ healthCenterSection
                 ++ [ p [] []
                    , submitButton
-                        |> Html.map (MsgForm relationId)
+                        |> Html.map (MsgForm relationId initiator)
 
                    -- Note that these are hidden by deafult by semantic-ui ... the
                    -- class of the "form" controls whether they are shown.

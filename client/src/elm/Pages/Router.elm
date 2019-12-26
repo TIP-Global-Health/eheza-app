@@ -2,6 +2,7 @@ module Pages.Router exposing (delta2url, parseUrl)
 
 import Activity.Model exposing (Activity)
 import Activity.Utils
+import Backend.Person.Model exposing (RegistrationInitiator(..))
 import Pages.Page exposing (..)
 import PrenatalActivity.Model exposing (PrenatalActivity)
 import PrenatalActivity.Utils
@@ -54,7 +55,7 @@ delta2url previous current =
                 MyAccountPage ->
                     Just <| UrlChange NewEntry "#my-account"
 
-                CreatePersonPage relationId ->
+                CreatePersonPage relationId _ ->
                     let
                         relation =
                             relationId
@@ -150,8 +151,8 @@ parseUrl =
         , map (\id page -> UserPage <| SessionPage id page) (s "session" </> parseUuid </> parseSessionPage)
         , map (UserPage <| PersonsPage Nothing) (s "persons")
         , map (\id -> UserPage <| PersonsPage (Just id)) (s "relations" </> parseUuid)
-        , map (\id -> UserPage <| CreatePersonPage (Just id)) (s "person" </> s "new" </> parseUuid)
-        , map (UserPage <| CreatePersonPage Nothing) (s "person" </> s "new")
+        , map (\id -> UserPage <| CreatePersonPage (Just id) ParticipantDirectoryOrigin) (s "person" </> s "new" </> parseUuid)
+        , map (UserPage <| CreatePersonPage Nothing ParticipantDirectoryOrigin) (s "person" </> s "new")
         , map (\id -> UserPage <| PersonPage id) (s "person" </> parseUuid)
         , map (UserPage PrenatalParticipantsPage) (s "prenatal-participants")
         , map (\id -> UserPage <| PrenatalParticipantPage id) (s "prenatal-participant" </> parseUuid)
