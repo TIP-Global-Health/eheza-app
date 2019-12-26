@@ -134,7 +134,7 @@ viewHeaderPane language currentDate mother measurements =
             unwrap
                 ( "----", "----" )
                 (\value ->
-                    ( generateGravida value.termPregnancy value.preTermPregnancy value.currentlyPregnant
+                    ( generateGravida value
                     , generatePara value
                     )
                 )
