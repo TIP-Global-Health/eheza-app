@@ -189,7 +189,7 @@ foreach ($health_centers_ids as $health_center_id) {
     $group_encounters[] = [
       $wrapper->getIdentifier(),
       $wrapper->field_clinic->getIdentifier(),
-      hedley_migrate_export_date_field($wrapper->field_scheduled_date->value()),
+      hedley_migrate_export_date_field($wrapper->field_scheduled_date->value(), TRUE),
     ];
   }
 

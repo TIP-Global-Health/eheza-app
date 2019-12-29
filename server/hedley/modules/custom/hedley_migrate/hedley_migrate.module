@@ -669,21 +669,29 @@ function hedley_migrate_resolve_for_export($type, $field, array $values) {
 }
 
 /**
- * Generates Date field for export.
+ * Generates DateTime field for export.
  *
  * Supports start and end dates.
  *
  * @param array $date
  *   Input date.
+ * @param bool $force_end_date
+ *   Wither to force setting end date. If True, sets current date.
  *
  * @return string
- *   Date at  'yyyy-mm-dd' format.
+ *   Start date as 'yyyy-mm-dd'.
+ *   Optional End date (same format), piped by '|' separator.
  */
-function hedley_migrate_export_date_field(array $date) {
+function hedley_migrate_export_date_field(array $date, $force_end_date = FALSE) {
   $time1 = strtotime($date['value']);
 
   if (empty($date['value2'])) {
-    return date('Y-m-d', $time1);;
+
+    if (!$force_end_date) {
+      return date('Y-m-d', $time1);
+    }
+
+    $date['value2'] = date('Y-m-d');
   }
 
   $time2 = strtotime($date['value2']);
