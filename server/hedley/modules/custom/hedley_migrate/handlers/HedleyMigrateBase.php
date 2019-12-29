@@ -214,6 +214,7 @@ abstract class HedleyMigrateBase extends Migration {
     if ($count == 1) {
       return [
         'value' => $value1,
+        'value2' => NULL,
       ];
     }
 
