@@ -2348,6 +2348,14 @@ function hedley_admin_views_default_views() {
     'scale' => '2',
     'prefix_suffix' => 1,
   );
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid_4']['id'] = 'nid_4';
+  $handler->display->display_options['fields']['nid_4']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_4']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_4']['label'] = 'Recumbent';
+  $handler->display->display_options['fields']['nid_4']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid_4']['alter']['text'] = '<br>';
+  $handler->display->display_options['fields']['nid_4']['alter']['strip_tags'] = TRUE;
   /* Field: Content: MUAC */
   $handler->display->display_options['fields']['field_muac']['id'] = 'field_muac';
   $handler->display->display_options['fields']['field_muac']['table'] = 'field_data_field_muac';
@@ -2359,6 +2367,14 @@ function hedley_admin_views_default_views() {
     'scale' => '2',
     'prefix_suffix' => 1,
   );
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid_5']['id'] = 'nid_5';
+  $handler->display->display_options['fields']['nid_5']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_5']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_5']['label'] = 'HC-Head Circumference(cm)';
+  $handler->display->display_options['fields']['nid_5']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid_5']['alter']['text'] = '<br>';
+  $handler->display->display_options['fields']['nid_5']['alter']['strip_tags'] = TRUE;
   /* Field: Content: ZScore Length */
   $handler->display->display_options['fields']['field_zscore_length']['id'] = 'field_zscore_length';
   $handler->display->display_options['fields']['field_zscore_length']['table'] = 'field_data_field_zscore_length';
@@ -2395,6 +2411,110 @@ function hedley_admin_views_default_views() {
     'scale' => '2',
     'prefix_suffix' => 1,
   );
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid_6']['id'] = 'nid_6';
+  $handler->display->display_options['fields']['nid_6']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_6']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_6']['label'] = 'Oedems+,++,+++';
+  $handler->display->display_options['fields']['nid_6']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid_6']['alter']['text'] = '<br>';
+  $handler->display->display_options['fields']['nid_6']['alter']['strip_tags'] = TRUE;
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid_7']['id'] = 'nid_7';
+  $handler->display->display_options['fields']['nid_7']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_7']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_7']['label'] = 'Number of days last provisions of FBF lasted(No Days)';
+  $handler->display->display_options['fields']['nid_7']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid_7']['alter']['text'] = '<br>';
+  $handler->display->display_options['fields']['nid_7']['alter']['strip_tags'] = TRUE;
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid_8']['id'] = 'nid_8';
+  $handler->display->display_options['fields']['nid_8']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_8']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_8']['label'] = 'Complications';
+  $handler->display->display_options['fields']['nid_8']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid_8']['alter']['text'] = '<br>';
+  $handler->display->display_options['fields']['nid_8']['alter']['strip_tags'] = TRUE;
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid_9']['id'] = 'nid_9';
+  $handler->display->display_options['fields']['nid_9']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_9']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_9']['label'] = 'Malnutrition(Yes/No)';
+  $handler->display->display_options['fields']['nid_9']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid_9']['alter']['text'] = '<br>';
+  $handler->display->display_options['fields']['nid_9']['alter']['strip_tags'] = TRUE;
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid_10']['id'] = 'nid_10';
+  $handler->display->display_options['fields']['nid_10']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_10']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_10']['label'] = 'If yes, Transferred (Yes/No)';
+  $handler->display->display_options['fields']['nid_10']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid_10']['alter']['text'] = '<br>';
+  $handler->display->display_options['fields']['nid_10']['alter']['strip_tags'] = TRUE;
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid_11']['id'] = 'nid_11';
+  $handler->display->display_options['fields']['nid_11']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_11']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_11']['label'] = 'Worm medication(Yes/No)';
+  $handler->display->display_options['fields']['nid_11']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid_11']['alter']['text'] = '<br>';
+  $handler->display->display_options['fields']['nid_11']['alter']['strip_tags'] = TRUE;
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid_12']['id'] = 'nid_12';
+  $handler->display->display_options['fields']['nid_12']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_12']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_12']['label'] = 'VitaminA(Yes/No)';
+  $handler->display->display_options['fields']['nid_12']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid_12']['alter']['text'] = '<br>';
+  $handler->display->display_options['fields']['nid_12']['alter']['strip_tags'] = TRUE;
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid_13']['id'] = 'nid_13';
+  $handler->display->display_options['fields']['nid_13']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_13']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_13']['label'] = 'All relevant vaccines received(Yes/No)';
+  $handler->display->display_options['fields']['nid_13']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid_13']['alter']['text'] = '<br>';
+  $handler->display->display_options['fields']['nid_13']['alter']['strip_tags'] = TRUE;
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid_14']['id'] = 'nid_14';
+  $handler->display->display_options['fields']['nid_14']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_14']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_14']['label'] = 'Fill in all that applied - Ongera=1RUTF=2CSB+=3Milk=4';
+  $handler->display->display_options['fields']['nid_14']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid_14']['alter']['text'] = '<br>';
+  $handler->display->display_options['fields']['nid_14']['alter']['strip_tags'] = TRUE;
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid_15']['id'] = 'nid_15';
+  $handler->display->display_options['fields']['nid_15']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_15']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_15']['label'] = 'FBF Quantiy received (Number of Packages)';
+  $handler->display->display_options['fields']['nid_15']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid_15']['alter']['text'] = '<br>';
+  $handler->display->display_options['fields']['nid_15']['alter']['strip_tags'] = TRUE;
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid_16']['id'] = 'nid_16';
+  $handler->display->display_options['fields']['nid_16']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_16']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_16']['label'] = 'Next appointment date (dd/mm/yyyy)';
+  $handler->display->display_options['fields']['nid_16']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid_16']['alter']['text'] = '<br>';
+  $handler->display->display_options['fields']['nid_16']['alter']['strip_tags'] = TRUE;
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid_17']['id'] = 'nid_17';
+  $handler->display->display_options['fields']['nid_17']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_17']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_17']['label'] = 'Observations';
+  $handler->display->display_options['fields']['nid_17']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid_17']['alter']['text'] = '<br>';
+  $handler->display->display_options['fields']['nid_17']['alter']['strip_tags'] = TRUE;
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid_18']['id'] = 'nid_18';
+  $handler->display->display_options['fields']['nid_18']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_18']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_18']['label'] = 'Signature';
+  $handler->display->display_options['fields']['nid_18']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid_18']['alter']['text'] = '<br>';
+  $handler->display->display_options['fields']['nid_18']['alter']['strip_tags'] = TRUE;
   /* Sort criterion: Content: Post date */
   $handler->display->display_options['sorts']['created']['id'] = 'created';
   $handler->display->display_options['sorts']['created']['table'] = 'node';
