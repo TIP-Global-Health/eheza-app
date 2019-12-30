@@ -2205,6 +2205,14 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['counter']['label'] = 'Register number';
   $handler->display->display_options['fields']['counter']['counter_start'] = '1';
   $handler->display->display_options['fields']['counter']['reverse'] = 0;
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid']['id'] = 'nid';
+  $handler->display->display_options['fields']['nid']['table'] = 'node';
+  $handler->display->display_options['fields']['nid']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid']['label'] = 'System ID';
+  $handler->display->display_options['fields']['nid']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid']['alter']['text'] = '<br>';
+  $handler->display->display_options['fields']['nid']['alter']['strip_tags'] = TRUE;
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title_1']['id'] = 'title_1';
   $handler->display->display_options['fields']['title_1']['table'] = 'node';
@@ -2286,6 +2294,30 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_village']['table'] = 'field_data_field_village';
   $handler->display->display_options['fields']['field_village']['field'] = 'field_village';
   $handler->display->display_options['fields']['field_village']['relationship'] = 'field_person_target_id';
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid_1']['id'] = 'nid_1';
+  $handler->display->display_options['fields']['nid_1']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_1']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_1']['label'] = 'Distance to nearest HF(in minutes)';
+  $handler->display->display_options['fields']['nid_1']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid_1']['alter']['text'] = '<br>';
+  $handler->display->display_options['fields']['nid_1']['alter']['strip_tags'] = TRUE;
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid_3']['id'] = 'nid_3';
+  $handler->display->display_options['fields']['nid_3']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_3']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_3']['label'] = 'Ubudehe (Household ID)';
+  $handler->display->display_options['fields']['nid_3']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid_3']['alter']['text'] = '<br>';
+  $handler->display->display_options['fields']['nid_3']['alter']['strip_tags'] = TRUE;
+  /* Field: Content: Nid */
+  $handler->display->display_options['fields']['nid_2']['id'] = 'nid_2';
+  $handler->display->display_options['fields']['nid_2']['table'] = 'node';
+  $handler->display->display_options['fields']['nid_2']['field'] = 'nid';
+  $handler->display->display_options['fields']['nid_2']['label'] = 'Item';
+  $handler->display->display_options['fields']['nid_2']['alter']['alter_text'] = TRUE;
+  $handler->display->display_options['fields']['nid_2']['alter']['text'] = '<br>';
+  $handler->display->display_options['fields']['nid_2']['alter']['strip_tags'] = TRUE;
   /* Field: Content: Post date */
   $handler->display->display_options['fields']['created_1']['id'] = 'created_1';
   $handler->display->display_options['fields']['created_1']['table'] = 'node';
