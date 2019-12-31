@@ -8,6 +8,22 @@
 include_once 'hedley_admin.features.inc';
 
 /**
+ * Implements hook_views_plugins()
+ */
+function hedley_admin_views_plugins() {
+  return array(
+    'access' => array(
+      'health_center' => array(
+        'title' => t('Health-center-based Access'),
+        'help' => t('If the child is associated with the same health center as the user, it grants access'),
+        'handler' => 'hedley_admin_health_center_access_plugin',
+        'path' => drupal_get_path('module', 'hedley_admin'),
+      ),
+    ),
+  );
+}
+
+/**
  * Implements hook_theme_registry_alter().
  */
 function hedley_admin_theme_registry_alter(&$theme_registry) {
@@ -182,4 +198,8 @@ function hedley_admin_query_views_ledger_alter(QueryAlterableInterface $query) {
   // @see https://api.drupal.org/api/drupal/includes!database!select.inc/function/SelectQueryInterface%3A%3AgetGroupBy/7.
   $fields =& $query->getGroupBy();
   $fields['node.nid'] = 'node.nid';
+}
+
+function hedley_admin_health_center_access($account) {
+  return TRUE;
 }
