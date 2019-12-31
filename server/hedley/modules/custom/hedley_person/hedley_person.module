@@ -56,6 +56,7 @@ define('HEDLEY_PERSON_COLUMN_CHILD_SECTOR', 14);
 define('HEDLEY_PERSON_COLUMN_CHILD_CELL', 15);
 define('HEDLEY_PERSON_COLUMN_CHILD_VILLAGE', 16);
 define('HEDLEY_PERSON_COLUMN_CHILD_HEALTH_CENTER', 17);
+define('HEDLEY_PERSON_COLUMN_CHILD_GROUP', 18);
 
 /**
  * Implements hook_menu().
@@ -267,7 +268,7 @@ function hedley_person_import_get_data(array $form, array &$form_state) {
   $fields = explode(',', $line);
   $fields_count = count($fields);
 
-  if ($fields_count == 18 && $fields[HEDLEY_PERSON_COLUMN_CHILD_RELATION] == 'Relation') {
+  if ($fields_count == 19 && $fields[HEDLEY_PERSON_COLUMN_CHILD_RELATION] == 'Relation') {
     $patient_type = 'child';
   }
   elseif ($fields_count == 19 && $fields[HEDLEY_PERSON_COLUMN_ADULT_EDUCATION_LEVEL] == 'Education level') {
@@ -484,7 +485,7 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
   }
 
   // Health center.
-  $health_center_id = hedley_person_resolve_health_center_by_name($health_center);
+  $health_center_id = hedley_person_resolve_content_by_name('health_center', $health_center);
   if (empty($health_center_id)) {
     $errors[] = "Health center: failed to resolve health center - $health_center";
   }
@@ -511,8 +512,21 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
       $adult_id = hedley_person_resolve_adult_by_name($adult_name);
 
       if (empty($adult_id)) {
-        $warnings[] = "Failed to resolve $relation for child, therefore, relationship with $adult_name will not be created";;
+        $warnings[] = "Failed to resolve $relation for child, therefore, relationship with $adult_name will not be created";
         return;
+      }
+
+      $group = trim($values[HEDLEY_PERSON_COLUMN_CHILD_GROUP]);
+      $group_id = hedley_person_resolve_content_by_name('clinic', $group);
+
+      if (empty($group_id)) {
+        $warnings[] = "Failed to resolve $group, therefore, it's impossible to join the group";
+        return;
+      }
+
+      $wrapper = entity_metadata_wrapper('node', $group_id);
+      if ($wrapper->field_health_center->getIdentifier() != $health_center_id) {
+        $errors[] = "Group: group $group does not belong to $health_center health center";
       }
     }
 
@@ -585,8 +599,7 @@ function hedley_person_import_patient($patient_type, array $values) {
 
   try {
     $person = hedley_person_create_basic_node('person');
-  }
-  catch (Exception $e) {
+  } catch (Exception $e) {
     return 'Failed to create person node';
   }
 
@@ -669,7 +682,7 @@ function hedley_person_import_patient($patient_type, array $values) {
   $wrapper->field_village->set($village);
 
   // Health center.
-  $health_center_id = hedley_person_resolve_health_center_by_name($health_center);
+  $health_center_id = hedley_person_resolve_content_by_name('health_center', $health_center);
   if (!empty($health_center_id)) {
     $wrapper->field_health_center->set($health_center_id);
   }
@@ -709,97 +722,136 @@ function hedley_person_import_patient($patient_type, array $values) {
       if (!hedley_person_create_relationship($wrapper->getIdentifier(), $adult_id, $relation)) {
         return "Import was successful, but failed to create $relation relationship with $adult_name";
       }
+
+      $group = trim($values[HEDLEY_PERSON_COLUMN_CHILD_GROUP]);
+      $group_id = hedley_person_resolve_content_by_name('clinic', $group);
+
+      if (!empty($group_id)) {
+        if (!hedley_person_create_pmtct_participant($wrapper->getIdentifier(), $adult_id, $group_id)) {
+          return "Import was successful, but failed to add adult-child pair to $group group.";
+        }
+      }
+
+      return TRUE;
     }
+
+    // Type specific logic - adult.
+    $education_level = trim($values[HEDLEY_PERSON_COLUMN_ADULT_EDUCATION_LEVEL]);
+    $wrapper->field_education_level->set($education_level);
+
+    $marital_status = strtolower($values[HEDLEY_PERSON_COLUMN_ADULT_MARITAL_STATUS]);
+    $wrapper->field_marital_status->set($marital_status);
+
+    $number_of_children = $values[HEDLEY_PERSON_COLUMN_ADULT_NUMBER_OF_CHILDREN];
+    if (!empty($number_of_children)) {
+      $wrapper->field_number_of_children->set((int) $number_of_children);
+    }
+
+    $phone_number = trim($values[HEDLEY_PERSON_COLUMN_ADULT_PHONE]);
+    if (!empty($phone_number)) {
+      $wrapper->field_phone_number->set($phone_number);
+    }
+
+    $wrapper->save();
 
     return TRUE;
   }
 
-  // Type specific logic - adult.
-  $education_level = trim($values[HEDLEY_PERSON_COLUMN_ADULT_EDUCATION_LEVEL]);
-  $wrapper->field_education_level->set($education_level);
+  /**
+   * Convert a date string to a timestamp.
+   *
+   * @param string $trimmed
+   *   A string containing a date.
+   *
+   * @return bool|int
+   *   FALSE on failure, timestamp on success.
+   */
+  function hedley_person_date_process($trimmed) {
+    if (empty($trimmed)) {
+      return $trimmed;
+    }
 
-  $marital_status = strtolower($values[HEDLEY_PERSON_COLUMN_ADULT_MARITAL_STATUS]);
-  $wrapper->field_marital_status->set($marital_status);
+    // Some dates are year-only ... we'll make those Jan. 1.
+    if (preg_match('/^\\d\\d\\d\\d$/', $trimmed)) {
+      $trimmed = "$trimmed-01-01";
+    }
 
-  $number_of_children = $values[HEDLEY_PERSON_COLUMN_ADULT_NUMBER_OF_CHILDREN];
-  if (!empty($number_of_children)) {
-    $wrapper->field_number_of_children->set((int) $number_of_children);
-  }
+    if (preg_match('/^\\d\\d-\\d\\d-\\d\\d$/', $trimmed)) {
+      return DateTime::createFromFormat('!y-m-d', $trimmed)->getTimestamp();
+    }
 
-  $phone_number = trim($values[HEDLEY_PERSON_COLUMN_ADULT_PHONE]);
-  if (!empty($phone_number)) {
-    $wrapper->field_phone_number->set($phone_number);
-  }
+    if (preg_match('/^\\d\\d\\d\\d-\\d\\d-\\d\\d$/', $trimmed)) {
+      return DateTime::createFromFormat('!Y-m-d', $trimmed)->getTimestamp();
+    }
 
-  $wrapper->save();
+    if (preg_match('@^\\d\\d?/\\d\\d?/\\d\\d\\d\\d@', $trimmed)) {
+      return DateTime::createFromFormat('!d/m/Y', $trimmed)->getTimestamp();
+    }
 
-  return TRUE;
-}
-
-/**
- * Convert a date string to a timestamp.
- *
- * @param string $trimmed
- *   A string containing a date.
- *
- * @return bool|int
- *   FALSE on failure, timestamp on success.
- */
-function hedley_person_date_process($trimmed) {
-  if (empty($trimmed)) {
-    return $trimmed;
-  }
-
-  // Some dates are year-only ... we'll make those Jan. 1.
-  if (preg_match('/^\\d\\d\\d\\d$/', $trimmed)) {
-    $trimmed = "$trimmed-01-01";
-  }
-
-  if (preg_match('/^\\d\\d-\\d\\d-\\d\\d$/', $trimmed)) {
-    return DateTime::createFromFormat('!y-m-d', $trimmed)->getTimestamp();
-  }
-
-  if (preg_match('/^\\d\\d\\d\\d-\\d\\d-\\d\\d$/', $trimmed)) {
-    return DateTime::createFromFormat('!Y-m-d', $trimmed)->getTimestamp();
-  }
-
-  if (preg_match('@^\\d\\d?/\\d\\d?/\\d\\d\\d\\d@', $trimmed)) {
-    return DateTime::createFromFormat('!d/m/Y', $trimmed)->getTimestamp();
-  }
-
-  return FALSE;
-}
-
-/**
- * Creates a relationship between child and adult.
- *
- * @param int $child_id
- *   Child node ID.
- * @param int $adult_id
- *   Adult node ID.
- * @param string $relation
- *   Parent or Caregiver.
- *
- * @return bool
- *   TRUE on success, FALSE otherwise.
- */
-function hedley_person_create_relationship($child_id, $adult_id, $relation) {
-  try {
-    $relationship = hedley_person_create_basic_node('relationship');
-  }
-  catch (Exception $e) {
     return FALSE;
   }
 
-  $wrapper = entity_metadata_wrapper('node', $relationship);
-  $wrapper->field_person->set($adult_id);
-  $wrapper->field_related_by->set($relation);
-  $wrapper->field_related_to->set($child_id);
+  /**
+   * Creates a relationship between child and adult.
+   *
+   * @param int $child_id
+   *   Child node ID.
+   * @param int $adult_id
+   *   Adult node ID.
+   * @param string $relation
+   *   Parent or Caregiver.
+   *
+   * @return bool
+   *   TRUE on success, FALSE otherwise.
+   */
+  function hedley_person_create_relationship($child_id, $adult_id, $relation) {
+    try {
+      $relationship = hedley_person_create_basic_node('relationship');
+    } catch (Exception $e) {
+      return FALSE;
+    }
 
-  $wrapper->save();
+    $wrapper = entity_metadata_wrapper('node', $relationship);
+    $wrapper->field_person->set($adult_id);
+    $wrapper->field_related_by->set($relation);
+    $wrapper->field_related_to->set($child_id);
 
-  return TRUE;
+    $wrapper->save();
+
+    return TRUE;
+  }
+
+  /**
+   * Creates a pmtct_participant node for adult-child pair.
+   *
+   * @param int $child_id
+   *   Child node ID.
+   * @param int $adult_id
+   *   Adult node ID.
+   * @param int $group_id
+   *   Group node ID.
+   *
+   * @return bool
+   *   TRUE on success, FALSE otherwise.
+   */
+  function hedley_person_create_pmtct_participant($child_id, $adult_id, $group_id) {
+    try {
+      $pmtct_participant = hedley_person_create_basic_node('pmtct_participant');
+    } catch (Exception $e) {
+      return FALSE;
+    }
+
+    $wrapper = entity_metadata_wrapper('node', $pmtct_participant);
+    $wrapper->field_person->set($child_id);
+    $wrapper->field_adult->set($adult_id);
+    $wrapper->field_clinic->set($group_id);
+
+    $wrapper->save();
+
+    return TRUE;
+  }
 }
+
 
 /**
  * Creates a node of provided type.
@@ -829,21 +881,24 @@ function hedley_person_create_basic_node($type) {
 }
 
 /**
- * Resolves Health Center node ID by it's name.
+ * Resolves content node ID by it's type and name.
  *
+ * @param string $type
+ *   Content type.
  * @param string $health_center
  *   Health center name.
  *
  * @return int|null
  *   Node ID. Null, if not found.
  */
-function hedley_person_resolve_health_center_by_name($health_center) {
+function hedley_person_resolve_content_by_name($type, $health_center) {
   $query = new EntityFieldQuery();
 
   $result = $query->entityCondition('entity_type', 'node')
-    ->propertyCondition('type', 'health_center')
+    ->propertyCondition('type', $type)
     ->propertyCondition('title', $health_center)
     ->propertyCondition('status', 1)
+    ->propertyOrderBy('nid', 'DESC')
     ->range(0, 1)
     ->execute();
 
