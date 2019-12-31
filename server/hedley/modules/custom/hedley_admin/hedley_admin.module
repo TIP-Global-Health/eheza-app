@@ -8,7 +8,7 @@
 include_once 'hedley_admin.features.inc';
 
 /**
- * Implements hook_views_plugins()
+ * Implements hook_views_plugins().
  */
 function hedley_admin_views_plugins() {
   return array(
@@ -200,6 +200,41 @@ function hedley_admin_query_views_ledger_alter(QueryAlterableInterface $query) {
   $fields['node.nid'] = 'node.nid';
 }
 
-function hedley_admin_health_center_access($account) {
-  return TRUE;
+/**
+ * Health-center-based access check.
+ */
+function hedley_admin_health_center_access($account = FALSE) {
+  global $user;
+  $account = isset($account) ? $account : $user;
+  if ($account->uid == 1) {
+    return TRUE;
+  }
+  if (!in_array('health worker', $account->roles)) {
+    return FALSE;
+  }
+  // There's no trivial and nice way to pass a view argument.
+  // Here views_get_current_view() doesn't return anything.
+  // Expected path:
+  // /admin/ledger/[nid].
+  $nid = arg(2);
+  if (empty($nid)) {
+    return FALSE;
+  }
+  $child = node_load($nid);
+  if (empty($child)) {
+    return FALSE;
+  }
+  $child_wrapper = entity_metadata_wrapper('node', $child);
+  $account_wrapper = entity_metadata_wrapper('user', $account);
+  $child_center = $child_wrapper->field_health_center->value();
+  if (empty($child_center->nid)) {
+    return FALSE;
+  }
+  foreach ($account_wrapper->field_health_centers as $value) {
+    if ($value->nid->value() !== $child_center->nid) {
+      continue;
+    }
+    return TRUE;
+  }
+  return FALSE;
 }
