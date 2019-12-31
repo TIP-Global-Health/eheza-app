@@ -255,7 +255,6 @@ foreach ($health_centers_ids as $health_center_id) {
       $wrapper->field_sector->value(),
       $wrapper->field_cell->value(),
       $wrapper->field_village->value(),
-      $wrapper->field_phone_number->value(),
       $wrapper->field_hiv_status->value(),
       $wrapper->field_mode_of_delivery->value(),
       $wrapper->field_number_of_children->value(),
