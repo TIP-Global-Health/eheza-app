@@ -31,6 +31,22 @@ class HedleyMigratePeople extends HedleyMigrateBase {
     'field_gender',
     'field_birth_date',
     'field_health_center',
+    'field_birth_date_estimated',
+    'field_hmis_number',
+    'field_marital_status',
+    'field_education_level',
+    'field_ubudehe',
+    'field_province',
+    'field_district',
+    'field_sector',
+    'field_cell',
+    'field_village',
+    'field_hiv_status',
+    'field_mode_of_delivery',
+    'field_number_of_children',
+    'field_photo',
+    'field_national_id_number',
+    'field_phone_number',
   ];
 
   /**
@@ -40,6 +56,21 @@ class HedleyMigratePeople extends HedleyMigrateBase {
     'field_first_name',
     'field_second_name',
     'field_gender',
+    'field_birth_date_estimated',
+    'field_hmis_number',
+    'field_marital_status',
+    'field_education_level',
+    'field_ubudehe',
+    'field_province',
+    'field_district',
+    'field_sector',
+    'field_cell',
+    'field_village',
+    'field_hiv_status',
+    'field_mode_of_delivery',
+    'field_number_of_children',
+    'field_national_id_number',
+    'field_phone_number',
   ];
 
   /**
@@ -61,6 +92,12 @@ class HedleyMigratePeople extends HedleyMigrateBase {
     $this
       ->addFieldMapping('field_health_center', 'field_health_center')
       ->sourceMigration('HedleyMigrateHealthCenters');
+
+    $this->addFieldMapping('field_photo', 'field_photo');
+    $this->addFieldMapping('field_photo:file_replace')
+      ->defaultValue(FILE_EXISTS_REPLACE);
+    $this->addFieldMapping('field_photo:source_dir')
+      ->defaultValue($this->getMigrateDirectory() . '/images/');
   }
 
   /**
