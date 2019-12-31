@@ -76,6 +76,22 @@ $people = [
     'field_gender',
     'field_birth_date',
     'field_health_center',
+    'field_birth_date_estimated',
+    'field_hmis_number',
+    'field_marital_status',
+    'field_education_level',
+    'field_ubudehe',
+    'field_province',
+    'field_district',
+    'field_sector',
+    'field_cell',
+    'field_village',
+    'field_hiv_status',
+    'field_mode_of_delivery',
+    'field_number_of_children',
+    'field_photo',
+    'field_national_id_number',
+    'field_phone_number',
   ],
 ];
 $relationships = [
@@ -217,6 +233,9 @@ foreach ($health_centers_ids as $health_center_id) {
     $gender = $wrapper->field_gender->value();
     $first_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
     $second_name = $faker->lastName;
+    $photo = rand(1, 5) . ".jpg";
+    $national_id = '1199270' . $faker->numberBetween(100000000, 199999999);
+    $phone_number = '0' . $faker->numberBetween(700000000, 799999999);
 
     $people[] = [
       $wrapper->getIdentifier(),
@@ -226,6 +245,23 @@ foreach ($health_centers_ids as $health_center_id) {
       $gender,
       date('Y-m-d', $wrapper->field_birth_date->value()),
       $wrapper->field_health_center->getIdentifier(),
+      $wrapper->field_birth_date_estimated->value(),
+      $wrapper->field_hmis_number->value(),
+      $wrapper->field_marital_status->value(),
+      $wrapper->field_education_level->value(),
+      $wrapper->field_ubudehe->value(),
+      $wrapper->field_province->value(),
+      $wrapper->field_district->value(),
+      $wrapper->field_sector->value(),
+      $wrapper->field_cell->value(),
+      $wrapper->field_village->value(),
+      $wrapper->field_phone_number->value(),
+      $wrapper->field_hiv_status->value(),
+      $wrapper->field_mode_of_delivery->value(),
+      $wrapper->field_number_of_children->value(),
+      $photo,
+      $national_id,
+      $phone_number,
     ];
   }
 
