@@ -492,15 +492,21 @@ viewCreateEditForm language currentDate operation model db =
                 |> Maybe.andThen (Date.fromIsoString >> Result.toMaybe)
 
         ( birthDateSelectorFrom, birthDateSelectorTo ) =
-            case expectedAge of
-                ExpectChild ->
-                    ( Date.add Years -13 currentDate, currentDate )
-
-                ExpectAdult ->
-                    ( Date.add Years -60 currentDate, Date.add Years -13 currentDate )
-
-                ExpectAdultOrChild ->
+            case operation of
+                -- When creating without relation, allow full dates range.
+                CreatePerson Nothing ->
                     ( Date.add Years -60 currentDate, currentDate )
+
+                _ ->
+                    case expectedAge of
+                        ExpectChild ->
+                            ( Date.add Years -13 currentDate, currentDate )
+
+                        ExpectAdult ->
+                            ( Date.add Years -60 currentDate, Date.add Years -13 currentDate )
+
+                        ExpectAdultOrChild ->
+                            ( Date.add Years -60 currentDate, currentDate )
 
         birthDateInput =
             div [ class "ui grid" ]
