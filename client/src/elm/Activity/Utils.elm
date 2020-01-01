@@ -74,10 +74,8 @@ encodeActivityAsString activity =
                 FamilyPlanning ->
                     "family_planning"
 
-
-
--- ParticipantConsent ->
--- "participants_consent"
+                ParticipantConsent ->
+                    "participants_consent"
 
 
 {-| The inverse of encodeActivityTypeAsString
@@ -105,8 +103,9 @@ decodeActivityFromString s =
         "family_planning" ->
             Just <| MotherActivity FamilyPlanning
 
-        -- "participants_consent" ->
-        --    Just <| MotherActivity ParticipantConsent
+        "participants_consent" ->
+            Just <| MotherActivity ParticipantConsent
+
         _ ->
             Nothing
 
@@ -148,10 +147,8 @@ getActivityIcon activity =
                 FamilyPlanning ->
                     "planning"
 
-
-
--- ParticipantConsent ->
---    "forms"
+                ParticipantConsent ->
+                    "forms"
 
 
 getAllActivities : List Activity
@@ -170,8 +167,7 @@ getAllChildActivities =
 getAllMotherActivities : List MotherActivity
 getAllMotherActivities =
     [ FamilyPlanning
-
-    -- , ParticipantConsent
+    , ParticipantConsent
     ]
 
 
@@ -414,11 +410,16 @@ expectMotherActivity session motherId activity =
 
                             CaregiverActivities ->
                                 False
-             {- ParticipantConsent ->
-                expectParticipantConsent session motherId
-                    |> Dict.isEmpty
-                    |> not
-             -}
+
+                    ParticipantConsent ->
+                        case session.session.clinicType of
+                            Just Pmtct ->
+                                expectParticipantConsent session motherId
+                                    |> Dict.isEmpty
+                                    |> not
+
+                            _ ->
+                                False
             )
 
 
@@ -429,6 +430,7 @@ expectParticipantConsent session motherId =
     let
         previouslyConsented =
             getMotherHistoricalMeasurements motherId session.offlineSession
+            getMotherHistoricalMeasurements motherId session
                 |> LocalData.map
                     (.consents
                         >> Dict.map (\_ consent -> consent.value.formId)
@@ -600,22 +602,19 @@ hasCompletedMotherActivity session motherId activityType measurements =
         FamilyPlanning ->
             isCompleted (Maybe.map Tuple.second measurements.current.familyPlanning)
 
-
-
-{-
-   ParticipantConsent ->
-       -- We only consider this activity completed if all expected
-       -- consents have been saved.
-       let
-           current =
-               mapMeasurementData .consent measurements
-                   |> currentValues
-                   |> List.map (Tuple.second >> .value >> .formId)
-                   |> EverySet.fromList
-       in
-       expectParticipantConsent session motherId
-           |> Dict.all (\id _ -> EverySet.member id current)
--}
+        ParticipantConsent ->
+            -- We only consider this activity completed if all expected
+            -- consents have been saved.
+            let
+                current =
+                    mapMeasurementData .consent measurements
+                        |> currentValues
+                        |> List.map (Tuple.second >> .value >> .formId)
+                        |> EverySet.fromList
+            in
+            expectParticipantConsent session motherId
+                |> Dict.toList
+                |> List.all (\( id, _ ) -> EverySet.member id current)
 
 
 motherHasCompletedActivity : PersonId -> MotherActivity -> OfflineSession -> Bool

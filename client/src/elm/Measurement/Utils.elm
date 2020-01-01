@@ -121,7 +121,7 @@ getMotherForm motherId pages session =
                         >> (\form ->
                                 { form
                                     | participantConsent =
-                                        { expected = expectParticipantConsent session motherId
+                                        { expected = expectParticipantConsent session.offlineSession motherId
                                         , view = Nothing
                                         , progress = form.participantConsent.progress
                                         }
