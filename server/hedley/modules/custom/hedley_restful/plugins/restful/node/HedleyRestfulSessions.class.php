@@ -28,6 +28,11 @@ class HedleyRestfulSessions extends HedleyRestfulSyncBase {
       'sub_property' => 'field_uuid',
     ];
 
+    $public_fields['clinic_type'] = [
+      'property' => 'field_clinic',
+      'sub_property' => 'field_group_type',
+    ];
+
     // The label is decorative only.
     unset($public_fields['label']);
 
