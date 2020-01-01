@@ -44,8 +44,8 @@ resolveExpectedAge currentDate birthDate operation =
                         ExpectChild
 
                     else
-                        -- Creating with no relation => no restrictions.
-                        ExpectAdultOrChild
+                        -- Creating with no relation => should be a adult.
+                        ExpectAdult
 
                 EditPerson _ ->
                     ExpectAdult
@@ -58,8 +58,8 @@ resolveExpectedAge currentDate birthDate operation =
                         ExpectAdult
 
                     else
-                        -- Creating with no relation => no restrictions.
-                        ExpectAdultOrChild
+                        -- Creating with no relation => should be a child.
+                        ExpectChild
 
                 EditPerson _ ->
                     ExpectChild

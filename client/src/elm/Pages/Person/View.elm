@@ -503,15 +503,21 @@ viewCreateEditForm language currentDate operation model db =
                     toLocalDateTime currentDate 0 0 0 0
 
                 ( birthDateSelectorFrom, birthDateSelectorTo ) =
-                    case expectedAge of
-                        ExpectChild ->
-                            ( Date.add Year -13 today, today )
-
-                        ExpectAdult ->
-                            ( Date.add Year -60 today, Date.add Year -13 today )
-
-                        ExpectAdultOrChild ->
+                    case operation of
+                        -- When creating without relation, allow full dates range.
+                        CreatePerson Nothing ->
                             ( Date.add Year -60 today, today )
+
+                        _ ->
+                            case expectedAge of
+                                ExpectChild ->
+                                    ( Date.add Year -13 today, today )
+
+                                ExpectAdult ->
+                                    ( Date.add Year -60 today, Date.add Year -13 today )
+
+                                ExpectAdultOrChild ->
+                                    ( Date.add Year -60 today, today )
             in
             div [ class "ui grid" ]
                 [ div
