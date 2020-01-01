@@ -635,7 +635,8 @@ function hedley_person_import_patient($patient_type, array $values) {
 
   try {
     $person = hedley_person_create_basic_node('person');
-  } catch (Exception $e) {
+  }
+  catch (Exception $e) {
     return 'Failed to create person node';
   }
 
@@ -810,7 +811,8 @@ function hedley_person_import_patient($patient_type, array $values) {
 function hedley_person_create_relationship($child_id, $adult_id, $relation) {
   try {
     $relationship = hedley_person_create_basic_node('relationship');
-  } catch (Exception $e) {
+  }
+  catch (Exception $e) {
     return FALSE;
   }
 
@@ -840,7 +842,8 @@ function hedley_person_create_relationship($child_id, $adult_id, $relation) {
 function hedley_person_create_pmtct_participant($child_id, $adult_id, $group_id) {
   try {
     $pmtct_participant = hedley_person_create_basic_node('pmtct_participant');
-  } catch (Exception $e) {
+  }
+  catch (Exception $e) {
     return FALSE;
   }
 
