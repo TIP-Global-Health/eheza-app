@@ -386,11 +386,19 @@ viewPhotoThumb url =
         ]
 
 
-viewCreateEditForm : Language -> NominalDate -> Maybe PersonId -> ParticipantDirectoryOperation -> Model -> ModelIndexedDb -> Html Msg
-viewCreateEditForm language currentDate personId operation model db =
+viewCreateEditForm : Language -> NominalDate -> ParticipantDirectoryOperation -> Model -> ModelIndexedDb -> Html Msg
+viewCreateEditForm language currentDate operation model db =
     let
         formBeforeDefaults =
             model.form
+
+        personId =
+            case operation of
+                CreatePerson maybePersonId ->
+                    maybePersonId
+
+                EditPerson personId_ ->
+                    Just personId_
 
         -- When we create new person, this is a person that we want to associate
         -- new person with.
@@ -411,10 +419,10 @@ viewCreateEditForm language currentDate personId operation model db =
 
         goBackAction =
             case operation of
-                CreatePerson ->
+                CreatePerson _ ->
                     SetActivePage <| UserPage <| PersonsPage personId
 
-                EditPerson ->
+                EditPerson _ ->
                     personId
                         |> Maybe.map
                             (\personId_ ->
@@ -505,7 +513,7 @@ viewCreateEditForm language currentDate personId operation model db =
                     , br [] []
                     , DateSelector.SelectorDropdown.view
                         ToggleDateSelector
-                        (DateSelected personId operation)
+                        (DateSelected operation)
                         model.isDateSelectorOpen
                         birthDateSelectorFrom
                         birthDateSelectorTo
@@ -521,7 +529,7 @@ viewCreateEditForm language currentDate personId operation model db =
                             , ( "field", True )
                             ]
                         ]
-                        |> Html.map (MsgForm personId operation)
+                        |> Html.map (MsgForm operation)
                     ]
                 ]
 
@@ -620,7 +628,7 @@ viewCreateEditForm language currentDate personId operation model db =
                 , div
                     [ id "dropzone"
                     , class "eight wide column dropzone"
-                    , on "dropzonecomplete" (Json.Decode.map (DropZoneComplete personId operation) decodeDropZoneFile)
+                    , on "dropzonecomplete" (Json.Decode.map (DropZoneComplete operation) decodeDropZoneFile)
                     ]
                     [ div
                         [ class "dz-message"
@@ -661,14 +669,14 @@ viewCreateEditForm language currentDate personId operation model db =
 
         demographicFields =
             viewPhoto
-                :: (List.map (Html.map (MsgForm personId operation)) <|
+                :: (List.map (Html.map (MsgForm operation)) <|
                         [ viewTextInput language Translate.FirstName Backend.Person.Form.firstName False personForm
                         , viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
                         , viewNumberInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
                         ]
                    )
                 ++ [ birthDateInput ]
-                ++ (List.map (Html.map (MsgForm personId operation)) <|
+                ++ (List.map (Html.map (MsgForm operation)) <|
                         case expectedAge of
                             ExpectAdult ->
                                 [ genderInput
@@ -845,10 +853,18 @@ viewCreateEditForm language currentDate personId operation model db =
                 True
                 personForm
 
+        isEditOperation =
+            case operation of
+                CreatePerson _ ->
+                    False
+
+                EditPerson _ ->
+                    True
+
         viewVillage =
             let
                 disabled =
-                    (operation == EditPerson)
+                    isEditOperation
                         && (isAdult currentDate selectedBirthDate
                                 |> Maybe.map not
                                 |> Maybe.withDefault False
@@ -891,7 +907,7 @@ viewCreateEditForm language currentDate personId operation model db =
                     [ text <| translate language Translate.ContactInformation ++ ":" ]
                 , [ viewTextInput language Translate.TelephoneNumber Backend.Person.Form.phoneNumber False personForm ]
                     |> fieldset [ class "registration-form address-info" ]
-                    |> Html.map (MsgForm personId operation)
+                    |> Html.map (MsgForm operation)
                 ]
 
             else
@@ -904,7 +920,7 @@ viewCreateEditForm language currentDate personId operation model db =
             let
                 inputClass =
                     "select-input"
-                        ++ (if operation == EditPerson && isFormFieldSet healthCenter then
+                        ++ (if isEditOperation && isFormFieldSet healthCenter then
                                 " disabled"
 
                             else
@@ -934,7 +950,7 @@ viewCreateEditForm language currentDate personId operation model db =
                 [ text <| translate language Translate.RegistratingHealthCenter ++ ":" ]
             , [ viewSelectInput language Translate.HealthCenter options Backend.Person.Form.healthCenter "ten" inputClass True personForm ]
                 |> fieldset [ class "registration-form health-center" ]
-                |> Html.map (MsgForm personId operation)
+                |> Html.map (MsgForm operation)
             ]
 
         submitButton =
@@ -960,19 +976,19 @@ viewCreateEditForm language currentDate personId operation model db =
                 [ text <| translate language Translate.FamilyInformation ++ ":" ]
             , familyInformationFields
                 |> fieldset [ class "registration-form family-info" ]
-                |> Html.map (MsgForm personId operation)
+                |> Html.map (MsgForm operation)
             , h3
                 [ class "ui header" ]
                 [ text <| translate language Translate.AddressInformation ++ ":" ]
             , addressFields
                 |> fieldset [ class "registration-form address-info" ]
-                |> Html.map (MsgForm personId operation)
+                |> Html.map (MsgForm operation)
             ]
                 ++ contactInformationSection
                 ++ healthCenterSection
                 ++ [ p [] []
                    , submitButton
-                        |> Html.map (MsgForm personId operation)
+                        |> Html.map (MsgForm operation)
 
                    -- Note that these are hidden by deafult by semantic-ui ... the
                    -- class of the "form" controls whether they are shown.

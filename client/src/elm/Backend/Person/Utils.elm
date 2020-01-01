@@ -3,6 +3,7 @@ module Backend.Person.Utils exposing (ageInYears, diffInYears, expectedAgeByPers
 import Backend.Person.Model exposing (ExpectedAge(..), ParticipantDirectoryOperation(..), Person)
 import Date
 import Gizra.NominalDate exposing (NominalDate)
+import Maybe.Extra exposing (isJust)
 
 
 ageInYears : NominalDate -> Person -> Maybe Int
@@ -37,18 +38,30 @@ resolveExpectedAge currentDate birthDate operation =
     case isAdult currentDate birthDate of
         Just True ->
             case operation of
-                CreatePerson ->
-                    ExpectChild
+                CreatePerson maybeId ->
+                    -- Creating person with relation to adult => should be a child.
+                    if isJust maybeId then
+                        ExpectChild
 
-                EditPerson ->
+                    else
+                        -- Creating with no relation => should be a adult.
+                        ExpectAdult
+
+                EditPerson _ ->
                     ExpectAdult
 
         Just False ->
             case operation of
-                CreatePerson ->
-                    ExpectAdult
+                CreatePerson maybeId ->
+                    -- Creating person with relation to child => should be a adult.
+                    if isJust maybeId then
+                        ExpectAdult
 
-                EditPerson ->
+                    else
+                        -- Creating with no relation => should be a child.
+                        ExpectChild
+
+                EditPerson _ ->
                     ExpectChild
 
         Nothing ->

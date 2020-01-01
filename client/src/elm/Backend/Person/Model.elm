@@ -16,7 +16,7 @@ module Backend.Person.Model exposing
     , allUbudehes
     )
 
-import Backend.Entities exposing (HealthCenterId)
+import Backend.Entities exposing (HealthCenterId, PersonId)
 import Gizra.NominalDate exposing (NominalDate)
 
 
@@ -145,8 +145,8 @@ allMaritalStatuses =
 
 
 type ParticipantDirectoryOperation
-    = CreatePerson
-    | EditPerson
+    = CreatePerson (Maybe PersonId)
+    | EditPerson PersonId
 
 
 {-| Sometimes, we are in a state where we are expecting the user to enter an

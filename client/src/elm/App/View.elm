@@ -192,12 +192,12 @@ viewUserPage page model configured =
                         |> flexPageWrapper model
 
                 CreatePersonPage relation ->
-                    Pages.Person.View.viewCreateEditForm model.language currentDate relation CreatePerson loggedInModel.createPersonPage model.indexedDb
+                    Pages.Person.View.viewCreateEditForm model.language currentDate (CreatePerson relation) loggedInModel.createPersonPage model.indexedDb
                         |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
                         |> flexPageWrapper model
 
                 EditPersonPage id ->
-                    Pages.Person.View.viewCreateEditForm model.language currentDate (Just id) EditPerson loggedInModel.editPersonPage model.indexedDb
+                    Pages.Person.View.viewCreateEditForm model.language currentDate (EditPerson id) loggedInModel.editPersonPage model.indexedDb
                         |> Html.map (MsgLoggedIn << MsgPageEditPerson)
                         |> flexPageWrapper model
 

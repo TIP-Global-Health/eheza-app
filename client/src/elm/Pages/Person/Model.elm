@@ -16,15 +16,13 @@ type alias Model =
 
 
 type Msg
-    = -- The personId, if provided, is a person we should offer to create
-      -- a relationship with.
-      MsgForm (Maybe PersonId) ParticipantDirectoryOperation Form.Msg
+    = MsgForm ParticipantDirectoryOperation Form.Msg
     | ResetCreateForm
     | ResetEditForm
     | SetActivePage Page
-    | DropZoneComplete (Maybe PersonId) ParticipantDirectoryOperation DropZoneFile
+    | DropZoneComplete ParticipantDirectoryOperation DropZoneFile
     | ToggleDateSelector
-    | DateSelected (Maybe PersonId) ParticipantDirectoryOperation Date
+    | DateSelected ParticipantDirectoryOperation Date
 
 
 emptyCreateModel : Model
