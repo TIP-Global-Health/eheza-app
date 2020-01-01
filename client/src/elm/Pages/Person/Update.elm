@@ -17,8 +17,16 @@ import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
 update : NominalDate -> Msg -> EntityUuidDict PersonId (WebData Person) -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate msg people model =
     case msg of
-        MsgForm relation operation subMsg ->
+        MsgForm operation subMsg ->
             let
+                relation =
+                    case operation of
+                        CreatePerson maybeId ->
+                            maybeId
+
+                        EditPerson id ->
+                            Just id
+
                 related =
                     relation
                         |> Maybe.andThen (\personId -> AllDict.get personId people)
@@ -31,7 +39,7 @@ update currentDate msg people model =
                     case subMsg of
                         Form.Submit ->
                             case operation of
-                                CreatePerson ->
+                                CreatePerson _ ->
                                     model.form
                                         |> Form.getOutput
                                         |> Maybe.map
@@ -50,7 +58,7 @@ update currentDate msg people model =
                                                 |> App.Model.MsgIndexedDb
                                             ]
 
-                                EditPerson ->
+                                EditPerson _ ->
                                     relation
                                         |> Maybe.map
                                             (\personId ->
@@ -84,12 +92,12 @@ update currentDate msg people model =
             , appMsgs
             )
 
-        DropZoneComplete relation operation result ->
+        DropZoneComplete operation result ->
             let
                 subMsg =
                     Form.Input Backend.Person.Form.photo Form.Text (Form.Field.String result.url)
             in
-            update currentDate (MsgForm relation operation subMsg) people model
+            update currentDate (MsgForm operation subMsg) people model
 
         ResetCreateForm ->
             ( Pages.Person.Model.emptyCreateModel
@@ -115,12 +123,12 @@ update currentDate msg people model =
             , []
             )
 
-        DateSelected relation operation date ->
+        DateSelected operation date ->
             let
                 dateAsString =
                     fromLocalDateTime date |> formatYYYYMMDD
 
                 setFieldMsg =
-                    Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm relation operation
+                    Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm operation
             in
             update currentDate setFieldMsg people model

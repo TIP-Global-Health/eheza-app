@@ -68,7 +68,7 @@ import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, formatYYYYMMDD, 
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Regex exposing (Regex)
-import Restful.Endpoint exposing (decodeEntityUuid, fromEntityId, fromEntityUuid, toEntityId)
+import Restful.Endpoint exposing (decodeEntityUuid, fromEntityId, fromEntityUuid, toEntityId, toEntityUuid)
 import Time.Date
 import Time.Iso8601
 import Translate exposing (ValidationError(..))
@@ -83,13 +83,13 @@ type alias PersonForm =
 emptyCreateForm : PersonForm
 emptyCreateForm =
     initial []
-        (validatePerson Nothing CreatePerson Nothing)
+        (validatePerson Nothing (CreatePerson Nothing) Nothing)
 
 
 emptyEditForm : PersonForm
 emptyEditForm =
     initial []
-        (validatePerson Nothing EditPerson Nothing)
+        (validatePerson Nothing (toEntityUuid "1" |> EditPerson) Nothing)
 
 
 {-| Given the birth date actually entered into the form, what age range are we
@@ -278,7 +278,7 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
                     form_
     in
     case operation of
-        CreatePerson ->
+        CreatePerson _ ->
             form
                 |> applyDefaultSelectInput ubudehe defaultUbudehe (encodeUbudehe >> toString)
                 |> applyDefaultSelectInput healthCenter defaultHealthCenter fromEntityUuid
@@ -288,7 +288,7 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
                 |> applyDefaultLocation cell defaultCellId
                 |> applyDefaultLocation village defaultVillageId
 
-        EditPerson ->
+        EditPerson _ ->
             form
                 |> applyDefaultTextInput photo defaultAvatarUrl identity
                 |> applyDefaultTextInput firstName defaultFirstName identity
