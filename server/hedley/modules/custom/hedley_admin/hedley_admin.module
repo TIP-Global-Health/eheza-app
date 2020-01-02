@@ -8,6 +8,22 @@
 include_once 'hedley_admin.features.inc';
 
 /**
+ * Implements hook_views_plugins().
+ */
+function hedley_admin_views_plugins() {
+  return array(
+    'access' => array(
+      'health_center' => array(
+        'title' => t('Health-center-based Access'),
+        'help' => t('If the child is associated with the same health center as the user, it grants access'),
+        'handler' => 'hedley_admin_health_center_access_plugin',
+        'path' => drupal_get_path('module', 'hedley_admin'),
+      ),
+    ),
+  );
+}
+
+/**
  * Implements hook_theme_registry_alter().
  */
 function hedley_admin_theme_registry_alter(&$theme_registry) {
@@ -182,4 +198,45 @@ function hedley_admin_query_views_ledger_alter(QueryAlterableInterface $query) {
   // @see https://api.drupal.org/api/drupal/includes!database!select.inc/function/SelectQueryInterface%3A%3AgetGroupBy/7.
   $fields =& $query->getGroupBy();
   $fields['node.nid'] = 'node.nid';
+}
+
+/**
+ * Health-center-based access check.
+ */
+function hedley_admin_health_center_access($account = FALSE) {
+  global $user;
+  $account = !empty($account) ? $account : $user;
+  if ($account->uid == 1) {
+    return TRUE;
+  }
+  if (!in_array('health worker', $account->roles) && !in_array('administrator', $account->roles)) {
+    return FALSE;
+  }
+  // There's no trivial and nice way to pass a view argument.
+  // Here views_get_current_view() doesn't return anything.
+  // Expected path:
+  // /admin/ledger/[nid].
+  $nid = arg(2);
+  if (empty($nid)) {
+    return FALSE;
+  }
+  $child = node_load($nid);
+  if (empty($child)) {
+    return FALSE;
+  }
+  try {
+    $child_wrapper = entity_metadata_wrapper('node', $child);
+    $account_wrapper = entity_metadata_wrapper('user', $account);
+    $child_center_nid = $child_wrapper->field_health_center->getIdentifier();
+    if (empty($child_center_nid)) {
+      return FALSE;
+    }
+    $hc_ids = $account_wrapper->field_health_centers->value(['identifier' => TRUE]);
+    return in_array($child_center_nid, $hc_ids);
+  }
+  catch (Exception $e) {
+    // Might be impartial data, anyways, simply disallow the access.
+    watchdog('hedley_admin', $e->getMessage());
+    return FALSE;
+  }
 }

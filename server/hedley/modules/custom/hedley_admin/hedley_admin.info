@@ -30,3 +30,4 @@ features[menu_links][] = menu-ihangane-admin-menu_create-relationship:node/add/r
 features[views_view][] = admin_views
 features[views_view][] = ledger
 files[] = hedley_admin_handlers.inc
+files[] = hedley_admin_health_center_access_plugin.inc
