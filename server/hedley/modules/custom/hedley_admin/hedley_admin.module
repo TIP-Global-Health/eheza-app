@@ -205,11 +205,11 @@ function hedley_admin_query_views_ledger_alter(QueryAlterableInterface $query) {
  */
 function hedley_admin_health_center_access($account = FALSE) {
   global $user;
-  $account = isset($account) ? $account : $user;
+  $account = !empty($account) ? $account : $user;
   if ($account->uid == 1) {
     return TRUE;
   }
-  if (!in_array('health worker', $account->roles)) {
+  if (!in_array('health worker', $account->roles) && !in_array('administrator', $account->roles)) {
     return FALSE;
   }
   // There's no trivial and nice way to pass a view argument.
@@ -224,17 +224,19 @@ function hedley_admin_health_center_access($account = FALSE) {
   if (empty($child)) {
     return FALSE;
   }
-  $child_wrapper = entity_metadata_wrapper('node', $child);
-  $account_wrapper = entity_metadata_wrapper('user', $account);
-  $child_center = $child_wrapper->field_health_center->value();
-  if (empty($child_center->nid)) {
+  try {
+    $child_wrapper = entity_metadata_wrapper('node', $child);
+    $account_wrapper = entity_metadata_wrapper('user', $account);
+    $child_center_nid = $child_wrapper->field_health_center->getIdentifier();
+    if (empty($child_center_nid)) {
+      return FALSE;
+    }
+    $hc_ids = $account_wrapper->field_health_centers->value(['identifier' => TRUE]);
+    return in_array($child_center_nid, $hc_ids);
+  }
+  catch (Exception $e) {
+    // Might be impartial data, anyways, simply disallow the access.
+    watchdog('hedley_admin', $e->getMessage());
     return FALSE;
   }
-  foreach ($account_wrapper->field_health_centers as $value) {
-    if ($value->nid->value() !== $child_center->nid) {
-      continue;
-    }
-    return TRUE;
-  }
-  return FALSE;
 }
