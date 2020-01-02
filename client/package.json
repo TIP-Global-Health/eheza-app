@@ -10,7 +10,7 @@
   "devDependencies": {
     "browser-sync": "^2.26.5",
     "chance": "^1.0.18",
-    "csv-parse": "^4.8.3",
+    "csv-parse": "^4.4.1",
     "del": "^4.1.1",
     "elm-test": "^0.18.12",
     "git-rev": "^0.2.1",
