@@ -29,6 +29,7 @@ expected (and not completed).
 
 import Activity.Model exposing (..)
 import AssocList as Dict exposing (Dict)
+import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -425,11 +426,10 @@ expectMotherActivity session motherId activity =
 
 {-| Which participant forms would we expect this mother to consent to in this session?
 -}
-expectParticipantConsent : EditableSession -> PersonId -> Dict ParticipantFormId ParticipantForm
+expectParticipantConsent : OfflineSession -> PersonId -> Dict ParticipantFormId ParticipantForm
 expectParticipantConsent session motherId =
     let
         previouslyConsented =
-            getMotherHistoricalMeasurements motherId session.offlineSession
             getMotherHistoricalMeasurements motherId session
                 |> LocalData.map
                     (.consents
@@ -438,9 +438,23 @@ expectParticipantConsent session motherId =
                         >> EverySet.fromList
                     )
                 |> LocalData.withDefault EverySet.empty
+
+        consentedAtCurrentSession =
+            getMotherMeasurementData2 motherId session
+                |> LocalData.map
+                    (.current
+                        >> .consent
+                        >> Dict.map (\_ consent -> consent.value.formId)
+                        >> Dict.values
+                        >> EverySet.fromList
+                    )
+                |> LocalData.withDefault EverySet.empty
+
+        consentedAtPreviousSessions =
+            EverySet.diff previouslyConsented consentedAtCurrentSession
     in
-    session.offlineSession.allParticipantForms
-        |> Dict.filter (\id _ -> not (EverySet.member id previouslyConsented))
+    session.allParticipantForms
+        |> Dict.filter (\id _ -> not (EverySet.member id consentedAtPreviousSessions))
 
 
 {-| For a particular child activity, figure out which children have completed
@@ -611,10 +625,15 @@ hasCompletedMotherActivity session motherId activityType measurements =
                         |> currentValues
                         |> List.map (Tuple.second >> .value >> .formId)
                         |> EverySet.fromList
+
+                expected =
+                    expectParticipantConsent session motherId
             in
-            expectParticipantConsent session motherId
-                |> Dict.toList
-                |> List.all (\( id, _ ) -> EverySet.member id current)
+            (Dict.isEmpty expected |> not)
+                && (expected
+                        |> Dict.toList
+                        |> List.all (\( id, _ ) -> EverySet.member id current)
+                   )
 
 
 motherHasCompletedActivity : PersonId -> MotherActivity -> OfflineSession -> Bool
@@ -635,7 +654,6 @@ isCompleted =
 hasAnyCompletedMotherActivity : OfflineSession -> PersonId -> MeasurementData MotherMeasurements -> Bool
 hasAnyCompletedMotherActivity session motherId measurements =
     getAllMotherActivities
-        |> List.any (\activity -> hasCompletedMotherActivity session motherId activity measurements)
 
 
 hasAnyCompletedChildActivity : MeasurementData ChildMeasurements -> Bool
