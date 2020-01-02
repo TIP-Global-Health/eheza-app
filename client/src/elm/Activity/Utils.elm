@@ -654,6 +654,10 @@ isCompleted =
 hasAnyCompletedMotherActivity : OfflineSession -> PersonId -> MeasurementData MotherMeasurements -> Bool
 hasAnyCompletedMotherActivity session motherId measurements =
     getAllMotherActivities
+        |> List.any
+            (\activity ->
+                hasCompletedMotherActivity session motherId activity measurements
+            )
 
 
 hasAnyCompletedChildActivity : MeasurementData ChildMeasurements -> Bool
