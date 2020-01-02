@@ -18,7 +18,6 @@ class hedley_admin_health_center_access_plugin extends views_plugin_access {
    */
   public function access($account) {
     return hedley_admin_health_center_access($account);
-
   }
 
   /**
