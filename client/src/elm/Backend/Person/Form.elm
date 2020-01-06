@@ -192,8 +192,7 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
         formFieldEmpty fieldName form_ =
             Form.getFieldAsString fieldName form_
                 |> .value
-                |> Maybe.map String.isEmpty
-                |> Maybe.withDefault True
+                |> isNothing
 
         applyDefaultGender form_ =
             maybeRelatedPerson
