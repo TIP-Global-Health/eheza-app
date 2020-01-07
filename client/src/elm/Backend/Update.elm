@@ -6,6 +6,7 @@ import App.Model
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (HistoricalMeasurements)
 import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMeasurements)
 import Backend.Model exposing (..)
@@ -660,9 +661,15 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                                                     Nothing ->
                                                         PersonPage personId
 
-                                            IndividualEncounterOrigin ->
-                                                -- Todo: add logic for encounter types
-                                                PrenatalParticipantPage personId
+                                            IndividualEncounterOrigin encounterType ->
+                                                case encounterType of
+                                                    AntenatalEncounter ->
+                                                        PrenatalParticipantPage personId
+
+                                                    _ ->
+                                                        -- This will change as we add support for
+                                                        -- new encounter types.
+                                                        IndividualEncounterTypesPage
                                 in
                                 [ Pages.Person.Model.ResetCreateForm
                                     |> App.Model.MsgPageCreatePerson

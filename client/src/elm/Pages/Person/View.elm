@@ -5,6 +5,7 @@ import AllDictList
 import App.Model
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Encoder exposing (encodeEducationLevel, encodeHivStatus, encodeMaritalStatus, encodeModeOfDelivery, encodeUbudehe)
 import Backend.Person.Form exposing (ExpectedAge(..), PersonForm, expectedAgeFromForm, validatePerson)
@@ -484,10 +485,17 @@ viewCreateForm language currentDate relationId initiator model db =
                 ParticipantDirectoryOrigin ->
                     SetActivePage PinCodePage
 
-                IndividualEncounterOrigin ->
-                    -- Todo: figure this out
-                    -- SetActivePage <| UserPage IndividualEncounterParticipantsPage
-                    SetActivePage PinCodePage
+                IndividualEncounterOrigin encounterType ->
+                    let
+                        page =
+                            case encounterType of
+                                AntenatalEncounter ->
+                                    UserPage (IndividualEncounterParticipantsPage AntenatalEncounter)
+
+                                _ ->
+                                    PinCodePage
+                    in
+                    SetActivePage page
 
         header =
             div [ class "ui basic segment head" ]

@@ -1,6 +1,7 @@
 module Backend.Person.Model exposing (EducationLevel(..), Gender(..), HIVStatus(..), MaritalStatus(..), ModeOfDelivery(..), Person, RegistrationInitiator(..), Ubudehe(..), VaginalDelivery(..), allEducationLevels, allHivStatuses, allMaritalStatuses, allModesOfDelivery, allUbudehes)
 
 import Backend.Entities exposing (HealthCenterId)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Gizra.NominalDate exposing (NominalDate)
 
 
@@ -130,4 +131,4 @@ allMaritalStatuses =
 
 type RegistrationInitiator
     = ParticipantDirectoryOrigin
-    | IndividualEncounterOrigin
+    | IndividualEncounterOrigin IndividualEncounterType

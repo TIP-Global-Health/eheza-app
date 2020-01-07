@@ -85,7 +85,7 @@ delta2url previous current =
                     Just <| UrlChange NewEntry <| "#prenatal-participant/" ++ fromEntityUuid id
 
                 IndividualEncounterParticipantsPage encounterType ->
-                    Just <| UrlChange NewEntry ("#prenatal-participants" ++ encoudeIndividualEncounterTypeAsString encounterType)
+                    Just <| UrlChange NewEntry ("#individual-participants/" ++ encoudeIndividualEncounterTypeAsString encounterType)
 
                 RelationshipPage id1 id2 ->
                     Just <|
@@ -163,7 +163,7 @@ parseUrl =
         , map (\id -> UserPage <| ClinicalProgressReportPage id) (s "clinical-progress-report" </> parseUuid)
         , map (\id -> UserPage <| DemographicsReportPage id) (s "demographics-report" </> parseUuid)
         , map (UserPage <| IndividualEncounterTypesPage) (s "individual-encounter-types")
-        , map (\encounterType -> UserPage <| IndividualEncounterParticipantsPage encounterType) (s "individual-encounter-participants" </> parseIndividualEncounterType)
+        , map (\encounterType -> UserPage <| IndividualEncounterParticipantsPage encounterType) (s "individual-participants" </> parseIndividualEncounterType)
 
         -- `top` represents the page without any segements ... i.e. the
         -- root page.
