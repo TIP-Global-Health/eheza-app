@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Contains HedleyRestfulPrenatalParticipants.
+ * Contains HedleyRestfulIndividualParticipants.
  */
 
 /**
- * Class HedleyRestfulPrenatalParticipants.
+ * Class HedleyRestfulIndividualParticipants.
  */
-class HedleyRestfulPrenatalParticipants extends HedleyRestfulSyncBase {
+class HedleyRestfulIndividualParticipants extends HedleyRestfulSyncBase {
 
   /**
    * {@inheritdoc}
