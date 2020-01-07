@@ -55,7 +55,10 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'create individual_participant content'.
   $permissions['create individual_participant content'] = array(
     'name' => 'create individual_participant content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
     'module' => 'node',
   );
 
@@ -128,8 +131,9 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'delete any individual_participant content'.
   $permissions['delete any individual_participant content'] = array(
     'name' => 'delete any individual_participant content',
-    'roles' => array(),
-    'module' => 'node',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),    'module' => 'node',
   );
 
   // Exported permission: 'delete any pmtct_participant content'.
@@ -198,7 +202,9 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'delete own individual_participant content'.
   $permissions['delete own individual_participant content'] = array(
     'name' => 'delete own individual_participant content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
     'module' => 'node',
   );
 
@@ -273,7 +279,10 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'edit any individual_participant content'.
   $permissions['edit any individual_participant content'] = array(
     'name' => 'edit any individual_participant content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
     'module' => 'node',
   );
 
@@ -351,7 +360,10 @@ function hedley_schedule_user_default_permissions() {
   // Exported permission: 'edit own individual_participant content'.
   $permissions['edit own individual_participant content'] = array(
     'name' => 'edit own individual_participant content',
-    'roles' => array(),
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
     'module' => 'node',
   );
 
