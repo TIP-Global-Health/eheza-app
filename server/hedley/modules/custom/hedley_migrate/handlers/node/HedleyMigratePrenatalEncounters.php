@@ -25,7 +25,7 @@ class HedleyMigratePrenatalEncounters extends HedleyMigrateBase {
    */
   protected $csvColumns = [
     'id',
-    'field_prenatal_participant',
+    'field_individual_participant',
     'field_scheduled_date',
   ];
 
@@ -46,7 +46,7 @@ class HedleyMigratePrenatalEncounters extends HedleyMigrateBase {
       ->callbacks([$this, 'dateProcess']);
 
     $this
-      ->addFieldMapping('field_prenatal_participant', 'field_prenatal_participant')
+      ->addFieldMapping('field_individual_participant', 'field_individual_participant')
       ->sourceMigration('HedleyMigratePrenatalParticipants');
   }
 
