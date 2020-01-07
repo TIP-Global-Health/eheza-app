@@ -104,7 +104,7 @@
         pmtct_participant: 'nodes',
         prenatal_family_planning: 'shards',
         prenatal_nutrition: 'shards',
-        prenatal_participant: 'nodes',
+        individual_participant: 'nodes',
         prenatal_encounter: 'nodes',
         relationship: 'nodes',
         resource: 'shards',
@@ -519,10 +519,10 @@
                 }
 
                 if (type === 'prenatal_encounter') {
-                  var prenatalSessionId = params.get('prenatal_participant');
+                  var prenatalSessionId = params.get('individual_participant');
                   if (prenatalSessionId) {
                     modifyQuery = modifyQuery.then(function () {
-                        criteria.prenatal_participant = prenatalSessionId;
+                        criteria.individual_participant = prenatalSessionId;
                         query = table.where(criteria);
 
                         countQuery = query.clone();

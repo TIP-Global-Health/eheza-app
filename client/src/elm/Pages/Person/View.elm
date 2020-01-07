@@ -485,7 +485,9 @@ viewCreateForm language currentDate relationId initiator model db =
                     SetActivePage PinCodePage
 
                 IndividualEncounterOrigin ->
-                    SetActivePage <| UserPage PrenatalParticipantsPage
+                    -- Todo: figure this out
+                    -- SetActivePage <| UserPage IndividualEncounterParticipantsPage
+                    SetActivePage PinCodePage
 
         header =
             div [ class "ui basic segment head" ]

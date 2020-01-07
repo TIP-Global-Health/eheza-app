@@ -30,7 +30,7 @@ import Pages.PrenatalActivity.Update
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.Update
 import Pages.PrenatalParticipant.Update
-import Pages.PrenatalParticipants.Update
+import Pages.IndividualEncounterParticipants.Update
 import Pages.Relationship.Model
 import Pages.Relationship.Update
 import Pages.Session.Model
@@ -223,13 +223,13 @@ update msg model =
                             , appMsgs
                             )
 
-                        MsgPagePrenatalParticipants subMsg ->
+                        MsgPageIndividualEncounterParticipants subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.PrenatalParticipants.Update.update subMsg data.prenatalParticipantsPage
+                                    Pages.IndividualEncounterParticipants.Update.update subMsg data.individualEncounterParticipantsPage
                             in
-                            ( { data | prenatalParticipantsPage = subModel }
-                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalParticipants) subCmd
+                            ( { data | individualEncounterParticipantsPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageIndividualEncounterParticipants) subCmd
                             , appMsgs
                             )
 

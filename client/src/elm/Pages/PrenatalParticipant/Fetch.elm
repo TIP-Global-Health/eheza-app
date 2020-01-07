@@ -11,7 +11,7 @@ fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetch id db =
     let
         fetchEncounters =
-            EveryDict.get id db.prenatalParticipantsByPerson
+            EveryDict.get id db.individualParticipantsByPerson
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.map
                     (EveryDictList.keys
@@ -21,5 +21,5 @@ fetch id db =
     in
     fetchEncounters
         ++ [ FetchPerson id
-           , FetchPrenatalParticipantsForPerson id
+           , FetchIndividualEncounterParticipantsForPerson id
            ]

@@ -15,7 +15,8 @@ import Pages.ClinicalProgressReport.View
 import Pages.Clinics.View
 import Pages.DemographicsReport.View
 import Pages.Device.View
-import Pages.EncounterTypes.View
+import Pages.IndividualEncounterParticipants.View
+import Pages.IndividualEncounterTypes.View
 import Pages.MyAccount.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
@@ -27,7 +28,6 @@ import Pages.PrenatalActivity.View
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalEncounter.View
 import Pages.PrenatalParticipant.View
-import Pages.PrenatalParticipants.View
 import Pages.Relationship.Model
 import Pages.Relationship.View
 import Pages.Session.Model
@@ -234,9 +234,9 @@ viewUserPage page model configured =
                         Pages.PrenatalParticipant.View.view model.language currentDate id model.indexedDb
                             |> flexPageWrapper model
 
-                    PrenatalParticipantsPage ->
-                        Pages.PrenatalParticipants.View.view model.language currentDate healthCenterId loggedInModel.prenatalParticipantsPage model.indexedDb
-                            |> Html.map (MsgLoggedIn << MsgPagePrenatalParticipants)
+                    IndividualEncounterParticipantsPage encounterType ->
+                        Pages.IndividualEncounterParticipants.View.view model.language currentDate healthCenterId encounterType loggedInModel.individualEncounterParticipantsPage model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPageIndividualEncounterParticipants)
                             |> flexPageWrapper model
 
                     RelationshipPage id1 id2 ->
@@ -287,8 +287,8 @@ viewUserPage page model configured =
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalActivity id activity)
                             |> flexPageWrapper model
 
-                    EncounterTypesPage id ->
-                        Pages.EncounterTypes.View.view model.language currentDate id model.indexedDb
+                    IndividualEncounterTypesPage ->
+                        Pages.IndividualEncounterTypes.View.view model.language currentDate model.indexedDb
                             |> flexPageWrapper model
 
             else

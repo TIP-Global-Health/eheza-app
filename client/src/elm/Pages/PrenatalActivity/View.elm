@@ -1,11 +1,11 @@
 module Pages.PrenatalActivity.View exposing (view)
 
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
-import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import Date.Extra as Date exposing (Interval(Day, Month))
 import DateSelector.SelectorDropdown
 import EveryDict
@@ -53,7 +53,7 @@ type alias AssembledData =
     { id : PrenatalEncounterId
     , activity : PrenatalActivity
     , encounter : PrenatalEncounter
-    , participant : PrenatalParticipant
+    , participant : IndividualEncounterParticipant
     , measurements : PrenatalMeasurements
     , person : Person
     }
@@ -74,7 +74,7 @@ view language currentDate id activity db model =
             encounter
                 |> RemoteData.andThen
                     (\encounter ->
-                        EveryDict.get encounter.participant db.prenatalParticipants
+                        EveryDict.get encounter.participant db.individualParticipants
                             |> Maybe.withDefault NotAsked
                     )
 

@@ -1,6 +1,7 @@
-module Pages.PrenatalParticipants.View exposing (view)
+module Pages.IndividualEncounterParticipants.View exposing (view)
 
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form exposing (ExpectedAge(..))
 import Backend.Person.Model exposing (Person, RegistrationInitiator(..))
@@ -14,8 +15,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (unwrap)
+import Pages.IndividualEncounterParticipants.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalParticipants.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, translate)
@@ -33,8 +34,8 @@ import Utils.WebData exposing (viewWebData)
     family member for that person, either child, parent, etc.
 
 -}
-view : Language -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
-view language currentDate healthCenterId model db =
+view : Language -> NominalDate -> HealthCenterId -> IndividualEncounterType -> Model -> ModelIndexedDb -> Html Msg
+view language currentDate healthCenterId encounterType model db =
     let
         title =
             translate language Translate.SearchExistingParticipants
@@ -42,7 +43,7 @@ view language currentDate healthCenterId model db =
     div
         [ class "wrap wrap-alt-2 page-prenatal-participants" ]
         [ viewHeader title
-        , viewContent language currentDate healthCenterId model db
+        , viewContent language currentDate healthCenterId encounterType model db
         ]
 
 
@@ -55,7 +56,7 @@ viewHeader title =
             [ text title ]
         , a
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage ClinicalPage
+            , onClick <| SetActivePage <| UserPage IndividualEncounterTypesPage
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -63,8 +64,8 @@ viewHeader title =
         ]
 
 
-viewContent : Language -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
-viewContent language currentDate selectedHealthCenterId model db =
+viewContent : Language -> NominalDate -> HealthCenterId -> IndividualEncounterType -> Model -> ModelIndexedDb -> Html Msg
+viewContent language currentDate selectedHealthCenterId encounterType model db =
     let
         sync =
             db.syncData |> RemoteData.withDefault EveryDictList.empty
@@ -104,13 +105,13 @@ viewContent language currentDate selectedHealthCenterId model db =
                         [ class "search-wrapper" ]
                         [ div
                             [ class "ui full segment" ]
-                            [ viewSearchForm language currentDate selectedHealthCenterId model db ]
+                            [ viewSearchForm language currentDate selectedHealthCenterId encounterType model db ]
                         ]
             )
 
 
-viewSearchForm : Language -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
-viewSearchForm language currentDate selectedHealthCenterId model db =
+viewSearchForm : Language -> NominalDate -> HealthCenterId -> IndividualEncounterType -> Model -> ModelIndexedDb -> Html Msg
+viewSearchForm language currentDate selectedHealthCenterId encounterType model db =
     let
         searchForm =
             Html.form []
@@ -133,6 +134,16 @@ viewSearchForm language currentDate selectedHealthCenterId model db =
             model.search
                 |> Maybe.withDefault ""
 
+        participantsFilter id person =
+            case encounterType of
+                AntenatalEncounter ->
+                    isPersonAFertileWoman currentDate person
+                        -- Show only mothers that belong to selected health center
+                        && (person.healthCenterId == Just selectedHealthCenterId)
+
+                _ ->
+                    True
+
         results =
             if String.isEmpty searchValue then
                 Nothing
@@ -141,13 +152,7 @@ viewSearchForm language currentDate selectedHealthCenterId model db =
                 Dict.get searchValue db.personSearches
                     |> Maybe.withDefault NotAsked
                     |> RemoteData.map
-                        (EveryDictList.filter
-                            (\_ person ->
-                                isPersonAFertileWoman currentDate person
-                                    -- Show only mothers that belong to selected health center
-                                    && (person.healthCenterId == Just selectedHealthCenterId)
-                            )
-                        )
+                        (EveryDictList.filter participantsFilter)
                     |> Just
 
         summary =
@@ -165,7 +170,7 @@ viewSearchForm language currentDate selectedHealthCenterId model db =
             results
                 |> Maybe.withDefault (Success EveryDictList.empty)
                 |> RemoteData.withDefault EveryDictList.empty
-                |> EveryDictList.map (viewParticipant language currentDate db)
+                |> EveryDictList.map (viewParticipant language currentDate encounterType db)
                 |> EveryDictList.values
 
         searchHelper =
@@ -205,21 +210,27 @@ viewSearchForm language currentDate selectedHealthCenterId model db =
         ]
 
 
-viewParticipant : Language -> NominalDate -> ModelIndexedDb -> PersonId -> Person -> Html Msg
-viewParticipant language currentDate db id person =
+viewParticipant : Language -> NominalDate -> IndividualEncounterType -> ModelIndexedDb -> PersonId -> Person -> Html Msg
+viewParticipant language currentDate encounterType db id person =
     let
         action =
+            case encounterType of
+                AntenatalEncounter ->
+                    [ onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage id ]
+
+                _ ->
+                    []
+
+        viewAction =
             div [ class "action" ]
                 [ div [ class "action-icon-wrapper" ]
                     [ span
-                        [ class "action-icon forward"
-                        , onClick <| SetActivePage <| UserPage <| EncounterTypesPage id
-                        ]
+                        (class "action-icon forward" :: action)
                         []
                     ]
                 ]
 
-        content =
+        viewContent =
             div [ class "content" ]
                 [ div
                     [ class "details" ]
@@ -239,7 +250,7 @@ viewParticipant language currentDate db id person =
                         , span [] [ person.village |> Maybe.withDefault "" |> text ]
                         ]
                     ]
-                , action
+                , viewAction
                 ]
     in
     div
@@ -247,5 +258,5 @@ viewParticipant language currentDate db id person =
         [ div
             [ class "ui image" ]
             [ thumbnailImage "mother" person.avatarUrl person.name 120 120 ]
-        , content
+        , viewContent
         ]

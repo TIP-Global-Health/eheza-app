@@ -21,13 +21,13 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person, RegistrationInitiator)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
-import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
@@ -99,11 +99,11 @@ type alias ModelIndexedDb =
     -- A simple cache of several things.
     , people : EveryDict PersonId (WebData Person)
     , prenatalEncounters : EveryDict PrenatalEncounterId (WebData PrenatalEncounter)
-    , prenatalParticipants : EveryDict PrenatalParticipantId (WebData PrenatalParticipant)
+    , individualParticipants : EveryDict IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
 
     -- Cache things organized in certain ways.
-    , prenatalParticipantsByPerson : EveryDict PersonId (WebData (EveryDictList PrenatalParticipantId PrenatalParticipant))
-    , prenatalEncountersByParticipant : EveryDict PrenatalParticipantId (WebData (EveryDictList PrenatalEncounterId PrenatalEncounter))
+    , individualParticipantsByPerson : EveryDict PersonId (WebData (EveryDictList IndividualEncounterParticipantId IndividualEncounterParticipant))
+    , prenatalEncountersByParticipant : EveryDict IndividualEncounterParticipantId (WebData (EveryDictList PrenatalEncounterId PrenatalEncounter))
     , prenatalMeasurements : EveryDict PrenatalEncounterId (WebData PrenatalMeasurements)
 
     -- From the point of view of the specified person, all of their relationships.
@@ -118,8 +118,8 @@ type alias ModelIndexedDb =
     , postPmtctParticipant : EveryDict PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
     , postRelationship : EveryDict PersonId (WebData MyRelationship)
     , postSession : WebData SessionId
-    , postPrenatalSession : EveryDict PersonId (WebData ( PrenatalParticipantId, PrenatalParticipant ))
-    , postPrenatalEncounter : EveryDict PrenatalParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))
+    , postIndividualSession : EveryDict PersonId (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
+    , postPrenatalEncounter : EveryDict IndividualEncounterParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))
     }
 
 
@@ -140,14 +140,14 @@ emptyModelIndexedDb =
     , personSearches = Dict.empty
     , postPerson = NotAsked
     , postPmtctParticipant = EveryDict.empty
-    , postPrenatalSession = EveryDict.empty
+    , postIndividualSession = EveryDict.empty
     , postPrenatalEncounter = EveryDict.empty
     , postRelationship = EveryDict.empty
     , postSession = NotAsked
     , prenatalEncounters = EveryDict.empty
     , prenatalEncounterRequests = EveryDict.empty
-    , prenatalParticipants = EveryDict.empty
-    , prenatalParticipantsByPerson = EveryDict.empty
+    , individualParticipants = EveryDict.empty
+    , individualParticipantsByPerson = EveryDict.empty
     , prenatalEncountersByParticipant = EveryDict.empty
     , prenatalMeasurements = EveryDict.empty
     , relationshipsByPerson = EveryDict.empty
@@ -176,10 +176,10 @@ type MsgIndexedDb
     | FetchPeopleByName String
     | FetchPerson PersonId
     | FetchPrenatalEncounter PrenatalEncounterId
-    | FetchPrenatalParticipantsForPerson PersonId
-    | FetchPrenatalEncountersForParticipant PrenatalParticipantId
+    | FetchIndividualEncounterParticipantsForPerson PersonId
+    | FetchPrenatalEncountersForParticipant IndividualEncounterParticipantId
     | FetchPrenatalMeasurements PrenatalEncounterId
-    | FetchPrenatalParticipant PrenatalParticipantId
+    | FetchIndividualEncounterParticipant IndividualEncounterParticipantId
     | FetchRelationshipsForPerson PersonId
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
@@ -197,10 +197,10 @@ type MsgIndexedDb
     | HandleFetchedPeopleByName String (WebData (EveryDictList PersonId Person))
     | HandleFetchedPerson PersonId (WebData Person)
     | HandleFetchedPrenatalEncounter PrenatalEncounterId (WebData PrenatalEncounter)
-    | HandleFetchedPrenatalParticipantsForPerson PersonId (WebData (EveryDictList PrenatalParticipantId PrenatalParticipant))
-    | HandleFetchedPrenatalEncountersForParticipant PrenatalParticipantId (WebData (EveryDictList PrenatalEncounterId PrenatalEncounter))
+    | HandleFetchedIndividualEncounterParticipantsForPerson PersonId (WebData (EveryDictList IndividualEncounterParticipantId IndividualEncounterParticipant))
+    | HandleFetchedPrenatalEncountersForParticipant IndividualEncounterParticipantId (WebData (EveryDictList PrenatalEncounterId PrenatalEncounter))
     | HandleFetchedPrenatalMeasurements PrenatalEncounterId (WebData PrenatalMeasurements)
-    | HandleFetchedPrenatalParticipant PrenatalParticipantId (WebData PrenatalParticipant)
+    | HandleFetchedIndividualEncounterParticipant IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
     | HandleFetchedRelationshipsForPerson PersonId (WebData (EveryDictList RelationshipId MyRelationship))
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (EveryDictList SessionId Session))
@@ -210,15 +210,15 @@ type MsgIndexedDb
     | PostRelationship PersonId MyRelationship (Maybe ClinicId)
     | PostPmtctParticipant PmtctParticipant
     | PostSession Session
-    | PostPrenatalSession PrenatalParticipant
+    | PostIndividualSession IndividualEncounterParticipant
     | PostPrenatalEncounter PrenatalEncounter
       -- Messages which handle responses to mutating data
     | HandlePostedPerson (Maybe PersonId) RegistrationInitiator (WebData PersonId)
     | HandlePostedRelationship PersonId (WebData MyRelationship)
     | HandlePostedPmtctParticipant PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
     | HandlePostedSession (WebData SessionId)
-    | HandlePostedPrenatalSession PersonId (WebData ( PrenatalParticipantId, PrenatalParticipant ))
-    | HandlePostedPrenatalEncounter PrenatalParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))
+    | HandlePostedIndividualSession PersonId (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
+    | HandlePostedPrenatalEncounter IndividualEncounterParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))
       -- Process some revisions we've received from the backend. In some cases,
       -- we can update our in-memory structures appropriately. In other cases, we
       -- can set them to `NotAsked` and let the "fetch" mechanism re-fetch them.
@@ -267,7 +267,7 @@ type Revision
     | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
     | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
     | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
-    | PrenatalParticipantRevision PrenatalParticipantId PrenatalParticipant
+    | IndividualEncounterParticipantRevision IndividualEncounterParticipantId IndividualEncounterParticipant
     | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
     | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto
     | RelationshipRevision RelationshipId Relationship

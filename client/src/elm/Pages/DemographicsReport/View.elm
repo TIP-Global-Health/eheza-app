@@ -2,11 +2,11 @@ module Pages.DemographicsReport.View exposing (view, viewHeader, viewItemHeading
 
 import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
-import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import EveryDict
 import EveryDictList
@@ -32,7 +32,7 @@ thumbnailDimensions =
 
 type alias FetchedData =
     { encounter : PrenatalEncounter
-    , participant : PrenatalParticipant
+    , participant : IndividualEncounterParticipant
     , person : Person
     , id : PrenatalEncounterId
     }
@@ -49,7 +49,7 @@ view language currentDate prenatalEncounterId db =
             encounter
                 |> RemoteData.andThen
                     (\encounter ->
-                        EveryDict.get encounter.participant db.prenatalParticipants
+                        EveryDict.get encounter.participant db.individualParticipants
                             |> Maybe.withDefault NotAsked
                     )
 
