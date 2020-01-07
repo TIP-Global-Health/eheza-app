@@ -1132,8 +1132,8 @@ function hedley_schedule_field_default_field_instances() {
   );
 
   // Exported field_instance:
-  // 'node-prenatal_encounter-field_prenatal_participant'.
-  $field_instances['node-prenatal_encounter-field_prenatal_participant'] = array(
+  // 'node-prenatal_encounter-field_individual_participant'.
+  $field_instances['node-prenatal_encounter-field_individual_participant'] = array(
     'bundle' => 'prenatal_encounter',
     'default_value' => NULL,
     'deleted' => 0,
@@ -1147,7 +1147,7 @@ function hedley_schedule_field_default_field_instances() {
           'link' => FALSE,
         ),
         'type' => 'entityreference_label',
-        'weight' => 1,
+        'weight' => 3,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -1157,8 +1157,8 @@ function hedley_schedule_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_prenatal_participant',
-    'label' => 'Prenatal Participant',
+    'field_name' => 'field_individual_participant',
+    'label' => 'Individual Participant',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -1172,7 +1172,7 @@ function hedley_schedule_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -2,
+      'weight' => 2,
     ),
   );
 
@@ -1227,7 +1227,7 @@ function hedley_schedule_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -1267,7 +1267,7 @@ function hedley_schedule_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 0,
+      'weight' => 3,
     ),
   );
 
@@ -1509,6 +1509,7 @@ function hedley_schedule_field_default_field_instances() {
   t('Group Encounter');
   t('Has the session been explicitly closed by the user?');
   t('Health Center');
+  t('Individual Participant');
   t('Kinyarwanda Title');
   t('Leave this blank -- it will be automatically generated.');
   t('Leave this field blank -- it will be automatically generated.');
@@ -1516,7 +1517,6 @@ function hedley_schedule_field_default_field_instances() {
   t('Once you have created a "Counseling Topic" and it has been used, make only minor edits -- any edit will affect the historical data of which topics have been discussed with participants. If an edit would represent a different topic, then create a new topic instead. You can remove an unused topic from the relevant "Counseling Schedule" -- but do not delete the unused topic, since that would also affect the historical data.');
   t('PMTCT Group');
   t('Person');
-  t('Prenatal Participant');
   t('Scheduled Date');
   t('Shards');
   t('The child who is participating in PMTCT child activities.');

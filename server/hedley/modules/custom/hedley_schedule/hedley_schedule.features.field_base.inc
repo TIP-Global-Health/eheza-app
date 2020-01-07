@@ -151,34 +151,13 @@ function hedley_schedule_field_default_field_bases() {
     'type' => 'datetime',
   );
 
-  // Exported field_base: 'field_kinyarwanda_title'.
-  $field_bases['field_kinyarwanda_title'] = array(
+  // Exported field_base: 'field_individual_participant'.
+  $field_bases['field_individual_participant'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_kinyarwanda_title',
-    'indexes' => array(
-      'format' => array(
-        0 => 'format',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'text',
-    'settings' => array(
-      'max_length' => 255,
-    ),
-    'translatable' => 0,
-    'type' => 'text',
-  );
-
-  // Exported field_base: 'field_prenatal_participant'.
-  $field_bases['field_prenatal_participant'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_prenatal_participant',
+    'field_name' => 'field_individual_participant',
     'indexes' => array(
       'target_id' => array(
         0 => 'target_id',
@@ -198,13 +177,34 @@ function hedley_schedule_field_default_field_bases() {
           'type' => 'none',
         ),
         'target_bundles' => array(
-          'prenatal_participant' => 'prenatal_participant',
+          'individual_participant' => 'individual_participant',
         ),
       ),
       'target_type' => 'node',
     ),
     'translatable' => 0,
     'type' => 'entityreference',
+  );
+
+  // Exported field_base: 'field_kinyarwanda_title'.
+  $field_bases['field_kinyarwanda_title'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_kinyarwanda_title',
+    'indexes' => array(
+      'format' => array(
+        0 => 'format',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'text',
+    'settings' => array(
+      'max_length' => 255,
+    ),
+    'translatable' => 0,
+    'type' => 'text',
   );
 
   // Exported field_base: 'field_scheduled_date'.
