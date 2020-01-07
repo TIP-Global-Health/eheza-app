@@ -75,6 +75,28 @@ while (TRUE) {
 
     $new->save();
 
+    // Reasign all encounters for old participant.
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldCondition('field_prenatal_participant', 'target_id', $node->nid)
+      ->execute();
+
+    if (empty($result['node'])) {
+      continue;
+    }
+
+    $encounter_ids = array_keys($result['node']);
+    $encounter_nodes = node_load_multiple($encounter_ids);
+    $new_id = $new->getIdentifier();
+
+    foreach ($$encounter_nodes as $encounter_node) {
+      $encounter_wrapper =  entity_metadata_wrapper('node', $encounter_node);
+      $encounter_wrapper->field_individual_participant->set($new_id);
+      $encounter_wrapper->save();
+    }
+
     drush_print(format_string('Migrated Id @id.', $params));
   }
 
