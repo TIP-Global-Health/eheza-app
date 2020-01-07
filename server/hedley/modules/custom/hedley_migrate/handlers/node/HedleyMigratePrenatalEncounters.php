@@ -38,7 +38,7 @@ class HedleyMigratePrenatalEncounters extends HedleyMigrateBase {
     parent::__construct($arguments);
 
     $this->dependencies = [
-      'HedleyMigratePrenatalParticipants',
+      'HedleyMigrateIndividualParticipants',
     ];
 
     $this
@@ -47,7 +47,7 @@ class HedleyMigratePrenatalEncounters extends HedleyMigrateBase {
 
     $this
       ->addFieldMapping('field_individual_participant', 'field_individual_participant')
-      ->sourceMigration('HedleyMigratePrenatalParticipants');
+      ->sourceMigration('HedleyMigrateIndividualParticipants');
   }
 
   /**
