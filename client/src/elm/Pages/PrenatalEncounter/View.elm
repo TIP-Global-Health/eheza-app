@@ -381,14 +381,34 @@ viewMainPageContent language currentDate data model =
                         ]
                     ]
 
+        allowEndEcounter =
+            case pendingActivities of
+                -- Either all activities are completed
+                [] ->
+                    True
+
+                -- Or only one none mandatory activity remains
+                [ PrenatalPhoto ] ->
+                    True
+
+                _ ->
+                    False
+
+        endEcounterButtonAttributes =
+            if allowEndEcounter then
+                [ class "ui fluid primary button"
+                , onClick <| CloseEncounter data.id
+                ]
+
+            else
+                [ class "ui fluid primary button disabled" ]
+
         content =
             div [ class "ui full segment" ]
                 [ innerContent
                 , div [ class "actions" ]
                     [ button
-                        [ class "ui fluid primary button"
-                        , onClick <| CloseEncounter data.id
-                        ]
+                        endEcounterButtonAttributes
                         [ text <| translate language Translate.EndEncounter ]
                     ]
                 ]
