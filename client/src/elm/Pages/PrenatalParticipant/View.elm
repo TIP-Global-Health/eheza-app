@@ -58,6 +58,7 @@ viewHeader language id =
 viewPrenatalActions : Language -> NominalDate -> PersonId -> ModelIndexedDb -> EveryDictList IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
 viewPrenatalActions language currentDate id db prenatalSessions =
     let
+        -- Person prenatal session.
         maybeSessionId =
             prenatalSessions
                 |> EveryDictList.toList
@@ -65,6 +66,7 @@ viewPrenatalActions language currentDate id db prenatalSessions =
                 |> List.head
                 |> Maybe.map Tuple.first
 
+        -- Person active prenatal encounter. There should not be more than one.
         maybeEncounterId =
             maybeSessionId
                 |> Maybe.andThen
@@ -80,22 +82,55 @@ viewPrenatalActions language currentDate id db prenatalSessions =
                             |> RemoteData.withDefault Nothing
                     )
 
-        firstVisitAction =
+        -- Wither first prenatal encounter for person is in process.
+        -- This is True when there's only one encounter, and it's active.
+        firstEncounterInProcess =
             maybeSessionId
                 |> Maybe.map
                     (\sessionId ->
-                        [ PrenatalEncounter sessionId currentDate Nothing
-                            |> Backend.Model.PostPrenatalEncounter
+                        EveryDict.get sessionId db.prenatalEncountersByParticipant
+                            |> Maybe.withDefault NotAsked
+                            |> RemoteData.map
+                                (EveryDictList.values
+                                    >> (\encounters ->
+                                            let
+                                                activeEncounters =
+                                                    encounters
+                                                        |> List.filter (.endDate >> isNothing)
+                                            in
+                                            List.length encounters == 1 && List.length activeEncounters == 1
+                                       )
+                                )
+                            |> RemoteData.withDefault False
+                    )
+                |> Maybe.withDefault False
+
+        firstVisitAction =
+            -- If first encounter is in process, navigate to it.
+            if firstEncounterInProcess then
+                maybeEncounterId
+                    |> unwrap
+                        []
+                        navigateToEncounterAction
+
+            else
+                maybeSessionId
+                    |> Maybe.map
+                        -- If prenatal session exists, create new encounter for it.
+                        (\sessionId ->
+                            [ PrenatalEncounter sessionId currentDate Nothing
+                                |> Backend.Model.PostPrenatalEncounter
+                                |> App.Model.MsgIndexedDb
+                                |> onClick
+                            ]
+                        )
+                    -- If prenatal session does not exist, create it.
+                    |> Maybe.withDefault
+                        [ IndividualEncounterParticipant id AntenatalEncounter currentDate Nothing
+                            |> Backend.Model.PostIndividualSession
                             |> App.Model.MsgIndexedDb
                             |> onClick
                         ]
-                    )
-                |> Maybe.withDefault
-                    [ IndividualEncounterParticipant id AntenatalEncounter currentDate Nothing
-                        |> Backend.Model.PostIndividualSession
-                        |> App.Model.MsgIndexedDb
-                        |> onClick
-                    ]
 
         subsequentVisitAction =
             maybeEncounterId
@@ -113,20 +148,24 @@ viewPrenatalActions language currentDate id db prenatalSessions =
                         |> Maybe.withDefault []
                     )
                     -- When there's an encounrer, we'll view it.
-                    (\encounterId ->
-                        [ onClick <|
-                            App.Model.SetActivePage <|
-                                UserPage <|
-                                    Pages.Page.PrenatalEncounterPage encounterId
-                        ]
-                    )
+                    navigateToEncounterAction
+
+        navigateToEncounterAction id =
+            [ Pages.Page.PrenatalEncounterPage id
+                |> UserPage
+                |> App.Model.SetActivePage
+                |> onClick
+            ]
+
+        firstVisitButtonDisabeld =
+            isJust maybeSessionId && not firstEncounterInProcess
     in
     div []
         [ p [ class "label-antenatal-visit" ] [ text <| translate language Translate.SelectAntenatalVisit ]
         , button
             (classList
                 [ ( "ui primary button", True )
-                , ( "disabled", isJust maybeSessionId )
+                , ( "disabled", firstVisitButtonDisabeld )
                 ]
                 :: firstVisitAction
             )
@@ -136,7 +175,7 @@ viewPrenatalActions language currentDate id db prenatalSessions =
         , button
             (classList
                 [ ( "ui primary button", True )
-                , ( "disabled", isNothing maybeSessionId )
+                , ( "disabled", not firstVisitButtonDisabeld )
                 ]
                 :: subsequentVisitAction
             )
