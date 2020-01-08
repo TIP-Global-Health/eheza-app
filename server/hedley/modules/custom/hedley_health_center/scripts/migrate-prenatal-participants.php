@@ -5,7 +5,7 @@
  * Migrate existing prenatal participants into individual participants.
  *
  * Drush scr
- * profiles/hedley/modules/custom/hedley_person/scripts/migrate-prenatal-participants.php.
+ * profiles/hedley/modules/custom/hedley_health_center/scripts/migrate-prenatal-participants.php.
  */
 
 if (!drupal_is_cli()) {
@@ -91,8 +91,8 @@ while (TRUE) {
     $encounter_nodes = node_load_multiple($encounter_ids);
     $new_id = $new->getIdentifier();
 
-    foreach ($$encounter_nodes as $encounter_node) {
-      $encounter_wrapper =  entity_metadata_wrapper('node', $encounter_node);
+    foreach ($encounter_nodes as $encounter_node) {
+      $encounter_wrapper = entity_metadata_wrapper('node', $encounter_node);
       $encounter_wrapper->field_individual_participant->set($new_id);
       $encounter_wrapper->save();
     }
