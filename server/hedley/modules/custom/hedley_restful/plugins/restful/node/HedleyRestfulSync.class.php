@@ -440,7 +440,10 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'type',
           'status',
           'shard',
-          'clinic_type'
+          // When creating a session, we provide clinic_type so it is
+          // recorded on client. We don't actiually need to pass this through,
+          // so, we filter it out here.
+          'clinic_type',
         ];
 
         foreach ($ignored as $i) {
