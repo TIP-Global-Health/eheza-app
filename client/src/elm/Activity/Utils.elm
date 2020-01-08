@@ -414,7 +414,7 @@ expectMotherActivity session motherId activity =
 
                     ParticipantConsent ->
                         case session.session.clinicType of
-                            Just Pmtct ->
+                            Pmtct ->
                                 expectParticipantConsent session motherId
                                     |> Dict.isEmpty
                                     |> not
