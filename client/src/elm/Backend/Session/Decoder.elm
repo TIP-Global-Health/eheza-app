@@ -16,4 +16,4 @@ decodeSession =
         |> requiredAt [ "scheduled_date", "value" ] decodeYYYYMMDD
         |> optionalAt [ "scheduled_date", "value2" ] (nullable decodeYYYYMMDD) Nothing
         |> required "clinic" decodeEntityUuid
-        |> optional "clinic_type" (nullable decodeClinicType) Nothing
+        |> required "clinic_type" decodeClinicType

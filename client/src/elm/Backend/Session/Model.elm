@@ -39,7 +39,7 @@ type alias Session =
     { startDate : NominalDate
     , endDate : Maybe NominalDate
     , clinicId : ClinicId
-    , clinicType : Maybe ClinicType
+    , clinicType : ClinicType
     }
 
 
