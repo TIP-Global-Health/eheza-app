@@ -8,7 +8,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Encoder exposing (encodeEducationLevel, encodeHivStatus, encodeMaritalStatus, encodeModeOfDelivery, encodeUbudehe)
-import Backend.Person.Form exposing (ExpectedAge(..), PersonForm, expectedAgeFromForm, validatePerson)
+import Backend.Person.Form exposing (ExpectedAge(..), ExpectedGender(..), PersonForm, expectedAgeFromForm, validatePerson)
 import Backend.Person.Model exposing (Gender(..), Person, RegistrationInitiator(..), allEducationLevels, allHivStatuses, allMaritalStatuses, allModesOfDelivery, allUbudehes)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
@@ -466,6 +466,9 @@ viewCreateForm language currentDate relationId initiator model db =
         formBeforeDefaults =
             model.form
 
+        today =
+            toLocalDateTime currentDate 0 0 0 0
+
         personForm =
             applyDefaultValues maybeRelatedPerson currentDate formBeforeDefaults
 
@@ -480,22 +483,55 @@ viewCreateForm language currentDate relationId initiator model db =
         emptyOption =
             ( "", "" )
 
-        goBackAction =
+        originBasedSettings =
             case initiator of
                 ParticipantDirectoryOrigin ->
-                    SetActivePage PinCodePage
+                    let
+                        expectedAge =
+                            maybeRelatedPerson
+                                |> Maybe.andThen
+                                    (\related ->
+                                        case isPersonAnAdult currentDate related of
+                                            Just True ->
+                                                Just ExpectChild
+
+                                            Just False ->
+                                                Just ExpectAdult
+
+                                            Nothing ->
+                                                Nothing
+                                    )
+                                -- If we don't have a related person, or don't know whether
+                                -- that person is an adult, then we check whether a birthdate
+                                -- has been entered into the form so far.
+                                |> Maybe.withDefault (expectedAgeFromForm currentDate personForm)
+                    in
+                    { goBackPage = PinCodePage
+                    , expectedAge = expectedAge
+                    , expectedGender = ExpectMaleOrFemale
+                    , birthDateSelectorFrom = Date.add Year -60 today
+                    , birthDateSelectorTo = today
+                    }
 
                 IndividualEncounterOrigin encounterType ->
-                    let
-                        page =
-                            case encounterType of
-                                AntenatalEncounter ->
-                                    UserPage (IndividualEncounterParticipantsPage AntenatalEncounter)
+                    case encounterType of
+                        AntenatalEncounter ->
+                            { goBackPage = UserPage (IndividualEncounterParticipantsPage AntenatalEncounter)
+                            , expectedAge = ExpectAdult
+                            , expectedGender = ExpectFemale
+                            , birthDateSelectorFrom = Date.add Year -45 today
+                            , birthDateSelectorTo = Date.add Year -13 today
+                            }
 
-                                _ ->
-                                    PinCodePage
-                    in
-                    SetActivePage page
+                        -- This will be redefined after we add support for more
+                        -- individual encounter types.
+                        _ ->
+                            { goBackPage = PinCodePage
+                            , expectedAge = ExpectAdultOrChild
+                            , expectedGender = ExpectMaleOrFemale
+                            , birthDateSelectorFrom = Date.add Year -60 today
+                            , birthDateSelectorTo = today
+                            }
 
         header =
             div [ class "ui basic segment head" ]
@@ -504,7 +540,7 @@ viewCreateForm language currentDate relationId initiator model db =
                     [ text <| translate language Translate.People ]
                 , a
                     [ class "link-back"
-                    , onClick goBackAction
+                    , onClick <| SetActivePage originBasedSettings.goBackPage
                     ]
                     [ span [ class "icon-back" ] []
                     , span [] []
@@ -544,33 +580,11 @@ viewCreateForm language currentDate relationId initiator model db =
         birthDateField =
             Form.getFieldAsString Backend.Person.Form.birthDate personForm
 
-        expectedAge =
-            maybeRelatedPerson
-                |> Maybe.andThen
-                    (\related ->
-                        case isPersonAnAdult currentDate related of
-                            Just True ->
-                                Just ExpectChild
-
-                            Just False ->
-                                Just ExpectAdult
-
-                            Nothing ->
-                                Nothing
-                    )
-                -- If we don't have a related person, or don't know whether
-                -- that person is an adult, then we check whether a birthdate
-                -- has been entered into the form so far.
-                |> Maybe.withDefault (expectedAgeFromForm currentDate personForm)
-
         birthDateEstimatedField =
             Form.getFieldAsBool Backend.Person.Form.birthDateEstimated personForm
 
         birthDateInput =
             let
-                today =
-                    toLocalDateTime currentDate 0 0 0 0
-
                 selectedDate =
                     Form.getFieldAsString Backend.Person.Form.birthDate personForm
                         |> .value
@@ -589,8 +603,8 @@ viewCreateForm language currentDate relationId initiator model db =
                         ToggleDateSelector
                         (DateSelected relationId initiator)
                         model.isDateSelectorOpen
-                        (Date.add Year -60 today)
-                        today
+                        originBasedSettings.birthDateSelectorFrom
+                        originBasedSettings.birthDateSelectorTo
                         selectedDate
                     ]
                 , div
@@ -611,23 +625,42 @@ viewCreateForm language currentDate relationId initiator model db =
             Form.getFieldAsString Backend.Person.Form.gender personForm
 
         genderInput =
-            div [ class "ui grid" ]
-                [ div
-                    [ class "six wide column required" ]
-                    [ text <| translate language Translate.GenderLabel ++ ":" ]
-                , Form.Input.radioInput "male"
-                    genderField
-                    [ class "one wide column gender-input" ]
-                , div
-                    [ class "three wide column" ]
-                    [ text <| translate language (Translate.Gender Male) ]
-                , Form.Input.radioInput "female"
-                    genderField
-                    [ class "one wide column gender-input" ]
-                , div
-                    [ class "three wide column" ]
-                    [ text <| translate language (Translate.Gender Female) ]
-                ]
+            let
+                label =
+                    div [ class "six wide column required" ]
+                        [ text <| translate language Translate.GenderLabel ++ ":" ]
+
+                maleOption =
+                    [ Form.Input.radioInput "male"
+                        genderField
+                        [ class "one wide column gender-input" ]
+                    , div
+                        [ class "three wide column" ]
+                        [ text <| translate language (Translate.Gender Male) ]
+                    ]
+
+                femaleOption =
+                    [ Form.Input.radioInput "female"
+                        genderField
+                        [ class "one wide column gender-input" ]
+                    , div
+                        [ class "three wide column" ]
+                        [ text <| translate language (Translate.Gender Female) ]
+                    ]
+
+                options =
+                    case originBasedSettings.expectedGender of
+                        ExpectMale ->
+                            maleOption
+
+                        ExpectFemale ->
+                            femaleOption
+
+                        ExpectMaleOrFemale ->
+                            maleOption ++ femaleOption
+            in
+            div [ class "ui grid" ] <|
+                (label :: options)
 
         educationLevelOptions =
             allEducationLevels
@@ -756,7 +789,7 @@ viewCreateForm language currentDate relationId initiator model db =
                    )
                 ++ [ birthDateInput ]
                 ++ (List.map (Html.map (MsgForm relationId initiator)) <|
-                        case expectedAge of
+                        case originBasedSettings.expectedAge of
                             ExpectAdult ->
                                 [ genderInput
                                 , hivStatusInput
@@ -964,7 +997,7 @@ viewCreateForm language currentDate relationId initiator model db =
             ]
 
         contactInformationSection =
-            if expectedAge /= ExpectChild then
+            if originBasedSettings.expectedAge /= ExpectChild then
                 [ h3
                     [ class "ui header" ]
                     [ text <| translate language Translate.ContactInformation ++ ":" ]
