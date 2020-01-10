@@ -186,6 +186,14 @@ function hedley_admin_views_post_execute(&$view) {
       $result->field_field_related_by[0]['rendered']['#markup'] = t('X');
     }
   }
+
+  // Due to the manipulation at hedley_admin_views_pre_view(), we would
+  // end up with a very strange breadcrumb, sanitizing it here.
+  $breadcrumb = [];
+  $breadcrumb[] = l(t('Home'), NULL);
+  $breadcrumb[] = l(t('Children'), 'admin/content/children');
+  $breadcrumb[] = l(t('Ledger'), 'admin/ledger/' . $view->args[0]);
+  drupal_set_breadcrumb($breadcrumb);
 }
 
 /**
@@ -205,6 +213,9 @@ function hedley_admin_query_views_ledger_alter(QueryAlterableInterface $query) {
  */
 function hedley_admin_health_center_access($account = FALSE) {
   global $user;
+  if (user_is_anonymous()) {
+    return FALSE;
+  }
   $account = !empty($account) ? $account : $user;
   if ($account->uid == 1) {
     return TRUE;
