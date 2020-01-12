@@ -845,7 +845,9 @@ viewPrenatalPhotoContent language currentDate assembled data =
         [ class "ui full segment photo" ]
         [ keyedDivKeyed "content"
             [ class "content" ]
-            [ keyedDivKeyed "grid"
+            [ p [] [ text "Take a picture of the mother's belly. Then you and the mother will see how the belly has grown!" ]
+                |> keyed "help"
+            , keyedDivKeyed "grid"
                 [ class "ui grid" ]
                 [ Maybe.map viewPhotoThumb displayPhoto
                     |> showMaybe
