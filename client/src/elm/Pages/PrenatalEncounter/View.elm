@@ -9,6 +9,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import Date.Extra as Date exposing (Interval(Day))
 import EveryDict
+import EveryDictList
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
 import Html exposing (..)
@@ -39,6 +40,7 @@ type alias FetchedData =
     , participant : PrenatalParticipant
     , person : Person
     , measurements : PrenatalMeasurements
+    , allMeasurementsWithDates : List ( NominalDate, PrenatalMeasurements )
     , id : PrenatalEncounterId
     }
 
@@ -70,11 +72,52 @@ view language currentDate id db model =
                             |> Maybe.withDefault NotAsked
                     )
 
+        allMeasurementsWithDates =
+            encounter
+                |> RemoteData.andThen
+                    (\encounter ->
+                        EveryDict.get encounter.participant db.prenatalEncountersByParticipant
+                            |> Maybe.withDefault NotAsked
+                            |> RemoteData.map
+                                (EveryDictList.toList
+                                    >> List.filterMap
+                                        (\( encounterId, encounter ) ->
+                                            let
+                                                measurements_ =
+                                                    EveryDict.get encounterId db.prenatalMeasurements
+                                                        |> Maybe.withDefault NotAsked
+                                            in
+                                            case measurements_ of
+                                                Success data ->
+                                                    Just ( encounter.startDate, data )
+
+                                                _ ->
+                                                    Nothing
+                                        )
+                                    >> List.sortWith
+                                        (\( date1, _ ) ( date2, _ ) ->
+                                            let
+                                                diff =
+                                                    diffDays date1 date2
+                                            in
+                                            if diff < 0 then
+                                                LT
+
+                                            else if diff == 0 then
+                                                EQ
+
+                                            else
+                                                GT
+                                        )
+                                )
+                    )
+
         data =
             RemoteData.map FetchedData encounter
                 |> RemoteData.andMap participant
                 |> RemoteData.andMap person
                 |> RemoteData.andMap measurements
+                |> RemoteData.andMap allMeasurementsWithDates
                 |> RemoteData.andMap (Success id)
 
         header =
@@ -273,38 +316,39 @@ viewMainPageContent : Language -> NominalDate -> FetchedData -> Model -> List (H
 viewMainPageContent language currentDate data model =
     let
         ( completedActivities, pendingActivities ) =
-            List.partition
-                (\activity ->
-                    case activity of
-                        PregnancyDating ->
-                            isJust data.measurements.lastMenstrualPeriod
+            getAllActivities
+                |> List.filter (expectPrenatalActivity currentDate data.allMeasurementsWithDates)
+                |> List.partition
+                    (\activity ->
+                        case activity of
+                            PregnancyDating ->
+                                isJust data.measurements.lastMenstrualPeriod
 
-                        History ->
-                            isJust data.measurements.obstetricHistory
-                                && isJust data.measurements.obstetricHistoryStep2
-                                && isJust data.measurements.medicalHistory
-                                && isJust data.measurements.socialHistory
+                            History ->
+                                isJust data.measurements.obstetricHistory
+                                    && isJust data.measurements.obstetricHistoryStep2
+                                    && isJust data.measurements.medicalHistory
+                                    && isJust data.measurements.socialHistory
 
-                        Examination ->
-                            isJust data.measurements.vitals
-                                && isJust data.measurements.nutrition
-                                && isJust data.measurements.corePhysicalExam
-                                && isJust data.measurements.obstetricalExam
-                                && isJust data.measurements.breastExam
+                            Examination ->
+                                isJust data.measurements.vitals
+                                    && isJust data.measurements.nutrition
+                                    && isJust data.measurements.corePhysicalExam
+                                    && isJust data.measurements.obstetricalExam
+                                    && isJust data.measurements.breastExam
 
-                        FamilyPlanning ->
-                            isJust data.measurements.familyPlanning
+                            FamilyPlanning ->
+                                isJust data.measurements.familyPlanning
 
-                        PatientProvisions ->
-                            isJust data.measurements.medication && isJust data.measurements.resource
+                            PatientProvisions ->
+                                isJust data.measurements.medication && isJust data.measurements.resource
 
-                        DangerSigns ->
-                            isJust data.measurements.dangerSigns
+                            DangerSigns ->
+                                isJust data.measurements.dangerSigns
 
-                        PrenatalPhoto ->
-                            isJust data.measurements.prenatalPhoto
-                )
-                getAllActivities
+                            PrenatalPhoto ->
+                                isJust data.measurements.prenatalPhoto
+                    )
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities

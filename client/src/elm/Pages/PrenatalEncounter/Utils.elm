@@ -1,10 +1,11 @@
-module Pages.PrenatalEncounter.Utils exposing (calculateEDDandEGADays, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generatePara, getLmpMeasurement)
+module Pages.PrenatalEncounter.Utils exposing (calculateEDDandEGADays, expectPrenatalActivity, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generatePara, getLmpMeasurement)
 
 import Backend.Measurement.Model exposing (..)
 import Date.Extra as Date exposing (Interval(Day))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime, toLocalDateTime)
-import Maybe.Extra exposing (unwrap)
+import Maybe.Extra exposing (isJust, unwrap)
+import PrenatalActivity.Model exposing (..)
 import Translate exposing (Language, translate)
 
 
@@ -77,3 +78,66 @@ getLmpMeasurement : PrenatalMeasurements -> Maybe NominalDate
 getLmpMeasurement measurements =
     measurements.lastMenstrualPeriod
         |> Maybe.map (Tuple.second >> .value >> .date)
+
+
+expectPrenatalActivity : NominalDate -> List ( NominalDate, PrenatalMeasurements ) -> PrenatalActivity -> Bool
+expectPrenatalActivity currentDate allMeasurementsWithDates activity =
+    case activity of
+        PrenatalPhoto ->
+            expectPrenatalPhoto currentDate allMeasurementsWithDates
+
+        _ ->
+            True
+
+
+expectPrenatalPhoto : NominalDate -> List ( NominalDate, PrenatalMeasurements ) -> Bool
+expectPrenatalPhoto currentDate allMeasurementsWithDates =
+    let
+        maybeLmpDate =
+            allMeasurementsWithDates
+                |> List.head
+                |> Maybe.andThen (Tuple.second >> getLmpMeasurement)
+    in
+    maybeLmpDate
+        |> Maybe.map
+            (\lmpDate ->
+                let
+                    rangeConditions =
+                        [ [ (>) 13 ], [ (>) 30, (<=) 20 ], [ (<) 30 ] ]
+
+                    currentWeek =
+                        diffDays lmpDate currentDate // 7
+                in
+                rangeConditions
+                    |> List.map
+                        -- Range conditions.
+                        (\conditions ->
+                            -- If we're withing a range today.
+                            if List.all (\condition -> condition currentWeek == True) conditions then
+                                let
+                                    measurementsWithingRangeWithPhoto =
+                                        allMeasurementsWithDates
+                                            |> List.filterMap
+                                                (\( encounterDate, measurements ) ->
+                                                    let
+                                                        encounterWeek =
+                                                            diffDays lmpDate encounterDate // 7
+                                                    in
+                                                    -- Encounter is within range, and it's has a photo measurement.
+                                                    if List.all (\condition -> condition encounterWeek == True) conditions && isJust measurements.prenatalPhoto then
+                                                        Just True
+
+                                                    else
+                                                        Nothing
+                                                )
+                                in
+                                -- None of enccounters are within range, got a photo measurement.
+                                List.length measurementsWithingRangeWithPhoto == 0
+
+                            else
+                                -- Not withing a range today.
+                                False
+                        )
+                    |> List.any ((==) True)
+            )
+        |> Maybe.withDefault True
