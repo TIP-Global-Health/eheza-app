@@ -840,9 +840,19 @@ viewPrenatalPhotoContent language currentDate assembled data =
                     , []
                     , True
                     )
+
+        totalTasks =
+            1
+
+        tasksCompleted =
+            if isJust displayPhoto then
+                1
+
+            else
+                0
     in
-    [ divKeyed
-        [ class "ui full segment photo" ]
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , divKeyed [ class "ui full segment photo" ]
         [ keyedDivKeyed "content"
             [ class "content" ]
             [ p [] [ text <| translate language Translate.PrenatalPhotoHelper ]
