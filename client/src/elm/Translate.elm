@@ -454,6 +454,7 @@ type TranslationId
     | PregnancyTrimester PregnancyTrimester
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalEncounter
+    | PrenatalPhotoHelper
     | PreTerm
     | PregnancyConcludedLabel
     | PreviousCSectionScar
@@ -2942,6 +2943,11 @@ translationSet trans =
 
         PrenatalEncounter ->
             { english = "Antenatal Encounter"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalPhotoHelper ->
+            { english = "Take a picture of the mother's belly. Then you and the mother will see how the belly has grown!"
             , kinyarwanda = Nothing
             }
 
