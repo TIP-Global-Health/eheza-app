@@ -40,7 +40,7 @@ type alias FetchedData =
     , participant : PrenatalParticipant
     , person : Person
     , measurements : PrenatalMeasurements
-    , allMeasurementsWithDates : List ( NominalDate, PrenatalMeasurements )
+    , previousMeasurementsWithDates : List ( NominalDate, PrenatalMeasurements )
     , id : PrenatalEncounterId
     }
 
@@ -72,7 +72,7 @@ view language currentDate id db model =
                             |> Maybe.withDefault NotAsked
                     )
 
-        allMeasurementsWithDates =
+        previousMeasurementsWithDates =
             encounter
                 |> RemoteData.andThen
                     (\encounter ->
@@ -82,17 +82,17 @@ view language currentDate id db model =
                                 (EveryDictList.toList
                                     >> List.filterMap
                                         (\( encounterId, encounter ) ->
-                                            let
-                                                measurements_ =
-                                                    EveryDict.get encounterId db.prenatalMeasurements
-                                                        |> Maybe.withDefault NotAsked
-                                            in
-                                            case measurements_ of
-                                                Success data ->
-                                                    Just ( encounter.startDate, data )
+                                            -- We do not want to get data of current encounter.
+                                            if encounterId == id then
+                                                Nothing
 
-                                                _ ->
-                                                    Nothing
+                                            else
+                                                case EveryDict.get encounterId db.prenatalMeasurements of
+                                                    Just (Success data) ->
+                                                        Just ( encounter.startDate, data )
+
+                                                    _ ->
+                                                        Nothing
                                         )
                                     >> List.sortWith
                                         (\( date1, _ ) ( date2, _ ) ->
@@ -111,13 +111,14 @@ view language currentDate id db model =
                                         )
                                 )
                     )
+                |> RemoteData.withDefault []
 
         data =
             RemoteData.map FetchedData encounter
                 |> RemoteData.andMap participant
                 |> RemoteData.andMap person
                 |> RemoteData.andMap measurements
-                |> RemoteData.andMap allMeasurementsWithDates
+                |> RemoteData.andMap (Success previousMeasurementsWithDates)
                 |> RemoteData.andMap (Success id)
 
         header =
@@ -317,7 +318,7 @@ viewMainPageContent language currentDate data model =
     let
         ( completedActivities, pendingActivities ) =
             getAllActivities
-                |> List.filter (expectPrenatalActivity currentDate data.allMeasurementsWithDates)
+                |> List.filter (expectPrenatalActivity currentDate data.previousMeasurementsWithDates)
                 |> List.partition
                     (\activity ->
                         case activity of

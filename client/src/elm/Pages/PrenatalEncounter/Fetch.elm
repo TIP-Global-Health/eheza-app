@@ -44,5 +44,8 @@ fetch id db =
         [ Maybe.map FetchPrenatalParticipant participantId
         , Maybe.map FetchPerson personId
         , Maybe.map FetchPrenatalEncountersForParticipant participantId
+
+        -- We need this, so we can resolve the participant from the encounter.
+        , Just <| FetchPrenatalEncounter id
         ]
         ++ fetchMeasurements

@@ -81,20 +81,20 @@ getLmpMeasurement measurements =
 
 
 expectPrenatalActivity : NominalDate -> List ( NominalDate, PrenatalMeasurements ) -> PrenatalActivity -> Bool
-expectPrenatalActivity currentDate allMeasurementsWithDates activity =
+expectPrenatalActivity currentDate previousMeasurementsWithDates activity =
     case activity of
         PrenatalPhoto ->
-            expectPrenatalPhoto currentDate allMeasurementsWithDates
+            expectPrenatalPhoto currentDate previousMeasurementsWithDates
 
         _ ->
             True
 
 
 expectPrenatalPhoto : NominalDate -> List ( NominalDate, PrenatalMeasurements ) -> Bool
-expectPrenatalPhoto currentDate allMeasurementsWithDates =
+expectPrenatalPhoto currentDate previousMeasurementsWithDates =
     let
         maybeLmpDate =
-            allMeasurementsWithDates
+            previousMeasurementsWithDates
                 |> List.head
                 |> Maybe.andThen (Tuple.second >> getLmpMeasurement)
     in
@@ -116,7 +116,7 @@ expectPrenatalPhoto currentDate allMeasurementsWithDates =
                             if List.all (\condition -> condition currentWeek == True) conditions then
                                 let
                                     measurementsWithingRangeWithPhoto =
-                                        allMeasurementsWithDates
+                                        previousMeasurementsWithDates
                                             |> List.filterMap
                                                 (\( encounterDate, measurements ) ->
                                                     let
