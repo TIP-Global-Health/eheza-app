@@ -8,7 +8,8 @@
  *   drush vset hedley_super_user_mode 1
  *
  * Execution:
- *   drush scr profiles/hedley/modules/custom/hedley_admin/scripts/delete-duplicate-measurements.php --session=[session ID].
+ *   drush scr profiles/hedley/modules/custom/hedley_admin/scripts/
+ *             delete-duplicate-measurements.php --session=[session ID].
  *
  * After execution:
  *   drush vset hedley_super_user_mode 0
