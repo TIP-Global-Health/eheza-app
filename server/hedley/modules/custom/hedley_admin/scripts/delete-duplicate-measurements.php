@@ -126,7 +126,7 @@ foreach (array_unique($people) as $person) {
         }
 
         $last = array_pop($summary[$person][$date][$type]);
-         drush_print("Person $person, on $date, $type: Total - $total, last NID - $last");
+        drush_print("Person $person, on $date, $type: Total - $total, last NID - $last");
         $new_total = count($summary[$person][$date][$type]);
         node_delete_multiple($summary[$person][$date][$type]);
         drush_print("$new_total duplicates deleted");
