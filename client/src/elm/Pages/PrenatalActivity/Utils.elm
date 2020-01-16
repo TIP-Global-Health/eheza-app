@@ -28,6 +28,12 @@ ifTrue value condition =
         EverySet.empty
 
 
+ifTrueNullable : a -> Maybe Bool -> Maybe (EverySet a)
+ifTrueNullable value maybeCondition =
+    Maybe.map (ifTrue value >> Just) maybeCondition
+        |> Maybe.withDefault (Just EverySet.empty)
+
+
 ifEmpty : a -> EverySet a -> EverySet a
 ifEmpty value set =
     if EverySet.isEmpty set then
@@ -542,6 +548,12 @@ socialHistoryFormWithDefault form saved =
 
 toSocialHistoryValueWithDefault : Maybe (EverySet SocialHistorySign) -> SocialHistoryForm -> Maybe (EverySet SocialHistorySign)
 toSocialHistoryValueWithDefault saved form =
+    let
+        log =
+            socialHistoryFormWithDefault form saved
+                |> toSocialHistoryValue
+                |> Debug.log ""
+    in
     socialHistoryFormWithDefault form saved
         |> toSocialHistoryValue
 
@@ -549,8 +561,8 @@ toSocialHistoryValueWithDefault saved form =
 toSocialHistoryValue : SocialHistoryForm -> Maybe (EverySet SocialHistorySign)
 toSocialHistoryValue form =
     [ Maybe.map (ifTrue AccompaniedByPartner) form.accompaniedByPartner
-    , Maybe.map (ifTrue PartnerHivCounseling) form.partnerReceivedCounseling
-    , Maybe.map (ifTrue PartnerHivTesting) form.partnerReceivedTesting
+    , ifTrueNullable PartnerHivCounseling form.partnerReceivedCounseling
+    , ifTrueNullable PartnerHivTesting form.partnerReceivedTesting
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoSocialHistorySign)

@@ -743,7 +743,7 @@ decodeSocialHistorySign =
                     "partner-hiv-counseling" ->
                         succeed PartnerHivCounseling
 
-                    "mental-health-testing" ->
+                    "partner-hiv-testing" ->
                         succeed PartnerHivTesting
 
                     "none" ->

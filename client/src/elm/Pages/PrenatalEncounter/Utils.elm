@@ -218,9 +218,8 @@ expectPrenatalActivity currentDate data activity =
         PregnancyDating ->
             isFirstEncounter
 
-        History ->
-            isFirstEncounter
-
+        -- History ->
+        --     isFirstEncounter
         PrenatalPhoto ->
             expectPrenatalPhoto currentDate data
 

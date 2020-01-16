@@ -9,6 +9,7 @@ import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import Date.Extra as Date exposing (Interval(Day, Month))
 import DateSelector.SelectorDropdown
 import EveryDict
+import EverySet
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime, toLocalDateTime)
 import Html exposing (..)
@@ -202,10 +203,14 @@ viewPregnancyDatingContent language currentDate assembled data =
 
 
 viewHistoryContent : Language -> NominalDate -> AssembledData -> HistoryData -> List (Html Msg)
-viewHistoryContent language currentDate assembled data =
+viewHistoryContent language currentDate assembled data_ =
     let
-        tasks =
-            [ Obstetric, Medical, Social ]
+        ( tasks, data ) =
+            if List.isEmpty assembled.previousMeasurementsWithDates then
+                ( [ Obstetric, Medical, Social ], data_ )
+
+            else
+                ( [ Social ], { data_ | activeTask = Social } )
 
         viewTask task =
             let
@@ -336,17 +341,51 @@ viewHistoryContent language currentDate assembled data =
                                 |> Maybe.map (Tuple.second >> .value)
                                 |> socialHistoryFormWithDefault data.socialForm
 
+                        showCounselingQuestion =
+                            assembled.previousMeasurementsWithDates
+                                |> List.filter
+                                    (\( _, measurements ) ->
+                                        measurements.socialHistory
+                                            |> Maybe.map (Tuple.second >> .value >> EverySet.member PartnerHivCounseling)
+                                            |> Maybe.withDefault False
+                                    )
+                                |> List.isEmpty
+
+                        partnerReceivedCounselingInput =
+                            if showCounselingQuestion then
+                                [ socialForm.partnerReceivedCounseling ]
+
+                            else
+                                []
+
+                        showTestingQuestion =
+                            assembled.previousMeasurementsWithDates
+                                |> List.filter
+                                    (\( _, measurements ) ->
+                                        measurements.socialHistory
+                                            |> Maybe.map (Tuple.second >> .value >> EverySet.member PartnerHivTesting)
+                                            |> Maybe.withDefault False
+                                    )
+                                |> List.isEmpty
+
+                        partnerReceivedTestingInput =
+                            if showTestingQuestion then
+                                [ socialForm.partnerReceivedTesting ]
+
+                            else
+                                []
+
                         boolInputs =
-                            [ socialForm.accompaniedByPartner
-                            , socialForm.partnerReceivedCounseling
-                            , socialForm.partnerReceivedTesting
-                            ]
+                            (socialForm.accompaniedByPartner
+                                :: partnerReceivedCounselingInput
+                            )
+                                ++ partnerReceivedTestingInput
                     in
-                    ( viewSocialForm language currentDate assembled socialForm
+                    ( viewSocialForm language currentDate showCounselingQuestion showTestingQuestion socialForm
                     , boolInputs
                         |> List.map taskCompleted
                         |> List.sum
-                    , 3
+                    , List.length boolInputs
                     )
 
         actions =
@@ -1351,56 +1390,75 @@ viewMedicalForm language currentDate assembled form =
         ]
 
 
-viewSocialForm : Language -> NominalDate -> AssembledData -> SocialHistoryForm -> Html Msg
-viewSocialForm language currentDate assembled form =
+viewSocialForm : Language -> NominalDate -> Bool -> Bool -> SocialHistoryForm -> Html Msg
+viewSocialForm language currentDate showCounselingQuestion showTestingQuestion form =
     let
         accompaniedByPartnerUpdateFunc value form_ =
             { form_ | accompaniedByPartner = Just value }
 
-        partnerReceivedCounselingUpdateFunc value form_ =
-            { form_ | partnerReceivedCounseling = Just value }
+        accompaniedQuestion =
+            [ div [ class "ui grid" ]
+                [ div [ class "twelve wide column" ]
+                    [ viewQuestionLabel language Translate.AccompaniedByPartner ]
+                , div [ class "four wide column" ]
+                    [ viewRedAlertForBool form.accompaniedByPartner True ]
+                ]
+            , viewBoolInput
+                language
+                form.accompaniedByPartner
+                (SetSocialBoolInput accompaniedByPartnerUpdateFunc)
+                "accompanied-by-partner"
+                Nothing
+            ]
 
-        partnerReceivedTestingUpdateFunc value form_ =
-            { form_ | partnerReceivedTesting = Just value }
+        counselingQuestion =
+            if showCounselingQuestion then
+                let
+                    partnerReceivedCounselingUpdateFunc value form_ =
+                        { form_ | partnerReceivedCounseling = Just value }
+                in
+                [ div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewQuestionLabel language Translate.PartnerReceivedHivCounseling ]
+                    , div [ class "four wide column" ]
+                        [ viewRedAlertForBool form.partnerReceivedCounseling True ]
+                    ]
+                , viewBoolInput
+                    language
+                    form.partnerReceivedCounseling
+                    (SetSocialBoolInput partnerReceivedCounselingUpdateFunc)
+                    "partner-received-counseling"
+                    Nothing
+                ]
+
+            else
+                []
+
+        testingQuestion =
+            if showTestingQuestion then
+                let
+                    partnerReceivedTestingUpdateFunc value form_ =
+                        { form_ | partnerReceivedTesting = Just value }
+                in
+                [ div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewQuestionLabel language Translate.PartnerReceivedHivTesting ]
+                    , div [ class "four wide column" ]
+                        [ viewRedAlertForBool form.partnerReceivedTesting True ]
+                    ]
+                , viewBoolInput
+                    language
+                    form.partnerReceivedTesting
+                    (SetSocialBoolInput partnerReceivedTestingUpdateFunc)
+                    "partner-received-testing"
+                    Nothing
+                ]
+
+            else
+                []
     in
-    div [ class "form history social" ]
-        [ div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewQuestionLabel language Translate.AccompaniedByPartner ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.accompaniedByPartner True ]
-            ]
-        , viewBoolInput
-            language
-            form.accompaniedByPartner
-            (SetSocialBoolInput accompaniedByPartnerUpdateFunc)
-            "accompanied-by-partner"
-            Nothing
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewQuestionLabel language Translate.PartnerReceivedHivCounseling ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.partnerReceivedCounseling True ]
-            ]
-        , viewBoolInput
-            language
-            form.partnerReceivedCounseling
-            (SetSocialBoolInput partnerReceivedCounselingUpdateFunc)
-            "partner-received-counseling"
-            Nothing
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewQuestionLabel language Translate.PartnerReceivedHivTesting ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.partnerReceivedTesting True ]
-            ]
-        , viewBoolInput
-            language
-            form.partnerReceivedTesting
-            (SetSocialBoolInput partnerReceivedTestingUpdateFunc)
-            "partner-received-testing"
-            Nothing
-        ]
+    (accompaniedQuestion ++ counselingQuestion ++ testingQuestion)
+        |> div [ class "form history social" ]
 
 
 viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html Msg
