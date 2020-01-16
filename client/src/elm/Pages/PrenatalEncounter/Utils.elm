@@ -82,7 +82,17 @@ getLmpMeasurement measurements =
 
 expectPrenatalActivity : NominalDate -> PrenatalMeasurements -> List ( NominalDate, PrenatalMeasurements ) -> PrenatalActivity -> Bool
 expectPrenatalActivity currentDate currentMeasurements previousMeasurementsWithDates activity =
+    let
+        isFirstEncounter =
+            List.isEmpty previousMeasurementsWithDates
+    in
     case activity of
+        PregnancyDating ->
+            isFirstEncounter
+
+        History ->
+            isFirstEncounter
+
         PrenatalPhoto ->
             expectPrenatalPhoto currentDate currentMeasurements previousMeasurementsWithDates
 
