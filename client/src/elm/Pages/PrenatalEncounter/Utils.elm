@@ -208,11 +208,11 @@ generateAssembledData id db =
         |> RemoteData.andMap (Success globalObstetricHistory)
 
 
-expectPrenatalActivity : NominalDate -> PrenatalMeasurements -> List ( NominalDate, PrenatalMeasurements ) -> PrenatalActivity -> Bool
-expectPrenatalActivity currentDate currentMeasurements previousMeasurementsWithDates activity =
+expectPrenatalActivity : NominalDate -> AssembledData -> PrenatalActivity -> Bool
+expectPrenatalActivity currentDate data activity =
     let
         isFirstEncounter =
-            List.isEmpty previousMeasurementsWithDates
+            List.isEmpty data.previousMeasurementsWithDates
     in
     case activity of
         PregnancyDating ->
@@ -222,14 +222,14 @@ expectPrenatalActivity currentDate currentMeasurements previousMeasurementsWithD
             isFirstEncounter
 
         PrenatalPhoto ->
-            expectPrenatalPhoto currentDate currentMeasurements previousMeasurementsWithDates
+            expectPrenatalPhoto currentDate data
 
         _ ->
             True
 
 
-expectPrenatalPhoto : NominalDate -> PrenatalMeasurements -> List ( NominalDate, PrenatalMeasurements ) -> Bool
-expectPrenatalPhoto currentDate currentMeasurements previousMeasurementsWithDates =
+expectPrenatalPhoto : NominalDate -> AssembledData -> Bool
+expectPrenatalPhoto currentDate data =
     let
         periods =
             -- Periods, where we want to have 1 photo:
@@ -239,9 +239,9 @@ expectPrenatalPhoto currentDate currentMeasurements previousMeasurementsWithDate
             [ [ (>) 13 ], [ (>) 30, (<=) 20 ], [ (<=) 30 ] ]
 
         previousMeasurements =
-            List.map Tuple.second previousMeasurementsWithDates
+            List.map Tuple.second data.previousMeasurementsWithDates
     in
-    resolveGlobalLmpDate currentMeasurements previousMeasurements
+    data.globalLmpDate
         |> Maybe.map
             (\lmpDate ->
                 let
@@ -261,7 +261,7 @@ expectPrenatalPhoto currentDate currentMeasurements previousMeasurementsWithDate
                         (\conditions ->
                             -- There should be no encounters that are  within dates range,
                             -- that got a photo measurement.
-                            previousMeasurementsWithDates
+                            data.previousMeasurementsWithDates
                                 |> List.filterMap
                                     (\( encounterDate, measurements ) ->
                                         let

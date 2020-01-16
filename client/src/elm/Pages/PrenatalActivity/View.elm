@@ -339,7 +339,7 @@ viewHistoryContent language currentDate assembled data =
                         boolInputs =
                             [ socialForm.accompaniedByPartner
                             , socialForm.partnerReceivedCounseling
-                            , socialForm.mentalHealthHistory
+                            , socialForm.partnerReceivedTesting
                             ]
                     in
                     ( viewSocialForm language currentDate assembled socialForm
@@ -1360,8 +1360,8 @@ viewSocialForm language currentDate assembled form =
         partnerReceivedCounselingUpdateFunc value form_ =
             { form_ | partnerReceivedCounseling = Just value }
 
-        mentalHealthHistoryUpdateFunc value form_ =
-            { form_ | mentalHealthHistory = Just value }
+        partnerReceivedTestingUpdateFunc value form_ =
+            { form_ | partnerReceivedTesting = Just value }
     in
     div [ class "form history social" ]
         [ div [ class "ui grid" ]
@@ -1378,7 +1378,7 @@ viewSocialForm language currentDate assembled form =
             Nothing
         , div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
-                [ viewQuestionLabel language Translate.PartnerReceivedCounseling ]
+                [ viewQuestionLabel language Translate.PartnerReceivedHivCounseling ]
             , div [ class "four wide column" ]
                 [ viewRedAlertForBool form.partnerReceivedCounseling True ]
             ]
@@ -1390,15 +1390,15 @@ viewSocialForm language currentDate assembled form =
             Nothing
         , div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.MentalHealthHistory ]
+                [ viewQuestionLabel language Translate.PartnerReceivedHivTesting ]
             , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.mentalHealthHistory False ]
+                [ viewRedAlertForBool form.partnerReceivedTesting True ]
             ]
         , viewBoolInput
             language
-            form.mentalHealthHistory
-            (SetSocialBoolInput mentalHealthHistoryUpdateFunc)
-            "mental-health-history"
+            form.partnerReceivedTesting
+            (SetSocialBoolInput partnerReceivedTestingUpdateFunc)
+            "partner-received-testing"
             Nothing
         ]
 

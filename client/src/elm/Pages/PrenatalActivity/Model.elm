@@ -353,7 +353,7 @@ emptyMedicalHistoryForm =
 type alias SocialHistoryForm =
     { accompaniedByPartner : Maybe Bool
     , partnerReceivedCounseling : Maybe Bool
-    , mentalHealthHistory : Maybe Bool
+    , partnerReceivedTesting : Maybe Bool
     }
 
 

@@ -87,7 +87,6 @@ type MedicalDiagnosis
     | DiagnosisAsthma
     | DiagnosisBowedLegs
     | DiagnosisHIV
-    | DiagnosisMentalHealthHistory
 
 
 type PregnancyTrimester
@@ -155,7 +154,6 @@ allMedicalDiagnosis =
     , DiagnosisAsthma
     , DiagnosisBowedLegs
     , DiagnosisHIV
-    , DiagnosisMentalHealthHistory
     ]
 
 

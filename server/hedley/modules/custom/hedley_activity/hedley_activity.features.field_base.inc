@@ -1139,7 +1139,7 @@ function hedley_activity_field_default_field_bases() {
       'allowed_values' => array(
         'accompanied-by-partner' => 'Accompanied by partner',
         'partner-hiv-counseling' => 'Partner HIV counseling',
-        'mental-health-history' => 'Mental health history',
+        'partner-hiv-testing' => 'Partner HIV testing',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

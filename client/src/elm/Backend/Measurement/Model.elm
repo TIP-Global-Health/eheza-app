@@ -489,7 +489,7 @@ type alias Resource =
 type SocialHistorySign
     = AccompaniedByPartner
     | PartnerHivCounseling
-    | MentalHealthHistory
+    | PartnerHivTesting
     | NoSocialHistorySign
 
 

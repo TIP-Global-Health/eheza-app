@@ -370,7 +370,6 @@ type TranslationId
     | MedicalFormHelper
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MMHGUnit
-    | MentalHealthHistory
     | MiddleName
     | MinutesAgo Int
     | ModeOfDelivery ModeOfDelivery
@@ -436,7 +435,8 @@ type TranslationId
     | ParticipantSummary
     | ParticipantDemographicInformation
     | ParticipantInformation
-    | PartnerReceivedCounseling
+    | PartnerReceivedHivCounseling
+    | PartnerReceivedHivTesting
     | PatientProgress
     | PatientInformation
     | PatientProvisionsTask PatientProvisionsTask
@@ -2048,7 +2048,7 @@ translationSet trans =
                     }
 
                 Social ->
-                    { english = "Social History"
+                    { english = "Partner Information"
                     , kinyarwanda = Nothing
                     }
 
@@ -2354,11 +2354,6 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisMentalHealthHistory ->
-                    { english = "History of Mental Health Problems"
-                    , kinyarwanda = Nothing
-                    }
-
         MedicalFormHelper ->
             { english = "Please record if the mother was diagnosed with the following medical issues"
             , kinyarwanda = Nothing
@@ -2366,11 +2361,6 @@ translationSet trans =
 
         MMHGUnit ->
             { english = "mmHG"
-            , kinyarwanda = Nothing
-            }
-
-        MentalHealthHistory ->
-            { english = "History of Mental Health Problems"
             , kinyarwanda = Nothing
             }
 
@@ -2799,8 +2789,13 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        PartnerReceivedCounseling ->
-            { english = "Did partner receive HIV Counseling and Testing during this pregnancy"
+        PartnerReceivedHivCounseling ->
+            { english = "Did partner receive HIV Counseling during this pregnancy"
+            , kinyarwanda = Nothing
+            }
+
+        PartnerReceivedHivTesting ->
+            { english = "Did partner receive HIV Testing during this pregnancy"
             , kinyarwanda = Nothing
             }
 

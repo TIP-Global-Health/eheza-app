@@ -232,7 +232,7 @@ viewMainPageContent language currentDate data model =
     let
         ( completedActivities, pendingActivities ) =
             getAllActivities
-                |> List.filter (expectPrenatalActivity currentDate data.measurements data.previousMeasurementsWithDates)
+                |> List.filter (expectPrenatalActivity currentDate data)
                 |> List.partition
                     (\activity ->
                         case activity of

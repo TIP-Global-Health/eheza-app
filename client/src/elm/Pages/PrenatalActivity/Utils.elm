@@ -523,7 +523,7 @@ fromSocialHistoryValue : Maybe (EverySet SocialHistorySign) -> SocialHistoryForm
 fromSocialHistoryValue saved =
     { accompaniedByPartner = Maybe.map (EverySet.member AccompaniedByPartner) saved
     , partnerReceivedCounseling = Maybe.map (EverySet.member PartnerHivCounseling) saved
-    , mentalHealthHistory = Maybe.map (EverySet.member MentalHealthHistory) saved
+    , partnerReceivedTesting = Maybe.map (EverySet.member PartnerHivTesting) saved
     }
 
 
@@ -535,7 +535,7 @@ socialHistoryFormWithDefault form saved =
             (\value ->
                 { accompaniedByPartner = or form.accompaniedByPartner (EverySet.member AccompaniedByPartner value |> Just)
                 , partnerReceivedCounseling = or form.partnerReceivedCounseling (EverySet.member PartnerHivCounseling value |> Just)
-                , mentalHealthHistory = or form.mentalHealthHistory (EverySet.member MentalHealthHistory value |> Just)
+                , partnerReceivedTesting = or form.partnerReceivedTesting (EverySet.member PartnerHivTesting value |> Just)
                 }
             )
 
@@ -550,7 +550,7 @@ toSocialHistoryValue : SocialHistoryForm -> Maybe (EverySet SocialHistorySign)
 toSocialHistoryValue form =
     [ Maybe.map (ifTrue AccompaniedByPartner) form.accompaniedByPartner
     , Maybe.map (ifTrue PartnerHivCounseling) form.partnerReceivedCounseling
-    , Maybe.map (ifTrue MentalHealthHistory) form.mentalHealthHistory
+    , Maybe.map (ifTrue PartnerHivTesting) form.partnerReceivedTesting
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoSocialHistorySign)

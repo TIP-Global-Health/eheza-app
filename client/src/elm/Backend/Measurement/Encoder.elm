@@ -808,8 +808,8 @@ encodeSocialHistorySign sign =
             PartnerHivCounseling ->
                 "partner-hiv-counseling"
 
-            MentalHealthHistory ->
-                "mental-health-history"
+            PartnerHivTesting ->
+                "partner-hiv-testing"
 
             NoSocialHistorySign ->
                 "none"
