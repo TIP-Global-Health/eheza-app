@@ -38,6 +38,7 @@ import Pages.PrenatalActivity.Utils
         , toObstetricHistoryValue
         , vitalsFormWithDefault
         )
+import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
 import Pages.Utils exposing (viewPhotoThumb)
@@ -49,53 +50,14 @@ import Utils.Html exposing (script)
 import Utils.WebData exposing (viewWebData)
 
 
-type alias AssembledData =
-    { id : PrenatalEncounterId
-    , activity : PrenatalActivity
-    , encounter : PrenatalEncounter
-    , participant : PrenatalParticipant
-    , measurements : PrenatalMeasurements
-    , person : Person
-    }
-
-
 view : Language -> NominalDate -> PrenatalEncounterId -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id activity db model =
     let
-        encounter =
-            EveryDict.get id db.prenatalEncounters
-                |> Maybe.withDefault NotAsked
-
-        measurements =
-            EveryDict.get id db.prenatalMeasurements
-                |> Maybe.withDefault NotAsked
-
-        participant =
-            encounter
-                |> RemoteData.andThen
-                    (\encounter ->
-                        EveryDict.get encounter.participant db.prenatalParticipants
-                            |> Maybe.withDefault NotAsked
-                    )
-
-        person =
-            participant
-                |> RemoteData.andThen
-                    (\participant ->
-                        EveryDict.get participant.person db.people
-                            |> Maybe.withDefault NotAsked
-                    )
-
         data =
-            RemoteData.map AssembledData (Success id)
-                |> RemoteData.andMap (Success activity)
-                |> RemoteData.andMap encounter
-                |> RemoteData.andMap participant
-                |> RemoteData.andMap measurements
-                |> RemoteData.andMap person
+            generateAssembledData id db
 
         content =
-            viewWebData language (viewContent language currentDate model) identity data
+            viewWebData language (viewContent language currentDate activity model) identity data
     in
     div [ class "page-prenatal-activity" ] <|
         [ viewHeader language id activity
@@ -103,11 +65,11 @@ view language currentDate id activity db model =
         ]
 
 
-viewContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
-viewContent language currentDate model data =
+viewContent : Language -> NominalDate -> PrenatalActivity -> Model -> AssembledData -> Html Msg
+viewContent language currentDate activity model data =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate data.person data.measurements model.showAlertsDialog SetAlertsDialogState
-            ++ viewActivity language currentDate data model
+        viewMotherAndMeasurements language currentDate data model.showAlertsDialog SetAlertsDialogState
+            ++ viewActivity language currentDate activity data model
 
 
 viewHeader : Language -> PrenatalEncounterId -> PrenatalActivity -> Html Msg
@@ -127,9 +89,9 @@ viewHeader language id activity =
         ]
 
 
-viewActivity : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
-viewActivity language currentDate data model =
-    case data.activity of
+viewActivity : Language -> NominalDate -> PrenatalActivity -> AssembledData -> Model -> List (Html Msg)
+viewActivity language currentDate activity data model =
+    case activity of
         PregnancyDating ->
             viewPregnancyDatingContent language currentDate data model.pregnancyDatingData
 

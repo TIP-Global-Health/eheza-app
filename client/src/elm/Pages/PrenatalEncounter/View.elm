@@ -1,7 +1,7 @@
 module Pages.PrenatalEncounter.View exposing (view, viewMotherAndMeasurements)
 
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (PrenatalMeasurements)
+import Backend.Measurement.Model exposing (ObstetricHistoryValue, PrenatalMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
@@ -25,7 +25,6 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date exposing (date)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (script, tabItem, thumbnailImage, viewLoading, viewModal)
-import Utils.NominalDate exposing (compareDates)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -36,78 +35,11 @@ thumbnailDimensions =
     }
 
 
-type alias FetchedData =
-    { encounter : PrenatalEncounter
-    , participant : PrenatalParticipant
-    , person : Person
-    , measurements : PrenatalMeasurements
-    , previousMeasurementsWithDates : List ( NominalDate, PrenatalMeasurements )
-    , id : PrenatalEncounterId
-    }
-
-
 view : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id db model =
     let
-        encounter =
-            EveryDict.get id db.prenatalEncounters
-                |> Maybe.withDefault NotAsked
-
-        measurements =
-            EveryDict.get id db.prenatalMeasurements
-                |> Maybe.withDefault NotAsked
-
-        participant =
-            encounter
-                |> RemoteData.andThen
-                    (\encounter ->
-                        EveryDict.get encounter.participant db.prenatalParticipants
-                            |> Maybe.withDefault NotAsked
-                    )
-
-        person =
-            participant
-                |> RemoteData.andThen
-                    (\participant ->
-                        EveryDict.get participant.person db.people
-                            |> Maybe.withDefault NotAsked
-                    )
-
-        previousMeasurementsWithDates =
-            encounter
-                |> RemoteData.andThen
-                    (\encounter ->
-                        EveryDict.get encounter.participant db.prenatalEncountersByParticipant
-                            |> Maybe.withDefault NotAsked
-                            |> RemoteData.map
-                                (EveryDictList.toList
-                                    >> List.filterMap
-                                        (\( encounterId, encounter ) ->
-                                            -- We do not want to get data of current encounter.
-                                            if encounterId == id then
-                                                Nothing
-
-                                            else
-                                                case EveryDict.get encounterId db.prenatalMeasurements of
-                                                    Just (Success data) ->
-                                                        Just ( encounter.startDate, data )
-
-                                                    _ ->
-                                                        Nothing
-                                        )
-                                    >> List.sortWith
-                                        (\( date1, _ ) ( date2, _ ) -> compareDates date1 date2)
-                                )
-                    )
-                |> RemoteData.withDefault []
-
         data =
-            RemoteData.map FetchedData encounter
-                |> RemoteData.andMap participant
-                |> RemoteData.andMap person
-                |> RemoteData.andMap measurements
-                |> RemoteData.andMap (Success previousMeasurementsWithDates)
-                |> RemoteData.andMap (Success id)
+            generateAssembledData id db
 
         header =
             viewWebData language (viewHeader language) identity data
@@ -121,14 +53,14 @@ view language currentDate id db model =
         ]
 
 
-viewContent : Language -> NominalDate -> Model -> FetchedData -> Html Msg
+viewContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
 viewContent language currentDate model data =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate data.person data.measurements model.showAlertsDialog SetAlertsDialogState
+        viewMotherAndMeasurements language currentDate data model.showAlertsDialog SetAlertsDialogState
             ++ viewMainPageContent language currentDate data model
 
 
-viewHeader : Language -> FetchedData -> Html Msg
+viewHeader : Language -> AssembledData -> Html Msg
 viewHeader language data =
     div
         [ class "ui basic segment head" ]
@@ -145,10 +77,10 @@ viewHeader language data =
         ]
 
 
-viewMotherAndMeasurements : Language -> NominalDate -> Person -> PrenatalMeasurements -> Bool -> (Bool -> msg) -> List (Html msg)
-viewMotherAndMeasurements language currentDate mother measurements isDialogOpen setAlertsDialogStateMsg =
-    [ viewMotherDetails language currentDate mother measurements isDialogOpen setAlertsDialogStateMsg
-    , viewMeasurements language currentDate measurements
+viewMotherAndMeasurements : Language -> NominalDate -> AssembledData -> Bool -> (Bool -> msg) -> List (Html msg)
+viewMotherAndMeasurements language currentDate data isDialogOpen setAlertsDialogStateMsg =
+    [ viewMotherDetails language currentDate data.person data.measurements isDialogOpen setAlertsDialogStateMsg
+    , viewMeasurements language currentDate data.globalLmpDate data.globalObstetricHistory
     ]
 
 
@@ -259,17 +191,11 @@ alertsDialog language highRiskAlertsData highSeverityAlertsData isOpen setAlerts
         Nothing
 
 
-viewMeasurements : Language -> NominalDate -> PrenatalMeasurements -> Html any
-viewMeasurements language currentDate measurements =
+viewMeasurements : Language -> NominalDate -> Maybe NominalDate -> Maybe ObstetricHistoryValue -> Html any
+viewMeasurements language currentDate lmpDate obstetricHistory =
     let
         ( edd, ega ) =
-            measurements.lastMenstrualPeriod
-                |> Maybe.map (Tuple.second >> .value >> .date)
-                |> generateEDDandEGA language currentDate ( "--/--/----", "----" )
-
-        obstetricHistoryValue =
-            measurements.obstetricHistory
-                |> Maybe.map (Tuple.second >> .value)
+            generateEDDandEGA language currentDate ( "--/--/----", "----" ) lmpDate
 
         ( gravida, para ) =
             unwrap
@@ -279,7 +205,7 @@ viewMeasurements language currentDate measurements =
                     , generatePara value
                     )
                 )
-                obstetricHistoryValue
+                obstetricHistory
     in
     div [ class "item measurements" ]
         [ div [ class "ui edd" ]
@@ -301,7 +227,7 @@ viewMeasurements language currentDate measurements =
         ]
 
 
-viewMainPageContent : Language -> NominalDate -> FetchedData -> Model -> List (Html Msg)
+viewMainPageContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
 viewMainPageContent language currentDate data model =
     let
         ( completedActivities, pendingActivities ) =

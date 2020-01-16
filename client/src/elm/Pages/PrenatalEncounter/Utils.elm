@@ -1,12 +1,19 @@
-module Pages.PrenatalEncounter.Utils exposing (calculateEDDandEGADays, expectPrenatalActivity, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generatePara, getLmpMeasurement)
+module Pages.PrenatalEncounter.Utils exposing (calculateEDDandEGADays, expectPrenatalActivity, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generatePara, generatePreviousMeasurements, getLmpMeasurement, resolveGlobalLmpDate, resolveGlobalObstetricHistory)
 
+import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Model exposing (ModelIndexedDb)
 import Date.Extra as Date exposing (Interval(Day))
+import EveryDict
+import EveryDictList
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime, toLocalDateTime)
 import Maybe.Extra exposing (isJust, unwrap)
+import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import PrenatalActivity.Model exposing (..)
+import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
+import Utils.NominalDate exposing (compareDates)
 
 
 calculateEDDandEGADays : NominalDate -> NominalDate -> ( NominalDate, Int )
@@ -80,6 +87,127 @@ getLmpMeasurement measurements =
         |> Maybe.map (Tuple.second >> .value >> .date)
 
 
+getObstetricHistory : PrenatalMeasurements -> Maybe ObstetricHistoryValue
+getObstetricHistory measurements =
+    measurements.obstetricHistory
+        |> Maybe.map (Tuple.second >> .value)
+
+
+resolveGlobalLmpDate : PrenatalMeasurements -> List PrenatalMeasurements -> Maybe NominalDate
+resolveGlobalLmpDate measurements previousMeasurements =
+    -- When there are no previous measurements, we try to resolve
+    -- from current encounter.
+    if List.isEmpty previousMeasurements then
+        getLmpMeasurement measurements
+
+    else
+        -- When there are previous measurements, we know that Lmp date
+        -- will be located at head of the list, becuase previous measurements
+        -- are sorted by encounter date, and Lmp date is a mandatory measurement.
+        previousMeasurements
+            |> List.head
+            |> Maybe.andThen getLmpMeasurement
+
+
+resolveGlobalObstetricHistory : PrenatalMeasurements -> List PrenatalMeasurements -> Maybe ObstetricHistoryValue
+resolveGlobalObstetricHistory measurements previousMeasurements =
+    -- When there are no previous measurements, we try to resolve
+    -- from current encounter.
+    if List.isEmpty previousMeasurements then
+        getObstetricHistory measurements
+
+    else
+        -- When there are previous measurements, we know that Lmp Obstetric history
+        -- will be located at head of the list, becuase previous measurements
+        -- are sorted by encounter date, and Obstetric history date is a mandatory measurement.
+        previousMeasurements
+            |> List.head
+            |> Maybe.andThen getObstetricHistory
+
+
+generatePreviousMeasurements : PrenatalEncounterId -> PrenatalParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, PrenatalMeasurements ))
+generatePreviousMeasurements currentEncounterId participantId db =
+    EveryDict.get participantId db.prenatalEncountersByParticipant
+        |> Maybe.withDefault NotAsked
+        |> RemoteData.map
+            (EveryDictList.toList
+                >> List.filterMap
+                    (\( encounterId, encounter ) ->
+                        -- We do not want to get data of current encounter.
+                        if encounterId == currentEncounterId then
+                            Nothing
+
+                        else
+                            case EveryDict.get encounterId db.prenatalMeasurements of
+                                Just (Success data) ->
+                                    Just ( encounter.startDate, data )
+
+                                _ ->
+                                    Nothing
+                    )
+                >> List.sortWith
+                    (\( date1, _ ) ( date2, _ ) -> compareDates date1 date2)
+            )
+
+
+generateAssembledData : PrenatalEncounterId -> ModelIndexedDb -> WebData AssembledData
+generateAssembledData id db =
+    let
+        encounter =
+            EveryDict.get id db.prenatalEncounters
+                |> Maybe.withDefault NotAsked
+
+        measurements =
+            EveryDict.get id db.prenatalMeasurements
+                |> Maybe.withDefault NotAsked
+
+        participant =
+            encounter
+                |> RemoteData.andThen
+                    (\encounter ->
+                        EveryDict.get encounter.participant db.prenatalParticipants
+                            |> Maybe.withDefault NotAsked
+                    )
+
+        person =
+            participant
+                |> RemoteData.andThen
+                    (\participant ->
+                        EveryDict.get participant.person db.people
+                            |> Maybe.withDefault NotAsked
+                    )
+
+        previousMeasurementsWithDates =
+            encounter
+                |> RemoteData.andThen
+                    (\encounter ->
+                        generatePreviousMeasurements id encounter.participant db
+                    )
+                |> RemoteData.withDefault []
+
+        previousMeasurements =
+            List.map Tuple.second previousMeasurementsWithDates
+
+        globalLmpDate =
+            measurements
+                |> RemoteData.map (\measurements_ -> resolveGlobalLmpDate measurements_ previousMeasurements)
+                |> RemoteData.withDefault Nothing
+
+        globalObstetricHistory =
+            measurements
+                |> RemoteData.map (\measurements_ -> resolveGlobalObstetricHistory measurements_ previousMeasurements)
+                |> RemoteData.withDefault Nothing
+    in
+    RemoteData.map AssembledData (Success id)
+        |> RemoteData.andMap encounter
+        |> RemoteData.andMap participant
+        |> RemoteData.andMap person
+        |> RemoteData.andMap measurements
+        |> RemoteData.andMap (Success previousMeasurementsWithDates)
+        |> RemoteData.andMap (Success globalLmpDate)
+        |> RemoteData.andMap (Success globalObstetricHistory)
+
+
 expectPrenatalActivity : NominalDate -> PrenatalMeasurements -> List ( NominalDate, PrenatalMeasurements ) -> PrenatalActivity -> Bool
 expectPrenatalActivity currentDate currentMeasurements previousMeasurementsWithDates activity =
     let
@@ -110,21 +238,10 @@ expectPrenatalPhoto currentDate currentMeasurements previousMeasurementsWithDate
             --  3. Week 30, or more.
             [ [ (>) 13 ], [ (>) 30, (<=) 20 ], [ (<=) 30 ] ]
 
-        maybeLmpDate =
-            -- When there are no previous measurements, we try to resolve
-            -- Lmp date from current encounter.
-            if List.isEmpty previousMeasurementsWithDates then
-                getLmpMeasurement currentMeasurements
-
-            else
-                -- When there are previous measurements, we know that Lmp date
-                -- will be located at head of the list, becuase previous measurements
-                -- are sorted by encounter date, and Lmp date is a mandatory measurement.
-                previousMeasurementsWithDates
-                    |> List.head
-                    |> Maybe.andThen (Tuple.second >> getLmpMeasurement)
+        previousMeasurements =
+            List.map Tuple.second previousMeasurementsWithDates
     in
-    maybeLmpDate
+    resolveGlobalLmpDate currentMeasurements previousMeasurements
         |> Maybe.map
             (\lmpDate ->
                 let
