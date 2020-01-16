@@ -80,64 +80,82 @@ getLmpMeasurement measurements =
         |> Maybe.map (Tuple.second >> .value >> .date)
 
 
-expectPrenatalActivity : NominalDate -> List ( NominalDate, PrenatalMeasurements ) -> PrenatalActivity -> Bool
-expectPrenatalActivity currentDate previousMeasurementsWithDates activity =
+expectPrenatalActivity : NominalDate -> PrenatalMeasurements -> List ( NominalDate, PrenatalMeasurements ) -> PrenatalActivity -> Bool
+expectPrenatalActivity currentDate currentMeasurements previousMeasurementsWithDates activity =
     case activity of
         PrenatalPhoto ->
-            expectPrenatalPhoto currentDate previousMeasurementsWithDates
+            expectPrenatalPhoto currentDate currentMeasurements previousMeasurementsWithDates
 
         _ ->
             True
 
 
-expectPrenatalPhoto : NominalDate -> List ( NominalDate, PrenatalMeasurements ) -> Bool
-expectPrenatalPhoto currentDate previousMeasurementsWithDates =
+expectPrenatalPhoto : NominalDate -> PrenatalMeasurements -> List ( NominalDate, PrenatalMeasurements ) -> Bool
+expectPrenatalPhoto currentDate currentMeasurements previousMeasurementsWithDates =
     let
+        periods =
+            -- Periods, where we want to have 1 photo:
+            --  1. 12 weeks, or less.
+            --  2. Between week 20 and week 29.
+            --  3. Week 30, or more.
+            [ [ (>) 13 ], [ (>) 30, (<=) 20 ], [ (<=) 30 ] ]
+
         maybeLmpDate =
-            previousMeasurementsWithDates
-                |> List.head
-                |> Maybe.andThen (Tuple.second >> getLmpMeasurement)
+            -- When there are no previous measurements, we try to resolve
+            -- Lmp date from current encounter.
+            if List.isEmpty previousMeasurementsWithDates then
+                getLmpMeasurement currentMeasurements
+
+            else
+                -- When there are previous measurements, we know that Lmp date
+                -- will be located at head of the list, becuase previous measurements
+                -- are sorted by encounter date, and Lmp date is a mandatory measurement.
+                previousMeasurementsWithDates
+                    |> List.head
+                    |> Maybe.andThen (Tuple.second >> getLmpMeasurement)
     in
     maybeLmpDate
         |> Maybe.map
             (\lmpDate ->
                 let
-                    rangeConditions =
-                        [ [ (>) 13 ], [ (>) 30, (<=) 20 ], [ (<) 30 ] ]
-
                     currentWeek =
                         diffDays lmpDate currentDate // 7
+
+                    conditionsForCurrentWeek =
+                        periods
+                            |> List.filter
+                                (\periodConditions ->
+                                    List.all (\condition -> condition currentWeek == True) periodConditions
+                                )
+                            |> List.head
                 in
-                rangeConditions
-                    |> List.map
-                        -- Range conditions.
+                conditionsForCurrentWeek
+                    |> Maybe.map
                         (\conditions ->
-                            -- If we're withing a range today.
-                            if List.all (\condition -> condition currentWeek == True) conditions then
-                                let
-                                    measurementsWithingRangeWithPhoto =
-                                        previousMeasurementsWithDates
-                                            |> List.filterMap
-                                                (\( encounterDate, measurements ) ->
-                                                    let
-                                                        encounterWeek =
-                                                            diffDays lmpDate encounterDate // 7
-                                                    in
-                                                    -- Encounter is within range, and it's has a photo measurement.
-                                                    if List.all (\condition -> condition encounterWeek == True) conditions && isJust measurements.prenatalPhoto then
-                                                        Just True
+                            -- There should be no encounters that are  within dates range,
+                            -- that got a photo measurement.
+                            previousMeasurementsWithDates
+                                |> List.filterMap
+                                    (\( encounterDate, measurements ) ->
+                                        let
+                                            encounterWeek =
+                                                diffDays lmpDate encounterDate // 7
+                                        in
+                                        -- Encounter is within dates range, and it's has a photo measurement.
+                                        if
+                                            List.all (\condition -> condition encounterWeek == True) conditions
+                                                && isJust measurements.prenatalPhoto
+                                        then
+                                            Just encounterDate
 
-                                                    else
-                                                        Nothing
-                                                )
-                                in
-                                -- None of enccounters are within range, got a photo measurement.
-                                List.length measurementsWithingRangeWithPhoto == 0
-
-                            else
-                                -- Not withing a range today.
-                                False
+                                        else
+                                            Nothing
+                                    )
+                                |> List.isEmpty
                         )
-                    |> List.any ((==) True)
+                    -- There are no period conditions, meaning we're not within required dates
+                    -- range. Therefore, we do not allow photo activity.
+                    |> Maybe.withDefault False
             )
-        |> Maybe.withDefault True
+        -- We do not allow photo activity when Lmp date is not known.
+        |> Maybe.withDefault False

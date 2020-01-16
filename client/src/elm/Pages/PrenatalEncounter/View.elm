@@ -25,6 +25,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date exposing (date)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (script, tabItem, thumbnailImage, viewLoading, viewModal)
+import Utils.NominalDate exposing (compareDates)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -95,20 +96,7 @@ view language currentDate id db model =
                                                         Nothing
                                         )
                                     >> List.sortWith
-                                        (\( date1, _ ) ( date2, _ ) ->
-                                            let
-                                                diff =
-                                                    diffDays date1 date2
-                                            in
-                                            if diff < 0 then
-                                                LT
-
-                                            else if diff == 0 then
-                                                EQ
-
-                                            else
-                                                GT
-                                        )
+                                        (\( date1, _ ) ( date2, _ ) -> compareDates date1 date2)
                                 )
                     )
                 |> RemoteData.withDefault []
@@ -318,7 +306,7 @@ viewMainPageContent language currentDate data model =
     let
         ( completedActivities, pendingActivities ) =
             getAllActivities
-                |> List.filter (expectPrenatalActivity currentDate data.previousMeasurementsWithDates)
+                |> List.filter (expectPrenatalActivity currentDate data.measurements data.previousMeasurementsWithDates)
                 |> List.partition
                     (\activity ->
                         case activity of
@@ -437,7 +425,8 @@ viewMainPageContent language currentDate data model =
                     True
 
                 _ ->
-                    False
+                    -- False
+                    True
 
         endEcounterButtonAttributes =
             if allowEndEcounter then
