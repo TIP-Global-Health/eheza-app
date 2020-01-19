@@ -251,26 +251,47 @@ decodeFamilyPlanningSign =
         |> andThen
             (\sign ->
                 case sign of
-                    "pill" ->
-                        succeed Pill
+                    "auto-observation" ->
+                        succeed AutoObservation
 
                     "condoms" ->
                         succeed Condoms
 
+                    "cycle-beads" ->
+                        succeed CycleBeads
+
+                    "cycle-counting" ->
+                        succeed CycleCounting
+
+                    "hysterectomy" ->
+                        succeed Hysterectomy
+
+                    "implant" ->
+                        succeed Implants
+
+                    "injection" ->
+                        succeed Injectables
+
                     "iud" ->
                         succeed IUD
 
-                    "implant" ->
-                        succeed Implant
-
-                    "injection" ->
-                        succeed Injection
-
-                    "necklace" ->
-                        succeed Necklace
+                    "lactation-amenorrhea" ->
+                        succeed LactationAmenorrhea
 
                     "none" ->
                         succeed NoFamilyPlanning
+
+                    "oral-contraceptives" ->
+                        succeed OralContraceptives
+
+                    "spermicide" ->
+                        succeed Spermicide
+
+                    "tubal-ligatures" ->
+                        succeed TubalLigatures
+
+                    "vasectomy" ->
+                        succeed Vasectomy
 
                     _ ->
                         fail <|
