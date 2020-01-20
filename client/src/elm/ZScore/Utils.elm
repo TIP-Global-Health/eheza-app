@@ -12,11 +12,11 @@ module ZScore.Utils exposing
 {-| This module determines a ZScore for various measurements.
 -}
 
-import AllDict exposing (AllDict)
 import Backend.Person.Model exposing (Gender(..))
 import Maybe.Extra exposing (orElseLazy)
 import RemoteData
 import Round
+import Utils.AllDict as AllDict exposing (AllDict)
 import Utils.NominalDate exposing (Days(..), Months(..))
 import ZScore.Model exposing (..)
 

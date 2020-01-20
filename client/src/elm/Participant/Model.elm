@@ -11,6 +11,7 @@ with Child and ChildActivity.
 -}
 
 import Activity.Model exposing (Activity, CompletedAndPending)
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession)
@@ -20,7 +21,6 @@ import Pages.Activity.Model
 import Pages.Session.Model
 import RemoteData exposing (WebData)
 import Translate exposing (Language)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 import ZScore.Model
 
 
@@ -35,13 +35,13 @@ type alias Participant id value activity msg =
     , getBirthDate : value -> Maybe NominalDate
     , getMotherId : id -> EditableSession -> Maybe PersonId
     , getName : value -> String
-    , getParticipants : EditableSession -> EntityUuidDictList id value
+    , getParticipants : EditableSession -> Dict id value
     , getValue : id -> ModelIndexedDb -> WebData value
     , getVillage : value -> Maybe String
     , iconClass : String
     , showProgressReportTab : Bool
     , summarizeActivitiesForParticipant : id -> OfflineSession -> CompletedAndPending (List activity)
-    , summarizeParticipantsForActivity : activity -> OfflineSession -> CheckedIn -> CompletedAndPending (EntityUuidDictList id value)
+    , summarizeParticipantsForActivity : activity -> OfflineSession -> CheckedIn -> CompletedAndPending (Dict id value)
     , tagActivity : activity -> Activity
     , toChildId : id -> Maybe PersonId
     , toMotherId : id -> Maybe PersonId

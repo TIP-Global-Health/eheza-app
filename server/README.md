@@ -19,6 +19,12 @@ Build Drupal modules
     chmod +x ./scripts/build
 	./scripts/build
 	
+Build composer
+    ddev ssh
+    cd sites/default/files/composer
+    composer install
+    exit
+	
 (Re)Start DDEV
 
     ddev restart

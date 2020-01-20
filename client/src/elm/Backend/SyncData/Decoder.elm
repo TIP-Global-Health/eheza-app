@@ -1,10 +1,11 @@
 module Backend.SyncData.Decoder exposing (decodeSyncData)
 
 import Backend.SyncData.Model exposing (..)
-import Date exposing (Date, fromTime)
+import Date exposing (Date, fromPosix, fromRataDie)
 import Gizra.Json exposing (decodeFloat, decodeInt)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
+import Time
 
 
 decodeSyncData : Decoder SyncData
@@ -18,7 +19,7 @@ decodeSyncData =
 decodeDownloadStatus : Decoder DownloadStatus
 decodeDownloadStatus =
     succeed DownloadStatus
-        |> required "last_contact" (map fromTime decodeFloat)
+        |> required "last_contact" (map fromRataDie decodeInt)
         |> required "last_timestamp" decodeInt
         |> required "remaining" decodeInt
 
@@ -89,9 +90,9 @@ decodeSyncAttempt =
 
 decodeFailure : Decoder SyncError -> Decoder SyncAttempt
 decodeFailure =
-    map2 Failure decodeTimestamp
+    map2 Backend.SyncData.Model.Failure decodeTimestamp
 
 
 decodeTimestamp : Decoder Date
 decodeTimestamp =
-    map fromTime (field "timestamp" decodeFloat)
+    map fromRataDie (field "timestamp" decodeInt)

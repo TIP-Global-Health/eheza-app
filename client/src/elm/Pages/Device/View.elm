@@ -1,7 +1,7 @@
 module Pages.Device.View exposing (view)
 
-import AllDictList
 import App.Model
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Model exposing (ModelIndexedDb)
@@ -59,7 +59,7 @@ view language device app model =
 viewDeviceStatus : Language -> WebData Device -> App.Model.Model -> Model -> Html Msg
 viewDeviceStatus language device app model =
     case device of
-        Success device ->
+        Success _ ->
             div [ class "device-status" ]
                 [ button
                     [ class "ui fluid primary button"
@@ -103,7 +103,7 @@ viewNodes language db =
     case db.syncData of
         Success syncData ->
             syncData
-                |> AllDictList.get nodesUuid
+                |> Dict.get nodesUuid
                 |> Maybe.map
                     (\data ->
                         div [ class "general-sync" ]
@@ -125,7 +125,7 @@ viewNodes language db =
 
 viewSyncData : Language -> SyncData -> Html Msg
 viewSyncData language data =
-    div [ class "general-status" ] [ text <| toString data ]
+    div [ class "general-status" ] [ text <| Debug.toString data ]
 
 
 viewHealthCenters : Language -> ModelIndexedDb -> Html Msg
@@ -134,25 +134,25 @@ viewHealthCenters language db =
         |> RemoteData.map
             (\data ->
                 data
-                    |> AllDictList.sortBy .name
-                    |> AllDictList.map (viewHealthCenter language db)
-                    |> AllDictList.values
+                    |> Dict.toList
+                    |> List.sortBy (Tuple.second >> .name)
+                    |> List.map (viewHealthCenter language db)
                     |> div [ class "health-centers" ]
             )
         |> RemoteData.withDefault spinner
 
 
-viewHealthCenter : Language -> ModelIndexedDb -> HealthCenterId -> HealthCenter -> Html Msg
-viewHealthCenter language db uuid model =
+viewHealthCenter : Language -> ModelIndexedDb -> ( HealthCenterId, HealthCenter ) -> Html Msg
+viewHealthCenter language db ( uuid, model ) =
     let
         sync =
             db.syncData
                 |> RemoteData.map
                     (\syncData ->
-                        case AllDictList.get uuid syncData of
+                        case Dict.get uuid syncData of
                             Just data ->
                                 div [ class "health-center-info" ]
-                                    [ text <| toString data
+                                    [ text <| Debug.toString data
                                     , button
                                         [ class "ui button"
                                         , onClick (SetSyncing uuid False)

@@ -10,7 +10,7 @@ import Restful.Endpoint exposing (decodeEntityUuid)
 
 decodePerson : Decoder Person
 decodePerson =
-    decode Person
+    succeed Person
         |> required "label" string
         |> optional "first_name" string ""
         |> optional "second_name" string ""
@@ -119,7 +119,7 @@ decodeUbudehe =
                         succeed Ubudehe4
 
                     _ ->
-                        fail <| toString ubudehe ++ " is out of range for Ubudehe"
+                        fail <| String.fromInt ubudehe ++ " is out of range for Ubudehe"
             )
 
 
@@ -152,7 +152,7 @@ decodeEducationLevel =
 
                     _ ->
                         fail <|
-                            toString educationLevel
+                            String.fromInt educationLevel
                                 ++ " is not a recognized EducationLevel"
             )
 

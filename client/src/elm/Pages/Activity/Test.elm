@@ -1,7 +1,7 @@
 module Pages.Activity.Test exposing (all)
 
+import AssocList as Dict
 import Date
-import Dict
 import Expect
 import Fixtures exposing (..)
 import Pages.Activity.Model exposing (emptyModel)

@@ -1,4 +1,4 @@
-module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), attendanceEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, relationshipEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, weightEndpoint)
+module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), attendanceEndpoint, childMeasurementListEndpoint, clinicEndpoint, computedDashboardEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, relationshipEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, weightEndpoint)
 
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
@@ -6,6 +6,8 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.Counseling.Encoder exposing (encodeCounselingSchedule, encodeCounselingTopic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
+import Backend.Dashboard.Decoder exposing (decodeDashboardStats)
+import Backend.Dashboard.Model exposing (DashboardStats)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Decoder exposing (decodeHealthCenter)
 import Backend.HealthCenter.Model exposing (HealthCenter)
@@ -47,7 +49,7 @@ swEndpoint path decodeValue =
         decodeKey =
             Json.Decode.map toEntityUuid (field "uuid" Json.Decode.string)
     in
-    endpoint path decodeKey decodeValue drupalBackend
+    endpoint path decodeKey decodeValue fromEntityUuid drupalBackend
         |> withKeyEncoder fromEntityUuid
 
 
@@ -89,6 +91,13 @@ encodeRelationshipParams params =
         [ Maybe.map (\person -> ( "person", fromEntityUuid person )) params.person
         , Maybe.map (\relatedTo -> ( "related_to", fromEntityUuid relatedTo )) params.relatedTo
         ]
+
+
+{-| @todo: For now we'll fetch only health center. Eventually, we'll get all the data, and compute inside Elm.
+-}
+computedDashboardEndpoint : ReadOnlyEndPoint Error HealthCenterId DashboardStats ()
+computedDashboardEndpoint =
+    swEndpoint "statistics" decodeDashboardStats
 
 
 healthCenterEndpoint : ReadOnlyEndPoint Error HealthCenterId HealthCenter ()

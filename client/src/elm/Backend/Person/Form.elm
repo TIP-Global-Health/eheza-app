@@ -44,21 +44,20 @@ module Backend.Person.Form exposing
     , withDefault
     )
 
-import AllDict
+import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeHivStatus, decodeMaritalStatus, decodeModeOfDelivery, decodeUbudehe)
 import Backend.Person.Model exposing (..)
-import Backend.Person.Utils exposing (isAdult, isPersonAnAdult)
+import Backend.Person.Utils exposing (diffInYears, isAdult, isPersonAnAdult)
+import Date
 import Form exposing (..)
 import Form.Init exposing (..)
 import Form.Validate exposing (..)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, fromLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
 import Json.Decode
-import Maybe.Extra exposing (join, unwrap)
+import Maybe.Extra exposing (unwrap)
 import Regex exposing (Regex)
 import Restful.Endpoint exposing (decodeEntityUuid, toEntityId)
-import Time.Date
-import Time.Iso8601
 import Translate exposing (ValidationError(..))
 import Utils.Form exposing (fromDecoder, nullable)
 import Utils.GeoLocation exposing (geoInfo)
@@ -87,11 +86,9 @@ looking at?
 -}
 expectedAgeFromForm : NominalDate -> PersonForm -> ExpectedAge
 expectedAgeFromForm currentDate form =
-    -- Our dates are formatted as 2019-07-02, which, strangely, Date.fromString
-    -- doesn't handle correctly. So, we use Time.Iso8601 instead.
     Form.getFieldAsString birthDate form
         |> .value
-        |> Maybe.andThen (Time.Iso8601.toDate >> Result.toMaybe)
+        |> Maybe.andThen (Date.fromIsoString >> Result.toMaybe)
         |> isAdult currentDate
         |> (\adult ->
                 case adult of
@@ -158,7 +155,7 @@ validatePerson maybeRelated maybeCurrentDate =
                 |> field birthDate
                 |> andThen (withNamesAndBirthDate firstNameValue secondNameValue)
 
-        withNamesAndBirthDate firstNameValue secondNameValue birthDate =
+        withNamesAndBirthDate firstNameValue secondNameValue birthDate_ =
             let
                 expectedAge =
                     case externalExpectedAge of
@@ -172,7 +169,7 @@ validatePerson maybeRelated maybeCurrentDate =
                             -- If we could accept either, then see what birthdate
                             -- has actually been entered, if any.
                             maybeCurrentDate
-                                |> Maybe.andThen (\currentDate -> isAdult currentDate birthDate)
+                                |> Maybe.andThen (\currentDate -> isAdult currentDate birthDate_)
                                 |> (\isAdult ->
                                         case isAdult of
                                             Just True ->
@@ -192,7 +189,7 @@ validatePerson maybeRelated maybeCurrentDate =
                 |> andMap (field nationalIdNumber validateNationalIdNumber)
                 |> andMap (field hmisNumber validateHmisNumber)
                 |> andMap (field photo <| nullable string)
-                |> andMap (succeed birthDate)
+                |> andMap (succeed birthDate_)
                 |> andMap (field birthDateEstimated bool)
                 |> andMap (field gender validateGender)
                 |> andMap (field hivStatus validateHivStatus)
@@ -244,7 +241,6 @@ validateHmisNumber =
                         customError InvalidHmisNumber
                 in
                 String.toInt s
-                    |> Result.toMaybe
                     |> Maybe.map
                         (\number ->
                             if number > 0 && number < 16 then
@@ -274,7 +270,7 @@ validateProvince related =
         |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
-                AllDict.get (toEntityId id) geoInfo.provinces
+                Dict.get (toEntityId id) geoInfo.provinces
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownProvince)
             )
@@ -287,7 +283,7 @@ validateDistrict related =
         |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
-                AllDict.get (toEntityId id) geoInfo.districts
+                Dict.get (toEntityId id) geoInfo.districts
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownDistrict)
             )
@@ -300,7 +296,7 @@ validateSector related =
         |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
-                AllDict.get (toEntityId id) geoInfo.sectors
+                Dict.get (toEntityId id) geoInfo.sectors
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownSector)
             )
@@ -313,7 +309,7 @@ validateCell related =
         |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
-                AllDict.get (toEntityId id) geoInfo.cells
+                Dict.get (toEntityId id) geoInfo.cells
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownCell)
             )
@@ -326,7 +322,7 @@ validateVillage related =
         |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
-                AllDict.get (toEntityId id) geoInfo.villages
+                Dict.get (toEntityId id) geoInfo.villages
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownVillage)
             )
@@ -358,15 +354,13 @@ validateBirthDate expectedAge maybeCurrentDate =
                             let
                                 -- Convert to NominalDate.
                                 maybeBirthDate =
-                                    Time.Iso8601.toDate s
+                                    Date.fromIsoString s
                                         |> Result.toMaybe
                             in
-                            maybeBirthDate
-                                -- Calculate difference of years between input birt
-                                -- date and current date.
-                                |> Maybe.map (Time.Date.delta currentDate >> .years)
+                            -- Calculate difference of years between input birth
+                            -- date and current date.
+                            diffInYears currentDate maybeBirthDate
                                 |> unwrap
-                                    -- Conversion to NominalDate failed.
                                     (fail <| customError InvalidBirthDate)
                                     (\delta ->
                                         if delta > 12 && expectedAge == ExpectChild then
@@ -442,7 +436,8 @@ validateHealthCenterId related =
 
 allDigitsPattern : Regex
 allDigitsPattern =
-    Regex.regex "^[0-9]*$"
+    Regex.fromString "^[0-9]*$"
+        |> Maybe.withDefault Regex.never
 
 
 

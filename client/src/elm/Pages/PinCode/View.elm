@@ -1,9 +1,9 @@
 module Pages.PinCode.View exposing (view)
 
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse, Role(..))
-import EveryDictList
 import EverySet
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Html exposing (..)
@@ -174,9 +174,20 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                             , span [ class "text" ] [ text <| translate language Translate.GroupAssessment ]
                             , span [ class "icon-back" ] []
                             ]
+
+                    dashboardButton =
+                        button
+                            [ class "ui primary button dashboard"
+                            , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage
+                            ]
+                            [ span [ class "icon-group" ] []
+                            , span [ class "text" ] [ text <| translate language Translate.DashboardLabel ]
+                            , span [ class "icon-back" ] []
+                            ]
                 in
                 [ p [] [ text <| translate language Translate.WhatDoYouWantToDo ]
                 , groupAssessmentButton
+                , dashboardButton
                 ]
 
             MainMenu ->
@@ -194,7 +205,7 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                             |> Maybe.andThen
                                 (\id ->
                                     RemoteData.toMaybe db.healthCenters
-                                        |> Maybe.andThen (EveryDictList.get id)
+                                        |> Maybe.andThen (Dict.get id)
                                 )
                             |> Maybe.map
                                 (\healthCenter ->
@@ -245,16 +256,16 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                 case db.healthCenters of
                     Success healthCenters ->
                         healthCenters
-                            |> EveryDictList.filter (\uuid _ -> EverySet.member uuid nurse.healthCenters)
-                            |> EveryDictList.toList
+                            |> Dict.filter (\uuid _ -> EverySet.member uuid nurse.healthCenters)
+                            |> Dict.toList
 
                     _ ->
                         []
 
-            selectHealthCenterButton ( healthCenterId, healthCenter ) =
+            selectHealthCenterButton ( healthCenterId_, healthCenter ) =
                 button
                     [ class "ui primary button health-center"
-                    , onClick <| SendOutMsg <| SetHealthCenter healthCenterId
+                    , onClick <| SendOutMsg <| SetHealthCenter healthCenterId_
                     ]
                     [ text healthCenter.name ]
         in

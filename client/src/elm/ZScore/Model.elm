@@ -18,8 +18,8 @@ module ZScore.Model exposing
 
 -}
 
-import AllDict exposing (AllDict)
 import RemoteData exposing (RemoteData(..), WebData)
+import Utils.AllDict exposing (AllDict)
 import Utils.NominalDate exposing (Days, Months)
 
 

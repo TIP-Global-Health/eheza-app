@@ -1,4 +1,4 @@
-module Pages.Activity.Model exposing (Model, Msg(..), Tab(..), emptyModel)
+module Pages.Activity.Model exposing (ChildUpdateReturns, Model, MotherUpdateReturns, Msg(..), Tab(..), emptyModel)
 
 {-| This models (part of) the UI state for the page which is oriented around
 the following flow:
@@ -31,6 +31,8 @@ We can only change the `selectedParticipant` and `selectedTab`.
 -}
 
 import Backend.Entities exposing (..)
+import Measurement.Model
+import Pages.Page exposing (Page(..))
 
 
 type alias Model id =
@@ -69,4 +71,22 @@ emptyModel =
     { selectedParticipant = Nothing
     , selectedTab = Pending
     , filter = ""
+    }
+
+
+type alias ChildUpdateReturns =
+    { model : Model PersonId
+    , cmd : Cmd (Msg PersonId Measurement.Model.MsgChild)
+    , form : Maybe Measurement.Model.ModelChild
+    , outMsg : Maybe Measurement.Model.OutMsgChild
+    , page : Maybe Page
+    }
+
+
+type alias MotherUpdateReturns =
+    { model : Model PersonId
+    , cmd : Cmd (Msg PersonId Measurement.Model.MsgMother)
+    , form : Maybe Measurement.Model.ModelMother
+    , outMsg : Maybe Measurement.Model.OutMsgMother
+    , page : Maybe Page
     }

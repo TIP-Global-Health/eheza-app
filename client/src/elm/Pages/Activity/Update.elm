@@ -4,7 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (MeasurementData, MotherMeasurements)
 import Measurement.Model
 import Measurement.Update
-import Pages.Activity.Model exposing (Model, Msg(..))
+import Pages.Activity.Model exposing (ChildUpdateReturns, Model, MotherUpdateReturns, Msg(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 
 
@@ -16,16 +16,16 @@ updateChild :
     Msg PersonId Measurement.Model.MsgChild
     -> Model PersonId
     -> Maybe Measurement.Model.ModelChild
-    -> ( Model PersonId, Cmd (Msg PersonId Measurement.Model.MsgChild), Maybe Measurement.Model.ModelChild, Maybe Measurement.Model.OutMsgChild, Maybe Page )
+    -> ChildUpdateReturns
 updateChild msg model childForm =
     case msg of
         GoBackToActivitiesPage sessionId ->
-            ( { model | filter = "" }
-            , Cmd.none
-            , childForm
-            , Nothing
-            , Just <| UserPage <| SessionPage sessionId ActivitiesPage
-            )
+            ChildUpdateReturns
+                { model | filter = "" }
+                Cmd.none
+                childForm
+                Nothing
+                (Just <| UserPage <| SessionPage sessionId ActivitiesPage)
 
         MsgMeasurement subMsg ->
             childForm
@@ -35,38 +35,38 @@ updateChild msg model childForm =
                             ( subModel, subCmd, outMsg ) =
                                 Measurement.Update.updateChild subMsg form
                         in
-                        ( model
-                        , Cmd.map MsgMeasurement subCmd
-                        , Just subModel
-                        , outMsg
-                        , Nothing
-                        )
+                        ChildUpdateReturns
+                            model
+                            (Cmd.map MsgMeasurement subCmd)
+                            (Just subModel)
+                            outMsg
+                            Nothing
                     )
-                |> Maybe.withDefault ( model, Cmd.none, Nothing, Nothing, Nothing )
+                |> Maybe.withDefault (ChildUpdateReturns model Cmd.none Nothing Nothing Nothing)
 
         SetFilter filter ->
-            ( { model | filter = filter }
-            , Cmd.none
-            , Nothing
-            , Nothing
-            , Nothing
-            )
+            ChildUpdateReturns
+                { model | filter = filter }
+                Cmd.none
+                Nothing
+                Nothing
+                Nothing
 
         SetSelectedParticipant val ->
-            ( { model | selectedParticipant = val }
-            , Cmd.none
-            , Nothing
-            , Nothing
-            , Nothing
-            )
+            ChildUpdateReturns
+                { model | selectedParticipant = val }
+                Cmd.none
+                Nothing
+                Nothing
+                Nothing
 
         SetSelectedTab val ->
-            ( { model | selectedTab = val }
-            , Cmd.none
-            , Nothing
-            , Nothing
-            , Nothing
-            )
+            ChildUpdateReturns
+                { model | selectedTab = val }
+                Cmd.none
+                Nothing
+                Nothing
+                Nothing
 
 
 updateMother :
@@ -74,11 +74,16 @@ updateMother :
     -> Model PersonId
     -> Maybe Measurement.Model.ModelMother
     -> MeasurementData MotherMeasurements
-    -> ( Model PersonId, Cmd (Msg PersonId Measurement.Model.MsgMother), Maybe Measurement.Model.ModelMother, Maybe Measurement.Model.OutMsgMother, Maybe Page )
+    -> MotherUpdateReturns
 updateMother msg model motherForm measurements =
     case msg of
         GoBackToActivitiesPage sessionId ->
-            ( model, Cmd.none, Nothing, Nothing, Just <| UserPage <| SessionPage sessionId ActivitiesPage )
+            MotherUpdateReturns
+                model
+                Cmd.none
+                Nothing
+                Nothing
+                (Just <| UserPage <| SessionPage sessionId ActivitiesPage)
 
         MsgMeasurement subMsg ->
             motherForm
@@ -88,35 +93,35 @@ updateMother msg model motherForm measurements =
                             ( subModel, subCmd, outMsg ) =
                                 Measurement.Update.updateMother measurements subMsg form
                         in
-                        ( model
-                        , Cmd.map MsgMeasurement subCmd
-                        , Just subModel
-                        , outMsg
-                        , Nothing
-                        )
+                        MotherUpdateReturns
+                            model
+                            (Cmd.map MsgMeasurement subCmd)
+                            (Just subModel)
+                            outMsg
+                            Nothing
                     )
-                |> Maybe.withDefault ( model, Cmd.none, Nothing, Nothing, Nothing )
+                |> Maybe.withDefault (MotherUpdateReturns model Cmd.none Nothing Nothing Nothing)
 
         SetFilter filter ->
-            ( { model | filter = filter }
-            , Cmd.none
-            , Nothing
-            , Nothing
-            , Nothing
-            )
+            MotherUpdateReturns
+                { model | filter = filter }
+                Cmd.none
+                Nothing
+                Nothing
+                Nothing
 
         SetSelectedParticipant val ->
-            ( { model | selectedParticipant = val }
-            , Cmd.none
-            , Nothing
-            , Nothing
-            , Nothing
-            )
+            MotherUpdateReturns
+                { model | selectedParticipant = val }
+                Cmd.none
+                Nothing
+                Nothing
+                Nothing
 
         SetSelectedTab val ->
-            ( { model | selectedTab = val }
-            , Cmd.none
-            , Nothing
-            , Nothing
-            , Nothing
-            )
+            MotherUpdateReturns
+                { model | selectedTab = val }
+                Cmd.none
+                Nothing
+                Nothing
+                Nothing

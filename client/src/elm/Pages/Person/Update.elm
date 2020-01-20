@@ -1,27 +1,27 @@
 module Pages.Person.Update exposing (update)
 
-import AllDict
 import App.Model
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PersonId)
 import Backend.Model
 import Backend.Person.Form exposing (ExpectedAge(..), birthDate, validatePerson)
 import Backend.Person.Model exposing (Person)
+import Date exposing (toRataDie)
 import Form
 import Form.Field
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD, fromLocalDateTime)
 import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
 
 
-update : NominalDate -> Msg -> EntityUuidDict PersonId (WebData Person) -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update : NominalDate -> Msg -> Dict PersonId (WebData Person) -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate msg people model =
     case msg of
         MsgForm relation subMsg ->
             let
                 related =
                     relation
-                        |> Maybe.andThen (\personId -> AllDict.get personId people)
+                        |> Maybe.andThen (\personId -> Dict.get personId people)
                         |> Maybe.andThen RemoteData.toMaybe
 
                 newForm =
@@ -83,7 +83,7 @@ update currentDate msg people model =
         DateSelected relation date ->
             let
                 dateAsString =
-                    fromLocalDateTime date |> formatYYYYMMDD
+                    Date.format "yyyy-MM-dd" date
 
                 setFieldMsg =
                     Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm relation

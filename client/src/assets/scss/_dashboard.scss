@@ -1,0 +1,25 @@
+.severity {
+
+  &.severity-neutral {
+    color: blue;
+  }
+
+  &.severity-good {
+    color: green;
+  }
+
+  &.severity-moderate {
+    color: darkorange;
+  }
+
+  &.severity-severe {
+    color: red;
+  }
+}
+
+.stats {
+
+  .neutral {
+    color: blue;
+  }
+}

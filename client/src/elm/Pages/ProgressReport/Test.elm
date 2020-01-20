@@ -6,7 +6,7 @@ import Html exposing (div)
 import Html.Attributes as Attr
 import Pages.Participant.Model exposing (Tab(..), emptyModel)
 import Pages.Participant.View exposing (viewChild, viewMother)
-import RemoteData exposing (RemoteData(NotAsked))
+import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query

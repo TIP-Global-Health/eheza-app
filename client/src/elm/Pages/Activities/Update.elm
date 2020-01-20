@@ -1,5 +1,7 @@
 module Pages.Activities.Update exposing (update)
 
+import Activity.Model exposing (Activity(..), ChildActivity(..))
+import App.Ports exposing (bindDropZone)
 import Backend.Session.Model exposing (EditableSession)
 import Pages.Activities.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -20,8 +22,19 @@ update session msg model =
             )
 
         SetRedirectPage page ->
+            let
+                cmd =
+                    case page of
+                        -- When switching to ChildPicture activity page, bind
+                        -- DropZone to be able to take pictures.
+                        UserPage (SessionPage _ (Pages.Page.ActivityPage (ChildActivity ChildPicture))) ->
+                            bindDropZone ()
+
+                        _ ->
+                            Cmd.none
+            in
             ( model
-            , Cmd.none
+            , cmd
             , [ Pages.Session.Model.SetActivePage page ]
             )
 

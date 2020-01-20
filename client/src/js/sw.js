@@ -117,6 +117,10 @@ dbSync.version(5).stores({
     }).delete();
 });
 
+dbSync.version(6).stores({
+    statistics: '&uuid',
+});
+
 function gatherWords (text) {
     // Split on spaces, and remove blanks from result.
     return (text || '').split(/\s+/).flatMap(function (word) {

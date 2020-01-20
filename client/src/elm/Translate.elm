@@ -1,6 +1,7 @@
 module Translate exposing
     ( Adherence(..)
     , ChartPhrase(..)
+    , Dashboard(..)
     , Language
     , LoginPhrase(..)
     , TranslationId(..)
@@ -14,7 +15,7 @@ module Translate exposing
     , translateFormField
     , translateHttpError
     , translateLoginPhrase
-    , translateMonth
+    , translateText
     , translateValidationError
     , translationSet
     )
@@ -30,12 +31,14 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
 import Backend.Person.Model exposing (EducationLevel(..), Gender(..), HIVStatus(..), MaritalStatus(..), ModeOfDelivery(..), VaginalDelivery(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
-import Date exposing (Month(..))
+import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
+import Html exposing (Html, text)
 import Http
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
+import Time exposing (Month(..))
 import Translate.Model exposing (TranslationSet)
 import Translate.Utils exposing (..)
 
@@ -60,6 +63,12 @@ type alias Language =
 translate : Language -> TranslationId -> String
 translate lang trans =
     selectLanguage lang (translationSet trans)
+
+
+translateText : Language -> TranslationId -> Html msg
+translateText lang trans =
+    translate lang trans
+        |> text
 
 
 type LoginPhrase
@@ -126,6 +135,15 @@ type Adherence
     | Adhering
 
 
+type Dashboard
+    = FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
+    | ModeratelyMalnourished
+    | NewBeneficiaries
+    | SeverelyMalnourished
+    | TotalMalnourished
+    | UseFamilyPlanning
+
+
 type TranslationId
     = AccessDenied
     | Activities
@@ -178,6 +196,7 @@ type TranslationId
     | ClickTheCheckMark
     | ClinicType ClinicType
     | Clinical
+    | Dashboard Dashboard
     | GroupNotFound
     | Group
     | Groups
@@ -197,7 +216,7 @@ type TranslationId
     | CreateRelationship
     | CreateTrainingGroupEncounters
     | DeleteTrainingGroupEncounters
-    | Dashboard
+    | DashboardLabel
     | DateOfLastAssessment
     | Day
     | DateOfBirth
@@ -459,8 +478,8 @@ translationSet trans =
             }
 
         ActivitiesCompleted count ->
-            { english = "Completed (" ++ toString count ++ ")"
-            , kinyarwanda = Just <| "Ibyarangiye (" ++ toString count ++ ")"
+            { english = "Completed (" ++ Debug.toString count ++ ")"
+            , kinyarwanda = Just <| "Ibyarangiye (" ++ Debug.toString count ++ ")"
             }
 
         ActivitiesHelp activity ->
@@ -632,8 +651,8 @@ translationSet trans =
                     }
 
         ActivitiesToComplete count ->
-            { english = "To Do (" ++ toString count ++ ")"
-            , kinyarwanda = Just <| "Ibisabwa gukora (" ++ toString count ++ ")"
+            { english = "To Do (" ++ Debug.toString count ++ ")"
+            , kinyarwanda = Just <| "Ibisabwa gukora (" ++ Debug.toString count ++ ")"
             }
 
         ActivePage page ->
@@ -643,43 +662,43 @@ translationSet trans =
             translateAdherence adherence
 
         Age months days ->
-            { english = toString months ++ " months " ++ toString days ++ " days"
-            , kinyarwanda = Just <| toString months ++ " Amezi " ++ toString days ++ " iminsi"
+            { english = Debug.toString months ++ " months " ++ Debug.toString days ++ " days"
+            , kinyarwanda = Just <| Debug.toString months ++ " Amezi " ++ Debug.toString days ++ " iminsi"
             }
 
         AgeDays days ->
-            { english = toString days ++ " days"
-            , kinyarwanda = Just <| toString days ++ " Iminsi"
+            { english = Debug.toString days ++ " days"
+            , kinyarwanda = Just <| Debug.toString days ++ " Iminsi"
             }
 
         AgeMonthsWithoutDay months ->
-            { english = toString months ++ " month"
-            , kinyarwanda = Just <| toString months ++ " Ukwezi"
+            { english = Debug.toString months ++ " month"
+            , kinyarwanda = Just <| Debug.toString months ++ " Ukwezi"
             }
 
         AgeSingleBoth months days ->
-            { english = toString months ++ " month " ++ toString days ++ " day"
-            , kinyarwanda = Just <| toString months ++ " Ukwezi " ++ toString days ++ " Umunsi"
+            { english = Debug.toString months ++ " month " ++ Debug.toString days ++ " day"
+            , kinyarwanda = Just <| Debug.toString months ++ " Ukwezi " ++ Debug.toString days ++ " Umunsi"
             }
 
         AgeSingleMonth months days ->
-            { english = toString months ++ " month " ++ toString days ++ " days"
-            , kinyarwanda = Just <| toString months ++ " Ukwezi " ++ toString days ++ " Iminsi"
+            { english = Debug.toString months ++ " month " ++ Debug.toString days ++ " days"
+            , kinyarwanda = Just <| Debug.toString months ++ " Ukwezi " ++ Debug.toString days ++ " Iminsi"
             }
 
         AgeSingleDayWithMonth months days ->
-            { english = toString months ++ " months " ++ toString days ++ " day"
-            , kinyarwanda = Just <| toString months ++ " Amezi " ++ toString days ++ " Umunsi"
+            { english = Debug.toString months ++ " months " ++ Debug.toString days ++ " day"
+            , kinyarwanda = Just <| Debug.toString months ++ " Amezi " ++ Debug.toString days ++ " Umunsi"
             }
 
         AgeSingleDayWithoutMonth months days ->
-            { english = toString days ++ " day"
-            , kinyarwanda = Just <| toString days ++ " Umunsi"
+            { english = Debug.toString days ++ " day"
+            , kinyarwanda = Just <| Debug.toString days ++ " Umunsi"
             }
 
         AgeSingleMonthWithoutDay month ->
-            { english = toString month ++ " month"
-            , kinyarwanda = Just <| toString month ++ " Ukwezi"
+            { english = Debug.toString month ++ " month"
+            , kinyarwanda = Just <| Debug.toString month ++ " Ukwezi"
             }
 
         AppName ->
@@ -881,6 +900,9 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Dashboard dashboard ->
+            translateDashboard dashboard
+
         GroupNotFound ->
             { english = "Group not found"
             , kinyarwanda = Nothing
@@ -974,7 +996,7 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        Dashboard ->
+        DashboardLabel ->
             { english = "Dashboard"
             , kinyarwanda = Just "Tabeau de bord"
             }
@@ -1060,12 +1082,12 @@ translationSet trans =
             }
 
         MemoryQuota quota ->
-            { english = "Memory used " ++ toString (quota.usedJSHeapSize // (1024 * 1024)) ++ " MB of available " ++ toString (quota.jsHeapSizeLimit // (1024 * 1024)) ++ " MB"
+            { english = "Memory used " ++ Debug.toString (quota.usedJSHeapSize // (1024 * 1024)) ++ " MB of available " ++ Debug.toString (quota.jsHeapSizeLimit // (1024 * 1024)) ++ " MB"
             , kinyarwanda = Nothing
             }
 
         StorageQuota quota ->
-            { english = "Storage used " ++ toString (quota.usage // (1024 * 1024)) ++ " MB of available " ++ toString (quota.quota // (1024 * 1024)) ++ " MB"
+            { english = "Storage used " ++ Debug.toString (quota.usage // (1024 * 1024)) ++ " MB of available " ++ Debug.toString (quota.quota // (1024 * 1024)) ++ " MB"
             , kinyarwanda = Nothing
             }
 
@@ -1347,13 +1369,13 @@ translationSet trans =
             }
 
         MeasurementGained amount ->
-            { english = "Gained " ++ toString amount
-            , kinyarwanda = Just <| "Kwiyongera " ++ toString amount
+            { english = "Gained " ++ Debug.toString amount
+            , kinyarwanda = Just <| "Kwiyongera " ++ Debug.toString amount
             }
 
         MeasurementLost amount ->
-            { english = "Lost " ++ toString amount
-            , kinyarwanda = Just <| "Kwiyongera " ++ toString amount
+            { english = "Lost " ++ Debug.toString amount
+            , kinyarwanda = Just <| "Kwiyongera " ++ Debug.toString amount
             }
 
         MiddleName ->
@@ -1370,7 +1392,7 @@ translationSet trans =
                     "one minute ago"
 
                 else
-                    toString minutes ++ " minutes ago"
+                    Debug.toString minutes ++ " minutes ago"
             , kinyarwanda = Nothing
             }
 
@@ -1681,8 +1703,8 @@ translationSet trans =
             }
 
         PreviousFloatMeasurement value ->
-            { english = "Previous measurement: " ++ toString value
-            , kinyarwanda = Just <| "Ibipimo by'ubushize: " ++ toString value
+            { english = "Previous measurement: " ++ Debug.toString value
+            , kinyarwanda = Just <| "Ibipimo by'ubushize: " ++ Debug.toString value
             }
 
         Profession ->
@@ -1776,8 +1798,8 @@ translationSet trans =
             }
 
         ReportRemaining remaining ->
-            { english = toString remaining ++ " remaning"
-            , kinyarwanda = Just <| toString remaining ++ " iyibutswa rya raporo"
+            { english = Debug.toString remaining ++ " remaning"
+            , kinyarwanda = Just <| Debug.toString remaining ++ " iyibutswa rya raporo"
             }
 
         ReportResultsOfSearch total ->
@@ -1788,7 +1810,7 @@ translationSet trans =
                     }
 
                 _ ->
-                    { english = "There are " ++ toString total ++ " participants that match your search."
+                    { english = "There are " ++ Debug.toString total ++ " participants that match your search."
                     , kinyarwanda = Nothing
                     }
 
@@ -1798,8 +1820,8 @@ translationSet trans =
             }
 
         ReportCompleted { pending, completed } ->
-            { english = toString completed ++ " / " ++ toString (pending + completed) ++ " Completed"
-            , kinyarwanda = Just <| toString completed ++ " / " ++ toString (pending + completed) ++ " Raporo irarangiye"
+            { english = Debug.toString completed ++ " / " ++ Debug.toString (pending + completed) ++ " Completed"
+            , kinyarwanda = Just <| Debug.toString completed ++ " / " ++ Debug.toString (pending + completed) ++ " Raporo irarangiye"
             }
 
         ResolveMonth month ->
@@ -2249,6 +2271,11 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
+                DashboardPage ->
+                    { english = "Dashboards"
+                    , kinyarwanda = Nothing
+                    }
+
                 MyAccountPage ->
                     { english = "My Account"
                     , kinyarwanda = Just "Compte"
@@ -2434,13 +2461,47 @@ translateChartPhrase phrase =
             }
 
         YearsPlural value ->
-            { english = toString value ++ " years"
-            , kinyarwanda = Just <| "Imyaka " ++ toString value
+            { english = Debug.toString value ++ " years"
+            , kinyarwanda = Just <| "Imyaka " ++ Debug.toString value
             }
 
         ZScoreChartsAvailableAt ->
             { english = "Z-score charts available at"
             , kinyarwanda = Just "Raporo ku mikurire y'umwana"
+            }
+
+
+translateDashboard : Dashboard -> TranslationSet String
+translateDashboard trans =
+    case trans of
+        FamilyPlanningOutOfWomen { total, useFamilyPlanning } ->
+            { english = String.fromInt useFamilyPlanning ++ " out of " ++ String.fromInt total ++ " women"
+            , kinyarwanda = Nothing
+            }
+
+        NewBeneficiaries ->
+            { english = "New Beneficiaries"
+            , kinyarwanda = Nothing
+            }
+
+        ModeratelyMalnourished ->
+            { english = "Moderately Malnourished"
+            , kinyarwanda = Nothing
+            }
+
+        SeverelyMalnourished ->
+            { english = "Severely Malnourished"
+            , kinyarwanda = Nothing
+            }
+
+        TotalMalnourished ->
+            { english = "Total Malnourished"
+            , kinyarwanda = Nothing
+            }
+
+        UseFamilyPlanning ->
+            { english = "Use family planning"
+            , kinyarwanda = Nothing
             }
 
 
@@ -2665,7 +2726,7 @@ translateValidationError id =
             }
 
         LengthError correctLength ->
-            { english = "should contain " ++ toString correctLength ++ " characters"
+            { english = "should contain " ++ Debug.toString correctLength ++ " characters"
             , kinyarwanda = Nothing
             }
 
@@ -2753,38 +2814,33 @@ translateFormError error =
             , kinyarwanda = Nothing
             }
 
-        InvalidDate ->
-            { english = "is not a valid date"
-            , kinyarwanda = Nothing
-            }
-
         SmallerIntThan int ->
-            { english = "must be smaller than " ++ toString int
+            { english = "must be smaller than " ++ Debug.toString int
             , kinyarwanda = Nothing
             }
 
         GreaterIntThan int ->
-            { english = "must be larger than " ++ toString int
+            { english = "must be larger than " ++ Debug.toString int
             , kinyarwanda = Nothing
             }
 
         SmallerFloatThan float ->
-            { english = "must be smaller than " ++ toString float
+            { english = "must be smaller than " ++ Debug.toString float
             , kinyarwanda = Nothing
             }
 
         GreaterFloatThan float ->
-            { english = "must be larger than " ++ toString float
+            { english = "must be larger than " ++ Debug.toString float
             , kinyarwanda = Nothing
             }
 
         ShorterStringThan int ->
-            { english = "must have fewer than " ++ toString int ++ " characters"
+            { english = "must have fewer than " ++ Debug.toString int ++ " characters"
             , kinyarwanda = Nothing
             }
 
         LongerStringThan int ->
-            { english = "must have more than " ++ toString int ++ " characters"
+            { english = "must have more than " ++ Debug.toString int ++ " characters"
             , kinyarwanda = Nothing
             }
 

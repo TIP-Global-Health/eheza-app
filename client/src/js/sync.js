@@ -534,7 +534,7 @@
                     // If the node references an image (or other file, for that
                     // matter), we'd like to decide immediately whether to
                     // cache it. Downloading to the cache will be async, and
-                    // our db tranasactions can't handle that ... IndexedDB
+                    // our db transactions can't handle that ... IndexedDB
                     // transactions can handle async db actions, but not other
                     // async actions (no "long" transactions). So, we'll need
                     // to handle this one-by-one. However, we'll wait to the
@@ -546,9 +546,17 @@
                     // our progress in downloading images.
                     //
                     // So, that's why we don't use `Promise.all` here ... it
-                    // would execute in parrallel rather than sequentially.
+                    // would execute in parallel rather than sequentially.
                     return json.data.batch.reduce(function (previous, item) {
                         return previous.then(function () {
+
+                            // Apart of the nodes we send statistics.
+                            if (!!item.type && item.type === 'statistics') {
+                                // We don't push it to the saved nodes, since
+                                // it's not a node.
+                                return dbSync.statistics.put(item);
+                            }
+
                             return formatNode(table, item, shardUuid).then(function (formatted) {
                                 return table.put(formatted).then(function () {
                                     saved.push(formatted);
@@ -563,7 +571,7 @@
                         // partial progress. Now, we'll note that we have some
                         // remaining things to get, so we'll try again. But,
                         // then, the thing we failed on will be first. So, if
-                        // we fail agaim, we won't have saved anything, and
+                        // we fail again, we won't have saved anything, and
                         // we'll return the error then.  That seems like a
                         // reasonable sequence of events.
                         if (saved.length > 0) {

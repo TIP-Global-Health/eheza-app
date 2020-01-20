@@ -1,7 +1,7 @@
 module Backend.SyncData.Encoder exposing (encodeSyncData)
 
 import Backend.SyncData.Model exposing (..)
-import Date exposing (Date, toTime)
+import Date exposing (Date, toRataDie)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 
@@ -18,7 +18,7 @@ encodeSyncData data =
 encodeDownloadStatus : DownloadStatus -> Value
 encodeDownloadStatus data =
     object
-        [ ( "last_contact", float (toTime data.lastSuccessfulContact) )
+        [ ( "last_contact", int (toRataDie data.lastSuccessfulContact) )
         , ( "last_timestamp", int data.lastTimestamp )
         , ( "remaining", int data.remaining )
         ]
@@ -42,13 +42,13 @@ encodeSyncAttempt data =
 
             Downloading date revision ->
                 [ ( "tag", string "Loading" )
-                , ( "timestamp", float (toTime date) )
+                , ( "timestamp", int (toRataDie date) )
                 , ( "revision", int revision )
                 ]
 
             Uploading date ->
                 [ ( "tag", string "Uploading" )
-                , ( "timestamp", float (toTime date) )
+                , ( "timestamp", int (toRataDie date) )
                 ]
 
             Success ->
@@ -56,7 +56,7 @@ encodeSyncAttempt data =
                 ]
 
             Failure date err ->
-                ( "timestamp", float (toTime date) )
+                ( "timestamp", int (toRataDie date) )
                     :: (case err of
                             DatabaseError message ->
                                 [ ( "tag", string "DatabaseError" )
