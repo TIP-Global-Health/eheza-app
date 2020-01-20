@@ -34,6 +34,8 @@ import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
 import Pages.Page exposing (..)
+import Restful.Endpoint exposing (fromEntityUuid)
+import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Translate.Model exposing (TranslationSet)
 import Translate.Utils exposing (..)
 
