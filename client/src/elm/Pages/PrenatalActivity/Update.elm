@@ -529,9 +529,6 @@ update currentDate msg model =
                 measurement =
                     Maybe.map (Tuple.second >> .value) saved
 
-                log =
-                    Debug.log "appMsgs" <| List.length appMsgs
-
                 appMsgs =
                     model.historyData.socialForm
                         |> toSocialHistoryValueWithDefault measurement

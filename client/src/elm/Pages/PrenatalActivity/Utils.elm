@@ -548,12 +548,6 @@ socialHistoryFormWithDefault form saved =
 
 toSocialHistoryValueWithDefault : Maybe (EverySet SocialHistorySign) -> SocialHistoryForm -> Maybe (EverySet SocialHistorySign)
 toSocialHistoryValueWithDefault saved form =
-    let
-        log =
-            socialHistoryFormWithDefault form saved
-                |> toSocialHistoryValue
-                |> Debug.log ""
-    in
     socialHistoryFormWithDefault form saved
         |> toSocialHistoryValue
 
