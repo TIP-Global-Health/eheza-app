@@ -34,8 +34,6 @@ import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
 import Pages.Page exposing (..)
-import Restful.Endpoint exposing (fromEntityUuid)
-import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Translate.Model exposing (TranslationSet)
 import Translate.Utils exposing (..)
 
@@ -1128,7 +1126,7 @@ translationSet trans =
 
                 Implants ->
                     { english = "Implants"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Akapira ko mu kaboko"
                     }
 
                 Injectables ->
@@ -1169,6 +1167,16 @@ translationSet trans =
                 Vasectomy ->
                     { english = "Vasectomy"
                     , kinyarwanda = Nothing
+                    }
+
+                Pill ->
+                    { english = "Pill"
+                    , kinyarwanda = Just "Ibinini"
+                    }
+
+                Necklace ->
+                    { english = "Necklace"
+                    , kinyarwanda = Just "Urunigi"
                     }
 
         FamilyUbudehe ->
