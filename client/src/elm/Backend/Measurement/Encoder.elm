@@ -215,6 +215,12 @@ encodeFamilyPlanningSignAsString sign =
         Vasectomy ->
             "vasectomy"
 
+        Pill ->
+            "pill"
+
+        Necklace ->
+            "necklace"
+
 
 encodeChildMeasurementList : ChildMeasurementList -> Value
 encodeChildMeasurementList measurements =

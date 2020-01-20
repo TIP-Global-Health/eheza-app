@@ -293,6 +293,12 @@ decodeFamilyPlanningSign =
                     "vasectomy" ->
                         succeed Vasectomy
 
+                    "pill" ->
+                        succeed Pill
+
+                    "necklace" ->
+                        succeed Necklace
+
                     _ ->
                         fail <|
                             sign
