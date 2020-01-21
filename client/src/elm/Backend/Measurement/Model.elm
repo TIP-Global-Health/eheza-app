@@ -100,8 +100,6 @@ type FamilyPlanningSign
     | Spermicide
     | TubalLigatures
     | Vasectomy
-    | Pill
-    | Necklace
 
 
 type alias FamilyPlanning =
