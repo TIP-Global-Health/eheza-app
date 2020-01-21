@@ -280,7 +280,7 @@ toMedicationValueWithDefault saved form =
 toMedicationValue : MedicationForm -> Maybe (EverySet MedicationSign)
 toMedicationValue form =
     [ Maybe.map (ifTrue IronAndFolicAcidSupplement) form.receivedIronFolicAcid
-    , Maybe.map (ifTrue DewormingPill) form.receivedDewormingPill
+    , ifNullableTrue DewormingPill form.receivedDewormingPill
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoMedication)

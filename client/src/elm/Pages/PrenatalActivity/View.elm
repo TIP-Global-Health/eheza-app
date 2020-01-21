@@ -697,6 +697,31 @@ viewPatientProvisionsContent language currentDate assembled data =
                     )
                 |> List.isEmpty
 
+        -- We show the question starting EGA week 20, and
+        -- as long as all preivious answers were 'No'.
+        showDewormingPillQuestion =
+            assembled.globalLmpDate
+                |> Maybe.map
+                    (\lmpDate ->
+                        let
+                            currentWeek =
+                                diffDays lmpDate currentDate // 7
+                        in
+                        if currentWeek < 20 then
+                            False
+
+                        else
+                            assembled.previousMeasurementsWithDates
+                                |> List.filter
+                                    (\( _, measurements ) ->
+                                        measurements.medication
+                                            |> Maybe.map (Tuple.second >> .value >> EverySet.member DewormingPill)
+                                            |> Maybe.withDefault False
+                                    )
+                                |> List.isEmpty
+                    )
+                |> Maybe.withDefault False
+
         tasks =
             if showResourcesTask then
                 [ Medication, Resources ]
@@ -741,12 +766,19 @@ viewPatientProvisionsContent language currentDate assembled data =
                             assembled.measurements.medication
                                 |> Maybe.map (Tuple.second >> .value)
                                 |> medicationFormWithDefault data.medicationForm
+
+                        questions =
+                            if showDewormingPillQuestion then
+                                [ form.receivedIronFolicAcid, form.receivedDewormingPill ]
+
+                            else
+                                [ form.receivedIronFolicAcid ]
                     in
-                    ( viewMedicationForm language currentDate assembled form
-                    , [ form.receivedIronFolicAcid, form.receivedDewormingPill ]
+                    ( viewMedicationForm language currentDate assembled showDewormingPillQuestion form
+                    , questions
                         |> List.map taskCompleted
                         |> List.sum
-                    , 2
+                    , List.length questions
                     )
 
                 Resources ->
@@ -2029,31 +2061,45 @@ viewBreastExamForm language currentDate assembled form =
         ]
 
 
-viewMedicationForm : Language -> NominalDate -> AssembledData -> MedicationForm -> Html Msg
-viewMedicationForm language currentDate assembled form =
+viewMedicationForm : Language -> NominalDate -> AssembledData -> Bool -> MedicationForm -> Html Msg
+viewMedicationForm language currentDate assembled showDewormingPillQuestion form =
     let
         receivedIronFolicAcidUpdateFunc value form_ =
             { form_ | receivedIronFolicAcid = Just value }
 
-        receivedDewormingPillUpdateFunc value form_ =
-            { form_ | receivedDewormingPill = Just value }
+        receivedIronFolicAcidQuestion =
+            [ viewQuestionLabel language Translate.ReceivedIronFolicAcid
+            , viewBoolInput
+                language
+                form.receivedIronFolicAcid
+                (SetMedicationBoolInput receivedIronFolicAcidUpdateFunc)
+                "iron-folic-acid"
+                Nothing
+            ]
+
+        receivedDewormingPillQuestion =
+            if showDewormingPillQuestion then
+                let
+                    receivedDewormingPillUpdateFunc value form_ =
+                        { form_ | receivedDewormingPill = Just value }
+                in
+                [ viewQuestionLabel language Translate.ReceivedDewormingPill
+                , viewBoolInput
+                    language
+                    form.receivedDewormingPill
+                    (SetMedicationBoolInput receivedDewormingPillUpdateFunc)
+                    "deworming-pill"
+                    Nothing
+                ]
+
+            else
+                []
+
+        questions =
+            receivedIronFolicAcidQuestion ++ receivedDewormingPillQuestion
     in
     div [ class "ui form patient-provisions medication" ]
-        [ viewQuestionLabel language Translate.ReceivedIronFolicAcid
-        , viewBoolInput
-            language
-            form.receivedIronFolicAcid
-            (SetMedicationBoolInput receivedIronFolicAcidUpdateFunc)
-            "iron-folic-acid"
-            Nothing
-        , viewQuestionLabel language Translate.ReceivedDewormingPill
-        , viewBoolInput
-            language
-            form.receivedDewormingPill
-            (SetMedicationBoolInput receivedDewormingPillUpdateFunc)
-            "deworming-pill"
-            Nothing
-        ]
+        questions
 
 
 viewResourcesForm : Language -> NominalDate -> AssembledData -> ResourcesForm -> Html Msg
