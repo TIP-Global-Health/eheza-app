@@ -687,8 +687,22 @@ viewFamilyPlanningContent language currentDate assembled data =
 viewPatientProvisionsContent : Language -> NominalDate -> AssembledData -> PatientProvisionsData -> List (Html Msg)
 viewPatientProvisionsContent language currentDate assembled data =
     let
+        showResourcesTask =
+            assembled.previousMeasurementsWithDates
+                |> List.filter
+                    (\( _, measurements ) ->
+                        measurements.resource
+                            |> Maybe.map (Tuple.second >> .value >> EverySet.member MosquitoNet)
+                            |> Maybe.withDefault False
+                    )
+                |> List.isEmpty
+
         tasks =
-            [ Medication, Resources ]
+            if showResourcesTask then
+                [ Medication, Resources ]
+
+            else
+                [ Medication ]
 
         viewTask task =
             let
