@@ -180,7 +180,7 @@ encodeFamilyPlanningSignAsString sign =
             "condoms"
 
         CycleBeads ->
-            "cycle-beads"
+            "necklace"
 
         CycleCounting ->
             "cycle-counting"
@@ -204,7 +204,7 @@ encodeFamilyPlanningSignAsString sign =
             "none"
 
         OralContraceptives ->
-            "oral-contraceptives"
+            "pill"
 
         Spermicide ->
             "spermicide"
@@ -214,12 +214,6 @@ encodeFamilyPlanningSignAsString sign =
 
         Vasectomy ->
             "vasectomy"
-
-        Pill ->
-            "pill"
-
-        Necklace ->
-            "necklace"
 
 
 encodeChildMeasurementList : ChildMeasurementList -> Value
