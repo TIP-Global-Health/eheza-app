@@ -1171,16 +1171,6 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                Pill ->
-                    { english = "Pill"
-                    , kinyarwanda = Just "Ibinini"
-                    }
-
-                Necklace ->
-                    { english = "Necklace"
-                    , kinyarwanda = Just "Urunigi"
-                    }
-
         FamilyUbudehe ->
             { english = "Family Ubudehe"
             , kinyarwanda = Nothing
