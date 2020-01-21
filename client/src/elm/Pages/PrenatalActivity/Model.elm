@@ -107,7 +107,7 @@ type Msg
     | SetActivePatientProvisionsTask PatientProvisionsTask
       -- PatientProvisionsMsgs, Medication
     | SetMedicationBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
-    | SaveMedication PrenatalEncounterId PersonId (Maybe ( MedicationId, Medication ))
+    | SaveMedication PrenatalEncounterId PersonId (Maybe ( MedicationId, Medication )) Bool
       -- PatientProvisionsMsgs, Resources
     | SetResourcesBoolInput (Bool -> ResourcesForm -> ResourcesForm) Bool
     | SaveResources PrenatalEncounterId PersonId (Maybe ( ResourceId, Resource ))

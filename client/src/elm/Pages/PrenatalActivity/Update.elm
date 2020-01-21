@@ -541,12 +541,8 @@ update currentDate msg model =
                                 , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
                                 ]
                             )
-
-                updatedData =
-                    model.historyData
-                        |> (\data -> { data | activeTask = Obstetric })
             in
-            ( { model | historyData = updatedData }
+            ( model
             , Cmd.none
             , appMsgs
             )
@@ -1295,7 +1291,7 @@ update currentDate msg model =
             , []
             )
 
-        SaveMedication prenatalEncounterId personId saved ->
+        SaveMedication prenatalEncounterId personId saved goToResourcesTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1315,13 +1311,21 @@ update currentDate msg model =
                                 ]
                             )
 
-                updatedData =
-                    model.patientProvisionsData
-                        |> (\data -> { data | activeTask = Resources })
+                ( updatedData, navigationMsg ) =
+                    if goToResourcesTask then
+                        ( model.patientProvisionsData
+                            |> (\data -> { data | activeTask = Resources })
+                        , []
+                        )
+
+                    else
+                        ( model.patientProvisionsData
+                        , [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId ]
+                        )
             in
             ( { model | patientProvisionsData = updatedData }
             , Cmd.none
-            , appMsgs
+            , appMsgs ++ navigationMsg
             )
 
         SetResourcesBoolInput formUpdateFunc value ->

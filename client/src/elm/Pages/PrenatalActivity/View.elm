@@ -688,14 +688,7 @@ viewPatientProvisionsContent : Language -> NominalDate -> AssembledData -> Patie
 viewPatientProvisionsContent language currentDate assembled data =
     let
         showResourcesTask =
-            assembled.previousMeasurementsWithDates
-                |> List.filter
-                    (\( _, measurements ) ->
-                        measurements.resource
-                            |> Maybe.map (Tuple.second >> .value >> EverySet.member MosquitoNet)
-                            |> Maybe.withDefault False
-                    )
-                |> List.isEmpty
+            shouldShowPatientProvisionsResourcesTask assembled
 
         -- We show the question starting EGA week 20, and
         -- as long as all preivious answers were 'No'.
@@ -798,7 +791,7 @@ viewPatientProvisionsContent language currentDate assembled data =
                 saveAction =
                     case data.activeTask of
                         Medication ->
-                            SaveMedication assembled.id assembled.participant.person assembled.measurements.medication
+                            SaveMedication assembled.id assembled.participant.person assembled.measurements.medication showResourcesTask
 
                         Resources ->
                             SaveResources assembled.id assembled.participant.person assembled.measurements.resource

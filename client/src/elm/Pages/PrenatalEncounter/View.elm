@@ -240,10 +240,17 @@ viewMainPageContent language currentDate data model =
                                 isJust data.measurements.lastMenstrualPeriod
 
                             History ->
-                                isJust data.measurements.obstetricHistory
-                                    && isJust data.measurements.obstetricHistoryStep2
-                                    && isJust data.measurements.medicalHistory
-                                    && isJust data.measurements.socialHistory
+                                if List.isEmpty data.previousMeasurementsWithDates then
+                                    -- First antenatal encounter - all tasks should be completed
+                                    isJust data.measurements.obstetricHistory
+                                        && isJust data.measurements.obstetricHistoryStep2
+                                        && isJust data.measurements.medicalHistory
+                                        && isJust data.measurements.socialHistory
+
+                                else
+                                    -- Subsequent antenatal encounter - only Social history task
+                                    -- needs to be completed.
+                                    isJust data.measurements.socialHistory
 
                             Examination ->
                                 isJust data.measurements.vitals
@@ -256,7 +263,11 @@ viewMainPageContent language currentDate data model =
                                 isJust data.measurements.familyPlanning
 
                             PatientProvisions ->
-                                isJust data.measurements.medication && isJust data.measurements.resource
+                                if shouldShowPatientProvisionsResourcesTask data then
+                                    isJust data.measurements.medication && isJust data.measurements.resource
+
+                                else
+                                    isJust data.measurements.medication
 
                             DangerSigns ->
                                 isJust data.measurements.dangerSigns

@@ -1,4 +1,4 @@
-module Pages.PrenatalEncounter.Utils exposing (calculateEDDandEGADays, expectPrenatalActivity, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generatePara, generatePreviousMeasurements, getLmpMeasurement, resolveGlobalLmpDate, resolveGlobalObstetricHistory)
+module Pages.PrenatalEncounter.Utils exposing (calculateEDDandEGADays, expectPrenatalActivity, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generatePara, generatePreviousMeasurements, getLmpMeasurement, resolveGlobalLmpDate, resolveGlobalObstetricHistory, shouldShowPatientProvisionsResourcesTask)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -285,3 +285,15 @@ expectPrenatalPhoto currentDate data =
             )
         -- We do not allow photo activity when Lmp date is not known.
         |> Maybe.withDefault False
+
+
+shouldShowPatientProvisionsResourcesTask : AssembledData -> Bool
+shouldShowPatientProvisionsResourcesTask assembled =
+    assembled.previousMeasurementsWithDates
+        |> List.filter
+            (\( _, measurements ) ->
+                measurements.resource
+                    |> Maybe.map (Tuple.second >> .value >> EverySet.member MosquitoNet)
+                    |> Maybe.withDefault False
+            )
+        |> List.isEmpty
