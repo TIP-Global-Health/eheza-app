@@ -157,6 +157,18 @@ viewPrenatalActions language currentDate id db prenatalSessions =
                 |> onClick
             ]
 
+        navigateToPregnancyOutcomeAction =
+            maybeSessionId
+                |> Maybe.map
+                    (\sessionId ->
+                        [ Pages.Page.PregnancyOutcomePage sessionId
+                            |> UserPage
+                            |> App.Model.SetActivePage
+                            |> onClick
+                        ]
+                    )
+                |> Maybe.withDefault []
+
         firstVisitButtonDisabeld =
             isJust maybeSessionId && not firstEncounterInProcess
     in
@@ -185,11 +197,12 @@ viewPrenatalActions language currentDate id db prenatalSessions =
         , div [ class "separator" ] []
         , p [ class "label-pregnancy-concluded" ] [ text <| translate language Translate.PregnancyConcludedLabel ]
         , button
-            [ classList
+            (classList
                 [ ( "ui primary button", True )
                 , ( "disabled", isNothing maybeSessionId )
                 ]
-            ]
+                :: navigateToPregnancyOutcomeAction
+            )
             [ span [ class "text" ] [ text <| translate language Translate.RecordPregnancyOutcome ]
             , span [ class "icon-back" ] []
             ]

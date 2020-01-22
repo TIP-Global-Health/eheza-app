@@ -43,6 +43,7 @@ import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
 import Pages.Page exposing (..)
+import Pages.PregnancyOutcome.Model exposing (PregnancyOutcome(..))
 import Pages.PrenatalActivity.Model
     exposing
         ( ExaminationTask(..)
@@ -457,6 +458,8 @@ type TranslationId
     | PrenatalPhotoHelper
     | PreTerm
     | PregnancyConcludedLabel
+    | PregnancyOutcomeLabel
+    | PregnancyOutcome PregnancyOutcome
     | PreviousCSectionScar
     | PreviousDelivery
     | PreviousDeliveryPeriods PreviousDeliveryPeriod
@@ -2956,6 +2959,38 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PregnancyOutcomeLabel ->
+            { english = "Pregnancy Outcome"
+            , kinyarwanda = Nothing
+            }
+
+        PregnancyOutcome outcome ->
+            case outcome of
+                OutcomeLiveAtTerm ->
+                    { english = "Live Birth at Term (38 weeks EGA or more)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeLivePreTerm ->
+                    { english = "Live Birth Preterm (less than 38 weeks EGA)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeStillAtTerm ->
+                    { english = "Stillbirth at Term (38 weeks EGA or more)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeStillPreTerm ->
+                    { english = "Stillbirth Preterm (less than 38 weeks EGA)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeAbortions ->
+                    { english = "Abortions (before 24 weeks EGA)"
+                    , kinyarwanda = Nothing
+                    }
+
         PreviousCSectionScar ->
             { english = "Previous C-section scar"
             , kinyarwanda = Nothing
@@ -3955,6 +3990,11 @@ translateActivePage page =
 
                 EncounterTypesPage _ ->
                     { english = "Encounter Types"
+                    , kinyarwanda = Nothing
+                    }
+
+                PregnancyOutcomePage _ ->
+                    { english = "Pregnancy Outcome"
                     , kinyarwanda = Nothing
                     }
 
