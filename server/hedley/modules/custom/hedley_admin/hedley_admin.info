@@ -28,4 +28,6 @@ features[menu_links][] = menu-ihangane-admin-menu_create-person:node/add/person
 features[menu_links][] = menu-ihangane-admin-menu_create-pmtct-participation:node/add/pmtct-paticipation
 features[menu_links][] = menu-ihangane-admin-menu_create-relationship:node/add/relationship
 features[views_view][] = admin_views
+features[views_view][] = ledger
 files[] = hedley_admin_handlers.inc
+files[] = hedley_admin_health_center_access_plugin.inc
