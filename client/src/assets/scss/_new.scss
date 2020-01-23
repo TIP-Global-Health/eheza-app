@@ -711,6 +711,14 @@ div.page-prenatal-activity {
       .form.patient-provisions {
         min-height: 335px;
       }
+
+      &.photo {
+
+        .small.image {
+          transform: rotate(90deg);
+          -ms-transform: rotate(90deg);
+        }
+      }
     }
 }
 
@@ -762,7 +770,7 @@ div.page-demographics-report {
         background: $color-white;
         color: $color-text;
         font-size: 18px;
-        padding: 20px 0 20px 40px
+        padding: 20px 0 20px 40px;
       }
     }
 }
@@ -987,13 +995,22 @@ div.page-clinical-progress-report {
         grid-gap: 28px;
         grid-template-columns: 150px 150px 150px 150px;
 
-        .progress-photo .ega {
-          background-color: $color-gray;
-          color: $color-white;
-          font-size: 16px;
-          font-weight: bold;
-          text-align: center;
+        .progress-photo {
+
+          .ega {
+            background-color: $color-gray;
+            color: $color-white;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+          }
+
+          .small.image {
+            transform: rotate(90deg);
+            -ms-transform: rotate(90deg);
+          }
         }
+
       }
 
       .trends-section {
