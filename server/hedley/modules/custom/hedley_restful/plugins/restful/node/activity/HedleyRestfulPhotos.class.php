@@ -48,7 +48,6 @@ class HedleyRestfulPhotos extends HedleyRestfulChildActivityBase {
   }
 
   /**
-  /**
    * Add latest measurement photo as the Person's profile avatar.
    *
    * @param $view_entity
@@ -75,6 +74,8 @@ class HedleyRestfulPhotos extends HedleyRestfulChildActivityBase {
       $person_wrapper->save();
     }
     catch (Exception $exception) {
+      watchdog('error', $exception->getMessage());
+
       throw $exception;
     }
   }
