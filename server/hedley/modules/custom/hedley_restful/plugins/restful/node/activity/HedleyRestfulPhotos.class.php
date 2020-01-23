@@ -50,13 +50,13 @@ class HedleyRestfulPhotos extends HedleyRestfulChildActivityBase {
   /**
    * Add latest measurement photo as the Person's profile avatar.
    *
-   * @param $view_entity
-   *   The photo entity view.
+   * @param array $view_entity
+   *   The photo entity RESTful view.
    *
    * @throws \Exception
    *   If there was an error saving the person entity.
    */
-  protected function copyImageToPerson($view_entity) {
+  protected function copyImageToPerson(array $view_entity) {
     $entity_id = $view_entity[0]['id'];
 
     $wrapper = entity_metadata_wrapper($this->entityType, $entity_id);
