@@ -70,6 +70,7 @@ type Msg
     | SaveMedicalHistory PrenatalEncounterId PersonId (Maybe ( MedicalHistoryId, MedicalHistory ))
       -- HistoryMsgs, Social
     | SetSocialBoolInput (Bool -> SocialHistoryForm -> SocialHistoryForm) Bool
+    | SetSocialHivTestingResult String
     | SaveSocialHistory PrenatalEncounterId PersonId (Maybe ( SocialHistoryId, SocialHistory ))
       -- ExaminationMsgs
     | SetActiveExaminationTask ExaminationTask
@@ -354,12 +355,13 @@ type alias SocialHistoryForm =
     { accompaniedByPartner : Maybe Bool
     , partnerReceivedCounseling : Maybe Bool
     , partnerReceivedTesting : Maybe Bool
+    , partnerTestingResult : Maybe SocialHistoryHivTestingResult
     }
 
 
 emptySocialHistoryForm : SocialHistoryForm
 emptySocialHistoryForm =
-    SocialHistoryForm Nothing Nothing Nothing
+    SocialHistoryForm Nothing Nothing Nothing Nothing
 
 
 type LmpRange

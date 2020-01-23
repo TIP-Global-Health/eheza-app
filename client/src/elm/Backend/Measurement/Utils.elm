@@ -1,4 +1,4 @@
-module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, getCurrentAndPrevious, mapMeasurementData, muacIndication, splitChildMeasurements, splitMotherMeasurements)
+module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, getCurrentAndPrevious, mapMeasurementData, muacIndication, socialHistoryHivTestingResultFromString, splitChildMeasurements, splitMotherMeasurements)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -161,3 +161,22 @@ getCurrentAndPrevious sessionId =
         { current = EveryDictList.empty
         , previous = Nothing
         }
+
+
+socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult
+socialHistoryHivTestingResultFromString result =
+    case result of
+        "positive" ->
+            Just ResultHivPositive
+
+        "negative" ->
+            Just ResultHivNegative
+
+        "indeterminate" ->
+            Just ResultHivIndeterminate
+
+        "none" ->
+            Just NoHivTesting
+
+        _ ->
+            Nothing

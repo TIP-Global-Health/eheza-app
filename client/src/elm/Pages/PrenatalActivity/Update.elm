@@ -14,7 +14,9 @@ import Backend.Measurement.Model
         , NeckCPESign(..)
         , PhotoUrl(..)
         , PreviousDeliveryPeriod(..)
+        , SocialHistoryHivTestingResult(..)
         )
+import Backend.Measurement.Utils exposing (socialHistoryHivTestingResultFromString)
 import Backend.Model
 import Backend.PrenatalEncounter.Model
 import Date.Extra as Date exposing (Interval(Day))
@@ -521,6 +523,25 @@ update currentDate msg model =
             , []
             )
 
+        SetSocialHivTestingResult value ->
+            let
+                result =
+                    socialHistoryHivTestingResultFromString value
+
+                updatedData =
+                    let
+                        updatedForm =
+                            model.historyData.socialForm
+                                |> (\form -> { form | partnerTestingResult = result })
+                    in
+                    model.historyData
+                        |> (\data -> { data | socialForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveSocialHistory prenatalEncounterId personId saved ->
             let
                 measurementId =
@@ -529,8 +550,16 @@ update currentDate msg model =
                 measurement =
                     Maybe.map (Tuple.second >> .value) saved
 
+                updatedForm =
+                    if isNothing model.historyData.socialForm.partnerTestingResult then
+                        model.historyData.socialForm
+                            |> (\form -> { form | partnerTestingResult = Just NoHivTesting })
+
+                    else
+                        model.historyData.socialForm
+
                 appMsgs =
-                    model.historyData.socialForm
+                    updatedForm
                         |> toSocialHistoryValueWithDefault measurement
                         |> unwrap
                             []
