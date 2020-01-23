@@ -13,7 +13,8 @@ type alias Model =
 
 
 type Msg
-    = SetActivePage Page
+    = NoOp
+    | SetActivePage Page
 
 
 emptyModel : Model

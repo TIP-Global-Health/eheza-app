@@ -334,7 +334,8 @@ div.page-person {
 
 //Common for Prenatal Encounter and Prenatal Activity pages
 div.page-prenatal-activity,
-div.page-prenatal-encounter {
+div.page-prenatal-encounter,
+div.page-pregnancy-outcome {
     padding: 0 35px 35px 35px;
     height: 100%;
     display: flex;
@@ -351,8 +352,8 @@ div.page-prenatal-encounter {
 
     .item.measurements {
       display: grid;
-      grid-template-columns: 25% 30% 20% 20%;
       grid-gap: 1em;
+      grid-template-columns: 25% 30% 20% 20%;
 
       .label {
         font-weight: bold;
@@ -477,6 +478,14 @@ div.page-prenatal-activity {
               padding: 5px;
             }
           }
+        }
+
+        &.hiv-test-result {
+          background: white;
+          border: 2px solid $color-light-gray;
+          margin-top: 15px;
+          padding: 5px;
+          width: 73%;
         }
 
         // Number inputs

@@ -133,7 +133,7 @@ fetch model =
                 |> List.map MsgIndexedDb
 
         UserPage (PregnancyOutcomePage id) ->
-            Pages.PregnancyOutcome.Fetch.fetch id
+            Pages.PregnancyOutcome.Fetch.fetch id model.indexedDb
                 |> List.map MsgIndexedDb
 
 

@@ -9,6 +9,12 @@ import Pages.PregnancyOutcome.Model exposing (..)
 update : NominalDate -> PrenatalParticipantId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id msg model =
     case msg of
+        NoOp ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
         SetActivePage page ->
             ( model
             , Cmd.none
