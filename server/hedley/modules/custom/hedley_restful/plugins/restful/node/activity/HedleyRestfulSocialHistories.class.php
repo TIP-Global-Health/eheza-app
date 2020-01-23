@@ -20,6 +20,10 @@ class HedleyRestfulSocialHistories extends HedleyRestfulPrenatalActivityBase {
       'property' => 'field_social_history',
     ];
 
+    $public_fields['partner_hiv_testing'] = [
+      'property' => 'field_partner_hiv_testing',
+    ];
+
     return $public_fields;
   }
 

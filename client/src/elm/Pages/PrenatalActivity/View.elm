@@ -1,6 +1,7 @@
 module Pages.PrenatalActivity.View exposing (view)
 
 import Backend.Entities exposing (..)
+import Backend.Measurement.Encoder exposing (socialHistoryHivTestingResultToString)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
@@ -346,7 +347,7 @@ viewHistoryContent language currentDate assembled data_ =
                                 |> List.filter
                                     (\( _, measurements ) ->
                                         measurements.socialHistory
-                                            |> Maybe.map (Tuple.second >> .value >> EverySet.member PartnerHivCounseling)
+                                            |> Maybe.map (Tuple.second >> .value >> .socialHistory >> EverySet.member PartnerHivCounseling)
                                             |> Maybe.withDefault False
                                     )
                                 |> List.isEmpty
@@ -358,18 +359,26 @@ viewHistoryContent language currentDate assembled data_ =
                             else
                                 []
 
-                        showTestingQuestion =
+                        showTestingQuestions =
                             assembled.previousMeasurementsWithDates
                                 |> List.filter
                                     (\( _, measurements ) ->
                                         measurements.socialHistory
-                                            |> Maybe.map (Tuple.second >> .value >> EverySet.member PartnerHivTesting)
+                                            |> Maybe.map
+                                                (\socialHistory ->
+                                                    let
+                                                        value =
+                                                            Tuple.second socialHistory |> .value
+                                                    in
+                                                    (value.hivTestingResult == ResultHivPositive)
+                                                        || (value.hivTestingResult == ResultHivNegative)
+                                                )
                                             |> Maybe.withDefault False
                                     )
                                 |> List.isEmpty
 
                         partnerReceivedTestingInput =
-                            if showTestingQuestion then
+                            if showTestingQuestions then
                                 [ socialForm.partnerReceivedTesting ]
 
                             else
@@ -380,12 +389,18 @@ viewHistoryContent language currentDate assembled data_ =
                                 :: partnerReceivedCounselingInput
                             )
                                 ++ partnerReceivedTestingInput
+
+                        listInputs =
+                            if socialForm.partnerReceivedTesting == Just True then
+                                [ socialForm.partnerTestingResult ]
+
+                            else
+                                []
                     in
-                    ( viewSocialForm language currentDate showCounselingQuestion showTestingQuestion socialForm
-                    , boolInputs
-                        |> List.map taskCompleted
-                        |> List.sum
-                    , List.length boolInputs
+                    ( viewSocialForm language currentDate showCounselingQuestion showTestingQuestions socialForm
+                    , (boolInputs |> List.map taskCompleted |> List.sum)
+                        + (listInputs |> List.map taskCompleted |> List.sum)
+                    , List.length boolInputs + List.length listInputs
                     )
 
         actions =
@@ -1430,7 +1445,7 @@ viewMedicalForm language currentDate assembled form =
 
 
 viewSocialForm : Language -> NominalDate -> Bool -> Bool -> SocialHistoryForm -> Html Msg
-viewSocialForm language currentDate showCounselingQuestion showTestingQuestion form =
+viewSocialForm language currentDate showCounselingQuestion showTestingQuestions form =
     let
         accompaniedByPartnerUpdateFunc value form_ =
             { form_ | accompaniedByPartner = Just value }
@@ -1473,8 +1488,8 @@ viewSocialForm language currentDate showCounselingQuestion showTestingQuestion f
             else
                 []
 
-        testingQuestion =
-            if showTestingQuestion then
+        testingReceivedQuestion =
+            if showTestingQuestions then
                 let
                     partnerReceivedTestingUpdateFunc value form_ =
                         { form_ | partnerReceivedTesting = Just value }
@@ -1495,8 +1510,40 @@ viewSocialForm language currentDate showCounselingQuestion showTestingQuestion f
 
             else
                 []
+
+        testingResultQuestion =
+            if showTestingQuestions && form.partnerReceivedTesting == Just True then
+                [ div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewQuestionLabel language Translate.PartnerHivTestResult ]
+                    , div [ class "four wide column" ]
+                        [ viewRedAlertForSelect
+                            (form.partnerTestingResult |> Maybe.map List.singleton |> Maybe.withDefault [])
+                            [ NoHivTesting, ResultHivNegative, ResultHivIndeterminate ]
+                        ]
+                    ]
+                , option
+                    [ value ""
+                    , selected (form.partnerTestingResult == Nothing)
+                    ]
+                    [ text "" ]
+                    :: ([ ResultHivNegative, ResultHivPositive, ResultHivIndeterminate ]
+                            |> List.map
+                                (\result ->
+                                    option
+                                        [ value (socialHistoryHivTestingResultToString result)
+                                        , selected (form.partnerTestingResult == Just result)
+                                        ]
+                                        [ text <| translate language <| Translate.SocialHistoryHivTestingResult result ]
+                                )
+                       )
+                    |> select [ onInput SetSocialHivTestingResult, class "form-input hiv-test-result" ]
+                ]
+
+            else
+                []
     in
-    (accompaniedQuestion ++ counselingQuestion ++ testingQuestion)
+    (accompaniedQuestion ++ counselingQuestion ++ testingReceivedQuestion ++ testingResultQuestion)
         |> div [ class "form history social" ]
 
 

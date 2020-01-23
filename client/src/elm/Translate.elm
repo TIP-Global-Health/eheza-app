@@ -435,6 +435,7 @@ type TranslationId
     | ParticipantSummary
     | ParticipantDemographicInformation
     | ParticipantInformation
+    | PartnerHivTestResult
     | PartnerReceivedHivCounseling
     | PartnerReceivedHivTesting
     | PatientProgress
@@ -542,6 +543,7 @@ type TranslationId
     | ServiceWorkerRegSuccess
     | ServiceWorkerStatus
     | SevereHemorrhagingPreviousDelivery
+    | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
     | StillbornPreviousDelivery
     | SubsequentAntenatalVisit
     | SuccessiveAbortions
@@ -2789,6 +2791,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PartnerHivTestResult ->
+            { english = "What was the partners Hiv Test result"
+            , kinyarwanda = Nothing
+            }
+
         PartnerReceivedHivCounseling ->
             { english = "Did partner receive HIV Counseling during this pregnancy"
             , kinyarwanda = Nothing
@@ -3480,6 +3487,28 @@ translationSet trans =
             { english = "Severe Hemorrhaging in previous delivery (>500 ml)"
             , kinyarwanda = Nothing
             }
+
+        SocialHistoryHivTestingResult result ->
+            case result of
+                ResultHivPositive ->
+                    { english = "Positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResultHivNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResultHivIndeterminate ->
+                    { english = "Indeterminate"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoHivTesting ->
+                    { english = "Ntibiboneste"
+                    , kinyarwanda = Nothing
+                    }
 
         StillbornPreviousDelivery ->
             { english = "Stillborn in previous delivery"
