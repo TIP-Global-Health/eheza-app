@@ -22,6 +22,11 @@ fetch participantId db =
                 |> RemoteData.map EveryDictList.keys
                 |> RemoteData.withDefault []
 
+        lastEncounterId =
+            encountersIds
+                |> List.reverse
+                |> List.head
+
         -- We fetch measurements for all encounters, to be
         -- able to resolve EGA, EDD, Gravida and Para.
         fetchMeasurements =
@@ -29,6 +34,8 @@ fetch participantId db =
                 |> List.map FetchPrenatalMeasurements
     in
     List.filterMap identity
-        [ Maybe.map FetchPerson personId ]
+        [ Maybe.map FetchPerson personId
+        , Maybe.map FetchPrenatalEncounter lastEncounterId
+        ]
         ++ [ FetchPrenatalParticipant participantId, FetchPrenatalEncountersForParticipant participantId ]
         ++ fetchMeasurements
