@@ -1,4 +1,4 @@
-module Backend.PrenatalParticipant.Encoder exposing (encodePrenatalParticipant, pregnancyOutcomeToString)
+module Backend.PrenatalParticipant.Encoder exposing (encodeDeliveryLocation, encodePregnancyOutcome, encodePrenatalParticipant, pregnancyOutcomeToString)
 
 import Backend.PrenatalParticipant.Model exposing (..)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
@@ -32,6 +32,24 @@ encodeEncounterType type_ =
 
         NutritionEncounter ->
             string "nutrition"
+
+
+encodePregnancyOutcome : PregnancyOutcome -> Value
+encodePregnancyOutcome outcome =
+    pregnancyOutcomeToString outcome |> string
+
+
+encodeDeliveryLocation : Bool -> Value
+encodeDeliveryLocation isFacilityDelivery =
+    let
+        location =
+            if isFacilityDelivery then
+                "facility"
+
+            else
+                "home"
+    in
+    string location
 
 
 pregnancyOutcomeToString : PregnancyOutcome -> String

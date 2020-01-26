@@ -16,6 +16,7 @@ type alias Model =
 
 type Msg
     = NoOp
+    | SavePregnancyOutcome
     | SetActivePage Page
     | SetDeliveryLocation Bool
     | SetPregnancyConcludedDate Date

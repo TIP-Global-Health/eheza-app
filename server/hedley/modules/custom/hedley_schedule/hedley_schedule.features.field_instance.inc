@@ -1095,6 +1095,61 @@ function hedley_schedule_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-prenatal_participant-field_date_concluded'.
+  $field_instances['node-prenatal_participant-field_date_concluded'] = array(
+    'bundle' => 'prenatal_participant',
+    'deleted' => 0,
+    'description' => 'Indicates the date on which session was completed',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 4,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_date_concluded',
+    'label' => 'Date concluded',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 5,
+    ),
+  );
+
   // Exported field_instance: 'node-prenatal_participant-field_encounter_type'.
   $field_instances['node-prenatal_participant-field_encounter_type'] = array(
     'bundle' => 'prenatal_participant',
@@ -1184,6 +1239,83 @@ function hedley_schedule_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_participant-field_outcome'.
+  $field_instances['node-prenatal_participant-field_outcome'] = array(
+    'bundle' => 'prenatal_participant',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Indicates what was the session outcome.
+Used to track outcome of pregnancies.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 5,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_outcome',
+    'label' => 'Outcome',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 6,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-prenatal_participant-field_outcome_location'.
+  $field_instances['node-prenatal_participant-field_outcome_location'] = array(
+    'bundle' => 'prenatal_participant',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Indicates the location where outcome occurred.
+Used to track location where pregnancies were completed.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_outcome_location',
+    'label' => 'Outcome location',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 7,
     ),
   );
 
@@ -1501,6 +1633,7 @@ function hedley_schedule_field_default_field_instances() {
   t('Child');
   t('Closed (DEPRECATED)');
   t('Date Measured');
+  t('Date concluded');
   t('Encounter type');
   t('English Title');
   t('Enter the clinic for which data-entry is being scheduled.');
@@ -1509,11 +1642,18 @@ function hedley_schedule_field_default_field_instances() {
   t('Group Encounter');
   t('Has the session been explicitly closed by the user?');
   t('Health Center');
+  t('Indicates the date on which session was completed');
+  t('Indicates the location where outcome occurred.
+Used to track location where pregnancies were completed.');
+  t('Indicates what was the session outcome.
+Used to track outcome of pregnancies.');
   t('Kinyarwanda Title');
   t('Leave this blank -- it will be automatically generated.');
   t('Leave this field blank -- it will be automatically generated.');
   t('Nurse');
   t('Once you have created a "Counseling Topic" and it has been used, make only minor edits -- any edit will affect the historical data of which topics have been discussed with participants. If an edit would represent a different topic, then create a new topic instead. You can remove an unused topic from the relevant "Counseling Schedule" -- but do not delete the unused topic, since that would also affect the historical data.');
+  t('Outcome');
+  t('Outcome location');
   t('PMTCT Group');
   t('Person');
   t('Prenatal Participant');

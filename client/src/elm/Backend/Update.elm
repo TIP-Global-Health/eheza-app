@@ -13,6 +13,8 @@ import Backend.Person.Model exposing (RegistrationInitiator(..))
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Update
+import Backend.PrenatalParticipant.Model
+import Backend.PrenatalParticipant.Update
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
 import Backend.Relationship.Model exposing (RelatedBy(..))
 import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
@@ -477,6 +479,25 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             in
             ( { model | prenatalEncounterRequests = EveryDict.insert encounterId subModel model.prenatalEncounterRequests }
             , Cmd.map (MsgPrenatalEncounter encounterId) subCmd
+            , []
+            )
+
+        MsgPrenatalSession participantId subMsg ->
+            let
+                participant =
+                    EveryDict.get participantId model.prenatalParticipants
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+
+                requests =
+                    EveryDict.get participantId model.prenatalSessionRequests
+                        |> Maybe.withDefault Backend.PrenatalParticipant.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.PrenatalParticipant.Update.update participantId participant currentDate subMsg requests
+            in
+            ( { model | prenatalSessionRequests = EveryDict.insert participantId subModel model.prenatalSessionRequests }
+            , Cmd.map (MsgPrenatalSession participantId) subCmd
             , []
             )
 

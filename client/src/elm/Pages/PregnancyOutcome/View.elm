@@ -140,8 +140,7 @@ viewPregnancyOutcome language currentDate data model =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-
-                -- , onClick <| SavePregnancyDating assembled.id assembled.participant.person assembled.measurements.lastMenstrualPeriod
+                , onClick SavePregnancyOutcome
                 ]
                 [ text <| translate language Translate.Save ]
             ]

@@ -75,12 +75,10 @@ type alias ModelIndexedDb =
     -- organized data here, and recalculate it when necessary.
     , editableSessions : EveryDict SessionId (WebData EditableSession)
 
-    -- Tracks requests in progress to update sessions or prenatal encounters
+    -- Tracks requests in progress to update sessions, prenatal sessions or prenatal encounters.
     , sessionRequests : EveryDict SessionId Backend.Session.Model.Model
     , prenatalEncounterRequests : EveryDict PrenatalEncounterId Backend.PrenatalEncounter.Model.Model
-
-    -- Tracks requests in progress to update sessions or prenatal encounters
-    , sessionRequests : EveryDict SessionId Backend.Session.Model.Model
+    , prenatalSessionRequests : EveryDict PrenatalParticipantId Backend.PrenatalParticipant.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
@@ -146,6 +144,7 @@ emptyModelIndexedDb =
     , postSession = NotAsked
     , prenatalEncounters = EveryDict.empty
     , prenatalEncounterRequests = EveryDict.empty
+    , prenatalSessionRequests = EveryDict.empty
     , prenatalParticipants = EveryDict.empty
     , prenatalParticipantsByPerson = EveryDict.empty
     , prenatalEncountersByParticipant = EveryDict.empty
@@ -231,6 +230,7 @@ type MsgIndexedDb
       -- Handling edits to session data or prenatal encounter data
     | MsgSession SessionId Backend.Session.Model.Msg
     | MsgPrenatalEncounter PrenatalEncounterId Backend.PrenatalEncounter.Model.Msg
+    | MsgPrenatalSession PrenatalParticipantId Backend.PrenatalParticipant.Model.Msg
       -- Temporary, until we have a real UI for picking out a PrenatalEncounter
     | GoToRandomPrenatalEncounter
     | HandleRandomPrenatalEncounter (Result Http.Error (Maybe PrenatalEncounterId))

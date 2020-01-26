@@ -2,19 +2,40 @@ module Pages.PregnancyOutcome.Update exposing (update)
 
 import App.Model
 import Backend.Entities exposing (..)
+import Backend.Model
 import Backend.PrenatalParticipant.Decoder exposing (pregnancyOutcomeFromString)
+import Backend.PrenatalParticipant.Model
 import Gizra.NominalDate exposing (NominalDate)
+import Pages.Page exposing (Page(..))
 import Pages.PregnancyOutcome.Model exposing (..)
 
 
 update : NominalDate -> PrenatalParticipantId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id msg model =
+    let
+        noChange =
+            ( model, Cmd.none, [] )
+    in
     case msg of
         NoOp ->
-            ( model
-            , Cmd.none
-            , []
-            )
+            noChange
+
+        SavePregnancyOutcome ->
+            Maybe.map3
+                (\dateConcluded outcome isFacilityDelivery ->
+                    ( model
+                    , Cmd.none
+                    , [ Backend.PrenatalParticipant.Model.ClosePrenatalSession dateConcluded outcome isFacilityDelivery
+                            |> Backend.Model.MsgPrenatalSession id
+                            |> App.Model.MsgIndexedDb
+                      , App.Model.SetActivePage PinCodePage
+                      ]
+                    )
+                )
+                model.pregnancyConcludedDate
+                model.pregnancyOutcome
+                model.isFacilityDelivery
+                |> Maybe.withDefault noChange
 
         SetActivePage page ->
             ( model
