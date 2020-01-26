@@ -545,3 +545,10 @@ function hedley_update_7022() {
   $health_worker_role->name = 'health worker';
   user_role_save($health_worker_role);
 }
+
+/**
+ * Enable the Hedley Stats module.
+ */
+function hedley_update_7023() {
+  module_enable(['hedley_stats']);
+}
