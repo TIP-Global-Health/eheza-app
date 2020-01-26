@@ -307,24 +307,32 @@ viewBeneficiariesTable language currentDate stats model =
 
 viewDashboardPagesLinks : Language -> Html Msg
 viewDashboardPagesLinks language =
-    div []
-        [ div [ class "ui segment" ]
-            [ a
-                [ DashboardPage StatsPage
-                    |> UserPage
-                    |> SetActivePage
-                    |> onClick
-                ]
-                [ text "Statistics" ]
+    div [ class "dashboards-links" ]
+        [ a
+            [ class "ui segment stats"
+            , DashboardPage StatsPage
+                |> UserPage
+                |> SetActivePage
+                |> onClick
             ]
-        , div [ class "ui segment" ]
-            [ a
-                [ DashboardPage CaseManagementPage
-                    |> UserPage
-                    |> SetActivePage
-                    |> onClick
-                ]
-                [ text "Case Management" ]
+            [ i [ class "icon" ] []
+            , span
+                []
+                [ translateText language <| Translate.Dashboard Translate.StatisticsLink ]
+            , i [ class "arrow" ] []
+            ]
+        , a
+            [ class "ui segment case"
+            , DashboardPage CaseManagementPage
+                |> UserPage
+                |> SetActivePage
+                |> onClick
+            ]
+            [ i [ class "icon" ] []
+            , span
+                []
+                [ translateText language <| Translate.Dashboard Translate.CaseManagementLink ]
+            , i [ class "arrow" ] []
             ]
         ]
 
