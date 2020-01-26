@@ -23,7 +23,7 @@ import Pages.DemographicsReport.View exposing (viewHeader, viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Utils exposing (calculateBmi)
 import Pages.PrenatalEncounter.Utils exposing (calculateEDDandEGADays, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generatePara, getLmpMeasurement)
-import Pages.Utils exposing (viewPhotoThumb)
+import Pages.Utils exposing (viewPhotoThumbFromPhotoUrl)
 import PrenatalActivity.Model
     exposing
         ( PregnancyTrimester(..)
@@ -575,7 +575,7 @@ viewPatientProgressPane language currentDate measurements =
                                                         |> Maybe.withDefault ""
                                             in
                                             div [ class "progress-photo" ]
-                                                [ viewPhotoThumb photoUrl
+                                                [ viewPhotoThumbFromPhotoUrl photoUrl
                                                 , div [ class "ega" ] [ text egaLabel ]
                                                 ]
                                        )

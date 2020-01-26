@@ -40,7 +40,7 @@ import Pages.PrenatalActivity.Utils
         )
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
-import Pages.Utils exposing (viewPhotoThumb)
+import Pages.Utils exposing (viewPhotoThumbFromPhotoUrl)
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -847,7 +847,7 @@ viewPrenatalPhotoContent language currentDate assembled data =
             [ class "content" ]
             [ keyedDivKeyed "grid"
                 [ class "ui grid" ]
-                [ Maybe.map viewPhotoThumb displayPhoto
+                [ Maybe.map viewPhotoThumbFromPhotoUrl displayPhoto
                     |> showMaybe
                     |> List.singleton
                     |> div [ class "eight wide column" ]

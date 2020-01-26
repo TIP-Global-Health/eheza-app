@@ -711,14 +711,6 @@ div.page-prenatal-activity {
       .form.patient-provisions {
         min-height: 335px;
       }
-
-      &.photo {
-
-        .small.image {
-          transform: rotate(90deg);
-          -ms-transform: rotate(90deg);
-        }
-      }
     }
 }
 
@@ -1003,11 +995,6 @@ div.page-clinical-progress-report {
             font-size: 16px;
             font-weight: bold;
             text-align: center;
-          }
-
-          .small.image {
-            transform: rotate(90deg);
-            -ms-transform: rotate(90deg);
           }
         }
 

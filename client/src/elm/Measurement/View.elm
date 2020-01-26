@@ -23,7 +23,7 @@ import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
-import Pages.Utils exposing (viewPhotoThumb)
+import Pages.Utils exposing (viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
@@ -449,7 +449,7 @@ viewPhoto language measurement photo =
                 |> keyed "help"
             , keyedDivKeyed "grid"
                 [ class "ui grid" ]
-                [ Maybe.map viewPhotoThumb displayPhoto
+                [ Maybe.map viewPhotoThumbFromPhotoUrl displayPhoto
                     |> showMaybe
                     |> List.singleton
                     |> div [ class "eight wide column" ]
