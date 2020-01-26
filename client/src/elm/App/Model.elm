@@ -13,7 +13,7 @@ import Json.Encode exposing (Value)
 import Pages.Clinics.Model
 import Pages.Dashboard.Model
 import Pages.Device.Model
-import Pages.Page exposing (Page(..))
+import Pages.Page exposing (DashboardPage(..), Page(..))
 import Pages.People.Model
 import Pages.Person.Model
 import Pages.PinCode.Model
@@ -203,7 +203,7 @@ type Msg
 type MsgLoggedIn
     = MsgPageClinics Pages.Clinics.Model.Msg
     | MsgPageCreatePerson Pages.Person.Model.Msg
-    | MsgPageDashboard Pages.Dashboard.Model.Msg
+    | MsgPageDashboard DashboardPage Pages.Dashboard.Model.Msg
     | MsgPagePersons Pages.People.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg

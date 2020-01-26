@@ -1,46 +1,57 @@
 module Pages.Dashboard.View exposing (view)
 
-import Array exposing (Array)
 import AssocList as Dict exposing (Dict)
 import Backend.Dashboard.Model exposing (DashboardStats)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model
 import Color exposing (Color)
-import Date exposing (Unit(..), fromCalendarDate, isBetween)
-import Gizra.NominalDate exposing (NominalDate, diffCalendarMonthsAndDays, isDiffTruthy)
+import Date exposing (Unit(..), isBetween)
+import Gizra.NominalDate exposing (NominalDate, isDiffTruthy)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
 import List.Extra
 import Pages.Dashboard.Model exposing (..)
+import Pages.Page exposing (DashboardPage)
 import Path
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
 import Svg.Attributes exposing (cx, cy, height, r, width)
-import Translate exposing (Language, translate, translateText)
+import Translate exposing (Language, translateText)
 import TypedSvg exposing (g, svg)
-import TypedSvg.Attributes exposing (fill, stroke, transform, viewBox)
+import TypedSvg.Attributes exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
 
 
 {-| Shows a dashboard page.
 -}
-view : Language -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
-view language currentDate healthCenterId model db =
+view : Language -> DashboardPage -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
+view language page currentDate healthCenterId model db =
     let
         stats =
             Dict.get healthCenterId db.computedDashboard
                 |> Maybe.withDefault Backend.Dashboard.Model.emptyModel
                 -- Filter by period.
                 |> filterStatsByPeriod currentDate model
+
+        header =
+            div
+                [ class "ui basic head segment" ]
+                [ h1 [ class "ui header" ]
+                    [ translateText language <| Translate.Dashboard Translate.DashboardTitle ]
+                , a
+                    [ class "link-back"
+                    ]
+                    [ span [ class "icon-back" ] [] ]
+                ]
     in
     div
-        []
-        [ viewPeriodFilter language model
+        [ class "wrap" ]
+        [ header
+        , viewPeriodFilter language model
         , viewAllCards language stats
         , viewBeneficiariesTable language currentDate stats model
         , div
@@ -287,16 +298,6 @@ filterStatsByPeriod currentDate model stats =
     let
         startDate =
             case model.period of
-                ThisMonth ->
-                    -- Beginning of current month.
-                    fromCalendarDate (Date.year currentDate) (Date.month currentDate) 1
-
-                LastMonth ->
-                    Date.add Months -1 currentDate
-
-                ThreeMonths ->
-                    Date.add Months -3 currentDate
-
                 OneYear ->
                     Date.add Years -1 currentDate
 

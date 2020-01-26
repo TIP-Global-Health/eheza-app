@@ -21,18 +21,12 @@ import Translate exposing (TranslationId)
 
 
 type FilterPeriod
-    = ThisMonth
-    | LastMonth
-    | ThreeMonths
-    | OneYear
+    = OneYear
 
 
 filterPeriods : List FilterPeriod
 filterPeriods =
-    [ ThisMonth
-    , LastMonth
-    , ThreeMonths
-    , OneYear
+    [ OneYear
     ]
 
 

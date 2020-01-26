@@ -384,6 +384,7 @@ var precacheFileGlob =
 var precacheLocalDev = [
   precacheFileGlob,
   'assets/**/' + precacheFileGlob,
+  '!js/rollbar.js',
   'bower_components/copy-button/bundled.min.js',
   'bower_components/dropzone/dist/min/dropzone.min.css',
   'bower_components/dropzone/dist/min/dropzone.min.js',
@@ -426,7 +427,6 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function() {
       'nodes.js',
       'statistics.js',
       'photos.js',
-      'rollbar.js',
       'sync.js'
     ]
   });

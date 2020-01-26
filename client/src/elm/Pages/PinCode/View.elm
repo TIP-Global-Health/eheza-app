@@ -9,7 +9,7 @@ import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 import Pages.PinCode.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
@@ -178,7 +178,7 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                     dashboardButton =
                         button
                             [ class "ui primary button dashboard"
-                            , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage
+                            , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage MainPage
                             ]
                             [ span [ class "icon-group" ] []
                             , span [ class "text" ] [ text <| translate language Translate.DashboardLabel ]

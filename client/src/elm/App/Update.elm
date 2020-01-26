@@ -64,7 +64,7 @@ init flags url key =
         fragment =
             -- @todo: Temporary
             -- pageToFragment PinCodePage
-            pageToFragment (UserPage DashboardPage)
+            pageToFragment (UserPage <| DashboardPage MainPage)
 
         url_ =
             { url | fragment = fragment, query = Nothing }
@@ -212,13 +212,13 @@ update msg model =
                             , appMsgs
                             )
 
-                        MsgPageDashboard subMsg ->
+                        MsgPageDashboard subPage subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
                                     Pages.Dashboard.Update.update subMsg data.dashboardPage
                             in
                             ( { data | dashboardPage = subModel }
-                            , Cmd.map (MsgLoggedIn << MsgPageDashboard) subCmd
+                            , Cmd.map (MsgLoggedIn << MsgPageDashboard subPage) subCmd
                             , appMsgs
                             )
 

@@ -5,7 +5,6 @@ import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Browser
 import Config.View
-import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
@@ -22,12 +21,12 @@ import Pages.PinCode.View
 import Pages.Relationship.Model
 import Pages.Relationship.View
 import Pages.Session.Model
-import Pages.Session.View exposing (view)
+import Pages.Session.View
 import RemoteData exposing (RemoteData(..), WebData)
 import ServiceWorker.View
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
-import Utils.Html exposing (spinner, wrapPage)
+import Utils.Html exposing (spinner)
 import Version
 
 
@@ -191,9 +190,9 @@ viewUserPage page model configured =
                         |> Html.map (MsgLoggedIn << MsgPageClinics)
                         |> flexPageWrapper model
 
-                DashboardPage ->
-                    Pages.Dashboard.View.view model.language currentDate healthCenterId loggedInModel.dashboardPage model.indexedDb
-                        |> Html.map (MsgLoggedIn << MsgPageDashboard)
+                DashboardPage subPage ->
+                    Pages.Dashboard.View.view model.language subPage currentDate healthCenterId loggedInModel.dashboardPage model.indexedDb
+                        |> Html.map (MsgLoggedIn << MsgPageDashboard subPage)
                         |> flexPageWrapper model
 
                 CreatePersonPage relation ->

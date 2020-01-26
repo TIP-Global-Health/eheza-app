@@ -49,7 +49,7 @@ fetch model =
             Pages.Clinics.Fetch.fetch clinicId
                 |> List.map MsgIndexedDb
 
-        UserPage DashboardPage ->
+        UserPage (DashboardPage subPage) ->
             getLoggedInData model
                 |> Maybe.map
                     (\( healthCenterId, loggedIn ) ->
