@@ -18,3 +18,6 @@ update msg model =
             , Cmd.none
             , []
             )
+
+        SetActivePage page ->
+            ( model, Cmd.none, [ App.Model.SetActivePage page ] )

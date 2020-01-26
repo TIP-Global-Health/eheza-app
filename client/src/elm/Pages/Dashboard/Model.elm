@@ -17,6 +17,7 @@ module Pages.Dashboard.Model exposing
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
 import Color exposing (Color)
+import Pages.Page exposing (Page)
 import Translate exposing (TranslationId)
 
 
@@ -86,3 +87,4 @@ type alias Card =
 type Msg
     = SetFilterGender FilterGender
     | SetFilterPeriod FilterPeriod
+    | SetActivePage Page

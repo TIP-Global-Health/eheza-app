@@ -14,7 +14,7 @@ import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
 import List.Extra
 import Pages.Dashboard.Model exposing (..)
-import Pages.Page exposing (DashboardPage)
+import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 import Path
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
@@ -31,11 +31,16 @@ import TypedSvg.Types exposing (Fill(..), Transform(..))
 view : Language -> DashboardPage -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
 view language page currentDate healthCenterId model db =
     let
-        stats =
-            Dict.get healthCenterId db.computedDashboard
-                |> Maybe.withDefault Backend.Dashboard.Model.emptyModel
-                -- Filter by period.
-                |> filterStatsByPeriod currentDate model
+        ( pageView, backAction ) =
+            case page of
+                MainPage ->
+                    ( viewMainPage language currentDate healthCenterId model db, SetActivePage PinCodePage )
+
+                StatsPage ->
+                    ( viewStatsPage language currentDate healthCenterId model db, SetActivePage <| UserPage <| DashboardPage MainPage )
+
+                CaseManagementPage ->
+                    ( viewCaseManagementPage language currentDate healthCenterId model db, SetActivePage <| UserPage <| DashboardPage MainPage )
 
         header =
             div
@@ -44,6 +49,7 @@ view language page currentDate healthCenterId model db =
                     [ translateText language <| Translate.Dashboard Translate.DashboardTitle ]
                 , a
                     [ class "link-back"
+                    , onClick <| backAction
                     ]
                     [ span [ class "icon-back" ] [] ]
                 ]
@@ -51,7 +57,26 @@ view language page currentDate healthCenterId model db =
     div
         [ class "wrap" ]
         [ header
-        , viewPeriodFilter language model
+        , pageView
+        ]
+
+
+viewMainPage : Language -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
+viewMainPage language currentDate healthCenterId model db =
+    div [ class "dashboard main" ] [ viewDashboardPagesLinks language ]
+
+
+viewStatsPage : Language -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
+viewStatsPage language currentDate healthCenterId model db =
+    let
+        stats =
+            Dict.get healthCenterId db.computedDashboard
+                |> Maybe.withDefault Backend.Dashboard.Model.emptyModel
+                -- Filter by period.
+                |> filterStatsByPeriod currentDate model
+    in
+    div [ class "dashboard stats" ]
+        [ viewPeriodFilter language model
         , viewAllCards language stats
         , viewBeneficiariesTable language currentDate stats model
         , div
@@ -66,6 +91,12 @@ view language page currentDate healthCenterId model db =
             [ text <| Debug.toString <| getFamilyPlanningSignsCounter stats
             ]
         ]
+
+
+viewCaseManagementPage : Language -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
+viewCaseManagementPage language currentDate healthCenterId model db =
+    --@todo: Add case management page design.
+    div [ class "dashboard management ui segment blue" ] [ text "Case Management Page" ]
 
 
 viewPeriodFilter : Language -> Model -> Html Msg
@@ -270,6 +301,30 @@ viewBeneficiariesTable language currentDate stats model =
                     , td [] [ text <| getTotalMalnourishedCount stats12_plus ]
                     ]
                 ]
+            ]
+        ]
+
+
+viewDashboardPagesLinks : Language -> Html Msg
+viewDashboardPagesLinks language =
+    div []
+        [ div [ class "ui segment" ]
+            [ a
+                [ DashboardPage StatsPage
+                    |> UserPage
+                    |> SetActivePage
+                    |> onClick
+                ]
+                [ text "Statistics" ]
+            ]
+        , div [ class "ui segment" ]
+            [ a
+                [ DashboardPage CaseManagementPage
+                    |> UserPage
+                    |> SetActivePage
+                    |> onClick
+                ]
+                [ text "Case Management" ]
             ]
         ]
 
