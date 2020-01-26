@@ -38,7 +38,7 @@
     var rw = 'rw';
 
     var batchSize = 50;
-    var dataTimeout = 15000; // 15 seconds
+    var dataTimeout = 30000; // 30 seconds
     var imageTimeout = 120000; // 2 minutes
 
     // Listen for background sync requests. We can get here in one of several
