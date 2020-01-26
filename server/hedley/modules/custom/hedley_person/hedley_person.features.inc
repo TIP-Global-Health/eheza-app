@@ -34,31 +34,7 @@ function hedley_person_image_default_styles() {
       ),
     ),
   );
-
-  // Exported image style: prenatal-photo.
-  $styles['prenatal-photo'] = array(
-    'label' => 'Prenatal photo',
-    'effects' => array(
-      2 => array(
-        'name' => 'image_scale_and_crop',
-        'data' => array(
-          'width' => 200,
-          'height' => 150,
-        ),
-        'weight' => 1,
-      ),
-      3 => array(
-        'name' => 'image_rotate',
-        'data' => array(
-          'degrees' => 90,
-          'bgcolor' => '#FFFFFF',
-          'random' => 0,
-        ),
-        'weight' => 2,
-      ),
-    ),
-  );
-
+  
   return $styles;
 }
 
