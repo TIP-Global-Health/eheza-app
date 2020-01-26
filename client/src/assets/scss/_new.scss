@@ -56,13 +56,13 @@ div.language-switcher {
     .version {
         margin-right: 16px;
         height: 24px;
-        color: white;
+        color: $color-white;
         font-size: .6em;
         cursor: pointer;
     }
 
     .sync-icon {
-        color: white;
+        color: $color-white;
         cursor: pointer;
     }
 
@@ -79,7 +79,7 @@ div.language-switcher {
             position: relative;
             display: flex;
             height: 27px;
-            color: white;
+            color: $color-white;
             font-size: .8em;
             cursor: pointer;
 
@@ -89,9 +89,9 @@ div.language-switcher {
 
             a {
                 display: block;
-                width: 27 px;
-                height: 27 px;
-                background: #fff;
+                width: 27px;
+                height: 27px;
+                background: $color-white;
                 border-radius: 50%;
                 position: relative;
                 margin-left: 10px;
@@ -155,7 +155,7 @@ div.page-pincode {
 
     button.ui.logout.button {
       background: $color-light-background;
-      border: 2px solid white;
+      border: 2px solid $color-white;
       position: absolute;
       bottom: 0;
       width: 89%;
@@ -454,7 +454,7 @@ div.page-prenatal-activity {
 
         // Pregnanacy Dating Inputs
         &.range {
-          background: white;
+          background: $color-white;
           border: 2px solid $color-light-gray;
           padding: 5px;
           width: 50%;
@@ -470,7 +470,7 @@ div.page-prenatal-activity {
           }
 
           .dropdown--button-container {
-            background: white;
+            background: $color-white;
             border: 2px solid $color-light-gray;
 
             input {
@@ -481,7 +481,7 @@ div.page-prenatal-activity {
         }
 
         &.hiv-test-result {
-          background: white;
+          background: $color-white;
           border: 2px solid $color-light-gray;
           margin-top: 15px;
           padding: 5px;
@@ -642,7 +642,7 @@ div.page-prenatal-activity {
           margin: 0;
 
           &.active {
-            border-left: 1px solid white;
+            border-left: 1px solid $color-white;
           }
         }
       }
@@ -720,6 +720,101 @@ div.page-prenatal-activity {
       .form.patient-provisions {
         min-height: 335px;
       }
+    }
+}
+
+// Pregnancy Outcome page
+div.page-pregnancy-outcome {
+
+    .tasks-count {
+      background: $color-primary;
+      font-size: 18px;
+      font-weight: bold;
+      padding: 5px 15px;
+    }
+
+    .ui.full.segment {
+
+      .label {
+        font-weight: bold;
+        margin-bottom: 20px;
+
+        &.helper {
+          margin-bottom: 40px;
+        }
+      }
+
+      .form-input {
+        margin-bottom: 30px;
+
+        &.date {
+          height: 2em;
+          width: 50%;
+
+          .dropdown,
+          .dropdown-open {
+            width: 100%;
+          }
+
+          .dropdown--button-container {
+            background: $color-white;
+            border: 2px solid $color-light-gray;
+
+            input {
+              border: 0;
+              padding: 5px;
+            }
+          }
+        }
+
+        &.pregnancy-outcome {
+          background: $color-white;
+          border: 2px solid $color-light-gray;
+          padding: 5px;
+          width: 73%;
+        }
+
+        // Bool inputs
+        &.yes-no {
+          padding-bottom: 15px;
+          margin-left: 25px;
+
+          label {
+            font-size: 25px;
+            margin-left: 10px;
+          }
+
+          label:before {
+            content: " ";
+            display: inline-block;
+            position: relative;
+            top: 5px;
+            margin-right: 10px;
+            width: 26px;
+            height: 26px;
+            border-radius: 13px;
+            border: 2px solid $color-gray-border;
+            background-color: transparent;
+          }
+
+          input[type=radio] {
+            display: none;
+          }
+
+          input[type=radio]:checked + label:after {
+            content: " ";
+            border-radius: 7px;
+            width: 14px;
+            height: 14px;
+            position: absolute;
+            top: 25px;
+            left: 30px;
+            display: block;
+            background: $color-text;
+          }
+        }
+      }
+
     }
 }
 

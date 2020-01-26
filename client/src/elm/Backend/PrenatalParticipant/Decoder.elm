@@ -1,4 +1,4 @@
-module Backend.PrenatalParticipant.Decoder exposing (decodePrenatalParticipant)
+module Backend.PrenatalParticipant.Decoder exposing (decodePrenatalParticipant, pregnancyOutcomeFromString)
 
 import Backend.PrenatalParticipant.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
@@ -36,3 +36,25 @@ decodeEncounterType =
                             s
                                 ++ " is not a recognized EncounterType"
             )
+
+
+pregnancyOutcomeFromString : String -> Maybe PregnancyOutcome
+pregnancyOutcomeFromString outcome =
+    case outcome of
+        "live-at-term" ->
+            Just OutcomeLiveAtTerm
+
+        "live-pre-term" ->
+            Just OutcomeLivePreTerm
+
+        "still-at-term" ->
+            Just OutcomeStillAtTerm
+
+        "still-pre-term" ->
+            Just OutcomeStillPreTerm
+
+        "abortions" ->
+            Just OutcomeAbortions
+
+        _ ->
+            Nothing

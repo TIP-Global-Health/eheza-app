@@ -43,7 +43,7 @@ import Pages.PrenatalActivity.Utils
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
-import Pages.Utils exposing (viewPhotoThumb)
+import Pages.Utils exposing (taskCompleted, viewBoolInput, viewCustomLabel, viewLabel, viewPhotoThumb, viewQuestionLabel)
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -2163,54 +2163,6 @@ viewResourcesForm language currentDate assembled form =
 -- Inputs
 
 
-viewBoolInput :
-    Language
-    -> Maybe Bool
-    -> (Bool -> Msg)
-    -> String
-    -> Maybe ( TranslationId, TranslationId )
-    -> Html Msg
-viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
-    let
-        ( yesTransId, noTransId ) =
-            optionsTranslationIds |> Maybe.withDefault ( Translate.Yes, Translate.No )
-
-        inputWidth =
-            if isJust optionsTranslationIds then
-                "eight"
-
-            else
-                "four"
-
-        viewInput value currentValue setMsg =
-            let
-                isChecked =
-                    currentValue == Just value
-            in
-            input
-                [ type_ "radio"
-                , checked isChecked
-                , classList [ ( "checked", isChecked ) ]
-                , onCheck (always (setMsg value))
-                ]
-                []
-    in
-    div [ class <| "form-input yes-no " ++ inputClass ]
-        [ div [ class "ui grid" ]
-            [ div [ class <| inputWidth ++ " wide column" ]
-                [ viewInput True currentValue setMsg
-                , label [ onClick <| setMsg True ]
-                    [ text <| translate language yesTransId ]
-                ]
-            , div [ class <| inputWidth ++ " wide column" ]
-                [ viewInput False currentValue setMsg
-                , label [ onClick <| setMsg False ]
-                    [ text <| translate language noTransId ]
-                ]
-            ]
-        ]
-
-
 viewNumberInput :
     Language
     -> Maybe a
@@ -2350,21 +2302,6 @@ viewMeasurementInputAndRound language maybeCurrentValue setMsg inputClass unitTr
 -- Components
 
 
-viewLabel : Language -> TranslationId -> Html any
-viewLabel language translationId =
-    viewCustomLabel language translationId ":" "label"
-
-
-viewQuestionLabel : Language -> TranslationId -> Html any
-viewQuestionLabel language translationId =
-    viewCustomLabel language translationId "?" "label"
-
-
-viewCustomLabel : Language -> TranslationId -> String -> String -> Html any
-viewCustomLabel language translationId suffix class_ =
-    div [ class class_ ] [ text <| (translate language translationId ++ suffix) ]
-
-
 viewPreviousMeasurement : Language -> Maybe Float -> TranslationId -> Html any
 viewPreviousMeasurement language maybePreviousValue unitTranslationId =
     let
@@ -2483,15 +2420,6 @@ viewAlert color =
 
 
 -- Helper functions
-
-
-taskCompleted : Maybe a -> Int
-taskCompleted maybe =
-    if isJust maybe then
-        1
-
-    else
-        0
 
 
 taskListCompleted : List (Maybe a) -> Int

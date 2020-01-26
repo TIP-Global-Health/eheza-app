@@ -1,13 +1,15 @@
-module Pages.PregnancyOutcome.Model exposing (Model, Msg(..), PregnancyOutcome(..), emptyModel)
+module Pages.PregnancyOutcome.Model exposing (Model, Msg(..), emptyModel)
 
 import Backend.Entities exposing (..)
+import Backend.PrenatalParticipant.Model exposing (PregnancyOutcome(..))
 import Date exposing (Date)
 import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { pregnancyConcluded : Maybe Date
-    , isHomeDelivery : Maybe Bool
+    { pregnancyConcludedDate : Maybe Date
+    , pregnancyOutcome : Maybe PregnancyOutcome
+    , isFacilityDelivery : Maybe Bool
     , isDateSelectorOpen : Bool
     }
 
@@ -15,19 +17,16 @@ type alias Model =
 type Msg
     = NoOp
     | SetActivePage Page
+    | SetDeliveryLocation Bool
+    | SetPregnancyConcludedDate Date
+    | SetPregnancyOutcome String
+    | ToggleDateSelector
 
 
 emptyModel : Model
 emptyModel =
-    { pregnancyConcluded = Nothing
-    , isHomeDelivery = Nothing
+    { pregnancyConcludedDate = Nothing
+    , pregnancyOutcome = Nothing
+    , isFacilityDelivery = Nothing
     , isDateSelectorOpen = False
     }
-
-
-type PregnancyOutcome
-    = OutcomeLiveAtTerm
-    | OutcomeLivePreTerm
-    | OutcomeStillAtTerm
-    | OutcomeStillPreTerm
-    | OutcomeAbortions

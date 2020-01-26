@@ -37,13 +37,12 @@ import Backend.Person.Model
         , ModeOfDelivery(..)
         , VaginalDelivery(..)
         )
-import Backend.PrenatalParticipant.Model exposing (EncounterType(..))
+import Backend.PrenatalParticipant.Model exposing (EncounterType(..), PregnancyOutcome(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
 import Pages.Page exposing (..)
-import Pages.PregnancyOutcome.Model exposing (PregnancyOutcome(..))
 import Pages.PrenatalActivity.Model
     exposing
         ( ExaminationTask(..)
@@ -259,12 +258,15 @@ type TranslationId
     | DangerSign DangerSign
     | Dashboard
     | DateOfLastAssessment
+    | DatePregnancyConcluded
     | Day
     | DaySinglePlural Int
     | DateOfBirth
     | Days
     | Delete
     | DeleteTrainingGroupEncounters
+    | DeliveryLocation
+    | DeliveryOutcome
     | DemographicInformation
     | DemographicsReport
     | Device
@@ -293,6 +295,7 @@ type TranslationId
     | ExaminationTask ExaminationTask
     | Extremities
     | Eyes
+    | Facility
     | Failure
     | FamilyInformation
     | FamilyMembers
@@ -338,6 +341,7 @@ type TranslationId
     | HIV
     | HIVStatus HIVStatus
     | HIVStatusLabel
+    | Home
     | HouseholdSize
     | HttpError Http.Error
     | HypertensionBeforePregnancy
@@ -1416,6 +1420,16 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        DeliveryLocation ->
+            { english = "Delivery Loaction"
+            , kinyarwanda = Nothing
+            }
+
+        DeliveryOutcome ->
+            { english = "Delivery Outcome"
+            , kinyarwanda = Nothing
+            }
+
         DangerSign sign ->
             case sign of
                 VaginalBleeding ->
@@ -1466,6 +1480,11 @@ translationSet trans =
         DateOfLastAssessment ->
             { english = "Date of last Assessment"
             , kinyarwanda = Just "Amakuru y'ipimwa ry'ubushize"
+            }
+
+        DatePregnancyConcluded ->
+            { english = "Date Pregnancy Concluded"
+            , kinyarwanda = Nothing
             }
 
         Day ->
@@ -1693,6 +1712,11 @@ translationSet trans =
 
         Eyes ->
             { english = "Eyes"
+            , kinyarwanda = Nothing
+            }
+
+        Facility ->
+            { english = "Facility"
             , kinyarwanda = Nothing
             }
 
@@ -2091,6 +2115,11 @@ translationSet trans =
 
         HIVStatusLabel ->
             { english = "HIV Status"
+            , kinyarwanda = Nothing
+            }
+
+        Home ->
+            { english = "Home"
             , kinyarwanda = Nothing
             }
 

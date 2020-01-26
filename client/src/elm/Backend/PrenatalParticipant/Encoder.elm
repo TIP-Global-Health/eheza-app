@@ -1,4 +1,4 @@
-module Backend.PrenatalParticipant.Encoder exposing (encodePrenatalParticipant)
+module Backend.PrenatalParticipant.Encoder exposing (encodePrenatalParticipant, pregnancyOutcomeToString)
 
 import Backend.PrenatalParticipant.Model exposing (..)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
@@ -32,3 +32,22 @@ encodeEncounterType type_ =
 
         NutritionEncounter ->
             string "nutrition"
+
+
+pregnancyOutcomeToString : PregnancyOutcome -> String
+pregnancyOutcomeToString outcome =
+    case outcome of
+        OutcomeLiveAtTerm ->
+            "live-at-term"
+
+        OutcomeLivePreTerm ->
+            "live-pre-term"
+
+        OutcomeStillAtTerm ->
+            "still-at-term"
+
+        OutcomeStillPreTerm ->
+            "still-pre-term"
+
+        OutcomeAbortions ->
+            "abortions"
