@@ -21,7 +21,7 @@ var elm = require('gulp-elm');
 
 var fs = require('fs');
 var path = require('path');
-var csvParse = require('csv-parse');
+var csvParse = require('csv-parse/lib/es5');
 var gitRev = require('git-rev');
 var sourceStream = require('vinyl-source-stream');
 
