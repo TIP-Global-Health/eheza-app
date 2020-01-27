@@ -32,6 +32,13 @@ class HedleyRestfulPrenatalParticipants extends HedleyRestfulSyncBase {
       ],
     ];
 
+    $public_fields['expected_date_concluded'] = [
+      'property' => 'field_expected_date_concluded',
+      'process_callbacks' => [
+        [$this, 'renderDate2'],
+      ],
+    ];
+
     $public_fields['date_concluded'] = [
       'property' => 'field_date_concluded',
       'process_callbacks' => [

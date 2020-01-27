@@ -16,6 +16,7 @@ import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalParticipant.Model exposing (..)
+import Pages.PrenatalParticipant.Utils exposing (isPregnancyActive)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.WebData exposing (viewWebData)
@@ -62,7 +63,7 @@ viewPrenatalActions language currentDate id db prenatalSessions =
         maybeSessionId =
             prenatalSessions
                 |> EveryDictList.toList
-                |> List.filter (\( _, session ) -> isNothing session.endDate)
+                |> List.filter (Tuple.second >> isPregnancyActive currentDate)
                 |> List.head
                 |> Maybe.map Tuple.first
 
@@ -126,7 +127,7 @@ viewPrenatalActions language currentDate id db prenatalSessions =
                         )
                     -- If prenatal session does not exist, create it.
                     |> Maybe.withDefault
-                        [ PrenatalParticipant id AntenatalEncounter currentDate Nothing
+                        [ PrenatalParticipant id AntenatalEncounter currentDate Nothing Nothing
                             |> Backend.Model.PostPrenatalSession
                             |> App.Model.MsgIndexedDb
                             |> onClick

@@ -45,3 +45,22 @@ update participantId maybeParticipant currentDate msg model =
             ( { model | closePrenatalSession = data }
             , Cmd.none
             )
+
+        SetEddDate eddDate ->
+            maybeParticipant
+                |> unwrap ( model, Cmd.none )
+                    (\participant ->
+                        ( { model | setEddDate = Loading }
+                        , object
+                            [ ( "expected_date_concluded", encodeYYYYMMDD eddDate )
+                            ]
+                            |> sw.patchAny prenatalParticipantEndpoint participantId
+                            |> withoutDecoder
+                            |> toCmd (RemoteData.fromResult >> HandleSetEddDate)
+                        )
+                    )
+
+        HandleSetEddDate data ->
+            ( { model | setEddDate = data }
+            , Cmd.none
+            )

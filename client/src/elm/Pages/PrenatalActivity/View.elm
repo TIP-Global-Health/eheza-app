@@ -195,7 +195,7 @@ viewPregnancyDatingContent language currentDate assembled data =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SavePregnancyDating assembled.id assembled.participant.person assembled.measurements.lastMenstrualPeriod
+                , onClick <| SavePregnancyDating assembled.id assembled.encounter.participant assembled.participant.person assembled.measurements.lastMenstrualPeriod
                 ]
                 [ text <| translate language Translate.Save ]
             ]

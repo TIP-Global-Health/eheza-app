@@ -11,22 +11,27 @@ type alias PrenatalParticipant =
     , encounterType : EncounterType
     , startDate : NominalDate
     , endDate : Maybe NominalDate
+    , eddDate : Maybe NominalDate
     }
 
 
 type alias Model =
     { closePrenatalSession : WebData ()
+    , setEddDate : WebData ()
     }
 
 
 type Msg
     = ClosePrenatalSession Date PregnancyOutcome Bool
     | HandleClosedPrenatalSession (WebData ())
+    | SetEddDate NominalDate
+    | HandleSetEddDate (WebData ())
 
 
 emptyModel : Model
 emptyModel =
     { closePrenatalSession = NotAsked
+    , setEddDate = NotAsked
     }
 
 

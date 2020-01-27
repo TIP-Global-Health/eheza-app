@@ -1,4 +1,18 @@
-module Pages.PrenatalEncounter.Utils exposing (calculateEDDandEGADays, expectPrenatalActivity, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generatePara, generatePreviousMeasurements, getLmpMeasurement, resolveGlobalLmpDate, resolveGlobalObstetricHistory, shouldShowPatientProvisionsResourcesTask)
+module Pages.PrenatalEncounter.Utils exposing
+    ( calculateEDD
+    , calculateEDDandEGADays
+    , expectPrenatalActivity
+    , generateAssembledData
+    , generateEDDandEGA
+    , generateEGAWeeksDaysLabel
+    , generateGravida
+    , generatePara
+    , generatePreviousMeasurements
+    , getLmpMeasurement
+    , resolveGlobalLmpDate
+    , resolveGlobalObstetricHistory
+    , shouldShowPatientProvisionsResourcesTask
+    )
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -16,11 +30,16 @@ import Translate exposing (Language, translate)
 import Utils.NominalDate exposing (compareDates)
 
 
-calculateEDDandEGADays : NominalDate -> NominalDate -> ( NominalDate, Int )
-calculateEDDandEGADays currentDate lmpDate =
-    ( toLocalDateTime lmpDate 12 0 0 0
+calculateEDD : NominalDate -> NominalDate
+calculateEDD lmpDate =
+    toLocalDateTime lmpDate 12 0 0 0
         |> Date.add Day 280
         |> fromLocalDateTime
+
+
+calculateEDDandEGADays : NominalDate -> NominalDate -> ( NominalDate, Int )
+calculateEDDandEGADays currentDate lmpDate =
+    ( calculateEDD lmpDate
     , diffDays lmpDate currentDate
     )
 

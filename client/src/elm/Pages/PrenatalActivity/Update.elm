@@ -19,6 +19,7 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils exposing (socialHistoryHivTestingResultFromString)
 import Backend.Model
 import Backend.PrenatalEncounter.Model
+import Backend.PrenatalParticipant.Model
 import Date.Extra as Date exposing (Interval(Day))
 import Gizra.NominalDate exposing (NominalDate, toLocalDateTime)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
@@ -41,6 +42,7 @@ import Pages.PrenatalActivity.Utils
         , toSocialHistoryValueWithDefault
         , toVitalsValueWithDefault
         )
+import Pages.PrenatalEncounter.Utils exposing (calculateEDD)
 import Result exposing (Result)
 
 
@@ -147,7 +149,7 @@ update currentDate msg model =
             , []
             )
 
-        SavePregnancyDating prenatalEncounterId personId saved ->
+        SavePregnancyDating prenatalEncounterId prenatalParticipantId personId saved ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -164,7 +166,14 @@ update currentDate msg model =
                                 [ Backend.PrenatalEncounter.Model.SaveLastMenstrualPeriod personId measurementId lastMenstrualPeriodValue
                                     |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
                                     |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
+                                , -- We store EDD date on pregnancy, to be able
+                                  -- to decide that pregnancy has ended even if end date was
+                                  -- not set - that is when we're 3 month past EDD date.
+                                  calculateEDD lastMenstrualPeriodValue.date
+                                    |> Backend.PrenatalParticipant.Model.SetEddDate
+                                    |> Backend.Model.MsgPrenatalSession prenatalParticipantId
+                                    |> App.Model.MsgIndexedDb
+                                , PrenatalEncounterPage prenatalEncounterId |> UserPage |> App.Model.SetActivePage
                                 ]
                             )
             in
