@@ -501,21 +501,21 @@ div.page-prenatal-activity {
           margin-bottom: 10px;
 
           .unit {
-            width: 35%;
             float: left;
             font-weight: normal;
             margin-left: 20px;
             margin-top: 10px;
+            width: 35%;
           }
 
           input {
-            border: 2px solid $color-gray-border;
             background-color: $color-white;
+            border: 2px solid $color-gray-border;
             float: left;
             width: 60%;
           }
 
-          &.bmi input {
+          &.disabled input{
             pointer-events: none;
           }
         }

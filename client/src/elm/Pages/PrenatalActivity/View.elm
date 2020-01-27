@@ -207,7 +207,7 @@ viewHistoryContent : Language -> NominalDate -> AssembledData -> HistoryData -> 
 viewHistoryContent language currentDate assembled data_ =
     let
         ( tasks, data ) =
-            if List.isEmpty assembled.previousMeasurementsWithDates then
+            if isFirstPrenatalEncounter assembled then
                 ( [ Obstetric, Medical, Social ], data_ )
 
             else
@@ -543,20 +543,45 @@ viewExaminationContent language currentDate assembled data =
 
                 NutritionAssessment ->
                     let
-                        form =
+                        hideHeightInput =
+                            isFirstPrenatalEncounter assembled |> not
+
+                        form_ =
                             assembled.measurements.nutrition
                                 |> Maybe.map (Tuple.second >> .value)
                                 |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
+
+                        form =
+                            if hideHeightInput then
+                                assembled.previousMeasurementsWithDates
+                                    |> List.head
+                                    |> Maybe.andThen (Tuple.second >> getMotherHeightMeasurement)
+                                    |> Maybe.map (\(HeightInCm height) -> { form_ | height = Just height })
+                                    |> Maybe.withDefault form_
+
+                            else
+                                form_
+
+                        tasks =
+                            if hideHeightInput then
+                                [ form.weight, form.muac ]
+
+                            else
+                                [ form.height, form.weight, form.muac ]
+
+                        tasksForBmi =
+                            if hideHeightInput then
+                                [ form.weight ]
+
+                            else
+                                [ form.height, form.weight ]
                     in
-                    ( viewNutritionAssessmentForm language currentDate assembled form
-                    , ([ form.height, form.weight, form.muac ]
-                        |> List.map taskCompleted
-                        |> List.sum
-                      )
+                    ( viewNutritionAssessmentForm language currentDate assembled form hideHeightInput
+                    , (List.map taskCompleted tasks |> List.sum)
                         -- This is for BMI task, which is considered as completed
                         -- when both height and weight are set.
-                        + taskListCompleted [ form.height, form.weight ]
-                    , 4
+                        + taskListCompleted tasksForBmi
+                    , List.length tasks + 1
                     )
 
                 CorePhysicalExam ->
@@ -1672,8 +1697,8 @@ viewVitalsForm language currentDate assembled form =
         ]
 
 
-viewNutritionAssessmentForm : Language -> NominalDate -> AssembledData -> NutritionAssessmentForm -> Html Msg
-viewNutritionAssessmentForm language currentDate assembled form =
+viewNutritionAssessmentForm : Language -> NominalDate -> AssembledData -> NutritionAssessmentForm -> Bool -> Html Msg
+viewNutritionAssessmentForm language currentDate assembled form hideHeightInput =
     let
         heightUpdateFunc value form_ =
             { form_ | height = value }
@@ -1701,70 +1726,78 @@ viewNutritionAssessmentForm language currentDate assembled form =
 
         calculatedBmi =
             calculateBmi form.height form.weight
+
+        heightSection =
+            if not hideHeightInput then
+                [ div [ class "ui grid" ]
+                    [ div [ class "eleven wide column" ]
+                        [ viewLabel language Translate.Height ]
+                    , viewWarning language Nothing
+                    ]
+                , viewMeasurementInput
+                    language
+                    form.height
+                    (SetNutritionAssessmentMeasurement heightUpdateFunc)
+                    "height"
+                    Translate.CentimeterShorthand
+                , viewPreviousMeasurement language heightPreviousValue Translate.CentimeterShorthand
+                , div [ class "separator" ] []
+                ]
+
+            else
+                []
     in
-    div [ class "ui form examination nutrition-assessment" ]
-        [ div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
-                [ viewLabel language Translate.Height ]
-            , viewWarning language Nothing
-            ]
-        , viewMeasurementInput
-            language
-            form.height
-            (SetNutritionAssessmentMeasurement heightUpdateFunc)
-            "height"
-            Translate.CentimeterShorthand
-        , viewPreviousMeasurement language heightPreviousValue Translate.CentimeterShorthand
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
-                [ viewLabel language Translate.Weight ]
-            , viewWarning language Nothing
-            ]
-        , viewMeasurementInput
-            language
-            form.weight
-            (SetNutritionAssessmentMeasurement weightUpdateFunc)
-            "weight"
-            Translate.KilogramShorthand
-        , viewPreviousMeasurement language weightPreviousValue Translate.KilogramShorthand
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.BMI ]
-            , div [ class "four wide column" ]
-                [ viewConditionalAlert calculatedBmi
-                    [ [ (<) 30 ], [ (>) 18.5 ] ]
-                    [ [ (>=) 30, (<=) 25 ] ]
-                ]
-            ]
-        , div [ class "title bmi" ] [ text <| translate language Translate.BMIHelper ]
-        , viewMeasurementInputAndRound
-            language
-            calculatedBmi
-            (SetNutritionAssessmentMeasurement bmiUpdateFunc)
-            "bmi"
-            Translate.EmptyString
-            (Just 1)
-        , viewPreviousMeasurement language bmiPreviousValue Translate.EmptyString
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.MUAC ]
-            , div [ class "four wide column" ]
-                [ viewConditionalAlert form.muac
-                    [ [ (>) 18.5 ] ]
-                    [ [ (<=) 18.5, (>) 22 ] ]
-                ]
-            ]
-        , viewMeasurementInput
-            language
-            form.muac
-            (SetNutritionAssessmentMeasurement muacUpdateFunc)
-            "muac"
-            Translate.CentimeterShorthand
-        , viewPreviousMeasurement language muacPreviousValue Translate.CentimeterShorthand
-        ]
+    div [ class "ui form examination nutrition-assessment" ] <|
+        heightSection
+            ++ [ div [ class "ui grid" ]
+                    [ div [ class "eleven wide column" ]
+                        [ viewLabel language Translate.Weight ]
+                    , viewWarning language Nothing
+                    ]
+               , viewMeasurementInput
+                    language
+                    form.weight
+                    (SetNutritionAssessmentMeasurement weightUpdateFunc)
+                    "weight"
+                    Translate.KilogramShorthand
+               , viewPreviousMeasurement language weightPreviousValue Translate.KilogramShorthand
+               , div [ class "separator" ] []
+               , div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewLabel language Translate.BMI ]
+                    , div [ class "four wide column" ]
+                        [ viewConditionalAlert calculatedBmi
+                            [ [ (<) 30 ], [ (>) 18.5 ] ]
+                            [ [ (>=) 30, (<=) 25 ] ]
+                        ]
+                    ]
+               , div [ class "title bmi" ] [ text <| translate language Translate.BMIHelper ]
+               , viewMeasurementInputAndRound
+                    language
+                    calculatedBmi
+                    (SetNutritionAssessmentMeasurement bmiUpdateFunc)
+                    "bmi disabled"
+                    Translate.EmptyString
+                    (Just 1)
+               , viewPreviousMeasurement language bmiPreviousValue Translate.EmptyString
+               , div [ class "separator" ] []
+               , div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewLabel language Translate.MUAC ]
+                    , div [ class "four wide column" ]
+                        [ viewConditionalAlert form.muac
+                            [ [ (>) 18.5 ] ]
+                            [ [ (<=) 18.5, (>) 22 ] ]
+                        ]
+                    ]
+               , viewMeasurementInput
+                    language
+                    form.muac
+                    (SetNutritionAssessmentMeasurement muacUpdateFunc)
+                    "muac"
+                    Translate.CentimeterShorthand
+               , viewPreviousMeasurement language muacPreviousValue Translate.CentimeterShorthand
+               ]
 
 
 viewCorePhysicalExamForm : Language -> NominalDate -> AssembledData -> CorePhysicalExamForm -> Html Msg

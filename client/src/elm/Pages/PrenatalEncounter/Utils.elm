@@ -1,4 +1,19 @@
-module Pages.PrenatalEncounter.Utils exposing (calculateEDDandEGADays, expectPrenatalActivity, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generatePara, generatePreviousMeasurements, getLmpMeasurement, resolveGlobalLmpDate, resolveGlobalObstetricHistory, shouldShowPatientProvisionsResourcesTask)
+module Pages.PrenatalEncounter.Utils exposing
+    ( calculateEDDandEGADays
+    , expectPrenatalActivity
+    , generateAssembledData
+    , generateEDDandEGA
+    , generateEGAWeeksDaysLabel
+    , generateGravida
+    , generatePara
+    , generatePreviousMeasurements
+    , getLmpMeasurement
+    , getMotherHeightMeasurement
+    , isFirstPrenatalEncounter
+    , resolveGlobalLmpDate
+    , resolveGlobalObstetricHistory
+    , shouldShowPatientProvisionsResourcesTask
+    )
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -91,6 +106,12 @@ getObstetricHistory : PrenatalMeasurements -> Maybe ObstetricHistoryValue
 getObstetricHistory measurements =
     measurements.obstetricHistory
         |> Maybe.map (Tuple.second >> .value)
+
+
+getMotherHeightMeasurement : PrenatalMeasurements -> Maybe HeightInCm
+getMotherHeightMeasurement measurements =
+    measurements.nutrition
+        |> Maybe.map (Tuple.second >> .value >> .height)
 
 
 resolveGlobalLmpDate : PrenatalMeasurements -> List PrenatalMeasurements -> Maybe NominalDate
@@ -297,3 +318,8 @@ shouldShowPatientProvisionsResourcesTask assembled =
                     |> Maybe.withDefault False
             )
         |> List.isEmpty
+
+
+isFirstPrenatalEncounter : AssembledData -> Bool
+isFirstPrenatalEncounter assembled =
+    List.isEmpty assembled.previousMeasurementsWithDates
