@@ -9,6 +9,7 @@ define('HEDLEY_STATS_PERIOD_THIS_MONTH', 'this_month');
 define('HEDLEY_STATS_PERIOD_LAST_MONTH', 'last_month');
 define('HEDLEY_STATS_PERIOD_THREE_MONTHS', 'three_months');
 define('HEDLEY_STATS_PERIOD_ONE_YEAR', 'one_year');
+define('HEDLEY_STATS_PERIOD_LAST_YEAR', 'last_year');
 
 /**
  * Return new people in a Health centers related stats.
@@ -112,7 +113,7 @@ function hedley_stats_get_family_planning_stats_by_period($health_center_id, $pe
 function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
   $query = hedley_stats_get_base_query($health_center_id, 'height', $period);
 
-  // Join `Z-scroe age`.
+  // Join `Z-score age`.
   hedley_stats_join_field_to_query($query, 'node', 'field_zscore_age');
 
   // Malnourished is defined as Z-score below -1.
@@ -141,6 +142,49 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
 }
 
 /**
+ * Return "Total Encounters" per period.
+ *
+ * @param int $health_center_id
+ *   The Health center node ID.
+ * @param string $period
+ *   The period to calculate. Be default it is for one year, as on the client
+ *   side we could filter out items, if requested to show smaller periods of
+ *   time.
+ *
+ * @return object
+ *   AN object with total encounters.
+ *
+ * @throws \Exception
+ */
+function hedley_stats_get_total_encounters($health_center_id) {
+  $encounters = new stdClass();
+  $result = [
+    'last_year' => 0,
+    'this_year' => 0,
+  ];
+  $queries['last_year'] = hedley_stats_get_base_query($health_center_id, 'attendance', HEDLEY_STATS_PERIOD_LAST_YEAR, 'field_date_measured');
+  $queries['this_year'] = hedley_stats_get_base_query($health_center_id, 'attendance', HEDLEY_STATS_PERIOD_ONE_YEAR, 'field_date_measured');
+
+  foreach ($queries as $key => $query) {
+    // Get the group type.
+    hedley_stats_join_field_to_query($query, 'node', 'field_session');
+    hedley_stats_join_field_to_query($query, 'node', 'field_clinic', TRUE, "field_session.field_session_target_id");
+    hedley_stats_join_field_to_query($query, 'node', 'field_group_type', TRUE, "field_clinic.field_clinic_target_id");
+
+    // Only FBF groups.
+    $query->condition('field_group_type.field_group_type_value', 'fbf');
+
+    $result[$key] = $query
+      ->execute();
+  }
+
+  $encounters->last_year = $result['last_year']->rowCount();
+  $encounters->this_year = $result['this_year']->rowCount();
+
+  return $encounters;
+}
+
+/**
  * Get base query for stats.
  *
  * @param int $health_center_id
@@ -151,22 +195,39 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
  *   The period to calculate. Be default it is for one year, as on the client
  *   side we could filter out items, if requested to show smaller periods of
  *   time.
+ * @param string $date_field
+ *   The field name to check the period condition against.
  *
  * @return \SelectQuery
  *   THe query object.
  *
  * @throws \Exception
  */
-function hedley_stats_get_base_query($health_center_id, $node_type, $period) {
+function hedley_stats_get_base_query($health_center_id, $node_type, $period, $date_field = 'created') {
   $query = db_select('node', 'node');
   $query->fields('node', ['nid', 'created']);
 
-  $start_date = hedley_stats_get_period_start($period);
+  // Date condition, could be the node's created property or any other field can
+  // be accepted as well, here's the logic to handle that.
+  if ($date_field != 'created') {
+    // We need to include the date field in the query if it's not the default
+    // one.
+    hedley_stats_join_field_to_query($query, 'node', $date_field);
+    $date_field_name = $date_field . '.' . $date_field . '_value';
+    $as_timestamp = FALSE;
+  }
+  else {
+    $date_field_name = 'created';
+    $as_timestamp = TRUE;
+  }
+
+  $date = hedley_stats_get_period($period, $as_timestamp);
+  dpm($date);
+  $query->condition($date_field_name, [$date['start'], $date['end']], 'BETWEEN');
 
   $query
     ->condition('type', $node_type)
-    ->condition('status', NODE_PUBLISHED)
-    ->condition('created', [$start_date, time()], 'BETWEEN');
+    ->condition('status', NODE_PUBLISHED);
 
   $health_center_field_name = 'field_health_center';
 
@@ -191,29 +252,59 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period) {
  *   Determine if date should be returned as string or timestamp. Defaults to
  *   TRUE.
  *
- * @return false|string
- *   The start date.
+ * @return false|array
+ *   The date period.
  */
-function hedley_stats_get_period_start($period, $as_timestamp = TRUE) {
+function hedley_stats_get_period($period, $as_timestamp = TRUE) {
+  $db_date_field_format = 'Y-m-d h:i:s';
+  $date = [
+    'start' => time(),
+    'end' => time(),
+  ];
+
   switch ($period) {
     case HEDLEY_STATS_PERIOD_THIS_MONTH:
-      $date = date('01-m-Y', strtotime("first day of this month"));
+      $date = [
+        'start' => date($db_date_field_format, strtotime("first day of this month")),
+        'end' => date($db_date_field_format, time()),
+      ];
       break;
 
     case HEDLEY_STATS_PERIOD_LAST_MONTH:
-      $date = date('d-m-Y', strtotime("first day of previous month"));
+      $date = [
+        'start' => date($db_date_field_format, strtotime("first day of previous month")),
+        'end' => date($db_date_field_format, time()),
+      ];
       break;
 
     case HEDLEY_STATS_PERIOD_THREE_MONTHS:
-      $date = date('d-m-Y', strtotime("3 months ago"));
+      $date = [
+        'start' => date($db_date_field_format, strtotime("3 months ago")),
+        'end' => date($db_date_field_format, time()),
+      ];
       break;
 
     case HEDLEY_STATS_PERIOD_ONE_YEAR:
-      $date = date('d-m-Y', strtotime("last year"));
+      $date = [
+        'start' => date($db_date_field_format, strtotime("last year")),
+        'end' => date($db_date_field_format, time()),
+      ];
+      break;
+
+    case HEDLEY_STATS_PERIOD_LAST_YEAR:
+      $date = [
+        'start' => date($db_date_field_format, strtotime("-2 years")),
+        'end' => date($db_date_field_format, strtotime("last year")),
+      ];
       break;
   }
 
-  return $as_timestamp ? strtotime($date) : $date;
+  if ($as_timestamp) {
+    $date['start'] = strtotime($date['start']);
+    $date['end'] = strtotime($date['end']);
+  }
+
+  return $date;
 }
 
 /**
