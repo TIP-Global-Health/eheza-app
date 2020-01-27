@@ -146,10 +146,6 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
  *
  * @param int $health_center_id
  *   The Health center node ID.
- * @param string $period
- *   The period to calculate. Be default it is for one year, as on the client
- *   side we could filter out items, if requested to show smaller periods of
- *   time.
  *
  * @return object
  *   AN object with total encounters.

@@ -70,8 +70,17 @@ view language page currentDate healthCenterId model db =
 viewMainPage : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
 viewMainPage language currentDate stats model =
     div [ class "dashboard main" ]
-        [ viewTotalEncounters language stats.totalEncounters
-        , viewDashboardPagesLinks language
+        [ div [ class "ui grid" ]
+            [ div [ class "eight wide column" ]
+                [-- @todo: Add good nutrition here.
+                ]
+            , div [ class "eight wide column" ]
+                [ viewTotalEncounters language stats.totalEncounters
+                ]
+            , div [ class "sixteen wide column" ]
+                [ viewDashboardPagesLinks language
+                ]
+            ]
         ]
 
 
@@ -134,23 +143,20 @@ viewTotalEncounters language encounters =
                 (diff // encounters.thisYear) * 100
 
         percentageClass =
-            if percentageDiff == 0 then
-                "severity severity-neutral"
-
-            else if percentageDiff > 0 then
-                "severity severity-good"
+            if percentageDiff > 0 then
+                "icon icon-up"
 
             else
-                "severity severity-severe"
+                "icon icon-down"
     in
-    div [ class "ui segment blue" ]
+    div [ class "ui segment blue total-encounters" ]
         [ div [ class "content" ]
             [ div [ class "header" ] [ translateText language <| Translate.Dashboard Translate.TotalEncountersLabel ]
             , div [ class "total this-year severity severity-neutral" ] [ text <| String.fromInt encounters.thisYear ]
             , div [ class "total last-year" ]
                 [ span [ class "percentage" ]
-                    [ i [] [ text <| String.fromInt percentageDiff ++ "%" ]
-                    , i [ class percentageClass ] []
+                    [ i [ class percentageClass ] []
+                    , i [] [ text <| String.fromInt percentageDiff ++ "%" ]
                     ]
                 , span [ class "percentage-label" ] [ translateText language <| Translate.Dashboard Translate.PercentageEncountersLabel ]
                 ]

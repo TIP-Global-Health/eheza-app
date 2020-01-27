@@ -26,6 +26,54 @@
     }
   }
 
+  .total-encounters {
+
+    .header {
+      font-size: 20px;
+      text-align: center;
+      line-height: 20px;
+    }
+
+    .this-year {
+      font-size: 40px;
+      line-height: 28px;
+      font-weight: 700;
+      text-align: center;
+      margin-top: 18px;
+    }
+
+    .last-year {
+      position: absolute;
+      right: 20px;
+      bottom: 30px;
+      max-width: 75px;
+
+      .percentage {
+        display: block;
+        text-align: center;
+        font-size: 20px;
+        line-height: 27px;
+        position: relative;
+
+        .icon {
+          margin-top: -13px;
+          left: -8px;
+
+          &.icon-down {
+            background-position: 0 20px;
+          }
+        }
+      }
+
+      .percentage-label {
+        display: block;
+        font-size: 12px;
+        line-height: 12px;
+        color: $color-background;
+      }
+    }
+  }
+
   .dashboards-links {
 
     a {
