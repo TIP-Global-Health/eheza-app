@@ -1,7 +1,7 @@
 module Pages.Dashboard.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Dashboard.Model exposing (DashboardStats)
+import Backend.Dashboard.Model exposing (DashboardStats, TotalEncounters)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
@@ -31,13 +31,19 @@ import TypedSvg.Types exposing (Fill(..), Transform(..))
 view : Language -> DashboardPage -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
 view language page currentDate healthCenterId model db =
     let
+        stats =
+            Dict.get healthCenterId db.computedDashboard
+                |> Maybe.withDefault Backend.Dashboard.Model.emptyModel
+                -- Filter by period.
+                |> filterStatsByPeriod currentDate model
+
         ( pageView, backAction ) =
             case page of
                 MainPage ->
-                    ( viewMainPage language currentDate healthCenterId model db, SetActivePage PinCodePage )
+                    ( viewMainPage language currentDate stats model, SetActivePage PinCodePage )
 
                 StatsPage ->
-                    ( viewStatsPage language currentDate healthCenterId model db, SetActivePage <| UserPage <| DashboardPage MainPage )
+                    ( viewStatsPage language currentDate stats model, SetActivePage <| UserPage <| DashboardPage MainPage )
 
                 CaseManagementPage ->
                     ( viewCaseManagementPage language currentDate healthCenterId model db, SetActivePage <| UserPage <| DashboardPage MainPage )
@@ -61,20 +67,16 @@ view language page currentDate healthCenterId model db =
         ]
 
 
-viewMainPage : Language -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
-viewMainPage language currentDate healthCenterId model db =
-    div [ class "dashboard main" ] [ viewDashboardPagesLinks language ]
+viewMainPage : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
+viewMainPage language currentDate stats model =
+    div [ class "dashboard main" ]
+        [ viewTotalEncounters language stats.totalEncounters
+        , viewDashboardPagesLinks language
+        ]
 
 
-viewStatsPage : Language -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
-viewStatsPage language currentDate healthCenterId model db =
-    let
-        stats =
-            Dict.get healthCenterId db.computedDashboard
-                |> Maybe.withDefault Backend.Dashboard.Model.emptyModel
-                -- Filter by period.
-                |> filterStatsByPeriod currentDate model
-    in
+viewStatsPage : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
+viewStatsPage language currentDate stats model =
     div [ class "dashboard stats" ]
         [ viewPeriodFilter language model
         , viewAllCards language stats
@@ -116,6 +118,44 @@ viewPeriodFilter language model =
     in
     div [ class "ui blue segment" ]
         (List.map renderButton filterPeriods)
+
+
+viewTotalEncounters : Language -> TotalEncounters -> Html Msg
+viewTotalEncounters language encounters =
+    let
+        diff =
+            encounters.thisYear - encounters.lastYear
+
+        percentageDiff =
+            if diff > 0 then
+                (diff // encounters.lastYear) * 100
+
+            else
+                (diff // encounters.thisYear) * 100
+
+        percentageClass =
+            if percentageDiff == 0 then
+                "severity severity-neutral"
+
+            else if percentageDiff > 0 then
+                "severity severity-good"
+
+            else
+                "severity severity-severe"
+    in
+    div [ class "ui segment blue" ]
+        [ div [ class "content" ]
+            [ div [ class "header" ] [ translateText language <| Translate.Dashboard Translate.TotalEncountersLabel ]
+            , div [ class "total this-year severity severity-neutral" ] [ text <| String.fromInt encounters.thisYear ]
+            , div [ class "total last-year" ]
+                [ span [ class "percentage" ]
+                    [ i [] [ text <| String.fromInt percentageDiff ++ "%" ]
+                    , i [ class percentageClass ] []
+                    ]
+                , span [ class "percentage-label" ] [ translateText language <| Translate.Dashboard Translate.PercentageEncountersLabel ]
+                ]
+            ]
+        ]
 
 
 viewAllCards : Language -> DashboardStats -> Html Msg

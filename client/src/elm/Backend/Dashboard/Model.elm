@@ -1,4 +1,4 @@
-module Backend.Dashboard.Model exposing (ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, MalnourishedStats, emptyModel)
+module Backend.Dashboard.Model exposing (ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, MalnourishedStats, TotalEncounters, emptyModel)
 
 {-| The stats for the dashboard.
 -}
@@ -6,7 +6,6 @@ module Backend.Dashboard.Model exposing (ChildrenBeneficiariesStats, DashboardSt
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
 import Backend.Person.Model exposing (Gender)
 import Gizra.NominalDate exposing (NominalDate)
-import Time
 import ZScore.Model exposing (ZScore)
 
 
@@ -14,6 +13,7 @@ type alias DashboardStats =
     { childrenBeneficiaries : List ChildrenBeneficiariesStats
     , familyPlanning : List FamilyPlanningStats
     , malnourished : List MalnourishedStats
+    , totalEncounters : TotalEncounters
     }
 
 
@@ -22,6 +22,10 @@ emptyModel =
     { childrenBeneficiaries = []
     , familyPlanning = []
     , malnourished = []
+    , totalEncounters =
+        { lastYear = 0
+        , thisYear = 0
+        }
     }
 
 
@@ -42,4 +46,10 @@ type alias MalnourishedStats =
     { created : NominalDate
     , gender : Gender
     , zscore : ZScore
+    }
+
+
+type alias TotalEncounters =
+    { lastYear : Int
+    , thisYear : Int
     }

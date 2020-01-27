@@ -141,9 +141,11 @@ type Dashboard
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
     | ModeratelyMalnourished
     | NewBeneficiaries
+    | PercentageEncountersLabel
     | SeverelyMalnourished
     | StatisticsLink
     | TotalMalnourished
+    | TotalEncountersLabel
     | UseFamilyPlanning
 
 
@@ -2502,6 +2504,11 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
+        PercentageEncountersLabel ->
+            { english = "from last year"
+            , kinyarwanda = Nothing
+            }
+
         SeverelyMalnourished ->
             { english = "Severely Malnourished"
             , kinyarwanda = Nothing
@@ -2514,6 +2521,11 @@ translateDashboard trans =
 
         TotalMalnourished ->
             { english = "Total Malnourished"
+            , kinyarwanda = Nothing
+            }
+
+        TotalEncountersLabel ->
+            { english = "Total encounters completed"
             , kinyarwanda = Nothing
             }
 
