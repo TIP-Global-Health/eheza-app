@@ -222,7 +222,6 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period, $da
   }
 
   $date = hedley_stats_get_period($period, $as_timestamp);
-  dpm($date);
   $query->condition($date_field_name, [$date['start'], $date['end']], 'BETWEEN');
 
   $query
