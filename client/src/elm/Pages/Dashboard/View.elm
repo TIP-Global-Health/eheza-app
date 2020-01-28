@@ -137,8 +137,17 @@ viewTotalEncounters language encounters =
             encounters.thisYear - encounters.lastYear
 
         percentageDiff =
+            let
+                lastYear =
+                    if encounters.lastYear == 0 then
+                        -- Avoid dividing by zero.
+                        1
+
+                    else
+                        encounters.lastYear
+            in
             if diff > 0 then
-                (diff // encounters.lastYear) * 100
+                (diff // lastYear) * 100
 
             else
                 (diff // encounters.thisYear) * 100

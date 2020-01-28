@@ -147,13 +147,12 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
  * @param int $health_center_id
  *   The Health center node ID.
  *
- * @return object
- *   AN object with total encounters.
+ * @return array
+ *   AN array with total encounters.
  *
  * @throws \Exception
  */
 function hedley_stats_get_total_encounters($health_center_id) {
-  $encounters = new stdClass();
   $result = [
     'last_year' => 0,
     'this_year' => 0,
@@ -171,13 +170,11 @@ function hedley_stats_get_total_encounters($health_center_id) {
     $query->condition('field_group_type.field_group_type_value', 'fbf');
 
     $result[$key] = $query
-      ->execute();
+      ->execute()
+      ->rowCount();
   }
 
-  $encounters->last_year = $result['last_year']->rowCount();
-  $encounters->this_year = $result['this_year']->rowCount();
-
-  return $encounters;
+  return $result;
 }
 
 /**
