@@ -8,9 +8,10 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model
 import Color exposing (Color)
 import Date exposing (Unit(..), isBetween)
+import Gizra.Html exposing (showIf)
 import Gizra.NominalDate exposing (NominalDate, isDiffTruthy)
 import Html exposing (..)
-import Html.Attributes exposing (class, classList)
+import Html.Attributes exposing (class, classList, src)
 import Html.Events exposing (onClick)
 import List.Extra
 import Pages.Dashboard.Model exposing (..)
@@ -142,20 +143,28 @@ viewTotalEncounters language encounters =
             else
                 (diff // encounters.thisYear) * 100
 
-        percentageClass =
-            if percentageDiff > 0 then
-                "icon icon-up"
+        percentageArrow =
+            if percentageDiff == 0 then
+                ""
+
+            else if percentageDiff > 0 then
+                "icon-up"
 
             else
-                "icon icon-down"
+                "icon-down"
     in
-    div [ class "ui segment blue total-encounters" ]
+    div [ class "ui segment blue dashboard-cards total-encounters" ]
         [ div [ class "content" ]
             [ div [ class "header" ] [ translateText language <| Translate.Dashboard Translate.TotalEncountersLabel ]
             , div [ class "total this-year severity severity-neutral" ] [ text <| String.fromInt encounters.thisYear ]
             , div [ class "total last-year" ]
                 [ span [ class "percentage" ]
-                    [ i [ class percentageClass ] []
+                    [ showIf (percentageArrow /= "") <|
+                        img
+                            [ class "arrow"
+                            , src <| "/assets/images/" ++ percentageArrow ++ ".svg"
+                            ]
+                            []
                     , i [] [ text <| String.fromInt percentageDiff ++ "%" ]
                     ]
                 , span [ class "percentage-label" ] [ translateText language <| Translate.Dashboard Translate.PercentageEncountersLabel ]
