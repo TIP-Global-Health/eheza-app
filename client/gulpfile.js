@@ -186,10 +186,10 @@ gulp.task("copy:dev", ["copy:bower", "copy:images", "copy:favicon",
 gulp.task("copy:bower", function() {
   // There are unused Dexie files that causes trouble for uglify later
   return gulp.src([
-    "bower_components/**/*",
-    "!bower_components/**/*.es.js",
-    "!bower_components/semantic/tasks/config/admin/templates/*.js"
-  ]).pipe(gulp.dest("serve/bower_components"))
+      "bower_components/**/*",
+      "!bower_components/**/*.es.js",
+      "!bower_components/semantic/tasks/config/admin/templates/*.js"
+    ]).pipe(gulp.dest("serve/bower_components"))
     .pipe($.size({
       title: "Bower"
     }))
@@ -241,24 +241,24 @@ gulp.task("minify", ["styles", "zscore", "copy:images", "copy:favicon"],
         console.error(err);
       })
 
-      // Minify CSS
-      .pipe($.if("*.css", $.minifyCss()))
+    // Minify CSS
+    .pipe($.if("*.css", $.minifyCss()))
 
-      // We don't do cache-busting here because the PWA stuff makes that obsolete
+    // We don't do cache-busting here because the PWA stuff makes that obsolete
 
-      // Minify HTML
-      .pipe($.if("*.html", $.htmlmin({
-        removeComments: true,
-        removeCommentsFromCDATA: true,
-        removeCDATASectionsFromCDATA: true,
-        collapseWhitespace: true,
-        collapseBooleanAttributes: true,
-        removeAttributeQuotes: true,
-        removeRedundantAttributes: true
-      })))
+    // Minify HTML
+    .pipe($.if("*.html", $.htmlmin({
+      removeComments: true,
+      removeCommentsFromCDATA: true,
+      removeCDATASectionsFromCDATA: true,
+      collapseWhitespace: true,
+      collapseBooleanAttributes: true,
+      removeAttributeQuotes: true,
+      removeRedundantAttributes: true
+    })))
 
-      // Send the output to the correct folder
-      .pipe(gulp.dest("dist"))
+    // Send the output to the correct folder
+    .pipe(gulp.dest("dist"))
       .pipe($.size({
         title: "optimizations"
       }));
