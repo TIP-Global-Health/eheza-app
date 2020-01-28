@@ -37,25 +37,25 @@ view language page currentDate healthCenterId model db =
                 -- Filter by period.
                 |> filterStatsByPeriod currentDate model
 
-        ( pageView, backAction ) =
+        ( pageView, goBackPage ) =
             case page of
                 MainPage ->
-                    ( viewMainPage language currentDate stats model, SetActivePage PinCodePage )
+                    ( viewMainPage language currentDate stats model, PinCodePage )
 
                 StatsPage ->
-                    ( viewStatsPage language currentDate stats model, SetActivePage <| UserPage <| DashboardPage MainPage )
+                    ( viewMainPage language currentDate stats model, UserPage <| DashboardPage MainPage )
 
                 CaseManagementPage ->
-                    ( viewCaseManagementPage language currentDate healthCenterId model db, SetActivePage <| UserPage <| DashboardPage MainPage )
+                    ( viewCaseManagementPage language currentDate healthCenterId model db, UserPage <| DashboardPage MainPage )
 
         header =
             div
                 [ class "ui basic head segment" ]
                 [ h1 [ class "ui header" ]
-                    [ translateText language <| Translate.Dashboard Translate.DashboardTitle ]
+                    [ translateText language Translate.DashboardLabel ]
                 , a
                     [ class "link-back"
-                    , onClick <| backAction
+                    , onClick <| SetActivePage goBackPage
                     ]
                     [ span [ class "icon-back" ] [] ]
                 ]
@@ -354,7 +354,7 @@ viewBeneficiariesTable language currentDate stats model =
 viewDashboardPagesLinks : Language -> Html Msg
 viewDashboardPagesLinks language =
     div [ class "dashboards-links" ]
-        [ a
+        [ div
             [ class "ui segment stats"
             , DashboardPage StatsPage
                 |> UserPage
@@ -364,10 +364,10 @@ viewDashboardPagesLinks language =
             [ i [ class "icon" ] []
             , span
                 []
-                [ translateText language <| Translate.Dashboard Translate.StatisticsLink ]
+                [ translateText language <| Translate.Dashboard Translate.StatisticsHelper ]
             , i [ class "arrow" ] []
             ]
-        , a
+        , div
             [ class "ui segment case"
             , DashboardPage CaseManagementPage
                 |> UserPage
@@ -377,7 +377,7 @@ viewDashboardPagesLinks language =
             [ i [ class "icon" ] []
             , span
                 []
-                [ translateText language <| Translate.Dashboard Translate.CaseManagementLink ]
+                [ translateText language <| Translate.Dashboard Translate.CaseManagementHelper ]
             , i [ class "arrow" ] []
             ]
         ]
