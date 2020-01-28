@@ -676,7 +676,7 @@ update currentDate msg model =
             , []
             )
 
-        SaveNutritionAssessment prenatalEncounterId personId saved ->
+        SaveNutritionAssessment prenatalEncounterId personId saved maybeHeight ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -684,8 +684,16 @@ update currentDate msg model =
                 measurement =
                     Maybe.map (Tuple.second >> .value) saved
 
-                appMsgs =
+                form_ =
                     model.examinationData.nutritionAssessmentForm
+
+                form =
+                    maybeHeight
+                        |> Maybe.map (\height -> { form_ | height = Just height })
+                        |> Maybe.withDefault form_
+
+                appMsgs =
+                    form
                         |> toPrenatalNutritionValueWithDefault measurement
                         |> unwrap
                             []

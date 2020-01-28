@@ -80,7 +80,7 @@ type Msg
     | SaveVitals PrenatalEncounterId PersonId (Maybe ( VitalsId, Vitals ))
       -- ExaminationMsgs, Nutrition Assessment
     | SetNutritionAssessmentMeasurement (Maybe Float -> NutritionAssessmentForm -> NutritionAssessmentForm) String
-    | SaveNutritionAssessment PrenatalEncounterId PersonId (Maybe ( PrenatalNutritionId, PrenatalNutrition ))
+    | SaveNutritionAssessment PrenatalEncounterId PersonId (Maybe ( PrenatalNutritionId, PrenatalNutrition )) (Maybe Float)
       -- ExaminationMsgs, Core Physical Exam
     | SetCorePhysicalExamBoolInput (Bool -> CorePhysicalExamForm -> CorePhysicalExamForm) Bool
     | SetCorePhysicalExamHeart HeartCPESign

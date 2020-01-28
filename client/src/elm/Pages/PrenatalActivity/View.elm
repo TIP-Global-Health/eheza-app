@@ -651,7 +651,21 @@ viewExaminationContent language currentDate assembled data =
                             SaveVitals assembled.id assembled.participant.person assembled.measurements.vitals
 
                         NutritionAssessment ->
-                            SaveNutritionAssessment assembled.id assembled.participant.person assembled.measurements.nutrition
+                            let
+                                passHeight =
+                                    isFirstPrenatalEncounter assembled |> not
+
+                                maybeHeight =
+                                    if passHeight then
+                                        assembled.previousMeasurementsWithDates
+                                            |> List.head
+                                            |> Maybe.andThen (Tuple.second >> getMotherHeightMeasurement)
+                                            |> Maybe.map (\(HeightInCm height) -> height)
+
+                                    else
+                                        Nothing
+                            in
+                            SaveNutritionAssessment assembled.id assembled.participant.person assembled.measurements.nutrition maybeHeight
 
                         CorePhysicalExam ->
                             SaveCorePhysicalExam assembled.id assembled.participant.person assembled.measurements.corePhysicalExam
