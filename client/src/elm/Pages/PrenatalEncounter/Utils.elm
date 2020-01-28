@@ -1,5 +1,6 @@
 module Pages.PrenatalEncounter.Utils exposing
-    ( calculateEDDandEGADays
+    ( calculateEDD
+    , calculateEDDandEGADays
     , expectPrenatalActivity
     , generateAssembledData
     , generateEDDandEGA
@@ -31,11 +32,16 @@ import Translate exposing (Language, translate)
 import Utils.NominalDate exposing (compareDates)
 
 
-calculateEDDandEGADays : NominalDate -> NominalDate -> ( NominalDate, Int )
-calculateEDDandEGADays currentDate lmpDate =
-    ( toLocalDateTime lmpDate 12 0 0 0
+calculateEDD : NominalDate -> NominalDate
+calculateEDD lmpDate =
+    toLocalDateTime lmpDate 12 0 0 0
         |> Date.add Day 280
         |> fromLocalDateTime
+
+
+calculateEDDandEGADays : NominalDate -> NominalDate -> ( NominalDate, Int )
+calculateEDDandEGADays currentDate lmpDate =
+    ( calculateEDD lmpDate
     , diffDays lmpDate currentDate
     )
 
@@ -239,8 +245,6 @@ expectPrenatalActivity currentDate data activity =
         PregnancyDating ->
             isFirstEncounter
 
-        -- History ->
-        --     isFirstEncounter
         PrenatalPhoto ->
             expectPrenatalPhoto currentDate data
 
