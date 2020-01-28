@@ -136,13 +136,13 @@ type Adherence
 
 
 type Dashboard
-    = CaseManagementLink
-    | DashboardTitle
+    = CaseManagementHelper
+    | DashboardLabel
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
     | ModeratelyMalnourished
     | NewBeneficiaries
     | SeverelyMalnourished
-    | StatisticsLink
+    | StatisticsHelper
     | TotalMalnourished
     | UseFamilyPlanning
 
@@ -2477,12 +2477,12 @@ translateChartPhrase phrase =
 translateDashboard : Dashboard -> TranslationSet String
 translateDashboard trans =
     case trans of
-        CaseManagementLink ->
+        CaseManagementHelper ->
             { english = "Review list of malnourished children"
             , kinyarwanda = Nothing
             }
 
-        DashboardTitle ->
+        DashboardLabel ->
             { english = "Dashboard"
             , kinyarwanda = Nothing
             }
@@ -2507,7 +2507,7 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
-        StatisticsLink ->
+        StatisticsHelper ->
             { english = "See statistics for this month"
             , kinyarwanda = Nothing
             }

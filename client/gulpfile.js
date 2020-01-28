@@ -186,10 +186,10 @@ gulp.task("copy:dev", ["copy:bower", "copy:images", "copy:favicon",
 gulp.task("copy:bower", function() {
   // There are unused Dexie files that causes trouble for uglify later
   return gulp.src([
-      "bower_components/**/*",
-      "!bower_components/**/*.es.js",
-      "!bower_components/semantic/tasks/config/admin/templates/*.js"
-    ]).pipe(gulp.dest("serve/bower_components"))
+    "bower_components/**/*",
+    "!bower_components/**/*.es.js",
+    "!bower_components/semantic/tasks/config/admin/templates/*.js"
+  ]).pipe(gulp.dest("serve/bower_components"))
     .pipe($.size({
       title: "Bower"
     }))
@@ -241,24 +241,24 @@ gulp.task("minify", ["styles", "zscore", "copy:images", "copy:favicon"],
         console.error(err);
       })
 
-    // Minify CSS
-    .pipe($.if("*.css", $.minifyCss()))
+      // Minify CSS
+      .pipe($.if("*.css", $.minifyCss()))
 
-    // We don't do cache-busting here because the PWA stuff makes that obsolete
+      // We don't do cache-busting here because the PWA stuff makes that obsolete
 
-    // Minify HTML
-    .pipe($.if("*.html", $.htmlmin({
-      removeComments: true,
-      removeCommentsFromCDATA: true,
-      removeCDATASectionsFromCDATA: true,
-      collapseWhitespace: true,
-      collapseBooleanAttributes: true,
-      removeAttributeQuotes: true,
-      removeRedundantAttributes: true
-    })))
+      // Minify HTML
+      .pipe($.if("*.html", $.htmlmin({
+        removeComments: true,
+        removeCommentsFromCDATA: true,
+        removeCDATASectionsFromCDATA: true,
+        collapseWhitespace: true,
+        collapseBooleanAttributes: true,
+        removeAttributeQuotes: true,
+        removeRedundantAttributes: true
+      })))
 
-    // Send the output to the correct folder
-    .pipe(gulp.dest("dist"))
+      // Send the output to the correct folder
+      .pipe(gulp.dest("dist"))
       .pipe($.size({
         title: "optimizations"
       }));
@@ -382,39 +382,38 @@ var precacheFileGlob =
 // We cache bower_components individually, since they often include things
 // we don't need.
 var precacheLocalDev = [
-  precacheFileGlob,
-  'assets/**/' + precacheFileGlob,
-  '!js/rollbar.js',
-  'bower_components/copy-button/bundled.min.js',
-  'bower_components/dropzone/dist/min/dropzone.min.css',
-  'bower_components/dropzone/dist/min/dropzone.min.js',
-  'bower_components/dexie/dist/dexie.min.js',
-  'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
-  'bower_components/semantic/dist/semantic.min.css'
+  'serve/' + precacheFileGlob,
+  'serve/assets/**/' + precacheFileGlob,
+  'serve/bower_components/copy-button/bundled.min.js',
+  'serve/bower_components/dropzone/dist/min/dropzone.min.css',
+  'serve/bower_components/dropzone/dist/min/dropzone.min.js',
+  'serve/bower_components/dexie/dist/dexie.min.js',
+  'serve/bower_components/semantic/dist/themes/**/' + precacheFileGlob,
+  'serve/bower_components/semantic/dist/semantic.min.css'
 ];
 
 // There may be a better way to do this, but for the moment we have some
 // slight duplication here.
 var precacheProd = [
-  precacheFileGlob,
-  'assets/**/' + precacheFileGlob,
-  'bower_components/copy-button/bundled.min.*.js',
-  'bower_components/dropzone/dist/min/dropzone.min.*.css',
-  'bower_components/dropzone/dist/min/dropzone.min.*.js',
-  'bower_components/dexie/dist/dexie.min.*.js',
-  'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
-  'bower_components/semantic/dist/semantic.min.*.css'
+  'dist/' + precacheFileGlob,
+  'dist/assets/**/' + precacheFileGlob,
+  'dist/bower_components/copy-button/bundled.min.*.js',
+  'dist/bower_components/dropzone/dist/min/dropzone.min.*.css',
+  'dist/bower_components/dropzone/dist/min/dropzone.min.*.js',
+  'dist/bower_components/dexie/dist/dexie.min.*.js',
+  'dist/bower_components/semantic/dist/themes/**/' + precacheFileGlob,
+  'dist/bower_components/semantic/dist/semantic.min.*.css'
 ];
 
 // For offline use while developing
-gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function() {
-  var workboxBuild = require('workbox-build');
+gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function(callback) {
+  var swPrecache = require('sw-precache');
+  var rootDir = 'serve/';
 
-  return workboxBuild.generateSW({
-    swDest: 'serve/service-worker.js',
+  swPrecache.write(`${rootDir}/service-worker.js`, {
     cacheId: 'ihangane',
-    globDirectory: 'serve',
-    globPatterns: precacheLocalDev,
+    staticFileGlobs: precacheLocalDev,
+    stripPrefix: rootDir,
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
     clientsClaim: true,
     skipWaiting: false,
@@ -427,20 +426,21 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function() {
       'nodes.js',
       'statistics.js',
       'photos.js',
+      'rollbar.js',
       'sync.js'
     ]
-  });
+  }, callback);
 });
 
 // Offline use in production.
-gulp.task('pwa:prod', function() {
-  var workboxBuild = require('workbox-build');
+gulp.task('pwa:prod', function(callback) {
+  var swPrecache = require('sw-precache');
+  var rootDir = 'dist/';
 
-  return workboxBuild.generateSW({
-    swDest: 'dist/service-worker.js',
+  swPrecache.write(`${rootDir}/service-worker.js`, {
     cacheId: 'ihangane',
-    globDirectory: 'dist',
-    globPatterns: precacheProd,
+    staticFileGlobs: precacheProd,
+    stripPrefix: rootDir,
     maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
     clientsClaim: true,
     skipWaiting: false,
@@ -455,7 +455,7 @@ gulp.task('pwa:prod', function() {
       'rollbar.js',
       'sync.js'
     ]
-  });
+  }, callback);
 });
 
 // Serve for the Android emulator, then watch.

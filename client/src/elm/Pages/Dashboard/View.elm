@@ -31,16 +31,16 @@ import TypedSvg.Types exposing (Fill(..), Transform(..))
 view : Language -> DashboardPage -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
 view language page currentDate healthCenterId model db =
     let
-        ( pageView, backAction ) =
+        ( pageView, goBackPage ) =
             case page of
                 MainPage ->
-                    ( viewMainPage language currentDate healthCenterId model db, SetActivePage PinCodePage )
+                    ( viewMainPage language currentDate healthCenterId model db, PinCodePage )
 
                 StatsPage ->
-                    ( viewStatsPage language currentDate healthCenterId model db, SetActivePage <| UserPage <| DashboardPage MainPage )
+                    ( viewStatsPage language currentDate healthCenterId model db, UserPage <| DashboardPage MainPage )
 
                 CaseManagementPage ->
-                    ( viewCaseManagementPage language currentDate healthCenterId model db, SetActivePage <| UserPage <| DashboardPage MainPage )
+                    ( viewCaseManagementPage language currentDate healthCenterId model db, UserPage <| DashboardPage MainPage )
 
         header =
             div
@@ -49,7 +49,7 @@ view language page currentDate healthCenterId model db =
                     [ translateText language <| Translate.Dashboard Translate.DashboardTitle ]
                 , a
                     [ class "link-back"
-                    , onClick <| backAction
+                    , onClick <| SetActivePage goBackPage
                     ]
                     [ span [ class "icon-back" ] [] ]
                 ]
@@ -308,7 +308,7 @@ viewBeneficiariesTable language currentDate stats model =
 viewDashboardPagesLinks : Language -> Html Msg
 viewDashboardPagesLinks language =
     div [ class "dashboards-links" ]
-        [ a
+        [ div
             [ class "ui segment stats"
             , DashboardPage StatsPage
                 |> UserPage
@@ -321,7 +321,7 @@ viewDashboardPagesLinks language =
                 [ translateText language <| Translate.Dashboard Translate.StatisticsLink ]
             , i [ class "arrow" ] []
             ]
-        , a
+        , div
             [ class "ui segment case"
             , DashboardPage CaseManagementPage
                 |> UserPage

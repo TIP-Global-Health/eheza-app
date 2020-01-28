@@ -48,15 +48,15 @@ pageToFragment current =
                         url =
                             case subPage of
                                 MainPage ->
-                                    "dashboard/main"
+                                    "main"
 
                                 StatsPage ->
-                                    "dashboard/stats"
+                                    "stats"
 
                                 CaseManagementPage ->
-                                    "dashboard/case-management"
+                                    "case-management"
                     in
-                    Just url
+                    "dashboard/" ++ url |> Just
 
                 MyAccountPage ->
                     Just "my-account"

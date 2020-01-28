@@ -28,12 +28,13 @@
 
   .dashboards-links {
 
-    a {
+    > div {
       font-size: 30px;
       line-height: 20px;
       color: $color-dark-background;
       display: block;
       padding: 11px 20px 11px 15px;
+      cursor: pointer;
 
       i.icon {
         width: 82px;
