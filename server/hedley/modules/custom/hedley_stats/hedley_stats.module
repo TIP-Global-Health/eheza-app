@@ -10,6 +10,9 @@ define('HEDLEY_STATS_PERIOD_LAST_MONTH', 'last_month');
 define('HEDLEY_STATS_PERIOD_THREE_MONTHS', 'three_months');
 define('HEDLEY_STATS_PERIOD_ONE_YEAR', 'one_year');
 define('HEDLEY_STATS_PERIOD_LAST_YEAR', 'last_year');
+define('HEDLEY_STATS_SEVERE', 'severe');
+define('HEDLEY_STATS_MODERATE', 'moderate');
+define('HEDLEY_STATS_GOOD', 'good');
 
 /**
  * Return new people in a Health centers related stats.
@@ -38,7 +41,10 @@ function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_
   $birthdate_start = date('Y-m-d H:i:s', strtotime("13 years ago"));
   $now_date = date('Y-m-d H:i:s');
 
-  $query->condition('field_birth_date.field_birth_date_value', [$birthdate_start, $now_date], 'BETWEEN');
+  $query->condition('field_birth_date.field_birth_date_value', [
+    $birthdate_start,
+    $now_date,
+  ], 'BETWEEN');
 
   $result = $query
     ->execute()
@@ -88,6 +94,7 @@ function hedley_stats_get_family_planning_stats_by_period($health_center_id, $pe
 
     // Remove unused data, to save bandwidth.
     unset($row->nid);
+    unset($row->type);
     unset($row->field_shards);
     unset($row->field_family_planning_signs);
   }
@@ -134,11 +141,116 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
 
     // Remove unused data, to save bandwidth.
     unset($row->nid);
+    unset($row->type);
     unset($row->field_shards);
     unset($row->field_person);
   }
 
   return array_values($result);
+}
+
+/**
+ * Return "Good nutrition" percentages for last year and the year before.
+ *
+ * @param int $health_center_id
+ *   The Health center node ID.
+ *
+ * @return array
+ *   AN array with good nutrition stats.
+ *
+ * @throws \Exception
+ */
+function hedley_stats_get_good_nutrition($health_center_id) {
+  $good_nutrition_result = [
+    'last_year' => 0,
+    'this_year' => 0,
+  ];
+
+  $result = [];
+
+  // All the measurements nodes with measurement field mapped.
+  $node_types = [
+    'height' => [
+      'field_zscore_age',
+    ],
+    'nutrition' => [
+      'field_nutrition_signs',
+    ],
+    'muac' => [
+      'field_muac',
+    ],
+    'weight' => [
+      'field_zscore_age',
+      'field_zscore_length',
+      'field_zscore_bmi',
+    ],
+  ];
+
+  // We start from attendance for this year and last year and we get
+  // measurements by the session (Encounter) ID.
+  $queries['last_year'] = hedley_stats_get_base_query($health_center_id, array_keys($node_types), HEDLEY_STATS_PERIOD_LAST_YEAR, 'field_date_measured', TRUE);
+  $queries['this_year'] = hedley_stats_get_base_query($health_center_id, array_keys($node_types), HEDLEY_STATS_PERIOD_ONE_YEAR, 'field_date_measured', TRUE);
+
+  foreach ($queries as $key => $query) {
+    // Get the group type.
+    hedley_stats_join_field_to_query($query, 'node', 'field_session');
+    hedley_stats_join_field_to_query($query, 'node', 'field_clinic', TRUE, "field_session.field_session_target_id");
+    hedley_stats_join_field_to_query($query, 'node', 'field_group_type', TRUE, "field_clinic.field_clinic_target_id");
+    // Only FBF groups.
+    $query->condition('field_group_type.field_group_type_value', 'fbf');
+
+    // Get the person.
+    hedley_stats_join_field_to_query($query, 'node', 'field_person');
+
+    // Get the nutrition signs for this person.
+    hedley_stats_join_field_to_query($query, 'node', 'field_nutrition_signs', FALSE);
+
+    // Get all other measurements for this person.
+    hedley_stats_join_field_to_query($query, 'node', 'field_zscore_age', FALSE);
+    hedley_stats_join_field_to_query($query, 'node', 'field_muac', FALSE);
+    hedley_stats_join_field_to_query($query, 'node', 'field_zscore_length', FALSE);
+    hedley_stats_join_field_to_query($query, 'node', 'field_zscore_bmi', FALSE);
+
+    // Only FBF groups.
+    $query->condition('field_group_type.field_group_type_value', 'fbf');
+
+    $result[$key] = $query
+      ->execute()
+      ->fetchAllAssoc('nid');
+  }
+
+  $people = [];
+  foreach ($result as $period => $measurements) {
+    foreach ($measurements as $measurement) {
+      // Get fields for current node type.
+      $measurement_fields = $node_types[$measurement->type];
+
+      // Group measurements by person.
+      foreach ($measurement_fields as $measurement_field) {
+        $people[$period][$measurement->field_person][$measurement->type][$measurement_field] = $measurement->{$measurement_field};
+      }
+    }
+  }
+
+  dpm($people);
+  // Analyzing the measurements.
+  $nutrition_signs = hedley_stats_nutrition_signs();
+  $all_people_measured = [
+    'last_year' => count($people['last_year']),
+    'this_year' => count($people['this_year']),
+  ];
+  $people_good_nutrition = [
+    'last_year' => 0,
+    'this_year' => 0,
+  ];
+
+  foreach ($people as $period => $data) {
+    foreach ($data as $person) {
+      // Measure people here.
+    }
+  }
+
+  return $result;
 }
 
 /**
@@ -182,23 +294,25 @@ function hedley_stats_get_total_encounters($health_center_id) {
  *
  * @param int $health_center_id
  *   The Health center node ID.
- * @param string $node_type
- *   The node type to query.
+ * @param string|array $node_type
+ *   The node type to query - Can be an array of types.
  * @param string $period
  *   The period to calculate. Be default it is for one year, as on the client
  *   side we could filter out items, if requested to show smaller periods of
  *   time.
  * @param string $date_field
  *   The field name to check the period condition against.
+ * @param bool $measurements
+ *   The queried nodes are measurements.
  *
  * @return \SelectQuery
  *   THe query object.
  *
  * @throws \Exception
  */
-function hedley_stats_get_base_query($health_center_id, $node_type, $period, $date_field = 'created') {
+function hedley_stats_get_base_query($health_center_id, $node_type, $period, $date_field = 'created', $measurements = FALSE) {
   $query = db_select('node', 'node');
-  $query->fields('node', ['nid', 'created']);
+  $query->fields('node', ['nid', 'created', 'type']);
 
   // Date condition, could be the node's created property or any other field can
   // be accepted as well, here's the logic to handle that.
@@ -215,16 +329,27 @@ function hedley_stats_get_base_query($health_center_id, $node_type, $period, $da
   }
 
   $date = hedley_stats_get_period($period, $as_timestamp);
-  $query->condition($date_field_name, [$date['start'], $date['end']], 'BETWEEN');
+  $query->condition($date_field_name, [
+    $date['start'],
+    $date['end'],
+  ], 'BETWEEN');
 
+  $node_type_operator = is_array($node_type) ? 'IN' : '=';
   $query
-    ->condition('type', $node_type)
+    ->condition('type', $node_type, $node_type_operator)
     ->condition('status', NODE_PUBLISHED);
 
   $health_center_field_name = 'field_health_center';
 
   // Some node types have the Health center info under `Shards` field.
-  if (field_info_instance('node', 'field_shards', $node_type)) {
+  if (!is_array($node_type)) {
+    if (field_info_instance('node', 'field_shards', $node_type)) {
+      $health_center_field_name = 'field_shards';
+    }
+  }
+
+  // All measurement nodes have the Health center info under `Shards` field.
+  if ($measurements) {
     $health_center_field_name = 'field_shards';
   }
 
@@ -365,4 +490,51 @@ function hedley_stats_join_field_to_query(SelectQuery $query, $entity_type, $fie
  */
 function hedley_stats_convert_timestamp_to_nominal($timestamp) {
   return date('Y-m-d', $timestamp);
+}
+
+/**
+ * Get the info about nutrition signs for all measurements.
+ *
+ * @return array
+ *   The detailed measurements signs.
+ */
+function hedley_stats_nutrition_signs() {
+  return [
+    'height' => [
+      'field_zscore_age' => [
+        HEDLEY_STATS_SEVERE => -3,
+        HEDLEY_STATS_MODERATE => -2,
+        HEDLEY_STATS_GOOD => -1.99,
+      ],
+    ],
+    'nutrition' => [
+      'field_nutrition_signs' => [
+        HEDLEY_STATS_GOOD => 'none',
+      ],
+    ],
+    'muac' => [
+      'field_muac' => [
+        HEDLEY_STATS_SEVERE => 18.5,
+        HEDLEY_STATS_MODERATE => 22,
+        HEDLEY_STATS_GOOD => 22.1,
+      ],
+    ],
+    'weight' => [
+      'field_zscore_age' => [
+        HEDLEY_STATS_SEVERE => -3,
+        HEDLEY_STATS_MODERATE => -2,
+        HEDLEY_STATS_GOOD => -1.99,
+      ],
+      'field_zscore_length' => [
+        HEDLEY_STATS_SEVERE => -3,
+        HEDLEY_STATS_MODERATE => -2,
+        HEDLEY_STATS_GOOD => -1.99,
+      ],
+      'field_zscore_bmi' => [
+        HEDLEY_STATS_SEVERE => -3,
+        HEDLEY_STATS_MODERATE => -2,
+        HEDLEY_STATS_GOOD => -1.99,
+      ],
+    ],
+  ];
 }
