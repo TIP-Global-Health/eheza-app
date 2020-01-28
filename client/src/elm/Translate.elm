@@ -137,7 +137,6 @@ type Adherence
 
 type Dashboard
     = CaseManagementHelper
-    | DashboardLabel
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
     | ModeratelyMalnourished
     | NewBeneficiaries
@@ -2479,11 +2478,6 @@ translateDashboard trans =
     case trans of
         CaseManagementHelper ->
             { english = "Review list of malnourished children"
-            , kinyarwanda = Nothing
-            }
-
-        DashboardLabel ->
-            { english = "Dashboard"
             , kinyarwanda = Nothing
             }
 

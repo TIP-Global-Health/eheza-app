@@ -46,7 +46,7 @@ view language page currentDate healthCenterId model db =
             div
                 [ class "ui basic head segment" ]
                 [ h1 [ class "ui header" ]
-                    [ translateText language <| Translate.Dashboard Translate.DashboardTitle ]
+                    [ translateText language Translate.DashboardLabel ]
                 , a
                     [ class "link-back"
                     , onClick <| SetActivePage goBackPage
@@ -318,7 +318,7 @@ viewDashboardPagesLinks language =
             [ i [ class "icon" ] []
             , span
                 []
-                [ translateText language <| Translate.Dashboard Translate.StatisticsLink ]
+                [ translateText language <| Translate.Dashboard Translate.StatisticsHelper ]
             , i [ class "arrow" ] []
             ]
         , div
@@ -331,7 +331,7 @@ viewDashboardPagesLinks language =
             [ i [ class "icon" ] []
             , span
                 []
-                [ translateText language <| Translate.Dashboard Translate.CaseManagementLink ]
+                [ translateText language <| Translate.Dashboard Translate.CaseManagementHelper ]
             , i [ class "arrow" ] []
             ]
         ]
