@@ -1,4 +1,4 @@
-module Backend.Dashboard.Model exposing (ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, MalnourishedStats, TotalEncounters, emptyModel)
+module Backend.Dashboard.Model exposing (ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Periods, emptyModel)
 
 {-| The stats for the dashboard.
 -}
@@ -12,8 +12,9 @@ import ZScore.Model exposing (ZScore)
 type alias DashboardStats =
     { childrenBeneficiaries : List ChildrenBeneficiariesStats
     , familyPlanning : List FamilyPlanningStats
+    , goodNutrition : GoodNutrition
     , malnourished : List MalnourishedStats
-    , totalEncounters : TotalEncounters
+    , totalEncounters : Periods
     }
 
 
@@ -21,6 +22,16 @@ emptyModel : DashboardStats
 emptyModel =
     { childrenBeneficiaries = []
     , familyPlanning = []
+    , goodNutrition =
+        { all =
+            { lastYear = 0
+            , thisYear = 0
+            }
+        , good =
+            { lastYear = 0
+            , thisYear = 0
+            }
+        }
     , malnourished = []
     , totalEncounters =
         { lastYear = 0
@@ -49,7 +60,13 @@ type alias MalnourishedStats =
     }
 
 
-type alias TotalEncounters =
+type alias Periods =
     { lastYear : Int
     , thisYear : Int
+    }
+
+
+type alias GoodNutrition =
+    { all : Periods
+    , good : Periods
     }

@@ -1,6 +1,6 @@
 module Backend.Dashboard.Decoder exposing (decodeDashboardStats)
 
-import Backend.Dashboard.Model exposing (ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, MalnourishedStats, TotalEncounters)
+import Backend.Dashboard.Model exposing (ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Periods)
 import Backend.Measurement.Decoder exposing (decodeFamilyPlanningSign)
 import Backend.Person.Decoder exposing (decodeGender)
 import Gizra.Json exposing (decodeInt)
@@ -14,8 +14,9 @@ decodeDashboardStats =
     succeed DashboardStats
         |> required "children_beneficiaries" (list decodePeopleStats)
         |> required "family_planning" (list decodeFamilyPlanningStats)
+        |> required "good_nutrition" decodeGoodNutrition
         |> required "malnourished_beneficiaries" (list decodeMalnourishedStats)
-        |> required "total_encounters" decodeTotalEncounters
+        |> required "total_encounters" decodePeriods
 
 
 decodePeopleStats : Decoder ChildrenBeneficiariesStats
@@ -33,6 +34,13 @@ decodeFamilyPlanningStats =
         |> required "signs" (list decodeFamilyPlanningSign)
 
 
+decodeGoodNutrition : Decoder GoodNutrition
+decodeGoodNutrition =
+    succeed GoodNutrition
+        |> required "all" decodePeriods
+        |> required "good" decodePeriods
+
+
 decodeMalnourishedStats : Decoder MalnourishedStats
 decodeMalnourishedStats =
     succeed MalnourishedStats
@@ -41,8 +49,8 @@ decodeMalnourishedStats =
         |> required "field_zscore_age" float
 
 
-decodeTotalEncounters : Decoder TotalEncounters
-decodeTotalEncounters =
-    succeed TotalEncounters
+decodePeriods : Decoder Periods
+decodePeriods =
+    succeed Periods
         |> required "last_year" decodeInt
         |> required "this_year" decodeInt

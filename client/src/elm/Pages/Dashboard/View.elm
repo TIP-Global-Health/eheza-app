@@ -1,7 +1,7 @@
 module Pages.Dashboard.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Dashboard.Model exposing (DashboardStats, TotalEncounters)
+import Backend.Dashboard.Model exposing (DashboardStats, GoodNutrition, Periods)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
@@ -16,6 +16,7 @@ import Html.Events exposing (onClick)
 import List.Extra
 import Pages.Dashboard.Model exposing (..)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
+import Pages.Utils exposing (calculatePercentage)
 import Path
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
@@ -44,7 +45,7 @@ view language page currentDate healthCenterId model db =
                     ( viewMainPage language currentDate stats model, PinCodePage )
 
                 StatsPage ->
-                    ( viewMainPage language currentDate stats model, UserPage <| DashboardPage MainPage )
+                    ( viewStatsPage language currentDate stats model, UserPage <| DashboardPage MainPage )
 
                 CaseManagementPage ->
                     ( viewCaseManagementPage language currentDate healthCenterId model db, UserPage <| DashboardPage MainPage )
@@ -73,7 +74,7 @@ viewMainPage language currentDate stats model =
     div [ class "dashboard main" ]
         [ div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
-                [-- @todo: Add good nutrition here.
+                [ viewGoodNutrition language stats.goodNutrition
                 ]
             , div [ class "eight wide column" ]
                 [ viewTotalEncounters language stats.totalEncounters
@@ -130,27 +131,56 @@ viewPeriodFilter language model =
         (List.map renderButton filterPeriods)
 
 
-viewTotalEncounters : Language -> TotalEncounters -> Html Msg
-viewTotalEncounters language encounters =
+viewGoodNutrition : Language -> GoodNutrition -> Html Msg
+viewGoodNutrition language nutrition =
     let
-        diff =
-            encounters.thisYear - encounters.lastYear
+        percentageThisYear =
+            calculatePercentage nutrition.all.thisYear nutrition.good.thisYear
+                |> round
+
+        percentageLastYear =
+            calculatePercentage nutrition.all.lastYear nutrition.good.lastYear
+                |> round
 
         percentageDiff =
-            let
-                lastYear =
-                    if encounters.lastYear == 0 then
-                        -- Avoid dividing by zero.
-                        1
+            percentageThisYear - percentageLastYear
 
-                    else
-                        encounters.lastYear
-            in
-            if diff > 0 then
-                (diff // lastYear) * 100
+        percentageArrow =
+            if percentageDiff == 0 then
+                ""
+
+            else if percentageDiff > 0 then
+                "icon-up"
 
             else
-                (diff // encounters.thisYear) * 100
+                "icon-down"
+    in
+    div [ class "ui segment blue dashboard-cards good-nutrition" ]
+        [ div [ class "content" ]
+            [ div [ class "header" ] [ translateText language <| Translate.Dashboard Translate.GoodNutritionLabel ]
+            , div [ class "percentage this-year severity severity-neutral" ] [ text <| String.fromInt percentageThisYear ++ "%" ]
+            , div [ class "total last-year" ]
+                [ span [ class "percentage" ]
+                    [ showIf (percentageArrow /= "") <|
+                        img
+                            [ class "arrow"
+                            , src <| "/assets/images/" ++ percentageArrow ++ ".svg"
+                            ]
+                            []
+                    , i [] [ text <| String.fromInt percentageDiff ++ "%" ]
+                    ]
+                , span [ class "percentage-label" ] [ translateText language <| Translate.Dashboard Translate.PercentageEncountersLabel ]
+                ]
+            ]
+        ]
+
+
+viewTotalEncounters : Language -> Periods -> Html Msg
+viewTotalEncounters language encounters =
+    let
+        percentageDiff =
+            calculatePercentage encounters.thisYear encounters.lastYear
+                |> round
 
         percentageArrow =
             if percentageDiff == 0 then

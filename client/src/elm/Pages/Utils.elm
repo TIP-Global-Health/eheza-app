@@ -1,4 +1,4 @@
-module Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
+module Pages.Utils exposing (calculatePercentage, filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
 
 import Backend.Entities exposing (PersonId)
 import Backend.Person.Model exposing (Person)
@@ -8,6 +8,15 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Translate exposing (Language, TranslationId, translate)
+
+
+calculatePercentage : Int -> Int -> Float
+calculatePercentage total unique =
+    let
+        diff =
+            total - unique
+    in
+    (toFloat unique / toFloat diff) * 100
 
 
 filterDependentNoResultsMessage : Language -> String -> TranslationId -> String

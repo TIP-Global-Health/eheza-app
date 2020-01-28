@@ -232,7 +232,6 @@ function hedley_stats_get_good_nutrition($health_center_id) {
     }
   }
 
-  dpm($people);
   // Analyzing the measurements.
   $nutrition_signs = hedley_stats_nutrition_signs();
   $all_people_measured = [
@@ -244,13 +243,45 @@ function hedley_stats_get_good_nutrition($health_center_id) {
     'this_year' => 0,
   ];
 
+  // Go through all the people.
   foreach ($people as $period => $data) {
     foreach ($data as $person) {
-      // Measure people here.
+      // Define that the person has good nutrition.
+      $good_nutrition = 1;
+
+      foreach ($person as $type => $measurement) {
+        // We are interested only with the nutrition signs that match the
+        // current type.
+        $current_nutrition_signs = $nutrition_signs[$type];
+
+        // Go through all the measurements for this person.
+        foreach ($measurement as $field_name => $value) {
+          // The nutrition value should be 'none' to be considered "good".
+          if ($type == 'nutrition') {
+            if ($value != $current_nutrition_signs[$field_name][HEDLEY_STATS_GOOD]) {
+              $good_nutrition = 0;
+            }
+          }
+          // All the rest of the measurements should be bigger than "moderate"
+          // to be considered good.
+          else {
+            if ($value <= $current_nutrition_signs[$field_name][HEDLEY_STATS_MODERATE]) {
+              $good_nutrition = 0;
+            }
+          }
+        }
+      }
+
+      if ($good_nutrition) {
+        $people_good_nutrition[$period]++;
+      }
     }
   }
 
-  return $result;
+  return [
+    'all' => $all_people_measured,
+    'good' => $people_good_nutrition,
+  ];
 }
 
 /**

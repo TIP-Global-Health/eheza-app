@@ -138,6 +138,7 @@ type Adherence
 type Dashboard
     = CaseManagementHelper
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
+    | GoodNutritionLabel
     | ModeratelyMalnourished
     | NewBeneficiaries
     | PercentageEncountersLabel
@@ -2485,6 +2486,11 @@ translateDashboard trans =
 
         FamilyPlanningOutOfWomen { total, useFamilyPlanning } ->
             { english = String.fromInt useFamilyPlanning ++ " out of " ++ String.fromInt total ++ " women"
+            , kinyarwanda = Nothing
+            }
+
+        GoodNutritionLabel ->
+            { english = "% Good nutrition"
             , kinyarwanda = Nothing
             }
 
