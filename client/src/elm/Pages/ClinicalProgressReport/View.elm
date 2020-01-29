@@ -2,12 +2,12 @@ module Pages.ClinicalProgressReport.View exposing (view)
 
 import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (PrenatalMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
-import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import Date
 import Date.Extra exposing (Interval(Day))
 import EveryDict
@@ -55,7 +55,7 @@ thumbnailDimensions =
 
 type alias FetchedData =
     { encounter : PrenatalEncounter
-    , participant : PrenatalParticipant
+    , participant : IndividualEncounterParticipant
     , person : Person
     , measurements : PrenatalMeasurements
     , id : PrenatalEncounterId
@@ -77,7 +77,7 @@ view language currentDate prenatalEncounterId db =
             encounter
                 |> RemoteData.andThen
                     (\encounter ->
-                        EveryDict.get encounter.participant db.prenatalParticipants
+                        EveryDict.get encounter.participant db.individualParticipants
                             |> Maybe.withDefault NotAsked
                     )
 

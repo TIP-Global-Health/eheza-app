@@ -50,7 +50,7 @@ viewContent language =
         individualEncounterButton =
             button
                 [ class "ui primary button individual-assessment"
-                , onClick <| SetActivePage <| UserPage PrenatalParticipantsPage
+                , onClick <| SetActivePage <| UserPage IndividualEncounterTypesPage
                 ]
                 [ span [ class "icon" ] []
                 , span [ class "text" ] [ text <| translate language Translate.IndividualEncounter ]

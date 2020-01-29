@@ -1,18 +1,18 @@
-module Backend.PrenatalParticipant.Model exposing (EncounterType(..), PrenatalParticipant)
+module Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 
 import Backend.Entities exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
 
 
-type alias PrenatalParticipant =
+type alias IndividualEncounterParticipant =
     { person : PersonId
-    , encounterType : EncounterType
+    , encounterType : IndividualEncounterType
     , startDate : NominalDate
     , endDate : Maybe NominalDate
     }
 
 
-type EncounterType
+type IndividualEncounterType
     = AntenatalEncounter
     | InmmunizationEncounter
     | NutritionEncounter

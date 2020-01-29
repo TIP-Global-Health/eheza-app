@@ -3,6 +3,7 @@ module Backend.Decoder exposing (decodeRevision)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
+import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
 import Backend.Measurement.Decoder exposing (..)
 import Backend.Model exposing (..)
 import Backend.Nurse.Decoder exposing (decodeNurse)
@@ -10,7 +11,6 @@ import Backend.ParticipantConsent.Decoder exposing (decodeParticipantForm)
 import Backend.Person.Decoder exposing (decodePerson)
 import Backend.PmtctParticipant.Decoder exposing (decodePmtctParticipant)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalEncounter)
-import Backend.PrenatalParticipant.Decoder exposing (decodePrenatalParticipant)
 import Backend.Relationship.Decoder exposing (decodeRelationship)
 import Backend.Session.Decoder exposing (decodeSession)
 import Json.Decode exposing (..)
@@ -112,8 +112,8 @@ decodeRevision =
                     "prenatal_nutrition" ->
                         decodeWithUuid PrenatalNutritionRevision decodePrenatalNutrition
 
-                    "prenatal_participant" ->
-                        decodeWithUuid PrenatalParticipantRevision decodePrenatalParticipant
+                    "individual_participant" ->
+                        decodeWithUuid IndividualEncounterParticipantRevision decodeIndividualEncounterParticipant
 
                     "prenatal_photo" ->
                         decodeWithUuid PrenatalPhotoRevision decodePrenatalPhoto

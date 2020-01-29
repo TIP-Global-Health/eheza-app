@@ -1,4 +1,4 @@
-module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), attendanceEndpoint, breastExamEndpoint, childMeasurementListEndpoint, clinicEndpoint, corePhysicalExamEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, dangerSignsEndpoint, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodePrenatalEncounterParams, encodePrenatalParticipantParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, lastMenstrualPeriodEndpoint, medicalHistoryEndpoint, medicationEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, obstetricHistoryEndpoint, obstetricHistoryStep2Endpoint, obstetricalExamEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, prenatalEncounterEndpoint, prenatalFamilyPlanningEndpoint, prenatalMeasurementsEndpoint, prenatalNutritionEndpoint, prenatalParticipantEndpoint, prenatalPhotoEndpoint, relationshipEndpoint, resourceEndpoint, sessionEndpoint, socialHistoryEndpoint, swEndpoint, syncDataEndpoint, vitalsEndpoint, weightEndpoint)
+module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), attendanceEndpoint, breastExamEndpoint, childMeasurementListEndpoint, clinicEndpoint, corePhysicalExamEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, dangerSignsEndpoint, encodeIndividualEncounterParticipantParams, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodePrenatalEncounterParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, individualEncounterParticipantEndpoint, lastMenstrualPeriodEndpoint, medicalHistoryEndpoint, medicationEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, obstetricHistoryEndpoint, obstetricHistoryStep2Endpoint, obstetricalExamEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, prenatalEncounterEndpoint, prenatalFamilyPlanningEndpoint, prenatalMeasurementsEndpoint, prenatalNutritionEndpoint, prenatalPhotoEndpoint, relationshipEndpoint, resourceEndpoint, sessionEndpoint, socialHistoryEndpoint, swEndpoint, syncDataEndpoint, vitalsEndpoint, weightEndpoint)
 
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
@@ -9,6 +9,9 @@ import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Decoder exposing (decodeHealthCenter)
 import Backend.HealthCenter.Model exposing (HealthCenter)
+import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Encoder exposing (encodeIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Decoder exposing (..)
 import Backend.Measurement.Encoder exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -26,9 +29,6 @@ import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalEncounter)
 import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalEncounter)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
-import Backend.PrenatalParticipant.Decoder exposing (decodePrenatalParticipant)
-import Backend.PrenatalParticipant.Encoder exposing (encodePrenatalParticipant)
-import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import Backend.Relationship.Decoder exposing (decodeRelationship)
 import Backend.Relationship.Encoder exposing (encodeRelationship)
 import Backend.Relationship.Model exposing (Relationship)
@@ -279,32 +279,32 @@ pmtctParticipantEndpoint =
         |> withParamsEncoder encodePmtctParticipantParams
 
 
-prenatalEncounterEndpoint : ReadWriteEndPoint Error PrenatalEncounterId PrenatalEncounter PrenatalEncounter (Maybe PrenatalParticipantId)
+prenatalEncounterEndpoint : ReadWriteEndPoint Error PrenatalEncounterId PrenatalEncounter PrenatalEncounter (Maybe IndividualEncounterParticipantId)
 prenatalEncounterEndpoint =
     swEndpoint "nodes/prenatal_encounter" decodePrenatalEncounter
         |> withValueEncoder (object << encodePrenatalEncounter)
         |> withParamsEncoder encodePrenatalEncounterParams
 
 
-encodePrenatalEncounterParams : Maybe PrenatalParticipantId -> List ( String, String )
+encodePrenatalEncounterParams : Maybe IndividualEncounterParticipantId -> List ( String, String )
 encodePrenatalEncounterParams params =
     case params of
         Just id ->
-            [ ( "prenatal_participant", fromEntityUuid id ) ]
+            [ ( "individual_participant", fromEntityUuid id ) ]
 
         Nothing ->
             []
 
 
-prenatalParticipantEndpoint : ReadWriteEndPoint Error PrenatalParticipantId PrenatalParticipant PrenatalParticipant (Maybe PersonId)
-prenatalParticipantEndpoint =
-    swEndpoint "nodes/prenatal_participant" decodePrenatalParticipant
-        |> withValueEncoder encodePrenatalParticipant
-        |> withParamsEncoder encodePrenatalParticipantParams
+individualEncounterParticipantEndpoint : ReadWriteEndPoint Error IndividualEncounterParticipantId IndividualEncounterParticipant IndividualEncounterParticipant (Maybe PersonId)
+individualEncounterParticipantEndpoint =
+    swEndpoint "nodes/individual_participant" decodeIndividualEncounterParticipant
+        |> withValueEncoder encodeIndividualEncounterParticipant
+        |> withParamsEncoder encodeIndividualEncounterParticipantParams
 
 
-encodePrenatalParticipantParams : Maybe PersonId -> List ( String, String )
-encodePrenatalParticipantParams params =
+encodeIndividualEncounterParticipantParams : Maybe PersonId -> List ( String, String )
+encodeIndividualEncounterParticipantParams params =
     case params of
         Just id ->
             [ ( "person", fromEntityUuid id ) ]

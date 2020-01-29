@@ -10,7 +10,8 @@ import Pages.ClinicalProgressReport.Fetch
 import Pages.Clinics.Fetch
 import Pages.DemographicsReport.Fetch
 import Pages.Device.Fetch
-import Pages.EncounterTypes.Fetch
+import Pages.IndividualEncounterParticipants.Fetch
+import Pages.IndividualEncounterTypes.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.People.Fetch
 import Pages.Person.Fetch
@@ -18,7 +19,6 @@ import Pages.PinCode.Fetch
 import Pages.PrenatalActivity.Fetch
 import Pages.PrenatalEncounter.Fetch
 import Pages.PrenatalParticipant.Fetch
-import Pages.PrenatalParticipants.Fetch
 import Pages.Relationship.Fetch
 import Pages.Session.Fetch
 
@@ -102,11 +102,11 @@ fetch model =
                     )
                 |> Maybe.withDefault []
 
-        UserPage PrenatalParticipantsPage ->
+        UserPage (IndividualEncounterParticipantsPage encounterType) ->
             getLoggedInData model
                 |> Maybe.map
                     (\( _, loggedIn ) ->
-                        Pages.PrenatalParticipants.Fetch.fetch loggedIn.prenatalParticipantsPage
+                        Pages.IndividualEncounterParticipants.Fetch.fetch encounterType loggedIn.individualEncounterParticipantsPage
                             |> List.map MsgIndexedDb
                     )
                 |> Maybe.withDefault []
@@ -127,8 +127,8 @@ fetch model =
             Pages.PrenatalActivity.Fetch.fetch prenatalEncounterId model.indexedDb
                 |> List.map MsgIndexedDb
 
-        UserPage (EncounterTypesPage personId) ->
-            Pages.EncounterTypes.Fetch.fetch personId
+        UserPage IndividualEncounterTypesPage ->
+            Pages.IndividualEncounterTypes.Fetch.fetch
                 |> List.map MsgIndexedDb
 
 
