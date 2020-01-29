@@ -8,6 +8,8 @@ module Pages.PrenatalEncounter.Utils exposing
     , generateGravida
     , generatePara
     , generatePreviousMeasurements
+    , getFirstEncounterMeasurements
+    , getLastEncounterMeasurements
     , getLmpMeasurement
     , getMotherHeightMeasurement
     , isFirstPrenatalEncounter
@@ -327,3 +329,23 @@ shouldShowPatientProvisionsResourcesTask assembled =
 isFirstPrenatalEncounter : AssembledData -> Bool
 isFirstPrenatalEncounter assembled =
     List.isEmpty assembled.previousMeasurementsWithDates
+
+
+getFirstEncounterMeasurements : AssembledData -> PrenatalMeasurements
+getFirstEncounterMeasurements data =
+    case data.previousMeasurementsWithDates of
+        [] ->
+            data.measurements
+
+        first :: others ->
+            Tuple.second first
+
+
+getLastEncounterMeasurements : AssembledData -> PrenatalMeasurements
+getLastEncounterMeasurements data =
+    case List.reverse data.previousMeasurementsWithDates of
+        [] ->
+            data.measurements
+
+        first :: others ->
+            Tuple.second first
