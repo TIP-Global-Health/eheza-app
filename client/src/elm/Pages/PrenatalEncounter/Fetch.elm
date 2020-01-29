@@ -41,7 +41,7 @@ fetch id db =
                 |> List.map FetchPrenatalMeasurements
     in
     List.filterMap identity
-        [ Maybe.map FetchPrenatalParticipant participantId
+        [ Maybe.map FetchIndividualEncounterParticipant participantId
         , Maybe.map FetchPerson personId
         , Maybe.map FetchPrenatalEncountersForParticipant participantId
 

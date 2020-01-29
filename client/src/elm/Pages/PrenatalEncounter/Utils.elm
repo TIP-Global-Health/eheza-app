@@ -152,7 +152,7 @@ resolveGlobalObstetricHistory measurements previousMeasurements =
             |> Maybe.andThen getObstetricHistory
 
 
-generatePreviousMeasurements : PrenatalEncounterId -> PrenatalParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, PrenatalMeasurements ))
+generatePreviousMeasurements : PrenatalEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, PrenatalMeasurements ))
 generatePreviousMeasurements currentEncounterId participantId db =
     EveryDict.get participantId db.prenatalEncountersByParticipant
         |> Maybe.withDefault NotAsked
@@ -192,7 +192,7 @@ generateAssembledData id db =
             encounter
                 |> RemoteData.andThen
                     (\encounter ->
-                        EveryDict.get encounter.participant db.prenatalParticipants
+                        EveryDict.get encounter.participant db.individualParticipants
                             |> Maybe.withDefault NotAsked
                     )
 
