@@ -70,3 +70,6 @@ update currentDate id msg model =
             , Cmd.none
             , []
             )
+
+        SetAlertsDialogState isOpen ->
+            ( { model | showAlertsDialog = isOpen }, Cmd.none, [] )
