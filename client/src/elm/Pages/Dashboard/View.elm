@@ -44,7 +44,7 @@ view language page currentDate healthCenterId model db =
                     ( viewMainPage language currentDate stats model, PinCodePage )
 
                 StatsPage ->
-                    ( viewMainPage language currentDate stats model, UserPage <| DashboardPage MainPage )
+                    ( viewStatsPage language currentDate stats model, UserPage <| DashboardPage MainPage )
 
                 CaseManagementPage ->
                     ( viewCaseManagementPage language currentDate healthCenterId model db, UserPage <| DashboardPage MainPage )
