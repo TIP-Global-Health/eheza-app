@@ -79,21 +79,27 @@ viewHeader language data =
 
 viewMotherAndMeasurements : Language -> NominalDate -> AssembledData -> Bool -> (Bool -> msg) -> List (Html msg)
 viewMotherAndMeasurements language currentDate data isDialogOpen setAlertsDialogStateMsg =
-    [ viewMotherDetails language currentDate data.person data.measurements isDialogOpen setAlertsDialogStateMsg
+    [ viewMotherDetails language currentDate data isDialogOpen setAlertsDialogStateMsg
     , viewMeasurements language currentDate data.globalLmpDate data.globalObstetricHistory
     ]
 
 
-viewMotherDetails : Language -> NominalDate -> Person -> PrenatalMeasurements -> Bool -> (Bool -> msg) -> Html msg
-viewMotherDetails language currentDate mother measurements isDialogOpen setAlertsDialogStateMsg =
+viewMotherDetails : Language -> NominalDate -> AssembledData -> Bool -> (Bool -> msg) -> Html msg
+viewMotherDetails language currentDate data isDialogOpen setAlertsDialogStateMsg =
     let
+        mother =
+            data.person
+
+        firstEncounterMeasurements =
+            getFirstEncounterMeasurements data
+
         highRiskAlertsData =
             allHighRiskFactors
-                |> List.filterMap (generateHighRiskAlertData language measurements)
+                |> List.filterMap (generateHighRiskAlertData language firstEncounterMeasurements)
 
         highSeverityAlertsData =
             allHighSeverityAlerts
-                |> List.filterMap (generateHighSeverityAlertData language currentDate measurements)
+                |> List.filterMap (generateHighSeverityAlertData language currentDate data)
 
         alertSign =
             if List.isEmpty highRiskAlertsData && List.isEmpty highSeverityAlertsData then
