@@ -78,7 +78,7 @@ type alias ModelIndexedDb =
     -- Tracks requests in progress to update sessions, prenatal sessions or prenatal encounters.
     , sessionRequests : EveryDict SessionId Backend.Session.Model.Model
     , prenatalEncounterRequests : EveryDict PrenatalEncounterId Backend.PrenatalEncounter.Model.Model
-    , prenatalSessionRequests : EveryDict PrenatalParticipantId Backend.PrenatalParticipant.Model.Model
+    , prenatalSessionRequests : EveryDict IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
@@ -230,7 +230,7 @@ type MsgIndexedDb
       -- Handling edits to session data or prenatal encounter data
     | MsgSession SessionId Backend.Session.Model.Msg
     | MsgPrenatalEncounter PrenatalEncounterId Backend.PrenatalEncounter.Model.Msg
-    | MsgPrenatalSession PrenatalParticipantId Backend.PrenatalParticipant.Model.Msg
+    | MsgPrenatalSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
       -- Temporary, until we have a real UI for picking out a PrenatalEncounter
     | GoToRandomPrenatalEncounter
     | HandleRandomPrenatalEncounter (Result Http.Error (Maybe PrenatalEncounterId))

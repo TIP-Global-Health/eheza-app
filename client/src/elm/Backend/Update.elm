@@ -7,6 +7,7 @@ import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Update
 import Backend.Measurement.Model exposing (HistoricalMeasurements)
 import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMeasurements)
 import Backend.Model exposing (..)
@@ -14,8 +15,6 @@ import Backend.Person.Model exposing (RegistrationInitiator(..))
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Update
-import Backend.PrenatalParticipant.Model
-import Backend.PrenatalParticipant.Update
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
 import Backend.Relationship.Model exposing (RelatedBy(..))
 import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
@@ -486,16 +485,16 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
         MsgPrenatalSession participantId subMsg ->
             let
                 participant =
-                    EveryDict.get participantId model.prenatalParticipants
+                    EveryDict.get participantId model.individualParticipants
                         |> Maybe.withDefault NotAsked
                         |> RemoteData.toMaybe
 
                 requests =
                     EveryDict.get participantId model.prenatalSessionRequests
-                        |> Maybe.withDefault Backend.PrenatalParticipant.Model.emptyModel
+                        |> Maybe.withDefault Backend.IndividualEncounterParticipant.Model.emptyModel
 
                 ( subModel, subCmd ) =
-                    Backend.PrenatalParticipant.Update.update participantId participant currentDate subMsg requests
+                    Backend.IndividualEncounterParticipant.Update.update participantId participant currentDate subMsg requests
             in
             ( { model | prenatalSessionRequests = EveryDict.insert participantId subModel model.prenatalSessionRequests }
             , Cmd.map (MsgPrenatalSession participantId) subCmd

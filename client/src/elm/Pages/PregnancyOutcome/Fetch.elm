@@ -7,11 +7,11 @@ import EveryDictList
 import RemoteData exposing (RemoteData(..))
 
 
-fetch : PrenatalParticipantId -> ModelIndexedDb -> List MsgIndexedDb
+fetch : IndividualEncounterParticipantId -> ModelIndexedDb -> List MsgIndexedDb
 fetch participantId db =
     let
         personId =
-            EveryDict.get participantId db.prenatalParticipants
+            EveryDict.get participantId db.individualParticipants
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
                 |> Maybe.map .person
@@ -37,5 +37,5 @@ fetch participantId db =
         [ Maybe.map FetchPerson personId
         , Maybe.map FetchPrenatalEncounter lastEncounterId
         ]
-        ++ [ FetchPrenatalParticipant participantId, FetchPrenatalEncountersForParticipant participantId ]
+        ++ [ FetchIndividualEncounterParticipant participantId, FetchPrenatalEncountersForParticipant participantId ]
         ++ fetchMeasurements

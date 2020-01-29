@@ -2,9 +2,9 @@ module Pages.PregnancyOutcome.View exposing (view)
 
 import App.Model
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Encoder exposing (pregnancyOutcomeToString)
+import Backend.IndividualEncounterParticipant.Model exposing (PregnancyOutcome(..), allPregnancyOutcome)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.PrenatalParticipant.Encoder exposing (pregnancyOutcomeToString)
-import Backend.PrenatalParticipant.Model exposing (PregnancyOutcome(..), allPregnancyOutcome)
 import Date.Extra as Date exposing (Interval(Day, Month))
 import DateSelector.SelectorDropdown
 import EveryDict
@@ -25,7 +25,7 @@ import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> PrenatalParticipantId -> ModelIndexedDb -> Model -> Html Msg
+view : Language -> NominalDate -> IndividualEncounterParticipantId -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id db model =
     let
         lastEncounterId =

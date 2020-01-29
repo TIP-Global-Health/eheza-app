@@ -152,7 +152,7 @@ type alias LoggedInModel =
     -- A set of pages for every "open" editable session.
     , prenatalEncounterPages : EveryDict PrenatalEncounterId Pages.PrenatalEncounter.Model.Model
     , prenatalActivityPages : EveryDict ( PrenatalEncounterId, PrenatalActivity ) Pages.PrenatalActivity.Model.Model
-    , pregnancyOutcomePages : EveryDict PrenatalParticipantId Pages.PregnancyOutcome.Model.Model
+    , pregnancyOutcomePages : EveryDict IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Model
     , sessionPages : EveryDict SessionId Pages.Session.Model.Model
     }
 
@@ -216,7 +216,7 @@ type MsgLoggedIn
     | MsgPageSession SessionId Pages.Session.Model.Msg
     | MsgPagePrenatalEncounter PrenatalEncounterId Pages.PrenatalEncounter.Model.Msg
     | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.PrenatalActivity.Model.Msg
-    | MsgPagePregnancyOutcome PrenatalParticipantId Pages.PregnancyOutcome.Model.Msg
+    | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Msg
 
 
 type alias Flags =

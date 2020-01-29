@@ -1,7 +1,7 @@
 module Pages.PrenatalParticipant.Utils exposing (isPregnancyActive)
 
 import Backend.Entities exposing (..)
-import Backend.PrenatalParticipant.Model exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Maybe.Extra exposing (isJust)
 
@@ -10,7 +10,7 @@ import Maybe.Extra exposing (isJust)
 date set, and it's EDD date is not set, or, EDD date is less than
 3 month overdue.
 -}
-isPregnancyActive : NominalDate -> PrenatalParticipant -> Bool
+isPregnancyActive : NominalDate -> IndividualEncounterParticipant -> Bool
 isPregnancyActive currentDate session =
     if isJust session.endDate then
         False

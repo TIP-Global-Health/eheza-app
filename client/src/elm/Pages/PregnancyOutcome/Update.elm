@@ -2,15 +2,15 @@ module Pages.PregnancyOutcome.Update exposing (update)
 
 import App.Model
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Decoder exposing (pregnancyOutcomeFromString)
+import Backend.IndividualEncounterParticipant.Model
 import Backend.Model
-import Backend.PrenatalParticipant.Decoder exposing (pregnancyOutcomeFromString)
-import Backend.PrenatalParticipant.Model
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page(..))
 import Pages.PregnancyOutcome.Model exposing (..)
 
 
-update : NominalDate -> PrenatalParticipantId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update : NominalDate -> IndividualEncounterParticipantId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id msg model =
     let
         noChange =
@@ -25,7 +25,7 @@ update currentDate id msg model =
                 (\dateConcluded outcome isFacilityDelivery ->
                     ( model
                     , Cmd.none
-                    , [ Backend.PrenatalParticipant.Model.ClosePrenatalSession dateConcluded outcome isFacilityDelivery
+                    , [ Backend.IndividualEncounterParticipant.Model.ClosePrenatalSession dateConcluded outcome isFacilityDelivery
                             |> Backend.Model.MsgPrenatalSession id
                             |> App.Model.MsgIndexedDb
                       , App.Model.SetActivePage PinCodePage

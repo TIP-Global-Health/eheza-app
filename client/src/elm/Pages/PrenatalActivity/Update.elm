@@ -1,6 +1,7 @@
 module Pages.PrenatalActivity.Update exposing (update)
 
 import App.Model
+import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model
     exposing
         ( AbdomenCPESign(..)
@@ -19,7 +20,6 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils exposing (socialHistoryHivTestingResultFromString)
 import Backend.Model
 import Backend.PrenatalEncounter.Model
-import Backend.PrenatalParticipant.Model
 import Date.Extra as Date exposing (Interval(Day))
 import Gizra.NominalDate exposing (NominalDate, toLocalDateTime)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
@@ -170,7 +170,7 @@ update currentDate msg model =
                                   -- to decide that pregnancy has ended even if end date was
                                   -- not set - that is when we're 3 month past EDD date.
                                   calculateEDD lastMenstrualPeriodValue.date
-                                    |> Backend.PrenatalParticipant.Model.SetEddDate
+                                    |> Backend.IndividualEncounterParticipant.Model.SetEddDate
                                     |> Backend.Model.MsgPrenatalSession prenatalParticipantId
                                     |> App.Model.MsgIndexedDb
                                 , PrenatalEncounterPage prenatalEncounterId |> UserPage |> App.Model.SetActivePage

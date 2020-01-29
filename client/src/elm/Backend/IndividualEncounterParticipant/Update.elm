@@ -1,6 +1,6 @@
 module Backend.IndividualEncounterParticipant.Update exposing (update)
 
-import Backend.Endpoints exposing (prenatalParticipantEndpoint)
+import Backend.Endpoints exposing (individualEncounterParticipantEndpoint)
 import Backend.Entities exposing (IndividualEncounterParticipantId)
 import Backend.IndividualEncounterParticipant.Encoder exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (..)
@@ -35,7 +35,7 @@ update participantId maybeParticipant currentDate msg model =
                             , ( "outcome", encodePregnancyOutcome pregnancyOutcome )
                             , ( "outcome_location", encodeDeliveryLocation isFacilityDelivery )
                             ]
-                            |> sw.patchAny prenatalParticipantEndpoint participantId
+                            |> sw.patchAny individualEncounterParticipantEndpoint participantId
                             |> withoutDecoder
                             |> toCmd (RemoteData.fromResult >> HandleClosedPrenatalSession)
                         )
@@ -54,7 +54,7 @@ update participantId maybeParticipant currentDate msg model =
                         , object
                             [ ( "expected_date_concluded", encodeYYYYMMDD eddDate )
                             ]
-                            |> sw.patchAny prenatalParticipantEndpoint participantId
+                            |> sw.patchAny individualEncounterParticipantEndpoint participantId
                             |> withoutDecoder
                             |> toCmd (RemoteData.fromResult >> HandleSetEddDate)
                         )
