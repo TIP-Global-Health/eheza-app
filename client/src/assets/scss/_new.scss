@@ -510,21 +510,21 @@ div.page-prenatal-activity {
           margin-bottom: 10px;
 
           .unit {
-            width: 35%;
             float: left;
             font-weight: normal;
             margin-left: 20px;
             margin-top: 10px;
+            width: 35%;
           }
 
           input {
-            border: 2px solid $color-gray-border;
             background-color: $color-white;
+            border: 2px solid $color-gray-border;
             float: left;
             width: 60%;
           }
 
-          &.bmi input {
+          &.disabled input{
             pointer-events: none;
           }
         }
@@ -866,7 +866,7 @@ div.page-demographics-report {
         background: $color-white;
         color: $color-text;
         font-size: 18px;
-        padding: 20px 0 20px 40px
+        padding: 20px 0 20px 40px;
       }
     }
 }
@@ -1091,13 +1091,17 @@ div.page-clinical-progress-report {
         grid-gap: 28px;
         grid-template-columns: 150px 150px 150px 150px;
 
-        .progress-photo .ega {
-          background-color: $color-gray;
-          color: $color-white;
-          font-size: 16px;
-          font-weight: bold;
-          text-align: center;
+        .progress-photo {
+
+          .ega {
+            background-color: $color-gray;
+            color: $color-white;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+          }
         }
+
       }
 
       .trends-section {

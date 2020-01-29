@@ -9,6 +9,8 @@ module Pages.PrenatalEncounter.Utils exposing
     , generatePara
     , generatePreviousMeasurements
     , getLmpMeasurement
+    , getMotherHeightMeasurement
+    , isFirstPrenatalEncounter
     , resolveGlobalLmpDate
     , resolveGlobalObstetricHistory
     , shouldShowPatientProvisionsResourcesTask
@@ -110,6 +112,12 @@ getObstetricHistory : PrenatalMeasurements -> Maybe ObstetricHistoryValue
 getObstetricHistory measurements =
     measurements.obstetricHistory
         |> Maybe.map (Tuple.second >> .value)
+
+
+getMotherHeightMeasurement : PrenatalMeasurements -> Maybe HeightInCm
+getMotherHeightMeasurement measurements =
+    measurements.nutrition
+        |> Maybe.map (Tuple.second >> .value >> .height)
 
 
 resolveGlobalLmpDate : PrenatalMeasurements -> List PrenatalMeasurements -> Maybe NominalDate
@@ -237,8 +245,6 @@ expectPrenatalActivity currentDate data activity =
         PregnancyDating ->
             isFirstEncounter
 
-        -- History ->
-        --     isFirstEncounter
         PrenatalPhoto ->
             expectPrenatalPhoto currentDate data
 
@@ -316,3 +322,8 @@ shouldShowPatientProvisionsResourcesTask assembled =
                     |> Maybe.withDefault False
             )
         |> List.isEmpty
+
+
+isFirstPrenatalEncounter : AssembledData -> Bool
+isFirstPrenatalEncounter assembled =
+    List.isEmpty assembled.previousMeasurementsWithDates

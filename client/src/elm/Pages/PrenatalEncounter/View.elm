@@ -362,8 +362,7 @@ viewMainPageContent language currentDate data model =
                     True
 
                 _ ->
-                    -- False
-                    True
+                    False
 
         endEcounterButtonAttributes =
             if allowEndEcounter then
