@@ -1,8 +1,8 @@
 module Pages.PrenatalActivity.View exposing (view)
 
 import Backend.Entities exposing (..)
-import Backend.Measurement.Encoder exposing (socialHistoryHivTestingResultToString)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
+import Backend.Measurement.Encoder exposing (socialHistoryHivTestingResultToString)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
