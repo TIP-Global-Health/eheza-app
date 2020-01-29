@@ -69,7 +69,7 @@ viewHeader language data =
             [ text <| translate language Translate.PrenatalEncounter ]
         , a
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| IndividualEncounterParticipantsPage AntenatalEncounter
+            , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage data.participant.person
             ]
             [ span [ class "icon-back" ] []
             , span [] []
