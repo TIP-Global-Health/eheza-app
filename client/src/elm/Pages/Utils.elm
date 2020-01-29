@@ -1,4 +1,17 @@
-module Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, taskCompleted, viewBoolInput, viewCustomLabel, viewLabel, viewNameFilter, viewPhotoThumbFromPhotoUrl, viewQuestionLabel)
+module Pages.Utils exposing
+    ( filterDependentNoResultsMessage
+    , matchFilter
+    , matchMotherAndHerChildren
+    , normalizeFilter
+    , taskCompleted
+    , viewBoolInput
+    , viewCustomLabel
+    , viewLabel
+    , viewNameFilter
+    , viewPhotoThumb
+    , viewPhotoThumbFromPhotoUrl
+    , viewQuestionLabel
+    )
 
 import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model exposing (PhotoUrl(..))
@@ -79,19 +92,6 @@ viewNameFilter language filterInput setFilterMsg =
         ]
 
 
-{-| Show a photo thumbnail.
--}
-viewPhotoThumb : String -> Html any
-viewPhotoThumb url =
-    div []
-        [ img
-            [ src url
-            , class "ui small image rotate-90"
-            ]
-            []
-        ]
-
-
 viewLabel : Language -> TranslationId -> Html any
 viewLabel language translationId =
     viewCustomLabel language translationId ":" "label"
@@ -162,8 +162,21 @@ taskCompleted maybe =
 
     else
         0
-        
-        
+
+
+{-| Show a photo thumbnail.
+-}
+viewPhotoThumb : String -> Html any
+viewPhotoThumb url =
+    div []
+        [ img
+            [ src url
+            , class "ui small image rotate-90"
+            ]
+            []
+        ]
+
+
 viewPhotoThumbFromPhotoUrl : PhotoUrl -> Html any
 viewPhotoThumbFromPhotoUrl (PhotoUrl url) =
     viewPhotoThumb url
