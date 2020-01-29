@@ -8,13 +8,12 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model
 import Color exposing (Color)
 import Date exposing (Unit(..), isBetween)
-import Gizra.Html exposing (showIf)
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, isDiffTruthy)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList, src)
 import Html.Events exposing (onClick)
 import List.Extra
-import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 import Pages.Utils exposing (calculatePercentage)
@@ -143,6 +142,9 @@ viewGoodNutrition language currentPage nutrition =
             calculatePercentage nutrition.all.lastYear nutrition.good.lastYear
                 |> round
 
+        percentageDiff =
+            percentageThisYear - percentageLastYear
+
         statsCard =
             { title = Translate.Dashboard Translate.GoodNutritionLabel
             , cardClasses = "good-nutrition"
@@ -150,7 +152,7 @@ viewGoodNutrition language currentPage nutrition =
             , value = percentageThisYear
             , valueSeverity = Neutral
             , valueIsPercentage = True
-            , percentageLastYear = percentageLastYear
+            , percentageLastYear = percentageDiff
             , newCases = Nothing
             }
     in
@@ -293,15 +295,22 @@ viewStatsCard language currentPage statsCard =
             else
                 ""
 
-        percentageArrow =
-            if statsCard.percentageLastYear == 0 then
-                ""
+        viewPercentageArrow icon =
+            img
+                [ class "arrow"
+                , src <| "/assets/images/" ++ icon ++ ".svg"
+                ]
+                []
 
-            else if statsCard.percentageLastYear > 0 then
-                "icon-up"
+        percentageArrow =
+            if statsCard.percentageLastYear > 0 then
+                viewPercentageArrow "icon-up"
+
+            else if statsCard.percentageLastYear < 0 then
+                viewPercentageArrow "icon-down"
 
             else
-                "icon-down"
+                emptyNode
     in
     div
         [ class <| "ui segment blue dashboard-cards " ++ statsCard.cardClasses ++ " " ++ cardLinkClass
@@ -312,12 +321,7 @@ viewStatsCard language currentPage statsCard =
             , div [ class <| "percentage this-year severity severity-" ++ severityClass ] [ text <| String.fromInt statsCard.value ++ valueSuffix ]
             , div [ class "total last-year" ]
                 [ span [ class "percentage" ]
-                    [ showIf (percentageArrow /= "") <|
-                        img
-                            [ class "arrow"
-                            , src <| "/assets/images/" ++ percentageArrow ++ ".svg"
-                            ]
-                            []
+                    [ percentageArrow
                     , i [] [ text <| String.fromInt statsCard.percentageLastYear ++ "%" ]
                     ]
                 , span [ class "percentage-label" ] [ translateText language <| Translate.Dashboard Translate.PercentageEncountersLabel ]
