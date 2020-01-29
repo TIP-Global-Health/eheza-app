@@ -2,9 +2,9 @@ module Pages.PrenatalParticipant.View exposing (view)
 
 import App.Model
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
-import Backend.PrenatalParticipant.Model exposing (EncounterType(..), PrenatalParticipant)
 import EveryDict
 import EveryDictList exposing (EveryDictList)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
@@ -25,7 +25,7 @@ view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Html App.Model.M
 view language currentDate id db =
     let
         prenatalSessions =
-            EveryDict.get id db.prenatalParticipantsByPerson
+            EveryDict.get id db.individualParticipantsByPerson
                 |> Maybe.withDefault NotAsked
     in
     div
@@ -47,7 +47,7 @@ viewHeader language id =
             [ text <| translate language Translate.PrenatalEncounter ]
         , a
             [ class "link-back"
-            , onClick <| App.Model.SetActivePage <| UserPage <| EncounterTypesPage id
+            , onClick <| App.Model.SetActivePage <| UserPage <| IndividualEncounterParticipantsPage AntenatalEncounter
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -55,7 +55,7 @@ viewHeader language id =
         ]
 
 
-viewPrenatalActions : Language -> NominalDate -> PersonId -> ModelIndexedDb -> EveryDictList PrenatalParticipantId PrenatalParticipant -> Html App.Model.Msg
+viewPrenatalActions : Language -> NominalDate -> PersonId -> ModelIndexedDb -> EveryDictList IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
 viewPrenatalActions language currentDate id db prenatalSessions =
     let
         -- Person prenatal session.
@@ -126,8 +126,8 @@ viewPrenatalActions language currentDate id db prenatalSessions =
                         )
                     -- If prenatal session does not exist, create it.
                     |> Maybe.withDefault
-                        [ PrenatalParticipant id AntenatalEncounter currentDate Nothing
-                            |> Backend.Model.PostPrenatalSession
+                        [ IndividualEncounterParticipant id AntenatalEncounter currentDate Nothing
+                            |> Backend.Model.PostIndividualSession
                             |> App.Model.MsgIndexedDb
                             |> onClick
                         ]

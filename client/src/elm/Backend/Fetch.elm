@@ -94,13 +94,13 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
-        FetchPrenatalParticipant id ->
-            EveryDict.get id model.prenatalParticipants
+        FetchIndividualEncounterParticipant id ->
+            EveryDict.get id model.individualParticipants
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
-        FetchPrenatalParticipantsForPerson id ->
-            EveryDict.get id model.prenatalParticipantsByPerson
+        FetchIndividualEncounterParticipantsForPerson id ->
+            EveryDict.get id model.individualParticipantsByPerson
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
@@ -165,8 +165,8 @@ forget msg model =
         FetchPerson id ->
             { model | people = EveryDict.remove id model.people }
 
-        FetchPrenatalParticipantsForPerson id ->
-            { model | prenatalParticipantsByPerson = EveryDict.remove id model.prenatalParticipantsByPerson }
+        FetchIndividualEncounterParticipantsForPerson id ->
+            { model | individualParticipantsByPerson = EveryDict.remove id model.individualParticipantsByPerson }
 
         FetchParticipantsForPerson id ->
             { model | participantsByPerson = EveryDict.remove id model.participantsByPerson }
@@ -180,8 +180,8 @@ forget msg model =
         FetchPrenatalMeasurements id ->
             { model | prenatalMeasurements = EveryDict.remove id model.prenatalMeasurements }
 
-        FetchPrenatalParticipant id ->
-            { model | prenatalParticipants = EveryDict.remove id model.prenatalParticipants }
+        FetchIndividualEncounterParticipant id ->
+            { model | individualParticipants = EveryDict.remove id model.individualParticipants }
 
         FetchRelationshipsForPerson id ->
             { model | relationshipsByPerson = EveryDict.remove id model.relationshipsByPerson }

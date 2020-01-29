@@ -1,10 +1,10 @@
-module Pages.PrenatalParticipants.Update exposing (update)
+module Pages.IndividualEncounterParticipants.Update exposing (update)
 
 import App.Model
 import Debouncer.Basic as Debouncer exposing (provideInput)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra
-import Pages.PrenatalParticipants.Model exposing (..)
+import Pages.IndividualEncounterParticipants.Model exposing (..)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
