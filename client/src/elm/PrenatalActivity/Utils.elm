@@ -163,32 +163,28 @@ generateHighSeverityAlertData language currentDate data alert =
     in
     case alert of
         BodyTemperature ->
-            let
-                resolveAlert measurements =
-                    measurements.vitals
-                        |> Maybe.andThen
-                            (\measurement ->
-                                let
-                                    value =
-                                        Tuple.second measurement |> .value |> .bodyTemperature
-                                in
-                                if value >= 38.5 then
-                                    Just
-                                        ( trans Translate.High ++ " " ++ transAlert alert
-                                        , toString value ++ "°C"
-                                        )
+            data.measurements.vitals
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value |> .bodyTemperature
+                        in
+                        if value >= 38.5 then
+                            Just
+                                ( trans Translate.High ++ " " ++ transAlert alert
+                                , toString value ++ "°C"
+                                )
 
-                                else if value < 35 then
-                                    Just
-                                        ( trans Translate.Low ++ " " ++ transAlert alert
-                                        , toString value ++ "°C"
-                                        )
+                        else if value < 35 then
+                            Just
+                                ( trans Translate.Low ++ " " ++ transAlert alert
+                                , toString value ++ "°C"
+                                )
 
-                                else
-                                    Nothing
-                            )
-            in
-            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
+                        else
+                            Nothing
+                    )
 
         BloodPressure ->
             let
@@ -212,8 +208,21 @@ generateHighSeverityAlertData language currentDate data alert =
                                 else
                                     Nothing
                             )
+
+                elevatedMoreThanOnceAlert =
+                    let
+                        numberOfOccasions =
+                            data.previousMeasurementsWithDates
+                                |> List.filterMap (Tuple.second >> resolveAlert)
+                                |> List.length
+                    in
+                    if numberOfOccasions > 1 then
+                        Just ( trans Translate.BloodPressureElevatedOcassions, toString numberOfOccasions )
+
+                    else
+                        Nothing
             in
-            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
+            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> elevatedMoreThanOnceAlert)
 
         FetalHeartRate ->
             let
@@ -278,60 +287,52 @@ generateHighSeverityAlertData language currentDate data alert =
             Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
 
         HeartRate ->
-            let
-                resolveAlert measurements =
-                    measurements.vitals
-                        |> Maybe.andThen
-                            (\measurement ->
-                                let
-                                    value =
-                                        Tuple.second measurement |> .value |> .heartRate
-                                in
-                                if value >= 120 then
-                                    Just
-                                        ( trans Translate.High ++ " " ++ transAlert alert
-                                        , toString value ++ trans Translate.BpmUnit
-                                        )
+            data.measurements.vitals
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value |> .heartRate
+                        in
+                        if value >= 120 then
+                            Just
+                                ( trans Translate.High ++ " " ++ transAlert alert
+                                , toString value ++ trans Translate.BpmUnit
+                                )
 
-                                else if value < 40 then
-                                    Just
-                                        ( trans Translate.Low ++ " " ++ transAlert alert
-                                        , toString value ++ trans Translate.BpmUnit
-                                        )
+                        else if value < 40 then
+                            Just
+                                ( trans Translate.Low ++ " " ++ transAlert alert
+                                , toString value ++ trans Translate.BpmUnit
+                                )
 
-                                else
-                                    Nothing
-                            )
-            in
-            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
+                        else
+                            Nothing
+                    )
 
         RespiratoryRate ->
-            let
-                resolveAlert measurements =
-                    measurements.vitals
-                        |> Maybe.andThen
-                            (\measurement ->
-                                let
-                                    value =
-                                        Tuple.second measurement |> .value |> .respiratoryRate
-                                in
-                                if value > 30 then
-                                    Just
-                                        ( trans Translate.High ++ " " ++ transAlert alert
-                                        , toString value ++ trans Translate.BpmUnit
-                                        )
+            data.measurements.vitals
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value |> .respiratoryRate
+                        in
+                        if value > 30 then
+                            Just
+                                ( trans Translate.High ++ " " ++ transAlert alert
+                                , toString value ++ trans Translate.BpmUnit
+                                )
 
-                                else if value < 12 then
-                                    Just
-                                        ( trans Translate.Low ++ " " ++ transAlert alert
-                                        , toString value ++ trans Translate.BpmUnit
-                                        )
+                        else if value < 12 then
+                            Just
+                                ( trans Translate.Low ++ " " ++ transAlert alert
+                                , toString value ++ trans Translate.BpmUnit
+                                )
 
-                                else
-                                    Nothing
-                            )
-            in
-            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
+                        else
+                            Nothing
+                    )
 
 
 generateRiskFactorAlertData : Language -> NominalDate -> PrenatalMeasurements -> RiskFactor -> Maybe String

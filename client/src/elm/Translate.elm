@@ -196,6 +196,7 @@ type TranslationId
     | BackendError
     | BegingNewEncounter
     | BloodPressure
+    | BloodPressureElevatedOcassions
     | BloodPressureDiaLabel
     | BloodPressureSysLabel
     | BMI
@@ -1004,6 +1005,11 @@ translationSet trans =
 
         BloodPressure ->
             { english = "Blood Pressure"
+            , kinyarwanda = Nothing
+            }
+
+        BloodPressureElevatedOcassions ->
+            { english = "Blood Pressure Elevated occasions"
             , kinyarwanda = Nothing
             }
 
