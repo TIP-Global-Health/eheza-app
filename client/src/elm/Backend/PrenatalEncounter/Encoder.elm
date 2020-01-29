@@ -17,5 +17,5 @@ encodePrenatalEncounter session =
             , ( "value2", maybe encodeYYYYMMDD session.endDate )
             ]
       )
-    , ( "prenatal_participant", encodeEntityUuid session.participant )
+    , ( "individual_participant", encodeEntityUuid session.participant )
     ]

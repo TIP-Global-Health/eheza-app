@@ -1,4 +1,4 @@
-module Pages.PrenatalParticipants.Model exposing (Model, Msg(..), emptyModel)
+module Pages.IndividualEncounterParticipants.Model exposing (Model, Msg(..), emptyModel)
 
 import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
 import Pages.Page exposing (Page)

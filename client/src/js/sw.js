@@ -114,11 +114,11 @@ dbSync.version(5).stores({
 });
 
 dbSync.version(6).stores({
-    nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+prenatal_participant],[type+adult]',
+    nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
 });
 
 dbSync.version(7).stores({
-    nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+prenatal_participant],[type+adult]',
+    nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
 }).upgrade(function (tx) {
     return tx.nodes.where({
         type: 'clinic'
@@ -126,10 +126,10 @@ dbSync.version(7).stores({
 });
 
 dbSync.version(8).stores({
-    nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+prenatal_participant],[type+adult]',
+    nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
 }).upgrade(function (tx) {
     return tx.nodes.where({
-        type: 'prenatal_participant'
+        type: 'individual_participant'
     }).delete();
 });
 

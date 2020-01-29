@@ -1,13 +1,14 @@
-module Pages.PrenatalParticipants.Fetch exposing (fetch)
+module Pages.IndividualEncounterParticipants.Fetch exposing (fetch)
 
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Maybe.Extra
-import Pages.PrenatalParticipants.Model exposing (..)
+import Pages.IndividualEncounterParticipants.Model exposing (..)
 
 
-fetch : Model -> List MsgIndexedDb
-fetch model =
+fetch : IndividualEncounterType -> Model -> List MsgIndexedDb
+fetch encounterType model =
     let
         trimmed =
             model.search

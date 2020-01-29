@@ -1,4 +1,12 @@
-module Backend.PrenatalParticipant.Model exposing (EncounterType(..), Model, Msg(..), PregnancyOutcome(..), PrenatalParticipant, allPregnancyOutcome, emptyModel)
+module Backend.IndividualEncounterParticipant.Model exposing
+    ( IndividualEncounterParticipant
+    , IndividualEncounterType(..)
+    , Model
+    , Msg(..)
+    , PregnancyOutcome(..)
+    , allPregnancyOutcome
+    , emptyModel
+    )
 
 import Backend.Entities exposing (..)
 import Date exposing (Date)
@@ -6,9 +14,9 @@ import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
-type alias PrenatalParticipant =
+type alias IndividualEncounterParticipant =
     { person : PersonId
-    , encounterType : EncounterType
+    , encounterType : IndividualEncounterType
     , startDate : NominalDate
     , endDate : Maybe NominalDate
     , eddDate : Maybe NominalDate
@@ -35,7 +43,7 @@ emptyModel =
     }
 
 
-type EncounterType
+type IndividualEncounterType
     = AntenatalEncounter
     | InmmunizationEncounter
     | NutritionEncounter

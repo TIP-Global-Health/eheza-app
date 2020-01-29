@@ -1,12 +1,12 @@
 module Pages.PrenatalEncounter.View exposing (view, viewMotherAndMeasurements)
 
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (ObstetricHistoryValue, PrenatalMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
-import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import Date.Extra as Date exposing (Interval(Day))
 import EveryDict
 import EveryDictList
@@ -69,7 +69,7 @@ viewHeader language data =
             [ text <| translate language Translate.PrenatalEncounter ]
         , a
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage data.participant.person
+            , onClick <| SetActivePage <| UserPage <| IndividualEncounterParticipantsPage AntenatalEncounter
             ]
             [ span [ class "icon-back" ] []
             , span [] []

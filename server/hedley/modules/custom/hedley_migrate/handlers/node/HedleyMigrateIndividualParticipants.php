@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Contains \HedleyMigratePrenatalParticipants.
+ * Contains \HedleyMigrateIndividualParticipants.
  */
 
 /**
- * Class HedleyMigratePrenatalParticipants.
+ * Class HedleyMigrateIndividualParticipants.
  */
-class HedleyMigratePrenatalParticipants extends HedleyMigrateBase {
+class HedleyMigrateIndividualParticipants extends HedleyMigrateBase {
 
   /**
    * {@inheritdoc}
@@ -18,7 +18,7 @@ class HedleyMigratePrenatalParticipants extends HedleyMigrateBase {
   /**
    * {@inheritdoc}
    */
-  protected $bundle = 'prenatal_participant';
+  protected $bundle = 'individual_participant';
 
   /**
    * {@inheritdoc}

@@ -19,7 +19,7 @@ fetch id db =
 
         personId =
             participantId
-                |> Maybe.andThen (\id -> EveryDict.get id db.prenatalParticipants)
+                |> Maybe.andThen (\id -> EveryDict.get id db.individualParticipants)
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
                 |> Maybe.map .person
@@ -42,7 +42,7 @@ fetch id db =
     List.filterMap identity <|
         ([ Just <| FetchHealthCenters
          , Just <| FetchPrenatalEncounter id
-         , Maybe.map FetchPrenatalParticipant participantId
+         , Maybe.map FetchIndividualEncounterParticipant participantId
          , Maybe.map FetchPerson personId
          , Maybe.map FetchRelationshipsForPerson personId
          ]

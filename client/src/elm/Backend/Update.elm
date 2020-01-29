@@ -6,6 +6,7 @@ import App.Model
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (HistoricalMeasurements)
 import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMeasurements)
 import Backend.Model exposing (..)
@@ -181,15 +182,15 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , appMsgs
             )
 
-        FetchPrenatalParticipantsForPerson id ->
-            ( { model | prenatalParticipantsByPerson = EveryDict.insert id Loading model.prenatalParticipantsByPerson }
-            , sw.select prenatalParticipantEndpoint (Just id)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedPrenatalParticipantsForPerson id)
+        FetchIndividualEncounterParticipantsForPerson id ->
+            ( { model | individualParticipantsByPerson = EveryDict.insert id Loading model.individualParticipantsByPerson }
+            , sw.select individualEncounterParticipantEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedIndividualEncounterParticipantsForPerson id)
             , []
             )
 
-        HandleFetchedPrenatalParticipantsForPerson id data ->
-            ( { model | prenatalParticipantsByPerson = EveryDict.insert id data model.prenatalParticipantsByPerson }
+        HandleFetchedIndividualEncounterParticipantsForPerson id data ->
+            ( { model | individualParticipantsByPerson = EveryDict.insert id data model.individualParticipantsByPerson }
             , Cmd.none
             , []
             )
@@ -354,15 +355,15 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , []
             )
 
-        FetchPrenatalParticipant id ->
-            ( { model | prenatalParticipants = EveryDict.insert id Loading model.prenatalParticipants }
-            , sw.get prenatalParticipantEndpoint id
-                |> toCmd (RemoteData.fromResult >> HandleFetchedPrenatalParticipant id)
+        FetchIndividualEncounterParticipant id ->
+            ( { model | individualParticipants = EveryDict.insert id Loading model.individualParticipants }
+            , sw.get individualEncounterParticipantEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedIndividualEncounterParticipant id)
             , []
             )
 
-        HandleFetchedPrenatalParticipant id data ->
-            ( { model | prenatalParticipants = EveryDict.insert id data model.prenatalParticipants }
+        HandleFetchedIndividualEncounterParticipant id data ->
+            ( { model | individualParticipants = EveryDict.insert id data model.individualParticipants }
             , Cmd.none
             , []
             )
@@ -681,8 +682,15 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                                                     Nothing ->
                                                         PersonPage personId
 
-                                            IndividualEncounterOrigin ->
-                                                EncounterTypesPage personId
+                                            IndividualEncounterOrigin encounterType ->
+                                                case encounterType of
+                                                    AntenatalEncounter ->
+                                                        PrenatalParticipantPage personId
+
+                                                    _ ->
+                                                        -- This will change as we add support for
+                                                        -- new encounter types.
+                                                        IndividualEncounterTypesPage
                                 in
                                 [ Pages.Person.Model.ResetCreateForm
                                     |> App.Model.MsgPageCreatePerson
@@ -712,14 +720,14 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , []
             )
 
-        PostPrenatalSession prenatalSession ->
-            ( { model | postPrenatalSession = EveryDict.insert prenatalSession.person Loading model.postPrenatalSession }
-            , sw.post prenatalParticipantEndpoint prenatalSession
-                |> toCmd (RemoteData.fromResult >> HandlePostedPrenatalSession prenatalSession.person)
+        PostIndividualSession prenatalSession ->
+            ( { model | postIndividualSession = EveryDict.insert prenatalSession.person Loading model.postIndividualSession }
+            , sw.post individualEncounterParticipantEndpoint prenatalSession
+                |> toCmd (RemoteData.fromResult >> HandlePostedIndividualSession prenatalSession.person)
             , []
             )
 
-        HandlePostedPrenatalSession personId data ->
+        HandlePostedIndividualSession personId data ->
             let
                 -- We automatically create new encounter for newly created prenatal session.
                 -- We'll probably need to change this once we allow to end prenatal session,
@@ -735,7 +743,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                         data
                         |> RemoteData.withDefault []
             in
-            ( { model | postPrenatalSession = EveryDict.insert personId data model.postPrenatalSession }
+            ( { model | postIndividualSession = EveryDict.insert personId data model.postIndividualSession }
             , Cmd.none
             , appMsgs
             )
@@ -974,17 +982,17 @@ handleRevision revision (( model, recalc ) as noChange) =
             , True
             )
 
-        PrenatalParticipantRevision uuid data ->
+        IndividualEncounterParticipantRevision uuid data ->
             let
-                prenatalParticipants =
-                    EveryDict.update uuid (Maybe.map (always (Success data))) model.prenatalParticipants
+                individualParticipants =
+                    EveryDict.update uuid (Maybe.map (always (Success data))) model.individualParticipants
 
-                prenatalParticipantsByPerson =
-                    EveryDict.remove data.person model.prenatalParticipantsByPerson
+                individualParticipantsByPerson =
+                    EveryDict.remove data.person model.individualParticipantsByPerson
             in
             ( { model
-                | prenatalParticipants = prenatalParticipants
-                , prenatalParticipantsByPerson = prenatalParticipantsByPerson
+                | individualParticipants = individualParticipants
+                , individualParticipantsByPerson = individualParticipantsByPerson
               }
             , recalc
             )

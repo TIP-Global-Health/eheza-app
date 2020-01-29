@@ -1,9 +1,9 @@
-module Backend.PrenatalParticipant.Update exposing (update)
+module Backend.IndividualEncounterParticipant.Update exposing (update)
 
 import Backend.Endpoints exposing (prenatalParticipantEndpoint)
-import Backend.Entities exposing (PrenatalParticipantId)
-import Backend.PrenatalParticipant.Encoder exposing (..)
-import Backend.PrenatalParticipant.Model exposing (..)
+import Backend.Entities exposing (IndividualEncounterParticipantId)
+import Backend.IndividualEncounterParticipant.Encoder exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD, fromLocalDateTime)
 import Json.Encode exposing (object)
 import Json.Encode.Extra
@@ -12,7 +12,7 @@ import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (applyBackendUrl, toCmd, withoutDecoder)
 
 
-update : PrenatalParticipantId -> Maybe PrenatalParticipant -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg )
+update : IndividualEncounterParticipantId -> Maybe IndividualEncounterParticipant -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg )
 update participantId maybeParticipant currentDate msg model =
     let
         sw =

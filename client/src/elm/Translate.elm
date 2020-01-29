@@ -27,6 +27,7 @@ import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model
     exposing
@@ -37,7 +38,6 @@ import Backend.Person.Model
         , ModeOfDelivery(..)
         , VaginalDelivery(..)
         )
-import Backend.PrenatalParticipant.Model exposing (EncounterType(..), PregnancyOutcome(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
@@ -285,7 +285,6 @@ type TranslationId
     | EgaHeader
     | EgaWeeks
     | EmptyString
-    | EncounterType EncounterType
     | EndEncounter
     | EndGroupEncounter
     | EnterPairingCode
@@ -347,6 +346,7 @@ type TranslationId
     | HypertensionBeforePregnancy
     | IncompleteCervixPreviousPregnancy
     | IndividualEncounter
+    | IndividualEncounterType IndividualEncounterType
     | IndividualEncounterTypes
     | KilogramShorthand
     | LastChecked
@@ -1613,23 +1613,6 @@ translationSet trans =
             , kinyarwanda = Just ""
             }
 
-        EncounterType type_ ->
-            case type_ of
-                AntenatalEncounter ->
-                    { english = "Antenatal"
-                    , kinyarwanda = Nothing
-                    }
-
-                InmmunizationEncounter ->
-                    { english = "Inmmunization"
-                    , kinyarwanda = Nothing
-                    }
-
-                NutritionEncounter ->
-                    { english = "Nutrition"
-                    , kinyarwanda = Nothing
-                    }
-
         EndEncounter ->
             { english = "End Encounter"
             , kinyarwanda = Nothing
@@ -2145,6 +2128,23 @@ translationSet trans =
             { english = "Individual Encounter"
             , kinyarwanda = Nothing
             }
+
+        IndividualEncounterType type_ ->
+            case type_ of
+                AntenatalEncounter ->
+                    { english = "Antenatal"
+                    , kinyarwanda = Nothing
+                    }
+
+                InmmunizationEncounter ->
+                    { english = "Inmmunization"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounter ->
+                    { english = "Nutrition"
+                    , kinyarwanda = Nothing
+                    }
 
         IndividualEncounterTypes ->
             { english = "Individual Encounter Types"
@@ -3989,10 +3989,22 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                PrenatalParticipantsPage ->
-                    { english = "Antenatal Participants"
-                    , kinyarwanda = Nothing
-                    }
+                IndividualEncounterParticipantsPage encounterType ->
+                    case encounterType of
+                        AntenatalEncounter ->
+                            { english = "Antenatal Participants"
+                            , kinyarwanda = Nothing
+                            }
+
+                        InmmunizationEncounter ->
+                            { english = "Inmmunization Participants"
+                            , kinyarwanda = Nothing
+                            }
+
+                        NutritionEncounter ->
+                            { english = "Nutrition Participants"
+                            , kinyarwanda = Nothing
+                            }
 
                 RelationshipPage _ _ ->
                     { english = "Relationship"
@@ -4046,7 +4058,7 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
-                EncounterTypesPage _ ->
+                IndividualEncounterTypesPage ->
                     { english = "Encounter Types"
                     , kinyarwanda = Nothing
                     }

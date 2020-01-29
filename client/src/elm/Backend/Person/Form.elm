@@ -1,5 +1,6 @@
 module Backend.Person.Form exposing
     ( ExpectedAge(..)
+    , ExpectedGender(..)
     , PersonForm
     , allDigitsPattern
     , birthDate
@@ -80,6 +81,12 @@ type ExpectedAge
     = ExpectAdult
     | ExpectChild
     | ExpectAdultOrChild
+
+
+type ExpectedGender
+    = ExpectMale
+    | ExpectFemale
+    | ExpectMaleOrFemale
 
 
 {-| Given the birth date actually entered into the form, what age range are we
