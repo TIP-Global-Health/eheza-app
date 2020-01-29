@@ -70,7 +70,6 @@ features[field_instance][] = node-relationship-field_related_by
 features[field_instance][] = node-relationship-field_related_to
 features[field_instance][] = node-relationship-field_uuid
 features[image][] = patient-photo
-features[image][] = prenatal-photo
 features[node][] = person
 features[node][] = relationship
 features[user_permission][] = create person content

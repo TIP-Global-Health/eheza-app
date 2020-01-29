@@ -1,4 +1,4 @@
-module Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter, viewPhotoThumb)
+module Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter, viewPhotoThumb, viewPhotoThumbFromPhotoUrl)
 
 import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model exposing (PhotoUrl(..))
@@ -80,12 +80,17 @@ viewNameFilter language filterInput setFilterMsg =
 
 {-| Show a photo thumbnail.
 -}
-viewPhotoThumb : PhotoUrl -> Html any
-viewPhotoThumb (PhotoUrl url) =
+viewPhotoThumb : String -> Html any
+viewPhotoThumb url =
     div []
         [ img
             [ src url
-            , class "ui small image"
+            , class "ui small image rotate-90"
             ]
             []
         ]
+
+
+viewPhotoThumbFromPhotoUrl : PhotoUrl -> Html any
+viewPhotoThumbFromPhotoUrl (PhotoUrl url) =
+    viewPhotoThumb url

@@ -652,13 +652,7 @@
             // First, we want to normalize the property ... we're only
             // recording the URL for one style.
             if (node[field]) {
-                var style = 'patient-photo';
-
-                if (node['type'] === 'prenatal_photo') {
-                    style = 'prenatal-photo';
-                }
-
-                node[field] = node[field].styles[style];
+                node[field] = node[field].styles['patient-photo'];
             }
 
             // Then, we need to see whether it has changed.

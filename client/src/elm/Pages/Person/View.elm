@@ -29,6 +29,7 @@ import Maybe.Extra exposing (isJust, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model exposing (..)
+import Pages.Utils exposing (viewPhotoThumb)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Set
@@ -357,17 +358,6 @@ viewOtherPerson language currentDate relationMainId ( otherPersonId, otherPerson
             [ class "ui image" ]
             [ thumbnailImage typeForThumbnail person.avatarUrl person.name 120 120 ]
         , content
-        ]
-
-
-viewPhotoThumb : String -> Html any
-viewPhotoThumb url =
-    div []
-        [ img
-            [ src url
-            , class "ui small image rotate-90"
-            ]
-            []
         ]
 
 
