@@ -10,13 +10,11 @@ import Html.Events exposing (..)
 import Translate exposing (Language, TranslationId, translate)
 
 
+{-| Calculate percentage.
+-}
 calculatePercentage : Int -> Int -> Float
 calculatePercentage total unique =
-    let
-        diff =
-            total - unique
-    in
-    (toFloat unique / toFloat diff) * 100
+    (toFloat unique / toFloat total) * 100
 
 
 filterDependentNoResultsMessage : Language -> String -> TranslationId -> String

@@ -152,6 +152,12 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
 /**
  * Return "Good nutrition" percentages for last year and the year before.
  *
+ * This function gets all measurements (Height, MUAC, Nutrition, Weight)
+ * possible for all the people inside a health center for the last two years
+ * (separated, each year inside its own array) and then it checks the number of
+ * people with "Good nutrition", meaning that all measurements for that person
+ * is above moderate.
+ *
  * @param int $health_center_id
  *   The Health center node ID.
  *
@@ -161,11 +167,6 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
  * @throws \Exception
  */
 function hedley_stats_get_good_nutrition($health_center_id) {
-  $good_nutrition_result = [
-    'last_year' => 0,
-    'this_year' => 0,
-  ];
-
   $result = [];
 
   // All the measurements nodes with measurement field mapped.

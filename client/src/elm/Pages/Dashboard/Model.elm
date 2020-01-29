@@ -6,6 +6,7 @@ module Pages.Dashboard.Model exposing
     , FilterPeriod(..)
     , Model
     , Msg(..)
+    , StatsCard
     , emptyModel
     , filterGenders
     , filterPeriods
@@ -14,10 +15,9 @@ module Pages.Dashboard.Model exposing
 {-| Filtering by period
 -}
 
-import AssocList as Dict exposing (Dict)
+import AssocList exposing (Dict)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
-import Color exposing (Color)
-import Pages.Page exposing (Page)
+import Pages.Page exposing (DashboardPage, Page)
 import Translate exposing (TranslationId)
 
 
@@ -81,6 +81,20 @@ type alias Card =
     { title : TranslationId
     , value : Int
     , valueSeverity : CardValueSeverity
+    }
+
+
+{-| A `Stat Card` that will appear in the dashboard and display a certain statistic with difference from last year.
+-}
+type alias StatsCard =
+    { title : TranslationId
+    , cardClasses : String
+    , cardAction : Maybe DashboardPage
+    , value : Int
+    , valueSeverity : CardValueSeverity
+    , valueIsPercentage : Bool
+    , percentageLastYear : Int
+    , newCases : Maybe Int
     }
 
 

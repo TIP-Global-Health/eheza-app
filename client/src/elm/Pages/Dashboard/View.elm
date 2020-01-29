@@ -14,6 +14,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, classList, src)
 import Html.Events exposing (onClick)
 import List.Extra
+import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 import Pages.Utils exposing (calculatePercentage)
@@ -42,13 +43,13 @@ view language page currentDate healthCenterId model db =
         ( pageView, goBackPage ) =
             case page of
                 MainPage ->
-                    ( viewMainPage language currentDate stats model, PinCodePage )
+                    ( viewMainPage language page currentDate stats model, PinCodePage )
 
                 StatsPage ->
-                    ( viewStatsPage language currentDate stats model, UserPage <| DashboardPage MainPage )
+                    ( viewStatsPage language page currentDate stats model, UserPage <| DashboardPage MainPage )
 
                 CaseManagementPage ->
-                    ( viewCaseManagementPage language currentDate healthCenterId model db, UserPage <| DashboardPage MainPage )
+                    ( viewCaseManagementPage language page currentDate healthCenterId model db, UserPage <| DashboardPage MainPage )
 
         header =
             div
@@ -69,15 +70,15 @@ view language page currentDate healthCenterId model db =
         ]
 
 
-viewMainPage : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
-viewMainPage language currentDate stats model =
+viewMainPage : Language -> DashboardPage -> NominalDate -> DashboardStats -> Model -> Html Msg
+viewMainPage language currentPage currentDate stats model =
     div [ class "dashboard main" ]
         [ div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
-                [ viewGoodNutrition language stats.goodNutrition
+                [ viewGoodNutrition language currentPage stats.goodNutrition
                 ]
             , div [ class "eight wide column" ]
-                [ viewTotalEncounters language stats.totalEncounters
+                [ viewTotalEncounters language currentPage stats.totalEncounters
                 ]
             , div [ class "sixteen wide column" ]
                 [ viewDashboardPagesLinks language
@@ -86,8 +87,8 @@ viewMainPage language currentDate stats model =
         ]
 
 
-viewStatsPage : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
-viewStatsPage language currentDate stats model =
+viewStatsPage : Language -> DashboardPage -> NominalDate -> DashboardStats -> Model -> Html Msg
+viewStatsPage language currentPage currentDate stats model =
     div [ class "dashboard stats" ]
         [ viewPeriodFilter language model
         , viewAllCards language stats
@@ -106,8 +107,8 @@ viewStatsPage language currentDate stats model =
         ]
 
 
-viewCaseManagementPage : Language -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
-viewCaseManagementPage language currentDate healthCenterId model db =
+viewCaseManagementPage : Language -> DashboardPage -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
+viewCaseManagementPage language currentPage currentDate healthCenterId model db =
     --@todo: Add case management page design.
     div [ class "dashboard management ui segment blue" ] [ text "Case Management Page" ]
 
@@ -131,8 +132,8 @@ viewPeriodFilter language model =
         (List.map renderButton filterPeriods)
 
 
-viewGoodNutrition : Language -> GoodNutrition -> Html Msg
-viewGoodNutrition language nutrition =
+viewGoodNutrition : Language -> DashboardPage -> GoodNutrition -> Html Msg
+viewGoodNutrition language currentPage nutrition =
     let
         percentageThisYear =
             calculatePercentage nutrition.all.thisYear nutrition.good.thisYear
@@ -142,74 +143,42 @@ viewGoodNutrition language nutrition =
             calculatePercentage nutrition.all.lastYear nutrition.good.lastYear
                 |> round
 
-        percentageDiff =
-            percentageThisYear - percentageLastYear
-
-        percentageArrow =
-            if percentageDiff == 0 then
-                ""
-
-            else if percentageDiff > 0 then
-                "icon-up"
-
-            else
-                "icon-down"
+        statsCard =
+            { title = Translate.Dashboard Translate.GoodNutritionLabel
+            , cardClasses = "good-nutrition"
+            , cardAction = Nothing
+            , value = percentageThisYear
+            , valueSeverity = Neutral
+            , valueIsPercentage = True
+            , percentageLastYear = percentageLastYear
+            , newCases = Nothing
+            }
     in
-    div [ class "ui segment blue dashboard-cards good-nutrition" ]
-        [ div [ class "content" ]
-            [ div [ class "header" ] [ translateText language <| Translate.Dashboard Translate.GoodNutritionLabel ]
-            , div [ class "percentage this-year severity severity-neutral" ] [ text <| String.fromInt percentageThisYear ++ "%" ]
-            , div [ class "total last-year" ]
-                [ span [ class "percentage" ]
-                    [ showIf (percentageArrow /= "") <|
-                        img
-                            [ class "arrow"
-                            , src <| "/assets/images/" ++ percentageArrow ++ ".svg"
-                            ]
-                            []
-                    , i [] [ text <| String.fromInt percentageDiff ++ "%" ]
-                    ]
-                , span [ class "percentage-label" ] [ translateText language <| Translate.Dashboard Translate.PercentageEncountersLabel ]
-                ]
-            ]
-        ]
+    viewStatsCard language currentPage statsCard
 
 
-viewTotalEncounters : Language -> Periods -> Html Msg
-viewTotalEncounters language encounters =
+viewTotalEncounters : Language -> DashboardPage -> Periods -> Html Msg
+viewTotalEncounters language currentPage encounters =
     let
+        diff =
+            encounters.thisYear - encounters.lastYear
+
         percentageDiff =
-            calculatePercentage encounters.thisYear encounters.lastYear
+            calculatePercentage encounters.thisYear diff
                 |> round
 
-        percentageArrow =
-            if percentageDiff == 0 then
-                ""
-
-            else if percentageDiff > 0 then
-                "icon-up"
-
-            else
-                "icon-down"
+        statsCard =
+            { title = Translate.Dashboard Translate.TotalEncountersLabel
+            , cardClasses = "total-encounters"
+            , cardAction = Nothing
+            , value = encounters.thisYear
+            , valueSeverity = Neutral
+            , valueIsPercentage = False
+            , percentageLastYear = percentageDiff
+            , newCases = Nothing
+            }
     in
-    div [ class "ui segment blue dashboard-cards total-encounters" ]
-        [ div [ class "content" ]
-            [ div [ class "header" ] [ translateText language <| Translate.Dashboard Translate.TotalEncountersLabel ]
-            , div [ class "total this-year severity severity-neutral" ] [ text <| String.fromInt encounters.thisYear ]
-            , div [ class "total last-year" ]
-                [ span [ class "percentage" ]
-                    [ showIf (percentageArrow /= "") <|
-                        img
-                            [ class "arrow"
-                            , src <| "/assets/images/" ++ percentageArrow ++ ".svg"
-                            ]
-                            []
-                    , i [] [ text <| String.fromInt percentageDiff ++ "%" ]
-                    ]
-                , span [ class "percentage-label" ] [ translateText language <| Translate.Dashboard Translate.PercentageEncountersLabel ]
-                ]
-            ]
-        ]
+    viewStatsCard language currentPage statsCard
 
 
 viewAllCards : Language -> DashboardStats -> Html Msg
@@ -284,6 +253,77 @@ viewMiscCards language stats =
     div [ class "ui segment" ]
         [ div [ class "ui cards" ]
             [ viewCard language totalNewBeneficiariesCard
+            ]
+        ]
+
+
+viewStatsCard : Language -> DashboardPage -> StatsCard -> Html Msg
+viewStatsCard language currentPage statsCard =
+    let
+        ( cardAction, cardLinkClass ) =
+            case statsCard.cardAction of
+                Nothing ->
+                    ( SetActivePage <| UserPage <| DashboardPage currentPage
+                    , ""
+                    )
+
+                Just page ->
+                    ( SetActivePage <| UserPage <| DashboardPage <| page
+                    , "link"
+                    )
+
+        severityClass =
+            case statsCard.valueSeverity of
+                Neutral ->
+                    "neutral"
+
+                Good ->
+                    "good"
+
+                Moderate ->
+                    "moderate"
+
+                Severe ->
+                    "severe"
+
+        valueSuffix =
+            if statsCard.valueIsPercentage then
+                "%"
+
+            else
+                ""
+
+        percentageArrow =
+            if statsCard.percentageLastYear == 0 then
+                ""
+
+            else if statsCard.percentageLastYear > 0 then
+                "icon-up"
+
+            else
+                "icon-down"
+    in
+    div
+        [ class <| "ui segment blue dashboard-cards " ++ statsCard.cardClasses ++ " " ++ cardLinkClass
+        , onClick cardAction
+        ]
+        [ div [ class "content" ]
+            [ div [ class "header" ] [ translateText language statsCard.title ]
+            , div [ class <| "percentage this-year severity severity-" ++ severityClass ] [ text <| String.fromInt statsCard.value ++ valueSuffix ]
+            , div [ class "total last-year" ]
+                [ span [ class "percentage" ]
+                    [ showIf (percentageArrow /= "") <|
+                        img
+                            [ class "arrow"
+                            , src <| "/assets/images/" ++ percentageArrow ++ ".svg"
+                            ]
+                            []
+                    , i [] [ text <| String.fromInt statsCard.percentageLastYear ++ "%" ]
+                    ]
+                , span [ class "percentage-label" ] [ translateText language <| Translate.Dashboard Translate.PercentageEncountersLabel ]
+                ]
+
+            --  @todo: Add newCases here.
             ]
         ]
 
