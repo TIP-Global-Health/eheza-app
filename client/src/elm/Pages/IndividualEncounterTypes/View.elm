@@ -57,29 +57,3 @@ viewContent language currentDate db =
     [ p [] [ text <| translate language Translate.SelectEncounterType ++ ":" ]
     , antenatalButton
     ]
-
-
-
--- let
---     antenatalButton =
---         EveryDict.get personId db.people
---             |> Maybe.withDefault NotAsked
---             |> RemoteData.map
---                 (\person ->
---                     if isPersonAFertileWoman currentDate person then
---                         button
---                             [ class "ui primary button encounter-type"
---                             , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage personId
---                             ]
---                             [ span [ class "text" ] [ text <| translate language <| Translate.EncounterType AntenatalEncounter ]
---                             , span [ class "icon-back" ] []
---                             ]
---
---                     else
---                         emptyNode
---                 )
---             |> RemoteData.withDefault emptyNode
--- in
--- [ p [] [ text <| translate language Translate.SelectEncounterType ++ ":" ]
--- , antenatalButton
--- ]

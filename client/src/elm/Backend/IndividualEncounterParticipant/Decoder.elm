@@ -26,26 +26,3 @@ decodeIndividualEncounterType =
                     |> Maybe.map succeed
                     |> Maybe.withDefault (s ++ " is not a recognized EncounterType" |> fail)
             )
-
-
-
--- decodeIndividualEncounterType2 : Decoder IndividualEncounterType
--- decodeIndividualEncounterType2 =
---     string
---         |> andThen
---             (\s ->
---                 case s of
---                     "antenatal" ->
---                         succeed AntenatalEncounter
---
---                     "inmmunization" ->
---                         succeed InmmunizationEncounter
---
---                     "nutrition" ->
---                         succeed NutritionEncounter
---
---                     _ ->
---                         fail <|
---                             s
---                                 ++ " is not a recognized EncounterType"
---             )
