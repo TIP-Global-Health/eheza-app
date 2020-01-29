@@ -1,0 +1,88 @@
+<?php
+
+/**
+ * @file
+ * Test Z-Score calculations.
+ */
+
+/**
+ * HedleyStats calculation tests.
+ */
+class HedleyStatsCalculation extends HedleyWebTestBase {
+
+  /**
+   * Info hook.
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'HedleyStatsCalculation tests',
+      'description' => 'Tests Stats calculations.',
+      'group' => 'Hedley',
+    ];
+  }
+
+  /**
+   * The attendance count last year.
+   *
+   * @var int
+   */
+  protected $attendanceLastYear = 10;
+
+  /**
+   * The attendance count this year.
+   *
+   * @var int
+   */
+  protected $attendanceThisYear = 5;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp() {
+    parent::setUp();
+
+    // Common test users for the cases.
+    $this->anonymousUser = user_load(0);
+    $this->user = $this->drupalCreateUser(['bypass node access']);
+  }
+
+  /**
+   * Testing the total encounters stats.
+   */
+  public function testTotalEncounters() {
+    $attend = [];
+    $health_center_nid = $this->createHealthCenter();
+    $clinic_nid = $this->createClinic($health_center_nid, 'fbf');
+
+    $sessions = [
+      [ 'date' => strtotime("-18 months"),
+        'number_of_attendance' => $this->attendanceLastYear,
+      ],
+      [ 'date' => strtotime("-9 months"),
+        'number_of_attendance' => $this->attendanceThisYear,
+      ],
+    ];
+
+    foreach ($sessions as $session) {
+      $session_nid = $this->createSession($clinic_nid, $session['date']);
+      $nurse = $this->createNurse($clinic_nid);
+
+      for ($i=1; $i<=$session['number_of_attendance']; $i++) {
+        $mother_nid = $this->createMother($clinic_nid);
+        $child_nid = $this->createChild($mother_nid, $health_center_nid);
+
+        $attend[] = $this->createAttendance($health_center_nid, $session_nid, $nurse->uid, $child_nid, $session['date']);
+      }
+    }
+
+    // Get total encounters from the stats function.
+    $total_encounters = hedley_stats_get_total_encounters($health_center_nid);
+
+    // Assert the amount of attendance for last year.
+    $this->assertEqual($this->attendanceLastYear, $total_encounters['last_year']);
+
+    // Assert the amount of attendance for this year.
+    $this->assertEqual($this->attendanceThisYear, $total_encounters['this_year']);
+  }
+
+}

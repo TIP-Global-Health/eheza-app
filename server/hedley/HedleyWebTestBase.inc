@@ -110,15 +110,63 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   }
 
   /**
+   * Create a health center with a random name.
+   *
+   * @return int
+   *   The "health center" node ID.
+   */
+  public function createHealthCenter() {
+    // Create a new device.
+    $device = $this->drupalCreateNode([
+      'type' => 'device',
+    ]);
+
+    $wrapper = entity_metadata_wrapper('node', $device);
+    $wrapper->field_pairing_code->set('123');
+    $wrapper->save();
+
+    // Create the necessary catchment area.
+    $catchment_area = $this->drupalCreateNode([
+      'type' => 'catchment_area',
+    ]);
+
+    $node = $this->drupalCreateNode([
+      'type' => 'health_center',
+    ]);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_catchment_area->set($catchment_area->nid);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
    * Create a clinic with a random name.
+   *
+   * @param int $health_center_id
+   *   The health center node ID.
+   * @param string $clinic_type
+   *   The clinic type, options: pmtct,fbf,sorwathe
    *
    * @return int
    *   The node ID.
    */
-  public function createClinic() {
-    return $this->drupalCreateNode([
+  public function createClinic($health_center_id = 0, $clinic_type = 'pmtct') {
+    $node = $this->drupalCreateNode([
       'type' => 'clinic',
     ]);
+
+    if (!$health_center_id) {
+      return $node->nid;
+    }
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_health_center->set($health_center_id);
+    $wrapper->field_group_type->set($clinic_type);
+    $wrapper->save();
+
+    return $node->nid;
   }
 
   /**
@@ -151,11 +199,13 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *
    * @param int $mother_id
    *   The mother's node ID.
+   * @param int $health_center_id
+   *   The health center's node ID.
    *
    * @return int
    *   The child's node ID.
    */
-  public function createChild($mother_id) {
+  public function createChild($mother_id, $health_center_id = 0) {
     $node = $this->drupalCreateNode([
       'type' => 'person',
       'title' => $this->randomName(),
@@ -164,6 +214,12 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper = entity_metadata_wrapper('node', $node);
     $wrapper->field_birth_date->set(strtotime('2015-06-27'));
     $wrapper->field_gender->set('male');
+
+    if ($health_center_id) {
+      // Need to add health center because health centers are assigned to nodes
+      // according to referenced person.
+      $wrapper->field_health_center->set($health_center_id);
+    }
     $wrapper->save();
 
     $this->createRelationship($mother_id, $node->nid, HEDLEY_PERSON_RELATED_BY_PARENT_OF);
@@ -186,7 +242,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    * @return int
    *   The relationship's node ID.
    */
-  function createRelationship ($person_id, $related_to, $related_by) {
+  function createRelationship($person_id, $related_to, $related_by) {
     $node = $this->drupalCreateNode([
       'type' => 'relationship',
     ]);
@@ -227,6 +283,41 @@ class HedleyWebTestBase extends DrupalWebTestCase {
       'value' => $date,
       'value2' => $date,
     ]);
+
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create an attendance for a session, starting today.
+   *
+   * @param int $health_center_nid
+   *   The node ID of the health center.
+   * @param int $session_id
+   *   The node ID of the session.
+   * @param int $nurse_id
+   *   The node ID of the nurse.
+  * @param int $child_id
+   *   The node ID of the child.
+   * @param int $timestamp
+   *   Optional; The date of the session, as a unix timestamp, defaults to the
+   *   time of the request.
+   *
+   * @return int
+   *   The node ID of the attendance.
+   */
+  public function createAttendance($health_center_nid, $session_id, $nurse_id, $child_id , $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'attendance']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_shards->set([
+      $health_center_nid => $health_center_nid,
+    ]);
+    $wrapper->field_session->set($session_id);
+    $wrapper->field_nurse->set($nurse_id);
+    $wrapper->field_person->set($child_id);
+    $wrapper->field_date_measured->set($timestamp);
 
     $wrapper->save();
 
