@@ -1015,47 +1015,91 @@ generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasure
 
         DiagnosisHypertension ->
             let
-                resolveAlert measurements =
-                    measurements.vitals
-                        |> Maybe.andThen
-                            (\measurement ->
-                                let
-                                    sys =
-                                        Tuple.second measurement |> .value |> .sys
+                lowBloodPressureOccasions =
+                    data.previousMeasurementsWithDates
+                        |> List.filterMap
+                            (\( _, measurements ) ->
+                                measurements.vitals
+                                    |> Maybe.andThen
+                                        (\measurement ->
+                                            let
+                                                sys =
+                                                    Tuple.second measurement |> .value |> .sys
 
-                                    dia =
-                                        Tuple.second measurement |> .value |> .dia
-                                in
-                                if sys < 110 || dia < 70 then
-                                    Just (transAlert diagnosis)
+                                                dia =
+                                                    Tuple.second measurement |> .value |> .dia
+                                            in
+                                            if sys < 110 || dia < 70 then
+                                                Just True
 
-                                else
-                                    Nothing
+                                            else
+                                                Nothing
+                                        )
                             )
+                        |> List.length
             in
-            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
+            if lowBloodPressureOccasions > 1 then
+                Just (transAlert diagnosis)
+
+            else
+                Nothing
 
         DiagnosisPregnancyInducedHypertension ->
             let
-                resolveAlert measurements =
-                    measurements.vitals
-                        |> Maybe.andThen
-                            (\measurement ->
-                                let
-                                    sys =
-                                        Tuple.second measurement |> .value |> .sys
+                lowBloodPressureOccasions =
+                    data.previousMeasurementsWithDates
+                        |> List.filterMap
+                            (\( _, measurements ) ->
+                                measurements.vitals
+                                    |> Maybe.andThen
+                                        (\measurement ->
+                                            let
+                                                sys =
+                                                    Tuple.second measurement |> .value |> .sys
 
-                                    dia =
-                                        Tuple.second measurement |> .value |> .dia
-                                in
-                                if sys > 140 || dia > 90 then
-                                    Just (transAlert diagnosis)
+                                                dia =
+                                                    Tuple.second measurement |> .value |> .dia
+                                            in
+                                            if sys < 110 || dia < 70 then
+                                                Just True
 
-                                else
-                                    Nothing
+                                            else
+                                                Nothing
+                                        )
                             )
+                        |> List.length
+
+                highBloodPressureOccasions =
+                    data.previousMeasurementsWithDates
+                        |> List.filterMap
+                            (\( _, measurements ) ->
+                                measurements.vitals
+                                    |> Maybe.andThen
+                                        (\measurement ->
+                                            let
+                                                sys =
+                                                    Tuple.second measurement |> .value |> .sys
+
+                                                dia =
+                                                    Tuple.second measurement |> .value |> .dia
+                                            in
+                                            if sys > 140 || dia > 90 then
+                                                Just True
+
+                                            else
+                                                Nothing
+                                        )
+                            )
+                        |> List.length
             in
-            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
+            if lowBloodPressureOccasions > 1 then
+                Nothing
+
+            else if highBloodPressureOccasions > 1 then
+                Just (transAlert diagnosis)
+
+            else
+                Nothing
 
         DiagnosisPreeclampsiaHighRisk ->
             let
