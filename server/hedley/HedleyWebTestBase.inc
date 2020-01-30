@@ -228,18 +228,21 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *   The mother's node ID.
    * @param int $health_center_id
    *   Optional; The health center's node ID.
+   * @param int $child_bd
+   *   Optional; The child's BD, defaults to 1 year ago.
    *
    * @return int
    *   The child's node ID.
    */
-  public function createChild($mother_id, $health_center_id = NULL) {
+  public function createChild($mother_id, $health_center_id = NULL, $child_bd = NULL) {
     $node = $this->drupalCreateNode([
       'type' => 'person',
       'title' => $this->randomName(),
     ]);
 
     $wrapper = entity_metadata_wrapper('node', $node);
-    $wrapper->field_birth_date->set(strtotime('2015-06-27'));
+    $child_bd = $child_bd ? $child_bd : strtotime('-24 months');
+    $wrapper->field_birth_date->set($child_bd);
     $wrapper->field_gender->set('male');
 
     if ($health_center_id) {
@@ -467,6 +470,64 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_session->set($session_id);
     $wrapper->field_weight->set($weight);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create an MUAC entity.
+   *
+   * @param int $session_id
+   *   The node ID of the session.
+   * @param int $child_id
+   *   The node ID of the child.
+   * @param float $muac
+   *   The MUAC value.
+   * @param int $timestamp
+   *   Optional; The date the measurement was taken, as a unix timestamp,
+   *   defaults to the time of the request.
+   *
+   * @return int
+   *   The node ID of the MUAC.
+   */
+  public function createMuac($session_id, $child_id, $muac, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'height']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($child_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_session->set($session_id);
+    $wrapper->field_muac->set($muac);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a nutrition entity.
+   *
+   * @param int $session_id
+   *   The node ID of the session.
+   * @param int $child_id
+   *   The node ID of the child.
+   * @param float $nutrition_sign
+   *   The nutrition sign value.
+   * @param int $timestamp
+   *   Optional; The date the measurement was taken, as a unix timestamp,
+   *   defaults to the time of the request.
+   *
+   * @return int
+   *   The node ID of the nutrition.
+   */
+  public function createNutrition($session_id, $child_id, $nutrition_sign, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'height']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($child_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_session->set($session_id);
+    $wrapper->field_nutrition_signs->set($nutrition_sign);
     $wrapper->save();
 
     return $node->nid;

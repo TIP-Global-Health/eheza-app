@@ -22,20 +22,6 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   }
 
   /**
-   * The attendance count last year.
-   *
-   * @var int
-   */
-  protected $attendanceLastYear = 10;
-
-  /**
-   * The attendance count this year.
-   *
-   * @var int
-   */
-  protected $attendanceThisYear = 5;
-
-  /**
    * The health center ID.
    *
    * @var int
@@ -50,32 +36,121 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   protected $clinicNid;
 
   /**
-   * Testing the total encounters stats.
+   * @inheritdoc
    */
-  public function testTotalEncounters() {
+  public function setUp() {
+    parent::setUp(['hedley_device']);
+
     // Create the base data for the test.
     $this->healthCenterNid = $this->createHealthCenter();
     // Type FBF because stats are only for FBF Clinics.
     $this->clinicNid = $this->createClinic($this->healthCenterNid, 'fbf');
+  }
 
-    $sessions = [
-      [
-        'date' => strtotime("-18 months"),
-        'number_of_attendance' => $this->attendanceLastYear,
+  /**
+   * Testing the total encounters stats.
+   */
+  public function testTotalEncounters() {
+    $attendance_last_year = 10;
+    $attendance_this_year = 5;
+    $this->createSessionsWithAttendance($attendance_last_year, $attendance_this_year);
+
+    // Get total encounters from the stats function.
+    $total_encounters = hedley_stats_get_total_encounters($this->healthCenterNid);
+
+    // Assert the amount of attendance for last year.
+    $this->assertEqual($attendance_last_year, $total_encounters['last_year']);
+
+    // Assert the amount of attendance for this year.
+    $this->assertEqual($attendance_this_year, $total_encounters['this_year']);
+  }
+
+  /**
+   * Testing the good nutrition stats.
+   */
+  public function testGoodNutrition() {
+    // Define needed measurements for the test.
+    $measurements = [
+      'good' => [
+        'nutrition' => 'none',
+        'weight' => 10,
+        'height' => 75,
+        'muac' => 23,
       ],
-      [
-        'date' => strtotime("-9 months"),
-        'number_of_attendance' => $this->attendanceThisYear,
+      'bad' => [
+        'nutrition' => 'edema',
+        'weight' => 5,
+        'height' => 60,
+        'muac' => 16,
       ],
     ];
 
+    $attendance = 10;
+    $sessions = $this->createSessionsWithAttendance($attendance, $attendance);
+
     foreach ($sessions as $session) {
+      $measurements_state = 'good';
+
+      foreach ($session['session_data'] as $session_data) {
+        $session_nid = $session_data['session_nid'];
+
+        foreach ($session_data['children'] as $child_nid) {
+          // Reverse the state of measurements for each child so would get equal
+          // number of good and bad measurements.
+          $measurements_state = $measurements_state == 'good' ? 'bad' : 'good';
+
+          // Create measurements.
+          $this->createNutrition($session_nid, $child_nid, $measurements[$measurements_state]['nutrition'], $session['date']);;
+          $this->createWeight($session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
+          $this->createHeight($session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
+          $this->createMuac($session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);;
+        }
+      }
+    }
+
+    $good_nutrition = hedley_stats_get_good_nutrition($this->healthCenterNid);
+
+    // Assert the amount of good nutrition for last year.
+    $this->assertEqual(10, $good_nutrition['all']['last_year']);
+    $this->assertEqual(5, $good_nutrition['good']['last_year']);
+
+    // Assert the amount of good nutrition for this year.
+    $this->assertEqual(10, $good_nutrition['all']['this_year']);
+    $this->assertEqual(5, $good_nutrition['good']['this_year']);
+  }
+
+  /**
+   * Create sessions with attendance.
+   *
+   * @param int $attendance_last_year
+   *   The number of attendances last year.
+   * @param int $attendance_this_year
+   *   The number of attendances this year.
+   *
+   * @return array
+   *   The sessions created with all the data created related to the session.
+   */
+  protected function createSessionsWithAttendance($attendance_last_year, $attendance_this_year) {
+    $sessions = [
+      [
+        'date' => strtotime('-18 months'),
+        'number_of_attendance' => $attendance_last_year,
+      ],
+      [
+        'date' => strtotime('-9 months'),
+        'number_of_attendance' => $attendance_this_year,
+      ],
+    ];
+
+    foreach ($sessions as $key => $session) {
       $session_nid = $this->createSession($this->clinicNid, $session['date']);
       $nurse = $this->createNurse($this->clinicNid);
 
+      $children = [];
       for ($i = 1; $i <= $session['number_of_attendance']; $i++) {
         $mother_nid = $this->createMother($this->clinicNid);
         $child_nid = $this->createChild($mother_nid, $this->healthCenterNid);
+        $children[] = $child_nid;
 
         // Create this because the health centers are assigned to "attendance"
         // by the "PMTCT Participant" connection.
@@ -84,16 +159,15 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
         $this->createAttendance($this->healthCenterNid, $session_nid, $nurse->uid, $child_nid, TRUE, $session['date']);
       }
+
+      $sessions[$key]['session_data'] = [
+        'session_nid' => $session_nid,
+        'nurse_uid' => $nurse->uid,
+        'children' => $children,
+      ];
     }
 
-    // Get total encounters from the stats function.
-    $total_encounters = hedley_stats_get_total_encounters($this->healthCenterNid);
-
-    // Assert the amount of attendance for last year.
-    $this->assertEqual($this->attendanceLastYear, $total_encounters['last_year']);
-
-    // Assert the amount of attendance for this year.
-    $this->assertEqual($this->attendanceThisYear, $total_encounters['this_year']);
+    return $sessions;
   }
 
 }
