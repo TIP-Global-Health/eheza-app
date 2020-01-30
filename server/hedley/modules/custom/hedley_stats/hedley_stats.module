@@ -167,70 +167,25 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
  * @throws \Exception
  */
 function hedley_stats_get_good_nutrition($health_center_id) {
-  $result = [];
-
-  // All the measurements nodes with measurement field mapped.
-  $node_types = [
-    'height' => [
-      'field_zscore_age',
-    ],
-    'nutrition' => [
-      'field_nutrition_signs',
-    ],
-    'muac' => [
-      'field_muac',
-    ],
-    'weight' => [
-      'field_zscore_age',
-      'field_zscore_length',
-      'field_zscore_bmi',
-    ],
-  ];
-
   // We start from attendance for this year and last year and we get
   // measurements by the session (Encounter) ID.
-  $queries['last_year'] = hedley_stats_get_base_query($health_center_id, array_keys($node_types), HEDLEY_STATS_PERIOD_LAST_YEAR, 'field_date_measured', TRUE);
-  $queries['this_year'] = hedley_stats_get_base_query($health_center_id, array_keys($node_types), HEDLEY_STATS_PERIOD_ONE_YEAR, 'field_date_measured', TRUE);
+  $people['last_year'] = hedley_stats_get_measurements_query_grouped_by_person($health_center_id, HEDLEY_STATS_PERIOD_LAST_YEAR);
+  $people['this_year'] = hedley_stats_get_measurements_query_grouped_by_person($health_center_id, HEDLEY_STATS_PERIOD_ONE_YEAR);
 
-  foreach ($queries as $key => $query) {
-    // Get the group type.
-    hedley_stats_join_field_to_query($query, 'node', 'field_session');
-    hedley_stats_join_field_to_query($query, 'node', 'field_clinic', TRUE, "field_session.field_session_target_id");
-    hedley_stats_join_field_to_query($query, 'node', 'field_group_type', TRUE, "field_clinic.field_clinic_target_id");
-    // Only FBF groups.
-    $query->condition('field_group_type.field_group_type_value', 'fbf');
-
-    // Get the person.
-    hedley_stats_join_field_to_query($query, 'node', 'field_person');
-
-    // Get the nutrition signs for this person.
-    hedley_stats_join_field_to_query($query, 'node', 'field_nutrition_signs', FALSE);
-
-    // Get all other measurements for this person.
-    hedley_stats_join_field_to_query($query, 'node', 'field_zscore_age', FALSE);
-    hedley_stats_join_field_to_query($query, 'node', 'field_muac', FALSE);
-    hedley_stats_join_field_to_query($query, 'node', 'field_zscore_length', FALSE);
-    hedley_stats_join_field_to_query($query, 'node', 'field_zscore_bmi', FALSE);
-
-    // Only FBF groups.
-    $query->condition('field_group_type.field_group_type_value', 'fbf');
-
-    $result[$key] = $query
-      ->execute()
-      ->fetchAllAssoc('nid');
-  }
-
-  $people = [];
-  foreach ($result as $period => $measurements) {
-    foreach ($measurements as $measurement) {
-      // Get fields for current node type.
-      $measurement_fields = $node_types[$measurement->type];
-
-      // Group measurements by person.
-      foreach ($measurement_fields as $measurement_field) {
-        $people[$period][$measurement->field_person][$measurement->type][$measurement_field] = $measurement->{$measurement_field};
-      }
-    }
+  if (empty($people['last_year']) && empty($people['this_year'])) {
+    // Satisfy the elm decoder.
+    return [
+      'all' =>
+        [
+          'last_year' => 0,
+          'this_year' => 0,
+        ],
+      'good' =>
+        [
+          'last_year' => 0,
+          'this_year' => 0,
+        ],
+    ];
   }
 
   // Analyzing the measurements.
@@ -323,6 +278,136 @@ function hedley_stats_get_total_encounters($health_center_id) {
   }
 
   return $result;
+}
+
+/**
+ * @TODO: Add docs.
+ *
+ * @param $health_center_id
+ *
+ * @return array
+ * @throws \Exception
+ */
+function hedley_stats_get_total_beneficiaries_card($health_center_id) {
+  $nutrition_per_month = [
+    'stunting' => [
+      'moderate_nutrition' => 0,
+      'severe_nutrition' => 0,
+    ],
+    'underweight' => [
+      'moderate_nutrition' => 0,
+      'severe_nutrition' => 0,
+    ],
+    'wasting' => [
+      'moderate_nutrition' => 0,
+      'severe_nutrition' => 0,
+    ],
+    'muac' => [
+      'moderate_nutrition' => 0,
+      'severe_nutrition' => 0,
+    ],
+  ];
+
+  $data_per_month = [
+    'jan' => $nutrition_per_month,
+    'feb' => $nutrition_per_month,
+    'mar' => $nutrition_per_month,
+    'apr' => $nutrition_per_month,
+    'may' => $nutrition_per_month,
+    'jun' => $nutrition_per_month,
+    'jul' => $nutrition_per_month,
+    'aug' => $nutrition_per_month,
+    'sep' => $nutrition_per_month,
+    'oct' => $nutrition_per_month,
+    'nov' => $nutrition_per_month,
+    'dec' => $nutrition_per_month,
+  ];
+
+  $people = hedley_stats_get_measurements_query_grouped_by_person($health_center_id, HEDLEY_STATS_PERIOD_ONE_YEAR);
+
+  if (empty($people)) {
+    return [];
+  }
+
+  $nutrition_signs = hedley_stats_nutrition_signs();
+
+  // Assign the measurements per month for the last year by the measurement
+  // date.
+  foreach ($people as $person) {
+    foreach ($person as $type => $measurement) {
+      // We are interested only with the nutrition signs that match the
+      // current type.
+      $current_nutrition_signs = $nutrition_signs[$type];
+
+      // Go through all the measurements for this person.
+      // @TODO: Analyze the data per month.
+    }
+  }
+
+  return [];
+}
+
+/**
+ * The query to get all the measurements for a health center per period.
+ *
+ * Results are grouped by a person.
+ *
+ * @param int $health_center_id
+ *   The Health center node ID.
+ * @param $period
+ *   The period to query.
+ *
+ * @return array
+ *   The queried measurements results.
+ *
+ * @throws \Exception
+ */
+function hedley_stats_get_measurements_query_grouped_by_person($health_center_id, $period) {
+  // All the measurements nodes with measurement field mapped.
+  $node_types = heldey_stats_get_mapped_measurements_content_types();
+
+  // We start from attendance for this year and last year and we get
+  // measurements by the session (Encounter) ID.
+  $query = hedley_stats_get_base_query($health_center_id, array_keys($node_types), $period, 'field_date_measured', TRUE);
+
+  // Get the group type.
+  hedley_stats_join_field_to_query($query, 'node', 'field_session');
+  hedley_stats_join_field_to_query($query, 'node', 'field_clinic', TRUE, "field_session.field_session_target_id");
+  hedley_stats_join_field_to_query($query, 'node', 'field_group_type', TRUE, "field_clinic.field_clinic_target_id");
+  // Only FBF groups.
+  $query->condition('field_group_type.field_group_type_value', 'fbf');
+
+  // Get the person.
+  hedley_stats_join_field_to_query($query, 'node', 'field_person');
+
+  // Get the nutrition signs for this person.
+  hedley_stats_join_field_to_query($query, 'node', 'field_nutrition_signs', FALSE);
+
+  // Get all other measurements for this person.
+  hedley_stats_join_field_to_query($query, 'node', 'field_zscore_age', FALSE);
+  hedley_stats_join_field_to_query($query, 'node', 'field_muac', FALSE);
+  hedley_stats_join_field_to_query($query, 'node', 'field_zscore_length', FALSE);
+  hedley_stats_join_field_to_query($query, 'node', 'field_zscore_bmi', FALSE);
+
+  // Only FBF groups.
+  $query->condition('field_group_type.field_group_type_value', 'fbf');
+
+  $result = $query
+    ->execute()
+    ->fetchAllAssoc('nid');
+
+  // Group measurements by person.
+  $people = [];
+  foreach ($result as $measurement) {
+    // Get fields for current node type.
+    $measurement_fields = $node_types[$measurement->type];
+
+    foreach ($measurement_fields as $measurement_field) {
+      $people[$measurement->field_person][$measurement->type][$measurement_field] = $measurement->{$measurement_field};
+    }
+  }
+
+  return $people;
 }
 
 /**
@@ -526,6 +611,31 @@ function hedley_stats_join_field_to_query(SelectQuery $query, $entity_type, $fie
  */
 function hedley_stats_convert_timestamp_to_nominal($timestamp) {
   return date('Y-m-d', $timestamp);
+}
+
+/**
+ * Get the measurements content types with the scores fields mapped.
+ *
+ * @return array
+ *   The measurements content types mapped.
+ */
+function heldey_stats_get_mapped_measurements_content_types() {
+  return [
+    'height' => [
+      'field_zscore_age',
+    ],
+    'nutrition' => [
+      'field_nutrition_signs',
+    ],
+    'muac' => [
+      'field_muac',
+    ],
+    'weight' => [
+      'field_zscore_age',
+      'field_zscore_length',
+      'field_zscore_bmi',
+    ],
+  ];
 }
 
 /**
