@@ -550,9 +550,9 @@ function hedley_stats_nutrition_signs() {
     ],
     'muac' => [
       'field_muac' => [
-        HEDLEY_STATS_SEVERE => 18.5,
-        HEDLEY_STATS_MODERATE => 22,
-        HEDLEY_STATS_GOOD => 22.1,
+        HEDLEY_STATS_SEVERE => 11.50,
+        HEDLEY_STATS_MODERATE => 12.50,
+        HEDLEY_STATS_GOOD => 12.51,
       ],
     ],
     'weight' => [

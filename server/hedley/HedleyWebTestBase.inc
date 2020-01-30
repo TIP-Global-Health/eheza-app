@@ -492,7 +492,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *   The node ID of the MUAC.
    */
   public function createMuac($session_id, $child_id, $muac, $timestamp = REQUEST_TIME) {
-    $node = $this->drupalCreateNode(['type' => 'height']);
+    $node = $this->drupalCreateNode(['type' => 'muac']);
 
     $wrapper = entity_metadata_wrapper('node', $node);
     $wrapper->field_person->set($child_id);
@@ -511,7 +511,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *   The node ID of the session.
    * @param int $child_id
    *   The node ID of the child.
-   * @param float $nutrition_sign
+   * @param string $nutrition_sign
    *   The nutrition sign value.
    * @param int $timestamp
    *   Optional; The date the measurement was taken, as a unix timestamp,
@@ -521,13 +521,21 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *   The node ID of the nutrition.
    */
   public function createNutrition($session_id, $child_id, $nutrition_sign, $timestamp = REQUEST_TIME) {
-    $node = $this->drupalCreateNode(['type' => 'height']);
+    $node = $this->drupalCreateNode([
+      'type' => 'nutrition',
+      // We have to add the nutrition signs here because we can't add it with
+      // the wrapper.
+      'field_nutrition_signs' => [
+        LANGUAGE_NONE => [
+          ['value' => $nutrition_sign],
+        ],
+      ],
+    ]);
 
     $wrapper = entity_metadata_wrapper('node', $node);
     $wrapper->field_person->set($child_id);
     $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_session->set($session_id);
-    $wrapper->field_nutrition_signs->set($nutrition_sign);
     $wrapper->save();
 
     return $node->nid;
