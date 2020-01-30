@@ -583,6 +583,8 @@ updateIndexedDb currentDate nurseId msg model =
                                                                     | update = NotAsked
                                                                     , offlineSession = updatedOffline
                                                                     , checkedIn = LocalData.setRecalculate editableSession.checkedIn
+                                                                    , summaryByParticipant = LocalData.setRecalculate editableSession.summaryByParticipant
+                                                                    , summaryByActivity = LocalData.setRecalculate editableSession.summaryByActivity
                                                                 }
 
                                                         newEditableSessions =
