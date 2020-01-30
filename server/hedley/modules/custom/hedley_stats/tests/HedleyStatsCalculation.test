@@ -1,0 +1,107 @@
+<?php
+
+/**
+ * @file
+ * Test Z-Score calculations.
+ */
+
+/**
+ * HedleyStats calculation tests.
+ */
+class HedleyStatsCalculation extends HedleyWebTestBase {
+
+  /**
+   * Info hook.
+   */
+  public static function getInfo() {
+    return [
+      'name' => 'HedleyStatsCalculation tests',
+      'description' => 'Tests Stats calculations.',
+      'group' => 'Hedley',
+    ];
+  }
+
+  /**
+   * The attendance count last year.
+   *
+   * @var int
+   */
+  protected $attendanceLastYear = 10;
+
+  /**
+   * The attendance count this year.
+   *
+   * @var int
+   */
+  protected $attendanceThisYear = 5;
+
+  /**
+   * The health center ID.
+   *
+   * @var int
+   */
+  protected $healthCenterNid;
+
+  /**
+   * The clinic ID.
+   *
+   * @var int
+   */
+  protected $clinicNid;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setUp() {
+    parent::setUp();
+
+    // Common test users for the cases.
+    $this->anonymousUser = user_load(0);
+    $this->user = $this->drupalCreateUser(['bypass node access']);
+    $this->healthCenterNid = $this->createHealthCenter();
+    $this->clinicNid = $this->createClinic($this->healthCenterNid, 'fbf');
+  }
+
+  /**
+   * Testing the total encounters stats.
+   */
+  public function testTotalEncounters() {
+    $sessions = [
+      [
+        'date' => strtotime("-18 months"),
+        'number_of_attendance' => $this->attendanceLastYear,
+      ],
+      [
+        'date' => strtotime("-9 months"),
+        'number_of_attendance' => $this->attendanceThisYear,
+      ],
+    ];
+
+    foreach ($sessions as $session) {
+      $session_nid = $this->createSession($this->clinicNid, $session['date']);
+      $nurse = $this->createNurse($this->clinicNid);
+
+      for ($i = 1; $i <= $session['number_of_attendance']; $i++) {
+        $mother_nid = $this->createMother($this->clinicNid);
+        $child_nid = $this->createChild($mother_nid, $this->healthCenterNid);
+
+        // Create this because the health centers are assigned to "attendance"
+        // by the "PMTCT Participant" connection.
+        $this->createDevice(rand(1000, 9999));
+        $this->createPMTCT($child_nid, $mother_nid, $this->clinicNid, $session['date']);
+
+        $this->createAttendance($this->healthCenterNid, $session_nid, $nurse->uid, $child_nid, TRUE, $session['date']);
+      }
+    }
+
+    // Get total encounters from the stats function.
+    $total_encounters = hedley_stats_get_total_encounters($this->healthCenterNid);
+
+    // Assert the amount of attendance for last year.
+    $this->assertEqual($this->attendanceLastYear, $total_encounters['last_year']);
+
+    // Assert the amount of attendance for this year.
+    $this->assertEqual($this->attendanceThisYear, $total_encounters['this_year']);
+  }
+
+}
