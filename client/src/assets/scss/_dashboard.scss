@@ -28,6 +28,8 @@
 
   .dashboard-cards {
     padding: 1.5rem 3rem;
+    border-radius: 1px;
+    min-height: 130px;
 
     .header {
       font-size: 20px;
@@ -46,7 +48,7 @@
     .last-year {
       position: absolute;
       right: 20px;
-      bottom: 20px;
+      top: 60px;;
       max-width: 80px;
 
       .percentage {
@@ -68,6 +70,23 @@
         font-size: 12px;
         line-height: 12px;
         color: $color-background;
+      }
+    }
+
+    .new-cases {
+      display: block;
+      width: 100%;
+      text-align: center;
+      font-size: 12px;
+      line-height: 13px;
+      margin: 15px 0 -15px;
+
+      .new-cases-value {
+
+        &:before {
+          content: ":";
+          margin-right: 2px;
+        }
       }
     }
   }

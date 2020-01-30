@@ -8,7 +8,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model
 import Color exposing (Color)
 import Date exposing (Unit(..), isBetween)
-import Gizra.Html exposing (emptyNode)
+import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, isDiffTruthy)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList, src)
@@ -326,8 +326,15 @@ viewStatsCard language currentPage statsCard =
                     ]
                 , span [ class "percentage-label" ] [ translateText language <| Translate.Dashboard Translate.PercentageEncountersLabel ]
                 ]
-
-            --  @todo: Add newCases here.
+            , statsCard.newCases
+                |> Maybe.map
+                    (\newCases ->
+                        div [ class "new-cases" ]
+                            [ span [ class "label" ] [ translateText language <| Translate.Dashboard Translate.NewCasesLabel ]
+                            , span [ class "new-cases-value" ] [ text <| String.fromInt newCases ]
+                            ]
+                    )
+                |> showMaybe
             ]
         ]
 

@@ -141,6 +141,7 @@ type Dashboard
     | GoodNutritionLabel
     | ModeratelyMalnourished
     | NewBeneficiaries
+    | NewCasesLabel
     | PercentageEncountersLabel
     | SeverelyMalnourished
     | StatisticsHelper
@@ -2491,6 +2492,11 @@ translateDashboard trans =
 
         GoodNutritionLabel ->
             { english = "% Good nutrition"
+            , kinyarwanda = Nothing
+            }
+
+        NewCasesLabel ->
+            { english = "New Cases"
             , kinyarwanda = Nothing
             }
 
