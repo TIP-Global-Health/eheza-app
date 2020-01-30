@@ -116,27 +116,54 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *   The "health center" node ID.
    */
   public function createHealthCenter() {
-    // Create a new device.
-    $device = $this->drupalCreateNode([
-      'type' => 'device',
-    ]);
-
-    $wrapper = entity_metadata_wrapper('node', $device);
-    $wrapper->field_pairing_code->set('123');
-    $wrapper->save();
+    $this->createDevice(rand(1000, 9999));
 
     // Create the necessary catchment area.
-    $catchment_area = $this->drupalCreateNode([
-      'type' => 'catchment_area',
-    ]);
+    $catchment_area_nid = $this->createCatchmentArea();
 
     $node = $this->drupalCreateNode([
       'type' => 'health_center',
     ]);
 
     $wrapper = entity_metadata_wrapper('node', $node);
-    $wrapper->field_catchment_area->set($catchment_area->nid);
+    $wrapper->field_catchment_area->set($catchment_area_nid);
     $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a Device with a pairing code.
+   *
+   * @param int $pairing_code
+   *   The pairing code for the device.
+   *
+   * @return int
+   *   The node ID.
+   */
+  public function createDevice($pairing_code) {
+    // Create a new device.
+    $node = $this->drupalCreateNode([
+      'type' => 'device',
+    ]);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_pairing_code->set($pairing_code);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a "Catchment Area" with a random name.
+   *
+   * @return int
+   *   The node ID.
+   */
+  public function createCatchmentArea() {
+    $node = $this->drupalCreateNode([
+      'type' => 'catchment_area',
+    ]);
 
     return $node->nid;
   }
@@ -292,14 +319,17 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create an attendance for a session, starting today.
    *
-   * @param int $health_center_nid
+   * @param int $health_center_id
    *   The node ID of the health center.
    * @param int $session_id
    *   The node ID of the session.
    * @param int $nurse_id
    *   The node ID of the nurse.
-  * @param int $child_id
+   * @param int $child_id
    *   The node ID of the child.
+   * @param bool $attended
+   *   Optional; Whether the participant attended the session or not, defaults
+   *   to TRUE (Yes).
    * @param int $timestamp
    *   Optional; The date of the session, as a unix timestamp, defaults to the
    *   time of the request.
@@ -307,17 +337,53 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    * @return int
    *   The node ID of the attendance.
    */
-  public function createAttendance($health_center_nid, $session_id, $nurse_id, $child_id , $timestamp = REQUEST_TIME) {
+  public function createAttendance($health_center_id, $session_id, $nurse_id, $child_id, $attended = TRUE, $timestamp = REQUEST_TIME) {
     $node = $this->drupalCreateNode(['type' => 'attendance']);
 
     $wrapper = entity_metadata_wrapper('node', $node);
     $wrapper->field_shards->set([
-      $health_center_nid => $health_center_nid,
+      $health_center_id,
     ]);
     $wrapper->field_session->set($session_id);
     $wrapper->field_nurse->set($nurse_id);
     $wrapper->field_person->set($child_id);
+    $wrapper->field_attended->set($attended);
     $wrapper->field_date_measured->set($timestamp);
+
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create an "PMTCT Participant".
+   *
+   * @param int $child_id
+   *   The node ID of the child.
+   * @param int $mother_id
+   *   The node ID of the mother.
+   * @param int $clinic_id
+   *   The node ID of the clinic.
+   * @param int $timestamp
+   *   Optional; The date of the session, as a unix timestamp, defaults to the
+   *   time of the request.
+   *
+   * @return int
+   *   The node ID of the "PMTCT Participant".
+   */
+  public function createPMTCT($child_id, $mother_id, $clinic_id, $timestamp = REQUEST_TIME) {
+    $date = date('Y-m-d', $timestamp);
+
+    $node = $this->drupalCreateNode(['type' => 'pmtct_participant']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_adult->set($mother_id);
+    $wrapper->field_person->set($child_id);
+    $wrapper->field_clinic->set($clinic_id);
+    $wrapper->field_expected->set([
+      'value' => $date,
+      'value2' => $date,
+    ]);
 
     $wrapper->save();
 
