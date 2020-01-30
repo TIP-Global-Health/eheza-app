@@ -232,7 +232,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     }
 
     // @todo: Calculate only when node from health center changed.
-    $health_center_id = 6;
+    $health_center_id = 7093;
     $wrapper = entity_metadata_wrapper('node', $health_center_id);
     $wrapper->field_uuid->value();
     $output[] = [

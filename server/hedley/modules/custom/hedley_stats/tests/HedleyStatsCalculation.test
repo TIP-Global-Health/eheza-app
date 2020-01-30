@@ -50,22 +50,14 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   protected $clinicNid;
 
   /**
-   * {@inheritdoc}
-   */
-  public function setUp() {
-    parent::setUp();
-
-    // Common test users for the cases.
-    $this->anonymousUser = user_load(0);
-    $this->user = $this->drupalCreateUser(['bypass node access']);
-    $this->healthCenterNid = $this->createHealthCenter();
-    $this->clinicNid = $this->createClinic($this->healthCenterNid, 'fbf');
-  }
-
-  /**
    * Testing the total encounters stats.
    */
   public function testTotalEncounters() {
+    // Create the base data for the test.
+    $this->healthCenterNid = $this->createHealthCenter();
+    // Type FBF because stats are only for FBF Clinics.
+    $this->clinicNid = $this->createClinic($this->healthCenterNid, 'fbf');
+
     $sessions = [
       [
         'date' => strtotime("-18 months"),
