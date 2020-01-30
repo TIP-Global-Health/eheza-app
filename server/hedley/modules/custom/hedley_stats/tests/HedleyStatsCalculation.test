@@ -40,14 +40,14 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    *
    * @var int
    */
-  protected $healthCenterNid = 0;
+  protected $healthCenterNid;
 
   /**
    * The clinic ID.
    *
    * @var int
    */
-  protected $clinicNid = 0;
+  protected $clinicNid;
 
   /**
    * {@inheritdoc}
@@ -67,10 +67,12 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    */
   public function testTotalEncounters() {
     $sessions = [
-      [ 'date' => strtotime("-18 months"),
+      [
+        'date' => strtotime("-18 months"),
         'number_of_attendance' => $this->attendanceLastYear,
       ],
-      [ 'date' => strtotime("-9 months"),
+      [
+        'date' => strtotime("-9 months"),
         'number_of_attendance' => $this->attendanceThisYear,
       ],
     ];
@@ -79,7 +81,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       $session_nid = $this->createSession($this->clinicNid, $session['date']);
       $nurse = $this->createNurse($this->clinicNid);
 
-      for ($i=1; $i<=$session['number_of_attendance']; $i++) {
+      for ($i = 1; $i <= $session['number_of_attendance']; $i++) {
         $mother_nid = $this->createMother($this->clinicNid);
         $child_nid = $this->createChild($mother_nid, $this->healthCenterNid);
 
