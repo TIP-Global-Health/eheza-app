@@ -8520,7 +8520,7 @@ function hedley_activity_field_default_field_instances() {
     'label' => 'Weight',
     'required' => 1,
     'settings' => array(
-      'max' => '',
+      'max' => '200.0',
       'min' => 0,
       'prefix' => '',
       'suffix' => 'kg',
