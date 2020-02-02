@@ -241,9 +241,14 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     ]);
 
     $wrapper = entity_metadata_wrapper('node', $node);
-    $child_bd = $child_bd ? $child_bd : strtotime('-24 months');
-    $wrapper->field_birth_date->set($child_bd);
     $wrapper->field_gender->set('male');
+
+    if ($child_bd) {
+      $wrapper->field_birth_date->set($child_bd);
+    }
+    else {
+      $wrapper->field_birth_date->set(strtotime('2015-06-27'));
+    }
 
     if ($health_center_id) {
       // Need to add health center because health centers are assigned to nodes
