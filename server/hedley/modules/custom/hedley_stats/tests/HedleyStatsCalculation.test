@@ -36,6 +36,8 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   protected $clinicNid;
 
   /**
+   * Add a main health center and clinic for all the tests.
+   *
    * @inheritdoc
    */
   public function setUp() {
