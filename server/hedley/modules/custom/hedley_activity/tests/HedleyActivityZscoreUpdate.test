@@ -31,7 +31,7 @@ class HedleyActivityZscoreUpdate extends HedleyWebTestBase {
 
     // Our default child is born on 2015-06-27, so we'll start out as a 1-year
     // old.
-    $one_year_old = strtotime('-1 year');
+    $one_year_old = strtotime('2016-06-27');
     $session_id = $this->createSession($clinic_id, $one_year_old);
 
     $weight_id = $this->createWeight($session_id, $child_id, 13, $one_year_old);
@@ -58,7 +58,7 @@ class HedleyActivityZscoreUpdate extends HedleyWebTestBase {
     // If we change the child's birth date, then the zscores should get
     // updated.
     $child = entity_metadata_wrapper('node', $child_id);
-    $child->field_birth_date->set(strtotime('-1 year'));
+    $child->field_birth_date->set(strtotime('2016-01-27'));
     $child->save();
 
     // Reset.
