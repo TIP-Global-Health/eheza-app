@@ -1,10 +1,12 @@
-module Backend.Dashboard.Model exposing (ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Periods, emptyModel)
+module Backend.Dashboard.Model exposing (ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Periods, TotalBeneficiaries, emptyModel)
 
 {-| The stats for the dashboard.
 -}
 
+import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
 import Backend.Person.Model exposing (Gender)
+import Date exposing (Month)
 import Gizra.NominalDate exposing (NominalDate)
 import ZScore.Model exposing (ZScore)
 
@@ -70,3 +72,17 @@ type alias GoodNutrition =
     { all : Periods
     , good : Periods
     }
+
+
+type alias TotalBeneficiaries =
+    { stunting : Nutrition
+    , underweight : Nutrition
+    , wasting : Nutrition
+    , muac : Nutrition
+    }
+
+
+type Nutrition
+    = Severe Int
+    | Moderate Int
+    | Good Int

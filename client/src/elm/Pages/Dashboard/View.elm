@@ -80,6 +80,9 @@ viewMainPage language currentPage currentDate stats model =
                 [ viewTotalEncounters language currentPage stats.totalEncounters
                 ]
             , div [ class "sixteen wide column" ]
+                [ viewMonthlyChart language stats
+                ]
+            , div [ class "sixteen wide column" ]
                 [ viewDashboardPagesLinks language
                 ]
             ]
@@ -689,6 +692,56 @@ viewDonutChart language stats =
                 useFamilyPlanning * 100 // totalCount
         in
         div []
+            [ viewChart dictWithoutNoFamilyPlanning
+            , div [ class "stats" ]
+                [ span [ class "neutral" ] [ text <| String.fromInt totalPercent ++ "%" ]
+                , text " "
+                , span [] [ translateText language <| Translate.Dashboard Translate.UseFamilyPlanning ]
+                ]
+            , div []
+                [ translateText language <|
+                    Translate.Dashboard <|
+                        Translate.FamilyPlanningOutOfWomen
+                            { total = totalCount
+                            , useFamilyPlanning = useFamilyPlanning
+                            }
+                ]
+            , viewFamilyPlanningChartLegend language dictWithoutNoFamilyPlanning
+            ]
+
+
+viewMonthlyChart : Language -> DashboardStats -> Html Msg
+viewMonthlyChart language stats =
+    let
+        dict =
+            getFamilyPlanningSignsCounter stats
+    in
+    if Dict.isEmpty dict then
+        div [] [ text "No family plannings for the selected period." ]
+
+    else
+        let
+            -- Remove the No family planning, as it won't be used for the chart
+            dictWithoutNoFamilyPlanning =
+                dict
+                    |> Dict.filter (\k _ -> not (k == NoFamilyPlanning))
+
+            totalCount =
+                dictWithoutNoFamilyPlanning
+                    |> Dict.values
+                    |> List.foldl (\val accum -> val + accum) 0
+
+            totalNoFamilyPlanning =
+                Dict.get NoFamilyPlanning dict
+                    |> Maybe.withDefault 0
+
+            useFamilyPlanning =
+                totalCount - totalNoFamilyPlanning
+
+            totalPercent =
+                useFamilyPlanning * 100 // totalCount
+        in
+        div [ class "ui segment blue" ]
             [ viewChart dictWithoutNoFamilyPlanning
             , div [ class "stats" ]
                 [ span [ class "neutral" ] [ text <| String.fromInt totalPercent ++ "%" ]

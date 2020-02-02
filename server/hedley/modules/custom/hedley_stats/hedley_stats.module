@@ -285,14 +285,24 @@ function hedley_stats_get_total_encounters($health_center_id) {
 }
 
 /**
- * @TODO: Add docs.
+ * Get the total beneficiaries data.
  *
- * @param $health_center_id
+ * The data is for the "total beneficiaries" graph which is divided by
+ * months for the past year and each month has four types:
+ * (Stunting, Underweight, Wasting, MUAC).
+ *
+ * @param int $health_center_id
+ *   The health center node ID.
+ *
+ * @param string $period
+ *   Optional; The period for the data, defaults to one year.
  *
  * @return array
+ *   The nutrition per month data array.
+ *
  * @throws \Exception
  */
-function hedley_stats_get_total_beneficiaries_card($health_center_id) {
+function hedley_stats_get_total_beneficiaries($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
   $nutrition_per_month = [
     'stunting' => [
       HEDLEY_STATS_SEVERE => 0,
@@ -313,21 +323,21 @@ function hedley_stats_get_total_beneficiaries_card($health_center_id) {
   ];
 
   $data_per_month = [
-    1 => $nutrition_per_month,
-    2 => $nutrition_per_month,
-    3 => $nutrition_per_month,
-    4 => $nutrition_per_month,
-    5 => $nutrition_per_month,
-    6 => $nutrition_per_month,
-    7 => $nutrition_per_month,
-    8 => $nutrition_per_month,
-    9 => $nutrition_per_month,
-    10 => $nutrition_per_month,
-    11 => $nutrition_per_month,
-    12 => $nutrition_per_month,
+    'jan' => $nutrition_per_month,
+    'feb' => $nutrition_per_month,
+    'mar' => $nutrition_per_month,
+    'apr' => $nutrition_per_month,
+    'may' => $nutrition_per_month,
+    'jun' => $nutrition_per_month,
+    'jul' => $nutrition_per_month,
+    'aug' => $nutrition_per_month,
+    'sep' => $nutrition_per_month,
+    'oct' => $nutrition_per_month,
+    'nov' => $nutrition_per_month,
+    'dec' => $nutrition_per_month,
   ];
 
-  $people = hedley_stats_get_measurements_query_grouped_by_person($health_center_id, HEDLEY_STATS_PERIOD_ONE_YEAR);
+  $people = hedley_stats_get_measurements_query_grouped_by_person($health_center_id, $period);
 
   if (empty($people)) {
     return [];
@@ -344,8 +354,10 @@ function hedley_stats_get_total_beneficiaries_card($health_center_id) {
         continue;
       }
 
-      // Get the date of the measurement in order to distribute them by months.
-      $month = date('n', strtotime($measurement['field_date_measured']));
+      // Get the date of the measurement in order to distribute them by months,
+      // also just make sure the month name is always in lower case letters by
+      // adding "strtolower".
+      $month = strtolower(date('M', strtotime($measurement['field_date_measured'])));
 
       // We are interested only with the nutrition signs that match the
       // current type.
@@ -398,6 +410,8 @@ function hedley_stats_get_total_beneficiaries_card($health_center_id) {
       }
     }
   }
+
+  dpm($data_per_month);
 
   return $data_per_month;
 }
