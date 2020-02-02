@@ -149,7 +149,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       $children = [];
       for ($i = 1; $i <= $session['number_of_attendance']; $i++) {
         $mother_nid = $this->createMother($this->clinicNid);
-        $child_nid = $this->createChild($mother_nid, $this->healthCenterNid);
+        $child_nid = $this->createChild($mother_nid, $this->healthCenterNid, strtotime('-24 months'));
         $children[] = $child_nid;
 
         // Create this because the health centers are assigned to "attendance"
