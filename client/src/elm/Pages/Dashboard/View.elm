@@ -1,6 +1,7 @@
 module Pages.Dashboard.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
+import Axis
 import Backend.Dashboard.Model exposing (DashboardStats, GoodNutrition, Periods)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
@@ -8,24 +9,28 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model
 import Color exposing (Color)
 import Date exposing (Unit(..), isBetween)
+import DateFormat
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, isDiffTruthy)
 import Html exposing (..)
-import Html.Attributes exposing (class, classList, src)
+import Html.Attributes as HE exposing (class, classList, src)
 import Html.Events exposing (onClick)
 import List.Extra
 import Pages.Dashboard.Model exposing (..)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 import Pages.Utils exposing (calculatePercentage)
 import Path
+import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
-import Svg.Attributes exposing (cx, cy, height, r, width)
+import Svg.Attributes exposing (cx, cy, r)
+import Time
 import Translate exposing (Language, translateText)
-import TypedSvg exposing (g, svg)
-import TypedSvg.Attributes exposing (fill, transform, viewBox)
+import TypedSvg exposing (g, rect, style, svg, text_)
+import TypedSvg.Attributes exposing (fill, textAnchor, transform, viewBox)
+import TypedSvg.Attributes.InPx exposing (height, width, x, y)
 import TypedSvg.Core exposing (Svg)
-import TypedSvg.Types exposing (Fill(..), Transform(..))
+import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..))
 
 
 {-| Shows a dashboard page.
@@ -80,7 +85,7 @@ viewMainPage language currentPage currentDate stats model =
                 [ viewTotalEncounters language currentPage stats.totalEncounters
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language stats
+                [ viewMonthlyChart timeSeries
                 ]
             , div [ class "sixteen wide column" ]
                 [ viewDashboardPagesLinks language
@@ -710,54 +715,84 @@ viewDonutChart language stats =
             ]
 
 
-viewMonthlyChart : Language -> DashboardStats -> Html Msg
-viewMonthlyChart language stats =
-    let
-        dict =
-            getFamilyPlanningSignsCounter stats
-    in
-    if Dict.isEmpty dict then
-        div [] [ text "No family plannings for the selected period." ]
+timeSeries : List ( Time.Posix, Float )
+timeSeries =
+    [ ( Time.millisToPosix 1448928000000, 2.5 )
+    , ( Time.millisToPosix 1451606400000, 2 )
+    , ( Time.millisToPosix 1452211200000, 3.5 )
+    , ( Time.millisToPosix 1452816000000, 2 )
+    , ( Time.millisToPosix 1453420800000, 3 )
+    , ( Time.millisToPosix 1454284800000, 1 )
+    , ( Time.millisToPosix 1456790400000, 1.2 )
+    ]
 
-    else
-        let
-            -- Remove the No family planning, as it won't be used for the chart
-            dictWithoutNoFamilyPlanning =
-                dict
-                    |> Dict.filter (\k _ -> not (k == NoFamilyPlanning))
 
-            totalCount =
-                dictWithoutNoFamilyPlanning
-                    |> Dict.values
-                    |> List.foldl (\val accum -> val + accum) 0
+padding : Float
+padding =
+    30
 
-            totalNoFamilyPlanning =
-                Dict.get NoFamilyPlanning dict
-                    |> Maybe.withDefault 0
 
-            useFamilyPlanning =
-                totalCount - totalNoFamilyPlanning
+xScale : List ( Time.Posix, Float ) -> BandScale Time.Posix
+xScale model =
+    List.map Tuple.first model
+        |> Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( 0, w - 2 * padding )
 
-            totalPercent =
-                useFamilyPlanning * 100 // totalCount
-        in
-        div [ class "ui segment blue" ]
-            [ viewChart dictWithoutNoFamilyPlanning
-            , div [ class "stats" ]
-                [ span [ class "neutral" ] [ text <| String.fromInt totalPercent ++ "%" ]
-                , text " "
-                , span [] [ translateText language <| Translate.Dashboard Translate.UseFamilyPlanning ]
-                ]
-            , div []
-                [ translateText language <|
-                    Translate.Dashboard <|
-                        Translate.FamilyPlanningOutOfWomen
-                            { total = totalCount
-                            , useFamilyPlanning = useFamilyPlanning
-                            }
-                ]
-            , viewFamilyPlanningChartLegend language dictWithoutNoFamilyPlanning
+
+yScale : ContinuousScale Float
+yScale =
+    Scale.linear ( h - 2 * padding, 0 ) ( 0, 5 )
+
+
+dateFormat : Time.Posix -> String
+dateFormat =
+    DateFormat.format [ DateFormat.dayOfMonthFixed, DateFormat.text " ", DateFormat.monthNameAbbreviated ] Time.utc
+
+
+xAxis : List ( Time.Posix, Float ) -> Svg msg
+xAxis model =
+    Axis.bottom [] (Scale.toRenderable dateFormat (xScale model))
+
+
+yAxis : Svg msg
+yAxis =
+    Axis.left [ Axis.tickCount 5 ] yScale
+
+
+column : BandScale Time.Posix -> ( Time.Posix, Float ) -> Svg msg
+column scale ( date, value ) =
+    g [ TypedSvg.Attributes.class [ "column" ] ]
+        [ rect
+            [ x <| Scale.convert scale date
+            , y <| Scale.convert yScale value
+            , width <| Scale.bandwidth scale
+            , height <| h - Scale.convert yScale value - 2 * padding
             ]
+            []
+        , text_
+            [ x <| Scale.convert (Scale.toRenderable dateFormat scale) date
+            , y <| Scale.convert yScale value - 5
+            , textAnchor AnchorMiddle
+            ]
+            [ TypedSvg.Core.text <| String.fromFloat value ]
+        ]
+
+
+viewMonthlyChart : List ( Time.Posix, Float ) -> Html Msg
+viewMonthlyChart model =
+    svg [ viewBox 0 0 w h ]
+        [ style [] [ text """
+                .column rect { fill: rgba(118, 214, 78, 0.8); }
+                .column text { display: none; }
+                .column:hover rect { fill: rgb(118, 214, 78); }
+                .column:hover text { display: inline; }
+              """ ]
+        , g [ transform [ Translate (padding - 1) (h - padding) ] ]
+            [ xAxis model ]
+        , g [ transform [ Translate (padding - 1) padding ] ]
+            [ yAxis ]
+        , g [ transform [ Translate padding padding ], TypedSvg.Attributes.class [ "series" ] ] <|
+            List.map (column (xScale model)) model
+        ]
 
 
 viewFamilyPlanningChartLegend : Language -> FamilyPlanningSignsCounter -> Html Msg
@@ -773,7 +808,7 @@ viewFamilyPlanningChartLegend language dict =
         (List.map
             (\( sign, _ ) ->
                 div []
-                    [ svg [ width "10", height "10", viewBox 0 0 100 100 ]
+                    [ svg [ Svg.Attributes.width "10", Svg.Attributes.height "10", viewBox 0 0 100 100 ]
                         [ Svg.circle [ cx "50", cy "50", r "40", fill <| Fill <| familyPlanningSignToColor sign ] []
                         ]
                     , span [] [ translateText language <| Translate.FamilyPlanningSignLabel sign ]
