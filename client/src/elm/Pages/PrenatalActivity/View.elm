@@ -1,8 +1,8 @@
 module Pages.PrenatalActivity.View exposing (view)
 
 import Backend.Entities exposing (..)
-import Backend.Measurement.Encoder exposing (socialHistoryHivTestingResultToString)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
+import Backend.Measurement.Encoder exposing (socialHistoryHivTestingResultToString)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
@@ -43,7 +43,7 @@ import Pages.PrenatalActivity.Utils
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
-import Pages.Utils exposing (viewPhotoThumbFromPhotoUrl)
+import Pages.Utils exposing (taskCompleted, viewBoolInput, viewCustomLabel, viewLabel, viewPhotoThumbFromPhotoUrl, viewQuestionLabel)
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -195,7 +195,7 @@ viewPregnancyDatingContent language currentDate assembled data =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SavePregnancyDating assembled.id assembled.participant.person assembled.measurements.lastMenstrualPeriod
+                , onClick <| SavePregnancyDating assembled.id assembled.encounter.participant assembled.participant.person assembled.measurements.lastMenstrualPeriod
                 ]
                 [ text <| translate language Translate.Save ]
             ]
@@ -1605,19 +1605,21 @@ viewVitalsForm language currentDate assembled form =
             { form_ | bodyTemperature = value }
 
         sysBloodPressurePreviousValue =
-            Nothing
+            resolvePreviousValue assembled .vitals .sys
 
         diaBloodPressurePreviousValue =
-            Nothing
+            resolvePreviousValue assembled .vitals .dia
 
         heartRatePreviousValue =
-            Nothing
+            resolvePreviousValue assembled .vitals .heartRate
+                |> Maybe.map toFloat
 
         respiratoryRatePreviousValue =
-            Nothing
+            resolvePreviousValue assembled .vitals .respiratoryRate
+                |> Maybe.map toFloat
 
         bodyTemperaturePreviousValue =
-            Nothing
+            resolvePreviousValue assembled .vitals .bodyTemperature
     in
     div [ class "ui form examination vitals" ]
         [ div [ class "ui grid" ]
@@ -1727,19 +1729,24 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
             { form_ | muac = value }
 
         heightPreviousValue =
-            Nothing
+            resolvePreviousValue assembled .nutrition .height
+                |> Maybe.map (\(HeightInCm cm) -> cm)
 
         weightPreviousValue =
-            Nothing
+            resolvePreviousValue assembled .nutrition .weight
+                |> Maybe.map (\(WeightInKg kg) -> kg)
 
         bmiPreviousValue =
-            Nothing
+            calculateBmi heightPreviousValue weightPreviousValue
+                |> Maybe.map (Round.roundNum 1)
 
         muacPreviousValue =
-            Nothing
+            resolvePreviousValue assembled .nutrition .muac
+                |> Maybe.map (\(MuacInCm cm) -> cm)
 
         calculatedBmi =
             calculateBmi form.height form.weight
+                |> Maybe.map (Round.roundNum 1)
 
         heightSection =
             if not hideHeightInput then
@@ -1754,7 +1761,6 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
                     (SetNutritionAssessmentMeasurement heightUpdateFunc)
                     "height"
                     Translate.CentimeterShorthand
-                , viewPreviousMeasurement language heightPreviousValue Translate.CentimeterShorthand
                 , div [ class "separator" ] []
                 ]
 
@@ -1786,13 +1792,12 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
                         ]
                     ]
                , div [ class "title bmi" ] [ text <| translate language Translate.BMIHelper ]
-               , viewMeasurementInputAndRound
+               , viewMeasurementInput
                     language
                     calculatedBmi
                     (SetNutritionAssessmentMeasurement bmiUpdateFunc)
                     "bmi disabled"
                     Translate.EmptyString
-                    (Just 1)
                , viewPreviousMeasurement language bmiPreviousValue Translate.EmptyString
                , div [ class "separator" ] []
                , div [ class "ui grid" ]
@@ -2044,10 +2049,12 @@ viewObstetricalExamForm language currentDate assembled form =
             { form_ | fetalMovement = Just value }
 
         fetalHeartRatePreviousValue =
-            Nothing
+            resolvePreviousValue assembled .obstetricalExam .fetalHeartRate
+                |> Maybe.map toFloat
 
         fundalHeightPreviousValue =
-            Nothing
+            resolvePreviousValue assembled .obstetricalExam .fundalHeight
+                |> Maybe.map (\(HeightInCm cm) -> cm)
     in
     div [ class "ui form examination obstetrical-exam" ]
         [ div [ class "ui grid" ]
@@ -2210,54 +2217,6 @@ viewResourcesForm language currentDate assembled form =
 -- Inputs
 
 
-viewBoolInput :
-    Language
-    -> Maybe Bool
-    -> (Bool -> Msg)
-    -> String
-    -> Maybe ( TranslationId, TranslationId )
-    -> Html Msg
-viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
-    let
-        ( yesTransId, noTransId ) =
-            optionsTranslationIds |> Maybe.withDefault ( Translate.Yes, Translate.No )
-
-        inputWidth =
-            if isJust optionsTranslationIds then
-                "eight"
-
-            else
-                "four"
-
-        viewInput value currentValue setMsg =
-            let
-                isChecked =
-                    currentValue == Just value
-            in
-            input
-                [ type_ "radio"
-                , checked isChecked
-                , classList [ ( "checked", isChecked ) ]
-                , onCheck (always (setMsg value))
-                ]
-                []
-    in
-    div [ class <| "form-input yes-no " ++ inputClass ]
-        [ div [ class "ui grid" ]
-            [ div [ class <| inputWidth ++ " wide column" ]
-                [ viewInput True currentValue setMsg
-                , label [ onClick <| setMsg True ]
-                    [ text <| translate language yesTransId ]
-                ]
-            , div [ class <| inputWidth ++ " wide column" ]
-                [ viewInput False currentValue setMsg
-                , label [ onClick <| setMsg False ]
-                    [ text <| translate language noTransId ]
-                ]
-            ]
-        ]
-
-
 viewNumberInput :
     Language
     -> Maybe a
@@ -2362,22 +2321,11 @@ viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc option 
 
 viewMeasurementInput : Language -> Maybe Float -> (String -> Msg) -> String -> TranslationId -> Html Msg
 viewMeasurementInput language maybeCurrentValue setMsg inputClass unitTranslationId =
-    viewMeasurementInputAndRound language maybeCurrentValue setMsg inputClass unitTranslationId Nothing
-
-
-viewMeasurementInputAndRound : Language -> Maybe Float -> (String -> Msg) -> String -> TranslationId -> Maybe Int -> Html Msg
-viewMeasurementInputAndRound language maybeCurrentValue setMsg inputClass unitTranslationId maybePrecision =
     let
         currentValue =
             maybeCurrentValue
-                |> unwrap
-                    ""
-                    (\currentValue ->
-                        maybePrecision
-                            |> unwrap
-                                (toString currentValue)
-                                (\precision -> Round.round precision currentValue)
-                    )
+                |> Maybe.map toString
+                |> Maybe.withDefault ""
 
         inputAttrs =
             [ type_ "number"
@@ -2395,21 +2343,6 @@ viewMeasurementInputAndRound language maybeCurrentValue setMsg inputClass unitTr
 
 
 -- Components
-
-
-viewLabel : Language -> TranslationId -> Html any
-viewLabel language translationId =
-    viewCustomLabel language translationId ":" "label"
-
-
-viewQuestionLabel : Language -> TranslationId -> Html any
-viewQuestionLabel language translationId =
-    viewCustomLabel language translationId "?" "label"
-
-
-viewCustomLabel : Language -> TranslationId -> String -> String -> Html any
-viewCustomLabel language translationId suffix class_ =
-    div [ class class_ ] [ text <| (translate language translationId ++ suffix) ]
 
 
 viewPreviousMeasurement : Language -> Maybe Float -> TranslationId -> Html any
@@ -2532,15 +2465,6 @@ viewAlert color =
 -- Helper functions
 
 
-taskCompleted : Maybe a -> Int
-taskCompleted maybe =
-    if isJust maybe then
-        1
-
-    else
-        0
-
-
 taskListCompleted : List (Maybe a) -> Int
 taskListCompleted list =
     if List.all isJust list then
@@ -2548,3 +2472,15 @@ taskListCompleted list =
 
     else
         0
+
+
+resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
+resolvePreviousValue assembled measurementFunc valueFunc =
+    assembled.previousMeasurementsWithDates
+        |> List.filterMap
+            (\( _, measurements ) ->
+                measurementFunc measurements
+                    |> Maybe.map (Tuple.second >> .value >> valueFunc)
+            )
+        |> List.reverse
+        |> List.head

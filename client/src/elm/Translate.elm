@@ -27,7 +27,7 @@ import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model
     exposing
@@ -196,6 +196,7 @@ type TranslationId
     | BackendError
     | BegingNewEncounter
     | BloodPressure
+    | BloodPressureElevatedOcassions
     | BloodPressureDiaLabel
     | BloodPressureSysLabel
     | BMI
@@ -258,12 +259,15 @@ type TranslationId
     | DangerSign DangerSign
     | Dashboard
     | DateOfLastAssessment
+    | DatePregnancyConcluded
     | Day
     | DaySinglePlural Int
     | DateOfBirth
     | Days
     | Delete
     | DeleteTrainingGroupEncounters
+    | DeliveryLocation
+    | DeliveryOutcome
     | DemographicInformation
     | DemographicsReport
     | Device
@@ -291,6 +295,7 @@ type TranslationId
     | ExaminationTask ExaminationTask
     | Extremities
     | Eyes
+    | Facility
     | Failure
     | FamilyInformation
     | FamilyMembers
@@ -336,6 +341,7 @@ type TranslationId
     | HIV
     | HIVStatus HIVStatus
     | HIVStatusLabel
+    | Home
     | HouseholdSize
     | HttpError Http.Error
     | HypertensionBeforePregnancy
@@ -458,6 +464,8 @@ type TranslationId
     | PrenatalPhotoHelper
     | PreTerm
     | PregnancyConcludedLabel
+    | PregnancyOutcomeLabel
+    | PregnancyOutcome PregnancyOutcome
     | PreviousCSectionScar
     | PreviousDelivery
     | PreviousDeliveryPeriods PreviousDeliveryPeriod
@@ -1000,6 +1008,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        BloodPressureElevatedOcassions ->
+            { english = "Blood Pressure Elevated occasions"
+            , kinyarwanda = Nothing
+            }
+
         BloodPressureDiaLabel ->
             { english = "Diastolic"
             , kinyarwanda = Nothing
@@ -1413,6 +1426,16 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        DeliveryLocation ->
+            { english = "Delivery Loaction"
+            , kinyarwanda = Nothing
+            }
+
+        DeliveryOutcome ->
+            { english = "Delivery Outcome"
+            , kinyarwanda = Nothing
+            }
+
         DangerSign sign ->
             case sign of
                 VaginalBleeding ->
@@ -1463,6 +1486,11 @@ translationSet trans =
         DateOfLastAssessment ->
             { english = "Date of last Assessment"
             , kinyarwanda = Just "Amakuru y'ipimwa ry'ubushize"
+            }
+
+        DatePregnancyConcluded ->
+            { english = "Date Pregnancy Concluded"
+            , kinyarwanda = Nothing
             }
 
         Day ->
@@ -1673,6 +1701,11 @@ translationSet trans =
 
         Eyes ->
             { english = "Eyes"
+            , kinyarwanda = Nothing
+            }
+
+        Facility ->
+            { english = "Facility"
             , kinyarwanda = Nothing
             }
 
@@ -2071,6 +2104,11 @@ translationSet trans =
 
         HIVStatusLabel ->
             { english = "HIV Status"
+            , kinyarwanda = Nothing
+            }
+
+        Home ->
+            { english = "Home"
             , kinyarwanda = Nothing
             }
 
@@ -2962,6 +3000,38 @@ translationSet trans =
             { english = "or Pregnancy Concluded"
             , kinyarwanda = Nothing
             }
+
+        PregnancyOutcomeLabel ->
+            { english = "Pregnancy Outcome"
+            , kinyarwanda = Nothing
+            }
+
+        PregnancyOutcome outcome ->
+            case outcome of
+                OutcomeLiveAtTerm ->
+                    { english = "Live Birth at Term (38 weeks EGA or more)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeLivePreTerm ->
+                    { english = "Live Birth Preterm (less than 38 weeks EGA)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeStillAtTerm ->
+                    { english = "Stillbirth at Term (38 weeks EGA or more)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeStillPreTerm ->
+                    { english = "Stillbirth Preterm (less than 38 weeks EGA)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeAbortions ->
+                    { english = "Abortions (before 24 weeks EGA)"
+                    , kinyarwanda = Nothing
+                    }
 
         PreviousCSectionScar ->
             { english = "Previous C-section scar"
@@ -3996,6 +4066,11 @@ translateActivePage page =
 
                 IndividualEncounterTypesPage ->
                     { english = "Encounter Types"
+                    , kinyarwanda = Nothing
+                    }
+
+                PregnancyOutcomePage _ ->
+                    { english = "Pregnancy Outcome"
                     , kinyarwanda = Nothing
                     }
 

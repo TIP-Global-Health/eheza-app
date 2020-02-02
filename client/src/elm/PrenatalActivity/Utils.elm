@@ -25,7 +25,10 @@ expected (and not completed).
 import Backend.Measurement.Model exposing (HeightInCm(..), MuacInCm(..), PrenatalMeasurements, PreviousDeliverySign(..), WeightInKg(..))
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, diffDays)
+import Maybe.Extra
 import Pages.PrenatalActivity.Utils exposing (calculateBmi)
+import Pages.PrenatalEncounter.Model exposing (AssembledData)
+import Pages.PrenatalEncounter.Utils exposing (getLastEncounterMeasurements)
 import PrenatalActivity.Model exposing (..)
 import Translate exposing (Language, TranslationId, translate)
 
@@ -146,18 +149,21 @@ generateHighRiskAlertData language measurements factor =
                     )
 
 
-generateHighSeverityAlertData : Language -> NominalDate -> PrenatalMeasurements -> HighSeverityAlert -> Maybe ( String, String )
-generateHighSeverityAlertData language currentDate measurements alert =
+generateHighSeverityAlertData : Language -> NominalDate -> AssembledData -> HighSeverityAlert -> Maybe ( String, String )
+generateHighSeverityAlertData language currentDate data alert =
     let
         trans =
             translate language
 
         transAlert alert =
             trans (Translate.HighSeverityAlert alert)
+
+        lastEncounterMeasurements =
+            getLastEncounterMeasurements data
     in
     case alert of
         BodyTemperature ->
-            measurements.vitals
+            data.measurements.vitals
                 |> Maybe.andThen
                     (\measurement ->
                         let
@@ -181,88 +187,107 @@ generateHighSeverityAlertData language currentDate measurements alert =
                     )
 
         BloodPressure ->
-            measurements.vitals
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            sys =
-                                Tuple.second measurement |> .value |> .sys
+            let
+                resolveAlert measurements =
+                    measurements.vitals
+                        |> Maybe.andThen
+                            (\measurement ->
+                                let
+                                    sys =
+                                        Tuple.second measurement |> .value |> .sys
 
-                            dia =
-                                Tuple.second measurement |> .value |> .dia
-                        in
-                        if sys > 180 || dia > 100 then
-                            Just
-                                ( trans Translate.High ++ " " ++ transAlert alert
-                                , toString sys ++ "/" ++ toString dia ++ trans Translate.MMHGUnit
-                                )
+                                    dia =
+                                        Tuple.second measurement |> .value |> .dia
+                                in
+                                if sys > 180 || dia > 100 then
+                                    Just
+                                        ( trans Translate.High ++ " " ++ transAlert alert
+                                        , toString sys ++ "/" ++ toString dia ++ trans Translate.MMHGUnit
+                                        )
 
-                        else
-                            Nothing
-                    )
+                                else
+                                    Nothing
+                            )
+
+                elevatedMoreThanOnceAlert =
+                    let
+                        numberOfOccasions =
+                            data.previousMeasurementsWithDates
+                                |> List.filterMap (Tuple.second >> resolveAlert)
+                                |> List.length
+                    in
+                    if numberOfOccasions > 1 then
+                        Just ( trans Translate.BloodPressureElevatedOcassions, toString numberOfOccasions )
+
+                    else
+                        Nothing
+            in
+            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> elevatedMoreThanOnceAlert)
 
         FetalHeartRate ->
-            measurements.lastMenstrualPeriod
-                |> Maybe.andThen
-                    (\lastMenstrualPeriod ->
-                        let
-                            lmpDate =
-                                Tuple.second lastMenstrualPeriod |> .value |> .date
+            let
+                resolveAlert measurements =
+                    data.globalLmpDate
+                        |> Maybe.andThen
+                            (\lmpDate ->
+                                let
+                                    egaInWeeks =
+                                        diffDays lmpDate currentDate // 7
+                                in
+                                if egaInWeeks > 19 then
+                                    measurements.obstetricalExam
+                                        |> Maybe.andThen
+                                            (\measurement ->
+                                                let
+                                                    value =
+                                                        Tuple.second measurement |> .value |> .fetalHeartRate
+                                                in
+                                                if value == 0 then
+                                                    Just ( transAlert alert, "" )
 
-                            egaInWeeks =
-                                diffDays lmpDate currentDate // 7
-                        in
-                        if egaInWeeks > 19 then
-                            measurements.obstetricalExam
-                                |> Maybe.andThen
-                                    (\measurement ->
-                                        let
-                                            value =
-                                                Tuple.second measurement |> .value |> .fetalHeartRate
-                                        in
-                                        if value == 0 then
-                                            Just ( transAlert alert, "" )
+                                                else
+                                                    Nothing
+                                            )
 
-                                        else
-                                            Nothing
-                                    )
-
-                        else
-                            Nothing
-                    )
+                                else
+                                    Nothing
+                            )
+            in
+            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
 
         FetalMovement ->
-            measurements.lastMenstrualPeriod
-                |> Maybe.andThen
-                    (\lastMenstrualPeriod ->
-                        let
-                            lmpDate =
-                                Tuple.second lastMenstrualPeriod |> .value |> .date
+            let
+                resolveAlert measurements =
+                    data.globalLmpDate
+                        |> Maybe.andThen
+                            (\lmpDate ->
+                                let
+                                    egaInWeeks =
+                                        diffDays lmpDate currentDate // 7
+                                in
+                                if egaInWeeks > 19 then
+                                    measurements.obstetricalExam
+                                        |> Maybe.andThen
+                                            (\measurement ->
+                                                let
+                                                    value =
+                                                        Tuple.second measurement |> .value |> .fetalMovement
+                                                in
+                                                if value == False then
+                                                    Just ( transAlert alert, "" )
 
-                            egaInWeeks =
-                                diffDays lmpDate currentDate // 7
-                        in
-                        if egaInWeeks > 19 then
-                            measurements.obstetricalExam
-                                |> Maybe.andThen
-                                    (\measurement ->
-                                        let
-                                            value =
-                                                Tuple.second measurement |> .value |> .fetalMovement
-                                        in
-                                        if value == False then
-                                            Just ( transAlert alert, "" )
+                                                else
+                                                    Nothing
+                                            )
 
-                                        else
-                                            Nothing
-                                    )
-
-                        else
-                            Nothing
-                    )
+                                else
+                                    Nothing
+                            )
+            in
+            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
 
         HeartRate ->
-            measurements.vitals
+            data.measurements.vitals
                 |> Maybe.andThen
                     (\measurement ->
                         let
@@ -286,7 +311,7 @@ generateHighSeverityAlertData language currentDate measurements alert =
                     )
 
         RespiratoryRate ->
-            measurements.vitals
+            data.measurements.vitals
                 |> Maybe.andThen
                     (\measurement ->
                         let
@@ -719,15 +744,18 @@ generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
                     )
 
 
-generateObstetricalDiagnosisAlertData : Language -> NominalDate -> PrenatalMeasurements -> ObstetricalDiagnosis -> Maybe String
-generateObstetricalDiagnosisAlertData language currentDate measurements diagnosis =
+generateObstetricalDiagnosisAlertData : Language -> NominalDate -> PrenatalMeasurements -> AssembledData -> ObstetricalDiagnosis -> Maybe String
+generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasurements data diagnosis =
     let
         transAlert diagnosis =
             translate language (Translate.ObstetricalDiagnosisAlert diagnosis)
+
+        lastEncounterMeasurements =
+            getLastEncounterMeasurements data
     in
     case diagnosis of
         DiagnosisRhNegative ->
-            measurements.obstetricHistoryStep2
+            firstEncounterMeasurements.obstetricHistoryStep2
                 |> Maybe.andThen
                     (\measurement ->
                         let
@@ -742,294 +770,376 @@ generateObstetricalDiagnosisAlertData language currentDate measurements diagnosi
                     )
 
         DiagnosisModerateUnderweight ->
-            measurements.nutrition
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            muac =
-                                Tuple.second measurement
-                                    |> .value
-                                    |> .muac
-                                    |> (\(MuacInCm cm) -> cm)
-                        in
-                        if muac >= 18.5 && muac < 22 then
-                            Just (transAlert diagnosis)
+            let
+                resolveAlert measurements =
+                    measurements.nutrition
+                        |> Maybe.andThen
+                            (\measurement ->
+                                let
+                                    muac =
+                                        Tuple.second measurement
+                                            |> .value
+                                            |> .muac
+                                            |> (\(MuacInCm cm) -> cm)
+                                in
+                                if muac >= 18.5 && muac < 22 then
+                                    Just (transAlert diagnosis)
 
-                        else
-                            Nothing
-                    )
+                                else
+                                    Nothing
+                            )
+            in
+            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
 
         DiagnosisSevereUnderweight ->
-            measurements.nutrition
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            height =
-                                Tuple.second measurement
-                                    |> .value
-                                    |> .height
-                                    |> (\(HeightInCm cm) -> cm)
+            let
+                resolveAlert measurements =
+                    measurements.nutrition
+                        |> Maybe.andThen
+                            (\measurement ->
+                                let
+                                    height =
+                                        Tuple.second measurement
+                                            |> .value
+                                            |> .height
+                                            |> (\(HeightInCm cm) -> cm)
 
-                            weight =
-                                Tuple.second measurement
-                                    |> .value
-                                    |> .weight
-                                    |> (\(WeightInKg kg) -> kg)
+                                    weight =
+                                        Tuple.second measurement
+                                            |> .value
+                                            |> .weight
+                                            |> (\(WeightInKg kg) -> kg)
 
-                            muac =
-                                Tuple.second measurement
-                                    |> .value
-                                    |> .muac
-                                    |> (\(MuacInCm cm) -> cm)
-                        in
-                        if muac < 18.5 then
-                            Just (transAlert diagnosis)
+                                    muac =
+                                        Tuple.second measurement
+                                            |> .value
+                                            |> .muac
+                                            |> (\(MuacInCm cm) -> cm)
+                                in
+                                if muac < 18.5 then
+                                    Just (transAlert diagnosis)
 
-                        else
-                            calculateBmi (Just height) (Just weight)
-                                |> Maybe.andThen
-                                    (\bmi_ ->
-                                        if bmi_ < 18.5 then
-                                            Just (transAlert diagnosis)
+                                else
+                                    calculateBmi (Just height) (Just weight)
+                                        |> Maybe.andThen
+                                            (\bmi_ ->
+                                                if bmi_ < 18.5 then
+                                                    Just (transAlert diagnosis)
 
-                                        else
-                                            Nothing
-                                    )
-                    )
+                                                else
+                                                    Nothing
+                                            )
+                            )
+            in
+            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
 
         DiagnosisOverweight ->
-            measurements.nutrition
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            height =
-                                Tuple.second measurement
-                                    |> .value
-                                    |> .height
-                                    |> (\(HeightInCm cm) -> cm)
+            let
+                resolveAlert measurements =
+                    measurements.nutrition
+                        |> Maybe.andThen
+                            (\measurement ->
+                                let
+                                    height =
+                                        Tuple.second measurement
+                                            |> .value
+                                            |> .height
+                                            |> (\(HeightInCm cm) -> cm)
 
-                            weight =
-                                Tuple.second measurement
-                                    |> .value
-                                    |> .weight
-                                    |> (\(WeightInKg kg) -> kg)
-                        in
-                        calculateBmi (Just height) (Just weight)
-                            |> Maybe.andThen
-                                (\bmi_ ->
-                                    if bmi_ >= 25 && bmi_ <= 30 then
-                                        Just (transAlert diagnosis)
+                                    weight =
+                                        Tuple.second measurement
+                                            |> .value
+                                            |> .weight
+                                            |> (\(WeightInKg kg) -> kg)
+                                in
+                                calculateBmi (Just height) (Just weight)
+                                    |> Maybe.andThen
+                                        (\bmi_ ->
+                                            if bmi_ >= 25 && bmi_ <= 30 then
+                                                Just (transAlert diagnosis)
 
-                                    else
-                                        Nothing
-                                )
-                    )
+                                            else
+                                                Nothing
+                                        )
+                            )
+            in
+            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
 
         DiagnosisObese ->
-            measurements.nutrition
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            height =
-                                Tuple.second measurement
-                                    |> .value
-                                    |> .height
-                                    |> (\(HeightInCm cm) -> cm)
+            let
+                resolveAlert measurements =
+                    measurements.nutrition
+                        |> Maybe.andThen
+                            (\measurement ->
+                                let
+                                    height =
+                                        Tuple.second measurement
+                                            |> .value
+                                            |> .height
+                                            |> (\(HeightInCm cm) -> cm)
 
-                            weight =
-                                Tuple.second measurement
-                                    |> .value
-                                    |> .weight
-                                    |> (\(WeightInKg kg) -> kg)
-                        in
-                        calculateBmi (Just height) (Just weight)
-                            |> Maybe.andThen
-                                (\bmi_ ->
-                                    if bmi_ > 30 then
-                                        Just (transAlert diagnosis)
+                                    weight =
+                                        Tuple.second measurement
+                                            |> .value
+                                            |> .weight
+                                            |> (\(WeightInKg kg) -> kg)
+                                in
+                                calculateBmi (Just height) (Just weight)
+                                    |> Maybe.andThen
+                                        (\bmi_ ->
+                                            if bmi_ > 30 then
+                                                Just (transAlert diagnosis)
 
-                                    else
-                                        Nothing
-                                )
-                    )
+                                            else
+                                                Nothing
+                                        )
+                            )
+            in
+            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
 
         DisgnosisPeripheralEdema ->
-            measurements.corePhysicalExam
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            hands =
-                                Tuple.second measurement |> .value |> .hands
+            let
+                resolveAlert measurements =
+                    measurements.corePhysicalExam
+                        |> Maybe.andThen
+                            (\measurement ->
+                                let
+                                    hands =
+                                        Tuple.second measurement |> .value |> .hands
 
-                            legs =
-                                Tuple.second measurement |> .value |> .legs
-                        in
-                        if
-                            EverySet.member Backend.Measurement.Model.EdemaHands hands
-                                || EverySet.member Backend.Measurement.Model.EdemaLegs legs
-                        then
-                            Just (transAlert diagnosis)
+                                    legs =
+                                        Tuple.second measurement |> .value |> .legs
+                                in
+                                if
+                                    EverySet.member Backend.Measurement.Model.EdemaHands hands
+                                        || EverySet.member Backend.Measurement.Model.EdemaLegs legs
+                                then
+                                    Just (transAlert diagnosis)
 
-                        else
-                            Nothing
-                    )
+                                else
+                                    Nothing
+                            )
+            in
+            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
 
         DiagnosisFetusBreech ->
-            measurements.lastMenstrualPeriod
-                |> Maybe.andThen
-                    (\lastMenstrualPeriod ->
-                        let
-                            lmpDate =
-                                Tuple.second lastMenstrualPeriod |> .value |> .date
+            let
+                resolveAlert measurements =
+                    data.globalLmpDate
+                        |> Maybe.andThen
+                            (\lmpDate ->
+                                let
+                                    egaInWeeks =
+                                        diffDays lmpDate currentDate // 7 |> toFloat
+                                in
+                                if egaInWeeks < 32 then
+                                    Nothing
 
-                            egaInWeeks =
-                                diffDays lmpDate currentDate // 7 |> toFloat
-                        in
-                        if egaInWeeks < 32 then
-                            Nothing
+                                else
+                                    measurements.obstetricalExam
+                                        |> Maybe.andThen
+                                            (\measurement ->
+                                                let
+                                                    value =
+                                                        Tuple.second measurement |> .value |> .fetalPresentation
+                                                in
+                                                if value == Backend.Measurement.Model.FetalBreech then
+                                                    Just (transAlert diagnosis)
 
-                        else
-                            measurements.obstetricalExam
-                                |> Maybe.andThen
-                                    (\measurement ->
-                                        let
-                                            value =
-                                                Tuple.second measurement |> .value |> .fetalPresentation
-                                        in
-                                        if value == Backend.Measurement.Model.FetalBreech then
-                                            Just (transAlert diagnosis)
-
-                                        else
-                                            Nothing
-                                    )
-                    )
+                                                else
+                                                    Nothing
+                                            )
+                            )
+            in
+            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
 
         DiagnosisFetusTransverse ->
-            measurements.lastMenstrualPeriod
-                |> Maybe.andThen
-                    (\lastMenstrualPeriod ->
-                        let
-                            lmpDate =
-                                Tuple.second lastMenstrualPeriod |> .value |> .date
+            let
+                resolveAlert measurements =
+                    data.globalLmpDate
+                        |> Maybe.andThen
+                            (\lmpDate ->
+                                let
+                                    egaInWeeks =
+                                        diffDays lmpDate currentDate // 7 |> toFloat
+                                in
+                                if egaInWeeks < 32 then
+                                    Nothing
 
-                            egaInWeeks =
-                                diffDays lmpDate currentDate // 7 |> toFloat
-                        in
-                        if egaInWeeks < 32 then
-                            Nothing
+                                else
+                                    measurements.obstetricalExam
+                                        |> Maybe.andThen
+                                            (\measurement ->
+                                                let
+                                                    value =
+                                                        Tuple.second measurement |> .value |> .fetalPresentation
+                                                in
+                                                if value == Backend.Measurement.Model.Transverse then
+                                                    Just (transAlert diagnosis)
 
-                        else
-                            measurements.obstetricalExam
-                                |> Maybe.andThen
-                                    (\measurement ->
-                                        let
-                                            value =
-                                                Tuple.second measurement |> .value |> .fetalPresentation
-                                        in
-                                        if value == Backend.Measurement.Model.Transverse then
-                                            Just (transAlert diagnosis)
-
-                                        else
-                                            Nothing
-                                    )
-                    )
+                                                else
+                                                    Nothing
+                                            )
+                            )
+            in
+            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
 
         DiagnosisBreastExamination ->
-            measurements.breastExam
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            signs =
-                                Tuple.second measurement |> .value |> .exam
-                        in
-                        if
-                            EverySet.isEmpty signs
-                                || EverySet.member Backend.Measurement.Model.NormalBreast signs
-                        then
-                            Nothing
+            let
+                resolveAlert measurements =
+                    measurements.breastExam
+                        |> Maybe.andThen
+                            (\measurement ->
+                                let
+                                    signs =
+                                        Tuple.second measurement |> .value |> .exam
+                                in
+                                if
+                                    EverySet.isEmpty signs
+                                        || EverySet.member Backend.Measurement.Model.NormalBreast signs
+                                then
+                                    Nothing
 
-                        else
-                            let
-                                transSigns =
-                                    EverySet.toList signs
-                                        |> List.map (\sign -> translate language (Translate.BreastExamSign sign))
-                                        |> List.intersperse ", "
-                                        |> String.concat
-                            in
-                            Just (transAlert diagnosis ++ " " ++ transSigns)
-                    )
+                                else
+                                    let
+                                        transSigns =
+                                            EverySet.toList signs
+                                                |> List.map (\sign -> translate language (Translate.BreastExamSign sign))
+                                                |> List.intersperse ", "
+                                                |> String.concat
+                                    in
+                                    Just (transAlert diagnosis ++ " " ++ transSigns)
+                            )
+            in
+            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
 
         DiagnosisHypertension ->
-            measurements.vitals
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            sys =
-                                Tuple.second measurement |> .value |> .sys
+            let
+                lowBloodPressureOccasions =
+                    data.previousMeasurementsWithDates
+                        |> List.filterMap
+                            (\( _, measurements ) ->
+                                measurements.vitals
+                                    |> Maybe.andThen
+                                        (\measurement ->
+                                            let
+                                                sys =
+                                                    Tuple.second measurement |> .value |> .sys
 
-                            dia =
-                                Tuple.second measurement |> .value |> .dia
-                        in
-                        if sys < 110 || dia < 70 then
-                            Just (transAlert diagnosis)
+                                                dia =
+                                                    Tuple.second measurement |> .value |> .dia
+                                            in
+                                            if sys < 110 || dia < 70 then
+                                                Just True
 
-                        else
-                            Nothing
-                    )
+                                            else
+                                                Nothing
+                                        )
+                            )
+                        |> List.length
+            in
+            if lowBloodPressureOccasions > 1 then
+                Just (transAlert diagnosis)
+
+            else
+                Nothing
 
         DiagnosisPregnancyInducedHypertension ->
-            measurements.vitals
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            sys =
-                                Tuple.second measurement |> .value |> .sys
+            let
+                lowBloodPressureOccasions =
+                    data.previousMeasurementsWithDates
+                        |> List.filterMap
+                            (\( _, measurements ) ->
+                                measurements.vitals
+                                    |> Maybe.andThen
+                                        (\measurement ->
+                                            let
+                                                sys =
+                                                    Tuple.second measurement |> .value |> .sys
 
-                            dia =
-                                Tuple.second measurement |> .value |> .dia
-                        in
-                        if sys > 140 || dia > 90 then
-                            Just (transAlert diagnosis)
+                                                dia =
+                                                    Tuple.second measurement |> .value |> .dia
+                                            in
+                                            if sys < 110 || dia < 70 then
+                                                Just True
 
-                        else
-                            Nothing
-                    )
+                                            else
+                                                Nothing
+                                        )
+                            )
+                        |> List.length
+
+                highBloodPressureOccasions =
+                    data.previousMeasurementsWithDates
+                        |> List.filterMap
+                            (\( _, measurements ) ->
+                                measurements.vitals
+                                    |> Maybe.andThen
+                                        (\measurement ->
+                                            let
+                                                sys =
+                                                    Tuple.second measurement |> .value |> .sys
+
+                                                dia =
+                                                    Tuple.second measurement |> .value |> .dia
+                                            in
+                                            if sys > 140 || dia > 90 then
+                                                Just True
+
+                                            else
+                                                Nothing
+                                        )
+                            )
+                        |> List.length
+            in
+            if lowBloodPressureOccasions > 1 then
+                Nothing
+
+            else if highBloodPressureOccasions > 1 then
+                Just (transAlert diagnosis)
+
+            else
+                Nothing
 
         DiagnosisPreeclampsiaHighRisk ->
-            measurements.vitals
-                |> Maybe.andThen
-                    (\vitals ->
-                        let
-                            sys =
-                                Tuple.second vitals |> .value |> .sys
+            let
+                resolveAlert measurements =
+                    measurements.vitals
+                        |> Maybe.andThen
+                            (\vitals ->
+                                let
+                                    sys =
+                                        Tuple.second vitals |> .value |> .sys
 
-                            dia =
-                                Tuple.second vitals |> .value |> .dia
-                        in
-                        if sys > 140 || dia > 90 then
-                            measurements.corePhysicalExam
-                                |> Maybe.andThen
-                                    (\corePhysicalExam ->
-                                        let
-                                            hands =
-                                                Tuple.second corePhysicalExam |> .value |> .hands
+                                    dia =
+                                        Tuple.second vitals |> .value |> .dia
+                                in
+                                if sys > 140 || dia > 90 then
+                                    measurements.corePhysicalExam
+                                        |> Maybe.andThen
+                                            (\corePhysicalExam ->
+                                                let
+                                                    hands =
+                                                        Tuple.second corePhysicalExam |> .value |> .hands
 
-                                            legs =
-                                                Tuple.second corePhysicalExam |> .value |> .legs
-                                        in
-                                        if
-                                            EverySet.member Backend.Measurement.Model.EdemaHands hands
-                                                || EverySet.member Backend.Measurement.Model.EdemaLegs legs
-                                        then
-                                            Just (transAlert diagnosis)
+                                                    legs =
+                                                        Tuple.second corePhysicalExam |> .value |> .legs
+                                                in
+                                                if
+                                                    EverySet.member Backend.Measurement.Model.EdemaHands hands
+                                                        || EverySet.member Backend.Measurement.Model.EdemaLegs legs
+                                                then
+                                                    Just (transAlert diagnosis)
 
-                                        else
-                                            Nothing
-                                    )
+                                                else
+                                                    Nothing
+                                            )
 
-                        else
-                            Nothing
-                    )
+                                else
+                                    Nothing
+                            )
+            in
+            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
 
 
 getEncounterTrimesterData : NominalDate -> Maybe NominalDate -> Maybe PregnancyTrimester

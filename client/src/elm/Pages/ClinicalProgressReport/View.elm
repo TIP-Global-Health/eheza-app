@@ -23,7 +23,7 @@ import Pages.DemographicsReport.View exposing (viewHeader, viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Utils exposing (calculateBmi)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
-import Pages.PrenatalEncounter.Utils exposing (calculateEDD, calculateEDDandEGADays, generateAssembledData, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generatePara, getLmpMeasurement)
+import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.Utils exposing (viewPhotoThumbFromPhotoUrl)
 import PrenatalActivity.Model
     exposing
@@ -74,11 +74,15 @@ view language currentDate id db =
 
 viewContent : Language -> NominalDate -> AssembledData -> Html Msg
 viewContent language currentDate data =
+    let
+        firstEncounterMeasurements =
+            getFirstEncounterMeasurements data
+    in
     div [ class "ui unstackable items" ]
         [ viewHeaderPane language currentDate data
-        , viewRiskFactorsPane language currentDate data.measurements
-        , viewMedicalDiagnosisPane language currentDate data.measurements
-        , viewObstetricalDiagnosisPane language currentDate data.measurements
+        , viewRiskFactorsPane language currentDate firstEncounterMeasurements
+        , viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements
+        , viewObstetricalDiagnosisPane language currentDate firstEncounterMeasurements data
         , viewPatientProgressPane language currentDate data
         ]
 
@@ -191,12 +195,12 @@ viewMedicalDiagnosisPane language currentDate measurements =
         ]
 
 
-viewObstetricalDiagnosisPane : Language -> NominalDate -> PrenatalMeasurements -> Html Msg
-viewObstetricalDiagnosisPane language currentDate measurements =
+viewObstetricalDiagnosisPane : Language -> NominalDate -> PrenatalMeasurements -> AssembledData -> Html Msg
+viewObstetricalDiagnosisPane language currentDate firstEncounterMeasurements data =
     let
         alerts =
             allObstetricalDiagnosis
-                |> List.filterMap (generateObstetricalDiagnosisAlertData language currentDate measurements)
+                |> List.filterMap (generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasurements data)
                 |> List.map (\alert -> p [] [ text <| "- " ++ alert ])
     in
     div [ class "obstetric-diagnosis" ]

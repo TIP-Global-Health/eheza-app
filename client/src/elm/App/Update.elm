@@ -26,6 +26,8 @@ import Pages.People.Update
 import Pages.Person.Update
 import Pages.PinCode.Model
 import Pages.PinCode.Update
+import Pages.PregnancyOutcome.Model
+import Pages.PregnancyOutcome.Update
 import Pages.PrenatalActivity.Model
 import Pages.PrenatalActivity.Update
 import Pages.PrenatalEncounter.Model
@@ -283,6 +285,19 @@ update msg model =
                             ( { data | prenatalActivityPages = EveryDict.insert ( id, activity ) subModel data.prenatalActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalActivity id activity) subCmd
                             , extraMsgs
+                            )
+
+                        MsgPagePregnancyOutcome id subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    data.pregnancyOutcomePages
+                                        |> EveryDict.get id
+                                        |> Maybe.withDefault Pages.PregnancyOutcome.Model.emptyModel
+                                        |> Pages.PregnancyOutcome.Update.update currentDate id subMsg
+                            in
+                            ( { data | pregnancyOutcomePages = EveryDict.insert id subModel data.pregnancyOutcomePages }
+                            , Cmd.map (MsgLoggedIn << MsgPagePregnancyOutcome id) subCmd
+                            , appMsgs
                             )
                 )
                 model

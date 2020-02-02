@@ -1,4 +1,9 @@
-module Backend.IndividualEncounterParticipant.Encoder exposing (encodeIndividualEncounterParticipant)
+module Backend.IndividualEncounterParticipant.Encoder exposing
+    ( encodeDeliveryLocation
+    , encodeIndividualEncounterParticipant
+    , encodePregnancyOutcome
+    , pregnancyOutcomeToString
+    )
 
 import Backend.IndividualEncounterParticipant.Model exposing (..)
 import Backend.IndividualEncounterParticipant.Utils exposing (encoudeIndividualEncounterTypeAsString)
@@ -25,3 +30,40 @@ encodeIndividualEncounterParticipant data =
 encodeIndividualEncounterType : IndividualEncounterType -> Value
 encodeIndividualEncounterType type_ =
     encoudeIndividualEncounterTypeAsString type_ |> string
+
+
+encodePregnancyOutcome : PregnancyOutcome -> Value
+encodePregnancyOutcome outcome =
+    pregnancyOutcomeToString outcome |> string
+
+
+encodeDeliveryLocation : Bool -> Value
+encodeDeliveryLocation isFacilityDelivery =
+    let
+        location =
+            if isFacilityDelivery then
+                "facility"
+
+            else
+                "home"
+    in
+    string location
+
+
+pregnancyOutcomeToString : PregnancyOutcome -> String
+pregnancyOutcomeToString outcome =
+    case outcome of
+        OutcomeLiveAtTerm ->
+            "live-at-term"
+
+        OutcomeLivePreTerm ->
+            "live-pre-term"
+
+        OutcomeStillAtTerm ->
+            "still-at-term"
+
+        OutcomeStillPreTerm ->
+            "still-pre-term"
+
+        OutcomeAbortions ->
+            "abortions"

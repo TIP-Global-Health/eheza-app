@@ -16,6 +16,7 @@ import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalParticipant.Model exposing (..)
+import Pages.PrenatalParticipant.Utils exposing (isPregnancyActive)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.WebData exposing (viewWebData)
@@ -62,25 +63,35 @@ viewPrenatalActions language currentDate id db prenatalSessions =
         maybeSessionId =
             prenatalSessions
                 |> EveryDictList.toList
-                |> List.filter (\( _, session ) -> isNothing session.endDate)
+                |> List.filter (Tuple.second >> isPregnancyActive currentDate)
                 |> List.head
                 |> Maybe.map Tuple.first
 
-        -- Person active prenatal encounter. There should not be more than one.
-        maybeEncounterId =
+        -- Resolve active prenatal encounter for person. There should not be more than one.
+        -- Also, we count the number of completed encounters, so that we know if to
+        -- allow 'Pregnancy Outcome' action.
+        ( maybeActiveEncounterId, totalCompletedEncounts ) =
             maybeSessionId
-                |> Maybe.andThen
+                |> Maybe.map
                     (\sessionId ->
                         EveryDict.get sessionId db.prenatalEncountersByParticipant
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.map
-                                (EveryDictList.toList
-                                    >> List.filter (\( _, encounter ) -> isNothing encounter.endDate)
-                                    >> List.head
-                                    >> Maybe.map Tuple.first
+                                (\dict ->
+                                    let
+                                        activeEncounters =
+                                            EveryDictList.toList dict
+                                                |> List.filter (\( _, encounter ) -> isNothing encounter.endDate)
+                                    in
+                                    ( activeEncounters
+                                        |> List.head
+                                        |> Maybe.map Tuple.first
+                                    , EveryDictList.size dict - List.length activeEncounters
+                                    )
                                 )
-                            |> RemoteData.withDefault Nothing
+                            |> RemoteData.withDefault ( Nothing, 0 )
                     )
+                |> Maybe.withDefault ( Nothing, 0 )
 
         -- Wither first prenatal encounter for person is in process.
         -- This is True when there's only one encounter, and it's active.
@@ -108,7 +119,7 @@ viewPrenatalActions language currentDate id db prenatalSessions =
         firstVisitAction =
             -- If first encounter is in process, navigate to it.
             if firstEncounterInProcess then
-                maybeEncounterId
+                maybeActiveEncounterId
                     |> unwrap
                         []
                         navigateToEncounterAction
@@ -126,14 +137,14 @@ viewPrenatalActions language currentDate id db prenatalSessions =
                         )
                     -- If prenatal session does not exist, create it.
                     |> Maybe.withDefault
-                        [ IndividualEncounterParticipant id AntenatalEncounter currentDate Nothing
+                        [ IndividualEncounterParticipant id AntenatalEncounter currentDate Nothing Nothing
                             |> Backend.Model.PostIndividualSession
                             |> App.Model.MsgIndexedDb
                             |> onClick
                         ]
 
         subsequentVisitAction =
-            maybeEncounterId
+            maybeActiveEncounterId
                 |> unwrap
                     -- When there's no encounter, we'll create new one.
                     (maybeSessionId
@@ -156,6 +167,22 @@ viewPrenatalActions language currentDate id db prenatalSessions =
                 |> App.Model.SetActivePage
                 |> onClick
             ]
+
+        navigateToPregnancyOutcomeAction =
+            if totalCompletedEncounts > 0 then
+                maybeSessionId
+                    |> Maybe.map
+                        (\sessionId ->
+                            [ Pages.Page.PregnancyOutcomePage sessionId
+                                |> UserPage
+                                |> App.Model.SetActivePage
+                                |> onClick
+                            ]
+                        )
+                    |> Maybe.withDefault []
+
+            else
+                []
 
         firstVisitButtonDisabeld =
             isJust maybeSessionId && not firstEncounterInProcess
@@ -185,11 +212,12 @@ viewPrenatalActions language currentDate id db prenatalSessions =
         , div [ class "separator" ] []
         , p [ class "label-pregnancy-concluded" ] [ text <| translate language Translate.PregnancyConcludedLabel ]
         , button
-            [ classList
+            (classList
                 [ ( "ui primary button", True )
-                , ( "disabled", isNothing maybeSessionId )
+                , ( "disabled", List.isEmpty navigateToPregnancyOutcomeAction )
                 ]
-            ]
+                :: navigateToPregnancyOutcomeAction
+            )
             [ span [ class "text" ] [ text <| translate language Translate.RecordPregnancyOutcome ]
             , span [ class "icon-back" ] []
             ]
