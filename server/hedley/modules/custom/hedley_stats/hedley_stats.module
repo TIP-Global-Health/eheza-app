@@ -10,9 +10,9 @@ define('HEDLEY_STATS_PERIOD_LAST_MONTH', 'last_month');
 define('HEDLEY_STATS_PERIOD_THREE_MONTHS', 'three_months');
 define('HEDLEY_STATS_PERIOD_ONE_YEAR', 'one_year');
 define('HEDLEY_STATS_PERIOD_LAST_YEAR', 'last_year');
-define('HEDLEY_STATS_SEVERE', 'severe');
-define('HEDLEY_STATS_MODERATE', 'moderate');
-define('HEDLEY_STATS_GOOD', 'good');
+define('HEDLEY_STATS_SEVERE', 'severe_nutrition');
+define('HEDLEY_STATS_MODERATE', 'moderate_nutrition');
+define('HEDLEY_STATS_GOOD', 'good_nutrition');
 
 /**
  * Return new people in a Health centers related stats.
@@ -212,6 +212,10 @@ function hedley_stats_get_good_nutrition($health_center_id) {
 
         // Go through all the measurements for this person.
         foreach ($measurement as $field_name => $value) {
+          if ($field_name == 'field_date_measured') {
+            // Don't let the date count.
+            continue;
+          }
           // The nutrition value should be 'none' to be considered "good".
           if ($type == 'nutrition') {
             if ($value != $current_nutrition_signs[$field_name][HEDLEY_STATS_GOOD]) {
@@ -291,36 +295,36 @@ function hedley_stats_get_total_encounters($health_center_id) {
 function hedley_stats_get_total_beneficiaries_card($health_center_id) {
   $nutrition_per_month = [
     'stunting' => [
-      'moderate_nutrition' => 0,
-      'severe_nutrition' => 0,
+      HEDLEY_STATS_SEVERE => 0,
+      HEDLEY_STATS_MODERATE => 0,
     ],
     'underweight' => [
-      'moderate_nutrition' => 0,
-      'severe_nutrition' => 0,
+      HEDLEY_STATS_SEVERE => 0,
+      HEDLEY_STATS_MODERATE => 0,
     ],
     'wasting' => [
-      'moderate_nutrition' => 0,
-      'severe_nutrition' => 0,
+      HEDLEY_STATS_SEVERE => 0,
+      HEDLEY_STATS_MODERATE => 0,
     ],
     'muac' => [
-      'moderate_nutrition' => 0,
-      'severe_nutrition' => 0,
+      HEDLEY_STATS_SEVERE => 0,
+      HEDLEY_STATS_MODERATE => 0,
     ],
   ];
 
   $data_per_month = [
-    'jan' => $nutrition_per_month,
-    'feb' => $nutrition_per_month,
-    'mar' => $nutrition_per_month,
-    'apr' => $nutrition_per_month,
-    'may' => $nutrition_per_month,
-    'jun' => $nutrition_per_month,
-    'jul' => $nutrition_per_month,
-    'aug' => $nutrition_per_month,
-    'sep' => $nutrition_per_month,
-    'oct' => $nutrition_per_month,
-    'nov' => $nutrition_per_month,
-    'dec' => $nutrition_per_month,
+    1 => $nutrition_per_month,
+    2 => $nutrition_per_month,
+    3 => $nutrition_per_month,
+    4 => $nutrition_per_month,
+    5 => $nutrition_per_month,
+    6 => $nutrition_per_month,
+    7 => $nutrition_per_month,
+    8 => $nutrition_per_month,
+    9 => $nutrition_per_month,
+    10 => $nutrition_per_month,
+    11 => $nutrition_per_month,
+    12 => $nutrition_per_month,
   ];
 
   $people = hedley_stats_get_measurements_query_grouped_by_person($health_center_id, HEDLEY_STATS_PERIOD_ONE_YEAR);
@@ -335,16 +339,67 @@ function hedley_stats_get_total_beneficiaries_card($health_center_id) {
   // date.
   foreach ($people as $person) {
     foreach ($person as $type => $measurement) {
+      if (!strtotime($measurement['field_date_measured'])) {
+        // Don't count if we don't have a valid date.
+        continue;
+      }
+
+      // Get the date of the measurement in order to distribute them by months.
+      $month = date('n', strtotime($measurement['field_date_measured']));
+
       // We are interested only with the nutrition signs that match the
       // current type.
       $current_nutrition_signs = $nutrition_signs[$type];
 
-      // Go through all the measurements for this person.
-      // @TODO: Analyze the data per month.
+      foreach ($measurement as $field_name => $value) {
+        // Go through all the measurements for this person.
+        switch ($type) {
+          case 'height':
+            if ($value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE]) {
+              $data_per_month[$month]['stunting'][HEDLEY_STATS_SEVERE]++;
+            }
+            elseif ($value >= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_MODERATE]) {
+              $data_per_month[$month]['stunting'][HEDLEY_STATS_MODERATE]++;
+            }
+
+            break;
+
+          case 'weight':
+            if ($field_name == 'field_zscore_age') {
+              if ($value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE]) {
+                $data_per_month[$month]['underweight'][HEDLEY_STATS_SEVERE]++;
+              }
+              elseif ($value >= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_MODERATE]) {
+                $data_per_month[$month]['underweight'][HEDLEY_STATS_MODERATE]++;
+              }
+            }
+
+            if ($field_name == 'field_zscore_length') {
+              if ($value <= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_SEVERE]) {
+                $data_per_month[$month]['wasting'][HEDLEY_STATS_SEVERE]++;
+              }
+              elseif ($value >= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_MODERATE]) {
+                $data_per_month[$month]['wasting'][HEDLEY_STATS_MODERATE]++;
+              }
+            }
+
+            break;
+
+          case 'muac':
+            if ($value <= $current_nutrition_signs['field_muac'][HEDLEY_STATS_SEVERE]) {
+              $data_per_month[$month]['muac'][HEDLEY_STATS_SEVERE]++;
+            }
+            elseif ($value >= $current_nutrition_signs['field_muac'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_muac'][HEDLEY_STATS_MODERATE]) {
+              $data_per_month[$month]['muac'][HEDLEY_STATS_MODERATE]++;
+            }
+
+            break;
+        }
+      }
     }
   }
 
-  return [];
+  return $data_per_month;
 }
 
 /**
@@ -401,6 +456,11 @@ function hedley_stats_get_measurements_query_grouped_by_person($health_center_id
   foreach ($result as $measurement) {
     // Get fields for current node type.
     $measurement_fields = $node_types[$measurement->type];
+
+    // Add the measurements' date.
+    if ($measurement->field_date_measured) {
+      $people[$measurement->field_person][$measurement->type]['field_date_measured'] = $measurement->field_date_measured;
+    }
 
     foreach ($measurement_fields as $measurement_field) {
       $people[$measurement->field_person][$measurement->type][$measurement_field] = $measurement->{$measurement_field};
