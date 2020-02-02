@@ -1,4 +1,4 @@
-module Backend.Dashboard.Model exposing (ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Periods, TotalBeneficiaries, emptyModel)
+module Backend.Dashboard.Model exposing (ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Nutrition, Periods, TotalBeneficiaries, emptyModel)
 
 {-| The stats for the dashboard.
 -}
@@ -16,6 +16,7 @@ type alias DashboardStats =
     , familyPlanning : List FamilyPlanningStats
     , goodNutrition : GoodNutrition
     , malnourished : List MalnourishedStats
+    , totalBeneficiaries : Dict Month TotalBeneficiaries
     , totalEncounters : Periods
     }
 
@@ -39,6 +40,7 @@ emptyModel =
         { lastYear = 0
         , thisYear = 0
         }
+    , totalBeneficiaries = Dict.empty
     }
 
 
@@ -74,15 +76,15 @@ type alias GoodNutrition =
     }
 
 
+type alias Nutrition =
+    { severeNutrition : Int
+    , moderateNutrition : Int
+    }
+
+
 type alias TotalBeneficiaries =
     { stunting : Nutrition
     , underweight : Nutrition
     , wasting : Nutrition
     , muac : Nutrition
     }
-
-
-type Nutrition
-    = Severe Int
-    | Moderate Int
-    | Good Int

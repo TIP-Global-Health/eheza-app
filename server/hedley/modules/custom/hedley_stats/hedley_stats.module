@@ -216,6 +216,7 @@ function hedley_stats_get_good_nutrition($health_center_id) {
             // Don't let the date count.
             continue;
           }
+
           // The nutrition value should be 'none' to be considered "good".
           if ($type == 'nutrition') {
             if ($value != $current_nutrition_signs[$field_name][HEDLEY_STATS_GOOD]) {
@@ -410,8 +411,6 @@ function hedley_stats_get_total_beneficiaries($health_center_id, $period = HEDLE
       }
     }
   }
-
-  dpm($data_per_month);
 
   return $data_per_month;
 }

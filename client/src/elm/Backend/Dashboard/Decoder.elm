@@ -1,10 +1,11 @@
 module Backend.Dashboard.Decoder exposing (decodeDashboardStats)
 
-import AssocList as Dict
-import Backend.Dashboard.Model exposing (ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Periods, TotalBeneficiaries)
+import AssocList as Dict exposing (Dict)
+import Backend.Dashboard.Model exposing (ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Nutrition, Periods, TotalBeneficiaries)
 import Backend.Measurement.Decoder exposing (decodeFamilyPlanningSign)
 import Backend.Person.Decoder exposing (decodeGender)
 import Date exposing (Month)
+import Dict as LegacyDict
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (..)
@@ -19,63 +20,80 @@ decodeDashboardStats =
         |> required "family_planning" (list decodeFamilyPlanningStats)
         |> required "good_nutrition" decodeGoodNutrition
         |> required "malnourished_beneficiaries" (list decodeMalnourishedStats)
-        --|> required "total_beneficiaries" decodeTotalBeneficiaries
+        |> required "total_beneficiaries" decodeTotalBeneficiariesDict
         |> required "total_encounters" decodePeriods
 
 
-decodeMonth : Decoder Month
-decodeMonth =
-    andThen
-        (\m ->
-            case m of
-                "jan" ->
-                    succeed Jan
-
-                "feb" ->
-                    succeed Feb
-
-                "mar" ->
-                    succeed Mar
-
-                "apr" ->
-                    succeed Apr
-
-                "may" ->
-                    succeed May
-
-                "jun" ->
-                    succeed Jun
-
-                "jul" ->
-                    succeed Jul
-
-                "aug" ->
-                    succeed Aug
-
-                "sep" ->
-                    succeed Sep
-
-                "oct" ->
-                    succeed Oct
-
-                "nov" ->
-                    succeed Nov
-
-                "dec" ->
-                    succeed Dec
-
-                _ ->
-                    fail <|
-                        m
-                            ++ " is not a recognized Month"
-        )
-        string
+decodeTotalBeneficiariesDict : Decoder (Dict Month TotalBeneficiaries)
+decodeTotalBeneficiariesDict =
+    dict decodeTotalBeneficiaries
+        |> andThen
+            (\dict ->
+                LegacyDict.toList dict
+                    |> List.map
+                        (\( k, v ) -> ( stringToMonth k, v ))
+                    |> Dict.fromList
+                    |> succeed
+            )
 
 
+decodeTotalBeneficiaries : Decoder TotalBeneficiaries
+decodeTotalBeneficiaries =
+    succeed TotalBeneficiaries
+        |> required "stunting" decodeBeneficiaries
+        |> required "underweight" decodeBeneficiaries
+        |> required "wasting" decodeBeneficiaries
+        |> required "muac" decodeBeneficiaries
 
---decodeTotalBeneficiaries : Decoder a -> TotalBeneficiaries
---decodeTotalBeneficiaries =
---    succeed TotalBeneficiaries |> Dict.empty
+
+decodeBeneficiaries : Decoder Nutrition
+decodeBeneficiaries =
+    succeed Nutrition
+        |> required "severe_nutrition" decodeInt
+        |> required "moderate_nutrition" decodeInt
+
+
+stringToMonth : String -> Month
+stringToMonth m =
+    case m of
+        "jan" ->
+            Jan
+
+        "feb" ->
+            Feb
+
+        "mar" ->
+            Mar
+
+        "apr" ->
+            Apr
+
+        "may" ->
+            May
+
+        "jun" ->
+            Jun
+
+        "jul" ->
+            Jul
+
+        "aug" ->
+            Aug
+
+        "sep" ->
+            Sep
+
+        "oct" ->
+            Oct
+
+        "nov" ->
+            Nov
+
+        "dec" ->
+            Dec
+
+        _ ->
+            Jan
 
 
 decodePeopleStats : Decoder ChildrenBeneficiariesStats
