@@ -324,11 +324,17 @@ fromObstetricHistoryValue : Maybe ObstetricHistoryValue -> ObstetricFormFirstSte
 fromObstetricHistoryValue saved =
     { currentlyPregnant = Maybe.map .currentlyPregnant saved
     , termPregnancy = Maybe.map .termPregnancy saved
+    , termPregnancyDirty = False
     , preTermPregnancy = Maybe.map .preTermPregnancy saved
+    , preTermPregnancyDirty = False
     , stillbirthsAtTerm = Maybe.map .stillbirthsAtTerm saved
+    , stillbirthsAtTermDirty = False
     , stillbirthsPreTerm = Maybe.map .stillbirthsPreTerm saved
+    , stillbirthsPreTermDirty = False
     , abortions = Maybe.map .abortions saved
+    , abortionsDirty = False
     , liveChildren = Maybe.map .liveChildren saved
+    , liveChildrenDirty = False
     }
 
 
@@ -338,13 +344,62 @@ obstetricHistoryFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
+                let
+                    termPregnancyValue =
+                        if form.termPregnancyDirty then
+                            form.termPregnancy
+
+                        else
+                            or form.termPregnancy (Just value.termPregnancy)
+
+                    preTermPregnancyValue =
+                        if form.preTermPregnancyDirty then
+                            form.preTermPregnancy
+
+                        else
+                            or form.preTermPregnancy (Just value.preTermPregnancy)
+
+                    stillbirthsAtTermValue =
+                        if form.stillbirthsAtTermDirty then
+                            form.stillbirthsAtTerm
+
+                        else
+                            or form.stillbirthsAtTerm (Just value.stillbirthsAtTerm)
+
+                    stillbirthsPreTermValue =
+                        if form.stillbirthsPreTermDirty then
+                            form.stillbirthsPreTerm
+
+                        else
+                            or form.stillbirthsPreTerm (Just value.stillbirthsPreTerm)
+
+                    abortionsValue =
+                        if form.abortionsDirty then
+                            form.abortions
+
+                        else
+                            or form.abortions (Just value.abortions)
+
+                    liveChildrenValue =
+                        if form.liveChildrenDirty then
+                            form.liveChildren
+
+                        else
+                            or form.liveChildren (Just value.liveChildren)
+                in
                 { currentlyPregnant = or form.currentlyPregnant (Just value.currentlyPregnant)
-                , termPregnancy = or form.termPregnancy (Just value.termPregnancy)
-                , preTermPregnancy = or form.preTermPregnancy (Just value.preTermPregnancy)
-                , stillbirthsAtTerm = or form.stillbirthsAtTerm (Just value.stillbirthsAtTerm)
-                , stillbirthsPreTerm = or form.stillbirthsPreTerm (Just value.stillbirthsPreTerm)
-                , abortions = or form.abortions (Just value.abortions)
-                , liveChildren = or form.liveChildren (Just value.liveChildren)
+                , termPregnancy = termPregnancyValue
+                , termPregnancyDirty = form.termPregnancyDirty
+                , preTermPregnancy = preTermPregnancyValue
+                , preTermPregnancyDirty = form.preTermPregnancyDirty
+                , stillbirthsAtTerm = stillbirthsAtTermValue
+                , stillbirthsAtTermDirty = form.stillbirthsAtTermDirty
+                , stillbirthsPreTerm = stillbirthsPreTermValue
+                , stillbirthsPreTermDirty = form.stillbirthsPreTermDirty
+                , abortions = abortionsValue
+                , abortionsDirty = form.abortionsDirty
+                , liveChildren = liveChildrenValue
+                , liveChildrenDirty = form.liveChildrenDirty
                 }
             )
 
@@ -372,7 +427,16 @@ obstetricHistoryStep2FormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { cSections = or form.cSections (Just value.cSections)
+                let
+                    cSectionsValue =
+                        if form.cSectionsDirty then
+                            form.cSections
+
+                        else
+                            or form.cSections (Just value.cSections)
+                in
+                { cSections = cSectionsValue
+                , cSectionsDirty = form.cSectionsDirty
                 , cSectionInPreviousDelivery = or form.cSectionInPreviousDelivery (EverySet.member CSectionInPreviousDelivery value.previousDelivery |> Just)
                 , cSectionReason = or form.cSectionReason (value.cSectionReason |> EverySet.toList |> List.head)
                 , previousDeliveryPeriod = or form.previousDeliveryPeriod (value.previousDeliveryPeriod |> EverySet.toList |> List.head)
