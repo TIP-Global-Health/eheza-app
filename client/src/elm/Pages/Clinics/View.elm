@@ -5,9 +5,9 @@ user to click on clinics the user is assigned to, to see the sessions which are
 available for data-entry.
 -}
 
-import App.Model exposing (Msg(..), MsgLoggedIn(..))
+import App.Model exposing (MsgLoggedIn(..))
 import AssocList as Dict exposing (Dict)
-import Backend.Clinic.Model exposing (Clinic)
+import Backend.Clinic.Model exposing (Clinic, ClinicType(..), allClinicTypes)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse)
@@ -21,6 +21,8 @@ import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Maybe.Extra exposing (isJust)
+import Pages.Clinics.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import RemoteData exposing (RemoteData(..), WebData, isLoading)
@@ -35,33 +37,40 @@ For now, at least, we don't really need our own `Msg` type, so we're just using
 the big one.
 
 -}
-view : Language -> NominalDate -> Nurse -> HealthCenterId -> Maybe ClinicId -> ModelIndexedDb -> Html Msg
-view language currentDate user healthCenterId selectedClinic db =
+view : Language -> NominalDate -> Nurse -> HealthCenterId -> Maybe ClinicId -> Model -> ModelIndexedDb -> Html Msg
+view language currentDate user healthCenterId selectedClinic model db =
     case selectedClinic of
         Just clinicId ->
             viewClinic language currentDate user clinicId db
 
         Nothing ->
-            viewClinicList language user healthCenterId db
+            viewClinicList language user healthCenterId model db
 
 
-viewClinicList : Language -> Nurse -> HealthCenterId -> ModelIndexedDb -> Html Msg
-viewClinicList language user healthCenterId db =
+viewClinicList : Language -> Nurse -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
+viewClinicList language user healthCenterId model db =
     let
         content =
             viewWebData language
-                (viewLoadedClinicList language user healthCenterId)
+                (viewLoadedClinicList language user healthCenterId model)
                 identity
                 (RemoteData.append db.clinics db.syncData)
+
+        ( titleTransId, goBackAction ) =
+            if isJust model.clinicType then
+                ( Translate.Groups, SetClinicType Nothing )
+
+            else
+                ( Translate.Programs, SetActivePage PinCodePage )
     in
     div [ class "wrap wrap-alt-2" ]
         [ div
             [ class "ui basic head segment" ]
             [ h1 [ class "ui header" ]
-                [ text <| translate language Translate.Groups ]
+                [ text <| translate language titleTransId ]
             , a
                 [ class "link-back"
-                , onClick <| SetActivePage PinCodePage
+                , onClick goBackAction
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []
@@ -81,33 +90,60 @@ we could show something about the sync status here ... might want to know how
 up-to-date things are.
 
 -}
-viewLoadedClinicList : Language -> Nurse -> HealthCenterId -> ( Dict ClinicId Clinic, Dict HealthCenterId SyncData ) -> Html Msg
-viewLoadedClinicList language user selectedHealthCenterId ( clinics, sync ) =
+viewLoadedClinicList : Language -> Nurse -> HealthCenterId -> Model -> ( Dict ClinicId Clinic, Dict HealthCenterId SyncData ) -> Html Msg
+viewLoadedClinicList language user selectedHealthCenterId model ( clinics, sync ) =
     let
+        titleTransId =
+            if isJust model.clinicType then
+                Translate.SelectYourGroup
+
+            else
+                Translate.SelectProgram
+
         title =
             p
                 [ class "centered" ]
-                [ text <| translate language Translate.SelectYourGroup
+                [ text <| translate language titleTransId
                 , text ":"
                 ]
 
         synced =
-            clinics
-                |> Dict.filter
-                    (\_ clinic ->
-                        -- Group belongs to seleced health center.
-                        (clinic.healthCenterId == selectedHealthCenterId)
-                            -- Health center is synced.
-                            && Dict.member clinic.healthCenterId sync
-                    )
-                |> Dict.toList
-                |> List.sortBy (Tuple.second >> .name)
-                |> Dict.fromList
+            case model.clinicType of
+                Just clinicType ->
+                    clinics
+                        |> Dict.filter
+                            (\_ clinic ->
+                                -- Group belongs to seleced health center.
+                                (clinic.healthCenterId == selectedHealthCenterId)
+                                    -- Health center is synced.
+                                    && Dict.member clinic.healthCenterId sync
+                                    -- Group is of selected type.
+                                    && (clinic.clinicType == clinicType)
+                            )
+                        |> Dict.toList
+                        |> List.sortBy (Tuple.second >> .name)
+                        |> Dict.fromList
 
-        clinicView =
-            synced
-                |> Dict.toList
-                |> List.map (viewClinicButton user)
+                Nothing ->
+                    clinics
+                        |> Dict.filter
+                            (\_ clinic ->
+                                -- Group belongs to seleced health center.
+                                (clinic.healthCenterId == selectedHealthCenterId)
+                                    -- Health center is synced.
+                                    && Dict.member clinic.healthCenterId sync
+                            )
+
+        buttonsView =
+            if isJust model.clinicType then
+                synced
+                    |> Dict.toList
+                    |> List.map (viewClinicButton user)
+
+            else
+                synced
+                    |> Dict.values
+                    |> viewClinicTypeButtons language
 
         message =
             if Dict.isEmpty synced then
@@ -122,7 +158,7 @@ viewLoadedClinicList language user selectedHealthCenterId ( clinics, sync ) =
     in
     div []
         [ title
-        , div [] clinicView
+        , div [] buttonsView
         , message
         ]
 
@@ -142,6 +178,28 @@ viewClinicButton user ( clinicId, clinic ) =
         , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Just clinicId
         ]
         [ text clinic.name ]
+
+
+viewClinicTypeButtons : Language -> List Clinic -> List (Html Msg)
+viewClinicTypeButtons language clinics =
+    let
+        clinicsTypes =
+            clinics
+                |> List.map .clinicType
+
+        allowedTypes =
+            allClinicTypes
+                |> List.filter (\type_ -> List.member type_ clinicsTypes)
+    in
+    allowedTypes
+        |> List.map
+            (\allowedType ->
+                button
+                    [ class "ui fluid primary button"
+                    , onClick <| SetClinicType (Just allowedType)
+                    ]
+                    [ text <| translate language (Translate.ClinicType allowedType) ]
+            )
 
 
 {-| View a specific clinic.
@@ -245,7 +303,7 @@ viewFoundClinic language currentDate nurse postSession clinicId clinic sessions 
                     ]
                 , defaultSession
                     |> PostSession
-                    |> App.Model.MsgIndexedDb
+                    |> MsgIndexedDb
                     |> onClick
                 ]
                 [ text <| translate language Translate.CreateGroupEncounter ]

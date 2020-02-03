@@ -37,12 +37,10 @@ view language currentDate zscores nurse sessionId page model db =
             Dict.get sessionId db.sessions
                 |> Maybe.withDefault NotAsked
     in
-    div []
-        [ viewWebData language
-            (\session -> viewFoundSession language currentDate zscores nurse ( sessionId, session ) page model db)
-            (wrapError language sessionId)
-            sessionData
-        ]
+    viewWebData language
+        (\session -> viewFoundSession language currentDate zscores nurse ( sessionId, session ) page model db)
+        (wrapError language sessionId)
+        sessionData
 
 
 wrapError : Language -> SessionId -> Html Msg -> Html Msg

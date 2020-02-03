@@ -57,56 +57,43 @@
         // Handle the POST requests from Dropzone, uploading the image to our cache
         if ((event.request.method === 'POST') && photosUploadUrlRegex.test(event.request.url)) {
             var response = caches.open(photosUploadCache).then (function (cache) {
-                return cache.keys().then(function (keys) {
-                    // We'll generate a unique URL here, to simulate what happens
-                    // on a POST
-                    var index = 1;
-                    while (true) {
-                        var url = (new URL("cache-upload/images/" + index, location.href)).toString();
-                        var used = keys.some(function (key) {
-                            return key.url == url;
-                        });
-                        if (!used) return url;
-                        index = index + 1;
-                    }
-                }).then (function (url) {
-                    return event.request.formData().then(function (formData) {
-                        // The body of our eventual response ... extract the image from the
-                        // request.
-                        var body = formData.get("file");
+                  var url = (new URL("cache-upload/images/" + Date.now(), location.href)).toString();
+                  return event.request.formData().then(function (formData) {
+                      // The body of our eventual response ... extract the image from the
+                      // request.
+                      var body = formData.get("file");
 
-                        // So, this is the response we'll eventually send, when the actual
-                        // file is requested ...
-                        var eventualResponse = new Response (body, {
-                            status: 200,
-                            statusText: "OK",
-                            headers: {
-                                'Content-Length': body.size,
-                                'Content-Type': body.type
-                            }
-                        });
+                      // So, this is the response we'll eventually send, when the actual
+                      // file is requested ...
+                      var eventualResponse = new Response (body, {
+                          status: 200,
+                          statusText: "OK",
+                          headers: {
+                              'Content-Length': body.size,
+                              'Content-Type': body.type
+                          }
+                      });
 
-                        // We want to extract the file that got sent, and store it in a way
-                        // that a request will hand it back.
-                        var eventualRequest = new Request (url, {
-                            method: "GET"
-                        });
+                      // We want to extract the file that got sent, and store it in a way
+                      // that a request will hand it back.
+                      var eventualRequest = new Request (url, {
+                          method: "GET"
+                      });
 
-                        return cache.put(eventualRequest, eventualResponse).then(function () {
-                            var responseText = JSON.stringify({
-                                url: url
-                            });
+                      return cache.put(eventualRequest, eventualResponse).then(function () {
+                          var responseText = JSON.stringify({
+                              url: url
+                          });
 
-                            return new Response (responseText, {
-                                status: 201,
-                                statusText: "Created",
-                                headers: {
-                                    Location: url
-                                }
-                            });
-                        });
-                    });
-                });
+                          return new Response (responseText, {
+                              status: 201,
+                              statusText: "Created",
+                              headers: {
+                                  Location: url
+                              }
+                          });
+                      });
+                  });
             }).catch(function (e) {
                 return new Response (e.toString(), {
                     status: 500,

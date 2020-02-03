@@ -19,6 +19,7 @@ import Http exposing (Error(..))
 import HttpBuilder
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
+import Pages.Clinics.Update
 import Pages.Device.Model
 import Pages.Device.Update
 import Pages.Page exposing (..)
@@ -188,6 +189,16 @@ update msg model =
             updateLoggedIn
                 (\data ->
                     case loggedInMsg of
+                        MsgPageClinics subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.Clinics.Update.update subMsg data.clinicsPage
+                            in
+                            ( { data | clinicsPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageClinics) subCmd
+                            , appMsgs
+                            )
+
                         MsgPageCreatePerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
@@ -515,7 +526,24 @@ update msg model =
                 -- Update our existing dataWanted to indicate that the data now wanted
                 -- was last wanted now.
                 dataWanted =
-                    List.foldl (\msg_ -> Dict.insert msg_ model.currentTime) model.dataWanted dataNowWanted
+                    List.foldl
+                        (\msg_ ->
+                            let
+                                -- Since we may send extra messages as part of fetch editable session
+                                -- command, normilise the message as if there're are none,
+                                -- so that we can maintain the remember / forget logic.
+                                normalizedMsg =
+                                    case msg_ of
+                                        MsgIndexedDb (Backend.Model.FetchEditableSession id _) ->
+                                            MsgIndexedDb (Backend.Model.FetchEditableSession id [])
+
+                                        _ ->
+                                            msg_
+                            in
+                            Dict.insert normalizedMsg model.currentTime
+                        )
+                        model.dataWanted
+                        dataNowWanted
 
                 fiveMinutes =
                     5 * 1000 * 60

@@ -216,7 +216,7 @@ viewFloatForm config language currentDate child measurements zscores model =
         -- And, we'll need the child's age.
         maybeAgeInDays =
             Maybe.map
-                (\birthDate -> diffDays birthDate dateMeasured)
+                (\birthDate -> diffDays dateMeasured birthDate)
                 child.birthDate
 
         renderedZScoreForAge =
@@ -369,7 +369,7 @@ viewPhotoThumb (PhotoUrl url) =
     div []
         [ img
             [ src url
-            , class "ui small image"
+            , class "ui small image rotate-90"
             ]
             []
         ]

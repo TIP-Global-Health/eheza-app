@@ -3,6 +3,7 @@ module Backend.Session.Fetch exposing (fetchEditableSession)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.Session.Model exposing (batchSize)
 import RemoteData exposing (RemoteData(..))
 
 
@@ -29,13 +30,13 @@ fetchEditableSession sessionId db =
                 property
 
         fetchPeople =
-            [ FetchPeople <| getIds db.people 1000 ]
+            [ FetchPeople <| getIds db.people batchSize ]
 
         fetchChildrenMeasurements =
-            [ FetchChildrenMeasurements <| getIds db.childMeasurements 1000 ]
+            [ FetchChildrenMeasurements <| getIds db.childMeasurements batchSize ]
 
         fetchMothersMeasurements =
-            [ FetchMothersMeasurements <| getIds db.motherMeasurements 1000 ]
+            [ FetchMothersMeasurements <| getIds db.motherMeasurements batchSize ]
 
         alwaysFetch =
             [ FetchSession sessionId

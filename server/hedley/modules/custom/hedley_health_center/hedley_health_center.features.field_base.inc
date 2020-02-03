@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * hedley_health_center.features.field_base.inc
@@ -43,6 +44,32 @@ function hedley_health_center_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'entityreference',
+  );
+
+  // Exported field_base: 'field_group_type'.
+  $field_bases['field_group_type'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_group_type',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'pmtct' => 'PMTCT',
+        'fbf' => 'FBF',
+        'sorwathe' => 'SORWATHE',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_health_center'.
