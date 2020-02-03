@@ -91,6 +91,29 @@
     }
   }
 
+  .dashboards-monthly-chart {
+
+    svg {
+
+      .column rect {
+        width: 20px;
+        border-radius: 4px 4px 0 0;
+      }
+
+      .column.moderate rect {
+        fill: $color-orange;
+      }
+
+      .column.severe rect {
+        fill: $color-red;
+      }
+
+      .column text {
+        display: none;
+      }
+    }
+  }
+
   .dashboards-links {
 
     > div {

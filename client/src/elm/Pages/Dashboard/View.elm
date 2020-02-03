@@ -13,7 +13,7 @@ import DateFormat
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, isDiffTruthy)
 import Html exposing (..)
-import Html.Attributes as HE exposing (class, classList, src)
+import Html.Attributes exposing (class, classList, src)
 import Html.Events exposing (onClick)
 import List.Extra
 import Pages.Dashboard.Model exposing (..)
@@ -24,7 +24,7 @@ import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
 import Svg.Attributes exposing (cx, cy, r)
-import Time
+import Time exposing (Month, millisToPosix, toMonth, utc)
 import Translate exposing (Language, translateText)
 import TypedSvg exposing (g, rect, style, svg, text_)
 import TypedSvg.Attributes exposing (fill, textAnchor, transform, viewBox)
@@ -717,13 +717,18 @@ viewDonutChart language stats =
 
 timeSeries : List ( Time.Posix, Float )
 timeSeries =
-    [ ( Time.millisToPosix 1448928000000, 2.5 )
-    , ( Time.millisToPosix 1451606400000, 2 )
-    , ( Time.millisToPosix 1452211200000, 3.5 )
-    , ( Time.millisToPosix 1452816000000, 2 )
-    , ( Time.millisToPosix 1453420800000, 3 )
-    , ( Time.millisToPosix 1454284800000, 1 )
-    , ( Time.millisToPosix 1456790400000, 1.2 )
+    [ ( millisToPosix 0, 30 )
+    , ( millisToPosix 1, 40 )
+    , ( millisToPosix 2, 10 )
+    , ( millisToPosix 3, 22 )
+    , ( millisToPosix 4, 50 )
+    , ( millisToPosix 5, 70 )
+    , ( millisToPosix 6, 90 )
+    , ( millisToPosix 7, 30 )
+    , ( millisToPosix 8, 65 )
+    , ( millisToPosix 9, 25 )
+    , ( millisToPosix 10, 10 )
+    , ( millisToPosix 11, 100 )
     ]
 
 
@@ -740,12 +745,12 @@ xScale model =
 
 yScale : ContinuousScale Float
 yScale =
-    Scale.linear ( h - 2 * padding, 0 ) ( 0, 5 )
+    Scale.linear ( h - 2 * padding, 0 ) ( 0, 100 )
 
 
 dateFormat : Time.Posix -> String
 dateFormat =
-    DateFormat.format [ DateFormat.dayOfMonthFixed, DateFormat.text " ", DateFormat.monthNameAbbreviated ] Time.utc
+    DateFormat.format [ DateFormat.monthNameAbbreviated ] Time.utc
 
 
 xAxis : List ( Time.Posix, Float ) -> Svg msg
@@ -760,38 +765,42 @@ yAxis =
 
 column : BandScale Time.Posix -> ( Time.Posix, Float ) -> Svg msg
 column scale ( date, value ) =
-    g [ TypedSvg.Attributes.class [ "column" ] ]
-        [ rect
-            [ x <| Scale.convert scale date
-            , y <| Scale.convert yScale value
-            , width <| Scale.bandwidth scale
-            , height <| h - Scale.convert yScale value - 2 * padding
+    g []
+        [ g [ TypedSvg.Attributes.class [ "column moderate" ] ]
+            [ rect
+                [ x <| Scale.convert scale date
+                , y <| Scale.convert yScale value
+                , width <| Scale.bandwidth scale / 2
+                , height <| h - Scale.convert yScale value - 2 * padding
+                ]
+                []
             ]
-            []
-        , text_
-            [ x <| Scale.convert (Scale.toRenderable dateFormat scale) date
-            , y <| Scale.convert yScale value - 5
-            , textAnchor AnchorMiddle
+        , g [ TypedSvg.Attributes.class [ "column severe" ] ]
+            [ rect
+                [ x <| Scale.convert scale date + 25
+                , y <| Scale.convert yScale value
+                , width <| Scale.bandwidth scale / 2
+                , height <| h - Scale.convert yScale value - 2 * padding
+                ]
+                []
             ]
-            [ TypedSvg.Core.text <| String.fromFloat value ]
         ]
 
 
 viewMonthlyChart : List ( Time.Posix, Float ) -> Html Msg
 viewMonthlyChart model =
-    svg [ viewBox 0 0 w h ]
-        [ style [] [ text """
-                .column rect { fill: rgba(118, 214, 78, 0.8); }
-                .column text { display: none; }
-                .column:hover rect { fill: rgb(118, 214, 78); }
-                .column:hover text { display: inline; }
-              """ ]
-        , g [ transform [ Translate (padding - 1) (h - padding) ] ]
-            [ xAxis model ]
-        , g [ transform [ Translate (padding - 1) padding ] ]
-            [ yAxis ]
-        , g [ transform [ Translate padding padding ], TypedSvg.Attributes.class [ "series" ] ] <|
-            List.map (column (xScale model)) model
+    div [ class "ui segment blue dashboards-monthly-chart" ]
+        [ div [ class "head" ] []
+        , div [ class "content" ]
+            [ svg [ viewBox 0 0 w h ]
+                [ g [ transform [ Translate (padding - 1) (h - padding) ] ]
+                    [ xAxis model ]
+                , g [ transform [ Translate (padding - 1) padding ] ]
+                    [ yAxis ]
+                , g [ transform [ Translate padding padding ], TypedSvg.Attributes.class [ "series" ] ] <|
+                    List.map (column (xScale model)) model
+                ]
+            ]
         ]
 
 
