@@ -19,5 +19,11 @@ update msg model =
             , []
             )
 
+        SetFilterTotalsChart filter ->
+            ( { model | currentTotalChartsFilter = filter }
+            , Cmd.none
+            , []
+            )
+
         SetActivePage page ->
             ( model, Cmd.none, [ App.Model.SetActivePage page ] )

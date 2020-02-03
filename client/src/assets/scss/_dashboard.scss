@@ -93,6 +93,36 @@
 
   .dashboards-monthly-chart {
 
+    .header {
+      clear: both;
+
+      .title {
+        font-size: 30px;
+        line-height: 35px;
+        float: left;
+        max-width: 40%;
+      }
+
+      .filters {
+        float: right;
+        font-size: 20px;
+        line-height: 27px;
+        color: $color-background;
+        margin-top: 6px;
+
+        .chart-filters {
+          padding: 4px 5px;
+          cursor: pointer;
+
+          &.active {
+            background-color: $color-primary;
+            color: white;
+            border-radius: 3px;
+          }
+        }
+      }
+    }
+
     svg {
 
       g {
@@ -107,10 +137,10 @@
 
         text {
           fill: $color-light-grey;
-          font-size: 15px;
+          font-size: 20px;
           text-transform: uppercase;
           line-height: 22px;
-          font-weight: 800;
+          font-weight: 600;
         }
 
         &.grid {

@@ -8,6 +8,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model
 import Color exposing (Color)
 import Date exposing (Unit(..), isBetween)
+import Debug exposing (toString)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, isDiffTruthy)
 import Html exposing (..)
@@ -79,67 +80,26 @@ viewMainPage language currentPage currentDate stats model =
             stats.totalBeneficiariesMax * 5
 
         chartData =
-            [ ( Jan
-              , { severeNutrition = 1
-                , moderateNutrition = 1
-                }
-              )
-            , ( Feb
-              , { severeNutrition = 1
-                , moderateNutrition = 1
-                }
-              )
-            , ( Mar
-              , { severeNutrition = 1
-                , moderateNutrition = 1
-                }
-              )
-            , ( Apr
-              , { severeNutrition = 1
-                , moderateNutrition = 1
-                }
-              )
-            , ( May
-              , { severeNutrition = 0
-                , moderateNutrition = 1
-                }
-              )
-            , ( Jun
-              , { severeNutrition = 0
-                , moderateNutrition = 0
-                }
-              )
-            , ( Jul
-              , { severeNutrition = 1
-                , moderateNutrition = 1
-                }
-              )
-            , ( Aug
-              , { severeNutrition = 0
-                , moderateNutrition = 1
-                }
-              )
-            , ( Sep
-              , { severeNutrition = 0
-                , moderateNutrition = 1
-                }
-              )
-            , ( Oct
-              , { severeNutrition = 1
-                , moderateNutrition = 1
-                }
-              )
-            , ( Nov
-              , { severeNutrition = 1
-                , moderateNutrition = 1
-                }
-              )
-            , ( Dec
-              , { severeNutrition = 1
-                , moderateNutrition = 1
-                }
-              )
-            ]
+            Dict.foldl
+                (\month data accum ->
+                    case model.currentTotalChartsFilter of
+                        Stunting ->
+                            Dict.insert month data.stunting accum
+
+                        Underweight ->
+                            Dict.insert month data.underweight accum
+
+                        Wasting ->
+                            Dict.insert month data.wasting accum
+
+                        MUAC ->
+                            Dict.insert month data.muac accum
+                )
+                Dict.empty
+                stats.totalBeneficiaries
+                |> Dict.toList
+
+        --|> @todo: Sort the list by month name and not alphabetically.
     in
     div [ class "dashboard main" ]
         [ div [ class "ui grid" ]
@@ -150,7 +110,7 @@ viewMainPage language currentPage currentDate stats model =
                 [ viewTotalEncounters language currentPage stats.totalEncounters
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language chartData yScaleMax
+                [ viewMonthlyChart language chartData model.currentTotalChartsFilter yScaleMax
                 ]
             , div [ class "sixteen wide column" ]
                 [ viewDashboardPagesLinks language
@@ -737,13 +697,30 @@ viewBarChart data yScaleMax =
         ]
 
 
-viewMonthlyChart : Language -> List ( Month, Nutrition ) -> Float -> Html Msg
-viewMonthlyChart language data yScaleMax =
+viewMonthlyChart : Language -> List ( Month, Nutrition ) -> FilterCharts -> Float -> Html Msg
+viewMonthlyChart language data currentFilter yScaleMax =
     div [ class "ui segment blue dashboards-monthly-chart" ]
-        [ div [ class "head" ] []
+        [ div [ class "header" ]
+            [ h3 [ class "title left floated column" ] [ translateText language <| Translate.Dashboard Translate.TotalBeneficiariesWasting ]
+            , div [ class "filters" ]
+                (List.map (viewMonthlyChartFilters currentFilter) filterCharts)
+            ]
         , div [ class "content" ]
             [ viewBarChart data yScaleMax ]
         ]
+
+
+viewMonthlyChartFilters : FilterCharts -> FilterCharts -> Html Msg
+viewMonthlyChartFilters currentChartFilter filter =
+    let
+        activeClass =
+            if filter == currentChartFilter then
+                " active"
+
+            else
+                ""
+    in
+    span [ class <| "chart-filters" ++ activeClass, onClick <| SetFilterTotalsChart filter ] [ text <| toString filter ]
 
 
 viewFamilyPlanningChartLegend : Language -> FamilyPlanningSignsCounter -> Html Msg

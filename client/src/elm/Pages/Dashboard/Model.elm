@@ -2,12 +2,14 @@ module Pages.Dashboard.Model exposing
     ( Card
     , CardValueSeverity(..)
     , FamilyPlanningSignsCounter
+    , FilterCharts(..)
     , FilterGender(..)
     , FilterPeriod(..)
     , Model
     , Msg(..)
     , StatsCard
     , emptyModel
+    , filterCharts
     , filterGenders
     , filterPeriods
     )
@@ -68,6 +70,7 @@ filterCharts =
 type alias Model =
     { period : FilterPeriod
     , beneficiariesGender : FilterGender
+    , currentTotalChartsFilter : FilterCharts
     }
 
 
@@ -75,6 +78,7 @@ emptyModel : Model
 emptyModel =
     { period = OneYear
     , beneficiariesGender = All
+    , currentTotalChartsFilter = Stunting
     }
 
 
@@ -119,4 +123,5 @@ type alias StatsCard =
 type Msg
     = SetFilterGender FilterGender
     | SetFilterPeriod FilterPeriod
+    | SetFilterTotalsChart FilterCharts
     | SetActivePage Page

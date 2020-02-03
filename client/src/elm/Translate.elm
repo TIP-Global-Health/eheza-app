@@ -145,6 +145,7 @@ type Dashboard
     | PercentageEncountersLabel
     | SeverelyMalnourished
     | StatisticsHelper
+    | TotalBeneficiariesWasting
     | TotalMalnourished
     | TotalEncountersLabel
     | UseFamilyPlanning
@@ -2522,6 +2523,11 @@ translateDashboard trans =
 
         StatisticsHelper ->
             { english = "See statistics for this month"
+            , kinyarwanda = Nothing
+            }
+
+        TotalBeneficiariesWasting ->
+            { english = "Total Beneficiaries Wasting"
             , kinyarwanda = Nothing
             }
 
