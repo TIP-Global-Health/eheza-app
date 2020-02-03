@@ -1559,6 +1559,9 @@ viewSocialForm language currentDate showCounselingQuestion showTestingQuestions 
                         [ viewRedAlertForSelect
                             (form.partnerTestingResult |> Maybe.map List.singleton |> Maybe.withDefault [])
                             [ NoHivTesting, ResultHivNegative, ResultHivIndeterminate ]
+                        , viewYellowAlertForSelect
+                            (form.partnerTestingResult |> Maybe.map List.singleton |> Maybe.withDefault [])
+                            [ NoHivTesting, ResultHivNegative, ResultHivPositive ]
                         ]
                     ]
                 , option
