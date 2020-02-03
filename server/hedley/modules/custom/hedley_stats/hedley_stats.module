@@ -674,7 +674,7 @@ function hedley_stats_join_field_to_query(SelectQuery $query, $entity_type, $fie
 }
 
 /**
- * Convert Unix timestamp to YYYYMMDD.
+ * Helper function; Convert Unix timestamp to YYYYMMDD.
  *
  * @param int $timestamp
  *   The Unix timestamp.
@@ -687,7 +687,7 @@ function hedley_stats_convert_timestamp_to_nominal($timestamp) {
 }
 
 /**
- * Get the measurements content types with the scores fields mapped.
+ * Helper function; Get the measurements content types with the scores fields mapped.
  *
  * @return array
  *   The measurements content types mapped.
@@ -712,7 +712,7 @@ function heldey_stats_get_mapped_measurements_content_types() {
 }
 
 /**
- * Get the info about nutrition signs for all measurements.
+ * Helper function; Get the info about nutrition signs for all measurements.
  *
  * @return array
  *   The detailed measurements signs.
@@ -756,4 +756,23 @@ function hedley_stats_nutrition_signs() {
       ],
     ],
   ];
+}
+
+/**
+ * Helper function; Get the highest value in an array.
+ *
+ * @param $array
+ *   The array to scan.
+ *
+ * @return mixed
+ *   The highest value in the array.
+ */
+function hedley_stats_get_max_value_in_array($array) {
+  foreach($array as $key => $value) {
+    if (is_array($value)) {
+      $array[$key] = hedley_stats_get_max_value_in_array($value);
+    }
+  }
+
+  return max($array);
 }

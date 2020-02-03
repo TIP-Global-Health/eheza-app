@@ -2,14 +2,13 @@ module Pages.Dashboard.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
 import Axis
-import Backend.Dashboard.Model exposing (DashboardStats, GoodNutrition, Periods)
+import Backend.Dashboard.Model exposing (DashboardStats, GoodNutrition, Nutrition, Periods)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model
 import Color exposing (Color)
 import Date exposing (Unit(..), isBetween)
-import DateFormat
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, isDiffTruthy)
 import Html exposing (..)
@@ -24,11 +23,11 @@ import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
 import Svg.Attributes exposing (cx, cy, r)
-import Time exposing (Month, millisToPosix, toMonth, utc)
+import Time exposing (Month(..))
 import Translate exposing (Language, translateText)
-import TypedSvg exposing (g, rect, style, svg, text_)
-import TypedSvg.Attributes exposing (fill, textAnchor, transform, viewBox)
-import TypedSvg.Attributes.InPx exposing (height, width, x, y)
+import TypedSvg exposing (g, rect, svg)
+import TypedSvg.Attributes exposing (fill, transform, viewBox)
+import TypedSvg.Attributes.InPx exposing (height, rx, ry, x, y)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..))
 
@@ -76,6 +75,73 @@ view language page currentDate healthCenterId model db =
 
 viewMainPage : Language -> DashboardPage -> NominalDate -> DashboardStats -> Model -> Html Msg
 viewMainPage language currentPage currentDate stats model =
+    let
+        yScaleMax =
+            40
+
+        chartData =
+            [ ( Jan
+              , { severeNutrition = 10
+                , moderateNutrition = 20
+                }
+              )
+            , ( Feb
+              , { severeNutrition = 20
+                , moderateNutrition = 30
+                }
+              )
+            , ( Mar
+              , { severeNutrition = 15
+                , moderateNutrition = 25
+                }
+              )
+            , ( Apr
+              , { severeNutrition = 20
+                , moderateNutrition = 10
+                }
+              )
+            , ( May
+              , { severeNutrition = 10
+                , moderateNutrition = 10
+                }
+              )
+            , ( Jun
+              , { severeNutrition = 30
+                , moderateNutrition = 25
+                }
+              )
+            , ( Jul
+              , { severeNutrition = 40
+                , moderateNutrition = 20
+                }
+              )
+            , ( Aug
+              , { severeNutrition = 15
+                , moderateNutrition = 10
+                }
+              )
+            , ( Sep
+              , { severeNutrition = 40
+                , moderateNutrition = 30
+                }
+              )
+            , ( Oct
+              , { severeNutrition = 40
+                , moderateNutrition = 30
+                }
+              )
+            , ( Nov
+              , { severeNutrition = 30
+                , moderateNutrition = 40
+                }
+              )
+            , ( Dec
+              , { severeNutrition = 15
+                , moderateNutrition = 25
+                }
+              )
+            ]
+    in
     div [ class "dashboard main" ]
         [ div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
@@ -85,7 +151,7 @@ viewMainPage language currentPage currentDate stats model =
                 [ viewTotalEncounters language currentPage stats.totalEncounters
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart timeSeries
+                [ viewMonthlyChart language chartData yScaleMax
                 ]
             , div [ class "sixteen wide column" ]
                 [ viewDashboardPagesLinks language
@@ -715,21 +781,42 @@ viewDonutChart language stats =
             ]
 
 
-timeSeries : List ( Time.Posix, Float )
-timeSeries =
-    [ ( millisToPosix 0, 30 )
-    , ( millisToPosix 1, 40 )
-    , ( millisToPosix 2, 10 )
-    , ( millisToPosix 3, 22 )
-    , ( millisToPosix 4, 50 )
-    , ( millisToPosix 5, 70 )
-    , ( millisToPosix 6, 90 )
-    , ( millisToPosix 7, 30 )
-    , ( millisToPosix 8, 65 )
-    , ( millisToPosix 9, 25 )
-    , ( millisToPosix 10, 10 )
-    , ( millisToPosix 11, 100 )
-    ]
+viewBarChart : List ( Month, Nutrition ) -> Float -> Html Msg
+viewBarChart data yScaleMax =
+    svg [ viewBox 0 0 w h ]
+        [ g [ transform [ Translate (padding - 1) (h - padding) ] ]
+            [ xAxis data ]
+        , g [ transform [ Translate (padding - 1) padding ] ]
+            [ yAxis yScaleMax ]
+        , g [ transform [ Translate padding padding ], TypedSvg.Attributes.class [ "series" ] ] <|
+            List.map (column (xScale data) yScaleMax) data
+        ]
+
+
+column : BandScale Month -> Float -> ( Month, Nutrition ) -> Svg msg
+column scale yScaleMax ( date, nutrition ) =
+    g []
+        [ g [ TypedSvg.Attributes.class [ "column moderate" ] ]
+            [ rect
+                [ x <| Scale.convert scale date + (Scale.bandwidth scale / 3)
+                , y <| Scale.convert (yScale yScaleMax) (toFloat nutrition.moderateNutrition)
+                , rx 2
+                , ry 2
+                , height <| h - Scale.convert (yScale yScaleMax) (toFloat nutrition.moderateNutrition) - 2 * padding
+                ]
+                []
+            ]
+        , g [ TypedSvg.Attributes.class [ "column severe" ] ]
+            [ rect
+                [ x <| Scale.convert scale date + (Scale.bandwidth scale / 2)
+                , y <| Scale.convert (yScale yScaleMax) (toFloat nutrition.severeNutrition)
+                , rx 2
+                , ry 2
+                , height <| h - Scale.convert (yScale yScaleMax) (toFloat nutrition.severeNutrition) - 2 * padding
+                ]
+                []
+            ]
+        ]
 
 
 padding : Float
@@ -737,70 +824,33 @@ padding =
     30
 
 
-xScale : List ( Time.Posix, Float ) -> BandScale Time.Posix
-xScale model =
-    List.map Tuple.first model
+xScale : List ( Month, Nutrition ) -> BandScale Month
+xScale data =
+    List.map Tuple.first data
         |> Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( 0, w - 2 * padding )
 
 
-yScale : ContinuousScale Float
-yScale =
-    Scale.linear ( h - 2 * padding, 0 ) ( 0, 100 )
+yScale : Float -> ContinuousScale Float
+yScale yScaleMax =
+    Scale.linear ( h - 2 * padding, 0 ) ( 0, yScaleMax )
 
 
-dateFormat : Time.Posix -> String
-dateFormat =
-    DateFormat.format [ DateFormat.monthNameAbbreviated ] Time.utc
+xAxis : List ( Month, Nutrition ) -> Svg msg
+xAxis data =
+    Axis.bottom [] (Scale.toRenderable Debug.toString (xScale data))
 
 
-xAxis : List ( Time.Posix, Float ) -> Svg msg
-xAxis model =
-    Axis.bottom [] (Scale.toRenderable dateFormat (xScale model))
+yAxis : Float -> Svg msg
+yAxis yScaleMax =
+    Axis.left [ Axis.tickCount 5 ] <| yScale yScaleMax
 
 
-yAxis : Svg msg
-yAxis =
-    Axis.left [ Axis.tickCount 5 ] yScale
-
-
-column : BandScale Time.Posix -> ( Time.Posix, Float ) -> Svg msg
-column scale ( date, value ) =
-    g []
-        [ g [ TypedSvg.Attributes.class [ "column moderate" ] ]
-            [ rect
-                [ x <| Scale.convert scale date
-                , y <| Scale.convert yScale value
-                , width <| Scale.bandwidth scale / 2
-                , height <| h - Scale.convert yScale value - 2 * padding
-                ]
-                []
-            ]
-        , g [ TypedSvg.Attributes.class [ "column severe" ] ]
-            [ rect
-                [ x <| Scale.convert scale date + 25
-                , y <| Scale.convert yScale value
-                , width <| Scale.bandwidth scale / 2
-                , height <| h - Scale.convert yScale value - 2 * padding
-                ]
-                []
-            ]
-        ]
-
-
-viewMonthlyChart : List ( Time.Posix, Float ) -> Html Msg
-viewMonthlyChart model =
+viewMonthlyChart : Language -> List ( Month, Nutrition ) -> Float -> Html Msg
+viewMonthlyChart language data yScaleMax =
     div [ class "ui segment blue dashboards-monthly-chart" ]
         [ div [ class "head" ] []
         , div [ class "content" ]
-            [ svg [ viewBox 0 0 w h ]
-                [ g [ transform [ Translate (padding - 1) (h - padding) ] ]
-                    [ xAxis model ]
-                , g [ transform [ Translate (padding - 1) padding ] ]
-                    [ yAxis ]
-                , g [ transform [ Translate padding padding ], TypedSvg.Attributes.class [ "series" ] ] <|
-                    List.map (column (xScale model)) model
-                ]
-            ]
+            [ viewBarChart data yScaleMax ]
         ]
 
 

@@ -21,6 +21,7 @@ decodeDashboardStats =
         |> required "good_nutrition" decodeGoodNutrition
         |> required "malnourished_beneficiaries" (list decodeMalnourishedStats)
         |> required "total_beneficiaries" decodeTotalBeneficiariesDict
+        |> required "total_beneficiaries_max" decodeInt
         |> required "total_encounters" decodePeriods
 
 

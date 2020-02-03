@@ -47,6 +47,24 @@ filterGenders =
     ]
 
 
+{-| Define the charts filters.
+-}
+type FilterCharts
+    = Stunting
+    | Underweight
+    | Wasting
+    | MUAC
+
+
+filterCharts : List FilterCharts
+filterCharts =
+    [ Stunting
+    , Underweight
+    , Wasting
+    , MUAC
+    ]
+
+
 type alias Model =
     { period : FilterPeriod
     , beneficiariesGender : FilterGender
