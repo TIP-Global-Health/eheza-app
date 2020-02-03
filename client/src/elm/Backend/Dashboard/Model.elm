@@ -17,7 +17,7 @@ type alias DashboardStats =
     , goodNutrition : GoodNutrition
     , malnourished : List MalnourishedStats
     , totalBeneficiaries : Dict Month TotalBeneficiaries
-    , totalBeneficiariesMax : Int
+    , totalBeneficiariesMax : Float
     , totalEncounters : Periods
     }
 

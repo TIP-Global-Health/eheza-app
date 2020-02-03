@@ -1,7 +1,6 @@
 module Pages.Dashboard.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
-import Axis
 import Backend.Dashboard.Model exposing (DashboardStats, GoodNutrition, Nutrition, Periods)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
@@ -15,19 +14,19 @@ import Html exposing (..)
 import Html.Attributes exposing (class, classList, src)
 import Html.Events exposing (onClick)
 import List.Extra
+import Pages.Dashboard.GraphUtils exposing (..)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 import Pages.Utils exposing (calculatePercentage)
 import Path
-import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
+import Scale exposing (BandConfig, BandScale, ContinuousScale)
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
 import Svg.Attributes exposing (cx, cy, r)
 import Time exposing (Month(..))
 import Translate exposing (Language, translateText)
-import TypedSvg exposing (g, rect, svg)
-import TypedSvg.Attributes exposing (fill, transform, viewBox)
-import TypedSvg.Attributes.InPx exposing (height, rx, ry, x, y)
+import TypedSvg exposing (g, svg)
+import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..))
 
@@ -77,67 +76,67 @@ viewMainPage : Language -> DashboardPage -> NominalDate -> DashboardStats -> Mod
 viewMainPage language currentPage currentDate stats model =
     let
         yScaleMax =
-            40
+            stats.totalBeneficiariesMax * 5
 
         chartData =
             [ ( Jan
-              , { severeNutrition = 10
-                , moderateNutrition = 20
+              , { severeNutrition = 1
+                , moderateNutrition = 1
                 }
               )
             , ( Feb
-              , { severeNutrition = 20
-                , moderateNutrition = 30
+              , { severeNutrition = 1
+                , moderateNutrition = 1
                 }
               )
             , ( Mar
-              , { severeNutrition = 15
-                , moderateNutrition = 25
+              , { severeNutrition = 1
+                , moderateNutrition = 1
                 }
               )
             , ( Apr
-              , { severeNutrition = 20
-                , moderateNutrition = 10
+              , { severeNutrition = 1
+                , moderateNutrition = 1
                 }
               )
             , ( May
-              , { severeNutrition = 10
-                , moderateNutrition = 10
+              , { severeNutrition = 0
+                , moderateNutrition = 1
                 }
               )
             , ( Jun
-              , { severeNutrition = 30
-                , moderateNutrition = 25
+              , { severeNutrition = 0
+                , moderateNutrition = 0
                 }
               )
             , ( Jul
-              , { severeNutrition = 40
-                , moderateNutrition = 20
+              , { severeNutrition = 1
+                , moderateNutrition = 1
                 }
               )
             , ( Aug
-              , { severeNutrition = 15
-                , moderateNutrition = 10
+              , { severeNutrition = 0
+                , moderateNutrition = 1
                 }
               )
             , ( Sep
-              , { severeNutrition = 40
-                , moderateNutrition = 30
+              , { severeNutrition = 0
+                , moderateNutrition = 1
                 }
               )
             , ( Oct
-              , { severeNutrition = 40
-                , moderateNutrition = 30
+              , { severeNutrition = 1
+                , moderateNutrition = 1
                 }
               )
             , ( Nov
-              , { severeNutrition = 30
-                , moderateNutrition = 40
+              , { severeNutrition = 1
+                , moderateNutrition = 1
                 }
               )
             , ( Dec
-              , { severeNutrition = 15
-                , moderateNutrition = 25
+              , { severeNutrition = 1
+                , moderateNutrition = 1
                 }
               )
             ]
@@ -674,63 +673,6 @@ getFamilyPlanningSignsCounter stats =
             stats.familyPlanning
 
 
-familyPlanningSignToColor : FamilyPlanningSign -> Color
-familyPlanningSignToColor sign =
-    case sign of
-        Condoms ->
-            Color.red
-
-        IUD ->
-            Color.orange
-
-        Implant ->
-            Color.yellow
-
-        Injection ->
-            Color.green
-
-        Necklace ->
-            Color.blue
-
-        NoFamilyPlanning ->
-            Color.black
-
-        Pill ->
-            Color.purple
-
-
-
--- From https://code.gampleman.eu/elm-visualization/PadAngle/
-
-
-w : Float
-w =
-    990
-
-
-h : Float
-h =
-    504
-
-
-colors : Dict FamilyPlanningSign Color
-colors =
-    Dict.fromList
-        [ ( Condoms, familyPlanningSignToColor Condoms )
-        , ( IUD, familyPlanningSignToColor IUD )
-        , ( Implant, familyPlanningSignToColor Implant )
-        , ( Injection, familyPlanningSignToColor Injection )
-        , ( Necklace, familyPlanningSignToColor Necklace )
-        , ( NoFamilyPlanning, familyPlanningSignToColor NoFamilyPlanning )
-        , ( Pill, familyPlanningSignToColor Pill )
-        ]
-
-
-radius : Float
-radius =
-    min (w / 2) h / 2 - 10
-
-
 viewDonutChart : Language -> DashboardStats -> Html Msg
 viewDonutChart language stats =
     let
@@ -784,65 +726,15 @@ viewDonutChart language stats =
 viewBarChart : List ( Month, Nutrition ) -> Float -> Html Msg
 viewBarChart data yScaleMax =
     svg [ viewBox 0 0 w h ]
-        [ g [ transform [ Translate (padding - 1) (h - padding) ] ]
+        [ g [ Explicit.class [ "grid gird-y" ] ] <| List.indexedMap yGridLine <| Scale.ticks gridYScale 4
+        , g [ Explicit.class [ "grid gird-x" ] ] <| List.indexedMap xGridLine <| Scale.ticks gridXScale 12
+        , g [ transform [ Translate (padding - 1) (h - padding) ] ]
             [ xAxis data ]
         , g [ transform [ Translate (padding - 1) padding ] ]
             [ yAxis yScaleMax ]
-        , g [ transform [ Translate padding padding ], TypedSvg.Attributes.class [ "series" ] ] <|
+        , g [ transform [ Translate padding padding ], Explicit.class [ "data" ] ] <|
             List.map (column (xScale data) yScaleMax) data
         ]
-
-
-column : BandScale Month -> Float -> ( Month, Nutrition ) -> Svg msg
-column scale yScaleMax ( date, nutrition ) =
-    g []
-        [ g [ TypedSvg.Attributes.class [ "column moderate" ] ]
-            [ rect
-                [ x <| Scale.convert scale date + (Scale.bandwidth scale / 3)
-                , y <| Scale.convert (yScale yScaleMax) (toFloat nutrition.moderateNutrition)
-                , rx 2
-                , ry 2
-                , height <| h - Scale.convert (yScale yScaleMax) (toFloat nutrition.moderateNutrition) - 2 * padding
-                ]
-                []
-            ]
-        , g [ TypedSvg.Attributes.class [ "column severe" ] ]
-            [ rect
-                [ x <| Scale.convert scale date + (Scale.bandwidth scale / 2)
-                , y <| Scale.convert (yScale yScaleMax) (toFloat nutrition.severeNutrition)
-                , rx 2
-                , ry 2
-                , height <| h - Scale.convert (yScale yScaleMax) (toFloat nutrition.severeNutrition) - 2 * padding
-                ]
-                []
-            ]
-        ]
-
-
-padding : Float
-padding =
-    30
-
-
-xScale : List ( Month, Nutrition ) -> BandScale Month
-xScale data =
-    List.map Tuple.first data
-        |> Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( 0, w - 2 * padding )
-
-
-yScale : Float -> ContinuousScale Float
-yScale yScaleMax =
-    Scale.linear ( h - 2 * padding, 0 ) ( 0, yScaleMax )
-
-
-xAxis : List ( Month, Nutrition ) -> Svg msg
-xAxis data =
-    Axis.bottom [] (Scale.toRenderable Debug.toString (xScale data))
-
-
-yAxis : Float -> Svg msg
-yAxis yScaleMax =
-    Axis.left [ Axis.tickCount 5 ] <| yScale yScaleMax
 
 
 viewMonthlyChart : Language -> List ( Month, Nutrition ) -> Float -> Html Msg

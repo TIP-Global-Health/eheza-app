@@ -6,7 +6,7 @@ import Backend.Measurement.Decoder exposing (decodeFamilyPlanningSign)
 import Backend.Person.Decoder exposing (decodeGender)
 import Date exposing (Month)
 import Dict as LegacyDict
-import Gizra.Json exposing (decodeInt)
+import Gizra.Json exposing (decodeFloat, decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
@@ -21,7 +21,7 @@ decodeDashboardStats =
         |> required "good_nutrition" decodeGoodNutrition
         |> required "malnourished_beneficiaries" (list decodeMalnourishedStats)
         |> required "total_beneficiaries" decodeTotalBeneficiariesDict
-        |> required "total_beneficiaries_max" decodeInt
+        |> required "total_beneficiaries_max" decodeFloat
         |> required "total_encounters" decodePeriods
 
 
