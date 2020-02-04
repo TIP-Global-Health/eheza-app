@@ -257,7 +257,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    */
   public function getForHealthCenter($uuid) {
     $request = $this->getRequest();
-    $handlers_by_Types = $this->entitiesForHealthCenters();
+    $handlers_by_types = $this->entitiesForHealthCenters();
 
     // Note that 0 is fine, so we can't use `empty`.
     if (!isset($request['base_revision'])) {
@@ -288,11 +288,10 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     // And the table which will give us the UUID of the shard.
     hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_shards.field_shards_target_id");
 
-
     $query
       ->fields('node', ['type', 'nid', 'vid', 'created'])
       ->condition('field_uuid.field_uuid_value', $uuid)
-      ->condition('node.type', array_keys($handlers_by_Types), 'IN');
+      ->condition('node.type', array_keys($handlers_by_types), 'IN');
 
     // Get the timestamp of the last revision. We'll also get a count of
     // remaining revisions, but the timestamp of the last revision will also
@@ -348,7 +347,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     }
     $output = [];
     foreach ($batch_by_node_type as $node_type => $items) {
-      $handler_name = $handlers_by_Types[$node_type ];
+      $handler_name = $handlers_by_types[$node_type];
       $sub_handler = restful_get_restful_handler($handler_name);
       $sub_handler->setAccount($account);
 
