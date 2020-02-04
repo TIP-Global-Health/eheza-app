@@ -94,6 +94,7 @@
   .dashboards-monthly-chart {
 
     .header {
+      float: left;
       clear: both;
 
       .title {
@@ -101,6 +102,7 @@
         line-height: 35px;
         float: left;
         max-width: 40%;
+        font-weight: normal;
       }
 
       .filters {
@@ -123,51 +125,82 @@
       }
     }
 
-    svg {
+    .content {
 
-      g {
+      .legend {
+        float: right;
+        clear: both;
 
-        line {
-          display: none;
-        }
-
-        path {
-          stroke: $color-light-blue;
-        }
-
-        text {
-          fill: $color-light-grey;
-          font-size: 20px;
-          text-transform: uppercase;
+        > div {
+          display: inline-block;
+          font-size: 15px;
           line-height: 22px;
-          font-weight: 600;
-        }
+          color: $color-light-grey;
+          padding: 2px 10px;
 
-        &.grid {
-          overflow: hidden;
+          svg {
+            margin-right: 6px;
 
-          line {
-            display: initial;
-            stroke: $color-svg-grid;
-            opacity: 0.7;
+            circle {
+
+              &.moderate {
+                fill: $color-orange;
+              }
+
+              &.severe {
+                fill: $color-velvet;
+              }
+            }
           }
         }
       }
 
-      .column rect {
-        width: 10px;
-      }
+      svg {
 
-      .column.moderate rect {
-        fill: $color-orange;
-      }
+        g {
 
-      .column.severe rect {
-        fill: $color-red;
-      }
+          line {
+            display: none;
+          }
 
-      .column text {
-        display: none;
+          path {
+            stroke: $color-light-blue;
+          }
+
+          text {
+            fill: $color-light-grey;
+            font-size: 20px;
+            text-transform: uppercase;
+            line-height: 22px;
+            font-weight: 600;
+          }
+
+          &.grid {
+            overflow: hidden;
+
+            line {
+              display: initial;
+              stroke: $color-svg-grid;
+              opacity: 0.7;
+            }
+          }
+        }
+
+        .column rect {
+          width: 10px;
+        }
+
+        .column.moderate rect {
+          fill: $color-orange;
+        }
+
+        .column.severe rect {
+          fill: $color-velvet;
+        }
+
+        .column text {
+          display: none;
+        }
       }
     }
   }

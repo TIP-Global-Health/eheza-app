@@ -1,7 +1,7 @@
 module Pages.Dashboard.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Dashboard.Model exposing (DashboardStats, GoodNutrition, Nutrition, Periods)
+import Backend.Dashboard.Model exposing (DashboardStats, GoodNutrition, Nutrition, Periods, TotalBeneficiaries)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
@@ -75,40 +75,6 @@ view language page currentDate healthCenterId model db =
 
 viewMainPage : Language -> DashboardPage -> NominalDate -> DashboardStats -> Model -> Html Msg
 viewMainPage language currentPage currentDate stats model =
-    let
-        yScaleMax =
-            stats.totalBeneficiariesMax * 5
-
-        chartList =
-            stats.totalBeneficiaries
-                |> Dict.toList
-                |> List.sortWith (\t1 t2 -> compare (Tuple.first t1) (Tuple.first t2))
-                |> Dict.fromList
-
-        chartData =
-            Dict.foldl
-                (\key data accum ->
-                    let
-                        month =
-                            numberToMonth key
-                    in
-                    case model.currentTotalChartsFilter of
-                        Stunting ->
-                            Dict.insert month data.stunting accum
-
-                        Underweight ->
-                            Dict.insert month data.underweight accum
-
-                        Wasting ->
-                            Dict.insert month data.wasting accum
-
-                        MUAC ->
-                            Dict.insert month data.muac accum
-                )
-                Dict.empty
-                chartList
-                |> Dict.toList
-    in
     div [ class "dashboard main" ]
         [ div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
@@ -118,7 +84,7 @@ viewMainPage language currentPage currentDate stats model =
                 [ viewTotalEncounters language currentPage stats.totalEncounters
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language chartData model.currentTotalChartsFilter yScaleMax
+                [ viewMonthlyChart language stats.totalBeneficiaries model.currentTotalChartsFilter stats.totalBeneficiariesMax
                 ]
             , div [ class "sixteen wide column" ]
                 [ viewDashboardPagesLinks language
@@ -691,12 +657,62 @@ viewDonutChart language stats =
             ]
 
 
+viewMonthlyChart : Language -> Dict Int TotalBeneficiaries -> FilterCharts -> Float -> Html Msg
+viewMonthlyChart language data currentFilter yScaleMax =
+    let
+        -- Add 10% to the top of the graph above the max
+        yScaleMaxEnhanced =
+            yScaleMax + (yScaleMax * 0.5)
+
+        chartList =
+            data
+                |> Dict.toList
+                |> List.sortWith (\t1 t2 -> compare (Tuple.first t1) (Tuple.first t2))
+                |> Dict.fromList
+
+        chartData =
+            Dict.foldl
+                (\key totalBeneficiaries accum ->
+                    let
+                        month =
+                            numberToMonth key
+                    in
+                    case currentFilter of
+                        Stunting ->
+                            Dict.insert month totalBeneficiaries.stunting accum
+
+                        Underweight ->
+                            Dict.insert month totalBeneficiaries.underweight accum
+
+                        Wasting ->
+                            Dict.insert month totalBeneficiaries.wasting accum
+
+                        MUAC ->
+                            Dict.insert month totalBeneficiaries.muac accum
+                )
+                Dict.empty
+                chartList
+                |> Dict.toList
+    in
+    div [ class "ui segment blue dashboards-monthly-chart" ]
+        [ div [ class "header" ]
+            [ h3 [ class "title left floated column" ] [ translateText language <| Translate.Dashboard Translate.TotalBeneficiariesWasting ]
+            , div [ class "filters" ]
+                (List.map (viewMonthlyChartFilters currentFilter) filterCharts)
+            ]
+        , div [ class "content" ]
+            [ viewBarsChartLegend language
+            , viewBarChart chartData yScaleMaxEnhanced
+            ]
+        ]
+
+
 viewBarChart : List ( Month, Nutrition ) -> Float -> Html Msg
 viewBarChart data yScaleMax =
-    svg [ viewBox 0 0 w h ]
+    svg [ viewBox 0 0 barChartWidth barChartHeight ]
         [ g [ Explicit.class [ "grid gird-y" ] ] <| List.indexedMap yGridLine <| Scale.ticks gridYScale 4
         , g [ Explicit.class [ "grid gird-x" ] ] <| List.indexedMap xGridLine <| Scale.ticks gridXScale 12
-        , g [ transform [ Translate (padding - 1) (h - padding) ] ]
+        , g [ transform [ Translate (padding - 1) (barChartHeight - padding) ] ]
             [ xAxis data ]
         , g [ transform [ Translate (padding - 1) padding ] ]
             [ yAxis yScaleMax ]
@@ -705,16 +721,21 @@ viewBarChart data yScaleMax =
         ]
 
 
-viewMonthlyChart : Language -> List ( Month, Nutrition ) -> FilterCharts -> Float -> Html Msg
-viewMonthlyChart language data currentFilter yScaleMax =
-    div [ class "ui segment blue dashboards-monthly-chart" ]
-        [ div [ class "header" ]
-            [ h3 [ class "title left floated column" ] [ translateText language <| Translate.Dashboard Translate.TotalBeneficiariesWasting ]
-            , div [ class "filters" ]
-                (List.map (viewMonthlyChartFilters currentFilter) filterCharts)
+viewBarsChartLegend : Language -> Html Msg
+viewBarsChartLegend language =
+    div [ class "legend" ]
+        [ div []
+            [ svg [ Svg.Attributes.width "12", Svg.Attributes.height "12", viewBox 0 0 100 100 ]
+                [ Svg.circle [ cx "50", cy "50", r "50", Explicit.class [ "moderate" ] ] []
+                ]
+            , span [] [ translateText language <| Translate.Dashboard Translate.Moderate ]
             ]
-        , div [ class "content" ]
-            [ viewBarChart data yScaleMax ]
+        , div []
+            [ svg [ Svg.Attributes.width "12", Svg.Attributes.height "12", viewBox 0 0 100 100 ]
+                [ Svg.circle [ cx "50", cy "50", r "50", Explicit.class [ "severe" ] ] []
+                ]
+            , span [] [ translateText language <| Translate.Dashboard Translate.Severe ]
+            ]
         ]
 
 
@@ -775,7 +796,7 @@ viewChart dict =
                         , cornerRadius = 0
                     }
     in
-    svg [ viewBox 0 0 w h ]
+    svg [ viewBox 0 0 pieChartWidth pieChartHeight ]
         [ annular signsList pieData ]
 
 

@@ -139,10 +139,12 @@ type Dashboard
     = CaseManagementHelper
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
     | GoodNutritionLabel
+    | Moderate
     | ModeratelyMalnourished
     | NewBeneficiaries
     | NewCasesLabel
     | PercentageEncountersLabel
+    | Severe
     | SeverelyMalnourished
     | StatisticsHelper
     | TotalBeneficiariesWasting
@@ -2506,6 +2508,11 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
+        Moderate ->
+            { english = "Moderate"
+            , kinyarwanda = Nothing
+            }
+
         ModeratelyMalnourished ->
             { english = "Moderately Malnourished"
             , kinyarwanda = Nothing
@@ -2513,6 +2520,11 @@ translateDashboard trans =
 
         PercentageEncountersLabel ->
             { english = "from last year"
+            , kinyarwanda = Nothing
+            }
+
+        Severe ->
+            { english = "Severe"
             , kinyarwanda = Nothing
             }
 

@@ -1,4 +1,4 @@
-module Pages.Dashboard.GraphUtils exposing (colors, column, familyPlanningSignToColor, gridXScale, gridYScale, h, padding, radius, w, xAxis, xGridLine, xScale, yAxis, yGridLine, yScale)
+module Pages.Dashboard.GraphUtils exposing (barChartHeight, barChartWidth, colors, column, familyPlanningSignToColor, gridXScale, gridYScale, padding, pieChartHeight, pieChartWidth, radius, xAxis, xGridLine, xScale, yAxis, yGridLine, yScale)
 
 import AssocList as Dict exposing (Dict)
 import Axis
@@ -8,7 +8,7 @@ import Color exposing (Color)
 import Scale exposing (BandConfig, BandScale, ContinuousScale, defaultBandConfig)
 import Time exposing (Month(..))
 import TypedSvg exposing (g, line, rect)
-import TypedSvg.Attributes as Explicit exposing (stroke)
+import TypedSvg.Attributes as Explicit
 import TypedSvg.Attributes.InPx exposing (height, rx, ry, strokeWidth, x, x1, x2, y, y1, y2)
 import TypedSvg.Core exposing (Svg, attribute)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..), percent)
@@ -23,7 +23,7 @@ column scale yScaleMax ( date, nutrition ) =
                 , y <| Scale.convert (yScale yScaleMax) (toFloat nutrition.moderateNutrition)
                 , rx 2
                 , ry 2
-                , height <| h - Scale.convert (yScale yScaleMax) (toFloat nutrition.moderateNutrition) - 2 * padding
+                , height <| barChartHeight - Scale.convert (yScale yScaleMax) (toFloat nutrition.moderateNutrition) - 2 * padding
                 ]
                 []
             ]
@@ -33,7 +33,7 @@ column scale yScaleMax ( date, nutrition ) =
                 , y <| Scale.convert (yScale yScaleMax) (toFloat nutrition.severeNutrition)
                 , rx 2
                 , ry 2
-                , height <| h - Scale.convert (yScale yScaleMax) (toFloat nutrition.severeNutrition) - 2 * padding
+                , height <| barChartHeight - Scale.convert (yScale yScaleMax) (toFloat nutrition.severeNutrition) - 2 * padding
                 ]
                 []
             ]
@@ -73,23 +73,23 @@ padding =
 
 gridXScale : ContinuousScale Float
 gridXScale =
-    Scale.linear ( padding, w - padding ) ( 0, 2 )
+    Scale.linear ( padding, barChartWidth - padding ) ( 0, 2 )
 
 
 gridYScale : ContinuousScale Float
 gridYScale =
-    Scale.linear ( h - padding, padding ) ( 0, 1 )
+    Scale.linear ( barChartHeight - padding, padding ) ( 0, 1 )
 
 
 xScale : List ( Month, Nutrition ) -> BandScale Month
 xScale data =
     List.map Tuple.first data
-        |> Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( 0, w - 2 * padding )
+        |> Scale.band { defaultBandConfig | paddingInner = 0.1, paddingOuter = 0.2 } ( 0, barChartWidth - 2 * padding )
 
 
 yScale : Float -> ContinuousScale Float
 yScale yScaleMax =
-    Scale.linear ( h - 2 * padding, 0 ) ( 0, yScaleMax )
+    Scale.linear ( barChartHeight - 2 * padding, 0 ) ( 0, yScaleMax )
 
 
 xAxis : List ( Month, Nutrition ) -> Svg msg
@@ -102,14 +102,24 @@ yAxis yScaleMax =
     Axis.left [ Axis.tickCount 5 ] <| yScale yScaleMax
 
 
-w : Float
-w =
+barChartWidth : Float
+barChartWidth =
+    940
+
+
+barChartHeight : Float
+barChartHeight =
+    400
+
+
+pieChartWidth : Float
+pieChartWidth =
     990
 
 
-h : Float
-h =
-    504
+pieChartHeight : Float
+pieChartHeight =
+    500
 
 
 familyPlanningSignToColor : FamilyPlanningSign -> Color
@@ -152,4 +162,4 @@ colors =
 
 radius : Float
 radius =
-    min (w / 2) h / 2 - 10
+    min (barChartWidth / 2) barChartHeight / 2 - 10
