@@ -6,7 +6,6 @@ module Backend.Dashboard.Model exposing (ChildrenBeneficiariesStats, DashboardSt
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
 import Backend.Person.Model exposing (Gender)
-import Date exposing (Month)
 import Gizra.NominalDate exposing (NominalDate)
 import ZScore.Model exposing (ZScore)
 
@@ -16,7 +15,7 @@ type alias DashboardStats =
     , familyPlanning : List FamilyPlanningStats
     , goodNutrition : GoodNutrition
     , malnourished : List MalnourishedStats
-    , totalBeneficiaries : Dict Month TotalBeneficiaries
+    , totalBeneficiaries : Dict Int TotalBeneficiaries
     , totalBeneficiariesMax : Float
     , totalEncounters : Periods
     }

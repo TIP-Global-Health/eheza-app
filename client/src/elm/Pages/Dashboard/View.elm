@@ -7,7 +7,7 @@ import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model
 import Color exposing (Color)
-import Date exposing (Unit(..), isBetween)
+import Date exposing (Unit(..), isBetween, numberToMonth)
 import Debug exposing (toString)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, isDiffTruthy)
@@ -79,9 +79,19 @@ viewMainPage language currentPage currentDate stats model =
         yScaleMax =
             stats.totalBeneficiariesMax * 5
 
+        chartList =
+            stats.totalBeneficiaries
+                |> Dict.toList
+                |> List.sortWith (\t1 t2 -> compare (Tuple.first t1) (Tuple.first t2))
+                |> Dict.fromList
+
         chartData =
             Dict.foldl
-                (\month data accum ->
+                (\key data accum ->
+                    let
+                        month =
+                            numberToMonth key
+                    in
                     case model.currentTotalChartsFilter of
                         Stunting ->
                             Dict.insert month data.stunting accum
@@ -96,10 +106,8 @@ viewMainPage language currentPage currentDate stats model =
                             Dict.insert month data.muac accum
                 )
                 Dict.empty
-                stats.totalBeneficiaries
+                chartList
                 |> Dict.toList
-
-        --|> @todo: Sort the list by month name and not alphabetically.
     in
     div [ class "dashboard main" ]
         [ div [ class "ui grid" ]

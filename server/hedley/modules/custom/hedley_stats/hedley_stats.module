@@ -324,18 +324,18 @@ function hedley_stats_get_total_beneficiaries($health_center_id, $period = HEDLE
   ];
 
   $data_per_month = [
-    'jan' => $nutrition_per_month,
-    'feb' => $nutrition_per_month,
-    'mar' => $nutrition_per_month,
-    'apr' => $nutrition_per_month,
-    'may' => $nutrition_per_month,
-    'jun' => $nutrition_per_month,
-    'jul' => $nutrition_per_month,
-    'aug' => $nutrition_per_month,
-    'sep' => $nutrition_per_month,
-    'oct' => $nutrition_per_month,
-    'nov' => $nutrition_per_month,
-    'dec' => $nutrition_per_month,
+    1 => $nutrition_per_month,
+    2 => $nutrition_per_month,
+    3 => $nutrition_per_month,
+    4 => $nutrition_per_month,
+    5 => $nutrition_per_month,
+    6 => $nutrition_per_month,
+    7 => $nutrition_per_month,
+    8 => $nutrition_per_month,
+    9 => $nutrition_per_month,
+    10 => $nutrition_per_month,
+    11 => $nutrition_per_month,
+    12 => $nutrition_per_month,
   ];
 
   $people = hedley_stats_get_measurements_query_grouped_by_person($health_center_id, $period);
@@ -355,10 +355,8 @@ function hedley_stats_get_total_beneficiaries($health_center_id, $period = HEDLE
         continue;
       }
 
-      // Get the date of the measurement in order to distribute them by months,
-      // also just make sure the month name is always in lower case letters by
-      // adding "strtolower".
-      $month = strtolower(date('M', strtotime($measurement['field_date_measured'])));
+      // Get the date of the measurement in order to distribute them by months.
+      $month = date('n', strtotime($measurement['field_date_measured']));
 
       // We are interested only with the nutrition signs that match the
       // current type.
@@ -687,7 +685,7 @@ function hedley_stats_convert_timestamp_to_nominal($timestamp) {
 }
 
 /**
- * Helper function; Get the measurements content types with the scores fields mapped.
+ * Helper function; Get the measurements types with the scores fields mapped.
  *
  * @return array
  *   The measurements content types mapped.
