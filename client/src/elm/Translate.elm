@@ -2724,8 +2724,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisHypertension ->
-                    { english = "Hypertension"
+                DiagnosisHypotension ->
+                    { english = "Hypotension"
                     , kinyarwanda = Nothing
                     }
 

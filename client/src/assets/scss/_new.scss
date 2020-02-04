@@ -1093,6 +1093,10 @@ div.page-clinical-progress-report {
 
         .progress-photo {
 
+          img {
+            height: 150px;
+          }
+
           .ega {
             background-color: $color-gray;
             color: $color-white;
