@@ -294,7 +294,6 @@ function hedley_stats_get_total_encounters($health_center_id) {
  *
  * @param int $health_center_id
  *   The health center node ID.
- *
  * @param string $period
  *   Optional; The period for the data, defaults to one year.
  *
@@ -420,7 +419,7 @@ function hedley_stats_get_total_beneficiaries($health_center_id, $period = HEDLE
  *
  * @param int $health_center_id
  *   The Health center node ID.
- * @param $period
+ * @param string $period
  *   The period to query.
  *
  * @return array
@@ -759,14 +758,14 @@ function hedley_stats_nutrition_signs() {
 /**
  * Helper function; Get the highest value in an array.
  *
- * @param $array
+ * @param array $array
  *   The array to scan.
  *
  * @return mixed
  *   The highest value in the array.
  */
-function hedley_stats_get_max_value_in_array($array) {
-  foreach($array as $key => $value) {
+function hedley_stats_get_max_value_in_array(array $array) {
+  foreach ($array as $key => $value) {
     if (is_array($value)) {
       $array[$key] = hedley_stats_get_max_value_in_array($value);
     }
