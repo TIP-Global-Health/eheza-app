@@ -52,7 +52,7 @@ view language page currentDate healthCenterId model db =
                     ( viewStatsPage language page currentDate stats model, UserPage <| DashboardPage MainPage )
 
                 CaseManagementPage ->
-                    ( viewCaseManagementPage language page currentDate healthCenterId model db, UserPage <| DashboardPage MainPage )
+                    ( viewCaseManagementPage language page currentDate healthCenterId stats model db, UserPage <| DashboardPage MainPage )
 
         header =
             div
@@ -113,8 +113,12 @@ viewStatsPage language currentPage currentDate stats model =
         ]
 
 
-viewCaseManagementPage : Language -> DashboardPage -> NominalDate -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
-viewCaseManagementPage language currentPage currentDate healthCenterId model db =
+viewCaseManagementPage : Language -> DashboardPage -> NominalDate -> HealthCenterId -> DashboardStats -> Model -> ModelIndexedDb -> Html Msg
+viewCaseManagementPage language currentPage currentDate healthCenterId stats model db =
+    let
+        _ =
+            Debug.log "case_management" stats.caseManagement
+    in
     --@todo: Add case management page design.
     div [ class "dashboard management ui segment blue" ] [ text "Case Management Page" ]
 

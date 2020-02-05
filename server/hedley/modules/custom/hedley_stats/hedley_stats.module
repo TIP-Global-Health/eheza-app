@@ -495,7 +495,6 @@ function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_ST
   foreach ($people_data as $id => $person) {
     $wrapper = entity_metadata_wrapper('node', $id);
     $people[$id] = [
-      'id' => $id,
       'name' => $wrapper->label(),
       'nutrition' => $nutrition_per_person,
     ];

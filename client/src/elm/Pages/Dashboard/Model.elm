@@ -71,6 +71,7 @@ type alias Model =
     { period : FilterPeriod
     , beneficiariesGender : FilterGender
     , currentTotalChartsFilter : FilterCharts
+    , currentCaseManagementFilter : FilterCharts
     }
 
 
@@ -79,6 +80,7 @@ emptyModel =
     { period = OneYear
     , beneficiariesGender = All
     , currentTotalChartsFilter = Stunting
+    , currentCaseManagementFilter = Stunting
     }
 
 

@@ -1,7 +1,7 @@
 module Backend.Dashboard.Decoder exposing (decodeDashboardStats)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Dashboard.Model exposing (ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Nutrition, Periods, TotalBeneficiaries)
+import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Nutrition, NutritionStatus(..), NutritionValue, Periods, TotalBeneficiaries)
 import Backend.Measurement.Decoder exposing (decodeFamilyPlanningSign)
 import Backend.Person.Decoder exposing (decodeGender)
 import Dict as LegacyDict
@@ -14,6 +14,7 @@ import Json.Decode.Pipeline exposing (..)
 decodeDashboardStats : Decoder DashboardStats
 decodeDashboardStats =
     succeed DashboardStats
+        |> required "case_management" (list decodeCaseManagement)
         |> required "children_beneficiaries" (list decodePeopleStats)
         |> required "family_planning" (list decodeFamilyPlanningStats)
         |> required "good_nutrition" decodeGoodNutrition
@@ -33,6 +34,51 @@ decodeTotalBeneficiariesDict =
                         (\( k, v ) -> ( Maybe.withDefault 1 (String.toInt k), v ))
                     |> Dict.fromList
                     |> succeed
+            )
+
+
+decodeCaseManagement : Decoder CaseManagement
+decodeCaseManagement =
+    succeed CaseManagement
+        |> required "name" string
+        |> required "nutrition" decodeCaseNutrition
+
+
+decodeCaseNutrition : Decoder CaseNutrition
+decodeCaseNutrition =
+    succeed CaseNutrition
+        |> required "stunting" decodeNutritionValue
+        |> required "underweight" decodeNutritionValue
+        |> required "wasting" decodeNutritionValue
+        |> required "muac" decodeNutritionValue
+
+
+decodeNutritionValue : Decoder NutritionValue
+decodeNutritionValue =
+    succeed NutritionValue
+        |> required "type" decodeNutritionStatus
+        |> required "value" decodeInt
+
+
+decodeNutritionStatus : Decoder NutritionStatus
+decodeNutritionStatus =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "good_nutrition" ->
+                        succeed Good
+
+                    "moderate_nutrition" ->
+                        succeed Moderate
+
+                    "severe_nutrition" ->
+                        succeed Severe
+
+                    _ ->
+                        fail <|
+                            s
+                                ++ " is not a recognized nutrition status."
             )
 
 

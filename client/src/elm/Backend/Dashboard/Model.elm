@@ -1,4 +1,4 @@
-module Backend.Dashboard.Model exposing (ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Nutrition, Periods, TotalBeneficiaries, emptyModel)
+module Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Nutrition, NutritionStatus(..), NutritionValue, Periods, TotalBeneficiaries, emptyModel)
 
 {-| The stats for the dashboard.
 -}
@@ -11,7 +11,8 @@ import ZScore.Model exposing (ZScore)
 
 
 type alias DashboardStats =
-    { childrenBeneficiaries : List ChildrenBeneficiariesStats
+    { caseManagement : List CaseManagement
+    , childrenBeneficiaries : List ChildrenBeneficiariesStats
     , familyPlanning : List FamilyPlanningStats
     , goodNutrition : GoodNutrition
     , malnourished : List MalnourishedStats
@@ -23,7 +24,8 @@ type alias DashboardStats =
 
 emptyModel : DashboardStats
 emptyModel =
-    { childrenBeneficiaries = []
+    { caseManagement = []
+    , childrenBeneficiaries = []
     , familyPlanning = []
     , goodNutrition =
         { all =
@@ -42,6 +44,20 @@ emptyModel =
         }
     , totalBeneficiaries = Dict.empty
     , totalBeneficiariesMax = 0
+    }
+
+
+type alias CaseManagement =
+    { name : String
+    , nutrition : CaseNutrition
+    }
+
+
+type alias CaseNutrition =
+    { stunting : NutritionValue
+    , underweight : NutritionValue
+    , wasting : NutritionValue
+    , muac : NutritionValue
     }
 
 
@@ -81,6 +97,18 @@ type alias Nutrition =
     { severeNutrition : Int
     , moderateNutrition : Int
     }
+
+
+type alias NutritionValue =
+    { class : NutritionStatus
+    , value : Int
+    }
+
+
+type NutritionStatus
+    = Good
+    | Moderate
+    | Severe
 
 
 type alias TotalBeneficiaries =
