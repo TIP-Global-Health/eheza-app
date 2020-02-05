@@ -119,8 +119,20 @@ viewCaseManagementPage language currentPage currentDate healthCenterId stats mod
         _ =
             Debug.log "caseManagement" stats.caseManagement
     in
-    --@todo: Add case management page design.
-    div [ class "dashboard management ui segment blue" ] [ text "Case Management Page" ]
+    div [ class "dashboard case" ]
+        [ div [ class "ui segment blue" ]
+            [ div [ class "case-management" ]
+                [ div [ class "header" ]
+                    [ h3 [ class "title left floated column" ] [ translateText language <| Translate.Dashboard Translate.CaseManagementLabel ]
+                    , div [ class "filters" ]
+                        (List.map (viewFilters FilterCaseManagement model.currentCaseManagementFilter) filterCharts)
+                    ]
+                , div [ class "content" ]
+                    [ text "Table here"
+                    ]
+                ]
+            ]
+        ]
 
 
 viewPeriodFilter : Language -> Model -> Html Msg
@@ -702,7 +714,7 @@ viewMonthlyChart language data currentFilter yScaleMax =
         [ div [ class "header" ]
             [ h3 [ class "title left floated column" ] [ translateText language <| Translate.Dashboard Translate.TotalBeneficiariesWasting ]
             , div [ class "filters" ]
-                (List.map (viewMonthlyChartFilters currentFilter) filterCharts)
+                (List.map (viewFilters FilterTotalsChart currentFilter) filterCharts)
             ]
         , div [ class "content" ]
             [ viewBarsChartLegend language
@@ -743,9 +755,17 @@ viewBarsChartLegend language =
         ]
 
 
-viewMonthlyChartFilters : FilterCharts -> FilterCharts -> Html Msg
-viewMonthlyChartFilters currentChartFilter filter =
+viewFilters : FilterType -> FilterCharts -> FilterCharts -> Html Msg
+viewFilters filterType currentChartFilter filter =
     let
+        filterAction =
+            case filterType of
+                FilterTotalsChart ->
+                    SetFilterTotalsChart filter
+
+                FilterCaseManagement ->
+                    SetFilterCaseManagement filter
+
         activeClass =
             if filter == currentChartFilter then
                 " active"
@@ -753,7 +773,7 @@ viewMonthlyChartFilters currentChartFilter filter =
             else
                 ""
     in
-    span [ class <| "chart-filters" ++ activeClass, onClick <| SetFilterTotalsChart filter ] [ text <| toString filter ]
+    span [ class <| "chart-filters" ++ activeClass, onClick <| filterAction ] [ text <| toString filter ]
 
 
 viewFamilyPlanningChartLegend : Language -> FamilyPlanningSignsCounter -> Html Msg

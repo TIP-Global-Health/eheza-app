@@ -1,5 +1,9 @@
 .dashboard {
 
+  .ui.segment {
+    padding: 1.5rem 2rem;
+  }
+
   .severity {
 
     &.severity-neutral {
@@ -91,11 +95,13 @@
     }
   }
 
-  .dashboards-monthly-chart {
+  .dashboards-monthly-chart,
+  .case-management {
 
     .header {
       float: left;
       clear: both;
+      width: 100%;
 
       .title {
         font-size: 30px;
@@ -103,6 +109,7 @@
         float: left;
         max-width: 40%;
         font-weight: normal;
+        font-family: Nunito;
       }
 
       .filters {

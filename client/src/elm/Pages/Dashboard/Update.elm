@@ -19,6 +19,12 @@ update msg model =
             , []
             )
 
+        SetFilterCaseManagement filter ->
+            ( { model | currentCaseManagementFilter = filter }
+            , Cmd.none
+            , []
+            )
+
         SetFilterTotalsChart filter ->
             ( { model | currentTotalChartsFilter = filter }
             , Cmd.none

@@ -137,6 +137,7 @@ type Adherence
 
 type Dashboard
     = CaseManagementHelper
+    | CaseManagementLabel
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
     | GoodNutritionLabel
     | Moderate
@@ -2485,6 +2486,11 @@ translateDashboard trans =
     case trans of
         CaseManagementHelper ->
             { english = "Review list of malnourished children"
+            , kinyarwanda = Nothing
+            }
+
+        CaseManagementLabel ->
+            { english = "Case Management"
             , kinyarwanda = Nothing
             }
 

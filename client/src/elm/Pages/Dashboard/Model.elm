@@ -5,6 +5,7 @@ module Pages.Dashboard.Model exposing
     , FilterCharts(..)
     , FilterGender(..)
     , FilterPeriod(..)
+    , FilterType(..)
     , Model
     , Msg(..)
     , StatsCard
@@ -122,8 +123,14 @@ type alias StatsCard =
     }
 
 
+type FilterType
+    = FilterTotalsChart
+    | FilterCaseManagement
+
+
 type Msg
     = SetFilterGender FilterGender
     | SetFilterPeriod FilterPeriod
     | SetFilterTotalsChart FilterCharts
+    | SetFilterCaseManagement FilterCharts
     | SetActivePage Page
