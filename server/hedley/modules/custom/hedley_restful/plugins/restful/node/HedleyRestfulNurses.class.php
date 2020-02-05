@@ -47,10 +47,10 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
     }
 
     // Get the UUID of the health center.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_health_centers.field_health_centers_target_id");
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_health_centers.field_health_centers_target_id", 'uuids_health_centers');
 
     $query->addExpression("GROUP_CONCAT(DISTINCT field_role.field_role_value)", 'field_role');
-    $query->addExpression("GROUP_CONCAT(DISTINCT field_health_centers.field_health_centers_target_id)", 'field_health_centers');
+    $query->addExpression("GROUP_CONCAT(DISTINCT uuids_health_centers.field_uuid_value)", 'uuids_health_centers');
     $query->groupBy('node.nid');
   }
 
@@ -62,13 +62,7 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
 
     foreach ($items as &$item) {
       $item->role = explode(',', $item->role);
-
-      $health_centers = explode(',', $item->health_centers);
-      foreach ($health_centers as &$health_center) {
-        $health_center = hedley_restful_nid_to_uuid($health_center);
-      }
-
-      $item->health_centers = $health_centers;
+      $item->health_centers = explode(',', $item->uuids_health_centers);
     }
 
     return $items;

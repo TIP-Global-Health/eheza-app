@@ -104,7 +104,7 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
     $query->addField('f', 'uri');
 
     // Get the UUID of the health center.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_health_center.field_health_center_target_id");
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_health_center.field_health_center_target_id", 'uuid_health_center');
   }
 
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
@@ -121,7 +121,9 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
       }
 
       unset($item->uri);
-      $item->health_center = hedley_restful_nid_to_uuid($item->health_center);
+
+      $item->health_center = $item->uuid_health_center;
+      unset($item->uuid_health_center);
     }
 
     return $items;

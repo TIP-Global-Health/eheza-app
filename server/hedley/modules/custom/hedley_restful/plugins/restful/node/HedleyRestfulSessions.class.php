@@ -50,6 +50,8 @@ class HedleyRestfulSessions extends HedleyRestfulSyncBase {
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     hedley_restful_join_field_to_query($query, 'node', 'field_clinic', FALSE);
     hedley_restful_join_field_to_query($query, 'node', 'field_scheduled_date', FALSE, NULL, NULL, TRUE);
+    // Get the UUID of the Clinic.
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_clinic.field_clinic_target_id", 'uuid_clinic');
   }
 
   /**
@@ -59,7 +61,8 @@ class HedleyRestfulSessions extends HedleyRestfulSyncBase {
     $items = parent::postExecuteQueryForViewWithDbSelect($items);
 
     foreach ($items as &$item) {
-      $item->clinic = hedley_restful_nid_to_uuid($item->clinic);
+      $item->clinic = $item->uuid_clinic;
+      unset($item->uuid_clinic);
 
       $value1 = $item->scheduled_date;
       $value2 = $item->field_scheduled_date_field_scheduled_date_value2;

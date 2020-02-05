@@ -58,6 +58,7 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
 
   // @todo: Make abstract, so everyone must implement.
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
+    return $query;
   }
 
   protected function executeQueryForViewWithDbSelect(SelectQuery $query) {

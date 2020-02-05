@@ -42,7 +42,7 @@ class HedleyRestfulClinics extends HedleyRestfulSyncBase {
     }
 
     // Get the UUID of the health center.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_health_center.field_health_center_target_id");
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_health_center.field_health_center_target_id", 'uuid_health_center');
   }
 
   /**
@@ -52,7 +52,8 @@ class HedleyRestfulClinics extends HedleyRestfulSyncBase {
     $items = parent::postExecuteQueryForViewWithDbSelect($items);
 
     foreach ($items as &$item) {
-      $item->health_center = hedley_restful_nid_to_uuid($item->health_center);
+      $item->health_center = $item->uuid_health_center;
+      unset($item->uuid_health_center);
     }
 
     return $items;

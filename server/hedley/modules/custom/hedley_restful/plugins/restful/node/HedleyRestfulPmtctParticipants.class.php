@@ -81,6 +81,11 @@ class HedleyRestfulPmtctParticipants extends HedleyRestfulSyncBase {
     }
 
     hedley_restful_join_field_to_query($query, 'node', 'field_expected', FALSE, NULL, NULL, TRUE);
+
+    // Get the UUIDs of the Person, Adult and Clinic.
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_person.field_person_target_id", 'uuid_person');
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_adult.field_adult_target_id", 'uuid_adult');
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_clinic.field_clinic_target_id", 'uuid_clinic');
   }
 
   /**
@@ -90,9 +95,12 @@ class HedleyRestfulPmtctParticipants extends HedleyRestfulSyncBase {
     $items = parent::postExecuteQueryForViewWithDbSelect($items);
 
     foreach ($items as &$item) {
-      $item->person = hedley_restful_nid_to_uuid($item->person);
-      $item->adult = hedley_restful_nid_to_uuid($item->adult);
-      $item->clinic = hedley_restful_nid_to_uuid($item->clinic);
+      $item->person = $item->uuid_person;
+      unset($item->uuid_person);
+      $item->adult = $item->uuid_adult;
+      unset($item->uuid_adult);
+      $item->clinic = $item->uuid_clinic;
+      unset($item->uuid_clinic);
 
       $value1 = $item->expected;
       $value2 = $item->field_expected_field_expected_value2;

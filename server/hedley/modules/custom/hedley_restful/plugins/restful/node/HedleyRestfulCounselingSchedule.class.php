@@ -42,9 +42,8 @@ class HedleyRestfulCounselingSchedule extends HedleyRestfulSyncBase {
     }
 
     // Get the UUID of the health center.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_topics.field_topics_target_id");
-
-    $query->addExpression("GROUP_CONCAT(DISTINCT field_topics.field_topics_target_id)", 'field_topics');
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_topics.field_topics_target_id", 'uuids_topics');
+    $query->addExpression("GROUP_CONCAT(DISTINCT uuids_topics.field_uuid_value)", 'uuids_topics');
     $query->groupBy('node.nid');
   }
 
@@ -55,7 +54,7 @@ class HedleyRestfulCounselingSchedule extends HedleyRestfulSyncBase {
     $items = parent::postExecuteQueryForViewWithDbSelect($items);
 
     foreach ($items as &$item) {
-      $item->topics = hedley_restful_nid_to_uuid($item->topics);
+      $item->topics = explode(',', $item->uuids_topics);
     }
 
     return $items;
