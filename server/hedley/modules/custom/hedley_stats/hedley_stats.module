@@ -446,6 +446,142 @@ function hedley_stats_get_total_beneficiaries($health_center_id, $period = HEDLE
 }
 
 /**
+ * Get the "Case Management" data.
+ *
+ * The data is for the "Case Management" table which is divided by
+ * person for the past year and each person has four types:
+ * (Stunting, Underweight, Wasting, MUAC).
+ *
+ * @param int $health_center_id
+ *   The health center node ID.
+ * @param string $period
+ *   Optional; The period for the data, defaults to one year.
+ *
+ * @return array
+ *   The nutrition per person data array.
+ *
+ * @throws \Exception
+ */
+function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
+  $nutrition_per_person = [
+    'stunting' => [
+      'type' => NULL,
+      'value' => 0,
+    ],
+    'underweight' => [
+      'type' => NULL,
+      'value' => 0,
+    ],
+    'wasting' => [
+      'type' => NULL,
+      'value' => 0,
+    ],
+    'muac' => [
+      'type' => NULL,
+      'value' => 0,
+    ],
+  ];
+
+  $people_data = hedley_stats_get_measurements_query_grouped_by_person($health_center_id, $period);
+
+  if (empty($people_data)) {
+    return [];
+  }
+
+  $nutrition_signs = hedley_stats_nutrition_signs();
+
+  $people = [];
+  // Get rid of unwanted data to make the response as light as possible.
+  foreach ($people_data as $id => $person) {
+    $wrapper = entity_metadata_wrapper('node', $id);
+    $people[$id] = [
+      'id' => $id,
+      'name' => $wrapper->label(),
+      'nutrition' => $nutrition_per_person,
+    ];
+    foreach ($person as $type => $measurement) {
+      // We are interested only with the nutrition signs that match the
+      // current type.
+      $current_nutrition_signs = $nutrition_signs[$type];
+
+      foreach ($measurement as $field_name => $value) {
+        switch ($type) {
+          case 'height':
+            // The value to display in the table.
+            $people[$id]['nutrition']['stunting']['value'] = $value;
+
+            if ($value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE]) {
+              $people[$id]['nutrition']['stunting']['type'] = HEDLEY_STATS_SEVERE;
+            }
+            elseif ($value >= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_MODERATE]) {
+              $people[$id]['nutrition']['stunting']['type'] = HEDLEY_STATS_MODERATE;
+            }
+            else {
+              $people[$id]['nutrition']['stunting']['type'] = HEDLEY_STATS_GOOD;
+            }
+
+            break;
+
+          case 'weight':
+            if ($field_name == 'field_zscore_age') {
+              // The value to display in the table.
+              $people[$id]['nutrition']['underweight']['value'] = $value;
+
+              if ($value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE]) {
+                $people[$id]['nutrition']['underweight']['type'] = HEDLEY_STATS_SEVERE;
+              }
+              elseif ($value >= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_MODERATE]) {
+                $people[$id]['nutrition']['underweight']['type'] = HEDLEY_STATS_MODERATE;
+              }
+              else {
+                $people[$id]['nutrition']['underweight']['type'] = HEDLEY_STATS_GOOD;
+              }
+            }
+
+            if ($field_name == 'field_zscore_length') {
+              // The value to display in the table.
+              $people[$id]['nutrition']['wasting']['value'] = $value;
+
+              if ($value <= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_SEVERE]) {
+                $people[$id]['nutrition']['wasting']['type'] = HEDLEY_STATS_SEVERE;
+              }
+              elseif ($value >= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_MODERATE]) {
+                $people[$id]['nutrition']['wasting']['type'] = HEDLEY_STATS_MODERATE;
+              }
+              else {
+                $people[$id]['nutrition']['wasting']['type'] = HEDLEY_STATS_GOOD;
+              }
+            }
+
+            break;
+
+          case 'muac':
+            // The value to display in the table.
+            $people[$id]['nutrition']['muac']['value'] = $value;
+
+            if ($value <= $current_nutrition_signs['field_muac'][HEDLEY_STATS_SEVERE]) {
+              $people[$id]['nutrition']['muac']['type'] = HEDLEY_STATS_SEVERE;
+            }
+            elseif ($value >= $current_nutrition_signs['field_muac'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_muac'][HEDLEY_STATS_MODERATE]) {
+              $people[$id]['nutrition']['muac']['type'] = HEDLEY_STATS_MODERATE;
+            }
+            else {
+              $people[$id]['nutrition']['muac']['type'] = HEDLEY_STATS_GOOD;
+            }
+
+            break;
+        }
+      }
+
+    }
+  }
+
+  dpm($people);
+
+  return $people;
+}
+
+/**
  * The query to get all the measurements for a health center per period.
  *
  * Results are grouped by a person.
