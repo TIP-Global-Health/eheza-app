@@ -69,13 +69,29 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
   }
 
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
-    foreach ($items as &$item) {
-      $item->id = $item->nid;
-      $item->label = $item->title;
-      $item->timestamp = $item->changed;
+    $fields_info = $this->getPublicFields();
 
+    foreach ($items as &$item) {
+      foreach ($fields_info as $public_name => $field_info) {
+        if (strpos($field_info['property'], 'field_') !== 0) {
+          continue;
+        }
+
+        if (!isset($item->{$field_info['property']})) {
+          continue;
+        }
+
+        $item->{$public_name} = $item->{$field_info['property']};
+        unset($item->{$field_info['property']});
+      }
+
+      $item->id = $item->nid;
       unset($item->nid);
+
+      $item->label = $item->title;
       unset($item->title);
+
+      $item->timestamp = $item->changed;
       unset($item->changed);
     }
 

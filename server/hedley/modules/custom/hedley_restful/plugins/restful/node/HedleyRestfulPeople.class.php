@@ -110,45 +110,9 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
     $items = parent::postExecuteQueryForViewWithDbSelect($items);
 
-    $field_names = [
-      'field_birth_date_estimated',
-      'field_cell',
-      'field_district',
-      'field_education_level',
-      'field_first_name',
-      'field_gender',
-      'field_marital_status',
-      'field_national_id_number',
-      'field_phone_number',
-      'field_province',
-      'field_second_name',
-      'field_sector',
-      'field_ubudehe',
-      'field_village',
-      'field_hiv_status',
-      'field_number_of_children',
-      'field_mode_of_delivery',
-      'field_hmis_number',
-
-      // Other fields.
-      'field_photo',
-      'field_birth_date',
-      'field_health_center',
-
-      // Other fields.
-      'field_uuid',
-    ];
-
     foreach ($items as &$item) {
-      $birth_date = explode(' ', $item->field_birth_date);
-      $item->field_birth_date = !empty($birth_date[0]) ? $birth_date[0] : NULL;
-
-      foreach ($field_names as $field_name) {
-        $public_name = str_replace('field_', '', $field_name);
-
-        $item->{$public_name} = $item->{$field_name};
-        unset($item->{$field_name});
-      }
+      $birth_date = explode(' ', $item->birth_date);
+      $item->birth_date = !empty($birth_date[0]) ? $birth_date[0] : NULL;
 
       $item->birth_date_estimated = (bool) intval($item->birth_date_estimated);
 
