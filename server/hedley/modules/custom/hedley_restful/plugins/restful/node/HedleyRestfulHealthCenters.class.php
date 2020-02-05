@@ -10,20 +10,6 @@
  */
 class HedleyRestfulHealthCenters extends HedleyRestfulSyncBase {
 
-  /**
-   * {@inheritdoc}
-   */
-  public function publicFieldsInfo() {
-    $public_fields = parent::publicFieldsInfo();
-
-    $public_fields['catchment_area'] = [
-      'property' => 'field_catchment_area',
-      'sub_property' => 'field_uuid',
-    ];
-
-    return $public_fields;
-  }
-
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     hedley_restful_join_field_to_query($query, 'node', 'field_catchment_area');
 
@@ -35,14 +21,14 @@ class HedleyRestfulHealthCenters extends HedleyRestfulSyncBase {
     $items = parent::postExecuteQueryForViewWithDbSelect($items);
 
     foreach ($items as &$row) {
-      $row->catchment_area = $row->field_catchment_area;
       $row->uuid = $row->field_uuid;
-
-      unset($row->field_catchment_area);
       unset($row->field_uuid);
+
+      $wrapper = entity_metadata_wrapper('node', $row->field_catchment_area);
+      $row->catchment_area = $wrapper->field_uuid->value();
+      unset($row->field_catchment_area);
     }
     return $items;
   }
-
 
 }

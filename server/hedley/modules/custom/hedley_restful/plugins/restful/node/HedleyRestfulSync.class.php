@@ -159,7 +159,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $query = db_select('node', 'node');
 
     $query
-      ->fields('node', ['nid', 'vid', 'created', 'type'])
+      ->fields('node', ['nid', 'vid', 'created', 'changed', 'type'])
       ->condition('node.type', array_keys($handlers_by_types), 'IN');
 
     // Get the timestamp of the last revision. We'll also get a count of
@@ -173,9 +173,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       ->execute()
       ->fetchObject();
 
-    // @todo
-    // $last_timestamp = $last_revision ? $last_revision->timestamp : 0;
-    $last_timestamp = 0;
+    $last_timestamp = $last_revision ? $last_revision->changed : 0;
 
     // Restrict to revisions the client doesn't already have.
     $query->condition('node.vid', $base, '>');
@@ -190,10 +188,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $batch = $query
       ->orderBy('node.vid', 'ASC')
       // @todo: change
-      ->range(0, 2000)
+      ->range(0, 50)
       ->execute()
       ->fetchAll();
-
 
     // Adjust the count if we've removed any items with our optimization.
     $count = $count - count($batch);
@@ -211,6 +208,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     foreach ($batch as $item) {
       $batch_by_node_type[$item->type][] = $item;
     }
+
     $output = [];
     foreach ($batch_by_node_type as $node_type => $items) {
       $handler_name = $handlers_by_types[$node_type];
@@ -289,7 +287,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_shards.field_shards_target_id");
 
     $query
-      ->fields('node', ['type', 'nid', 'vid', 'created'])
+      ->fields('node', ['type', 'nid', 'vid', 'created', 'changed'])
       ->condition('field_uuid.field_uuid_value', $uuid)
       ->condition('node.type', array_keys($handlers_by_types), 'IN');
 
@@ -305,8 +303,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       ->fetchObject();
 
     // @todo: Remove, as I believe it doesn't really give us important data
-    // $last_timestamp = $last_revision ? $last_revision->timestamp : 0;
-    $last_timestamp = 0;
+    $last_timestamp = $last_revision ? $last_revision->changed : 0;
 
     // Restrict to revisions the client doesn't already have.
     $query->condition('node.vid', $base, '>');
