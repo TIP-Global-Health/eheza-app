@@ -51,51 +51,45 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
     return date("Y-m-d", $date);
   }
 
-
-  // @todo: Get public fields here as-well.
-  protected function getQueryForViewWithDbSelect(array $node_ids) {
-    $query = db_select('node', 'node');
-    $query->fields('node', ['type', 'nid', 'vid', 'created']);
-    $query->condition('node.nid',$node_ids, 'IN');
+  protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
+    $query = parent::alterQueryForViewWithDbSelect($query);
 
     $field_names = [
       'field_date_measured',
       'field_nurse',
       'field_session',
       'field_person',
+      'field_uuid',
     ];
 
     foreach ($field_names as $field_name) {
-      hedley_restful_join_field_to_query($query, 'node', $field_name);
+      hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
     }
 
-    // Get the UUID of the Nurse.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_nurse.field_nurse_target_id", 'field_uuid_of_nurse');
+     // Get the UUID of the Nurse.
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_nurse.field_nurse_target_id", 'uuid_nurse');
 
     // Get the UUID of the Session.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_session.field_session_target_id", 'field_uuid_of_session');
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_session.field_session_target_id", 'uuid_session');
 
     // Get the UUID of the Person.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_person.field_person_target_id", 'field_uuid_of_person');
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_person.field_person_target_id", 'uuid_person');
 
     return $query;
   }
 
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
-    foreach ($items as &$item) {
-      $date = explode(' ', $item->field_date_measured);
-      $item->date_measured = !empty($date[0]) ? $date[0] : '1970-01-01';
-      $item->nurse = $item->field_uuid_of_nurse;
-      $item->session = $item->field_uuid_of_session;
-      $item->person = $item->field_uuid_of_person;
+    $items = parent::postExecuteQueryForViewWithDbSelect($items);
 
-      unset($item->field_date_measured);
-      unset($item->field_nurse);
-      unset($item->field_session);
-      unset($item->field_person);
-      unset($item->field_uuid_of_nurse);
-      unset($item->field_uuid_of_session);
-      unset($item->field_uuid_of_person);
+    foreach ($items as &$item) {
+      $date = explode(' ', $item->date_measured);
+      $item->date_measured = !empty($date[0]) ? $date[0] : NULL;
+      $item->nurse = $item->uuid_nurse;
+      unset($item->uuid_nurse);
+      $item->session = $item->uuid_session;
+      unset($item->uuid_session);
+      $item->person = $item->uuid_person;
+      unset($item->uuid_person);
     }
 
     return $items;
