@@ -15,6 +15,39 @@ define('HEDLEY_STATS_MODERATE', 'moderate_nutrition');
 define('HEDLEY_STATS_GOOD', 'good_nutrition');
 
 /**
+ * Reset the cache of measurements because a measurement has changed.
+ *
+ * Implements hook_node_update().
+ */
+function hedley_stats_node_presave($node) {
+  $measurements_content_types = heldey_stats_get_mapped_measurements_content_types();
+
+  if (!in_array($node->type, array_keys($measurements_content_types))) {
+    // Reset cache only when a measurement is changed.
+    return;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node->nid);
+
+  if (!$wrapper->__isset('field_shards')) {
+    return;
+  }
+
+  // Get health centers.
+  $health_centers = $wrapper->field_shards->value();
+  if (empty($health_centers)) {
+    return;
+  }
+
+  // Reset the cache for the stats of the health center because a measurement in
+  // it has changed.
+  foreach ($health_centers as $health_center) {
+    $health_center_cache_id = 'measurements_query_grouped_by_person_' . $health_center->nid;
+    cache_clear_all($health_center_cache_id, 'cache');
+  }
+}
+
+/**
  * Return new people in a Health centers related stats.
  *
  * @param int $health_center_id
@@ -428,6 +461,14 @@ function hedley_stats_get_total_beneficiaries($health_center_id, $period = HEDLE
  * @throws \Exception
  */
 function hedley_stats_get_measurements_query_grouped_by_person($health_center_id, $period) {
+  // Set the query options as strings for creating cache ID.
+  $health_center_cache_id = 'measurements_query_grouped_by_person_' . $health_center_id;
+  $cache = cache_get($health_center_cache_id);
+
+  if (!empty($cache)) {
+    return $cache->data;
+  }
+
   // All the measurements nodes with measurement field mapped.
   $node_types = heldey_stats_get_mapped_measurements_content_types();
 
@@ -476,6 +517,9 @@ function hedley_stats_get_measurements_query_grouped_by_person($health_center_id
       $people[$measurement->field_person][$measurement->type][$measurement_field] = $measurement->{$measurement_field};
     }
   }
+
+  // Store in cache.
+  cache_set($health_center_cache_id, $people, 'cache', CACHE_TEMPORARY);
 
   return $people;
 }
