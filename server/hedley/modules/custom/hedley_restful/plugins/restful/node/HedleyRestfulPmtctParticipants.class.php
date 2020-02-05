@@ -65,4 +65,43 @@ class HedleyRestfulPmtctParticipants extends HedleyRestfulSyncBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
+    $field_names = [
+      'field_adult_activities',
+      'field_person',
+      'field_adult',
+      'field_clinic',
+    ];
+
+    foreach ($field_names as $field_name) {
+      hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
+    }
+
+    hedley_restful_join_field_to_query($query, 'node', 'field_expected', FALSE, NULL, NULL, TRUE);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    $items = parent::postExecuteQueryForViewWithDbSelect($items);
+
+    foreach ($items as &$item) {
+      $item->person = hedley_restful_nid_to_uuid($item->person);
+      $item->adult = hedley_restful_nid_to_uuid($item->adult);
+      $item->clinic = hedley_restful_nid_to_uuid($item->clinic);
+
+      $item->expected = [
+        'value' => $item->expected ? hedley_restful_timestamp_only_date($item->expected) : NULL,
+        'value2' => $item->field_expected_field_expected_value2 ? hedley_restful_timestamp_only_date($item->field_expected_field_expected_value2) : NULL,
+      ];
+      unset($item->field_expected_field_expected_value2);
+    }
+
+    return $items;
+  }
+
 }

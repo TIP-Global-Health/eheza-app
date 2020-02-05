@@ -225,7 +225,7 @@ function hedley_restful_query_in_batches(\EntityFieldQuery $base_query, $batch_s
  *
  * @throws Exception
  */
-function hedley_restful_join_field_to_query(SelectQuery $query, $entity_type, $field_name, $require = TRUE, $entity_id_selector = NULL, $field_alias = NULL) {
+function hedley_restful_join_field_to_query(SelectQuery $query, $entity_type, $field_name, $require = TRUE, $entity_id_selector = NULL, $field_alias = NULL, $second_value = FALSE) {
   $field = field_info_field($field_name);
   $table_name = _field_sql_storage_tablename($field);
 
@@ -265,6 +265,10 @@ function hedley_restful_join_field_to_query(SelectQuery $query, $entity_type, $f
 
   $field_alias = $field_alias ?: $field_name;
   $query->addField($field_alias, $field_name . '_' . $column_suffix, $field_alias);
+  if ($second_value) {
+    $column_suffix = 'value2';
+    $query->addField($field_alias, $field_name . '_' . $column_suffix, $field_alias);
+  }
 
   $join = $require ? 'innerJoin' : 'leftJoin';
   $arguments = [':type' => $entity_type];
