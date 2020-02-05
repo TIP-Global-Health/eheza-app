@@ -13,21 +13,8 @@ use Ramsey\Uuid\Uuid;
  * The content types and their restful handler for nodes that
  * we sync to all devices.
  */
-const HEDLEY_RESTFUL_ALL_DEVICES = [
-//  'catchment_area' => 'catchment_areas',
-//  'clinic' => 'clinics',
-//  'counseling_schedule' => 'counseling-schedule',
-//  'counseling_topic' => 'counseling-topics',
-//  'health_center' => 'health_centers',
-//  'nurse' => 'nurses',
-//  'participant_form' => 'participants-form',
-  'person' => 'people',
-//  'pmtct_participant' => 'pmtct-participants',
-//  'individual_participant' => 'individual-participants',
-//  'prenatal_encounter' => 'prenatal-encounters',
-//  'relationship' => 'relationships',
-//  'session' => 'sessions',
-];
+const HEDLEY_RESTFUL_DB_QUERY_RANGE = 2;
+
 
 /**
  * Class HedleyRestfulSync.
@@ -84,7 +71,19 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    *   machine names for the restful handler to use when syncing.
    */
   public function entitiesForAllDevices() {
-    return HEDLEY_RESTFUL_ALL_DEVICES;
+    return [
+// v 'catchment_area' => 'catchment_areas',
+// v  'clinic' => 'clinics',
+// v 'counseling_schedule' => 'counseling-schedule',
+// v 'counseling_topic' => 'counseling-topics',
+// v 'health_center' => 'health_centers',
+      'nurse' => 'nurses',
+// v  'participant_form' => 'participants-form',
+// v  'person' => 'people',
+// v  'pmtct_participant' => 'pmtct-participants',
+//  'relationship' => 'relationships',
+//  'session' => 'sessions',
+    ];
   }
 
   /**
@@ -98,17 +97,14 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    */
   public function entitiesForHealthCenters() {
     return [
-      'attendance' => 'attendances',
-      'counseling_session' => 'counseling-sessions',
-      'family_planning' => 'family-plannings',
-      'height' => 'heights',
-      'muac' => 'muacs',
-      'nutrition' => 'nutritions',
-      'participant_consent' => 'participants-consent',
-      // @todo: We should save the image style on the node, so we could
-      // query it, without trying to create it while syncing - thus save
-      // syncing time.
-      'photo' => 'photos',
+//      'attendance' => 'attendances',
+//      'counseling_session' => 'counseling-sessions',
+//      'family_planning' => 'family-plannings',
+//      'height' => 'heights',
+//      'muac' => 'muacs',
+//      'nutrition' => 'nutritions',
+//      'participant_consent' => 'participants-consent',
+//      'photo' => 'photos',
       'weight' => 'weights',
     ];
   }
@@ -197,8 +193,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     // Then, get one batch worth of results.
     $batch = $query
       ->orderBy('node.vid', 'ASC')
-      // @todo: change
-      ->range(0, 1)
+      ->range(0, HEDLEY_RESTFUL_DB_QUERY_RANGE)
       ->execute()
       ->fetchAll();
 
@@ -331,8 +326,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     // Then, get one batch worth of results.
     $batch = $query
       ->orderBy('node.vid', 'ASC')
-      // @todo: Make range configurable ($this->rangeForQueryWithDb)
-      ->range(0, 10)
+      ->range(0, HEDLEY_RESTFUL_DB_QUERY_RANGE)
       ->execute()
       ->fetchAll();
 
