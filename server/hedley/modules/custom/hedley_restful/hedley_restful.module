@@ -144,6 +144,17 @@ function hedley_restful_uuid_to_nid($uuid) {
   return $result;
 }
 
+function hedley_restful_nid_to_uuid($nid) {
+  $wrapper = entity_metadata_wrapper('node', $nid);
+  $uuid = $wrapper->field_uuid->value();
+
+  if (empty($uuid)) {
+    throw new RestfulBadRequestException("Could not find UUID for NID: $nid");
+  }
+
+  return $uuid;
+}
+
 /**
  * Run a query in batches.
  *

@@ -20,13 +20,12 @@ class HedleyRestfulHealthCenters extends HedleyRestfulSyncBase {
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
     $items = parent::postExecuteQueryForViewWithDbSelect($items);
 
-    foreach ($items as &$row) {
-      $row->uuid = $row->field_uuid;
-      unset($row->field_uuid);
+    foreach ($items as &$item) {
+      $item->uuid = $item->field_uuid;
+      unset($item->field_uuid);
 
-      $wrapper = entity_metadata_wrapper('node', $row->field_catchment_area);
-      $row->catchment_area = $wrapper->field_uuid->value();
-      unset($row->field_catchment_area);
+      $item->catchment_area = hedley_restful_nid_to_uuid($item->field_catchment_area);
+      unset($item->field_catchment_area);
     }
     return $items;
   }

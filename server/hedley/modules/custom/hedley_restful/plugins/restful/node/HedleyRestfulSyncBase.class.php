@@ -70,13 +70,13 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
 
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
     foreach ($items as &$item) {
-      $row->id = $row->nid;
+      $item->id = $item->nid;
       $item->label = $item->title;
-      $row->timestamp = $row->changed;
+      $item->timestamp = $item->changed;
 
-      unset($row->nid);
+      unset($item->nid);
       unset($item->title);
-      unset($row->changed);
+      unset($item->changed);
     }
 
     return $items;

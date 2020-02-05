@@ -98,14 +98,13 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
       hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
     }
 
-    // For the Photo, get to the `file`. We'll convert the `uri` to `field_photo`
-    // in
+    // For the Photo, get to the `file`. We'll convert the `uri`
+    // to `field_photo`.
     $query->leftJoin('file_managed', 'f', 'f.fid = field_photo.field_photo_fid');
     $query->addField('f', 'uri');
 
     // Get the UUID of the health center.
     hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_health_center.field_health_center_target_id");
-
   }
 
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
@@ -140,36 +139,25 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
       'field_uuid',
     ];
 
-    foreach ($items as &$row) {
-      $birth_date = explode(' ', $row->field_birth_date);
-      $row->field_birth_date = !empty($birth_date[0]) ? $birth_date[0] : '1970-01-01';
+    foreach ($items as &$item) {
+      $birth_date = explode(' ', $item->field_birth_date);
+      $item->field_birth_date = !empty($birth_date[0]) ? $birth_date[0] : NULL;
 
       foreach ($field_names as $field_name) {
         $public_name = str_replace('field_', '', $field_name);
 
-        $row->{$public_name} = $row->{$field_name};
-        unset($row->{$field_name});
+        $item->{$public_name} = $item->{$field_name};
+        unset($item->{$field_name});
       }
 
-      $row->birth_date_estimated = (bool) intval($row->birth_date_estimated);
+      $item->birth_date_estimated = (bool) intval($item->birth_date_estimated);
 
-      if (!empty($row->photo) && !empty($row->uri)) {
-        $fid = $row->photo;
-        $uri = $row->uri;
-
-        $image_style  = 'patient-photo';
-
-        $value = [
-          'id' => $fid,
-          'self' => file_create_url($uri),
-          'styles' => [
-            $image_style => image_style_url($image_style  , $uri),
-          ],
-        ];
-
-        $row->photo = $value;
+      if (!empty($item->photo) && !empty($item->uri)) {
+        $item->photo = image_style_url('patient-photo', $item->uri);
       }
 
+      unset($item->uri);
+      $item->health_center = hedley_restful_nid_to_uuid($item->health_center);
     }
 
     return $items;

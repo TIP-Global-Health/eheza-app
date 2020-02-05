@@ -8,6 +8,28 @@
 use Ramsey\Uuid\Uuid;
 
 /**
+ * Nodes synced to all devices.
+ *
+ * The content types and their restful handler for nodes that
+ * we sync to all devices.
+ */
+const HEDLEY_RESTFUL_ALL_DEVICES = [
+//  'catchment_area' => 'catchment_areas',
+//  'clinic' => 'clinics',
+//  'counseling_schedule' => 'counseling-schedule',
+//  'counseling_topic' => 'counseling-topics',
+//  'health_center' => 'health_centers',
+//  'nurse' => 'nurses',
+//  'participant_form' => 'participants-form',
+  'person' => 'people',
+//  'pmtct_participant' => 'pmtct-participants',
+//  'individual_participant' => 'individual-participants',
+//  'prenatal_encounter' => 'prenatal-encounters',
+//  'relationship' => 'relationships',
+//  'session' => 'sessions',
+];
+
+/**
  * Class HedleyRestfulSync.
  */
 class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInterface {
@@ -62,19 +84,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    *   machine names for the restful handler to use when syncing.
    */
   public function entitiesForAllDevices() {
-    return [
-//      'catchment_area' => 'catchment_areas',
-//      'clinic' => 'clinics',
-//      'counseling_schedule' => 'counseling-schedule',
-//      'counseling_topic' => 'counseling-topics',
-      'health_center' => 'health_centers',
-//      'nurse' => 'nurses',
-//      'participant_form' => 'participants-form',
-      'person' => 'people',
-//      'pmtct_participant' => 'pmtct-participants',
-//      'relationship' => 'relationships',
-//      'session' => 'sessions',
-    ];
+    return HEDLEY_RESTFUL_ALL_DEVICES;
   }
 
   /**
@@ -188,7 +198,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $batch = $query
       ->orderBy('node.vid', 'ASC')
       // @todo: change
-      ->range(0, 50)
+      ->range(0, 1)
       ->execute()
       ->fetchAll();
 
