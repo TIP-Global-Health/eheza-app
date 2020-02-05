@@ -10,6 +10,20 @@
  */
 class HedleyRestfulHealthCenters extends HedleyRestfulSyncBase {
 
+  /**
+   * {@inheritdoc}
+   */
+  public function publicFieldsInfo() {
+    $public_fields = parent::publicFieldsInfo();
+
+    $public_fields['catchment_area'] = [
+      'property' => 'field_catchment_area',
+      'sub_property' => 'field_uuid',
+    ];
+
+    return $public_fields;
+  }
+
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     hedley_restful_join_field_to_query($query, 'node', 'field_catchment_area');
 
