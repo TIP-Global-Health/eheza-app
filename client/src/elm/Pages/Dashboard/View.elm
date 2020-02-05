@@ -714,7 +714,7 @@ viewBarChart data yScaleMax =
         , g [ Explicit.class [ "grid gird-x" ] ] <| List.indexedMap xGridLine <| Scale.ticks gridXScale 12
         , g [ transform [ Translate (padding - 1) (barChartHeight - padding) ] ]
             [ xAxis data ]
-        , g [ transform [ Translate (padding - 1) padding ] ]
+        , g [ transform [ Translate (padding + 1) padding ] ]
             [ yAxis yScaleMax ]
         , g [ transform [ Translate padding padding ], Explicit.class [ "data" ] ] <|
             List.map (column (xScale data) yScaleMax) data
