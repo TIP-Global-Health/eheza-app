@@ -234,10 +234,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     // @todo: Calculate only when node from health center changed.
     $health_center_id = 7093;
     $wrapper = entity_metadata_wrapper('node', $health_center_id);
-    $wrapper->field_uuid->value();
 
-    // Find the highest value in the data.
     $total_beneficiaries = hedley_stats_get_total_beneficiaries($health_center_id);
+    // Find the highest value in the data.
     $total_beneficiaries_max = hedley_stats_get_max_value_in_array($total_beneficiaries);
 
     $output[] = [
