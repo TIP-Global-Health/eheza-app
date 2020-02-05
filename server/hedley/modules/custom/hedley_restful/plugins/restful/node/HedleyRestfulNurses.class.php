@@ -63,6 +63,7 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
     foreach ($items as &$item) {
       $item->role = explode(',', $item->role);
       $item->health_centers = explode(',', $item->uuids_health_centers);
+      unset($item->uuids_health_centers);
     }
 
     return $items;

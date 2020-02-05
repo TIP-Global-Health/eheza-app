@@ -78,10 +78,6 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
           continue;
         }
 
-        if (!isset($item->{$field_info['property']})) {
-          continue;
-        }
-
         $item->{$public_name} = $item->{$field_info['property']};
         unset($item->{$field_info['property']});
       }

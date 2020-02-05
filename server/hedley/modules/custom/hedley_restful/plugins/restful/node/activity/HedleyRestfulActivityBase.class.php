@@ -67,13 +67,13 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
     }
 
      // Get the UUID of the Nurse.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_nurse.field_nurse_target_id", 'uuid_nurse');
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_nurse.field_nurse_target_id", 'uuid_nurse');
 
     // Get the UUID of the Session.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_session.field_session_target_id", 'uuid_session');
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_session.field_session_target_id", 'uuid_session');
 
     // Get the UUID of the Person.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_person.field_person_target_id", 'uuid_person');
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_person.field_person_target_id", 'uuid_person');
 
     return $query;
   }
@@ -90,6 +90,8 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
       unset($item->uuid_session);
       $item->person = $item->uuid_person;
       unset($item->uuid_person);
+
+      unset($item->label);
     }
 
     return $items;

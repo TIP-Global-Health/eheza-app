@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulWeights.
  */
-class HedleyRestfulWeights extends HedleyRestfulChildActivityBase {
+class HedleyRestfulWeights extends HedleyRestfulActivityBase {
 
   /**
    * {@inheritdoc}
@@ -39,7 +39,12 @@ class HedleyRestfulWeights extends HedleyRestfulChildActivityBase {
     return $public_fields;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
+    $query = parent::alterQueryForViewWithDbSelect($query);
+
     $field_names = [
       'field_weight',
       'field_bmi',
@@ -49,31 +54,8 @@ class HedleyRestfulWeights extends HedleyRestfulChildActivityBase {
     ];
 
     foreach ($field_names as $field_name) {
-      hedley_restful_join_field_to_query($query, 'node', $field_name);
+      hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
     }
-  }
-
-  protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
-    $items = parent::postExecuteQueryForViewWithDbSelect($items);
-
-    $fields_info = $this->getPublicFields();
-
-    foreach ($items as &$row) {
-      foreach ($fields_info as $public_name => $field_info) {
-        if (strpos($field_info['property'], 'field_') !== 0) {
-          continue;
-        }
-
-        if (!isset($row->{$field_info['property']})) {
-          continue;
-        }
-
-        $row->{$public_name} = $row->{$field_info['property']};
-        unset($row->{$field_info['property']});
-      }
-    }
-
-    return $items;
   }
 
 }

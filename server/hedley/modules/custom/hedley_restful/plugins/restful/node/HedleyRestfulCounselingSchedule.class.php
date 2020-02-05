@@ -55,6 +55,7 @@ class HedleyRestfulCounselingSchedule extends HedleyRestfulSyncBase {
 
     foreach ($items as &$item) {
       $item->topics = explode(',', $item->uuids_topics);
+      unset($item->uuids_topics);
     }
 
     return $items;
