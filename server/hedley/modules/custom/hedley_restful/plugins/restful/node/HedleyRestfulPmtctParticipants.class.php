@@ -94,9 +94,12 @@ class HedleyRestfulPmtctParticipants extends HedleyRestfulSyncBase {
       $item->adult = hedley_restful_nid_to_uuid($item->adult);
       $item->clinic = hedley_restful_nid_to_uuid($item->clinic);
 
+      $value1 = $item->expected;
+      $value2 = $item->field_expected_field_expected_value2;
       $item->expected = [
-        'value' => $item->expected ? hedley_restful_timestamp_only_date($item->expected) : NULL,
-        'value2' => $item->field_expected_field_expected_value2 ? hedley_restful_timestamp_only_date($item->field_expected_field_expected_value2) : NULL,
+        'value' => $value1 ? hedley_restful_timestamp_only_date($value1) : NULL,
+        'value2' => $value2 ? hedley_restful_timestamp_only_date($value2) : NULL,
+
       ];
       unset($item->field_expected_field_expected_value2);
     }
