@@ -465,19 +465,19 @@ function hedley_stats_get_total_beneficiaries($health_center_id, $period = HEDLE
 function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
   $nutrition_per_person = [
     'stunting' => [
-      'type' => NULL,
+      'class' => NULL,
       'value' => 0,
     ],
     'underweight' => [
-      'type' => NULL,
+      'class' => NULL,
       'value' => 0,
     ],
     'wasting' => [
-      'type' => NULL,
+      'class' => NULL,
       'value' => 0,
     ],
     'muac' => [
-      'type' => NULL,
+      'class' => NULL,
       'value' => 0,
     ],
   ];
@@ -491,6 +491,7 @@ function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_ST
   $nutrition_signs = hedley_stats_nutrition_signs();
 
   $people = [];
+
   // Get rid of unwanted data to make the response as light as possible.
   foreach ($people_data as $id => $person) {
     $wrapper = entity_metadata_wrapper('node', $id);
@@ -498,6 +499,7 @@ function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_ST
       'name' => $wrapper->label(),
       'nutrition' => $nutrition_per_person,
     ];
+
     foreach ($person as $type => $measurement) {
       // We are interested only with the nutrition signs that match the
       // current type.
@@ -510,13 +512,13 @@ function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_ST
             $people[$id]['nutrition']['stunting']['value'] = $value;
 
             if ($value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE]) {
-              $people[$id]['nutrition']['stunting']['type'] = HEDLEY_STATS_SEVERE;
+              $people[$id]['nutrition']['stunting']['class'] = HEDLEY_STATS_SEVERE;
             }
             elseif ($value >= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_MODERATE]) {
-              $people[$id]['nutrition']['stunting']['type'] = HEDLEY_STATS_MODERATE;
+              $people[$id]['nutrition']['stunting']['class'] = HEDLEY_STATS_MODERATE;
             }
             else {
-              $people[$id]['nutrition']['stunting']['type'] = HEDLEY_STATS_GOOD;
+              $people[$id]['nutrition']['stunting']['class'] = HEDLEY_STATS_GOOD;
             }
 
             break;
@@ -527,13 +529,13 @@ function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_ST
               $people[$id]['nutrition']['underweight']['value'] = $value;
 
               if ($value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE]) {
-                $people[$id]['nutrition']['underweight']['type'] = HEDLEY_STATS_SEVERE;
+                $people[$id]['nutrition']['underweight']['class'] = HEDLEY_STATS_SEVERE;
               }
               elseif ($value >= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_MODERATE]) {
-                $people[$id]['nutrition']['underweight']['type'] = HEDLEY_STATS_MODERATE;
+                $people[$id]['nutrition']['underweight']['class'] = HEDLEY_STATS_MODERATE;
               }
               else {
-                $people[$id]['nutrition']['underweight']['type'] = HEDLEY_STATS_GOOD;
+                $people[$id]['nutrition']['underweight']['class'] = HEDLEY_STATS_GOOD;
               }
             }
 
@@ -542,13 +544,13 @@ function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_ST
               $people[$id]['nutrition']['wasting']['value'] = $value;
 
               if ($value <= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_SEVERE]) {
-                $people[$id]['nutrition']['wasting']['type'] = HEDLEY_STATS_SEVERE;
+                $people[$id]['nutrition']['wasting']['class'] = HEDLEY_STATS_SEVERE;
               }
               elseif ($value >= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_MODERATE]) {
-                $people[$id]['nutrition']['wasting']['type'] = HEDLEY_STATS_MODERATE;
+                $people[$id]['nutrition']['wasting']['class'] = HEDLEY_STATS_MODERATE;
               }
               else {
-                $people[$id]['nutrition']['wasting']['type'] = HEDLEY_STATS_GOOD;
+                $people[$id]['nutrition']['wasting']['class'] = HEDLEY_STATS_GOOD;
               }
             }
 
@@ -559,13 +561,13 @@ function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_ST
             $people[$id]['nutrition']['muac']['value'] = $value;
 
             if ($value <= $current_nutrition_signs['field_muac'][HEDLEY_STATS_SEVERE]) {
-              $people[$id]['nutrition']['muac']['type'] = HEDLEY_STATS_SEVERE;
+              $people[$id]['nutrition']['muac']['class'] = HEDLEY_STATS_SEVERE;
             }
             elseif ($value >= $current_nutrition_signs['field_muac'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_muac'][HEDLEY_STATS_MODERATE]) {
-              $people[$id]['nutrition']['muac']['type'] = HEDLEY_STATS_MODERATE;
+              $people[$id]['nutrition']['muac']['class'] = HEDLEY_STATS_MODERATE;
             }
             else {
-              $people[$id]['nutrition']['muac']['type'] = HEDLEY_STATS_GOOD;
+              $people[$id]['nutrition']['muac']['class'] = HEDLEY_STATS_GOOD;
             }
 
             break;
@@ -575,9 +577,7 @@ function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_ST
     }
   }
 
-  dpm($people);
-
-  return $people;
+  return array_values($people);
 }
 
 /**

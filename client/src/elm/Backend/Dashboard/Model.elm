@@ -101,7 +101,7 @@ type alias Nutrition =
 
 type alias NutritionValue =
     { class : NutritionStatus
-    , value : Int
+    , value : String
     }
 
 

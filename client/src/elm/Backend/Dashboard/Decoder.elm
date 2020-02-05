@@ -56,8 +56,8 @@ decodeCaseNutrition =
 decodeNutritionValue : Decoder NutritionValue
 decodeNutritionValue =
     succeed NutritionValue
-        |> required "type" decodeNutritionStatus
-        |> required "value" decodeInt
+        |> required "class" decodeNutritionStatus
+        |> required "value" string
 
 
 decodeNutritionStatus : Decoder NutritionStatus

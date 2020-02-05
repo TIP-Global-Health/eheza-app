@@ -117,7 +117,7 @@ viewCaseManagementPage : Language -> DashboardPage -> NominalDate -> HealthCente
 viewCaseManagementPage language currentPage currentDate healthCenterId stats model db =
     let
         _ =
-            Debug.log "case_management" stats.caseManagement
+            Debug.log "caseManagement" stats.caseManagement
     in
     --@todo: Add case management page design.
     div [ class "dashboard management ui segment blue" ] [ text "Case Management Page" ]
