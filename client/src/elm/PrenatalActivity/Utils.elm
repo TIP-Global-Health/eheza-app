@@ -1133,7 +1133,7 @@ getEncounterTrimesterData encounterDate maybeLmpDate =
                     diffInWeeks =
                         diffDays lmpDate encounterDate // 7
                 in
-                if diffInWeeks < 12 then
+                if diffInWeeks < 13 then
                     FirstTrimester
 
                 else if diffInWeeks < 28 then

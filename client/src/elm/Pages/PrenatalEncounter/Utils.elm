@@ -260,9 +260,9 @@ expectPrenatalPhoto currentDate data =
         periods =
             -- Periods, where we want to have 1 photo:
             --  1. 12 weeks, or less.
-            --  2. Between week 20 and week 29.
-            --  3. Week 30, or more.
-            [ [ (>) 13 ], [ (>) 30, (<=) 20 ], [ (<=) 30 ] ]
+            --  2. Between week 13 and week 27.
+            --  3. Week 28, or more.
+            [ [ (>) 13 ], [ (>) 28, (<=) 13 ], [ (<=) 28 ] ]
 
         previousMeasurements =
             List.map Tuple.second data.previousMeasurementsWithDates
