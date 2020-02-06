@@ -91,7 +91,10 @@ viewPrenatalActions language currentDate id db prenatalSessions =
                                         |> Maybe.map Tuple.first
                                     , EveryDictList.size dict - List.length activeEncounters
                                     , EveryDictList.toList dict
-                                        |> List.filter (\( _, encounter ) -> encounter.endDate == Just currentDate)
+                                        |> List.filter
+                                            (\( _, encounter ) ->
+                                                encounter.startDate == currentDate && encounter.endDate == Just currentDate
+                                            )
                                         |> List.isEmpty
                                         |> not
                                     )
