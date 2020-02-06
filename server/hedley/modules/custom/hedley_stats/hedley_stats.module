@@ -335,7 +335,6 @@ function hedley_stats_get_total_beneficiaries($health_center_id, $period = HEDLE
     12 => $nutrition_per_month,
   ];
 
-
   $people = hedley_stats_get_measurements_query_grouped_by_person($health_center_id, $period);
 
   if (empty($people)) {
