@@ -59,7 +59,6 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
       'field_nurse',
       'field_session',
       'field_person',
-      'field_uuid',
     ];
 
     foreach ($field_names as $field_name) {

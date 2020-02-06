@@ -13,8 +13,7 @@ use Ramsey\Uuid\Uuid;
  * The content types and their restful handler for nodes that
  * we sync to all devices.
  */
-const HEDLEY_RESTFUL_DB_QUERY_RANGE = 2;
-
+const HEDLEY_RESTFUL_DB_QUERY_RANGE = 50;
 
 /**
  * Class HedleyRestfulSync.
@@ -72,17 +71,17 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    */
   public function entitiesForAllDevices() {
     return [
-// v 'catchment_area' => 'catchment_areas',
-// v  'clinic' => 'clinics',
-// v 'counseling_schedule' => 'counseling-schedule',
-// v 'counseling_topic' => 'counseling-topics',
-// v 'health_center' => 'health_centers',
+      'catchment_area' => 'catchment_areas',
+      'clinic' => 'clinics',
+      'counseling_schedule' => 'counseling-schedule',
+      'counseling_topic' => 'counseling-topics',
+      'health_center' => 'health_centers',
       'nurse' => 'nurses',
-// v  'participant_form' => 'participants-form',
-// v  'person' => 'people',
-// v  'pmtct_participant' => 'pmtct-participants',
-//  'relationship' => 'relationships',
-//  'session' => 'sessions',
+      'participant_form' => 'participants-form',
+      'person' => 'people',
+      'pmtct_participant' => 'pmtct-participants',
+      'relationship' => 'relationships',
+      'session' => 'sessions',
     ];
   }
 
@@ -97,14 +96,14 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    */
   public function entitiesForHealthCenters() {
     return [
-//      'attendance' => 'attendances',
-//      'counseling_session' => 'counseling-sessions',
-//      'family_planning' => 'family-plannings',
-//      'height' => 'heights',
-//      'muac' => 'muacs',
-//      'nutrition' => 'nutritions',
-//      'participant_consent' => 'participants-consent',
-//      'photo' => 'photos',
+      'attendance' => 'attendances',
+      'counseling_session' => 'counseling-sessions',
+      'family_planning' => 'family-plannings',
+      'height' => 'heights',
+      'muac' => 'muacs',
+      'nutrition' => 'nutritions',
+      'participant_consent' => 'participants-consent',
+      'photo' => 'photos',
       'weight' => 'weights',
     ];
   }
@@ -196,9 +195,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       ->range(0, HEDLEY_RESTFUL_DB_QUERY_RANGE)
       ->execute()
       ->fetchAll();
-
-    // Adjust the count if we've removed any items with our optimization.
-    $count = $count - count($batch);
 
     // Now, we wish to get a restful representation of each revision in this
     // batch. We need to represent the specific revision, rather than the
@@ -329,9 +325,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       ->range(0, HEDLEY_RESTFUL_DB_QUERY_RANGE)
       ->execute()
       ->fetchAll();
-
-    // Adjust the count if we've removed any items with our optimization.
-    $count = $count - count($batch);
 
     // Now, we wish to get a restful representation of each revision in this
     // batch. We need to represent the specific revision, rather than the
