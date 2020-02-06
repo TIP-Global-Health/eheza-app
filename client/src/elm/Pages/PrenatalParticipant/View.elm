@@ -71,8 +71,8 @@ viewPrenatalActions language currentDate id db prenatalSessions =
         -- We count the number of completed encounters, so that we know if to
         -- allow 'Pregnancy Outcome' action.
         -- We also want to know if there's an encounter that was completed today,
-        -- as we do not want to allow creating new encounter at same day previous one
-        -- has ended.
+        -- (started and ended on the same day), as we do not want to allow creating new encounter
+        -- at same day previous one has ended.
         ( maybeActiveEncounterId, totalCompletedEncounts, encounterWasCompletedToday ) =
             maybeSessionId
                 |> Maybe.map

@@ -253,7 +253,14 @@ generateHighSeverityAlertData language currentDate data alert =
                                     Nothing
                             )
             in
-            Maybe.Extra.orLazy (resolveAlert ( currentDate, data.measurements )) (\() -> resolveAlert lastEncounterMeasurementsWithDate)
+            -- If obstetricalExam measurements were taken at current encounter,
+            -- we issue the alarm according to those values.
+            -- Otherwise, we use values of last encounter.
+            if isJust data.measurements.obstetricalExam then
+                resolveAlert ( currentDate, data.measurements )
+
+            else
+                resolveAlert lastEncounterMeasurementsWithDate
 
         FetalMovement ->
             let
@@ -284,7 +291,14 @@ generateHighSeverityAlertData language currentDate data alert =
                                     Nothing
                             )
             in
-            Maybe.Extra.orLazy (resolveAlert ( currentDate, data.measurements )) (\() -> resolveAlert lastEncounterMeasurementsWithDate)
+            -- If obstetricalExam measurements were taken at current encounter,
+            -- we issue the alarm according to those values.
+            -- Otherwise, we use values of last encounter.
+            if isJust data.measurements.obstetricalExam then
+                resolveAlert ( currentDate, data.measurements )
+
+            else
+                resolveAlert lastEncounterMeasurementsWithDate
 
         HeartRate ->
             data.measurements.vitals
@@ -789,7 +803,14 @@ generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasure
                                     Nothing
                             )
             in
-            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
+            -- If nutrition measurements were taken at current encounter,
+            -- we issue the alarm according to those values.
+            -- Otherwise, we use values of last encounter.
+            if isJust data.measurements.nutrition then
+                resolveAlert data.measurements
+
+            else
+                resolveAlert lastEncounterMeasurements
 
         DiagnosisSevereUnderweight ->
             let
@@ -831,7 +852,14 @@ generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasure
                                             )
                             )
             in
-            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
+            -- If nutrition measurements were taken at current encounter,
+            -- we issue the alarm according to those values.
+            -- Otherwise, we use values of last encounter.
+            if isJust data.measurements.nutrition then
+                resolveAlert data.measurements
+
+            else
+                resolveAlert lastEncounterMeasurements
 
         DiagnosisOverweight ->
             let
@@ -863,7 +891,14 @@ generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasure
                                         )
                             )
             in
-            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
+            -- If nutrition measurements were taken at current encounter,
+            -- we issue the alarm according to those values.
+            -- Otherwise, we use values of last encounter.
+            if isJust data.measurements.nutrition then
+                resolveAlert data.measurements
+
+            else
+                resolveAlert lastEncounterMeasurements
 
         DiagnosisObese ->
             let
@@ -895,7 +930,14 @@ generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasure
                                         )
                             )
             in
-            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
+            -- If nutrition measurements were taken at current encounter,
+            -- we issue the alarm according to those values.
+            -- Otherwise, we use values of last encounter.
+            if isJust data.measurements.nutrition then
+                resolveAlert data.measurements
+
+            else
+                resolveAlert lastEncounterMeasurements
 
         DisgnosisPeripheralEdema ->
             let
@@ -920,7 +962,14 @@ generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasure
                                     Nothing
                             )
             in
-            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
+            -- If corePhysicalExam measurements were taken at current encounter,
+            -- we issue the alarm according to those values.
+            -- Otherwise, we use values of last encounter.
+            if isJust data.measurements.corePhysicalExam then
+                resolveAlert data.measurements
+
+            else
+                resolveAlert lastEncounterMeasurements
 
         DiagnosisFetusBreech ->
             let
@@ -951,7 +1000,14 @@ generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasure
                                             )
                             )
             in
-            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
+            -- If obstetricalExam measurements were taken at current encounter,
+            -- we issue the alarm according to those values.
+            -- Otherwise, we use values of last encounter.
+            if isJust data.measurements.obstetricalExam then
+                resolveAlert data.measurements
+
+            else
+                resolveAlert lastEncounterMeasurements
 
         DiagnosisFetusTransverse ->
             let
@@ -982,7 +1038,14 @@ generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasure
                                             )
                             )
             in
-            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
+            -- If obstetricalExam measurements were taken at current encounter,
+            -- we issue the alarm according to those values.
+            -- Otherwise, we use values of last encounter.
+            if isJust data.measurements.obstetricalExam then
+                resolveAlert data.measurements
+
+            else
+                resolveAlert lastEncounterMeasurements
 
         DiagnosisBreastExamination ->
             let
@@ -1011,7 +1074,14 @@ generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasure
                                     Just (transAlert diagnosis ++ " " ++ transSigns)
                             )
             in
-            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
+            -- If breastExam measurements were taken at current encounter,
+            -- we issue the alarm according to those values.
+            -- Otherwise, we use values of last encounter.
+            if isJust data.measurements.breastExam then
+                resolveAlert data.measurements
+
+            else
+                resolveAlert lastEncounterMeasurements
 
         DiagnosisHypotension ->
             let
@@ -1121,7 +1191,14 @@ generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasure
                                     Nothing
                             )
             in
-            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
+            -- If vitals and corePhysicalExam measurements were taken
+            -- at current encounter, we issue the alarm according to those values.
+            -- Otherwise, we use values of last encounter.
+            if isJust data.measurements.vitals && isJust data.measurements.corePhysicalExam then
+                resolveAlert data.measurements
+
+            else
+                resolveAlert lastEncounterMeasurements
 
 
 getEncounterTrimesterData : NominalDate -> Maybe NominalDate -> Maybe PregnancyTrimester
