@@ -29,7 +29,7 @@ class HedleyRestfulAttendances extends HedleyRestfulActivityBase {
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     $query = parent::alterQueryForViewWithDbSelect($query);
 
-    hedley_restful_join_field_to_query($query, 'node', 'field_attended');
+    hedley_restful_join_field_to_query($query, 'node', 'field_attended', FALSE);
   }
 
   /**

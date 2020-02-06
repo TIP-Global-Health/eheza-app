@@ -29,7 +29,7 @@ class HedleyRestfulNutritions extends HedleyRestfulActivityBase {
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     $query = parent::alterQueryForViewWithDbSelect($query);
 
-    hedley_restful_join_field_to_query($query, 'node', 'field_nutrition_signs');
+    hedley_restful_join_field_to_query($query, 'node', 'field_nutrition_signs', FALSE);
 
     $query->addExpression("GROUP_CONCAT(DISTINCT field_nutrition_signs.field_nutrition_signs_value)", 'field_nutrition_signs');
     $query->groupBy('node.nid');

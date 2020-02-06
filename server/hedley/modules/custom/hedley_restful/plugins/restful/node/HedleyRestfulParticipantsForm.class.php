@@ -43,7 +43,6 @@ class HedleyRestfulParticipantsForm extends HedleyRestfulSyncBase {
       'body',
       'field_kinyarwanda_title',
       'field_kinyarwanda_body',
-      'field_uuid',
     ];
 
     foreach ($field_names as $field_name) {
