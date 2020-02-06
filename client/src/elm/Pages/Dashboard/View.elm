@@ -118,6 +118,26 @@ viewCaseManagementPage language currentPage currentDate healthCenterId stats mod
     let
         _ =
             Debug.log "caseManagement" stats.caseManagement
+
+        chartData =
+            List.foldl
+                (\( key, caseManagement ) accum ->
+                    case model.currentCaseManagementFilter of
+                        Stunting ->
+                            {name = caseManagement.name,  caseManagement.nutrition.stunting}
+                            caseManagement.nutrition.stunting :: accum
+
+                        Underweight ->
+                            caseManagement.nutrition.underweight :: accum
+
+                        Wasting ->
+                            caseManagement.nutrition.wasting :: accum
+
+                        MUAC ->
+                            caseManagement.nutrition.muac :: accum
+                )
+                []
+                stats.caseManagement
     in
     div [ class "dashboard case" ]
         [ div [ class "ui segment blue" ]
