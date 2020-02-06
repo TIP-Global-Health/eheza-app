@@ -28,7 +28,7 @@ import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Maybe.Extra exposing (isJust)
 import Pages.PrenatalActivity.Utils exposing (calculateBmi)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
-import Pages.PrenatalEncounter.Utils exposing (getLastEncounterMeasurements)
+import Pages.PrenatalEncounter.Utils exposing (getLastEncounterMeasurements, getLastEncounterMeasurementsWithDate)
 import PrenatalActivity.Model exposing (..)
 import Translate exposing (Language, TranslationId, translate)
 
@@ -158,8 +158,8 @@ generateHighSeverityAlertData language currentDate data alert =
         transAlert alert =
             trans (Translate.HighSeverityAlert alert)
 
-        lastEncounterMeasurements =
-            getLastEncounterMeasurements data
+        lastEncounterMeasurementsWithDate =
+            getLastEncounterMeasurementsWithDate currentDate data
     in
     case alert of
         BodyTemperature ->
@@ -226,13 +226,13 @@ generateHighSeverityAlertData language currentDate data alert =
 
         FetalHeartRate ->
             let
-                resolveAlert measurements =
+                resolveAlert ( date, measurements ) =
                     data.globalLmpDate
                         |> Maybe.andThen
                             (\lmpDate ->
                                 let
                                     egaInWeeks =
-                                        diffDays lmpDate currentDate // 7
+                                        diffDays lmpDate date // 7
                                 in
                                 if egaInWeeks > 19 then
                                     measurements.obstetricalExam
@@ -253,17 +253,17 @@ generateHighSeverityAlertData language currentDate data alert =
                                     Nothing
                             )
             in
-            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
+            Maybe.Extra.orLazy (resolveAlert ( currentDate, data.measurements )) (\() -> resolveAlert lastEncounterMeasurementsWithDate)
 
         FetalMovement ->
             let
-                resolveAlert measurements =
+                resolveAlert ( date, measurements ) =
                     data.globalLmpDate
                         |> Maybe.andThen
                             (\lmpDate ->
                                 let
                                     egaInWeeks =
-                                        diffDays lmpDate currentDate // 7
+                                        diffDays lmpDate date // 7
                                 in
                                 if egaInWeeks > 19 then
                                     measurements.obstetricalExam
@@ -284,7 +284,7 @@ generateHighSeverityAlertData language currentDate data alert =
                                     Nothing
                             )
             in
-            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> resolveAlert lastEncounterMeasurements)
+            Maybe.Extra.orLazy (resolveAlert ( currentDate, data.measurements )) (\() -> resolveAlert lastEncounterMeasurementsWithDate)
 
         HeartRate ->
             data.measurements.vitals
@@ -751,7 +751,7 @@ generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasure
             translate language (Translate.ObstetricalDiagnosisAlert diagnosis)
 
         lastEncounterMeasurements =
-            getLastEncounterMeasurements data
+            getLastEncounterMeasurements currentDate data
     in
     case diagnosis of
         DiagnosisRhNegative ->

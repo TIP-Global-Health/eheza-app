@@ -10,6 +10,7 @@ module Pages.PrenatalEncounter.Utils exposing
     , generatePreviousMeasurements
     , getFirstEncounterMeasurements
     , getLastEncounterMeasurements
+    , getLastEncounterMeasurementsWithDate
     , getLmpMeasurement
     , getMotherHeightMeasurement
     , isFirstPrenatalEncounter
@@ -341,11 +342,16 @@ getFirstEncounterMeasurements data =
             Tuple.second first
 
 
-getLastEncounterMeasurements : AssembledData -> PrenatalMeasurements
-getLastEncounterMeasurements data =
+getLastEncounterMeasurementsWithDate : NominalDate -> AssembledData -> ( NominalDate, PrenatalMeasurements )
+getLastEncounterMeasurementsWithDate currentDate data =
     case List.reverse data.previousMeasurementsWithDates of
         [] ->
-            data.measurements
+            ( currentDate, data.measurements )
 
         first :: others ->
-            Tuple.second first
+            first
+
+
+getLastEncounterMeasurements : NominalDate -> AssembledData -> PrenatalMeasurements
+getLastEncounterMeasurements currentDate data =
+    getLastEncounterMeasurementsWithDate currentDate data |> Tuple.second
