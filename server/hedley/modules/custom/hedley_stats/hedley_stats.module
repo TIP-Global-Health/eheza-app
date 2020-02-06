@@ -368,28 +368,6 @@ function hedley_stats_get_total_beneficiaries($health_center_id, $period = HEDLE
     12 => $nutrition_per_month,
   ];
 
-  // Get max values per type for each month.
-  $max_per_type = [
-    'stunting' => 0,
-    'underweight' => 0,
-    'wasting' => 0,
-    'muac' => 0,
-  ];
-
-  $max_per_month = [
-    1 => $max_per_type,
-    2 => $max_per_type,
-    3 => $max_per_type,
-    4 => $max_per_type,
-    5 => $max_per_type,
-    6 => $max_per_type,
-    7 => $max_per_type,
-    8 => $max_per_type,
-    9 => $max_per_type,
-    10 => $max_per_type,
-    11 => $max_per_type,
-    12 => $max_per_type,
-  ];
 
   $people = hedley_stats_get_measurements_query_grouped_by_person($health_center_id, $period);
 
@@ -420,13 +398,9 @@ function hedley_stats_get_total_beneficiaries($health_center_id, $period = HEDLE
             case 'height':
 
               if ($value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE]) {
-                // Set max value per type.
-                $max_per_month[$month]['stunting']++;
                 $data_per_month[$month]['stunting'][HEDLEY_STATS_SEVERE]++;
               }
               elseif ($value >= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_MODERATE]) {
-                // Set max value per type.
-                $max_per_month[$month]['stunting']++;
                 $data_per_month[$month]['stunting'][HEDLEY_STATS_MODERATE]++;
               }
 
@@ -435,26 +409,18 @@ function hedley_stats_get_total_beneficiaries($health_center_id, $period = HEDLE
             case 'weight':
               if ($field_name == 'field_zscore_age') {
                 if ($value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE]) {
-                  // Set max value per type.
-                  $max_per_month[$month]['underweight']++;
                   $data_per_month[$month]['underweight'][HEDLEY_STATS_SEVERE]++;
                 }
                 elseif ($value >= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_MODERATE]) {
-                  // Set max value per type.
-                  $max_per_month[$month]['underweight']++;
                   $data_per_month[$month]['underweight'][HEDLEY_STATS_MODERATE]++;
                 }
               }
 
               if ($field_name == 'field_zscore_length') {
                 if ($value <= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_SEVERE]) {
-                  // Set max value per type.
-                  $max_per_month[$month]['wasting']++;
                   $data_per_month[$month]['wasting'][HEDLEY_STATS_SEVERE]++;
                 }
                 elseif ($value >= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_MODERATE]) {
-                  // Set max value per type.
-                  $max_per_month[$month]['wasting']++;
                   $data_per_month[$month]['wasting'][HEDLEY_STATS_MODERATE]++;
                 }
               }
@@ -463,13 +429,9 @@ function hedley_stats_get_total_beneficiaries($health_center_id, $period = HEDLE
 
             case 'muac':
               if ($value <= $current_nutrition_signs['field_muac'][HEDLEY_STATS_SEVERE]) {
-                // Set max value per type.
-                $max_per_month[$month]['muac']++;
                 $data_per_month[$month]['muac'][HEDLEY_STATS_SEVERE]++;
               }
               elseif ($value >= $current_nutrition_signs['field_muac'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_muac'][HEDLEY_STATS_MODERATE]) {
-                // Set max value per type.
-                $max_per_month[$month]['muac']++;
                 $data_per_month[$month]['muac'][HEDLEY_STATS_MODERATE]++;
               }
 
@@ -480,14 +442,7 @@ function hedley_stats_get_total_beneficiaries($health_center_id, $period = HEDLE
     }
   }
 
-  $max_per_type = [];
-  foreach ($max_per_month as $month => $types) {
-    foreach ($types as $type => $max) {
-      $max_per_type[$type] = !isset($max_per_type[$type]) || $max > $max_per_type[$type] ? $max : $max_per_type[$type];
-    }
-  }
-
-  return [$data_per_month, $max_per_type];
+  return $data_per_month;
 }
 
 /**

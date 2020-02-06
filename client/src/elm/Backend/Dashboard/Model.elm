@@ -1,4 +1,4 @@
-module Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, MaxValuePerType, Nutrition, NutritionStatus(..), NutritionValue, Periods, TotalBeneficiaries, emptyModel)
+module Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Nutrition, NutritionStatus(..), NutritionValue, Periods, TotalBeneficiaries, emptyModel)
 
 {-| The stats for the dashboard.
 -}
@@ -17,7 +17,6 @@ type alias DashboardStats =
     , goodNutrition : GoodNutrition
     , malnourished : List MalnourishedStats
     , totalBeneficiaries : Dict Int TotalBeneficiaries
-    , totalBeneficiariesMax : MaxValuePerType
     , totalEncounters : Periods
     }
 
@@ -43,12 +42,6 @@ emptyModel =
         , thisYear = 0
         }
     , totalBeneficiaries = Dict.empty
-    , totalBeneficiariesMax =
-        { stunting = 0
-        , underweight = 0
-        , wasting = 0
-        , muac = 0
-        }
     }
 
 
@@ -121,12 +114,4 @@ type alias TotalBeneficiaries =
     , underweight : Nutrition
     , wasting : Nutrition
     , muac : Nutrition
-    }
-
-
-type alias MaxValuePerType =
-    { stunting : Float
-    , underweight : Float
-    , wasting : Float
-    , muac : Float
     }
