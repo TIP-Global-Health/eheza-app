@@ -119,25 +119,27 @@ viewCaseManagementPage language currentPage currentDate healthCenterId stats mod
         _ =
             Debug.log "caseManagement" stats.caseManagement
 
-        chartData =
+        tableData =
             List.foldl
-                (\( key, caseManagement ) accum ->
+                (\person accum ->
                     case model.currentCaseManagementFilter of
                         Stunting ->
-                            {name = caseManagement.name,  caseManagement.nutrition.stunting}
-                            caseManagement.nutrition.stunting :: accum
+                            { name = person.name, nutrition = person.nutrition.stunting } :: accum
 
                         Underweight ->
-                            caseManagement.nutrition.underweight :: accum
+                            { name = person.name, nutrition = person.nutrition.underweight } :: accum
 
                         Wasting ->
-                            caseManagement.nutrition.wasting :: accum
+                            { name = person.name, nutrition = person.nutrition.wasting } :: accum
 
                         MUAC ->
-                            caseManagement.nutrition.muac :: accum
+                            { name = person.name, nutrition = person.nutrition.muac } :: accum
                 )
                 []
                 stats.caseManagement
+
+        _ =
+            Debug.log "tableData" tableData
     in
     div [ class "dashboard case" ]
         [ div [ class "ui segment blue" ]

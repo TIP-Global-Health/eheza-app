@@ -52,10 +52,10 @@ type alias CaseManagement =
 
 
 type alias CaseNutrition =
-    { stunting : NutritionValue
-    , underweight : NutritionValue
-    , wasting : NutritionValue
-    , muac : NutritionValue
+    { stunting : Dict Int NutritionValue
+    , underweight : Dict Int NutritionValue
+    , wasting : Dict Int NutritionValue
+    , muac : Dict Int NutritionValue
     }
 
 
@@ -106,6 +106,7 @@ type alias NutritionValue =
 type NutritionStatus
     = Good
     | Moderate
+    | Neutral
     | Severe
 
 

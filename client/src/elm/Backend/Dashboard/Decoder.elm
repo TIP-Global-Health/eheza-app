@@ -46,10 +46,23 @@ decodeCaseManagement =
 decodeCaseNutrition : Decoder CaseNutrition
 decodeCaseNutrition =
     succeed CaseNutrition
-        |> required "stunting" decodeNutritionValue
-        |> required "underweight" decodeNutritionValue
-        |> required "wasting" decodeNutritionValue
-        |> required "muac" decodeNutritionValue
+        |> required "stunting" decodeNutritionValueDict
+        |> required "underweight" decodeNutritionValueDict
+        |> required "wasting" decodeNutritionValueDict
+        |> required "muac" decodeNutritionValueDict
+
+
+decodeNutritionValueDict : Decoder (Dict Int NutritionValue)
+decodeNutritionValueDict =
+    dict decodeNutritionValue
+        |> andThen
+            (\dict ->
+                LegacyDict.toList dict
+                    |> List.map
+                        (\( k, v ) -> ( Maybe.withDefault 1 (String.toInt k), v ))
+                    |> Dict.fromList
+                    |> succeed
+            )
 
 
 decodeNutritionValue : Decoder NutritionValue
@@ -65,6 +78,9 @@ decodeNutritionStatus =
         |> andThen
             (\s ->
                 case s of
+                    "neutral" ->
+                        succeed Neutral
+
                     "good_nutrition" ->
                         succeed Good
 
