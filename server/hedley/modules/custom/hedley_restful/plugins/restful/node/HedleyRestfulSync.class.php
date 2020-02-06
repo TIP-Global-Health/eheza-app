@@ -235,9 +235,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $health_center_id = 7092;
     $wrapper = entity_metadata_wrapper('node', $health_center_id);
 
-    $total_beneficiaries = hedley_stats_get_total_beneficiaries($health_center_id);
-    // Find the highest value in the data.
-    $total_beneficiaries_max = hedley_stats_get_max_value_in_array($total_beneficiaries);
+    list($total_beneficiaries, $total_beneficiaries_max) = hedley_stats_get_total_beneficiaries($health_center_id);
 
     $output[] = [
       'type' => 'statistics',

@@ -1,7 +1,7 @@
 module Pages.Dashboard.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Dashboard.Model exposing (DashboardStats, GoodNutrition, Nutrition, Periods, TotalBeneficiaries)
+import Backend.Dashboard.Model exposing (DashboardStats, GoodNutrition, MaxValuePerType, Nutrition, Periods, TotalBeneficiaries)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
@@ -657,12 +657,23 @@ viewDonutChart language stats =
             ]
 
 
-viewMonthlyChart : Language -> Dict Int TotalBeneficiaries -> FilterCharts -> Float -> Html Msg
+viewMonthlyChart : Language -> Dict Int TotalBeneficiaries -> FilterCharts -> MaxValuePerType -> Html Msg
 viewMonthlyChart language data currentFilter yScaleMax =
     let
-        -- Add 10% to the top of the graph above the max
+        -- Add 20% to the top of the graph above the max
         yScaleMaxEnhanced =
-            yScaleMax + (yScaleMax * 0.5)
+            case currentFilter of
+                Stunting ->
+                    yScaleMax.stunting + (yScaleMax.stunting * 0.2)
+
+                Underweight ->
+                    yScaleMax.underweight + (yScaleMax.underweight * 0.2)
+
+                Wasting ->
+                    yScaleMax.wasting + (yScaleMax.wasting * 0.2)
+
+                MUAC ->
+                    yScaleMax.muac + (yScaleMax.muac * 0.2)
 
         chartList =
             data

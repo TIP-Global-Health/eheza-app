@@ -211,23 +211,21 @@ function hedley_stats_get_good_nutrition($health_center_id) {
         $current_nutrition_signs = $nutrition_signs[$type];
 
         // Go through all the measurements for this person.
-        foreach ($measurement as $field_name => $value) {
-          if ($field_name == 'field_date_measured') {
-            // Don't let the date count.
-            continue;
-          }
+        foreach ($measurement as $values) {
 
-          // The nutrition value should be 'none' to be considered "good".
-          if ($type == 'nutrition') {
-            if ($value != $current_nutrition_signs[$field_name][HEDLEY_STATS_GOOD]) {
-              $good_nutrition = 0;
+          foreach ($values as $field_name => $value) {
+            // The nutrition value should be 'none' to be considered "good".
+            if ($type == 'nutrition') {
+              if ($value != $current_nutrition_signs[$field_name][HEDLEY_STATS_GOOD]) {
+                $good_nutrition = 0;
+              }
             }
-          }
-          // All the rest of the measurements should be bigger than "moderate"
-          // to be considered good.
-          else {
-            if ($value <= $current_nutrition_signs[$field_name][HEDLEY_STATS_MODERATE]) {
-              $good_nutrition = 0;
+            // All the rest of the measurements should be bigger than "moderate"
+            // to be considered good.
+            else {
+              if ($value <= $current_nutrition_signs[$field_name][HEDLEY_STATS_MODERATE]) {
+                $good_nutrition = 0;
+              }
             }
           }
         }
@@ -337,6 +335,29 @@ function hedley_stats_get_total_beneficiaries($health_center_id, $period = HEDLE
     12 => $nutrition_per_month,
   ];
 
+  // Get max values per type for each month.
+  $max_per_type = [
+    'stunting' => 0,
+    'underweight' => 0,
+    'wasting' => 0,
+    'muac' => 0,
+  ];
+
+  $max_per_month = [
+    1 => $max_per_type,
+    2 => $max_per_type,
+    3 => $max_per_type,
+    4 => $max_per_type,
+    5 => $max_per_type,
+    6 => $max_per_type,
+    7 => $max_per_type,
+    8 => $max_per_type,
+    9 => $max_per_type,
+    10 => $max_per_type,
+    11 => $max_per_type,
+    12 => $max_per_type,
+  ];
+
   $people = hedley_stats_get_measurements_query_grouped_by_person($health_center_id, $period);
 
   if (empty($people)) {
@@ -349,67 +370,90 @@ function hedley_stats_get_total_beneficiaries($health_center_id, $period = HEDLE
   // date.
   foreach ($people as $person) {
     foreach ($person as $type => $measurement) {
-      if (!strtotime($measurement['field_date_measured'])) {
-        // Don't count if we don't have a valid date.
-        continue;
-      }
-
-      // Get the date of the measurement in order to distribute them by months.
-      $month = date('n', strtotime($measurement['field_date_measured']));
 
       // We are interested only with the nutrition signs that match the
       // current type.
       $current_nutrition_signs = $nutrition_signs[$type];
 
-      foreach ($measurement as $field_name => $value) {
-        // Go through all the measurements for this person.
-        switch ($type) {
-          case 'height':
-            if ($value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE]) {
-              $data_per_month[$month]['stunting'][HEDLEY_STATS_SEVERE]++;
-            }
-            elseif ($value >= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_MODERATE]) {
-              $data_per_month[$month]['stunting'][HEDLEY_STATS_MODERATE]++;
-            }
+      foreach ($measurement as $date => $values) {
+        // Get the date of the measurement in order to distribute them by months.
+        $month = date('n', strtotime($date));
 
-            break;
+        foreach ($values as $field_name => $value) {
 
-          case 'weight':
-            if ($field_name == 'field_zscore_age') {
+          // Go through all the measurements for this person.
+          switch ($type) {
+            case 'height':
+
               if ($value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE]) {
-                $data_per_month[$month]['underweight'][HEDLEY_STATS_SEVERE]++;
+                // Set max value per type.
+                $max_per_month[$month]['stunting']++;
+                $data_per_month[$month]['stunting'][HEDLEY_STATS_SEVERE]++;
               }
               elseif ($value >= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_MODERATE]) {
-                $data_per_month[$month]['underweight'][HEDLEY_STATS_MODERATE]++;
+                // Set max value per type.
+                $max_per_month[$month]['stunting']++;
+                $data_per_month[$month]['stunting'][HEDLEY_STATS_MODERATE]++;
               }
-            }
 
-            if ($field_name == 'field_zscore_length') {
-              if ($value <= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_SEVERE]) {
-                $data_per_month[$month]['wasting'][HEDLEY_STATS_SEVERE]++;
+              break;
+
+            case 'weight':
+              if ($field_name == 'field_zscore_age') {
+                if ($value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE]) {
+                  // Set max value per type.
+                  $max_per_month[$month]['underweight']++;
+                  $data_per_month[$month]['underweight'][HEDLEY_STATS_SEVERE]++;
+                }
+                elseif ($value >= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_MODERATE]) {
+                  // Set max value per type.
+                  $max_per_month[$month]['underweight']++;
+                  $data_per_month[$month]['underweight'][HEDLEY_STATS_MODERATE]++;
+                }
               }
-              elseif ($value >= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_MODERATE]) {
-                $data_per_month[$month]['wasting'][HEDLEY_STATS_MODERATE]++;
+
+              if ($field_name == 'field_zscore_length') {
+                if ($value <= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_SEVERE]) {
+                  // Set max value per type.
+                  $max_per_month[$month]['wasting']++;
+                  $data_per_month[$month]['wasting'][HEDLEY_STATS_SEVERE]++;
+                }
+                elseif ($value >= $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_zscore_length'][HEDLEY_STATS_MODERATE]) {
+                  // Set max value per type.
+                  $max_per_month[$month]['wasting']++;
+                  $data_per_month[$month]['wasting'][HEDLEY_STATS_MODERATE]++;
+                }
               }
-            }
 
-            break;
+              break;
 
-          case 'muac':
-            if ($value <= $current_nutrition_signs['field_muac'][HEDLEY_STATS_SEVERE]) {
-              $data_per_month[$month]['muac'][HEDLEY_STATS_SEVERE]++;
-            }
-            elseif ($value >= $current_nutrition_signs['field_muac'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_muac'][HEDLEY_STATS_MODERATE]) {
-              $data_per_month[$month]['muac'][HEDLEY_STATS_MODERATE]++;
-            }
+            case 'muac':
+              if ($value <= $current_nutrition_signs['field_muac'][HEDLEY_STATS_SEVERE]) {
+                // Set max value per type.
+                $max_per_month[$month]['muac']++;
+                $data_per_month[$month]['muac'][HEDLEY_STATS_SEVERE]++;
+              }
+              elseif ($value >= $current_nutrition_signs['field_muac'][HEDLEY_STATS_SEVERE] && $value < $current_nutrition_signs['field_muac'][HEDLEY_STATS_MODERATE]) {
+                // Set max value per type.
+                $max_per_month[$month]['muac']++;
+                $data_per_month[$month]['muac'][HEDLEY_STATS_MODERATE]++;
+              }
 
-            break;
+              break;
+          }
         }
       }
     }
   }
 
-  return $data_per_month;
+  $max_per_type = [];
+  foreach ($max_per_month as $month => $types) {
+    foreach ($types as $type => $max) {
+      $max_per_type[$type] = !isset($max_per_type[$type]) || $max > $max_per_type[$type] ? $max : $max_per_type[$type];
+    }
+  }
+
+  return [$data_per_month, $max_per_type];
 }
 
 /**
@@ -467,13 +511,8 @@ function hedley_stats_get_measurements_query_grouped_by_person($health_center_id
     // Get fields for current node type.
     $measurement_fields = $node_types[$measurement->type];
 
-    // Add the measurements' date.
-    if ($measurement->field_date_measured) {
-      $people[$measurement->field_person][$measurement->type]['field_date_measured'] = $measurement->field_date_measured;
-    }
-
     foreach ($measurement_fields as $measurement_field) {
-      $people[$measurement->field_person][$measurement->type][$measurement_field] = $measurement->{$measurement_field};
+      $people[$measurement->field_person][$measurement->type][$measurement->field_date_measured][$measurement_field] = $measurement->{$measurement_field};
     }
   }
 
@@ -753,23 +792,4 @@ function hedley_stats_nutrition_signs() {
       ],
     ],
   ];
-}
-
-/**
- * Helper function; Get the highest value in an array.
- *
- * @param array $array
- *   The array to scan.
- *
- * @return mixed
- *   The highest value in the array.
- */
-function hedley_stats_get_max_value_in_array(array $array) {
-  foreach ($array as $key => $value) {
-    if (is_array($value)) {
-      $array[$key] = hedley_stats_get_max_value_in_array($value);
-    }
-  }
-
-  return max($array);
 }
