@@ -409,7 +409,8 @@ function hedley_stats_get_total_beneficiaries($health_center_id, $period = HEDLE
       $current_nutrition_signs = $nutrition_signs[$type];
 
       foreach ($measurement as $date => $values) {
-        // Get the date of the measurement in order to distribute them by months.
+        // Get the date of the measurement in order to distribute them by
+        // months.
         $month = date('n', strtotime($date));
 
         foreach ($values as $field_name => $value) {
