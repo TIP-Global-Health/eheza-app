@@ -1,7 +1,7 @@
 module Pages.Dashboard.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Dashboard.Model exposing (DashboardStats, GoodNutrition, MaxValuePerType, Nutrition, Periods, TotalBeneficiaries)
+import Backend.Dashboard.Model exposing (DashboardStats, GoodNutrition, Nutrition, Periods, TotalBeneficiaries)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
@@ -84,7 +84,7 @@ viewMainPage language currentPage currentDate stats model =
                 [ viewTotalEncounters language currentPage stats.totalEncounters
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language stats.totalBeneficiaries model.currentTotalChartsFilter stats.totalBeneficiariesMax
+                [ viewMonthlyChart language model stats.totalBeneficiaries model.currentTotalChartsFilter
                 ]
             , div [ class "sixteen wide column" ]
                 [ viewDashboardPagesLinks language
@@ -657,24 +657,9 @@ viewDonutChart language stats =
             ]
 
 
-viewMonthlyChart : Language -> Dict Int TotalBeneficiaries -> FilterCharts -> MaxValuePerType -> Html Msg
-viewMonthlyChart language data currentFilter yScaleMax =
+viewMonthlyChart : Language -> Model -> Dict Int TotalBeneficiaries -> FilterCharts -> Html Msg
+viewMonthlyChart language model data currentFilter =
     let
-        -- Add 20% to the top of the graph above the max
-        yScaleMaxEnhanced =
-            case currentFilter of
-                Stunting ->
-                    yScaleMax.stunting + (yScaleMax.stunting * 0.2)
-
-                Underweight ->
-                    yScaleMax.underweight + (yScaleMax.underweight * 0.2)
-
-                Wasting ->
-                    yScaleMax.wasting + (yScaleMax.wasting * 0.2)
-
-                MUAC ->
-                    yScaleMax.muac + (yScaleMax.muac * 0.2)
-
         chartList =
             data
                 |> Dict.toList
@@ -704,6 +689,32 @@ viewMonthlyChart language data currentFilter yScaleMax =
                 Dict.empty
                 chartList
                 |> Dict.toList
+
+        yScaleMaxList =
+            let
+                choose x y =
+                    let
+                        chosenX =
+                            if x.moderateNutrition > x.severeNutrition then
+                                x.moderateNutrition
+
+                            else
+                                x.severeNutrition
+                    in
+                    if chosenX > y then
+                        chosenX
+
+                    else
+                        y
+            in
+            List.map (\( key, value ) -> choose value 0) chartData
+
+        yScaleMax =
+            Maybe.withDefault 1 <| List.maximum yScaleMaxList
+
+        -- Add 20% to the top of the graph above the max
+        yScaleMaxEnhanced =
+            toFloat yScaleMax + (toFloat yScaleMax * 0.2)
     in
     div [ class "ui segment blue dashboards-monthly-chart" ]
         [ div [ class "header" ]

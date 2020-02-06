@@ -1,11 +1,11 @@
 module Backend.Dashboard.Decoder exposing (decodeDashboardStats)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Dashboard.Model exposing (ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, MaxValuePerType, Nutrition, Periods, TotalBeneficiaries)
+import Backend.Dashboard.Model exposing (ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Nutrition, Periods, TotalBeneficiaries)
 import Backend.Measurement.Decoder exposing (decodeFamilyPlanningSign)
 import Backend.Person.Decoder exposing (decodeGender)
 import Dict as LegacyDict
-import Gizra.Json exposing (decodeFloat, decodeInt)
+import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
@@ -19,7 +19,6 @@ decodeDashboardStats =
         |> required "good_nutrition" decodeGoodNutrition
         |> required "malnourished_beneficiaries" (list decodeMalnourishedStats)
         |> required "total_beneficiaries" decodeTotalBeneficiariesDict
-        |> required "total_beneficiaries_max" decodeMaxValuePerType
         |> required "total_encounters" decodePeriods
 
 
@@ -43,15 +42,6 @@ decodeTotalBeneficiaries =
         |> required "underweight" decodeBeneficiaries
         |> required "wasting" decodeBeneficiaries
         |> required "muac" decodeBeneficiaries
-
-
-decodeMaxValuePerType : Decoder MaxValuePerType
-decodeMaxValuePerType =
-    succeed MaxValuePerType
-        |> required "stunting" decodeFloat
-        |> required "underweight" decodeFloat
-        |> required "wasting" decodeFloat
-        |> required "muac" decodeFloat
 
 
 decodeBeneficiaries : Decoder Nutrition

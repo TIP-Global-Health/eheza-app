@@ -235,8 +235,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $health_center_id = 7092;
     $wrapper = entity_metadata_wrapper('node', $health_center_id);
 
-    list($total_beneficiaries, $total_beneficiaries_max) = hedley_stats_get_total_beneficiaries($health_center_id);
-
     $output[] = [
       'type' => 'statistics',
       // UUID of the health center.
@@ -245,8 +243,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'children_beneficiaries' => hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id),
       'malnourished_beneficiaries' => hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_center_id),
       'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_id),
-      'total_beneficiaries' => $total_beneficiaries,
-      'total_beneficiaries_max' => $total_beneficiaries_max,
+      'total_beneficiaries' => hedley_stats_get_total_beneficiaries($health_center_id),
       'total_encounters' => hedley_stats_get_total_encounters($health_center_id),
     ];
 
