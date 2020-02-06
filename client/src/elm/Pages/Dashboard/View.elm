@@ -116,9 +116,6 @@ viewStatsPage language currentPage currentDate stats model =
 viewCaseManagementPage : Language -> DashboardPage -> NominalDate -> HealthCenterId -> DashboardStats -> Model -> ModelIndexedDb -> Html Msg
 viewCaseManagementPage language currentPage currentDate healthCenterId stats model db =
     let
-        _ =
-            Debug.log "caseManagement" stats.caseManagement
-
         tableData =
             List.foldl
                 (\person accum ->

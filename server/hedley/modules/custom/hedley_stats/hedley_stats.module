@@ -468,7 +468,7 @@ function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_ST
   for ($i=1;$i<=12;$i++) {
     $data_per_month[$i] = [
       'class' => 'neutral',
-      'value' => 0,
+      'value' => 'X',
     ];
   }
 
