@@ -1,7 +1,7 @@
 module Pages.Dashboard.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Dashboard.Model exposing (DashboardStats, GoodNutrition, Nutrition, Periods, TotalBeneficiaries)
+import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, DashboardStats, GoodNutrition, Nutrition, NutritionValue, Periods, TotalBeneficiaries)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
@@ -134,9 +134,6 @@ viewCaseManagementPage language currentPage currentDate healthCenterId stats mod
                 )
                 []
                 stats.caseManagement
-
-        _ =
-            Debug.log "tableData" tableData
     in
     div [ class "dashboard case" ]
         [ div [ class "ui segment blue" ]
@@ -147,11 +144,61 @@ viewCaseManagementPage language currentPage currentDate healthCenterId stats mod
                         (List.map (viewFilters FilterCaseManagement model.currentCaseManagementFilter) filterCharts)
                     ]
                 , div [ class "content" ]
-                    [ text "Table here"
+                    [ viewCaseManagementTable language model tableData
                     ]
                 ]
             ]
         ]
+
+
+viewCaseManagementTable : Language -> Model -> List { name : String, nutrition : Dict Int NutritionValue } -> Html Msg
+viewCaseManagementTable language model tableData =
+    table [ class "ui celled table" ]
+        [ thead []
+            [ tr []
+                [ th [ class "name" ] [ text "Name" ]
+                , th [] [ text "Jan" ]
+                , th [] [ text "Feb" ]
+                , th [] [ text "Mar" ]
+                , th [] [ text "Apr" ]
+                , th [] [ text "May" ]
+                , th [] [ text "Jun" ]
+                , th [] [ text "Jul" ]
+                , th [] [ text "Aug" ]
+                , th [] [ text "Sep" ]
+                , th [] [ text "Oct" ]
+                , th [] [ text "Nov" ]
+                , th [] [ text "Dec" ]
+                ]
+            ]
+        , tbody []
+            (List.map viewCaseManagementTableRow tableData)
+        ]
+
+
+viewCaseManagementTableRow : { name : String, nutrition : Dict Int NutritionValue } -> Html Msg
+viewCaseManagementTableRow rowData =
+    let
+        rowList =
+            rowData.nutrition
+                |> Dict.toList
+                |> List.sortWith (\t1 t2 -> compare (Tuple.first t1) (Tuple.first t2))
+
+        viewMonthCell ( month, cellData ) =
+            let
+                class =
+                    classList
+                        [ ( String.toLower <| Debug.toString cellData.class, True )
+                        , ( String.fromInt month, True )
+                        ]
+            in
+            td [ class ] [ text cellData.value ]
+    in
+    tr []
+        (List.append
+            [ td [ class "name" ] [ text rowData.name ] ]
+            (List.map viewMonthCell rowList)
+        )
 
 
 viewPeriodFilter : Language -> Model -> Html Msg
