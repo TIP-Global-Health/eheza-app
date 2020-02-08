@@ -153,7 +153,7 @@ viewCaseManagementPage language currentPage currentDate healthCenterId stats mod
 
 viewCaseManagementTable : Language -> Model -> List { name : String, nutrition : Dict Int NutritionValue } -> Html Msg
 viewCaseManagementTable language model tableData =
-    table [ class "ui celled table" ]
+    table [ class "ui very basic collapsing celled table" ]
         [ thead []
             [ tr []
                 [ th [ class "name" ] [ text "Name" ]
@@ -192,7 +192,7 @@ viewCaseManagementTableRow rowData =
                         , ( String.fromInt month, True )
                         ]
             in
-            td [ class ] [ text cellData.value ]
+            td [ class ] [ span [] [ text cellData.value ] ]
     in
     tr []
         (List.append

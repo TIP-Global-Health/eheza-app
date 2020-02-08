@@ -4,6 +4,103 @@
     padding: 1.5rem 2rem;
   }
 
+  &.case {
+
+    .ui.segment {
+
+      .header {
+        float: none;
+      }
+
+      .content {
+        overflow-x: scroll;
+        overflow-y: visible;
+        width: 100%;
+
+        .table.basic {
+          width: 100%;
+          margin-left: 407px;
+
+          th {
+            font-size: 16px;
+            line-height: 24px;
+            border: 0 none;
+            border-bottom: 1px solid $color-text;
+            color: $color-text;
+            text-transform: uppercase;
+            padding: 0 3px;
+            text-align: center;
+
+            &.name {
+              height: 25px;
+              text-align: left;
+            }
+          }
+
+          td {
+            font-size: 20px;
+            line-height: 24px;
+            border: 0 none;
+            padding: 8px 10px;
+
+            &.name {
+              border-right: 1px solid $color-text;
+              height: 45px;
+              padding: 16px 8px;
+            }
+
+            span {
+              padding: 2px 22px;
+              text-align: center;
+              display: block;
+              border-radius: 6px;
+              color: white;
+              max-width: 70px;
+            }
+
+            &.neutral {
+
+              span {
+                background-color: $color-text;
+              }
+            }
+
+            &.severe {
+
+              span {
+                background-color: $color-velvet;
+              }
+            }
+
+            &.moderate {
+
+              span {
+                background-color: $color-orange;
+              }
+            }
+
+            &.good {
+
+              span {
+                background-color: $color-green;
+              }
+            }
+          }
+
+          // Create the table's vertical scroll.
+          th.name,
+          td.name {
+            position: absolute;
+            left: 25px;
+            width: 410px;
+            background-color: white;
+            word-break: break-all;
+          }
+        }
+      }
+    }
+  }
+
   .severity {
 
     &.severity-neutral {
