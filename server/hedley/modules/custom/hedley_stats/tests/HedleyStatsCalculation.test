@@ -160,7 +160,8 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
         if ($moderate_count >= $moderate_people) {
           $measurements_state = HEDLEY_STATS_SEVERE;
           $severe_count++;
-        } else {
+        }
+        else {
           $moderate_count++;
         }
 
