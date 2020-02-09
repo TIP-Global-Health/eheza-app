@@ -261,11 +261,17 @@ emptyPregnancyDatingForm =
 type alias ObstetricFormFirstStep =
     { currentlyPregnant : Maybe Bool
     , termPregnancy : Maybe Int
+    , termPregnancyDirty : Bool
     , preTermPregnancy : Maybe Int
+    , preTermPregnancyDirty : Bool
     , stillbirthsAtTerm : Maybe Int
+    , stillbirthsAtTermDirty : Bool
     , stillbirthsPreTerm : Maybe Int
+    , stillbirthsPreTermDirty : Bool
     , abortions : Maybe Int
+    , abortionsDirty : Bool
     , liveChildren : Maybe Int
+    , liveChildrenDirty : Bool
     }
 
 
@@ -273,16 +279,23 @@ emptyObstetricFormFirstStep : ObstetricFormFirstStep
 emptyObstetricFormFirstStep =
     { currentlyPregnant = Nothing
     , termPregnancy = Nothing
+    , termPregnancyDirty = False
     , preTermPregnancy = Nothing
+    , preTermPregnancyDirty = False
     , stillbirthsAtTerm = Nothing
+    , stillbirthsAtTermDirty = False
     , stillbirthsPreTerm = Nothing
+    , stillbirthsPreTermDirty = False
     , abortions = Nothing
+    , abortionsDirty = False
     , liveChildren = Nothing
+    , liveChildrenDirty = False
     }
 
 
 type alias ObstetricFormSecondStep =
     { cSections : Maybe Int
+    , cSectionsDirty : Bool
     , cSectionInPreviousDelivery : Maybe Bool
     , cSectionReason : Maybe CSectionReason
     , previousDeliveryPeriod : Maybe PreviousDeliveryPeriod
@@ -304,6 +317,7 @@ type alias ObstetricFormSecondStep =
 emptyObstetricFormSecondStep : ObstetricFormSecondStep
 emptyObstetricFormSecondStep =
     { cSections = Nothing
+    , cSectionsDirty = False
     , cSectionInPreviousDelivery = Nothing
     , cSectionReason = Nothing
     , previousDeliveryPeriod = Nothing
