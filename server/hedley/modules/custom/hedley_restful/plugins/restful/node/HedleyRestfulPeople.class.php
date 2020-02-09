@@ -67,6 +67,9 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
     return $public_fields;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     $field_names = [
       'field_birth_date_estimated',
@@ -107,6 +110,9 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
     hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_health_center.field_health_center_target_id", 'uuid_health_center');
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
     $items = parent::postExecuteQueryForViewWithDbSelect($items);
 
@@ -128,6 +134,5 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
 
     return $items;
   }
-
 
 }

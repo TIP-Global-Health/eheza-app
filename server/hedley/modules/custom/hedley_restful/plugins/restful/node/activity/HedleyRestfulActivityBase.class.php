@@ -51,6 +51,9 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
     return date("Y-m-d", $date);
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     $query = parent::alterQueryForViewWithDbSelect($query);
 
@@ -65,7 +68,7 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
       hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
     }
 
-     // Get the UUID of the Nurse.
+    // Get the UUID of the Nurse.
     hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_nurse.field_nurse_target_id", 'uuid_nurse');
 
     // Get the UUID of the Session.
@@ -77,6 +80,9 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
     return $query;
   }
 
+  /**
+   * {@inheritdoc}
+   */
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
     $items = parent::postExecuteQueryForViewWithDbSelect($items);
 
@@ -95,6 +101,5 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
 
     return $items;
   }
-
 
 }

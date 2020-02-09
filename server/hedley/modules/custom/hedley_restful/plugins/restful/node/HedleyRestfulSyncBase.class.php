@@ -38,6 +38,17 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
     return $public_fields;
   }
 
+  /**
+   * Generates nodes view for provided nodes.
+   *
+   * @param array $node_ids
+   *   The IDs of nodes to view.
+   *
+   * @return array
+   *   The view of the nodes.
+   *
+   * @throws \Exception
+   */
   public function viewWithDbSelect(array $node_ids) {
     $query = $this->getQueryForViewWithDbSelect($node_ids);
 
@@ -47,21 +58,49 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
     return $this->postExecuteQueryForViewWithDbSelect($items);
   }
 
+  /**
+   * Generates basic query for view the nodes.
+   *
+   * @param array $node_ids
+   *   The IDs of nodes to view.
+   *
+   * @return \SelectQuery
+   *   The view query
+   *
+   * @throws \Exception
+   */
   protected function getQueryForViewWithDbSelect(array $node_ids) {
     $query = db_select('node', 'node');
     $query->fields('node', ['type', 'nid', 'vid', 'changed', 'title', 'status']);
     $query->condition('node.nid',$node_ids, 'IN');
 
+    return $query;
+  }
+
+  /**
+   * Alters query for view the nodes.
+   *
+   * @param \SelectQuery $query
+   *   The query objected.
+   *
+   * @return \SelectQuery
+   *   Altered query objected.
+   */
+  protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE);
 
     return $query;
   }
 
-  // @todo: Make abstract, so everyone must implement.
-  protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
-    return $query;
-  }
-
+  /**
+   * Executes the view query.
+   *
+   * @param \SelectQuery $query
+   *   The query objected.
+   *
+   * @return array
+   *   A list of view node obejcts.
+   */
   protected function executeQueryForViewWithDbSelect(SelectQuery $query) {
     $result = $query
       ->execute()
@@ -70,6 +109,15 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
     return $result;
   }
 
+  /**
+   * Performs post processing for view node objects.
+   *
+   * @param array $items
+   *   View node objects
+   *
+   * @return array
+   *   Processed view node objects.
+   */
   protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
     $fields_info = $this->getPublicFields();
 
@@ -95,9 +143,5 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
 
     return $items;
   }
-
-
-
-
 
 }
