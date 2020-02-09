@@ -120,29 +120,95 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   }
 
   /**
+   * Testing the good nutrition stats.
+   */
+  public function testTotalBeneficiaries() {
+    // Define needed measurements for the test.
+    $measurements = [
+      HEDLEY_STATS_MODERATE => [
+        'weight' => 8,
+        'height' => 75,
+        'muac' => 12,
+      ],
+      HEDLEY_STATS_SEVERE => [
+        'weight' => 5,
+        'height' => 72,
+        'muac' => 11,
+      ],
+    ];
+
+    $attendance = 20;
+    $sessions = $this->createSessionsWithAttendance(0, $attendance, '0', '-5 months');
+
+    foreach ($sessions as $session) {
+      if (!isset($session['session_data'])) {
+        continue;
+      }
+
+      $measurements_state = HEDLEY_STATS_MODERATE;
+      $session_data = $session['session_data'];
+      $session_nid = $session_data['session_nid'];
+
+      foreach ($session_data['children'] as $child_nid) {
+        // Reverse the state of measurements for each child so would get equal
+        // number of moderate and severe measurements.
+        $measurements_state = $measurements_state == HEDLEY_STATS_MODERATE ? HEDLEY_STATS_SEVERE : HEDLEY_STATS_MODERATE;
+
+        // Create measurements.
+        $this->createWeight($session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
+        $this->createHeight($session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
+        $this->createMuac($session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);;
+      }
+
+      $month = date('n', $session['date']);
+
+      $total_beneficiaries = hedley_stats_get_total_beneficiaries($this->healthCenterNid);
+
+      // Assert the amount of total beneficiaries.
+      $this->assertEqual(10, $total_beneficiaries[$month]['stunting'][HEDLEY_STATS_SEVERE]);
+      $this->assertEqual(10, $total_beneficiaries[$month]['stunting'][HEDLEY_STATS_MODERATE]);
+      $this->assertEqual(10, $total_beneficiaries[$month]['underweight'][HEDLEY_STATS_SEVERE]);
+      $this->assertEqual(10, $total_beneficiaries[$month]['underweight'][HEDLEY_STATS_MODERATE]);
+      $this->assertEqual(10, $total_beneficiaries[$month]['wasting'][HEDLEY_STATS_SEVERE]);
+      $this->assertEqual(10, $total_beneficiaries[$month]['wasting'][HEDLEY_STATS_MODERATE]);
+      $this->assertEqual(10, $total_beneficiaries[$month]['muac'][HEDLEY_STATS_SEVERE]);
+      $this->assertEqual(10, $total_beneficiaries[$month]['muac'][HEDLEY_STATS_MODERATE]);
+    }
+  }
+
+  /**
    * Create sessions with attendance.
    *
    * @param int $attendance_last_year
    *   The number of attendances last year.
    * @param int $attendance_this_year
    *   The number of attendances this year.
+   * @param string $last_year_session_date
+   *   The date in string for last year's session.
+   * @param string $this_year_session_date
+   *   The date in string for this year's session.
    *
    * @return array
    *   The sessions created with all the data created related to the session.
    */
-  protected function createSessionsWithAttendance($attendance_last_year, $attendance_this_year) {
+  protected function createSessionsWithAttendance($attendance_last_year, $attendance_this_year, $last_year_session_date = '-18 months', $this_year_session_date = '-9 months') {
     $sessions = [
       [
-        'date' => strtotime('-18 months'),
+        'date' => strtotime($last_year_session_date),
         'number_of_attendance' => $attendance_last_year,
       ],
       [
-        'date' => strtotime('-9 months'),
+        'date' => strtotime($this_year_session_date),
         'number_of_attendance' => $attendance_this_year,
       ],
     ];
 
     foreach ($sessions as $key => $session) {
+      if ($session['number_of_attendance'] <= 0) {
+        // No need to create any data if the number of attendance is 0.
+        continue;
+      }
+
       $session_nid = $this->createSession($this->clinicNid, $session['date']);
       $nurse = $this->createNurse($this->clinicNid);
 
