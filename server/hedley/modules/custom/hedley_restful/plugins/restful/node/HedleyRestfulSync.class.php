@@ -13,7 +13,7 @@ use Ramsey\Uuid\Uuid;
  * The content types and their restful handler for nodes that
  * we sync to all devices.
  */
-const HEDLEY_RESTFUL_DB_QUERY_RANGE = 50;
+const HEDLEY_RESTFUL_DB_QUERY_RANGE = 500;
 
 /**
  * Class HedleyRestfulSync.
@@ -222,15 +222,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       }
 
       $rendered_items = $sub_handler->viewWithDbSelect($node_ids);
-
-      // @todo: Use array_merge
-      foreach ($rendered_items as $rendered_item) {
-        // Also add in the timestamp.
-        // @todo: Convert to timestamp?
-        // $rendered['timestamp'] = $item->timestamp;
-
-        $output[] = $rendered_item;
-      }
+      $output = array_merge($output, $rendered_items);
     }
 
     return [
@@ -339,6 +331,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     foreach ($batch as $item) {
       $batch_by_node_type[$item->type][] = $item;
     }
+
     $output = [];
     foreach ($batch_by_node_type as $node_type => $items) {
       $handler_name = $handlers_by_types[$node_type];
@@ -351,15 +344,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       }
 
       $rendered_items = $sub_handler->viewWithDbSelect($node_ids);
-
-      // @todo: Use array_merge
-      foreach ($rendered_items as $rendered_item) {
-        // Also add in the timestamp.
-        // @todo: Convert to timestamp?
-        // $rendered['timestamp'] = $item->timestamp;
-
-        $output[] = $rendered_item;
-      }
+      $output = array_merge($output, $rendered_items);
     }
 
     return [
