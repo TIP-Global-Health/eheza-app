@@ -74,6 +74,8 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
     $query->fields('node', ['type', 'nid', 'vid', 'changed', 'title', 'status']);
     $query->condition('node.nid', $node_ids, 'IN');
 
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE);
+
     return $query;
   }
 
@@ -87,8 +89,6 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
    *   Altered query objected.
    */
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE);
-
     return $query;
   }
 
