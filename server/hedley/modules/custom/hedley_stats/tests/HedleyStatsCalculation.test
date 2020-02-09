@@ -137,22 +137,33 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       ],
     ];
 
-    $attendance = 20;
+    $attendance = 30;
     $sessions = $this->createSessionsWithAttendance(0, $attendance, '0', '-5 months');
+
+    $moderate_people = 18;
+    $severe_people = 12;
+    $moderate_count = 0;
+    $severe_count = 0;
 
     foreach ($sessions as $session) {
       if (!isset($session['session_data'])) {
         continue;
       }
 
-      $measurements_state = HEDLEY_STATS_MODERATE;
       $session_data = $session['session_data'];
       $session_nid = $session_data['session_nid'];
 
       foreach ($session_data['children'] as $child_nid) {
-        // Reverse the state of measurements for each child so would get equal
-        // number of moderate and severe measurements.
-        $measurements_state = $measurements_state == HEDLEY_STATS_MODERATE ? HEDLEY_STATS_SEVERE : HEDLEY_STATS_MODERATE;
+        // We want to reach the amount of severe and moderate distrubtion that
+        // has been set above the loop.
+        $measurements_state = HEDLEY_STATS_MODERATE;
+        if ($moderate_count >= $moderate_people) {
+          $measurements_state = HEDLEY_STATS_SEVERE;
+          $severe_count++;
+        }
+        else {
+          $moderate_count++;
+        }
 
         // Create measurements.
         $this->createWeight($session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
@@ -165,14 +176,14 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       $total_beneficiaries = hedley_stats_get_total_beneficiaries($this->healthCenterNid);
 
       // Assert the amount of total beneficiaries.
-      $this->assertEqual(10, $total_beneficiaries[$month]['stunting'][HEDLEY_STATS_SEVERE]);
-      $this->assertEqual(10, $total_beneficiaries[$month]['stunting'][HEDLEY_STATS_MODERATE]);
-      $this->assertEqual(10, $total_beneficiaries[$month]['underweight'][HEDLEY_STATS_SEVERE]);
-      $this->assertEqual(10, $total_beneficiaries[$month]['underweight'][HEDLEY_STATS_MODERATE]);
-      $this->assertEqual(10, $total_beneficiaries[$month]['wasting'][HEDLEY_STATS_SEVERE]);
-      $this->assertEqual(10, $total_beneficiaries[$month]['wasting'][HEDLEY_STATS_MODERATE]);
-      $this->assertEqual(10, $total_beneficiaries[$month]['muac'][HEDLEY_STATS_SEVERE]);
-      $this->assertEqual(10, $total_beneficiaries[$month]['muac'][HEDLEY_STATS_MODERATE]);
+      $this->assertEqual($severe_people, $total_beneficiaries[$month]['stunting'][HEDLEY_STATS_SEVERE]);
+      $this->assertEqual($moderate_people, $total_beneficiaries[$month]['stunting'][HEDLEY_STATS_MODERATE]);
+      $this->assertEqual($severe_people, $total_beneficiaries[$month]['underweight'][HEDLEY_STATS_SEVERE]);
+      $this->assertEqual($moderate_people, $total_beneficiaries[$month]['underweight'][HEDLEY_STATS_MODERATE]);
+      $this->assertEqual($severe_people, $total_beneficiaries[$month]['wasting'][HEDLEY_STATS_SEVERE]);
+      $this->assertEqual($moderate_people, $total_beneficiaries[$month]['wasting'][HEDLEY_STATS_MODERATE]);
+      $this->assertEqual($severe_people, $total_beneficiaries[$month]['muac'][HEDLEY_STATS_SEVERE]);
+      $this->assertEqual($moderate_people, $total_beneficiaries[$month]['muac'][HEDLEY_STATS_MODERATE]);
     }
   }
 

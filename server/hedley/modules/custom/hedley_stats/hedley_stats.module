@@ -395,7 +395,6 @@ function hedley_stats_get_total_beneficiaries($health_center_id, $period = HEDLE
           // Go through all the measurements for this person.
           switch ($type) {
             case 'height':
-
               if ($value <= $current_nutrition_signs['field_zscore_age'][HEDLEY_STATS_SEVERE]) {
                 $data_per_month[$month]['stunting'][HEDLEY_STATS_SEVERE]++;
               }

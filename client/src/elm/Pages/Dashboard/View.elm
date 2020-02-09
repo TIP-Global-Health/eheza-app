@@ -793,7 +793,7 @@ viewMonthlyChart language model data currentFilter =
             List.map (\( key, value ) -> choose value 0) chartData
 
         yScaleMax =
-            Maybe.withDefault 1 <| List.maximum yScaleMaxList
+            List.maximum yScaleMaxList |> Maybe.withDefault 1
 
         -- Add 20% to the top of the graph above the max
         yScaleMaxEnhanced =
@@ -854,15 +854,15 @@ viewFilters filterType currentChartFilter filter =
 
                 FilterCaseManagement ->
                     SetFilterCaseManagement filter
-
-        activeClass =
-            if filter == currentChartFilter then
-                " active"
-
-            else
-                ""
     in
-    span [ class <| "chart-filters" ++ activeClass, onClick <| filterAction ] [ text <| toString filter ]
+    span
+        [ classList
+            [ ( "chart-filters", True )
+            , ( "active", filter == currentChartFilter )
+            ]
+        , onClick <| filterAction
+        ]
+        [ text <| toString filter ]
 
 
 viewFamilyPlanningChartLegend : Language -> FamilyPlanningSignsCounter -> Html Msg
