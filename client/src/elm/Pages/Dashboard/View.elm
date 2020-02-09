@@ -184,22 +184,24 @@ viewCaseManagementTableRow rowData =
             rowData.nutrition
                 |> Dict.toList
                 |> List.sortWith (\t1 t2 -> compare (Tuple.first t1) (Tuple.first t2))
-
-        viewMonthCell ( month, cellData ) =
-            let
-                class =
-                    classList
-                        [ ( String.toLower <| Debug.toString cellData.class, True )
-                        , ( String.fromInt month, True )
-                        ]
-            in
-            td [ class ] [ span [] [ text cellData.value ] ]
     in
     tr []
         (List.append
             [ td [ class "name" ] [ text rowData.name ] ]
             (List.map viewMonthCell rowList)
         )
+
+
+viewMonthCell : ( Int, NutritionValue ) -> Html Msg
+viewMonthCell ( month, cellData ) =
+    let
+        class =
+            classList
+                [ ( String.toLower <| Debug.toString cellData.class, True )
+                , ( String.fromInt month, True )
+                ]
+    in
+    td [ class ] [ span [] [ text cellData.value ] ]
 
 
 viewPeriodFilter : Language -> Model -> Html Msg
