@@ -906,22 +906,22 @@ viewObstetricFormFirstStep language currentDate assembled form =
                 |> Maybe.withDefault ""
 
         termPregnancyUpdateFunc value form_ =
-            { form_ | termPregnancy = value }
+            { form_ | termPregnancy = value, termPregnancyDirty = True }
 
         preTermPregnancyUpdateFunc value form_ =
-            { form_ | preTermPregnancy = value }
+            { form_ | preTermPregnancy = value, preTermPregnancyDirty = True }
 
         stillbirthsAtTermUpdateFunc value form_ =
-            { form_ | stillbirthsAtTerm = value }
+            { form_ | stillbirthsAtTerm = value, stillbirthsAtTermDirty = True }
 
         stillbirthsPreTermUpdateFunc value form_ =
-            { form_ | stillbirthsPreTerm = value }
+            { form_ | stillbirthsPreTerm = value, stillbirthsPreTermDirty = True }
 
         abortionsUpdateFunc value form_ =
-            { form_ | abortions = value }
+            { form_ | abortions = value, abortionsDirty = True }
 
         liveChildrenUpdateFunc value form_ =
-            { form_ | liveChildren = value }
+            { form_ | liveChildren = value, liveChildrenDirty = True }
     in
     div [ class "form history obstetric first" ]
         [ viewLabel language Translate.CurrentlyPregnant

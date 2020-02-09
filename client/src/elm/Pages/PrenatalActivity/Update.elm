@@ -330,12 +330,16 @@ update currentDate msg model =
                                             model.historyData.obstetricFormSecondStep
 
                                         updatedForm =
-                                            case String.toInt value of
-                                                Ok number ->
-                                                    { form | cSections = Just number }
+                                            let
+                                                updatedValue =
+                                                    case String.toInt value of
+                                                        Ok number ->
+                                                            Just number
 
-                                                Err _ ->
-                                                    form
+                                                        Err _ ->
+                                                            Nothing
+                                            in
+                                            { form | cSections = updatedValue, cSectionsDirty = True }
                                     in
                                     model.historyData
                                         |> (\data -> { data | obstetricFormSecondStep = updatedForm })
