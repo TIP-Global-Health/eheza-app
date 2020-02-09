@@ -72,7 +72,7 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
   protected function getQueryForViewWithDbSelect(array $node_ids) {
     $query = db_select('node', 'node');
     $query->fields('node', ['type', 'nid', 'vid', 'changed', 'title', 'status']);
-    $query->condition('node.nid',$node_ids, 'IN');
+    $query->condition('node.nid', $node_ids, 'IN');
 
     return $query;
   }
@@ -113,7 +113,7 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
    * Performs post processing for view node objects.
    *
    * @param array $items
-   *   View node objects
+   *   View node objects.
    *
    * @return array
    *   Processed view node objects.
