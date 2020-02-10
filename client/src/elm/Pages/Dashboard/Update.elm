@@ -2,6 +2,7 @@ module Pages.Dashboard.Update exposing (update)
 
 import App.Model
 import Pages.Dashboard.Model exposing (..)
+import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -32,4 +33,12 @@ update msg model =
             )
 
         SetActivePage page ->
-            ( model, Cmd.none, [ App.Model.SetActivePage page ] )
+            let
+                updatedModel =
+                    if page == UserPage (DashboardPage StatsPage) then
+                        { model | period = ThisMonth }
+
+                    else
+                        { model | period = OneYear }
+            in
+            ( updatedModel, Cmd.none, [ App.Model.SetActivePage page ] )

@@ -13,6 +13,7 @@ module Pages.Dashboard.Model exposing
     , filterCharts
     , filterGenders
     , filterPeriods
+    , filterPeriodsForStatsPage
     )
 
 {-| Filtering by period
@@ -20,17 +21,25 @@ module Pages.Dashboard.Model exposing
 
 import AssocList exposing (Dict)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
+import Html exposing (Html)
 import Pages.Page exposing (DashboardPage, Page)
-import Translate exposing (TranslationId)
 
 
 type FilterPeriod
-    = OneYear
+    = ThisMonth
+    | LastMonth
+    | OneYear
 
 
 filterPeriods : List FilterPeriod
 filterPeriods =
-    [ OneYear
+    [ OneYear ]
+
+
+filterPeriodsForStatsPage : List FilterPeriod
+filterPeriodsForStatsPage =
+    [ ThisMonth
+    , LastMonth
     ]
 
 
@@ -103,7 +112,7 @@ type CardValueSeverity
 {-| A `Card` that will appear in the dashboard.
 -}
 type alias Card =
-    { title : TranslationId
+    { title : Html Msg
     , value : Int
     , valueSeverity : CardValueSeverity
     }
@@ -112,7 +121,7 @@ type alias Card =
 {-| A `Stat Card` that will appear in the dashboard and display a certain statistic with difference from last year.
 -}
 type alias StatsCard =
-    { title : TranslationId
+    { title : Html Msg
     , cardClasses : String
     , cardAction : Maybe DashboardPage
     , value : Int

@@ -13,8 +13,20 @@
         line-height: 30px;
         text-transform: none;
         font-weight: normal;
-        padding: 4px 6px;
+        padding: 0 4px;
         border-radius: 3px;
+
+        &:link,
+        &:focus,
+        &:active,
+        &:hover {
+          background-color: $color-primary;
+        }
+
+        &.inactive {
+          background-color: transparent;
+          color: $color-background;
+        }
       }
     }
   }

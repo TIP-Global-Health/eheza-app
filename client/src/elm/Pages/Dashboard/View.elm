@@ -76,7 +76,7 @@ view language page currentDate healthCenterId model db =
 viewMainPage : Language -> DashboardPage -> NominalDate -> DashboardStats -> Model -> Html Msg
 viewMainPage language currentPage currentDate stats model =
     div [ class "dashboard main" ]
-        [ viewPeriodFilter language model
+        [ viewPeriodFilter language model filterPeriods
         , div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
                 [ viewGoodNutrition language currentPage stats.goodNutrition
@@ -97,8 +97,8 @@ viewMainPage language currentPage currentDate stats model =
 viewStatsPage : Language -> DashboardPage -> NominalDate -> DashboardStats -> Model -> Html Msg
 viewStatsPage language currentPage currentDate stats model =
     div [ class "dashboard stats" ]
-        [ viewPeriodFilter language model
-        , viewAllCards language stats
+        [ viewPeriodFilter language model filterPeriodsForStatsPage
+        , viewAllStatsCards language currentPage stats
         , viewBeneficiariesTable language currentDate stats model
         , div
             [ class "ui placeholder segment" ]
@@ -138,7 +138,7 @@ viewCaseManagementPage language currentPage currentDate healthCenterId stats mod
                 |> List.sortWith (\t1 t2 -> compare t1.name t2.name)
     in
     div [ class "dashboard case" ]
-        [ viewPeriodFilter language model
+        [ viewPeriodFilter language model filterPeriods
         , div [ class "ui segment blue" ]
             [ div [ class "case-management" ]
                 [ div [ class "header" ]
@@ -206,23 +206,22 @@ viewMonthCell ( month, cellData ) =
     td [ class ] [ span [] [ text cellData.value ] ]
 
 
-viewPeriodFilter : Language -> Model -> Html Msg
-viewPeriodFilter language model =
+viewPeriodFilter : Language -> Model -> List FilterPeriod -> Html Msg
+viewPeriodFilter language model filterPeriodsPerPage =
     let
         renderButton period =
-            -- @todo: Translate
             button
                 [ classList
-                    [ ( "primary", model.period == period )
-                    , ( "ui button", True )
+                    [ ( "inactive", model.period /= period )
+                    , ( "primary ui button", True )
                     ]
                 , onClick <| SetFilterPeriod period
                 ]
-                [ translateText language <| Translate.Dashboard Translate.PeriodFilter
+                [ translateText language <| Translate.Dashboard <| Translate.PeriodFilter period
                 ]
     in
     div [ class "ui segment filters" ]
-        (List.map renderButton filterPeriods)
+        (List.map renderButton filterPeriodsPerPage)
 
 
 viewGoodNutrition : Language -> DashboardPage -> GoodNutrition -> Html Msg
@@ -240,7 +239,7 @@ viewGoodNutrition language currentPage nutrition =
             percentageThisYear - percentageLastYear
 
         statsCard =
-            { title = Translate.Dashboard Translate.GoodNutritionLabel
+            { title = translateText language <| Translate.Dashboard Translate.GoodNutritionLabel
             , cardClasses = "good-nutrition"
             , cardAction = Nothing
             , value = percentageThisYear
@@ -250,7 +249,7 @@ viewGoodNutrition language currentPage nutrition =
             , newCases = Nothing
             }
     in
-    viewStatsCard language currentPage statsCard
+    viewCard language currentPage statsCard
 
 
 viewTotalEncounters : Language -> DashboardPage -> Periods -> Html Msg
@@ -264,7 +263,7 @@ viewTotalEncounters language currentPage encounters =
                 |> round
 
         statsCard =
-            { title = Translate.Dashboard Translate.TotalEncountersLabel
+            { title = translateText language <| Translate.Dashboard Translate.TotalEncountersLabel
             , cardClasses = "total-encounters"
             , cardAction = Nothing
             , value = encounters.thisYear
@@ -274,32 +273,37 @@ viewTotalEncounters language currentPage encounters =
             , newCases = Nothing
             }
     in
-    viewStatsCard language currentPage statsCard
+    viewCard language currentPage statsCard
 
 
-viewAllCards : Language -> DashboardStats -> Html Msg
-viewAllCards language stats =
+viewAllStatsCards : Language -> DashboardPage -> DashboardStats -> Html Msg
+viewAllStatsCards language currentPage stats =
     if List.isEmpty stats.malnourished then
         div [ class "ui segment" ] [ text "No data for the selected period." ]
 
     else
-        div [ class "ui segment" ]
-            [ viewMalnourishedCards language stats
-            , viewMiscCards language stats
+        div [ class "ui equal width grid" ]
+            [ viewMalnourishedCards language currentPage stats
+            , viewMiscCards language currentPage stats
             ]
 
 
-viewMalnourishedCards : Language -> DashboardStats -> Html Msg
-viewMalnourishedCards language stats =
+viewMalnourishedCards : Language -> DashboardPage -> DashboardStats -> Html Msg
+viewMalnourishedCards language currentPage stats =
     let
         total =
             stats.malnourished
                 |> List.length
 
         totalCard =
-            { title = Translate.Dashboard Translate.TotalMalnourished
+            { title = translateText language <| Translate.Dashboard Translate.TotalMalnourished
+            , cardClasses = "total-malnourished"
+            , cardAction = Just CaseManagementPage
             , value = total
             , valueSeverity = Neutral
+            , valueIsPercentage = False
+            , percentageLastYear = total
+            , newCases = Nothing
             }
 
         severe =
@@ -308,9 +312,14 @@ viewMalnourishedCards language stats =
                 |> List.length
 
         severeCard =
-            { title = Translate.Dashboard Translate.SeverelyMalnourished
+            { title = translateText language <| Translate.Dashboard Translate.SeverelyMalnourished
+            , cardClasses = "severely-malnourished"
+            , cardAction = Just CaseManagementPage
             , value = severe
             , valueSeverity = Severe
+            , valueIsPercentage = False
+            , percentageLastYear = total
+            , newCases = Nothing
             }
 
         moderate =
@@ -319,42 +328,48 @@ viewMalnourishedCards language stats =
                 |> List.length
 
         moderateCard =
-            { title = Translate.Dashboard Translate.ModeratelyMalnourished
+            { title = translateText language <| Translate.Dashboard Translate.ModeratelyMalnourished
+            , cardClasses = "moderately-malnourished"
+            , cardAction = Just CaseManagementPage
             , value = moderate
             , valueSeverity = Moderate
+            , valueIsPercentage = False
+            , percentageLastYear = total
+            , newCases = Nothing
             }
     in
-    div [ class "ui segment" ]
-        [ div [ class "ui cards" ]
-            [ viewCard language totalCard
-            , viewCard language severeCard
-            , viewCard language moderateCard
-            ]
+    div [ class "row" ]
+        [ div [ class "column" ] [ viewCard language currentPage totalCard ]
+        , div [ class "column" ] [ viewCard language currentPage severeCard ]
+        , div [ class "column" ] [ viewCard language currentPage moderateCard ]
         ]
 
 
-viewMiscCards : Language -> DashboardStats -> Html Msg
-viewMiscCards language stats =
+viewMiscCards : Language -> DashboardPage -> DashboardStats -> Html Msg
+viewMiscCards language currentPage stats =
     let
         totalNewBeneficiaries =
             stats.childrenBeneficiaries
                 |> List.length
 
         totalNewBeneficiariesCard =
-            { title = Translate.Dashboard Translate.NewBeneficiaries
+            { title = translateText language <| Translate.Dashboard Translate.NewBeneficiaries
+            , cardClasses = "new-beneficiaries"
+            , cardAction = Just CaseManagementPage
             , value = totalNewBeneficiaries
             , valueSeverity = Neutral
+            , valueIsPercentage = False
+            , percentageLastYear = totalNewBeneficiaries
+            , newCases = Nothing
             }
     in
-    div [ class "ui segment" ]
-        [ div [ class "ui cards" ]
-            [ viewCard language totalNewBeneficiariesCard
-            ]
+    div [ class "row" ]
+        [ div [ class "column" ] [ viewCard language currentPage totalNewBeneficiariesCard ]
         ]
 
 
-viewStatsCard : Language -> DashboardPage -> StatsCard -> Html Msg
-viewStatsCard language currentPage statsCard =
+viewCard : Language -> DashboardPage -> StatsCard -> Html Msg
+viewCard language currentPage statsCard =
     let
         ( cardAction, cardLinkClass ) =
             case statsCard.cardAction of
@@ -411,7 +426,7 @@ viewStatsCard language currentPage statsCard =
         , onClick cardAction
         ]
         [ div [ class "content" ]
-            [ div [ class "header" ] [ translateText language statsCard.title ]
+            [ div [ class "header" ] [ statsCard.title ]
             , div [ class <| "percentage this-year severity severity-" ++ severityClass ] [ text <| String.fromInt statsCard.value ++ valueSuffix ]
             , div [ class "total last-year" ]
                 [ span [ class "percentage" ]
@@ -429,31 +444,6 @@ viewStatsCard language currentPage statsCard =
                             ]
                     )
                 |> showMaybe
-            ]
-        ]
-
-
-viewCard : Language -> Card -> Html Msg
-viewCard language card =
-    let
-        severityClass =
-            case card.valueSeverity of
-                Neutral ->
-                    "neutral"
-
-                Good ->
-                    "good"
-
-                Moderate ->
-                    "moderate"
-
-                Severe ->
-                    "severe"
-    in
-    div [ class "card" ]
-        [ div [ class "content" ]
-            [ div [ class "header" ] [ translateText language card.title ]
-            , div [ class <| "severity severity-" ++ severityClass ] [ text <| String.fromInt card.value ]
             ]
         ]
 
@@ -602,6 +592,12 @@ filterStatsByPeriod currentDate model stats =
             case model.period of
                 OneYear ->
                     Date.add Years -1 currentDate
+
+                ThisMonth ->
+                    currentDate
+
+                LastMonth ->
+                    Date.add Months -1 currentDate
 
         filterPartial =
             isBetween startDate currentDate

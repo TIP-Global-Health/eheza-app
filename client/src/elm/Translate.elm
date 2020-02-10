@@ -35,6 +35,7 @@ import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
 import Http
+import Pages.Dashboard.Model as Dashboard exposing (FilterPeriod(..))
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
@@ -145,7 +146,7 @@ type Dashboard
     | NewBeneficiaries
     | NewCasesLabel
     | PercentageEncountersLabel
-    | PeriodFilter
+    | PeriodFilter FilterPeriod
     | Severe
     | SeverelyMalnourished
     | StatisticsHelper
@@ -2536,10 +2537,22 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
-        PeriodFilter ->
-            { english = "1 year"
-            , kinyarwanda = Nothing
-            }
+        PeriodFilter period ->
+            case period of
+                Dashboard.OneYear ->
+                    { english = "1 year"
+                    , kinyarwanda = Nothing
+                    }
+
+                Dashboard.ThisMonth ->
+                    { english = "This month"
+                    , kinyarwanda = Nothing
+                    }
+
+                Dashboard.LastMonth ->
+                    { english = "Last month"
+                    , kinyarwanda = Nothing
+                    }
 
         Severe ->
             { english = "Severe"
