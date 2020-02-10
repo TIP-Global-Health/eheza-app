@@ -49,7 +49,7 @@ view language page currentDate healthCenterId model db =
                     ( viewMainPage language page currentDate stats model, PinCodePage )
 
                 StatsPage ->
-                    ( viewStatsPage language page currentDate stats model, UserPage <| DashboardPage MainPage )
+                    ( viewStatsPage language page currentDate stats model healthCenterId db, UserPage <| DashboardPage MainPage )
 
                 CaseManagementPage ->
                     ( viewCaseManagementPage language page currentDate healthCenterId stats model db, UserPage <| DashboardPage MainPage )
@@ -94,11 +94,11 @@ viewMainPage language currentPage currentDate stats model =
         ]
 
 
-viewStatsPage : Language -> DashboardPage -> NominalDate -> DashboardStats -> Model -> Html Msg
-viewStatsPage language currentPage currentDate stats model =
+viewStatsPage : Language -> DashboardPage -> NominalDate -> DashboardStats -> Model -> HealthCenterId -> ModelIndexedDb -> Html Msg
+viewStatsPage language currentPage currentDate stats model healthCenterId db =
     div [ class "dashboard stats" ]
         [ viewPeriodFilter language model filterPeriodsForStatsPage
-        , viewAllStatsCards language currentPage stats
+        , viewAllStatsCards language currentPage stats currentDate model healthCenterId db
         , viewBeneficiariesTable language currentDate stats model
         , div
             [ class "ui placeholder segment" ]
@@ -278,24 +278,49 @@ viewTotalEncounters language currentPage encounters =
     viewCard language currentPage statsCard
 
 
-viewAllStatsCards : Language -> DashboardPage -> DashboardStats -> Html Msg
-viewAllStatsCards language currentPage stats =
+viewAllStatsCards : Language -> DashboardPage -> DashboardStats -> NominalDate -> Model -> HealthCenterId -> ModelIndexedDb -> Html Msg
+viewAllStatsCards language currentPage stats currentDate model healthCenterId db =
+    let
+        modelWithLastMonth =
+            if model.period == ThisMonth then
+                { model | period = LastMonth }
+
+            else
+                { model | period = ThreeMonths }
+
+        monthBeforeStats =
+            Dict.get healthCenterId db.computedDashboard
+                |> Maybe.withDefault Backend.Dashboard.Model.emptyModel
+                -- Filter by period.
+                |> filterStatsByPeriod currentDate modelWithLastMonth
+    in
     if List.isEmpty stats.malnourished then
         div [ class "ui segment" ] [ text "No data for the selected period." ]
 
     else
         div [ class "ui equal width grid" ]
-            [ viewMalnourishedCards language currentPage stats
-            , viewMiscCards language currentPage stats
+            [ viewMalnourishedCards language currentPage stats monthBeforeStats
+            , viewMiscCards language currentPage stats monthBeforeStats
             ]
 
 
-viewMalnourishedCards : Language -> DashboardPage -> DashboardStats -> Html Msg
-viewMalnourishedCards language currentPage stats =
+viewMalnourishedCards : Language -> DashboardPage -> DashboardStats -> DashboardStats -> Html Msg
+viewMalnourishedCards language currentPage stats monthBeforeStats =
     let
         total =
             stats.malnourished
                 |> List.length
+
+        totalBefore =
+            monthBeforeStats.malnourished
+                |> List.length
+
+        totalDiff =
+            total - totalBefore
+
+        totalPercentage =
+            calculatePercentage total totalDiff
+                |> round
 
         totalCard =
             { title = translateText language <| Translate.Dashboard Translate.TotalMalnourished
@@ -304,15 +329,27 @@ viewMalnourishedCards language currentPage stats =
             , value = total
             , valueSeverity = Neutral
             , valueIsPercentage = False
-            , previousPercentage = severe
+            , previousPercentage = totalPercentage
             , previousPercentageLabel = ThisMonth
-            , newCases = Nothing
+            , newCases = Just totalDiff
             }
 
         severe =
             stats.malnourished
                 |> List.filter (\row -> row.zscore <= -2)
                 |> List.length
+
+        severeBefore =
+            monthBeforeStats.malnourished
+                |> List.filter (\row -> row.zscore <= -2)
+                |> List.length
+
+        severeDiff =
+            severe - severeBefore
+
+        severePercentage =
+            calculatePercentage severe severeDiff
+                |> round
 
         severeCard =
             { title = translateText language <| Translate.Dashboard Translate.SeverelyMalnourished
@@ -321,15 +358,27 @@ viewMalnourishedCards language currentPage stats =
             , value = severe
             , valueSeverity = Severe
             , valueIsPercentage = False
-            , previousPercentage = severe
+            , previousPercentage = severePercentage
             , previousPercentageLabel = ThisMonth
-            , newCases = Nothing
+            , newCases = Just severeDiff
             }
 
         moderate =
             stats.malnourished
                 |> List.filter (\row -> row.zscore > -2)
                 |> List.length
+
+        moderateBefore =
+            monthBeforeStats.malnourished
+                |> List.filter (\row -> row.zscore > -2)
+                |> List.length
+
+        moderateDiff =
+            moderate - moderateBefore
+
+        moderatePercentage =
+            calculatePercentage moderate moderateDiff
+                |> round
 
         moderateCard =
             { title = translateText language <| Translate.Dashboard Translate.ModeratelyMalnourished
@@ -338,9 +387,9 @@ viewMalnourishedCards language currentPage stats =
             , value = moderate
             , valueSeverity = Moderate
             , valueIsPercentage = False
-            , previousPercentage = severe
+            , previousPercentage = moderatePercentage
             , previousPercentageLabel = ThisMonth
-            , newCases = Nothing
+            , newCases = Just moderateDiff
             }
     in
     div [ class "row" ]
@@ -350,8 +399,8 @@ viewMalnourishedCards language currentPage stats =
         ]
 
 
-viewMiscCards : Language -> DashboardPage -> DashboardStats -> Html Msg
-viewMiscCards language currentPage stats =
+viewMiscCards : Language -> DashboardPage -> DashboardStats -> DashboardStats -> Html Msg
+viewMiscCards language currentPage stats monthBeforeStats =
     let
         totalNewBeneficiaries =
             stats.childrenBeneficiaries
@@ -604,6 +653,9 @@ filterStatsByPeriod currentDate model stats =
 
                 LastMonth ->
                     Date.add Months -1 currentDate
+
+                ThreeMonths ->
+                    Date.add Months -3 currentDate
 
         filterPartial =
             isBetween startDate currentDate

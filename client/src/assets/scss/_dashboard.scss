@@ -218,6 +218,11 @@
       }
     }
 
+    &.link {
+      cursor: pointer;
+      background: white url(#{$img-path}icon-card-link.svg) no-repeat 97% 7px;
+    }
+
     &.stats {
       padding: 1.5rem 2.5rem;
 

@@ -2549,6 +2549,11 @@ translateDashboard trans =
                     , kinyarwanda = Nothing
                     }
 
+                ThreeMonths ->
+                    { english = "from last month"
+                    , kinyarwanda = Nothing
+                    }
+
         PeriodFilter period ->
             case period of
                 Dashboard.OneYear ->
@@ -2563,6 +2568,11 @@ translateDashboard trans =
 
                 Dashboard.LastMonth ->
                     { english = "Last month"
+                    , kinyarwanda = Nothing
+                    }
+
+                Dashboard.ThreeMonths ->
+                    { english = "Three months"
                     , kinyarwanda = Nothing
                     }
 
