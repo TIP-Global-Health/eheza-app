@@ -161,7 +161,19 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
 
   // Get child's gender, via the People content type.
   hedley_stats_join_field_to_query($query, 'node', 'field_person');
+
+  // Person's info.
   hedley_stats_join_field_to_query($query, 'node', 'field_gender', TRUE, "field_person.field_person_target_id");
+  hedley_stats_join_field_to_query($query, 'node', 'field_first_name', FALSE, "field_person.field_person_target_id");
+  hedley_stats_join_field_to_query($query, 'node', 'field_second_name', FALSE, "field_person.field_person_target_id");
+  hedley_stats_join_field_to_query($query, 'node', 'field_phone_number', FALSE, "field_person.field_person_target_id");
+
+  // Get the group type.
+  hedley_stats_join_field_to_query($query, 'node', 'field_session');
+  hedley_stats_join_field_to_query($query, 'node', 'field_clinic', TRUE, "field_session.field_session_target_id");
+  hedley_stats_join_field_to_query($query, 'node', 'field_group_type', TRUE, "field_clinic.field_clinic_target_id");
+  // Only FBF groups.
+  $query->condition('field_group_type.field_group_type_value', 'fbf');
 
   $result = $query
     ->execute()
@@ -175,6 +187,9 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
     // Remove unused data, to save bandwidth.
     unset($row->nid);
     unset($row->type);
+    unset($row->field_session);
+    unset($row->field_clinic);
+    unset($row->field_group_type);
     unset($row->field_shards);
     unset($row->field_person);
   }
