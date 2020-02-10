@@ -49,10 +49,10 @@ view language page currentDate healthCenterId model db =
                     ( viewMainPage language page currentDate stats model, PinCodePage )
 
                 StatsPage ->
-                    ( viewStatsPage language page currentDate stats model healthCenterId db, UserPage <| DashboardPage MainPage )
+                    ( viewStatsPage language page currentDate stats model healthCenterId db, UserPage <| DashboardPage model.latestPage )
 
                 CaseManagementPage ->
-                    ( viewCaseManagementPage language page currentDate healthCenterId stats model db, UserPage <| DashboardPage MainPage )
+                    ( viewCaseManagementPage language page currentDate healthCenterId stats model db, UserPage <| DashboardPage model.latestPage )
 
         header =
             div
@@ -61,7 +61,7 @@ view language page currentDate healthCenterId model db =
                     [ translateText language Translate.DashboardLabel ]
                 , a
                     [ class "link-back"
-                    , onClick <| SetActivePage goBackPage
+                    , onClick <| SetActivePage page goBackPage
                     ]
                     [ span [ class "icon-back" ] [] ]
                 ]
@@ -88,7 +88,7 @@ viewMainPage language currentPage currentDate stats model =
                 [ viewMonthlyChart language model stats.totalBeneficiaries model.currentTotalChartsFilter
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewDashboardPagesLinks language
+                [ viewDashboardPagesLinks language currentPage
                 ]
             ]
         ]
@@ -429,12 +429,12 @@ viewCard language currentPage statsCard =
         ( cardAction, cardLinkClass ) =
             case statsCard.cardAction of
                 Nothing ->
-                    ( SetActivePage <| UserPage <| DashboardPage currentPage
+                    ( SetActivePage currentPage (UserPage <| DashboardPage currentPage)
                     , ""
                     )
 
                 Just page ->
-                    ( SetActivePage <| UserPage <| DashboardPage <| page
+                    ( SetActivePage currentPage (UserPage <| DashboardPage <| page)
                     , "link"
                     )
 
@@ -589,14 +589,14 @@ viewBeneficiariesTable language currentDate stats model =
         ]
 
 
-viewDashboardPagesLinks : Language -> Html Msg
-viewDashboardPagesLinks language =
+viewDashboardPagesLinks : Language -> DashboardPage -> Html Msg
+viewDashboardPagesLinks language currentPage =
     div [ class "dashboards-links" ]
         [ div
             [ class "ui segment stats"
             , DashboardPage StatsPage
                 |> UserPage
-                |> SetActivePage
+                |> SetActivePage currentPage
                 |> onClick
             ]
             [ i [ class "icon" ] []
@@ -609,7 +609,7 @@ viewDashboardPagesLinks language =
             [ class "ui segment case"
             , DashboardPage CaseManagementPage
                 |> UserPage
-                |> SetActivePage
+                |> SetActivePage currentPage
                 |> onClick
             ]
             [ i [ class "icon" ] []

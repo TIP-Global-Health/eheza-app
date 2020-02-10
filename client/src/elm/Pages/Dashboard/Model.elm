@@ -22,7 +22,7 @@ module Pages.Dashboard.Model exposing
 import AssocList exposing (Dict)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
 import Html exposing (Html)
-import Pages.Page exposing (DashboardPage, Page)
+import Pages.Page exposing (DashboardPage(..), Page(..))
 
 
 type FilterPeriod
@@ -83,6 +83,7 @@ type alias Model =
     , beneficiariesGender : FilterGender
     , currentTotalChartsFilter : FilterCharts
     , currentCaseManagementFilter : FilterCharts
+    , latestPage : DashboardPage
     }
 
 
@@ -92,6 +93,7 @@ emptyModel =
     , beneficiariesGender = All
     , currentTotalChartsFilter = Stunting
     , currentCaseManagementFilter = Stunting
+    , latestPage = MainPage
     }
 
 
@@ -144,4 +146,4 @@ type Msg
     | SetFilterPeriod FilterPeriod
     | SetFilterTotalsChart FilterCharts
     | SetFilterCaseManagement FilterCharts
-    | SetActivePage Page
+    | SetActivePage DashboardPage Page

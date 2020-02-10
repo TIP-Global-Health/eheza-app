@@ -32,7 +32,7 @@ update msg model =
             , []
             )
 
-        SetActivePage page ->
+        SetActivePage currentPage page ->
             let
                 updatedModel =
                     if page == UserPage (DashboardPage StatsPage) then
@@ -41,4 +41,4 @@ update msg model =
                     else
                         { model | period = OneYear }
             in
-            ( updatedModel, Cmd.none, [ App.Model.SetActivePage page ] )
+            ( { updatedModel | latestPage = currentPage }, Cmd.none, [ App.Model.SetActivePage page ] )
