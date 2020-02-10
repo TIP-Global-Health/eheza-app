@@ -456,7 +456,8 @@
 
                                 var request = new Request(uploadUrl, {
                                     method: 'POST',
-                                    body: formData
+                                    body: formData,
+                                    credentials: 'omit'
                                 });
 
                                 return fetchWithTimeout(request, {}, imageTimeout).catch(function (err) {
