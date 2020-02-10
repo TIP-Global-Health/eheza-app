@@ -29,7 +29,7 @@ class HedleyRestfulMuacs extends HedleyRestfulActivityBase {
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     $query = parent::alterQueryForViewWithDbSelect($query);
 
-    hedley_restful_join_field_to_query($query, 'node', 'field_muac', FASLE);
+    hedley_restful_join_field_to_query($query, 'node', 'field_muac', FALSE);
   }
 
 }
