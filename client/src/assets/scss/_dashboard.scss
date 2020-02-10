@@ -1,7 +1,22 @@
 .dashboard {
+  margin-top: -15px;
 
   .ui.segment {
     padding: 1.5rem 2rem;
+
+    &.filters {
+      background-color: $color-light-background;
+      padding: 15px 20px;
+
+      .ui.button {
+        font-size: 22px;
+        line-height: 30px;
+        text-transform: none;
+        font-weight: normal;
+        padding: 4px 6px;
+        border-radius: 3px;
+      }
+    }
   }
 
   &.case {

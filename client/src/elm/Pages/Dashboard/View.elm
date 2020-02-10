@@ -76,7 +76,8 @@ view language page currentDate healthCenterId model db =
 viewMainPage : Language -> DashboardPage -> NominalDate -> DashboardStats -> Model -> Html Msg
 viewMainPage language currentPage currentDate stats model =
     div [ class "dashboard main" ]
-        [ div [ class "ui grid" ]
+        [ viewPeriodFilter language model
+        , div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
                 [ viewGoodNutrition language currentPage stats.goodNutrition
                 ]
@@ -137,7 +138,8 @@ viewCaseManagementPage language currentPage currentDate healthCenterId stats mod
                 |> List.sortWith (\t1 t2 -> compare t1.name t2.name)
     in
     div [ class "dashboard case" ]
-        [ div [ class "ui segment blue" ]
+        [ viewPeriodFilter language model
+        , div [ class "ui segment blue" ]
             [ div [ class "case-management" ]
                 [ div [ class "header" ]
                     [ h3 [ class "title left floated column" ] [ translateText language <| Translate.Dashboard Translate.CaseManagementLabel ]
@@ -216,10 +218,10 @@ viewPeriodFilter language model =
                     ]
                 , onClick <| SetFilterPeriod period
                 ]
-                [ text <| Debug.toString period
+                [ translateText language <| Translate.Dashboard Translate.PeriodFilter
                 ]
     in
-    div [ class "ui blue segment" ]
+    div [ class "ui segment filters" ]
         (List.map renderButton filterPeriods)
 
 

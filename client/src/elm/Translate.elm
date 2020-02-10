@@ -145,6 +145,7 @@ type Dashboard
     | NewBeneficiaries
     | NewCasesLabel
     | PercentageEncountersLabel
+    | PeriodFilter
     | Severe
     | SeverelyMalnourished
     | StatisticsHelper
@@ -2532,6 +2533,11 @@ translateDashboard trans =
 
         PercentageEncountersLabel ->
             { english = "from last year"
+            , kinyarwanda = Nothing
+            }
+
+        PeriodFilter ->
+            { english = "1 year"
             , kinyarwanda = Nothing
             }
 
