@@ -245,7 +245,8 @@ viewGoodNutrition language currentPage nutrition =
             , value = percentageThisYear
             , valueSeverity = Neutral
             , valueIsPercentage = True
-            , percentageLastYear = percentageDiff
+            , previousPercentage = percentageDiff
+            , previousPercentageLabel = OneYear
             , newCases = Nothing
             }
     in
@@ -269,7 +270,8 @@ viewTotalEncounters language currentPage encounters =
             , value = encounters.thisYear
             , valueSeverity = Neutral
             , valueIsPercentage = False
-            , percentageLastYear = percentageDiff
+            , previousPercentage = percentageDiff
+            , previousPercentageLabel = OneYear
             , newCases = Nothing
             }
     in
@@ -297,12 +299,13 @@ viewMalnourishedCards language currentPage stats =
 
         totalCard =
             { title = translateText language <| Translate.Dashboard Translate.TotalMalnourished
-            , cardClasses = "total-malnourished"
+            , cardClasses = "stats total-malnourished"
             , cardAction = Just CaseManagementPage
             , value = total
             , valueSeverity = Neutral
             , valueIsPercentage = False
-            , percentageLastYear = total
+            , previousPercentage = severe
+            , previousPercentageLabel = ThisMonth
             , newCases = Nothing
             }
 
@@ -313,12 +316,13 @@ viewMalnourishedCards language currentPage stats =
 
         severeCard =
             { title = translateText language <| Translate.Dashboard Translate.SeverelyMalnourished
-            , cardClasses = "severely-malnourished"
+            , cardClasses = "stats severely-malnourished"
             , cardAction = Just CaseManagementPage
             , value = severe
             , valueSeverity = Severe
             , valueIsPercentage = False
-            , percentageLastYear = total
+            , previousPercentage = severe
+            , previousPercentageLabel = ThisMonth
             , newCases = Nothing
             }
 
@@ -329,12 +333,13 @@ viewMalnourishedCards language currentPage stats =
 
         moderateCard =
             { title = translateText language <| Translate.Dashboard Translate.ModeratelyMalnourished
-            , cardClasses = "moderately-malnourished"
+            , cardClasses = "stats moderately-malnourished"
             , cardAction = Just CaseManagementPage
             , value = moderate
             , valueSeverity = Moderate
             , valueIsPercentage = False
-            , percentageLastYear = total
+            , previousPercentage = severe
+            , previousPercentageLabel = ThisMonth
             , newCases = Nothing
             }
     in
@@ -359,7 +364,8 @@ viewMiscCards language currentPage stats =
             , value = totalNewBeneficiaries
             , valueSeverity = Neutral
             , valueIsPercentage = False
-            , percentageLastYear = totalNewBeneficiaries
+            , previousPercentage = totalNewBeneficiaries
+            , previousPercentageLabel = ThisMonth
             , newCases = Nothing
             }
     in
@@ -412,10 +418,10 @@ viewCard language currentPage statsCard =
                 []
 
         percentageArrow =
-            if statsCard.percentageLastYear > 0 then
+            if statsCard.previousPercentage > 0 then
                 viewPercentageArrow "icon-up"
 
-            else if statsCard.percentageLastYear < 0 then
+            else if statsCard.previousPercentage < 0 then
                 viewPercentageArrow "icon-down"
 
             else
@@ -431,9 +437,9 @@ viewCard language currentPage statsCard =
             , div [ class "total last-year" ]
                 [ span [ class "percentage" ]
                     [ percentageArrow
-                    , i [] [ text <| String.fromInt statsCard.percentageLastYear ++ "%" ]
+                    , i [] [ text <| String.fromInt statsCard.previousPercentage ++ "%" ]
                     ]
-                , span [ class "percentage-label" ] [ translateText language <| Translate.Dashboard Translate.PercentageEncountersLabel ]
+                , span [ class "percentage-label" ] [ translateText language <| Translate.Dashboard <| Translate.PercentageLabel statsCard.previousPercentageLabel ]
                 ]
             , statsCard.newCases
                 |> Maybe.map

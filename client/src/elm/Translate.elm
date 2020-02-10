@@ -145,7 +145,7 @@ type Dashboard
     | ModeratelyMalnourished
     | NewBeneficiaries
     | NewCasesLabel
-    | PercentageEncountersLabel
+    | PercentageLabel FilterPeriod
     | PeriodFilter FilterPeriod
     | Severe
     | SeverelyMalnourished
@@ -2532,10 +2532,22 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
-        PercentageEncountersLabel ->
-            { english = "from last year"
-            , kinyarwanda = Nothing
-            }
+        PercentageLabel period ->
+            case period of
+                Dashboard.OneYear ->
+                    { english = "from last year"
+                    , kinyarwanda = Nothing
+                    }
+
+                Dashboard.ThisMonth ->
+                    { english = "from last month"
+                    , kinyarwanda = Nothing
+                    }
+
+                Dashboard.LastMonth ->
+                    { english = "from last month"
+                    , kinyarwanda = Nothing
+                    }
 
         PeriodFilter period ->
             case period of

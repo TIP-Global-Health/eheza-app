@@ -127,7 +127,8 @@ type alias StatsCard =
     , value : Int
     , valueSeverity : CardValueSeverity
     , valueIsPercentage : Bool
-    , percentageLastYear : Int
+    , previousPercentage : Int
+    , previousPercentageLabel : FilterPeriod
     , newCases : Maybe Int
     }
 
