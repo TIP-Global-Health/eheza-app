@@ -18,7 +18,7 @@ import List.Extra
 import Pages.Dashboard.GraphUtils exposing (..)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
-import Pages.Utils exposing (calculatePercentage)
+import Pages.Utils exposing (calculatePercentage, monthList)
 import Path
 import Scale exposing (BandConfig, BandScale, ContinuousScale)
 import Shape exposing (Arc, defaultPieConfig)
@@ -46,13 +46,13 @@ view language page currentDate healthCenterId model db =
         ( pageView, goBackPage ) =
             case page of
                 MainPage ->
-                    ( viewMainPage language page currentDate stats model, PinCodePage )
+                    ( viewMainPage language currentDate stats model, PinCodePage )
 
                 StatsPage ->
-                    ( viewStatsPage language page currentDate stats model healthCenterId db, UserPage <| DashboardPage model.latestPage )
+                    ( viewStatsPage language currentDate stats model, UserPage <| DashboardPage model.latestPage )
 
                 CaseManagementPage ->
-                    ( viewCaseManagementPage language page currentDate healthCenterId stats model db, UserPage <| DashboardPage model.latestPage )
+                    ( viewCaseManagementPage language currentDate stats healthCenterId model db, UserPage <| DashboardPage model.latestPage )
 
         header =
             div
@@ -73,16 +73,16 @@ view language page currentDate healthCenterId model db =
         ]
 
 
-viewMainPage : Language -> DashboardPage -> NominalDate -> DashboardStats -> Model -> Html Msg
-viewMainPage language currentPage currentDate stats model =
+viewMainPage : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
+viewMainPage language currentDate stats model =
     div [ class "dashboard main" ]
         [ viewPeriodFilter language model filterPeriods
         , div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
-                [ viewGoodNutrition language currentPage stats.goodNutrition
+                [ viewGoodNutrition language stats.goodNutrition
                 ]
             , div [ class "eight wide column" ]
-                [ viewTotalEncounters language currentPage stats.totalEncounters
+                [ viewTotalEncounters language stats.totalEncounters
                 ]
             , div [ class "sixteen wide column" ]
                 [ viewMonthlyChart language model stats.totalBeneficiaries model.currentTotalChartsFilter
@@ -94,11 +94,11 @@ viewMainPage language currentPage currentDate stats model =
         ]
 
 
-viewStatsPage : Language -> DashboardPage -> NominalDate -> DashboardStats -> Model -> HealthCenterId -> ModelIndexedDb -> Html Msg
-viewStatsPage language currentPage currentDate stats model healthCenterId db =
+viewStatsPage : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
+viewStatsPage language currentDate stats model =
     div [ class "dashboard stats" ]
         [ viewPeriodFilter language model filterPeriodsForStatsPage
-        , viewAllStatsCards language currentPage stats currentDate model healthCenterId db
+        , viewAllStatsCards language stats currentDate model healthCenterId db
         , viewBeneficiariesTable language currentDate stats model
         , div
             [ class "ui placeholder segment" ]
@@ -114,8 +114,8 @@ viewStatsPage language currentPage currentDate stats model healthCenterId db =
         ]
 
 
-viewCaseManagementPage : Language -> DashboardPage -> NominalDate -> HealthCenterId -> DashboardStats -> Model -> ModelIndexedDb -> Html Msg
-viewCaseManagementPage language currentPage currentDate healthCenterId stats model db =
+viewCaseManagementPage : Language -> NominalDate -> DashboardStats -> HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
+viewCaseManagementPage language currentDate stats healthCenterId model db =
     let
         tableData =
             List.foldl
@@ -135,7 +135,7 @@ viewCaseManagementPage language currentPage currentDate healthCenterId stats mod
                 )
                 []
                 stats.caseManagement
-                |> List.sortWith (\t1 t2 -> compare t1.name t2.name)
+                |> List.sortBy .name
     in
     div [ class "dashboard case" ]
         [ viewPeriodFilter language model filterPeriods
@@ -159,20 +159,9 @@ viewCaseManagementTable language model tableData =
     table [ class "ui very basic collapsing celled table" ]
         [ thead []
             [ tr []
-                [ th [ class "name" ] [ translateText language <| Translate.Name ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Jan True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Feb True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Mar True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Apr True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth May True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Jun True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Jul True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Aug True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Sep True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Oct True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Nov True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Dec True ] ]
-                ]
+                (th [ class "name" ] [ translateText language <| Translate.Name ]
+                    :: List.map (\month -> th [] [ span [] [ translateText language <| Translate.ResolveMonth month True ] ]) monthList
+                )
             ]
         , tbody []
             (List.map viewCaseManagementTableRow tableData)
@@ -185,12 +174,11 @@ viewCaseManagementTableRow rowData =
         rowList =
             rowData.nutrition
                 |> Dict.toList
-                |> List.sortWith (\t1 t2 -> compare (Tuple.first t1) (Tuple.first t2))
+                |> List.sortBy Tuple.first
     in
     tr []
-        (List.append
-            [ td [ class "name" ] [ text rowData.name ] ]
-            (List.map viewMonthCell rowList)
+        (td [ class "name" ] [ text rowData.name ]
+            :: List.map viewMonthCell rowList
         )
 
 
@@ -224,8 +212,8 @@ viewPeriodFilter language model filterPeriodsPerPage =
         (List.map renderButton filterPeriodsPerPage)
 
 
-viewGoodNutrition : Language -> DashboardPage -> GoodNutrition -> Html Msg
-viewGoodNutrition language currentPage nutrition =
+viewGoodNutrition : Language -> GoodNutrition -> Html Msg
+viewGoodNutrition language nutrition =
     let
         percentageThisYear =
             calculatePercentage nutrition.all.thisYear nutrition.good.thisYear
@@ -250,11 +238,11 @@ viewGoodNutrition language currentPage nutrition =
             , newCases = Nothing
             }
     in
-    viewCard language currentPage statsCard
+    viewCard language statsCard
 
 
-viewTotalEncounters : Language -> DashboardPage -> Periods -> Html Msg
-viewTotalEncounters language currentPage encounters =
+viewTotalEncounters : Language -> Periods -> Html Msg
+viewTotalEncounters language encounters =
     let
         diff =
             encounters.thisYear - encounters.lastYear
@@ -275,7 +263,7 @@ viewTotalEncounters language currentPage encounters =
             , newCases = Nothing
             }
     in
-    viewCard language currentPage statsCard
+    viewCard language statsCard
 
 
 viewAllStatsCards : Language -> DashboardPage -> DashboardStats -> NominalDate -> Model -> HealthCenterId -> ModelIndexedDb -> Html Msg
@@ -423,20 +411,23 @@ viewMiscCards language currentPage stats monthBeforeStats =
         ]
 
 
-viewCard : Language -> DashboardPage -> StatsCard -> Html Msg
-viewCard language currentPage statsCard =
+viewCard : Language -> StatsCard -> Html Msg
+viewCard language statsCard =
     let
         ( cardAction, cardLinkClass ) =
             case statsCard.cardAction of
                 Nothing ->
-                    ( SetActivePage currentPage (UserPage <| DashboardPage currentPage)
+                    ( []
                     , ""
                     )
 
                 Just page ->
-                    ( SetActivePage currentPage (UserPage <| DashboardPage <| page)
+                    ( [ onClick <| SetActivePage <| UserPage <| DashboardPage <| page ]
                     , "link"
                     )
+
+        cardAttributes =
+            (class <| "ui segment blue dashboard-cards " ++ statsCard.cardClasses ++ " " ++ cardLinkClass) :: cardAction
 
         severityClass =
             case statsCard.valueSeverity of
@@ -477,9 +468,7 @@ viewCard language currentPage statsCard =
                 emptyNode
     in
     div
-        [ class <| "ui segment blue dashboard-cards " ++ statsCard.cardClasses ++ " " ++ cardLinkClass
-        , onClick cardAction
-        ]
+        cardAttributes
         [ div [ class "content" ]
             [ div [ class "header" ] [ statsCard.title ]
             , div [ class <| "percentage this-year severity severity-" ++ severityClass ] [ text <| String.fromInt statsCard.value ++ valueSuffix ]
