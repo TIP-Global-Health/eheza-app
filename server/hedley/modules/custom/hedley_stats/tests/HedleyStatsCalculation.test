@@ -230,7 +230,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
       $month = date('n', $session['date']);
 
-      $case_management = hedley_stats_get_case_management($this->healthCenterNid);
+      $case_management = hedley_stats_get_case_management($this->healthCenterId);
 
       // Assert the amount of case management.
       $this->assertEqual(20, count($case_management));
