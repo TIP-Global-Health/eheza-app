@@ -146,4 +146,4 @@ type Msg
     | SetFilterPeriod FilterPeriod
     | SetFilterTotalsChart FilterCharts
     | SetFilterCaseManagement FilterCharts
-    | SetActivePage DashboardPage Page
+    | SetActivePage Page

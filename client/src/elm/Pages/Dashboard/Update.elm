@@ -5,8 +5,8 @@ import Pages.Dashboard.Model exposing (..)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 
 
-update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update msg model =
+update : Msg -> DashboardPage -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update msg subPage model =
     case msg of
         SetFilterGender gender ->
             ( { model | beneficiariesGender = gender }
@@ -32,13 +32,13 @@ update msg model =
             , []
             )
 
-        SetActivePage currentPage page ->
+        SetActivePage page ->
             let
-                updatedModel =
+                newPeriod =
                     if page == UserPage (DashboardPage StatsPage) then
-                        { model | period = ThisMonth }
+                        ThisMonth
 
                     else
-                        { model | period = OneYear }
+                        OneYear
             in
-            ( { updatedModel | latestPage = currentPage }, Cmd.none, [ App.Model.SetActivePage page ] )
+            ( { model | latestPage = subPage, period = newPeriod }, Cmd.none, [ App.Model.SetActivePage page ] )
