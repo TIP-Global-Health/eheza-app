@@ -26,14 +26,14 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    *
    * @var int
    */
-  protected $healthCenterNid;
+  protected $healthCenterId;
 
   /**
    * The clinic ID.
    *
    * @var int
    */
-  protected $clinicNid;
+  protected $clinicId;
 
   /**
    * Add a main health center and clinic for all the tests.
@@ -44,9 +44,9 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     parent::setUp(['hedley_device']);
 
     // Create the base data for the test.
-    $this->healthCenterNid = $this->createHealthCenter();
+    $this->healthCenterId = $this->createHealthCenter();
     // Type FBF because stats are only for FBF Clinics.
-    $this->clinicNid = $this->createClinic($this->healthCenterNid, 'fbf');
+    $this->clinicId = $this->createClinic($this->healthCenterId, 'fbf');
   }
 
   /**
@@ -58,7 +58,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->createSessionsWithAttendance($attendance_last_year, $attendance_this_year);
 
     // Get total encounters from the stats function.
-    $total_encounters = hedley_stats_get_total_encounters($this->healthCenterNid);
+    $total_encounters = hedley_stats_get_total_encounters($this->healthCenterId);
 
     // Assert the amount of attendance for last year.
     $this->assertEqual($attendance_last_year, $total_encounters['last_year']);
@@ -108,7 +108,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       }
     }
 
-    $good_nutrition = hedley_stats_get_good_nutrition($this->healthCenterNid);
+    $good_nutrition = hedley_stats_get_good_nutrition($this->healthCenterId);
 
     // Assert the amount of good nutrition for last year.
     $this->assertEqual(10, $good_nutrition['all']['last_year']);
@@ -220,21 +220,21 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
         continue;
       }
 
-      $session_nid = $this->createSession($this->clinicNid, $session['date']);
-      $nurse = $this->createNurse($this->clinicNid);
+      $session_nid = $this->createSession($this->clinicId, $session['date']);
+      $nurse = $this->createNurse($this->clinicId);
 
       $children = [];
       for ($i = 1; $i <= $session['number_of_attendance']; $i++) {
-        $mother_nid = $this->createMother($this->clinicNid);
-        $child_nid = $this->createChild($mother_nid, $this->healthCenterNid, strtotime('-24 months'));
+        $mother_nid = $this->createMother($this->clinicId);
+        $child_nid = $this->createChild($mother_nid, $this->healthCenterId, strtotime('-24 months'));
         $children[] = $child_nid;
 
         // Create this because the health centers are assigned to "attendance"
         // by the "PMTCT Participant" connection.
         $this->createDevice(rand(1000, 9999));
-        $this->createPMTCT($child_nid, $mother_nid, $this->clinicNid, $session['date']);
+        $this->createPMTCT($child_nid, $mother_nid, $this->clinicId, $session['date']);
 
-        $this->createAttendance($this->healthCenterNid, $session_nid, $nurse->uid, $child_nid, TRUE, $session['date']);
+        $this->createAttendance($this->healthCenterId, $session_nid, $nurse->uid, $child_nid, TRUE, $session['date']);
       }
 
       $sessions[$key]['session_data'] = [
