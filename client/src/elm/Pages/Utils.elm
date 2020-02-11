@@ -14,17 +14,13 @@ import Translate exposing (Language, TranslationId, translate)
 -}
 calculatePercentage : Int -> Int -> Float
 calculatePercentage total unique =
-    let
-        percentage =
-            -- Avoid dividing by zero and getting "NaN", just return 0.
-            -- Besides, if the total is 0, then we don't need to calculate anything here.
-            if total == 0 then
-                0
+    -- Avoid dividing by zero and getting "NaN", just return 0.
+    -- Besides, if the total is 0, then we don't need to calculate anything here.
+    if total == 0 then
+        0
 
-            else
-                (toFloat unique / toFloat total) * 100
-    in
-    percentage
+    else
+        (toFloat unique / toFloat total) * 100
 
 
 filterDependentNoResultsMessage : Language -> String -> TranslationId -> String
