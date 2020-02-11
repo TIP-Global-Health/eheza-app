@@ -457,6 +457,9 @@
                                 var request = new Request(uploadUrl, {
                                     method: 'POST',
                                     body: formData,
+                                    // This prevents attaching cookies to request, to prevent
+                                    // sending authenitaction cookie, as our desired
+                                    // authentication method is token.
                                     credentials: 'omit'
                                 });
 
