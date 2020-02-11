@@ -215,7 +215,7 @@ update msg model =
                         MsgPageDashboard subPage subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Dashboard.Update.update subMsg data.dashboardPage
+                                    Pages.Dashboard.Update.update subMsg subPage data.dashboardPage
                             in
                             ( { data | dashboardPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageDashboard subPage) subCmd

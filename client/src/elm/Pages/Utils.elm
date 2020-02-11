@@ -1,4 +1,4 @@
-module Pages.Utils exposing (calculatePercentage, filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
+module Pages.Utils exposing (calculatePercentage, filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, monthList, normalizeFilter, viewNameFilter)
 
 import Backend.Entities exposing (PersonId)
 import Backend.Person.Model exposing (Person)
@@ -7,6 +7,7 @@ import Backend.Session.Utils exposing (getChildren)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Time exposing (Month(..))
 import Translate exposing (Language, TranslationId, translate)
 
 
@@ -14,17 +15,13 @@ import Translate exposing (Language, TranslationId, translate)
 -}
 calculatePercentage : Int -> Int -> Float
 calculatePercentage total unique =
-    let
-        percentage =
-            -- Avoid dividing by zero and getting "NaN", just return 0.
-            -- Besides, if the total is 0, then we don't need to calculate anything here.
-            if total == 0 then
-                0
+    -- Avoid dividing by zero and getting "NaN", just return 0.
+    -- Besides, if the total is 0, then we don't need to calculate anything here.
+    if total == 0 then
+        0
 
-            else
-                (toFloat unique / toFloat total) * 100
-    in
-    percentage
+    else
+        (toFloat unique / toFloat total) * 100
 
 
 filterDependentNoResultsMessage : Language -> String -> TranslationId -> String
@@ -45,6 +42,11 @@ matchFilter filter filteredValue =
         filteredValue
             |> String.toLower
             |> String.contains filter
+
+
+monthList : List Month
+monthList =
+    [ Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec ]
 
 
 matchMotherAndHerChildren : String -> OfflineSession -> PersonId -> Person -> Bool

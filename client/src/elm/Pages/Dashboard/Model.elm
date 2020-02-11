@@ -115,7 +115,7 @@ type CardValueSeverity
 {-| A `Card` that will appear in the dashboard.
 -}
 type alias Card =
-    { title : Html Msg
+    { title : String
     , value : Int
     , valueSeverity : CardValueSeverity
     }
@@ -124,7 +124,7 @@ type alias Card =
 {-| A `Stat Card` that will appear in the dashboard and display a certain statistic with difference from last year.
 -}
 type alias StatsCard =
-    { title : Html Msg
+    { title : String
     , cardClasses : String
     , cardAction : Maybe DashboardPage
     , value : Int
@@ -146,4 +146,4 @@ type Msg
     | SetFilterPeriod FilterPeriod
     | SetFilterTotalsChart FilterCharts
     | SetFilterCaseManagement FilterCharts
-    | SetActivePage DashboardPage Page
+    | SetActivePage Page

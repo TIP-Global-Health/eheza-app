@@ -18,14 +18,14 @@ import List.Extra
 import Pages.Dashboard.GraphUtils exposing (..)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
-import Pages.Utils exposing (calculatePercentage)
+import Pages.Utils exposing (calculatePercentage, monthList)
 import Path
 import Scale exposing (BandConfig, BandScale, ContinuousScale)
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
 import Svg.Attributes exposing (cx, cy, r)
 import Time exposing (Month(..))
-import Translate exposing (Language, translateText)
+import Translate exposing (Language, translate, translateText)
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
@@ -46,13 +46,13 @@ view language page currentDate healthCenterId model db =
         ( pageView, goBackPage ) =
             case page of
                 MainPage ->
-                    ( viewMainPage language page currentDate stats model, PinCodePage )
+                    ( viewMainPage language currentDate stats model, PinCodePage )
 
                 StatsPage ->
-                    ( viewStatsPage language page currentDate stats model healthCenterId db, UserPage <| DashboardPage model.latestPage )
+                    ( viewStatsPage language currentDate stats model healthCenterId db, UserPage <| DashboardPage MainPage )
 
                 CaseManagementPage ->
-                    ( viewCaseManagementPage language page currentDate healthCenterId stats model db, UserPage <| DashboardPage model.latestPage )
+                    ( viewCaseManagementPage language currentDate stats model, UserPage <| DashboardPage model.latestPage )
 
         header =
             div
@@ -61,7 +61,7 @@ view language page currentDate healthCenterId model db =
                     [ translateText language Translate.DashboardLabel ]
                 , a
                     [ class "link-back"
-                    , onClick <| SetActivePage page goBackPage
+                    , onClick <| SetActivePage goBackPage
                     ]
                     [ span [ class "icon-back" ] [] ]
                 ]
@@ -73,32 +73,32 @@ view language page currentDate healthCenterId model db =
         ]
 
 
-viewMainPage : Language -> DashboardPage -> NominalDate -> DashboardStats -> Model -> Html Msg
-viewMainPage language currentPage currentDate stats model =
+viewMainPage : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
+viewMainPage language currentDate stats model =
     div [ class "dashboard main" ]
         [ viewPeriodFilter language model filterPeriods
         , div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
-                [ viewGoodNutrition language currentPage stats.goodNutrition
+                [ viewGoodNutrition language stats.goodNutrition
                 ]
             , div [ class "eight wide column" ]
-                [ viewTotalEncounters language currentPage stats.totalEncounters
+                [ viewTotalEncounters language stats.totalEncounters
                 ]
             , div [ class "sixteen wide column" ]
                 [ viewMonthlyChart language model stats.totalBeneficiaries model.currentTotalChartsFilter
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewDashboardPagesLinks language currentPage
+                [ viewDashboardPagesLinks language
                 ]
             ]
         ]
 
 
-viewStatsPage : Language -> DashboardPage -> NominalDate -> DashboardStats -> Model -> HealthCenterId -> ModelIndexedDb -> Html Msg
-viewStatsPage language currentPage currentDate stats model healthCenterId db =
+viewStatsPage : Language -> NominalDate -> DashboardStats -> Model -> HealthCenterId -> ModelIndexedDb -> Html Msg
+viewStatsPage language currentDate stats model healthCenterId db =
     div [ class "dashboard stats" ]
         [ viewPeriodFilter language model filterPeriodsForStatsPage
-        , viewAllStatsCards language currentPage stats currentDate model healthCenterId db
+        , viewAllStatsCards language stats currentDate model healthCenterId db
         , viewBeneficiariesTable language currentDate stats model
         , div
             [ class "ui placeholder segment" ]
@@ -114,8 +114,8 @@ viewStatsPage language currentPage currentDate stats model healthCenterId db =
         ]
 
 
-viewCaseManagementPage : Language -> DashboardPage -> NominalDate -> HealthCenterId -> DashboardStats -> Model -> ModelIndexedDb -> Html Msg
-viewCaseManagementPage language currentPage currentDate healthCenterId stats model db =
+viewCaseManagementPage : Language -> NominalDate -> DashboardStats -> Model -> Html Msg
+viewCaseManagementPage language currentDate stats model =
     let
         tableData =
             List.foldl
@@ -135,7 +135,7 @@ viewCaseManagementPage language currentPage currentDate healthCenterId stats mod
                 )
                 []
                 stats.caseManagement
-                |> List.sortWith (\t1 t2 -> compare t1.name t2.name)
+                |> List.sortBy .name
     in
     div [ class "dashboard case" ]
         [ viewPeriodFilter language model filterPeriods
@@ -159,20 +159,9 @@ viewCaseManagementTable language model tableData =
     table [ class "ui very basic collapsing celled table" ]
         [ thead []
             [ tr []
-                [ th [ class "name" ] [ translateText language <| Translate.Name ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Jan True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Feb True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Mar True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Apr True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth May True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Jun True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Jul True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Aug True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Sep True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Oct True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Nov True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Dec True ] ]
-                ]
+                (th [ class "name" ] [ translateText language <| Translate.Name ]
+                    :: List.map (\month -> th [] [ span [] [ translateText language <| Translate.ResolveMonth month True ] ]) monthList
+                )
             ]
         , tbody []
             (List.map viewCaseManagementTableRow tableData)
@@ -185,12 +174,11 @@ viewCaseManagementTableRow rowData =
         rowList =
             rowData.nutrition
                 |> Dict.toList
-                |> List.sortWith (\t1 t2 -> compare (Tuple.first t1) (Tuple.first t2))
+                |> List.sortBy Tuple.first
     in
     tr []
-        (List.append
-            [ td [ class "name" ] [ text rowData.name ] ]
-            (List.map viewMonthCell rowList)
+        (td [ class "name" ] [ text rowData.name ]
+            :: List.map viewMonthCell rowList
         )
 
 
@@ -224,8 +212,8 @@ viewPeriodFilter language model filterPeriodsPerPage =
         (List.map renderButton filterPeriodsPerPage)
 
 
-viewGoodNutrition : Language -> DashboardPage -> GoodNutrition -> Html Msg
-viewGoodNutrition language currentPage nutrition =
+viewGoodNutrition : Language -> GoodNutrition -> Html Msg
+viewGoodNutrition language nutrition =
     let
         percentageThisYear =
             calculatePercentage nutrition.all.thisYear nutrition.good.thisYear
@@ -239,7 +227,7 @@ viewGoodNutrition language currentPage nutrition =
             percentageThisYear - percentageLastYear
 
         statsCard =
-            { title = translateText language <| Translate.Dashboard Translate.GoodNutritionLabel
+            { title = translate language <| Translate.Dashboard Translate.GoodNutritionLabel
             , cardClasses = "good-nutrition"
             , cardAction = Nothing
             , value = percentageThisYear
@@ -250,11 +238,11 @@ viewGoodNutrition language currentPage nutrition =
             , newCases = Nothing
             }
     in
-    viewCard language currentPage statsCard
+    viewCard language statsCard
 
 
-viewTotalEncounters : Language -> DashboardPage -> Periods -> Html Msg
-viewTotalEncounters language currentPage encounters =
+viewTotalEncounters : Language -> Periods -> Html Msg
+viewTotalEncounters language encounters =
     let
         diff =
             encounters.thisYear - encounters.lastYear
@@ -264,7 +252,7 @@ viewTotalEncounters language currentPage encounters =
                 |> round
 
         statsCard =
-            { title = translateText language <| Translate.Dashboard Translate.TotalEncountersLabel
+            { title = translate language <| Translate.Dashboard Translate.TotalEncountersLabel
             , cardClasses = "total-encounters"
             , cardAction = Nothing
             , value = encounters.thisYear
@@ -275,11 +263,11 @@ viewTotalEncounters language currentPage encounters =
             , newCases = Nothing
             }
     in
-    viewCard language currentPage statsCard
+    viewCard language statsCard
 
 
-viewAllStatsCards : Language -> DashboardPage -> DashboardStats -> NominalDate -> Model -> HealthCenterId -> ModelIndexedDb -> Html Msg
-viewAllStatsCards language currentPage stats currentDate model healthCenterId db =
+viewAllStatsCards : Language -> DashboardStats -> NominalDate -> Model -> HealthCenterId -> ModelIndexedDb -> Html Msg
+viewAllStatsCards language stats currentDate model healthCenterId db =
     let
         modelWithLastMonth =
             if model.period == ThisMonth then
@@ -299,13 +287,13 @@ viewAllStatsCards language currentPage stats currentDate model healthCenterId db
 
     else
         div [ class "ui equal width grid" ]
-            [ viewMalnourishedCards language currentPage stats monthBeforeStats
-            , viewMiscCards language currentPage stats monthBeforeStats
+            [ viewMalnourishedCards language stats monthBeforeStats
+            , viewMiscCards language stats monthBeforeStats
             ]
 
 
-viewMalnourishedCards : Language -> DashboardPage -> DashboardStats -> DashboardStats -> Html Msg
-viewMalnourishedCards language currentPage stats monthBeforeStats =
+viewMalnourishedCards : Language -> DashboardStats -> DashboardStats -> Html Msg
+viewMalnourishedCards language stats monthBeforeStats =
     let
         total =
             stats.malnourished
@@ -323,7 +311,7 @@ viewMalnourishedCards language currentPage stats monthBeforeStats =
                 |> round
 
         totalCard =
-            { title = translateText language <| Translate.Dashboard Translate.TotalMalnourished
+            { title = translate language <| Translate.Dashboard Translate.TotalMalnourished
             , cardClasses = "stats total-malnourished"
             , cardAction = Just CaseManagementPage
             , value = total
@@ -352,7 +340,7 @@ viewMalnourishedCards language currentPage stats monthBeforeStats =
                 |> round
 
         severeCard =
-            { title = translateText language <| Translate.Dashboard Translate.SeverelyMalnourished
+            { title = translate language <| Translate.Dashboard Translate.SeverelyMalnourished
             , cardClasses = "stats severely-malnourished"
             , cardAction = Just CaseManagementPage
             , value = severe
@@ -381,7 +369,7 @@ viewMalnourishedCards language currentPage stats monthBeforeStats =
                 |> round
 
         moderateCard =
-            { title = translateText language <| Translate.Dashboard Translate.ModeratelyMalnourished
+            { title = translate language <| Translate.Dashboard Translate.ModeratelyMalnourished
             , cardClasses = "stats moderately-malnourished"
             , cardAction = Just CaseManagementPage
             , value = moderate
@@ -393,21 +381,21 @@ viewMalnourishedCards language currentPage stats monthBeforeStats =
             }
     in
     div [ class "row" ]
-        [ div [ class "column" ] [ viewCard language currentPage totalCard ]
-        , div [ class "column" ] [ viewCard language currentPage severeCard ]
-        , div [ class "column" ] [ viewCard language currentPage moderateCard ]
+        [ div [ class "column" ] [ viewCard language totalCard ]
+        , div [ class "column" ] [ viewCard language severeCard ]
+        , div [ class "column" ] [ viewCard language moderateCard ]
         ]
 
 
-viewMiscCards : Language -> DashboardPage -> DashboardStats -> DashboardStats -> Html Msg
-viewMiscCards language currentPage stats monthBeforeStats =
+viewMiscCards : Language -> DashboardStats -> DashboardStats -> Html Msg
+viewMiscCards language stats monthBeforeStats =
     let
         totalNewBeneficiaries =
             stats.childrenBeneficiaries
                 |> List.length
 
         totalNewBeneficiariesCard =
-            { title = translateText language <| Translate.Dashboard Translate.NewBeneficiaries
+            { title = translate language <| Translate.Dashboard Translate.NewBeneficiaries
             , cardClasses = "new-beneficiaries"
             , cardAction = Just CaseManagementPage
             , value = totalNewBeneficiaries
@@ -419,24 +407,27 @@ viewMiscCards language currentPage stats monthBeforeStats =
             }
     in
     div [ class "row" ]
-        [ div [ class "column" ] [ viewCard language currentPage totalNewBeneficiariesCard ]
+        [ div [ class "column" ] [ viewCard language totalNewBeneficiariesCard ]
         ]
 
 
-viewCard : Language -> DashboardPage -> StatsCard -> Html Msg
-viewCard language currentPage statsCard =
+viewCard : Language -> StatsCard -> Html Msg
+viewCard language statsCard =
     let
         ( cardAction, cardLinkClass ) =
             case statsCard.cardAction of
                 Nothing ->
-                    ( SetActivePage currentPage (UserPage <| DashboardPage currentPage)
+                    ( []
                     , ""
                     )
 
                 Just page ->
-                    ( SetActivePage currentPage (UserPage <| DashboardPage <| page)
+                    ( [ onClick <| SetActivePage <| UserPage <| DashboardPage <| page ]
                     , "link"
                     )
+
+        cardAttributes =
+            (class <| "ui segment blue dashboard-cards " ++ statsCard.cardClasses ++ " " ++ cardLinkClass) :: cardAction
 
         severityClass =
             case statsCard.valueSeverity of
@@ -477,11 +468,9 @@ viewCard language currentPage statsCard =
                 emptyNode
     in
     div
-        [ class <| "ui segment blue dashboard-cards " ++ statsCard.cardClasses ++ " " ++ cardLinkClass
-        , onClick cardAction
-        ]
+        cardAttributes
         [ div [ class "content" ]
-            [ div [ class "header" ] [ statsCard.title ]
+            [ div [ class "header" ] [ text statsCard.title ]
             , div [ class <| "percentage this-year severity severity-" ++ severityClass ] [ text <| String.fromInt statsCard.value ++ valueSuffix ]
             , div [ class "total last-year" ]
                 [ span [ class "percentage" ]
@@ -589,14 +578,14 @@ viewBeneficiariesTable language currentDate stats model =
         ]
 
 
-viewDashboardPagesLinks : Language -> DashboardPage -> Html Msg
-viewDashboardPagesLinks language currentPage =
+viewDashboardPagesLinks : Language -> Html Msg
+viewDashboardPagesLinks language =
     div [ class "dashboards-links" ]
         [ div
             [ class "ui segment stats"
             , DashboardPage StatsPage
                 |> UserPage
-                |> SetActivePage currentPage
+                |> SetActivePage
                 |> onClick
             ]
             [ i [ class "icon" ] []
@@ -609,7 +598,7 @@ viewDashboardPagesLinks language currentPage =
             [ class "ui segment case"
             , DashboardPage CaseManagementPage
                 |> UserPage
-                |> SetActivePage currentPage
+                |> SetActivePage
                 |> onClick
             ]
             [ i [ class "icon" ] []
