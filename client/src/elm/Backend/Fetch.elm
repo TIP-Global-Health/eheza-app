@@ -42,6 +42,26 @@ shouldFetch model msg =
             isNotAsked model.clinics
 
         FetchEditableSession id _ ->
+            -- This one is a bit special because it is synthetic ...  what
+            -- we're asking for here is not the fetch itself, but a certain
+            -- organization of the fetched data. We want to re-run the
+            -- organization in every case unless we have a success here.
+            -- Which means, once we have a success, it's important to
+            -- invalidate or modify our successful data if underlying data
+            -- changes. (That is, our `handleRevisions` needs to keep the
+            -- editable sessions in mind).
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> isSuccess
+                |> not
+
+        FetchEditableSessionCheckedIn id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map (.checkedIn >> isNotNeeded)
+                |> RemoteData.withDefault False
+
+        FetchEditableSessionMeasurements id ->
             let
                 -- Make sure we don't still have measurements being lazy loaded. If we do, allow rebuilding the
                 -- `EditableSession`.
@@ -51,35 +71,15 @@ shouldFetch model msg =
                 hasChildrenMeasurementsNotSuccess =
                     hasNoSuccessValues model.childMeasurements
 
-                sessionNotSuccess =
+                measurementsNotSuccess =
                     Dict.get id model.editableSessions
                         |> Maybe.withDefault NotAsked
-                        |> isSuccess
-                        |> not
+                        |> RemoteData.map (.offlineSession >> .measurements >> isNotNeeded)
+                        |> RemoteData.withDefault False
             in
-            -- This one is a bit special because it is synthetic ...  what
-            -- we're asking for here is not the fetch itself, but a certain
-            -- organization of the fetched data. We want to re-run the
-            -- organization in every case unless we have a success here.
-            -- Which means, once we have a success, it's important to
-            -- invalidate or modify our successful data if underlying data
-            -- changes. (That is, our `handleRevisions` needs to keep the
-            -- editable sessions in mind).
-            sessionNotSuccess
+            measurementsNotSuccess
                 || hasMothersMeasurementsNotSuccess
                 || hasChildrenMeasurementsNotSuccess
-
-        FetchEditableSessionCheckedIn id ->
-            Dict.get id model.editableSessions
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.map (.checkedIn >> isNotNeeded)
-                |> RemoteData.withDefault False
-
-        FetchEditableSessionMeasurements id ->
-            Dict.get id model.editableSessions
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.map (.offlineSession >> .measurements >> isNotNeeded)
-                |> RemoteData.withDefault False
 
         FetchEditableSessionSummaryByActivity id ->
             Dict.get id model.editableSessions
