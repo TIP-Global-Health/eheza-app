@@ -1054,84 +1054,104 @@ existing types).
 makeEditableSession : SessionId -> ModelIndexedDb -> WebData EditableSession
 makeEditableSession sessionId db =
     let
-        sessionData =
-            Dict.get sessionId db.sessions
-                |> Maybe.withDefault NotAsked
+        hasNoSuccessValues dict =
+            dict
+                |> Dict.values
+                |> List.filter (\v -> RemoteData.isLoading v || RemoteData.isNotAsked v)
+                |> List.isEmpty
+                |> not
 
-        allParticipantFormsData =
-            db.participantForms
+        hasMothersMeasurementsNotSuccess =
+            hasNoSuccessValues db.motherMeasurements
 
-        everyCounselingScheduleData =
-            db.everyCounselingSchedule
-
-        participantsData =
-            Dict.get sessionId db.expectedParticipants
-                |> Maybe.withDefault NotAsked
-
-        mothersData =
-            RemoteData.andThen
-                (\participants ->
-                    Dict.keys participants.byMotherId
-                        |> List.map
-                            (\id ->
-                                Dict.get id db.people
-                                    |> Maybe.withDefault NotAsked
-                                    |> RemoteData.map (\data -> ( id, data ))
-                            )
-                        |> RemoteData.fromList
-                        |> RemoteData.map (List.sortBy (Tuple.second >> .name) >> Dict.fromList)
-                )
-                participantsData
-
-        childrenData =
-            RemoteData.andThen
-                (\participants ->
-                    Dict.keys participants.byChildId
-                        |> List.map
-                            (\id ->
-                                Dict.get id db.people
-                                    |> Maybe.withDefault NotAsked
-                                    |> RemoteData.map (\data -> ( id, data ))
-                            )
-                        |> RemoteData.fromList
-                        |> RemoteData.map Dict.fromList
-                )
-                participantsData
-
-        measurementData =
-            Success NotNeeded
-
-        offlineSession =
-            RemoteData.map OfflineSession sessionData
-                |> RemoteData.andMap allParticipantFormsData
-                |> RemoteData.andMap everyCounselingScheduleData
-                |> RemoteData.andMap participantsData
-                |> RemoteData.andMap mothersData
-                |> RemoteData.andMap childrenData
-                |> RemoteData.andMap measurementData
-
-        ( previousCheckedIn, previousSummaryByParticipant, previousSummaryByActivity ) =
-            Dict.get sessionId db.editableSessions
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map
-                    (\editableSessions ->
-                        ( LocalData.setRecalculate editableSessions.checkedIn
-                        , LocalData.setRecalculate editableSessions.summaryByParticipant
-                        , LocalData.setRecalculate editableSessions.summaryByActivity
-                        )
-                    )
-                |> Maybe.withDefault ( NotNeeded, NotNeeded, NotNeeded )
+        hasChildrenMeasurementsNotSuccess =
+            hasNoSuccessValues db.childMeasurements
     in
-    RemoteData.map
-        (\offline ->
-            { offlineSession = offline
-            , update = NotAsked
-            , checkedIn = previousCheckedIn
-            , summaryByParticipant = previousSummaryByParticipant
-            , summaryByActivity = previousSummaryByActivity
-            }
-        )
-        offlineSession
+    -- Make sure we don't still have measurements being lazy loaded. If we do, allow rebuilding the
+    -- `EditableSession`.
+    if hasMothersMeasurementsNotSuccess || hasChildrenMeasurementsNotSuccess then
+        Loading
+
+    else
+        let
+            sessionData =
+                Dict.get sessionId db.sessions
+                    |> Maybe.withDefault NotAsked
+
+            allParticipantFormsData =
+                db.participantForms
+
+            everyCounselingScheduleData =
+                db.everyCounselingSchedule
+
+            participantsData =
+                Dict.get sessionId db.expectedParticipants
+                    |> Maybe.withDefault NotAsked
+
+            mothersData =
+                RemoteData.andThen
+                    (\participants ->
+                        Dict.keys participants.byMotherId
+                            |> List.map
+                                (\id ->
+                                    Dict.get id db.people
+                                        |> Maybe.withDefault NotAsked
+                                        |> RemoteData.map (\data -> ( id, data ))
+                                )
+                            |> RemoteData.fromList
+                            |> RemoteData.map (List.sortBy (Tuple.second >> .name) >> Dict.fromList)
+                    )
+                    participantsData
+
+            childrenData =
+                RemoteData.andThen
+                    (\participants ->
+                        Dict.keys participants.byChildId
+                            |> List.map
+                                (\id ->
+                                    Dict.get id db.people
+                                        |> Maybe.withDefault NotAsked
+                                        |> RemoteData.map (\data -> ( id, data ))
+                                )
+                            |> RemoteData.fromList
+                            |> RemoteData.map Dict.fromList
+                    )
+                    participantsData
+
+            measurementData =
+                Success NotNeeded
+
+            offlineSession =
+                RemoteData.map OfflineSession sessionData
+                    |> RemoteData.andMap allParticipantFormsData
+                    |> RemoteData.andMap everyCounselingScheduleData
+                    |> RemoteData.andMap participantsData
+                    |> RemoteData.andMap mothersData
+                    |> RemoteData.andMap childrenData
+                    |> RemoteData.andMap measurementData
+
+            ( previousCheckedIn, previousSummaryByParticipant, previousSummaryByActivity ) =
+                Dict.get sessionId db.editableSessions
+                    |> Maybe.andThen RemoteData.toMaybe
+                    |> Maybe.map
+                        (\editableSessions ->
+                            ( LocalData.setRecalculate editableSessions.checkedIn
+                            , LocalData.setRecalculate editableSessions.summaryByParticipant
+                            , LocalData.setRecalculate editableSessions.summaryByActivity
+                            )
+                        )
+                    |> Maybe.withDefault ( NotNeeded, NotNeeded, NotNeeded )
+        in
+        RemoteData.map
+            (\offline ->
+                { offlineSession = offline
+                , update = NotAsked
+                , checkedIn = previousCheckedIn
+                , summaryByParticipant = previousSummaryByParticipant
+                , summaryByActivity = previousSummaryByActivity
+                }
+            )
+            offlineSession
 
 
 {-| Summarize our data for the editable session in a way that is useful
