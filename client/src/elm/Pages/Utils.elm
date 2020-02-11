@@ -1,4 +1,4 @@
-module Pages.Utils exposing (calculatePercentage, filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
+module Pages.Utils exposing (calculatePercentage, filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, monthList, normalizeFilter, viewNameFilter)
 
 import Backend.Entities exposing (PersonId)
 import Backend.Person.Model exposing (Person)
@@ -7,6 +7,7 @@ import Backend.Session.Utils exposing (getChildren)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Time exposing (Month(..))
 import Translate exposing (Language, TranslationId, translate)
 
 
@@ -41,6 +42,11 @@ matchFilter filter filteredValue =
         filteredValue
             |> String.toLower
             |> String.contains filter
+
+
+monthList : List Month
+monthList =
+    [ Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec ]
 
 
 matchMotherAndHerChildren : String -> OfflineSession -> PersonId -> Person -> Bool

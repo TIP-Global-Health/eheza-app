@@ -18,7 +18,7 @@ import List.Extra
 import Pages.Dashboard.GraphUtils exposing (..)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
-import Pages.Utils exposing (calculatePercentage)
+import Pages.Utils exposing (calculatePercentage, monthList)
 import Path
 import Scale exposing (BandConfig, BandScale, ContinuousScale)
 import Shape exposing (Arc, defaultPieConfig)
@@ -134,7 +134,7 @@ viewCaseManagementPage language currentDate stats healthCenterId model db =
                 )
                 []
                 stats.caseManagement
-                |> List.sortWith (\t1 t2 -> compare t1.name t2.name)
+                |> List.sortBy .name
     in
     div [ class "dashboard case" ]
         [ div [ class "ui segment blue" ]
@@ -157,20 +157,9 @@ viewCaseManagementTable language model tableData =
     table [ class "ui very basic collapsing celled table" ]
         [ thead []
             [ tr []
-                [ th [ class "name" ] [ translateText language <| Translate.Name ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Jan True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Feb True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Mar True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Apr True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth May True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Jun True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Jul True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Aug True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Sep True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Oct True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Nov True ] ]
-                , th [] [ span [] [ translateText language <| Translate.ResolveMonth Dec True ] ]
-                ]
+                (th [ class "name" ] [ translateText language <| Translate.Name ]
+                    :: List.map (\month -> th [] [ span [] [ translateText language <| Translate.ResolveMonth month True ] ]) monthList
+                )
             ]
         , tbody []
             (List.map viewCaseManagementTableRow tableData)
@@ -183,12 +172,11 @@ viewCaseManagementTableRow rowData =
         rowList =
             rowData.nutrition
                 |> Dict.toList
-                |> List.sortWith (\t1 t2 -> compare (Tuple.first t1) (Tuple.first t2))
+                |> List.sortBy Tuple.first
     in
     tr []
-        (List.append
-            [ td [ class "name" ] [ text rowData.name ] ]
-            (List.map viewMonthCell rowList)
+        (td [ class "name" ] [ text rowData.name ]
+            :: List.map viewMonthCell rowList
         )
 
 
