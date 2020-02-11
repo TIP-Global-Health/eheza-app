@@ -227,7 +227,7 @@ function hedley_admin_health_center_access($account = FALSE) {
     return TRUE;
   }
 
-  if (!in_array('E-ledger viewer', $account->roles)) {
+  if (!in_array('E-ledger viewer', $account->roles) && !in_array('nurse', $account->roles)) {
     return FALSE;
   }
 
