@@ -25,7 +25,7 @@ import Shape exposing (Arc, defaultPieConfig)
 import Svg
 import Svg.Attributes exposing (cx, cy, r)
 import Time exposing (Month(..))
-import Translate exposing (Language, translateText)
+import Translate exposing (Language, translate, translateText)
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
@@ -227,7 +227,7 @@ viewGoodNutrition language nutrition =
             percentageThisYear - percentageLastYear
 
         statsCard =
-            { title = translateText language <| Translate.Dashboard Translate.GoodNutritionLabel
+            { title = translate language <| Translate.Dashboard Translate.GoodNutritionLabel
             , cardClasses = "good-nutrition"
             , cardAction = Nothing
             , value = percentageThisYear
@@ -252,7 +252,7 @@ viewTotalEncounters language encounters =
                 |> round
 
         statsCard =
-            { title = translateText language <| Translate.Dashboard Translate.TotalEncountersLabel
+            { title = translate language <| Translate.Dashboard Translate.TotalEncountersLabel
             , cardClasses = "total-encounters"
             , cardAction = Nothing
             , value = encounters.thisYear
@@ -311,7 +311,7 @@ viewMalnourishedCards language stats monthBeforeStats =
                 |> round
 
         totalCard =
-            { title = translateText language <| Translate.Dashboard Translate.TotalMalnourished
+            { title = translate language <| Translate.Dashboard Translate.TotalMalnourished
             , cardClasses = "stats total-malnourished"
             , cardAction = Just CaseManagementPage
             , value = total
@@ -340,7 +340,7 @@ viewMalnourishedCards language stats monthBeforeStats =
                 |> round
 
         severeCard =
-            { title = translateText language <| Translate.Dashboard Translate.SeverelyMalnourished
+            { title = translate language <| Translate.Dashboard Translate.SeverelyMalnourished
             , cardClasses = "stats severely-malnourished"
             , cardAction = Just CaseManagementPage
             , value = severe
@@ -369,7 +369,7 @@ viewMalnourishedCards language stats monthBeforeStats =
                 |> round
 
         moderateCard =
-            { title = translateText language <| Translate.Dashboard Translate.ModeratelyMalnourished
+            { title = translate language <| Translate.Dashboard Translate.ModeratelyMalnourished
             , cardClasses = "stats moderately-malnourished"
             , cardAction = Just CaseManagementPage
             , value = moderate
@@ -395,7 +395,7 @@ viewMiscCards language stats monthBeforeStats =
                 |> List.length
 
         totalNewBeneficiariesCard =
-            { title = translateText language <| Translate.Dashboard Translate.NewBeneficiaries
+            { title = translate language <| Translate.Dashboard Translate.NewBeneficiaries
             , cardClasses = "new-beneficiaries"
             , cardAction = Just CaseManagementPage
             , value = totalNewBeneficiaries
@@ -470,7 +470,7 @@ viewCard language statsCard =
     div
         cardAttributes
         [ div [ class "content" ]
-            [ div [ class "header" ] [ statsCard.title ]
+            [ div [ class "header" ] [ text statsCard.title ]
             , div [ class <| "percentage this-year severity severity-" ++ severityClass ] [ text <| String.fromInt statsCard.value ++ valueSuffix ]
             , div [ class "total last-year" ]
                 [ span [ class "percentage" ]
