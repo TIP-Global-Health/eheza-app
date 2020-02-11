@@ -275,7 +275,7 @@ viewStatsCard language statsCard =
                     )
 
         cardAttributes =
-            List.append cardAction [ class <| "ui segment blue dashboard-cards " ++ statsCard.cardClasses ++ " " ++ cardLinkClass ]
+            (class <| "ui segment blue dashboard-cards " ++ statsCard.cardClasses ++ " " ++ cardLinkClass) :: cardAction
 
         severityClass =
             case statsCard.valueSeverity of
