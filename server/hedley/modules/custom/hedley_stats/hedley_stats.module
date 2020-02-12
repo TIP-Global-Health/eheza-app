@@ -39,13 +39,23 @@ function hedley_stats_node_presave($node) {
     return;
   }
 
+  $periods = [
+    HEDLEY_STATS_PERIOD_THIS_MONTH,
+    HEDLEY_STATS_PERIOD_LAST_MONTH,
+    HEDLEY_STATS_PERIOD_THREE_MONTHS,
+    HEDLEY_STATS_PERIOD_ONE_YEAR,
+    HEDLEY_STATS_PERIOD_LAST_YEAR,
+  ];
   // Reset the cache for the stats of the health center because a measurement in
   // it has changed.
   foreach ($health_centers as $health_center) {
-    $measurements_query_cache_id = 'measurements_query_grouped_by_person_' . $health_center->nid;
-    $session_attendance_cache_id = 'session_attendance_stats_' . $health_center->nid;
-    cache_clear_all($measurements_query_cache_id, 'cache');
-    cache_clear_all($session_attendance_cache_id, 'cache');
+    foreach ($periods as $period) {
+      // Clear cache for all the periods.
+      $measurements_query_cache_id = 'measurements_query_grouped_by_person_' . $health_center->nid . '_' . $period;
+      $session_attendance_cache_id = 'session_attendance_stats_' . $health_center->nid . '_' . $period;
+      cache_clear_all($measurements_query_cache_id, 'cache');
+      cache_clear_all($session_attendance_cache_id, 'cache');
+    }
   }
 }
 
@@ -167,13 +177,6 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
   // Person's info.
   hedley_stats_join_field_to_query($query, 'node', 'field_gender', TRUE, "field_person.field_person_target_id");
 
-  // Get the group type.
-  hedley_stats_join_field_to_query($query, 'node', 'field_session');
-  hedley_stats_join_field_to_query($query, 'node', 'field_clinic', TRUE, "field_session.field_session_target_id");
-  hedley_stats_join_field_to_query($query, 'node', 'field_group_type', TRUE, "field_clinic.field_clinic_target_id");
-  // Only FBF groups.
-  $query->condition('field_group_type.field_group_type_value', 'fbf');
-
   $result = $query
     ->execute()
     ->fetchAllAssoc('nid');
@@ -225,7 +228,7 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
  */
 function hedley_stats_get_session_attendance_stats_by_period($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
   // Set the query options as strings for creating cache ID.
-  $health_center_cache_id = 'session_attendance_stats_' . $health_center_id;
+  $health_center_cache_id = 'session_attendance_stats_' . $health_center_id . '_' . $period;
   $cache = cache_get($health_center_cache_id);
 
   if (!empty($cache)) {
@@ -711,7 +714,7 @@ function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_ST
  */
 function hedley_stats_get_measurements_query_grouped_by_person($health_center_id, $period) {
   // Set the query options as strings for creating cache ID.
-  $health_center_cache_id = 'measurements_query_grouped_by_person_' . $health_center_id;
+  $health_center_cache_id = 'measurements_query_grouped_by_person_' . $health_center_id . '_' . $period;
   $cache = cache_get($health_center_cache_id);
 
   if (!empty($cache)) {
