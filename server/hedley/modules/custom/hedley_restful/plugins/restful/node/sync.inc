@@ -11,6 +11,5 @@ $plugin = array(
   'name' => 'sync',
   'description' => t('Sync with devices.'),
   'class' => 'HedleyRestfulSync',
-  // @todo: Why was just token?
   'authentication_types' => ['token'],
 );

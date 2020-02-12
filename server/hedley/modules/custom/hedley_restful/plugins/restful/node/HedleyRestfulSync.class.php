@@ -295,7 +295,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       ->execute()
       ->fetchObject();
 
-    // @todo: Remove, as I believe it doesn't really give us important data
     $last_timestamp = $last_revision ? $last_revision->changed : 0;
 
     // Restrict to revisions the client doesn't already have.
