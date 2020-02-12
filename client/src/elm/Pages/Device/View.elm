@@ -157,7 +157,7 @@ viewSyncData language data =
                 second =
                     Time.toSecond Time.utc time |> normalize
             in
-            day ++ " " ++ month ++ " " ++ year ++ " " ++ hour ++ ":" ++ minute ++ ":" ++ second
+            day ++ " " ++ month ++ " " ++ year ++ " " ++ hour ++ ":" ++ minute ++ ":" ++ second ++ " UTC"
 
         viewAttempt attempt =
             case attempt of
