@@ -58,9 +58,6 @@ pageToFragment current =
                 EditPersonPage id ->
                     Just ("person/" ++ fromEntityUuid id ++ "/edit")
 
-                EditPersonPage id ->
-                    Just <| UrlChange NewEntry ("#person/" ++ fromEntityUuid id ++ "/edit")
-
                 PersonPage id ->
                     Just ("person/" ++ fromEntityUuid id)
 
