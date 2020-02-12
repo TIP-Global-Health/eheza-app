@@ -120,7 +120,26 @@ function hedley_restful_output_for_bundles($bundleHandlers, array $nids, $accoun
 }
 
 /**
- * Convert a UUID to a nodeId.
+ * Resolve node ID using provided UUID.
+ *
+ * @param string $uuid
+ *   The UUID.
+ *
+ * @return int
+ *   The Node ID. False, if not found.
+ */
+function hedley_restful_resolve_nid_for_uuid($uuid) {
+  $result = db_select('field_data_field_uuid', 'uuid')
+    ->fields('uuid', ['entity_id'])
+    ->condition('uuid.field_uuid_value', $uuid)
+    ->execute()
+    ->fetchField();
+
+  return empty($result) ? FALSE : $result;
+}
+
+/**
+ * Convert a UUID to a node ID.
  *
  * @param string $uuid
  *   The UUID.
@@ -131,13 +150,9 @@ function hedley_restful_output_for_bundles($bundleHandlers, array $nids, $accoun
  * @throws \RestfulBadRequestException
  */
 function hedley_restful_uuid_to_nid($uuid) {
-  $result = db_select('field_data_field_uuid', 'uuid')
-    ->fields('uuid', ['entity_id'])
-    ->condition('uuid.field_uuid_value', $uuid)
-    ->execute()
-    ->fetchField();
+  $result = hedley_restful_resolve_nid_for_uuid($uuid);
 
-  if (empty($result)) {
+  if ($result === FALSE) {
     throw new RestfulBadRequestException("Could not find UUID: $uuid");
   }
 

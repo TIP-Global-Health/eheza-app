@@ -453,7 +453,13 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
             break;
 
           case 'POST':
-            $sub_handler->post('', $data);
+            $nid = hedley_restful_resolve_nid_for_uuid($item['uuid']);
+            // Check if node with provided UUID already exists.
+            // If it does, we don't do anything, as this is duplicate request.
+            // Otherwise, we can proceed with content creation.
+            if ($nid === FALSE) {
+              $sub_handler->post('', $data);
+            }
             break;
         }
       }
