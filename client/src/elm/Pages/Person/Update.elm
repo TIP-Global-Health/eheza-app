@@ -6,8 +6,6 @@ import Backend.Entities exposing (PersonId)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form exposing (PersonForm, applyDefaultValues, birthDate, validatePerson)
 import Backend.Person.Model exposing (ExpectedAge(..), ParticipantDirectoryOperation(..), Person)
-import Backend.Person.Utils exposing (isPersonAnAdult)
-import Date exposing (toRataDie)
 import Form
 import Form.Field
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD, fromLocalDateTime)

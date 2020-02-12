@@ -411,9 +411,6 @@ viewCreateEditForm language currentDate operation model db =
         personForm =
             applyDefaultValues maybeRelatedPerson operation currentDate formBeforeDefaults
 
-        request =
-            db.postPerson
-
         emptyOption =
             ( "", "" )
 
