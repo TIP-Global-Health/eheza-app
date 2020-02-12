@@ -235,10 +235,6 @@ function hedley_stats_get_session_attendance_stats_by_period($health_center_id, 
     return $cache->data;
   }
 
-  $completed_program = [];
-  $missed_session = [];
-
-  $expected_date = hedley_stats_get_period($period, TRUE);
   $pmtct_by_health_center = hedley_stats_get_pmtct_participants_by_health_center($health_center_id, 10000);
 
   // Get people from the participants.
@@ -259,38 +255,38 @@ function hedley_stats_get_session_attendance_stats_by_period($health_center_id, 
     ];
   }
 
-  $attended_people_by_health_center = hedley_stats_get_measurements_query_grouped_by_person($health_center_id, $period);
+  // Get sessions for the given period.
+  $sessions = hedley_stats_get_health_center_sessions_by_period($health_center_id, $period, 1000);
 
+  $completed_program = [];
+  $missed_session = [];
+  $measurements_types = array_keys(heldey_stats_get_mapped_measurements_content_types());
   // Prepare data to be consumed by client side.
-  foreach (array_keys($expected_people_by_health_center) as $person_nid) {
-    if (in_array($person_nid, array_keys($attended_people_by_health_center))) {
-      $person_attendance = $attended_people_by_health_center[$person_nid];
+  foreach ($sessions as $session_nid) {
+    $session_wrapper = entity_metadata_wrapper('node', $session_nid);
+    $date = hedley_stats_convert_timestamp_to_nominal($session_wrapper->field_scheduled_date->value->value());
 
-      // Check that this person completed the program in the given period.
-      $completed = [];
-      foreach ($person_attendance as $measurements) {
-        foreach ($measurements as $measurement) {
-          foreach ($measurement as $date => $value) {
-            if (strtotime($date) > $expected_date['start']) {
-              $completed[] = TRUE;
-            }
-          }
+    foreach (array_keys($expected_people_by_health_center) as $person_nid) {
+      // First check if person attended any of the sessions.
+      $attendance = hedley_activity_get_attendance_by_session($session_nid, $person_nid, TRUE, 1);
+      if (!$attendance) {
+        $missed_session[] = $expected_people_by_health_center[$person_nid] + ['date' => $date];
+      }
+      else {
+        // Check if the person who attended has completed the program.
+        $measurements = hedley_activity_get_measurements_by_session($session_nid, $person_nid, $measurements_types);
+        if (count($measurements) == 4) {
+          $completed_program[] = $expected_people_by_health_center[$person_nid] + ['date' => $date];
         }
       }
-
-      if (array_sum($completed) == count($completed)) {
-        // This means all measurements have been completed in the given period.
-        $completed_program[] = $expected_people_by_health_center[$person_nid];
-      }
-    }
-    else {
-      // Person missed the session.
-      $missed_session[] = $expected_people_by_health_center[$person_nid];
     }
   }
 
   // Store in cache.
-  cache_set($health_center_cache_id, [$completed_program, $missed_session], 'cache', CACHE_TEMPORARY);
+  cache_set($health_center_cache_id, [
+    $completed_program,
+    $missed_session,
+  ], 'cache', CACHE_TEMPORARY);
 
   return [$completed_program, $missed_session];
 }
@@ -1059,19 +1055,8 @@ function hedley_stats_nutrition_signs() {
  */
 function hedley_stats_get_pmtct_participants_by_health_center($health_center_id, $range = 100) {
   // First we get all the FBF clinics for this health center.
-  $query = new EntityFieldQuery();
-  $query
-    ->entityCondition('entity_type', 'node')
-    ->propertyCondition('type', 'clinic')
-    ->propertyCondition('status', NODE_PUBLISHED)
-    ->fieldCondition('field_health_center', 'target_id', $health_center_id)
-    // All the stats should only be for groups of type `fbf`.
-    ->fieldCondition('field_group_type', 'value', 'fbf')
-    ->range(0, $range);
-
-  $clinics = $query->execute();
-
-  if (empty($clinics['node'])) {
+  $clinics = hedley_health_center_get_clinics_by_health_center($health_center_id, 'fbf', $range);
+  if (empty($clinics)) {
     // No clinics found.
     return [];
   }
@@ -1081,10 +1066,47 @@ function hedley_stats_get_pmtct_participants_by_health_center($health_center_id,
     ->entityCondition('entity_type', 'node')
     ->propertyCondition('type', 'pmtct_participant')
     ->propertyCondition('status', NODE_PUBLISHED)
-    ->fieldCondition('field_clinic', 'target_id', array_keys($clinics['node']), 'IN')
+    ->fieldCondition('field_clinic', 'target_id', $clinics, 'IN')
     // Meaning that we are still expecting those participants.
     ->fieldCondition('field_expected', 'value2', NULL)
+    ->range(0, $range);
 
+  $result = $query->execute();
+
+  return !empty($result['node']) ? array_keys($result['node']) : [];
+}
+
+/**
+ * Get health center sessions by period.
+ *
+ * @param int $health_center_id
+ *   The health center node ID.
+ * @param string $period
+ *   The wanted period.
+ * @param int $range
+ *   The queries' range.
+ *
+ * @return array
+ *   Node IDs if they exist or empty array if no nodes exist.
+ */
+function hedley_stats_get_health_center_sessions_by_period($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR, $range = 100) {
+  $dates = hedley_stats_get_period($period, FALSE);
+
+  // First we get all the FBF clinics for this health center.
+  $clinics = hedley_health_center_get_clinics_by_health_center($health_center_id, 'fbf', $range);
+  if (empty($clinics)) {
+    // No clinics found.
+    return [];
+  }
+
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->propertyCondition('type', 'session')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_clinic', 'target_id', $clinics, 'IN')
+    // Meaning that we are still expecting those participants.
+    ->fieldCondition('field_scheduled_date', 'value', $dates['start'], '>')
     ->range(0, $range);
 
   $result = $query->execute();
