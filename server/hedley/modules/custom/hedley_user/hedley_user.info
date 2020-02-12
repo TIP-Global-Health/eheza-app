@@ -29,6 +29,7 @@ features[field_instance][] = node-nurse-field_role
 features[field_instance][] = node-nurse-field_uuid
 features[field_instance][] = user-user-field_avatar
 features[field_instance][] = user-user-field_clinics
+features[field_instance][] = user-user-field_health_centers
 features[field_instance][] = user-user-field_phone
 features[field_instance][] = user-user-field_pin_code
 features[node][] = nurse
