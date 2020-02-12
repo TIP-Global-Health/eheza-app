@@ -532,6 +532,7 @@
 
                     var table = shardUuid === nodesUuid ? dbSync.nodes : dbSync.shards;
 
+
                     // We keep a list of those nodes successfully saved.
                     var saved = [];
 
@@ -639,12 +640,6 @@
 
     function checkImageField (table, node, field) {
         if (node.hasOwnProperty(field)) {
-            // First, we want to normalize the property ... we're only
-            // recording the URL for one style.
-            if (node[field]) {
-                node[field] = node[field].styles['patient-photo'];
-            }
-
             // Then, we need to see whether it has changed.
             return table.get(node.uuid).then(function (existing) {
                 if (existing) {
