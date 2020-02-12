@@ -1,7 +1,7 @@
 module Backend.Dashboard.Decoder exposing (decodeDashboardStats)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Nutrition, NutritionStatus(..), NutritionValue, Periods, TotalBeneficiaries)
+import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Nutrition, NutritionStatus(..), NutritionValue, ParticipantStats, Periods, TotalBeneficiaries)
 import Backend.Measurement.Decoder exposing (decodeFamilyPlanningSign)
 import Backend.Person.Decoder exposing (decodeGender)
 import Dict as LegacyDict
@@ -16,9 +16,11 @@ decodeDashboardStats =
     succeed DashboardStats
         |> required "case_management" (list decodeCaseManagement)
         |> required "children_beneficiaries" (list decodePeopleStats)
+        |> required "completed_program" (list decodeParticipantStats)
         |> required "family_planning" (list decodeFamilyPlanningStats)
         |> required "good_nutrition" decodeGoodNutrition
         |> required "malnourished_beneficiaries" (list decodeMalnourishedStats)
+        |> required "missed_sessions" (list decodeParticipantStats)
         |> required "total_beneficiaries" decodeTotalBeneficiariesDict
         |> required "total_encounters" decodePeriods
 
@@ -121,6 +123,14 @@ decodePeopleStats =
         |> required "created" decodeYYYYMMDD
 
 
+decodeParticipantStats : Decoder ParticipantStats
+decodeParticipantStats =
+    succeed ParticipantStats
+        |> required "name" string
+        |> required "mother_name" string
+        |> optional "phone_number" (nullable string) Nothing
+
+
 decodeFamilyPlanningStats : Decoder FamilyPlanningStats
 decodeFamilyPlanningStats =
     succeed FamilyPlanningStats
@@ -141,6 +151,9 @@ decodeMalnourishedStats =
         |> required "created" decodeYYYYMMDD
         |> required "field_gender" decodeGender
         |> required "field_zscore_age" float
+        |> required "name" string
+        |> required "mother_name" string
+        |> optional "phone_number" (nullable string) Nothing
 
 
 decodePeriods : Decoder Periods

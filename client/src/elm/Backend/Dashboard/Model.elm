@@ -1,4 +1,4 @@
-module Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Nutrition, NutritionStatus(..), NutritionValue, Periods, TotalBeneficiaries, emptyModel)
+module Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Nutrition, NutritionStatus(..), NutritionValue, ParticipantStats, Periods, TotalBeneficiaries, emptyModel)
 
 {-| The stats for the dashboard.
 -}
@@ -13,9 +13,11 @@ import ZScore.Model exposing (ZScore)
 type alias DashboardStats =
     { caseManagement : List CaseManagement
     , childrenBeneficiaries : List ChildrenBeneficiariesStats
+    , completedProgram : List ParticipantStats
     , familyPlanning : List FamilyPlanningStats
     , goodNutrition : GoodNutrition
     , malnourished : List MalnourishedStats
+    , missedSessions : List ParticipantStats
     , totalBeneficiaries : Dict Int TotalBeneficiaries
     , totalEncounters : Periods
     }
@@ -25,6 +27,7 @@ emptyModel : DashboardStats
 emptyModel =
     { caseManagement = []
     , childrenBeneficiaries = []
+    , completedProgram = []
     , familyPlanning = []
     , goodNutrition =
         { all =
@@ -37,6 +40,7 @@ emptyModel =
             }
         }
     , malnourished = []
+    , missedSessions = []
     , totalEncounters =
         { lastYear = 0
         , thisYear = 0
@@ -76,6 +80,16 @@ type alias MalnourishedStats =
     { created : NominalDate
     , gender : Gender
     , zscore : ZScore
+    , name : String
+    , motherName : String
+    , phoneNumber : Maybe String
+    }
+
+
+type alias ParticipantStats =
+    { name : String
+    , motherName : String
+    , phoneNumber : Maybe String
     }
 
 

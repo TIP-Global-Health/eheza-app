@@ -183,24 +183,17 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
     $row->created = hedley_stats_convert_timestamp_to_nominal($row->created);
     $row->field_zscore_age = floatval($row->field_zscore_age);
 
-    $relationships = hedley_person_get_relationships($row->field_person, HEDLEY_PERSON_RELATED_BY_CHILD);
+    $person_wrapper = entity_metadata_wrapper('node', $row->field_person);
+    $row->name = $person_wrapper->label();
 
+    // Get the parent/caregiver details.
+    $relationships = hedley_person_get_relationships($row->field_person, HEDLEY_PERSON_RELATED_BY_CHILD);
     if (!empty($relationships)) {
       $relationship = reset($relationships);
       $relation_wrapper = entity_metadata_wrapper('node', $relationship);
       $row->mother_name = isset($relation_wrapper->field_person) ? $relation_wrapper->field_person->label() : NULL;
       $row->phone_number = isset($relation_wrapper->field_person->field_phone_number) ? $relation_wrapper->field_person->field_phone_number->value() : NULL;
-
-      // Get the person's attendance information.
-      $attendance = hedley_activity_get_attendance_by_session($row->field_session, $relation_wrapper->field_person->getIdentifier(), TRUE, 1);
-      if (!empty($attendance)) {
-        $attendance_wrapper = entity_metadata_wrapper('node', reset($attendance));
-        $row->attendance = $attendance_wrapper->field_attended->value();
-      }
     }
-
-    $person_wrapper = entity_metadata_wrapper('node', $row->field_person);
-    $row->person_name = $person_wrapper->label();
 
     // Remove unused data, to save bandwidth.
     unset($row->nid);
