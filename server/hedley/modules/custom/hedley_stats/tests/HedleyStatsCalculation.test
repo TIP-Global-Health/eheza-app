@@ -293,7 +293,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
         // Create this because the health centers are assigned to "attendance"
         // by the "PMTCT Participant" connection.
-        $this->createDevice(rand(1000, 9999));
+        $this->createDevice();
         $this->createPMTCT($child_nid, $mother_nid, $this->clinicId, $session['date']);
 
         $this->createAttendance($this->healthCenterId, $session_nid, $nurse->uid, $child_nid, TRUE, $session['date']);

@@ -42,8 +42,10 @@ function hedley_stats_node_presave($node) {
   // Reset the cache for the stats of the health center because a measurement in
   // it has changed.
   foreach ($health_centers as $health_center) {
-    $health_center_cache_id = 'measurements_query_grouped_by_person_' . $health_center->nid;
-    cache_clear_all($health_center_cache_id, 'cache');
+    $measurements_query_cache_id = 'measurements_query_grouped_by_person_' . $health_center->nid;
+    $session_attendance_cache_id = 'session_attendance_stats_' . $health_center->nid;
+    cache_clear_all($measurements_query_cache_id, 'cache');
+    cache_clear_all($session_attendance_cache_id, 'cache');
   }
 }
 
@@ -190,7 +192,7 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
       $row->phone_number = isset($relation_wrapper->field_person->field_phone_number) ? $relation_wrapper->field_person->field_phone_number->value() : NULL;
 
       // Get the person's attendance information.
-      $attendance = hedley_activity_get_attendance_by_session($row->field_session, $relation_wrapper->field_person->getIdentifier());
+      $attendance = hedley_activity_get_attendance_by_session($row->field_session, $relation_wrapper->field_person->getIdentifier(), TRUE, 1);
       if (!empty($attendance)) {
         $attendance_wrapper = entity_metadata_wrapper('node', reset($attendance));
         $row->attendance = $attendance_wrapper->field_attended->value();
@@ -211,6 +213,90 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
   }
 
   return array_values($result);
+}
+
+/**
+ * Return Session attendance related states by health center and period.
+ *
+ * @param int $health_center_id
+ *   The Health center node ID.
+ * @param string $period
+ *   The period to calculate. Be default it is for one year, as on the client
+ *   side we could filter out items, if requested to show smaller periods of
+ *   time.
+ *
+ * @return array
+ *   Array with the result.
+ *
+ * @throws \Exception
+ */
+function hedley_stats_get_session_attendance_stats_by_period($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
+  // Set the query options as strings for creating cache ID.
+  $health_center_cache_id = 'session_attendance_stats_' . $health_center_id;
+  $cache = cache_get($health_center_cache_id);
+
+  if (!empty($cache)) {
+    return $cache->data;
+  }
+
+  $completed_program = [];
+  $missed_session = [];
+
+  $expected_date = hedley_stats_get_period($period, TRUE);
+  $pmtct_by_health_center = hedley_stats_get_pmtct_participants_by_health_center($health_center_id, 10000);
+
+  // Get people from the participants.
+  $expected_people_by_health_center = [];
+  foreach ($pmtct_by_health_center as $pmtct_nid) {
+    $pmtct_wrapper = entity_metadata_wrapper('node', $pmtct_nid);
+    $person_wrapper = $pmtct_wrapper->field_person;
+    $mother_wrapper = $pmtct_wrapper->field_adult;
+
+    if (empty($person_wrapper) || empty($mother_wrapper)) {
+      continue;
+    }
+
+    $expected_people_by_health_center[$person_wrapper->getIdentifier()] = [
+      'name' => $person_wrapper->label(),
+      'mother_name' => $mother_wrapper->label(),
+      'phone_number' => $mother_wrapper->field_phone_number->value(),
+    ];
+  }
+
+  $attended_people_by_health_center = hedley_stats_get_measurements_query_grouped_by_person($health_center_id, $period);
+
+  // Prepare data to be consumed by client side.
+  foreach (array_keys($expected_people_by_health_center) as $person_nid) {
+    if (in_array($person_nid, array_keys($attended_people_by_health_center))) {
+      $person_attendance = $attended_people_by_health_center[$person_nid];
+
+      // Check that this person completed the program in the given period.
+      $completed = [];
+      foreach ($person_attendance as $measurements) {
+        foreach ($measurements as $measurement) {
+          foreach ($measurement as $date => $value) {
+            if (strtotime($date) > $expected_date['start']) {
+              $completed[] = TRUE;
+            }
+          }
+        }
+      }
+
+      if (array_sum($completed) == count($completed)) {
+        // This means all measurements have been completed in the given period.
+        $completed_program[] = $expected_people_by_health_center[$person_nid];
+      }
+    }
+    else {
+      // Person missed the session.
+      $missed_session[] = $expected_people_by_health_center[$person_nid];
+    }
+  }
+
+  // Store in cache.
+  cache_set($health_center_cache_id, [$completed_program, $missed_session], 'cache', CACHE_TEMPORARY);
+
+  return [$completed_program, $missed_session];
 }
 
 /**
@@ -962,4 +1048,50 @@ function hedley_stats_nutrition_signs() {
       ],
     ],
   ];
+}
+
+/**
+ * Get PMTCT participants by health center.
+ *
+ * @param int $health_center_id
+ *   The health center node ID.
+ * @param int $range
+ *   The queries' range.
+ *
+ * @return array
+ *   Node IDs if they exist or empty array if no nodes exist.
+ */
+function hedley_stats_get_pmtct_participants_by_health_center($health_center_id, $range = 100) {
+  // First we get all the FBF clinics for this health center.
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->propertyCondition('type', 'clinic')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_health_center', 'target_id', $health_center_id)
+    // All the stats should only be for groups of type `fbf`.
+    ->fieldCondition('field_group_type', 'value', 'fbf')
+    ->range(0, $range);
+
+  $clinics = $query->execute();
+
+  if (empty($clinics['node'])) {
+    // No clinics found.
+    return [];
+  }
+
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->propertyCondition('type', 'pmtct_participant')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_clinic', 'target_id', array_keys($clinics['node']), 'IN')
+    // Meaning that we are still expecting those participants.
+    ->fieldCondition('field_expected', 'value2', NULL)
+
+    ->range(0, $range);
+
+  $result = $query->execute();
+
+  return !empty($result['node']) ? array_keys($result['node']) : [];
 }

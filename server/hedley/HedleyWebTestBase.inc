@@ -116,7 +116,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *   The "health center" node ID.
    */
   public function createHealthCenter() {
-    $this->createDevice(rand(1000, 9999));
+    $this->createDevice();
 
     // Create the necessary catchment area.
     $catchment_area_nid = $this->createCatchmentArea();
@@ -135,13 +135,12 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create a Device with a pairing code.
    *
-   * @param int $pairing_code
-   *   The pairing code for the device.
-   *
    * @return int
    *   The node ID.
    */
-  public function createDevice($pairing_code) {
+  public function createDevice() {
+    $pairing_code = hedley_user_get_unique_pincode();
+
     // Create a new device.
     $node = $this->drupalCreateNode([
       'type' => 'device',

@@ -306,21 +306,31 @@ function hedley_activity_get_measurements_by_session($session_id, $measurement_b
  * @param int $session_id
  *   The session node ID.
  * @param int $person_id
- *   The prson node ID.
+ *   Optional; The person node ID.
+ * @param bool $attendance_status
+ *   Optional; The attendance status.
+ * @param int $range
+ *   Optional; The query's range.
  *
  * @return array
  *   Node IDs if they exist or empty array if no nodes exist.
  */
-function hedley_activity_get_attendance_by_session($session_id, $person_id) {
+function hedley_activity_get_attendance_by_session($session_id, $person_id = NULL, $attendance_status = TRUE, $range = 100) {
   $query = new EntityFieldQuery();
-  $result = $query
+  $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'attendance')
     ->fieldCondition('field_session', 'target_id', $session_id)
-    ->fieldCondition('field_person', 'target_id', $person_id)
+    ->fieldCondition('field_attended', 'value', $attendance_status)
     ->propertyCondition('status', NODE_PUBLISHED)
-    ->range(0, 1)
-    ->execute();
+    ->range(0, $range);
+
+  if ($person_id) {
+    $query
+      ->fieldCondition('field_person', 'target_id', $person_id);
+  }
+
+  $result = $query->execute();
 
   return !empty($result['node']) ? array_keys($result['node']) : [];
 }
