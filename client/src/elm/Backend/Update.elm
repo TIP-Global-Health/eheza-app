@@ -7,6 +7,7 @@ import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Update
 import Backend.Measurement.Model exposing (HistoricalMeasurements)
 import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMeasurements)
 import Backend.Model exposing (..)
@@ -478,6 +479,25 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             in
             ( { model | prenatalEncounterRequests = EveryDict.insert encounterId subModel model.prenatalEncounterRequests }
             , Cmd.map (MsgPrenatalEncounter encounterId) subCmd
+            , []
+            )
+
+        MsgPrenatalSession participantId subMsg ->
+            let
+                participant =
+                    EveryDict.get participantId model.individualParticipants
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+
+                requests =
+                    EveryDict.get participantId model.prenatalSessionRequests
+                        |> Maybe.withDefault Backend.IndividualEncounterParticipant.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.IndividualEncounterParticipant.Update.update participantId participant currentDate subMsg requests
+            in
+            ( { model | prenatalSessionRequests = EveryDict.insert participantId subModel model.prenatalSessionRequests }
+            , Cmd.map (MsgPrenatalSession participantId) subCmd
             , []
             )
 

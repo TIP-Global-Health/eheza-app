@@ -2,6 +2,7 @@ module Pages.PrenatalActivity.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
+import Backend.Measurement.Encoder exposing (socialHistoryHivTestingResultToString)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
@@ -9,6 +10,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Date.Extra as Date exposing (Interval(Day, Month))
 import DateSelector.SelectorDropdown
 import EveryDict
+import EverySet
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime, toLocalDateTime)
 import Html exposing (..)
@@ -38,9 +40,10 @@ import Pages.PrenatalActivity.Utils
         , toObstetricHistoryValue
         , vitalsFormWithDefault
         )
+import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
-import Pages.Utils exposing (viewPhotoThumbFromPhotoUrl)
+import Pages.Utils exposing (taskCompleted, viewBoolInput, viewCustomLabel, viewLabel, viewPhotoThumbFromPhotoUrl, viewQuestionLabel)
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -49,53 +52,14 @@ import Utils.Html exposing (script)
 import Utils.WebData exposing (viewWebData)
 
 
-type alias AssembledData =
-    { id : PrenatalEncounterId
-    , activity : PrenatalActivity
-    , encounter : PrenatalEncounter
-    , participant : IndividualEncounterParticipant
-    , measurements : PrenatalMeasurements
-    , person : Person
-    }
-
-
 view : Language -> NominalDate -> PrenatalEncounterId -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id activity db model =
     let
-        encounter =
-            EveryDict.get id db.prenatalEncounters
-                |> Maybe.withDefault NotAsked
-
-        measurements =
-            EveryDict.get id db.prenatalMeasurements
-                |> Maybe.withDefault NotAsked
-
-        participant =
-            encounter
-                |> RemoteData.andThen
-                    (\encounter ->
-                        EveryDict.get encounter.participant db.individualParticipants
-                            |> Maybe.withDefault NotAsked
-                    )
-
-        person =
-            participant
-                |> RemoteData.andThen
-                    (\participant ->
-                        EveryDict.get participant.person db.people
-                            |> Maybe.withDefault NotAsked
-                    )
-
         data =
-            RemoteData.map AssembledData (Success id)
-                |> RemoteData.andMap (Success activity)
-                |> RemoteData.andMap encounter
-                |> RemoteData.andMap participant
-                |> RemoteData.andMap measurements
-                |> RemoteData.andMap person
+            generateAssembledData id db
 
         content =
-            viewWebData language (viewContent language currentDate model) identity data
+            viewWebData language (viewContent language currentDate activity model) identity data
     in
     div [ class "page-prenatal-activity" ] <|
         [ viewHeader language id activity
@@ -103,11 +67,11 @@ view language currentDate id activity db model =
         ]
 
 
-viewContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
-viewContent language currentDate model data =
+viewContent : Language -> NominalDate -> PrenatalActivity -> Model -> AssembledData -> Html Msg
+viewContent language currentDate activity model data =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate data.person data.measurements model.showAlertsDialog SetAlertsDialogState
-            ++ viewActivity language currentDate data model
+        viewMotherAndMeasurements language currentDate data model.showAlertsDialog SetAlertsDialogState
+            ++ viewActivity language currentDate activity data model
 
 
 viewHeader : Language -> PrenatalEncounterId -> PrenatalActivity -> Html Msg
@@ -127,9 +91,9 @@ viewHeader language id activity =
         ]
 
 
-viewActivity : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
-viewActivity language currentDate data model =
-    case data.activity of
+viewActivity : Language -> NominalDate -> PrenatalActivity -> AssembledData -> Model -> List (Html Msg)
+viewActivity language currentDate activity data model =
+    case activity of
         PregnancyDating ->
             viewPregnancyDatingContent language currentDate data model.pregnancyDatingData
 
@@ -231,7 +195,7 @@ viewPregnancyDatingContent language currentDate assembled data =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SavePregnancyDating assembled.id assembled.participant.person assembled.measurements.lastMenstrualPeriod
+                , onClick <| SavePregnancyDating assembled.id assembled.encounter.participant assembled.participant.person assembled.measurements.lastMenstrualPeriod
                 ]
                 [ text <| translate language Translate.Save ]
             ]
@@ -240,10 +204,14 @@ viewPregnancyDatingContent language currentDate assembled data =
 
 
 viewHistoryContent : Language -> NominalDate -> AssembledData -> HistoryData -> List (Html Msg)
-viewHistoryContent language currentDate assembled data =
+viewHistoryContent language currentDate assembled data_ =
     let
-        tasks =
-            [ Obstetric, Medical, Social ]
+        ( tasks, data ) =
+            if isFirstPrenatalEncounter assembled then
+                ( [ Obstetric, Medical, Social ], data_ )
+
+            else
+                ( [ Social ], { data_ | activeTask = Social } )
 
         viewTask task =
             let
@@ -374,17 +342,65 @@ viewHistoryContent language currentDate assembled data =
                                 |> Maybe.map (Tuple.second >> .value)
                                 |> socialHistoryFormWithDefault data.socialForm
 
+                        showCounselingQuestion =
+                            assembled.previousMeasurementsWithDates
+                                |> List.filter
+                                    (\( _, measurements ) ->
+                                        measurements.socialHistory
+                                            |> Maybe.map (Tuple.second >> .value >> .socialHistory >> EverySet.member PartnerHivCounseling)
+                                            |> Maybe.withDefault False
+                                    )
+                                |> List.isEmpty
+
+                        partnerReceivedCounselingInput =
+                            if showCounselingQuestion then
+                                [ socialForm.partnerReceivedCounseling ]
+
+                            else
+                                []
+
+                        showTestingQuestions =
+                            assembled.previousMeasurementsWithDates
+                                |> List.filter
+                                    (\( _, measurements ) ->
+                                        measurements.socialHistory
+                                            |> Maybe.map
+                                                (\socialHistory ->
+                                                    let
+                                                        value =
+                                                            Tuple.second socialHistory |> .value
+                                                    in
+                                                    (value.hivTestingResult == ResultHivPositive)
+                                                        || (value.hivTestingResult == ResultHivNegative)
+                                                )
+                                            |> Maybe.withDefault False
+                                    )
+                                |> List.isEmpty
+
+                        partnerReceivedTestingInput =
+                            if showTestingQuestions then
+                                [ socialForm.partnerReceivedTesting ]
+
+                            else
+                                []
+
                         boolInputs =
-                            [ socialForm.accompaniedByPartner
-                            , socialForm.partnerReceivedCounseling
-                            , socialForm.mentalHealthHistory
-                            ]
+                            (socialForm.accompaniedByPartner
+                                :: partnerReceivedCounselingInput
+                            )
+                                ++ partnerReceivedTestingInput
+
+                        listInputs =
+                            if socialForm.partnerReceivedTesting == Just True then
+                                [ socialForm.partnerTestingResult ]
+
+                            else
+                                []
                     in
-                    ( viewSocialForm language currentDate assembled socialForm
-                    , boolInputs
-                        |> List.map taskCompleted
-                        |> List.sum
-                    , 3
+                    ( viewSocialForm language currentDate showCounselingQuestion showTestingQuestions socialForm
+                    , (boolInputs |> List.map taskCompleted |> List.sum)
+                        + (listInputs |> List.map taskCompleted |> List.sum)
+                    , List.length boolInputs + List.length listInputs
                     )
 
         actions =
@@ -527,20 +543,45 @@ viewExaminationContent language currentDate assembled data =
 
                 NutritionAssessment ->
                     let
-                        form =
+                        hideHeightInput =
+                            isFirstPrenatalEncounter assembled |> not
+
+                        form_ =
                             assembled.measurements.nutrition
                                 |> Maybe.map (Tuple.second >> .value)
                                 |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
+
+                        form =
+                            if hideHeightInput then
+                                assembled.previousMeasurementsWithDates
+                                    |> List.head
+                                    |> Maybe.andThen (Tuple.second >> getMotherHeightMeasurement)
+                                    |> Maybe.map (\(HeightInCm height) -> { form_ | height = Just height })
+                                    |> Maybe.withDefault form_
+
+                            else
+                                form_
+
+                        tasks =
+                            if hideHeightInput then
+                                [ form.weight, form.muac ]
+
+                            else
+                                [ form.height, form.weight, form.muac ]
+
+                        tasksForBmi =
+                            if hideHeightInput then
+                                [ form.weight ]
+
+                            else
+                                [ form.height, form.weight ]
                     in
-                    ( viewNutritionAssessmentForm language currentDate assembled form
-                    , ([ form.height, form.weight, form.muac ]
-                        |> List.map taskCompleted
-                        |> List.sum
-                      )
+                    ( viewNutritionAssessmentForm language currentDate assembled form hideHeightInput
+                    , (List.map taskCompleted tasks |> List.sum)
                         -- This is for BMI task, which is considered as completed
                         -- when both height and weight are set.
-                        + taskListCompleted [ form.height, form.weight ]
-                    , 4
+                        + taskListCompleted tasksForBmi
+                    , List.length tasks + 1
                     )
 
                 CorePhysicalExam ->
@@ -610,7 +651,21 @@ viewExaminationContent language currentDate assembled data =
                             SaveVitals assembled.id assembled.participant.person assembled.measurements.vitals
 
                         NutritionAssessment ->
-                            SaveNutritionAssessment assembled.id assembled.participant.person assembled.measurements.nutrition
+                            let
+                                passHeight =
+                                    isFirstPrenatalEncounter assembled |> not
+
+                                maybeHeight =
+                                    if passHeight then
+                                        assembled.previousMeasurementsWithDates
+                                            |> List.head
+                                            |> Maybe.andThen (Tuple.second >> getMotherHeightMeasurement)
+                                            |> Maybe.map (\(HeightInCm height) -> height)
+
+                                    else
+                                        Nothing
+                            in
+                            SaveNutritionAssessment assembled.id assembled.participant.person assembled.measurements.nutrition maybeHeight
 
                         CorePhysicalExam ->
                             SaveCorePhysicalExam assembled.id assembled.participant.person assembled.measurements.corePhysicalExam
@@ -686,8 +741,40 @@ viewFamilyPlanningContent language currentDate assembled data =
 viewPatientProvisionsContent : Language -> NominalDate -> AssembledData -> PatientProvisionsData -> List (Html Msg)
 viewPatientProvisionsContent language currentDate assembled data =
     let
+        showResourcesTask =
+            shouldShowPatientProvisionsResourcesTask assembled
+
+        -- We show the question starting EGA week 20, and
+        -- as long as all preivious answers were 'No'.
+        showDewormingPillQuestion =
+            assembled.globalLmpDate
+                |> Maybe.map
+                    (\lmpDate ->
+                        let
+                            currentWeek =
+                                diffDays lmpDate currentDate // 7
+                        in
+                        if currentWeek < 20 then
+                            False
+
+                        else
+                            assembled.previousMeasurementsWithDates
+                                |> List.filter
+                                    (\( _, measurements ) ->
+                                        measurements.medication
+                                            |> Maybe.map (Tuple.second >> .value >> EverySet.member DewormingPill)
+                                            |> Maybe.withDefault False
+                                    )
+                                |> List.isEmpty
+                    )
+                |> Maybe.withDefault False
+
         tasks =
-            [ Medication, Resources ]
+            if showResourcesTask then
+                [ Medication, Resources ]
+
+            else
+                [ Medication ]
 
         viewTask task =
             let
@@ -726,12 +813,19 @@ viewPatientProvisionsContent language currentDate assembled data =
                             assembled.measurements.medication
                                 |> Maybe.map (Tuple.second >> .value)
                                 |> medicationFormWithDefault data.medicationForm
+
+                        questions =
+                            if showDewormingPillQuestion then
+                                [ form.receivedIronFolicAcid, form.receivedDewormingPill ]
+
+                            else
+                                [ form.receivedIronFolicAcid ]
                     in
-                    ( viewMedicationForm language currentDate assembled form
-                    , [ form.receivedIronFolicAcid, form.receivedDewormingPill ]
+                    ( viewMedicationForm language currentDate assembled showDewormingPillQuestion form
+                    , questions
                         |> List.map taskCompleted
                         |> List.sum
-                    , 2
+                    , List.length questions
                     )
 
                 Resources ->
@@ -751,7 +845,7 @@ viewPatientProvisionsContent language currentDate assembled data =
                 saveAction =
                     case data.activeTask of
                         Medication ->
-                            SaveMedication assembled.id assembled.participant.person assembled.measurements.medication
+                            SaveMedication assembled.id assembled.participant.person assembled.measurements.medication showResourcesTask
 
                         Resources ->
                             SaveResources assembled.id assembled.participant.person assembled.measurements.resource
@@ -840,12 +934,24 @@ viewPrenatalPhotoContent language currentDate assembled data =
                     , []
                     , True
                     )
+
+        totalTasks =
+            1
+
+        tasksCompleted =
+            if isJust displayPhoto then
+                1
+
+            else
+                0
     in
-    [ divKeyed
-        [ class "ui full segment photo" ]
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , divKeyed [ class "ui full segment photo" ]
         [ keyedDivKeyed "content"
             [ class "content" ]
-            [ keyedDivKeyed "grid"
+            [ p [] [ text <| translate language Translate.PrenatalPhotoHelper ]
+                |> keyed "help"
+            , keyedDivKeyed "grid"
                 [ class "ui grid" ]
                 [ Maybe.map viewPhotoThumbFromPhotoUrl displayPhoto
                     |> showMaybe
@@ -1377,56 +1483,110 @@ viewMedicalForm language currentDate assembled form =
         ]
 
 
-viewSocialForm : Language -> NominalDate -> AssembledData -> SocialHistoryForm -> Html Msg
-viewSocialForm language currentDate assembled form =
+viewSocialForm : Language -> NominalDate -> Bool -> Bool -> SocialHistoryForm -> Html Msg
+viewSocialForm language currentDate showCounselingQuestion showTestingQuestions form =
     let
         accompaniedByPartnerUpdateFunc value form_ =
             { form_ | accompaniedByPartner = Just value }
 
-        partnerReceivedCounselingUpdateFunc value form_ =
-            { form_ | partnerReceivedCounseling = Just value }
+        accompaniedQuestion =
+            [ div [ class "ui grid" ]
+                [ div [ class "twelve wide column" ]
+                    [ viewQuestionLabel language Translate.AccompaniedByPartner ]
+                , div [ class "four wide column" ]
+                    [ viewRedAlertForBool form.accompaniedByPartner True ]
+                ]
+            , viewBoolInput
+                language
+                form.accompaniedByPartner
+                (SetSocialBoolInput accompaniedByPartnerUpdateFunc)
+                "accompanied-by-partner"
+                Nothing
+            ]
 
-        mentalHealthHistoryUpdateFunc value form_ =
-            { form_ | mentalHealthHistory = Just value }
+        counselingQuestion =
+            if showCounselingQuestion then
+                let
+                    partnerReceivedCounselingUpdateFunc value form_ =
+                        { form_ | partnerReceivedCounseling = Just value }
+                in
+                [ div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewQuestionLabel language Translate.PartnerReceivedHivCounseling ]
+                    , div [ class "four wide column" ]
+                        [ viewRedAlertForBool form.partnerReceivedCounseling True ]
+                    ]
+                , viewBoolInput
+                    language
+                    form.partnerReceivedCounseling
+                    (SetSocialBoolInput partnerReceivedCounselingUpdateFunc)
+                    "partner-received-counseling"
+                    Nothing
+                ]
+
+            else
+                []
+
+        testingReceivedQuestion =
+            if showTestingQuestions then
+                let
+                    partnerReceivedTestingUpdateFunc value form_ =
+                        { form_ | partnerReceivedTesting = Just value }
+                in
+                [ div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewQuestionLabel language Translate.PartnerReceivedHivTesting ]
+                    , div [ class "four wide column" ]
+                        [ viewRedAlertForBool form.partnerReceivedTesting True ]
+                    ]
+                , viewBoolInput
+                    language
+                    form.partnerReceivedTesting
+                    (SetSocialBoolInput partnerReceivedTestingUpdateFunc)
+                    "partner-received-testing"
+                    Nothing
+                ]
+
+            else
+                []
+
+        testingResultQuestion =
+            if showTestingQuestions && form.partnerReceivedTesting == Just True then
+                [ div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewQuestionLabel language Translate.PartnerHivTestResult ]
+                    , div [ class "four wide column" ]
+                        [ viewRedAlertForSelect
+                            (form.partnerTestingResult |> Maybe.map List.singleton |> Maybe.withDefault [])
+                            [ NoHivTesting, ResultHivNegative, ResultHivIndeterminate ]
+                        , viewYellowAlertForSelect
+                            (form.partnerTestingResult |> Maybe.map List.singleton |> Maybe.withDefault [])
+                            [ NoHivTesting, ResultHivNegative, ResultHivPositive ]
+                        ]
+                    ]
+                , option
+                    [ value ""
+                    , selected (form.partnerTestingResult == Nothing)
+                    ]
+                    [ text "" ]
+                    :: ([ ResultHivNegative, ResultHivPositive, ResultHivIndeterminate ]
+                            |> List.map
+                                (\result ->
+                                    option
+                                        [ value (socialHistoryHivTestingResultToString result)
+                                        , selected (form.partnerTestingResult == Just result)
+                                        ]
+                                        [ text <| translate language <| Translate.SocialHistoryHivTestingResult result ]
+                                )
+                       )
+                    |> select [ onInput SetSocialHivTestingResult, class "form-input hiv-test-result" ]
+                ]
+
+            else
+                []
     in
-    div [ class "form history social" ]
-        [ div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewQuestionLabel language Translate.AccompaniedByPartner ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.accompaniedByPartner True ]
-            ]
-        , viewBoolInput
-            language
-            form.accompaniedByPartner
-            (SetSocialBoolInput accompaniedByPartnerUpdateFunc)
-            "accompanied-by-partner"
-            Nothing
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewQuestionLabel language Translate.PartnerReceivedCounseling ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.partnerReceivedCounseling True ]
-            ]
-        , viewBoolInput
-            language
-            form.partnerReceivedCounseling
-            (SetSocialBoolInput partnerReceivedCounselingUpdateFunc)
-            "partner-received-counseling"
-            Nothing
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.MentalHealthHistory ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.mentalHealthHistory False ]
-            ]
-        , viewBoolInput
-            language
-            form.mentalHealthHistory
-            (SetSocialBoolInput mentalHealthHistoryUpdateFunc)
-            "mental-health-history"
-            Nothing
-        ]
+    (accompaniedQuestion ++ counselingQuestion ++ testingReceivedQuestion ++ testingResultQuestion)
+        |> div [ class "form history social" ]
 
 
 viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html Msg
@@ -1448,19 +1608,21 @@ viewVitalsForm language currentDate assembled form =
             { form_ | bodyTemperature = value }
 
         sysBloodPressurePreviousValue =
-            Nothing
+            resolvePreviousValue assembled .vitals .sys
 
         diaBloodPressurePreviousValue =
-            Nothing
+            resolvePreviousValue assembled .vitals .dia
 
         heartRatePreviousValue =
-            Nothing
+            resolvePreviousValue assembled .vitals .heartRate
+                |> Maybe.map toFloat
 
         respiratoryRatePreviousValue =
-            Nothing
+            resolvePreviousValue assembled .vitals .respiratoryRate
+                |> Maybe.map toFloat
 
         bodyTemperaturePreviousValue =
-            Nothing
+            resolvePreviousValue assembled .vitals .bodyTemperature
     in
     div [ class "ui form examination vitals" ]
         [ div [ class "ui grid" ]
@@ -1554,8 +1716,8 @@ viewVitalsForm language currentDate assembled form =
         ]
 
 
-viewNutritionAssessmentForm : Language -> NominalDate -> AssembledData -> NutritionAssessmentForm -> Html Msg
-viewNutritionAssessmentForm language currentDate assembled form =
+viewNutritionAssessmentForm : Language -> NominalDate -> AssembledData -> NutritionAssessmentForm -> Bool -> Html Msg
+viewNutritionAssessmentForm language currentDate assembled form hideHeightInput =
     let
         heightUpdateFunc value form_ =
             { form_ | height = value }
@@ -1570,83 +1732,95 @@ viewNutritionAssessmentForm language currentDate assembled form =
             { form_ | muac = value }
 
         heightPreviousValue =
-            Nothing
+            resolvePreviousValue assembled .nutrition .height
+                |> Maybe.map (\(HeightInCm cm) -> cm)
 
         weightPreviousValue =
-            Nothing
+            resolvePreviousValue assembled .nutrition .weight
+                |> Maybe.map (\(WeightInKg kg) -> kg)
 
         bmiPreviousValue =
-            Nothing
+            calculateBmi heightPreviousValue weightPreviousValue
+                |> Maybe.map (Round.roundNum 1)
 
         muacPreviousValue =
-            Nothing
+            resolvePreviousValue assembled .nutrition .muac
+                |> Maybe.map (\(MuacInCm cm) -> cm)
 
         calculatedBmi =
             calculateBmi form.height form.weight
+                |> Maybe.map (Round.roundNum 1)
+
+        heightSection =
+            if not hideHeightInput then
+                [ div [ class "ui grid" ]
+                    [ div [ class "eleven wide column" ]
+                        [ viewLabel language Translate.Height ]
+                    , viewWarning language Nothing
+                    ]
+                , viewMeasurementInput
+                    language
+                    form.height
+                    (SetNutritionAssessmentMeasurement heightUpdateFunc)
+                    "height"
+                    Translate.CentimeterShorthand
+                , viewPreviousMeasurement language Nothing Translate.EmptyString
+                , div [ class "separator" ] []
+                ]
+
+            else
+                []
     in
-    div [ class "ui form examination nutrition-assessment" ]
-        [ div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
-                [ viewLabel language Translate.Height ]
-            , viewWarning language Nothing
-            ]
-        , viewMeasurementInput
-            language
-            form.height
-            (SetNutritionAssessmentMeasurement heightUpdateFunc)
-            "height"
-            Translate.CentimeterShorthand
-        , viewPreviousMeasurement language heightPreviousValue Translate.CentimeterShorthand
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
-                [ viewLabel language Translate.Weight ]
-            , viewWarning language Nothing
-            ]
-        , viewMeasurementInput
-            language
-            form.weight
-            (SetNutritionAssessmentMeasurement weightUpdateFunc)
-            "weight"
-            Translate.KilogramShorthand
-        , viewPreviousMeasurement language weightPreviousValue Translate.KilogramShorthand
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.BMI ]
-            , div [ class "four wide column" ]
-                [ viewConditionalAlert calculatedBmi
-                    [ [ (<) 30 ], [ (>) 18.5 ] ]
-                    [ [ (>=) 30, (<=) 25 ] ]
-                ]
-            ]
-        , div [ class "title bmi" ] [ text <| translate language Translate.BMIHelper ]
-        , viewMeasurementInputAndRound
-            language
-            calculatedBmi
-            (SetNutritionAssessmentMeasurement bmiUpdateFunc)
-            "bmi"
-            Translate.EmptyString
-            (Just 1)
-        , viewPreviousMeasurement language bmiPreviousValue Translate.EmptyString
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.MUAC ]
-            , div [ class "four wide column" ]
-                [ viewConditionalAlert form.muac
-                    [ [ (>) 18.5 ] ]
-                    [ [ (<=) 18.5, (>) 22 ] ]
-                ]
-            ]
-        , viewMeasurementInput
-            language
-            form.muac
-            (SetNutritionAssessmentMeasurement muacUpdateFunc)
-            "muac"
-            Translate.CentimeterShorthand
-        , viewPreviousMeasurement language muacPreviousValue Translate.CentimeterShorthand
-        ]
+    div [ class "ui form examination nutrition-assessment" ] <|
+        heightSection
+            ++ [ div [ class "ui grid" ]
+                    [ div [ class "eleven wide column" ]
+                        [ viewLabel language Translate.Weight ]
+                    , viewWarning language Nothing
+                    ]
+               , viewMeasurementInput
+                    language
+                    form.weight
+                    (SetNutritionAssessmentMeasurement weightUpdateFunc)
+                    "weight"
+                    Translate.KilogramShorthand
+               , viewPreviousMeasurement language weightPreviousValue Translate.KilogramShorthand
+               , div [ class "separator" ] []
+               , div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewLabel language Translate.BMI ]
+                    , div [ class "four wide column" ]
+                        [ viewConditionalAlert calculatedBmi
+                            [ [ (<) 30 ], [ (>) 18.5 ] ]
+                            [ [ (>=) 30, (<=) 25 ] ]
+                        ]
+                    ]
+               , div [ class "title bmi" ] [ text <| translate language Translate.BMIHelper ]
+               , viewMeasurementInput
+                    language
+                    calculatedBmi
+                    (SetNutritionAssessmentMeasurement bmiUpdateFunc)
+                    "bmi disabled"
+                    Translate.EmptyString
+               , viewPreviousMeasurement language bmiPreviousValue Translate.EmptyString
+               , div [ class "separator" ] []
+               , div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewLabel language Translate.MUAC ]
+                    , div [ class "four wide column" ]
+                        [ viewConditionalAlert form.muac
+                            [ [ (>) 18.5 ] ]
+                            [ [ (<=) 18.5, (>) 22 ] ]
+                        ]
+                    ]
+               , viewMeasurementInput
+                    language
+                    form.muac
+                    (SetNutritionAssessmentMeasurement muacUpdateFunc)
+                    "muac"
+                    Translate.CentimeterShorthand
+               , viewPreviousMeasurement language muacPreviousValue Translate.CentimeterShorthand
+               ]
 
 
 viewCorePhysicalExamForm : Language -> NominalDate -> AssembledData -> CorePhysicalExamForm -> Html Msg
@@ -1879,10 +2053,12 @@ viewObstetricalExamForm language currentDate assembled form =
             { form_ | fetalMovement = Just value }
 
         fetalHeartRatePreviousValue =
-            Nothing
+            resolvePreviousValue assembled .obstetricalExam .fetalHeartRate
+                |> Maybe.map toFloat
 
         fundalHeightPreviousValue =
-            Nothing
+            resolvePreviousValue assembled .obstetricalExam .fundalHeight
+                |> Maybe.map (\(HeightInCm cm) -> cm)
     in
     div [ class "ui form examination obstetrical-exam" ]
         [ div [ class "ui grid" ]
@@ -1983,31 +2159,45 @@ viewBreastExamForm language currentDate assembled form =
         ]
 
 
-viewMedicationForm : Language -> NominalDate -> AssembledData -> MedicationForm -> Html Msg
-viewMedicationForm language currentDate assembled form =
+viewMedicationForm : Language -> NominalDate -> AssembledData -> Bool -> MedicationForm -> Html Msg
+viewMedicationForm language currentDate assembled showDewormingPillQuestion form =
     let
         receivedIronFolicAcidUpdateFunc value form_ =
             { form_ | receivedIronFolicAcid = Just value }
 
-        receivedDewormingPillUpdateFunc value form_ =
-            { form_ | receivedDewormingPill = Just value }
+        receivedIronFolicAcidQuestion =
+            [ viewQuestionLabel language Translate.ReceivedIronFolicAcid
+            , viewBoolInput
+                language
+                form.receivedIronFolicAcid
+                (SetMedicationBoolInput receivedIronFolicAcidUpdateFunc)
+                "iron-folic-acid"
+                Nothing
+            ]
+
+        receivedDewormingPillQuestion =
+            if showDewormingPillQuestion then
+                let
+                    receivedDewormingPillUpdateFunc value form_ =
+                        { form_ | receivedDewormingPill = Just value }
+                in
+                [ viewQuestionLabel language Translate.ReceivedDewormingPill
+                , viewBoolInput
+                    language
+                    form.receivedDewormingPill
+                    (SetMedicationBoolInput receivedDewormingPillUpdateFunc)
+                    "deworming-pill"
+                    Nothing
+                ]
+
+            else
+                []
+
+        questions =
+            receivedIronFolicAcidQuestion ++ receivedDewormingPillQuestion
     in
     div [ class "ui form patient-provisions medication" ]
-        [ viewQuestionLabel language Translate.ReceivedIronFolicAcid
-        , viewBoolInput
-            language
-            form.receivedIronFolicAcid
-            (SetMedicationBoolInput receivedIronFolicAcidUpdateFunc)
-            "iron-folic-acid"
-            Nothing
-        , viewQuestionLabel language Translate.ReceivedDewormingPill
-        , viewBoolInput
-            language
-            form.receivedDewormingPill
-            (SetMedicationBoolInput receivedDewormingPillUpdateFunc)
-            "deworming-pill"
-            Nothing
-        ]
+        questions
 
 
 viewResourcesForm : Language -> NominalDate -> AssembledData -> ResourcesForm -> Html Msg
@@ -2029,54 +2219,6 @@ viewResourcesForm language currentDate assembled form =
 
 
 -- Inputs
-
-
-viewBoolInput :
-    Language
-    -> Maybe Bool
-    -> (Bool -> Msg)
-    -> String
-    -> Maybe ( TranslationId, TranslationId )
-    -> Html Msg
-viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
-    let
-        ( yesTransId, noTransId ) =
-            optionsTranslationIds |> Maybe.withDefault ( Translate.Yes, Translate.No )
-
-        inputWidth =
-            if isJust optionsTranslationIds then
-                "eight"
-
-            else
-                "four"
-
-        viewInput value currentValue setMsg =
-            let
-                isChecked =
-                    currentValue == Just value
-            in
-            input
-                [ type_ "radio"
-                , checked isChecked
-                , classList [ ( "checked", isChecked ) ]
-                , onCheck (always (setMsg value))
-                ]
-                []
-    in
-    div [ class <| "form-input yes-no " ++ inputClass ]
-        [ div [ class "ui grid" ]
-            [ div [ class <| inputWidth ++ " wide column" ]
-                [ viewInput True currentValue setMsg
-                , label [ onClick <| setMsg True ]
-                    [ text <| translate language yesTransId ]
-                ]
-            , div [ class <| inputWidth ++ " wide column" ]
-                [ viewInput False currentValue setMsg
-                , label [ onClick <| setMsg False ]
-                    [ text <| translate language noTransId ]
-                ]
-            ]
-        ]
 
 
 viewNumberInput :
@@ -2183,22 +2325,11 @@ viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc option 
 
 viewMeasurementInput : Language -> Maybe Float -> (String -> Msg) -> String -> TranslationId -> Html Msg
 viewMeasurementInput language maybeCurrentValue setMsg inputClass unitTranslationId =
-    viewMeasurementInputAndRound language maybeCurrentValue setMsg inputClass unitTranslationId Nothing
-
-
-viewMeasurementInputAndRound : Language -> Maybe Float -> (String -> Msg) -> String -> TranslationId -> Maybe Int -> Html Msg
-viewMeasurementInputAndRound language maybeCurrentValue setMsg inputClass unitTranslationId maybePrecision =
     let
         currentValue =
             maybeCurrentValue
-                |> unwrap
-                    ""
-                    (\currentValue ->
-                        maybePrecision
-                            |> unwrap
-                                (toString currentValue)
-                                (\precision -> Round.round precision currentValue)
-                    )
+                |> Maybe.map toString
+                |> Maybe.withDefault ""
 
         inputAttrs =
             [ type_ "number"
@@ -2216,21 +2347,6 @@ viewMeasurementInputAndRound language maybeCurrentValue setMsg inputClass unitTr
 
 
 -- Components
-
-
-viewLabel : Language -> TranslationId -> Html any
-viewLabel language translationId =
-    viewCustomLabel language translationId ":" "label"
-
-
-viewQuestionLabel : Language -> TranslationId -> Html any
-viewQuestionLabel language translationId =
-    viewCustomLabel language translationId "?" "label"
-
-
-viewCustomLabel : Language -> TranslationId -> String -> String -> Html any
-viewCustomLabel language translationId suffix class_ =
-    div [ class class_ ] [ text <| (translate language translationId ++ suffix) ]
 
 
 viewPreviousMeasurement : Language -> Maybe Float -> TranslationId -> Html any
@@ -2353,15 +2469,6 @@ viewAlert color =
 -- Helper functions
 
 
-taskCompleted : Maybe a -> Int
-taskCompleted maybe =
-    if isJust maybe then
-        1
-
-    else
-        0
-
-
 taskListCompleted : List (Maybe a) -> Int
 taskListCompleted list =
     if List.all isJust list then
@@ -2369,3 +2476,15 @@ taskListCompleted list =
 
     else
         0
+
+
+resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
+resolvePreviousValue assembled measurementFunc valueFunc =
+    assembled.previousMeasurementsWithDates
+        |> List.filterMap
+            (\( _, measurements ) ->
+                measurementFunc measurements
+                    |> Maybe.map (Tuple.second >> .value >> valueFunc)
+            )
+        |> List.reverse
+        |> List.head

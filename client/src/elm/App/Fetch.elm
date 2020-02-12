@@ -16,6 +16,7 @@ import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.People.Fetch
 import Pages.Person.Fetch
 import Pages.PinCode.Fetch
+import Pages.PregnancyOutcome.Fetch
 import Pages.PrenatalActivity.Fetch
 import Pages.PrenatalEncounter.Fetch
 import Pages.PrenatalParticipant.Fetch
@@ -129,6 +130,10 @@ fetch model =
 
         UserPage IndividualEncounterTypesPage ->
             Pages.IndividualEncounterTypes.Fetch.fetch
+                |> List.map MsgIndexedDb
+
+        UserPage (PregnancyOutcomePage id) ->
+            Pages.PregnancyOutcome.Fetch.fetch id model.indexedDb
                 |> List.map MsgIndexedDb
 
 

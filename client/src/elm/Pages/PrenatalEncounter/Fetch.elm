@@ -3,6 +3,7 @@ module Pages.PrenatalEncounter.Fetch exposing (fetch)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import EveryDict
+import EveryDictList
 import RemoteData exposing (RemoteData(..))
 
 
@@ -21,10 +22,30 @@ fetch id db =
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
                 |> Maybe.map .person
+
+        encountersIds =
+            participantId
+                |> Maybe.map
+                    (\participantId_ ->
+                        EveryDict.get participantId_ db.prenatalEncountersByParticipant
+                            |> Maybe.withDefault NotAsked
+                            |> RemoteData.map EveryDictList.keys
+                            |> RemoteData.withDefault []
+                    )
+                |> Maybe.withDefault []
+
+        -- We fetch measurements for  all encounters, to be
+        -- able to apply `expectedPrenatalActivity` logic.
+        fetchMeasurements =
+            encountersIds
+                |> List.map FetchPrenatalMeasurements
     in
     List.filterMap identity
-        [ Just <| FetchPrenatalEncounter id
-        , Just <| FetchPrenatalMeasurements id
-        , Maybe.map FetchIndividualEncounterParticipant participantId
+        [ Maybe.map FetchIndividualEncounterParticipant participantId
         , Maybe.map FetchPerson personId
+        , Maybe.map FetchPrenatalEncountersForParticipant participantId
+
+        -- We need this, so we can resolve the participant from the encounter.
+        , Just <| FetchPrenatalEncounter id
         ]
+        ++ fetchMeasurements

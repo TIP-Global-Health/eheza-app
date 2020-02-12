@@ -65,7 +65,9 @@ module Backend.Measurement.Model exposing
     , Resource
     , ResourceSign(..)
     , SocialHistory
+    , SocialHistoryHivTestingResult(..)
     , SocialHistorySign(..)
+    , SocialHistoryValue
     , Vitals
     , VitalsValue
     , Weight
@@ -489,12 +491,24 @@ type alias Resource =
 type SocialHistorySign
     = AccompaniedByPartner
     | PartnerHivCounseling
-    | MentalHealthHistory
     | NoSocialHistorySign
 
 
+type SocialHistoryHivTestingResult
+    = ResultHivPositive
+    | ResultHivNegative
+    | ResultHivIndeterminate
+    | NoHivTesting
+
+
+type alias SocialHistoryValue =
+    { socialHistory : EverySet SocialHistorySign
+    , hivTestingResult : SocialHistoryHivTestingResult
+    }
+
+
 type alias SocialHistory =
-    PrenatalMeasurement (EverySet SocialHistorySign)
+    PrenatalMeasurement SocialHistoryValue
 
 
 type alias VitalsValue =

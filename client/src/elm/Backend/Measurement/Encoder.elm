@@ -42,11 +42,13 @@ module Backend.Measurement.Encoder exposing
     , encodeResource
     , encodeResourceValue
     , encodeSocialHistory
+    , encodeSocialHistoryHivTestingResult
     , encodeSocialHistoryValue
     , encodeVitals
     , encodeVitalsValue
     , encodeWeight
     , encodeWeightValue
+    , socialHistoryHivTestingResultToString
     )
 
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
@@ -808,11 +810,29 @@ encodeSocialHistorySign sign =
             PartnerHivCounseling ->
                 "partner-hiv-counseling"
 
-            MentalHealthHistory ->
-                "mental-health-history"
-
             NoSocialHistorySign ->
                 "none"
+
+
+socialHistoryHivTestingResultToString : SocialHistoryHivTestingResult -> String
+socialHistoryHivTestingResultToString result =
+    case result of
+        ResultHivPositive ->
+            "positive"
+
+        ResultHivNegative ->
+            "negative"
+
+        ResultHivIndeterminate ->
+            "indeterminate"
+
+        NoHivTesting ->
+            "none"
+
+
+encodeSocialHistoryHivTestingResult : SocialHistoryHivTestingResult -> Value
+encodeSocialHistoryHivTestingResult result =
+    socialHistoryHivTestingResultToString result |> string
 
 
 encodeSocialHistory : SocialHistory -> List ( String, Value )
@@ -820,9 +840,11 @@ encodeSocialHistory =
     encodePrenatalMeasurement encodeSocialHistoryValue
 
 
-encodeSocialHistoryValue : EverySet SocialHistorySign -> List ( String, Value )
+encodeSocialHistoryValue : SocialHistoryValue -> List ( String, Value )
 encodeSocialHistoryValue value =
-    [ ( "social_history", encodeEverySet encodeSocialHistorySign value ) ]
+    [ ( "social_history", encodeEverySet encodeSocialHistorySign value.socialHistory )
+    , ( "partner_hiv_testing", encodeSocialHistoryHivTestingResult value.hivTestingResult )
+    ]
 
 
 encodeVitals : Vitals -> List ( String, Value )

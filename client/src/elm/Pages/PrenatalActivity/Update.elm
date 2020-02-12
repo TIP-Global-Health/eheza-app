@@ -1,6 +1,7 @@
 module Pages.PrenatalActivity.Update exposing (update)
 
 import App.Model
+import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model
     exposing
         ( AbdomenCPESign(..)
@@ -14,7 +15,9 @@ import Backend.Measurement.Model
         , NeckCPESign(..)
         , PhotoUrl(..)
         , PreviousDeliveryPeriod(..)
+        , SocialHistoryHivTestingResult(..)
         )
+import Backend.Measurement.Utils exposing (socialHistoryHivTestingResultFromString)
 import Backend.Model
 import Backend.PrenatalEncounter.Model
 import Date.Extra as Date exposing (Interval(Day))
@@ -39,6 +42,7 @@ import Pages.PrenatalActivity.Utils
         , toSocialHistoryValueWithDefault
         , toVitalsValueWithDefault
         )
+import Pages.PrenatalEncounter.Utils exposing (calculateEDD)
 import Result exposing (Result)
 
 
@@ -145,7 +149,7 @@ update currentDate msg model =
             , []
             )
 
-        SavePregnancyDating prenatalEncounterId personId saved ->
+        SavePregnancyDating prenatalEncounterId prenatalParticipantId personId saved ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -162,7 +166,14 @@ update currentDate msg model =
                                 [ Backend.PrenatalEncounter.Model.SaveLastMenstrualPeriod personId measurementId lastMenstrualPeriodValue
                                     |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
                                     |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
+                                , -- We store EDD date on pregnancy, to be able
+                                  -- to decide that pregnancy has ended even if end date was
+                                  -- not set - that is when we're 3 month past EDD date.
+                                  calculateEDD lastMenstrualPeriodValue.date
+                                    |> Backend.IndividualEncounterParticipant.Model.SetEddDate
+                                    |> Backend.Model.MsgPrenatalSession prenatalParticipantId
+                                    |> App.Model.MsgIndexedDb
+                                , PrenatalEncounterPage prenatalEncounterId |> UserPage |> App.Model.SetActivePage
                                 ]
                             )
             in
@@ -525,6 +536,25 @@ update currentDate msg model =
             , []
             )
 
+        SetSocialHivTestingResult value ->
+            let
+                result =
+                    socialHistoryHivTestingResultFromString value
+
+                updatedData =
+                    let
+                        updatedForm =
+                            model.historyData.socialForm
+                                |> (\form -> { form | partnerTestingResult = result })
+                    in
+                    model.historyData
+                        |> (\data -> { data | socialForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveSocialHistory prenatalEncounterId personId saved ->
             let
                 measurementId =
@@ -533,8 +563,16 @@ update currentDate msg model =
                 measurement =
                     Maybe.map (Tuple.second >> .value) saved
 
+                updatedForm =
+                    if isNothing model.historyData.socialForm.partnerTestingResult then
+                        model.historyData.socialForm
+                            |> (\form -> { form | partnerTestingResult = Just NoHivTesting })
+
+                    else
+                        model.historyData.socialForm
+
                 appMsgs =
-                    model.historyData.socialForm
+                    updatedForm
                         |> toSocialHistoryValueWithDefault measurement
                         |> unwrap
                             []
@@ -545,12 +583,8 @@ update currentDate msg model =
                                 , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
                                 ]
                             )
-
-                updatedData =
-                    model.historyData
-                        |> (\data -> { data | activeTask = Obstetric })
             in
-            ( { model | historyData = updatedData }
+            ( model
             , Cmd.none
             , appMsgs
             )
@@ -655,7 +689,7 @@ update currentDate msg model =
             , []
             )
 
-        SaveNutritionAssessment prenatalEncounterId personId saved ->
+        SaveNutritionAssessment prenatalEncounterId personId saved maybeHeight ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -663,8 +697,16 @@ update currentDate msg model =
                 measurement =
                     Maybe.map (Tuple.second >> .value) saved
 
-                appMsgs =
+                form_ =
                     model.examinationData.nutritionAssessmentForm
+
+                form =
+                    maybeHeight
+                        |> Maybe.map (\height -> { form_ | height = Just height })
+                        |> Maybe.withDefault form_
+
+                appMsgs =
+                    form
                         |> toPrenatalNutritionValueWithDefault measurement
                         |> unwrap
                             []
@@ -1299,7 +1341,7 @@ update currentDate msg model =
             , []
             )
 
-        SaveMedication prenatalEncounterId personId saved ->
+        SaveMedication prenatalEncounterId personId saved goToResourcesTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1319,13 +1361,21 @@ update currentDate msg model =
                                 ]
                             )
 
-                updatedData =
-                    model.patientProvisionsData
-                        |> (\data -> { data | activeTask = Resources })
+                ( updatedData, navigationMsg ) =
+                    if goToResourcesTask then
+                        ( model.patientProvisionsData
+                            |> (\data -> { data | activeTask = Resources })
+                        , []
+                        )
+
+                    else
+                        ( model.patientProvisionsData
+                        , [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId ]
+                        )
             in
             ( { model | patientProvisionsData = updatedData }
             , Cmd.none
-            , appMsgs
+            , appMsgs ++ navigationMsg
             )
 
         SetResourcesBoolInput formUpdateFunc value ->

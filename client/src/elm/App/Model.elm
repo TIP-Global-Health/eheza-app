@@ -16,6 +16,7 @@ import Pages.Page exposing (Page(..))
 import Pages.People.Model
 import Pages.Person.Model
 import Pages.PinCode.Model
+import Pages.PregnancyOutcome.Model
 import Pages.PrenatalActivity.Model
 import Pages.PrenatalEncounter.Model
 import Pages.PrenatalParticipant.Model
@@ -151,6 +152,7 @@ type alias LoggedInModel =
     -- A set of pages for every "open" editable session.
     , prenatalEncounterPages : EveryDict PrenatalEncounterId Pages.PrenatalEncounter.Model.Model
     , prenatalActivityPages : EveryDict ( PrenatalEncounterId, PrenatalActivity ) Pages.PrenatalActivity.Model.Model
+    , pregnancyOutcomePages : EveryDict IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Model
     , sessionPages : EveryDict SessionId Pages.Session.Model.Model
     }
 
@@ -165,6 +167,7 @@ emptyLoggedInModel nurse =
     , nurse = nurse
     , prenatalEncounterPages = EveryDict.empty
     , prenatalActivityPages = EveryDict.empty
+    , pregnancyOutcomePages = EveryDict.empty
     , sessionPages = EveryDict.empty
     }
 
@@ -213,6 +216,7 @@ type MsgLoggedIn
     | MsgPageSession SessionId Pages.Session.Model.Msg
     | MsgPagePrenatalEncounter PrenatalEncounterId Pages.PrenatalEncounter.Model.Msg
     | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.PrenatalActivity.Model.Msg
+    | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Msg
 
 
 type alias Flags =

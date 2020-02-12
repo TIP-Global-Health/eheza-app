@@ -28,6 +28,12 @@ ifTrue value condition =
         EverySet.empty
 
 
+ifNullableTrue : a -> Maybe Bool -> Maybe (EverySet a)
+ifNullableTrue value maybeCondition =
+    Maybe.map (ifTrue value >> Just) maybeCondition
+        |> Maybe.withDefault (Just EverySet.empty)
+
+
 ifEmpty : a -> EverySet a -> EverySet a
 ifEmpty value set =
     if EverySet.isEmpty set then
@@ -274,7 +280,7 @@ toMedicationValueWithDefault saved form =
 toMedicationValue : MedicationForm -> Maybe (EverySet MedicationSign)
 toMedicationValue form =
     [ Maybe.map (ifTrue IronAndFolicAcidSupplement) form.receivedIronFolicAcid
-    , Maybe.map (ifTrue DewormingPill) form.receivedDewormingPill
+    , ifNullableTrue DewormingPill form.receivedDewormingPill
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoMedication)
@@ -583,41 +589,47 @@ toResourceValue form =
     Maybe.map (toEverySet MosquitoNet NoResource) form.receivedMosquitoNet
 
 
-fromSocialHistoryValue : Maybe (EverySet SocialHistorySign) -> SocialHistoryForm
+fromSocialHistoryValue : Maybe SocialHistoryValue -> SocialHistoryForm
 fromSocialHistoryValue saved =
-    { accompaniedByPartner = Maybe.map (EverySet.member AccompaniedByPartner) saved
-    , partnerReceivedCounseling = Maybe.map (EverySet.member PartnerHivCounseling) saved
-    , mentalHealthHistory = Maybe.map (EverySet.member MentalHealthHistory) saved
+    { accompaniedByPartner = Maybe.map (.socialHistory >> EverySet.member AccompaniedByPartner) saved
+    , partnerReceivedCounseling = Maybe.map (.socialHistory >> EverySet.member PartnerHivCounseling) saved
+    , partnerReceivedTesting = Maybe.map (.hivTestingResult >> (==) NoHivTesting >> not) saved
+    , partnerTestingResult = Maybe.map .hivTestingResult saved
     }
 
 
-socialHistoryFormWithDefault : SocialHistoryForm -> Maybe (EverySet SocialHistorySign) -> SocialHistoryForm
+socialHistoryFormWithDefault : SocialHistoryForm -> Maybe SocialHistoryValue -> SocialHistoryForm
 socialHistoryFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { accompaniedByPartner = or form.accompaniedByPartner (EverySet.member AccompaniedByPartner value |> Just)
-                , partnerReceivedCounseling = or form.partnerReceivedCounseling (EverySet.member PartnerHivCounseling value |> Just)
-                , mentalHealthHistory = or form.mentalHealthHistory (EverySet.member MentalHealthHistory value |> Just)
+                { accompaniedByPartner = or form.accompaniedByPartner (EverySet.member AccompaniedByPartner value.socialHistory |> Just)
+                , partnerReceivedCounseling = or form.partnerReceivedCounseling (EverySet.member PartnerHivCounseling value.socialHistory |> Just)
+                , partnerReceivedTesting = or form.partnerReceivedTesting (value.hivTestingResult == NoHivTesting |> not |> Just)
+                , partnerTestingResult = or form.partnerTestingResult (Just value.hivTestingResult)
                 }
             )
 
 
-toSocialHistoryValueWithDefault : Maybe (EverySet SocialHistorySign) -> SocialHistoryForm -> Maybe (EverySet SocialHistorySign)
+toSocialHistoryValueWithDefault : Maybe SocialHistoryValue -> SocialHistoryForm -> Maybe SocialHistoryValue
 toSocialHistoryValueWithDefault saved form =
     socialHistoryFormWithDefault form saved
         |> toSocialHistoryValue
 
 
-toSocialHistoryValue : SocialHistoryForm -> Maybe (EverySet SocialHistorySign)
+toSocialHistoryValue : SocialHistoryForm -> Maybe SocialHistoryValue
 toSocialHistoryValue form =
-    [ Maybe.map (ifTrue AccompaniedByPartner) form.accompaniedByPartner
-    , Maybe.map (ifTrue PartnerHivCounseling) form.partnerReceivedCounseling
-    , Maybe.map (ifTrue MentalHealthHistory) form.mentalHealthHistory
-    ]
-        |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoSocialHistorySign)
+    let
+        socialHistory =
+            [ Maybe.map (ifTrue AccompaniedByPartner) form.accompaniedByPartner
+            , ifNullableTrue PartnerHivCounseling form.partnerReceivedCounseling
+            ]
+                |> Maybe.Extra.combine
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoSocialHistorySign)
+    in
+    Maybe.map SocialHistoryValue socialHistory
+        |> andMap form.partnerTestingResult
 
 
 fromVitalsValue : Maybe VitalsValue -> VitalsForm

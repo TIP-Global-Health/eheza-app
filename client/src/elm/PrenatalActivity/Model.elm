@@ -72,7 +72,7 @@ type ObstetricalDiagnosis
     | DiagnosisFetusBreech
     | DiagnosisFetusTransverse
     | DiagnosisBreastExamination
-    | DiagnosisHypertension
+    | DiagnosisHypotension
     | DiagnosisPregnancyInducedHypertension
     | DiagnosisPreeclampsiaHighRisk
 
@@ -87,7 +87,6 @@ type MedicalDiagnosis
     | DiagnosisAsthma
     | DiagnosisBowedLegs
     | DiagnosisHIV
-    | DiagnosisMentalHealthHistory
 
 
 type PregnancyTrimester
@@ -138,7 +137,7 @@ allObstetricalDiagnosis =
     , DiagnosisFetusBreech
     , DiagnosisFetusTransverse
     , DiagnosisBreastExamination
-    , DiagnosisHypertension
+    , DiagnosisHypotension
     , DiagnosisPregnancyInducedHypertension
     , DiagnosisPreeclampsiaHighRisk
     ]
@@ -155,7 +154,6 @@ allMedicalDiagnosis =
     , DiagnosisAsthma
     , DiagnosisBowedLegs
     , DiagnosisHIV
-    , DiagnosisMentalHealthHistory
     ]
 
 

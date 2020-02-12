@@ -72,7 +72,7 @@ type Msg
     | SaveFamilyPlanning PersonId (Maybe PrenatalFamilyPlanningId) (EverySet FamilyPlanningSign)
     | SaveNutrition PersonId (Maybe PrenatalNutritionId) PrenatalNutritionValue
     | SaveResource PersonId (Maybe ResourceId) (EverySet ResourceSign)
-    | SaveSocialHistory PersonId (Maybe SocialHistoryId) (EverySet SocialHistorySign)
+    | SaveSocialHistory PersonId (Maybe SocialHistoryId) SocialHistoryValue
     | SaveVitals PersonId (Maybe VitalsId) VitalsValue
     | SavePrenatalPhoto PersonId (Maybe PrenatalPhotoId) PhotoUrl
     | HandleClosedPrenatalEncounter (WebData ())

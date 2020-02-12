@@ -17,12 +17,13 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
-import Maybe.Extra exposing (unwrap)
+import Maybe.Extra exposing (isJust, unwrap)
 import Pages.ClinicalProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
 import Pages.DemographicsReport.View exposing (viewHeader, viewItemHeading)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Utils exposing (calculateBmi)
-import Pages.PrenatalEncounter.Utils exposing (calculateEDDandEGADays, generateEDDandEGA, generateEGAWeeksDaysLabel, generateGravida, generatePara, getLmpMeasurement)
+import Pages.PrenatalEncounter.Model exposing (AssembledData)
+import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.Utils exposing (viewPhotoThumbFromPhotoUrl)
 import PrenatalActivity.Model
     exposing
@@ -53,51 +54,14 @@ thumbnailDimensions =
     }
 
 
-type alias FetchedData =
-    { encounter : PrenatalEncounter
-    , participant : IndividualEncounterParticipant
-    , person : Person
-    , measurements : PrenatalMeasurements
-    , id : PrenatalEncounterId
-    }
-
-
 view : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Html Msg
-view language currentDate prenatalEncounterId db =
+view language currentDate id db =
     let
-        encounter =
-            EveryDict.get prenatalEncounterId db.prenatalEncounters
-                |> Maybe.withDefault NotAsked
-
-        measurements =
-            EveryDict.get prenatalEncounterId db.prenatalMeasurements
-                |> Maybe.withDefault NotAsked
-
-        participant =
-            encounter
-                |> RemoteData.andThen
-                    (\encounter ->
-                        EveryDict.get encounter.participant db.individualParticipants
-                            |> Maybe.withDefault NotAsked
-                    )
-
-        person =
-            participant
-                |> RemoteData.andThen
-                    (\participant ->
-                        EveryDict.get participant.person db.people
-                            |> Maybe.withDefault NotAsked
-                    )
-
         data =
-            RemoteData.map FetchedData encounter
-                |> RemoteData.andMap participant
-                |> RemoteData.andMap person
-                |> RemoteData.andMap measurements
-                |> RemoteData.andMap (Success prenatalEncounterId)
+            generateAssembledData id db
 
         header =
-            viewHeader language prenatalEncounterId Translate.ClinicalProgressReport
+            viewHeader language id Translate.ClinicalProgressReport
 
         content =
             viewWebData language (viewContent language currentDate) identity data
@@ -108,27 +72,33 @@ view language currentDate prenatalEncounterId db =
         ]
 
 
-viewContent : Language -> NominalDate -> FetchedData -> Html Msg
+viewContent : Language -> NominalDate -> AssembledData -> Html Msg
 viewContent language currentDate data =
+    let
+        firstEncounterMeasurements =
+            getFirstEncounterMeasurements data
+    in
     div [ class "ui unstackable items" ]
-        [ viewHeaderPane language currentDate data.person data.measurements
-        , viewRiskFactorsPane language currentDate data.measurements
-        , viewMedicalDiagnosisPane language currentDate data.measurements
-        , viewObstetricalDiagnosisPane language currentDate data.measurements
-        , viewPatientProgressPane language currentDate data.measurements
+        [ viewHeaderPane language currentDate data
+        , viewRiskFactorsPane language currentDate firstEncounterMeasurements
+        , viewMedicalDiagnosisPane language currentDate firstEncounterMeasurements
+        , viewObstetricalDiagnosisPane language currentDate firstEncounterMeasurements data
+        , viewPatientProgressPane language currentDate data
         ]
 
 
-viewHeaderPane : Language -> NominalDate -> Person -> PrenatalMeasurements -> Html Msg
-viewHeaderPane language currentDate mother measurements =
+viewHeaderPane : Language -> NominalDate -> AssembledData -> Html Msg
+viewHeaderPane language currentDate data =
     let
+        mother =
+            data.person
+
         ( edd, ega ) =
-            getLmpMeasurement measurements
+            data.globalLmpDate
                 |> generateEDDandEGA language currentDate ( "--/--/----", "----" )
 
         obstetricHistoryValue =
-            measurements.obstetricHistory
-                |> Maybe.map (Tuple.second >> .value)
+            data.globalObstetricHistory
 
         ( gravida, para ) =
             unwrap
@@ -225,12 +195,12 @@ viewMedicalDiagnosisPane language currentDate measurements =
         ]
 
 
-viewObstetricalDiagnosisPane : Language -> NominalDate -> PrenatalMeasurements -> Html Msg
-viewObstetricalDiagnosisPane language currentDate measurements =
+viewObstetricalDiagnosisPane : Language -> NominalDate -> PrenatalMeasurements -> AssembledData -> Html Msg
+viewObstetricalDiagnosisPane language currentDate firstEncounterMeasurements data =
     let
         alerts =
             allObstetricalDiagnosis
-                |> List.filterMap (generateObstetricalDiagnosisAlertData language currentDate measurements)
+                |> List.filterMap (generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasurements data)
                 |> List.map (\alert -> p [] [ text <| "- " ++ alert ])
     in
     div [ class "obstetric-diagnosis" ]
@@ -239,76 +209,85 @@ viewObstetricalDiagnosisPane language currentDate measurements =
         ]
 
 
-viewPatientProgressPane : Language -> NominalDate -> PrenatalMeasurements -> Html Msg
-viewPatientProgressPane language currentDate measurements =
+viewPatientProgressPane : Language -> NominalDate -> AssembledData -> Html Msg
+viewPatientProgressPane language currentDate data =
     let
-        allEncountersData =
-            [ ( currentDate, measurements )
-            ]
+        allMeasurementsWithDates =
+            data.previousMeasurementsWithDates
+                ++ [ ( currentDate, data.measurements ) ]
 
-        allEncountersMeasurements =
-            allEncountersData
+        allMeasurements =
+            allMeasurementsWithDates
                 |> List.map Tuple.second
 
         encountersTrimestersData =
-            allEncountersData
+            allMeasurementsWithDates
                 |> List.map
-                    (\( date, measurements ) ->
-                        getLmpMeasurement measurements
-                            |> getEncounterTrimesterData date
+                    (\( date, _ ) ->
+                        ( date
+                        , getEncounterTrimesterData date data.globalLmpDate
+                        )
                     )
 
-        countTrimesterEncounters trimester =
+        getTrimesterEncounters trimester =
             encountersTrimestersData
-                |> List.filter (\t -> t == Just trimester)
-                |> List.length
+                |> List.filter (\t -> Tuple.second t == Just trimester)
+                |> List.map Tuple.first
 
         encountersFirstTrimester =
-            countTrimesterEncounters FirstTrimester
+            getTrimesterEncounters FirstTrimester
+
+        encountersFirstTrimesterCount =
+            List.length encountersFirstTrimester
 
         encountersSecondTrimester =
-            countTrimesterEncounters SecondTrimester
+            getTrimesterEncounters SecondTrimester
+
+        encountersSecondTrimesterCount =
+            List.length encountersSecondTrimester
 
         encountersThirdTrimester =
-            countTrimesterEncounters ThirdTrimester
+            getTrimesterEncounters ThirdTrimester
 
-        fetalMovementsDetected =
-            measurements.obstetricalExam
-                |> Maybe.map
-                    (\measurement ->
-                        let
-                            value =
-                                Tuple.second measurement |> .value |> .fetalMovement
-                        in
-                        value == True
-                    )
-                |> Maybe.withDefault False
+        encountersThirdTrimesterCount =
+            List.length encountersThirdTrimester
 
-        fetalHeartRateDetected =
-            measurements.obstetricalExam
-                |> Maybe.map
-                    (\measurement ->
-                        let
-                            value =
-                                Tuple.second measurement |> .value |> .fetalHeartRate
-                        in
-                        value > 0
+        fetalMovementsDate =
+            allMeasurementsWithDates
+                |> List.filter
+                    (\( _, measurements ) ->
+                        measurements.obstetricalExam
+                            |> Maybe.map (Tuple.second >> .value >> .fetalMovement >> (==) True)
+                            |> Maybe.withDefault False
                     )
-                |> Maybe.withDefault False
+                |> List.head
+                |> Maybe.map Tuple.first
+
+        fetalHeartRateDate =
+            allMeasurementsWithDates
+                |> List.filter
+                    (\( _, measurements ) ->
+                        measurements.obstetricalExam
+                            |> Maybe.map (Tuple.second >> .value >> .fetalHeartRate >> (<) 0)
+                            |> Maybe.withDefault False
+                    )
+                |> List.head
+                |> Maybe.map Tuple.first
+
+        egaWeeksDaysLabel language encounterDate lmpDate =
+            let
+                diffInDays =
+                    diffDays lmpDate encounterDate
+            in
+            generateEGAWeeksDaysLabel language diffInDays
 
         ( eddLabel, fetalHeartRateLabel, fetalMovementsLabel ) =
-            getLmpMeasurement measurements
+            data.globalLmpDate
                 |> Maybe.map
                     (\lmpDate ->
                         let
-                            ( eddDate_, diffDays ) =
-                                calculateEDDandEGADays currentDate lmpDate
-
                             eddDate =
-                                toLocalDateTime eddDate_ 12 0 0 0
-
-                            egaWeeksDaysLabel =
-                                generateEGAWeeksDaysLabel language diffDays
+                                toLocalDateTime (calculateEDD lmpDate) 12 0 0 0
                         in
                         ( div [ class "due-date-label" ]
                             [ div [] [ text <| translate language Translate.DueDate ++ ":" ]
@@ -319,22 +298,24 @@ viewPatientProgressPane language currentDate measurements =
                                         ++ translate language (Date.month eddDate |> Translate.ResolveMonth)
                                 ]
                             ]
-                        , if fetalHeartRateDetected then
-                            div [ class "heart-rate-label" ]
-                                [ span [] [ text <| translate language Translate.FetalHeartRate ++ ": " ]
-                                , span [] [ text egaWeeksDaysLabel ]
-                                ]
-
-                          else
-                            emptyNode
-                        , if fetalMovementsDetected then
-                            div [ class "movements-label" ]
-                                [ span [] [ text <| translate language Translate.FetalMovement ++ ": " ]
-                                , span [] [ text egaWeeksDaysLabel ]
-                                ]
-
-                          else
-                            emptyNode
+                        , fetalHeartRateDate
+                            |> Maybe.map
+                                (\date ->
+                                    div [ class "heart-rate-label" ]
+                                        [ span [] [ text <| translate language Translate.FetalHeartRate ++ ": " ]
+                                        , span [] [ egaWeeksDaysLabel language date lmpDate |> text ]
+                                        ]
+                                )
+                            |> Maybe.withDefault emptyNode
+                        , fetalMovementsDate
+                            |> Maybe.map
+                                (\date ->
+                                    div [ class "movements-label" ]
+                                        [ span [] [ text <| translate language Translate.FetalMovement ++ ": " ]
+                                        , span [] [ egaWeeksDaysLabel language date lmpDate |> text ]
+                                        ]
+                                )
+                            |> Maybe.withDefault emptyNode
                         )
                     )
                 |> Maybe.withDefault ( emptyNode, emptyNode, emptyNode )
@@ -345,10 +326,10 @@ viewPatientProgressPane language currentDate measurements =
                     18
 
                 currentEncounterTrimester =
-                    if encountersThirdTrimester > 0 then
+                    if encountersThirdTrimesterCount > 0 then
                         ThirdTrimester
 
-                    else if encountersSecondTrimester > 0 then
+                    else if encountersSecondTrimesterCount > 0 then
                         SecondTrimester
 
                     else
@@ -357,39 +338,45 @@ viewPatientProgressPane language currentDate measurements =
                 periodWidth =
                     case trimester of
                         FirstTrimester ->
-                            (180 - encounterIconWidth * encountersFirstTrimester) // (encountersFirstTrimester + 1)
+                            (180 - encounterIconWidth * encountersFirstTrimesterCount) // (encountersFirstTrimesterCount + 1)
 
                         SecondTrimester ->
-                            (180 - encounterIconWidth * encountersSecondTrimester) // (encountersSecondTrimester + 1)
+                            (180 - encounterIconWidth * encountersSecondTrimesterCount) // (encountersSecondTrimesterCount + 1)
 
                         ThirdTrimester ->
-                            (210 - encounterIconWidth * encountersThirdTrimester) // (encountersThirdTrimester + 1)
+                            (210 - encounterIconWidth * encountersThirdTrimesterCount) // (encountersThirdTrimesterCount + 1)
 
-                trimesterPeriodsColors =
+                ( trimesterPeriodsColors, trimesterEncountersDates ) =
                     case trimester of
                         FirstTrimester ->
-                            if currentEncounterTrimester == FirstTrimester then
-                                List.repeat encountersFirstTrimester "blue" ++ [ "gray" ]
+                            ( if currentEncounterTrimester == FirstTrimester then
+                                List.repeat encountersFirstTrimesterCount "blue" ++ [ "gray" ]
 
-                            else
-                                List.repeat (encountersFirstTrimester + 1) "blue"
+                              else
+                                List.repeat (encountersFirstTrimesterCount + 1) "blue"
+                            , encountersFirstTrimester
+                            )
 
                         SecondTrimester ->
-                            if currentEncounterTrimester == SecondTrimester then
-                                List.repeat encountersSecondTrimester "blue" ++ [ "gray" ]
+                            ( if currentEncounterTrimester == SecondTrimester then
+                                List.repeat encountersSecondTrimesterCount "blue" ++ [ "gray" ]
 
-                            else if currentEncounterTrimester == FirstTrimester then
-                                List.repeat (encountersSecondTrimester + 1) "gray"
+                              else if currentEncounterTrimester == FirstTrimester then
+                                List.repeat (encountersSecondTrimesterCount + 1) "gray"
 
-                            else
-                                List.repeat (encountersSecondTrimester + 1) "blue"
+                              else
+                                List.repeat (encountersSecondTrimesterCount + 1) "blue"
+                            , encountersSecondTrimester
+                            )
 
                         ThirdTrimester ->
-                            if currentEncounterTrimester == ThirdTrimester then
-                                List.repeat encountersThirdTrimester "blue" ++ [ "gray" ]
+                            ( if currentEncounterTrimester == ThirdTrimester then
+                                List.repeat encountersThirdTrimesterCount "blue" ++ [ "gray" ]
 
-                            else
-                                List.repeat (encountersThirdTrimester + 1) "gray"
+                              else
+                                List.repeat (encountersThirdTrimesterCount + 1) "gray"
+                            , encountersThirdTrimester
+                            )
 
                 fetalMovementsIcon =
                     span [ class "fetal-movements" ]
@@ -412,22 +399,6 @@ viewPatientProgressPane language currentDate measurements =
                             []
                         ]
 
-                timelineIcons =
-                    if fetalMovementsDetected && fetalHeartRateDetected then
-                        div [ style [ ( "margin-left", "-25px" ), ( "width", "65px" ) ] ]
-                            [ fetalHeartRateIcon "5px"
-                            , fetalMovementsIcon
-                            ]
-
-                    else if fetalHeartRateDetected then
-                        div [ style [ ( "margin-left", "-6px" ), ( "width", "35px" ) ] ] [ fetalHeartRateIcon "0" ]
-
-                    else if fetalMovementsDetected then
-                        div [ style [ ( "margin-left", "-2px" ), ( "width", "30px" ) ] ] [ fetalMovementsIcon ]
-
-                    else
-                        emptyNode
-
                 dueDateInfo =
                     if trimester == ThirdTrimester then
                         div [ class "due-date-info" ]
@@ -437,26 +408,49 @@ viewPatientProgressPane language currentDate measurements =
 
                     else
                         emptyNode
+
+                trimesterPeriods =
+                    trimesterPeriodsColors
+                        |> List.map
+                            (\color ->
+                                p
+                                    [ class <| "period " ++ color
+                                    , style [ ( "width", toString periodWidth ++ "px" ) ]
+                                    ]
+                                    []
+                            )
+
+                timelineIcons date =
+                    if fetalMovementsDate == Just date && fetalHeartRateDate == Just date then
+                        div [ style [ ( "margin-left", "-25px" ), ( "width", "65px" ) ] ]
+                            [ fetalHeartRateIcon "5px"
+                            , fetalMovementsIcon
+                            ]
+
+                    else if fetalHeartRateDate == Just date then
+                        div [ style [ ( "margin-left", "-6px" ), ( "width", "35px" ) ] ] [ fetalHeartRateIcon "0" ]
+
+                    else if fetalMovementsDate == Just date then
+                        div [ style [ ( "margin-left", "-2px" ), ( "width", "30px" ) ] ] [ fetalMovementsIcon ]
+
+                    else
+                        emptyNode
+
+                trimesterEncounters =
+                    trimesterEncountersDates
+                        |> List.map
+                            (\date ->
+                                span [ style [ ( "width", toString encounterIconWidth ++ "px" ) ] ]
+                                    [ img
+                                        [ src "assets/images/icon-blue-circle.png"
+                                        , style [ ( "width", toString encounterIconWidth ++ "px" ) ]
+                                        ]
+                                        []
+                                    , timelineIcons date
+                                    ]
+                            )
             in
-            trimesterPeriodsColors
-                |> List.map
-                    (\color ->
-                        p
-                            [ class <| "period " ++ color
-                            , style [ ( "width", toString periodWidth ++ "px" ) ]
-                            ]
-                            []
-                    )
-                |> List.intersperse
-                    (span [ style [ ( "width", toString encounterIconWidth ++ "px" ) ] ]
-                        [ img
-                            [ src "assets/images/icon-blue-circle.png"
-                            , style [ ( "width", toString encounterIconWidth ++ "px" ) ]
-                            ]
-                            []
-                        , timelineIcons
-                        ]
-                    )
+            List.Extra.interweave trimesterPeriods trimesterEncounters
                 |> List.append [ dueDateInfo ]
                 |> div [ class "trimester-timeline" ]
 
@@ -465,13 +459,13 @@ viewPatientProgressPane language currentDate measurements =
                 ( expectedVisits, actualVisists, visitsLabel ) =
                     case trimester of
                         FirstTrimester ->
-                            ( 1, encountersFirstTrimester, Translate.OneVisit )
+                            ( 1, encountersFirstTrimesterCount, Translate.OneVisit )
 
                         SecondTrimester ->
-                            ( 2, encountersSecondTrimester, Translate.TwoVisits )
+                            ( 2, encountersSecondTrimesterCount, Translate.TwoVisits )
 
                         ThirdTrimester ->
-                            ( 5, encountersThirdTrimester, Translate.FiveVisits )
+                            ( 5, encountersThirdTrimesterCount, Translate.FiveVisits )
 
                 actualVisists_ =
                     if actualVisists > expectedVisits then
@@ -503,10 +497,10 @@ viewPatientProgressPane language currentDate measurements =
                 ]
 
         egaBmiValues =
-            allEncountersMeasurements
+            allMeasurementsWithDates
                 |> List.filterMap
-                    (\measurements ->
-                        getLmpMeasurement measurements
+                    (\( date, measurements ) ->
+                        data.globalLmpDate
                             |> Maybe.map
                                 (\lmpDate ->
                                     let
@@ -532,15 +526,15 @@ viewPatientProgressPane language currentDate measurements =
                                                     )
                                                 |> Maybe.withDefault 0
                                     in
-                                    ( diffDays lmpDate currentDate, bmi )
+                                    ( diffDays lmpDate date, bmi )
                                 )
                     )
 
         egaFundalHeightValues =
-            allEncountersMeasurements
+            allMeasurementsWithDates
                 |> List.filterMap
-                    (\measurements ->
-                        getLmpMeasurement measurements
+                    (\( date, measurements ) ->
+                        data.globalLmpDate
                             |> Maybe.map
                                 (\lmpDate ->
                                     let
@@ -555,12 +549,12 @@ viewPatientProgressPane language currentDate measurements =
                                                     )
                                                 |> Maybe.withDefault 0
                                     in
-                                    ( diffDays lmpDate currentDate, fundalHeight )
+                                    ( diffDays lmpDate date, fundalHeight )
                                 )
                     )
 
         progressPhotos =
-            allEncountersData
+            allMeasurementsWithDates
                 |> List.filterMap
                     (\( date, measurements ) ->
                         measurements.prenatalPhoto
@@ -570,7 +564,7 @@ viewPatientProgressPane language currentDate measurements =
                                     >> (\photoUrl ->
                                             let
                                                 egaLabel =
-                                                    getLmpMeasurement measurements
+                                                    data.globalLmpDate
                                                         |> Maybe.map (\lmpDate -> diffDays lmpDate date |> generateEGAWeeksDaysLabel language)
                                                         |> Maybe.withDefault ""
                                             in
@@ -606,13 +600,13 @@ viewPatientProgressPane language currentDate measurements =
                 [ viewMarkers
                 , div [ class "bmi-info" ]
                     [ viewChartHeading Translate.BMI
-                    , heightWeightBMITable language currentDate allEncountersMeasurements
+                    , heightWeightBMITable language currentDate data.globalLmpDate allMeasurementsWithDates
                     , viewBMIForEGA language egaBmiValues
                     , illustrativePurposes language
                     ]
                 , div [ class "fundal-height-info" ]
                     [ viewChartHeading Translate.FundalHeight
-                    , fundalHeightTable language currentDate allEncountersMeasurements
+                    , fundalHeightTable language currentDate data.globalLmpDate allMeasurementsWithDates
                     , viewFundalHeightForEGA language egaFundalHeightValues
                     , illustrativePurposes language
                     ]
@@ -621,28 +615,29 @@ viewPatientProgressPane language currentDate measurements =
         ]
 
 
-tableEgaHeading : Language -> NominalDate -> List PrenatalMeasurements -> Html any
-tableEgaHeading language currentDate measurements =
-    measurements
+tableEgaHeading : Language -> NominalDate -> Maybe NominalDate -> List ( NominalDate, PrenatalMeasurements ) -> Html any
+tableEgaHeading language currentDate maybeLmpDate measurementsWithDates =
+    measurementsWithDates
         |> List.map
-            (getLmpMeasurement
-                >> Maybe.map
-                    (\lmpDate ->
-                        diffDays lmpDate currentDate
-                            |> generateEGAWeeksDaysLabel language
-                            |> String.toLower
-                            |> text
-                            |> List.singleton
-                    )
-                >> Maybe.withDefault [ text "--" ]
-                >> th
-                    [ classList
-                        [ ( "center", True )
-                        , ( "bottom", True )
-                        , ( "aligned", True )
-                        , ( "ega-header", True )
+            (\( date, measurements ) ->
+                maybeLmpDate
+                    |> Maybe.map
+                        (\lmpDate ->
+                            diffDays lmpDate date
+                                |> generateEGAWeeksDaysLabel language
+                                |> String.toLower
+                                |> text
+                                |> List.singleton
+                        )
+                    |> Maybe.withDefault [ text "--" ]
+                    |> th
+                        [ classList
+                            [ ( "center", True )
+                            , ( "bottom", True )
+                            , ( "aligned", True )
+                            , ( "ega-header", True )
+                            ]
                         ]
-                    ]
             )
         |> (::)
             (th
@@ -652,25 +647,26 @@ tableEgaHeading language currentDate measurements =
         |> tr []
 
 
-heightWeightBMITable : Language -> NominalDate -> List PrenatalMeasurements -> Html any
-heightWeightBMITable language currentDate allEncounetrsMeasurements =
+heightWeightBMITable : Language -> NominalDate -> Maybe NominalDate -> List ( NominalDate, PrenatalMeasurements ) -> Html any
+heightWeightBMITable language currentDate maybeLmpDate allMeasurementsWithDates =
     let
         cell language transId =
             td [ class "uppercase" ]
                 [ text <| translate language transId ]
     in
-    allEncounetrsMeasurements
+    allMeasurementsWithDates
         |> greedyGroupsOf 6
         |> List.map
             (\groupOfSix ->
                 let
                     egas =
-                        tableEgaHeading language currentDate groupOfSix
+                        tableEgaHeading language currentDate maybeLmpDate groupOfSix
 
                     heights =
                         groupOfSix
                             |> List.map
-                                (.nutrition
+                                (Tuple.second
+                                    >> .nutrition
                                     >> Maybe.map
                                         (\measurement ->
                                             let
@@ -691,7 +687,8 @@ heightWeightBMITable language currentDate allEncounetrsMeasurements =
                     weights =
                         groupOfSix
                             |> List.map
-                                (.nutrition
+                                (Tuple.second
+                                    >> .nutrition
                                     >> Maybe.map
                                         (\measurement ->
                                             let
@@ -712,7 +709,8 @@ heightWeightBMITable language currentDate allEncounetrsMeasurements =
                     bmis =
                         groupOfSix
                             |> List.map
-                                (.nutrition
+                                (Tuple.second
+                                    >> .nutrition
                                     >> Maybe.map
                                         (\measurement ->
                                             let
@@ -753,25 +751,26 @@ heightWeightBMITable language currentDate allEncounetrsMeasurements =
         |> table [ class "ui collapsing celled table" ]
 
 
-fundalHeightTable : Language -> NominalDate -> List PrenatalMeasurements -> Html any
-fundalHeightTable language currentDate allEncounetrsMeasurements =
+fundalHeightTable : Language -> NominalDate -> Maybe NominalDate -> List ( NominalDate, PrenatalMeasurements ) -> Html any
+fundalHeightTable language currentDate maybeLmpDate allMeasurementsWithDates =
     let
         cell language transId =
             td [ class "uppercase" ]
                 [ text <| translate language transId ]
     in
-    allEncounetrsMeasurements
+    allMeasurementsWithDates
         |> greedyGroupsOf 6
         |> List.map
             (\groupOfSix ->
                 let
                     egas =
-                        tableEgaHeading language currentDate groupOfSix
+                        tableEgaHeading language currentDate maybeLmpDate groupOfSix
 
                     heights =
                         groupOfSix
                             |> List.map
-                                (.obstetricalExam
+                                (Tuple.second
+                                    >> .obstetricalExam
                                     >> Maybe.map
                                         (\measurement ->
                                             let

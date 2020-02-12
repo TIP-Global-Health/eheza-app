@@ -939,6 +939,33 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_partner_hiv_testing'.
+  $field_bases['field_partner_hiv_testing'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_partner_hiv_testing',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'positive' => 'Positive',
+        'negative' => 'Negative',
+        'indeterminate' => 'Indeterminate',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_prenatal_encounter'.
   $field_bases['field_prenatal_encounter'] = array(
     'active' => 1,
@@ -1139,7 +1166,6 @@ function hedley_activity_field_default_field_bases() {
       'allowed_values' => array(
         'accompanied-by-partner' => 'Accompanied by partner',
         'partner-hiv-counseling' => 'Partner HIV counseling',
-        'mental-health-history' => 'Mental health history',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

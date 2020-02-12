@@ -133,7 +133,8 @@ function hedley_schedule_user_default_permissions() {
     'name' => 'delete any individual_participant content',
     'roles' => array(
       'administrator' => 'administrator',
-    ),    'module' => 'node',
+    ),
+    'module' => 'node',
   );
 
   // Exported permission: 'delete any pmtct_participant content'.

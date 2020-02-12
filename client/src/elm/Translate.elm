@@ -27,7 +27,7 @@ import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model
     exposing
@@ -196,6 +196,7 @@ type TranslationId
     | BackendError
     | BegingNewEncounter
     | BloodPressure
+    | BloodPressureElevatedOcassions
     | BloodPressureDiaLabel
     | BloodPressureSysLabel
     | BMI
@@ -258,12 +259,15 @@ type TranslationId
     | DangerSign DangerSign
     | Dashboard
     | DateOfLastAssessment
+    | DatePregnancyConcluded
     | Day
     | DaySinglePlural Int
     | DateOfBirth
     | Days
     | Delete
     | DeleteTrainingGroupEncounters
+    | DeliveryLocation
+    | DeliveryOutcome
     | DemographicInformation
     | DemographicsReport
     | Device
@@ -291,6 +295,7 @@ type TranslationId
     | ExaminationTask ExaminationTask
     | Extremities
     | Eyes
+    | Facility
     | Failure
     | FamilyInformation
     | FamilyMembers
@@ -336,6 +341,7 @@ type TranslationId
     | HIV
     | HIVStatus HIVStatus
     | HIVStatusLabel
+    | Home
     | HouseholdSize
     | HttpError Http.Error
     | HypertensionBeforePregnancy
@@ -370,7 +376,6 @@ type TranslationId
     | MedicalFormHelper
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MMHGUnit
-    | MentalHealthHistory
     | MiddleName
     | MinutesAgo Int
     | ModeOfDelivery ModeOfDelivery
@@ -436,7 +441,9 @@ type TranslationId
     | ParticipantSummary
     | ParticipantDemographicInformation
     | ParticipantInformation
-    | PartnerReceivedCounseling
+    | PartnerHivTestResult
+    | PartnerReceivedHivCounseling
+    | PartnerReceivedHivTesting
     | PatientProgress
     | PatientInformation
     | PatientProvisionsTask PatientProvisionsTask
@@ -454,8 +461,11 @@ type TranslationId
     | PregnancyTrimester PregnancyTrimester
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalEncounter
+    | PrenatalPhotoHelper
     | PreTerm
     | PregnancyConcludedLabel
+    | PregnancyOutcomeLabel
+    | PregnancyOutcome PregnancyOutcome
     | PreviousCSectionScar
     | PreviousDelivery
     | PreviousDeliveryPeriods PreviousDeliveryPeriod
@@ -541,6 +551,7 @@ type TranslationId
     | ServiceWorkerRegSuccess
     | ServiceWorkerStatus
     | SevereHemorrhagingPreviousDelivery
+    | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
     | StillbornPreviousDelivery
     | SubsequentAntenatalVisit
     | SuccessiveAbortions
@@ -997,6 +1008,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        BloodPressureElevatedOcassions ->
+            { english = "Blood Pressure Elevated occasions"
+            , kinyarwanda = Nothing
+            }
+
         BloodPressureDiaLabel ->
             { english = "Diastolic"
             , kinyarwanda = Nothing
@@ -1410,6 +1426,16 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        DeliveryLocation ->
+            { english = "Delivery Loaction"
+            , kinyarwanda = Nothing
+            }
+
+        DeliveryOutcome ->
+            { english = "Delivery Outcome"
+            , kinyarwanda = Nothing
+            }
+
         DangerSign sign ->
             case sign of
                 VaginalBleeding ->
@@ -1460,6 +1486,11 @@ translationSet trans =
         DateOfLastAssessment ->
             { english = "Date of last Assessment"
             , kinyarwanda = Just "Amakuru y'ipimwa ry'ubushize"
+            }
+
+        DatePregnancyConcluded ->
+            { english = "Date Pregnancy Concluded"
+            , kinyarwanda = Nothing
             }
 
         Day ->
@@ -1670,6 +1701,11 @@ translationSet trans =
 
         Eyes ->
             { english = "Eyes"
+            , kinyarwanda = Nothing
+            }
+
+        Facility ->
+            { english = "Facility"
             , kinyarwanda = Nothing
             }
 
@@ -2030,7 +2066,7 @@ translationSet trans =
                     }
 
                 Social ->
-                    { english = "Social History"
+                    { english = "Partner Information"
                     , kinyarwanda = Nothing
                     }
 
@@ -2068,6 +2104,11 @@ translationSet trans =
 
         HIVStatusLabel ->
             { english = "HIV Status"
+            , kinyarwanda = Nothing
+            }
+
+        Home ->
+            { english = "Home"
             , kinyarwanda = Nothing
             }
 
@@ -2353,11 +2394,6 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisMentalHealthHistory ->
-                    { english = "History of Mental Health Problems"
-                    , kinyarwanda = Nothing
-                    }
-
         MedicalFormHelper ->
             { english = "Please record if the mother was diagnosed with the following medical issues"
             , kinyarwanda = Nothing
@@ -2365,11 +2401,6 @@ translationSet trans =
 
         MMHGUnit ->
             { english = "mmHG"
-            , kinyarwanda = Nothing
-            }
-
-        MentalHealthHistory ->
-            { english = "History of Mental Health Problems"
             , kinyarwanda = Nothing
             }
 
@@ -2693,8 +2724,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisHypertension ->
-                    { english = "Hypertension"
+                DiagnosisHypotension ->
+                    { english = "Hypotension"
                     , kinyarwanda = Nothing
                     }
 
@@ -2798,8 +2829,18 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        PartnerReceivedCounseling ->
-            { english = "Did partner receive HIV Counseling and Testing during this pregnancy"
+        PartnerHivTestResult ->
+            { english = "What was the partners Hiv Test result"
+            , kinyarwanda = Nothing
+            }
+
+        PartnerReceivedHivCounseling ->
+            { english = "Did partner receive HIV Counseling during this pregnancy"
+            , kinyarwanda = Nothing
+            }
+
+        PartnerReceivedHivTesting ->
+            { english = "Did partner receive HIV Testing during this pregnancy"
             , kinyarwanda = Nothing
             }
 
@@ -2945,6 +2986,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PrenatalPhotoHelper ->
+            { english = "Take a picture of the mother's belly. Then you and the mother will see how the belly has grown!"
+            , kinyarwanda = Nothing
+            }
+
         PreTerm ->
             { english = "Pre Term"
             , kinyarwanda = Nothing
@@ -2954,6 +3000,38 @@ translationSet trans =
             { english = "or Pregnancy Concluded"
             , kinyarwanda = Nothing
             }
+
+        PregnancyOutcomeLabel ->
+            { english = "Pregnancy Outcome"
+            , kinyarwanda = Nothing
+            }
+
+        PregnancyOutcome outcome ->
+            case outcome of
+                OutcomeLiveAtTerm ->
+                    { english = "Live Birth at Term (38 weeks EGA or more)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeLivePreTerm ->
+                    { english = "Live Birth Preterm (less than 38 weeks EGA)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeStillAtTerm ->
+                    { english = "Stillbirth at Term (38 weeks EGA or more)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeStillPreTerm ->
+                    { english = "Stillbirth Preterm (less than 38 weeks EGA)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeAbortions ->
+                    { english = "Abortions (before 24 weeks EGA)"
+                    , kinyarwanda = Nothing
+                    }
 
         PreviousCSectionScar ->
             { english = "Previous C-section scar"
@@ -3480,6 +3558,28 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        SocialHistoryHivTestingResult result ->
+            case result of
+                ResultHivPositive ->
+                    { english = "Positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResultHivNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResultHivIndeterminate ->
+                    { english = "Indeterminate"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoHivTesting ->
+                    { english = "Ntibiboneste"
+                    , kinyarwanda = Nothing
+                    }
+
         StillbornPreviousDelivery ->
             { english = "Stillborn in previous delivery"
             , kinyarwanda = Nothing
@@ -3966,6 +4066,11 @@ translateActivePage page =
 
                 IndividualEncounterTypesPage ->
                     { english = "Encounter Types"
+                    , kinyarwanda = Nothing
+                    }
+
+                PregnancyOutcomePage _ ->
+                    { english = "Pregnancy Outcome"
                     , kinyarwanda = Nothing
                     }
 

@@ -56,13 +56,13 @@ div.language-switcher {
     .version {
         margin-right: 16px;
         height: 24px;
-        color: white;
+        color: $color-white;
         font-size: .6em;
         cursor: pointer;
     }
 
     .sync-icon {
-        color: white;
+        color: $color-white;
         cursor: pointer;
     }
 
@@ -79,7 +79,7 @@ div.language-switcher {
             position: relative;
             display: flex;
             height: 27px;
-            color: white;
+            color: $color-white;
             font-size: .8em;
             cursor: pointer;
 
@@ -89,9 +89,9 @@ div.language-switcher {
 
             a {
                 display: block;
-                width: 27 px;
-                height: 27 px;
-                background: #fff;
+                width: 27px;
+                height: 27px;
+                background: $color-white;
                 border-radius: 50%;
                 position: relative;
                 margin-left: 10px;
@@ -155,7 +155,7 @@ div.page-pincode {
 
     button.ui.logout.button {
       background: $color-light-background;
-      border: 2px solid white;
+      border: 2px solid $color-white;
       position: absolute;
       bottom: 0;
       width: 89%;
@@ -334,7 +334,8 @@ div.page-person {
 
 //Common for Prenatal Encounter and Prenatal Activity pages
 div.page-prenatal-activity,
-div.page-prenatal-encounter {
+div.page-prenatal-encounter,
+div.page-pregnancy-outcome {
     padding: 0 35px 35px 35px;
     height: 100%;
     display: flex;
@@ -351,8 +352,8 @@ div.page-prenatal-encounter {
 
     .item.measurements {
       display: grid;
-      grid-template-columns: 25% 30% 20% 20%;
       grid-gap: 1em;
+      grid-template-columns: 25% 30% 20% 20%;
 
       .label {
         font-weight: bold;
@@ -372,7 +373,7 @@ div.page-prenatal-encounter {
       margin-bottom: 20px;
 
       .full.content {
-        min-height: 430px;
+        min-height: 235px;
       }
     }
 
@@ -453,7 +454,7 @@ div.page-prenatal-activity {
 
         // Pregnanacy Dating Inputs
         &.range {
-          background: white;
+          background: $color-white;
           border: 2px solid $color-light-gray;
           padding: 5px;
           width: 50%;
@@ -469,7 +470,7 @@ div.page-prenatal-activity {
           }
 
           .dropdown--button-container {
-            background: white;
+            background: $color-white;
             border: 2px solid $color-light-gray;
 
             input {
@@ -477,6 +478,14 @@ div.page-prenatal-activity {
               padding: 5px;
             }
           }
+        }
+
+        &.hiv-test-result {
+          background: $color-white;
+          border: 2px solid $color-light-gray;
+          margin-top: 15px;
+          padding: 5px;
+          width: 73%;
         }
 
         // Number inputs
@@ -501,21 +510,21 @@ div.page-prenatal-activity {
           margin-bottom: 10px;
 
           .unit {
-            width: 35%;
             float: left;
             font-weight: normal;
             margin-left: 20px;
             margin-top: 10px;
+            width: 35%;
           }
 
           input {
-            border: 2px solid $color-gray-border;
             background-color: $color-white;
+            border: 2px solid $color-gray-border;
             float: left;
             width: 60%;
           }
 
-          &.bmi input {
+          &.disabled input{
             pointer-events: none;
           }
         }
@@ -633,7 +642,7 @@ div.page-prenatal-activity {
           margin: 0;
 
           &.active {
-            border-left: 1px solid white;
+            border-left: 1px solid $color-white;
           }
         }
       }
@@ -711,6 +720,101 @@ div.page-prenatal-activity {
       .form.patient-provisions {
         min-height: 335px;
       }
+    }
+}
+
+// Pregnancy Outcome page
+div.page-pregnancy-outcome {
+
+    .tasks-count {
+      background: $color-primary;
+      font-size: 18px;
+      font-weight: bold;
+      padding: 5px 15px;
+    }
+
+    .ui.full.segment {
+
+      .label {
+        font-weight: bold;
+        margin-bottom: 20px;
+
+        &.helper {
+          margin-bottom: 40px;
+        }
+      }
+
+      .form-input {
+        margin-bottom: 30px;
+
+        &.date {
+          height: 2em;
+          width: 50%;
+
+          .dropdown,
+          .dropdown-open {
+            width: 100%;
+          }
+
+          .dropdown--button-container {
+            background: $color-white;
+            border: 2px solid $color-light-gray;
+
+            input {
+              border: 0;
+              padding: 5px;
+            }
+          }
+        }
+
+        &.pregnancy-outcome {
+          background: $color-white;
+          border: 2px solid $color-light-gray;
+          padding: 5px;
+          width: 73%;
+        }
+
+        // Bool inputs
+        &.yes-no {
+          padding-bottom: 15px;
+          margin-left: 25px;
+
+          label {
+            font-size: 25px;
+            margin-left: 10px;
+          }
+
+          label:before {
+            content: " ";
+            display: inline-block;
+            position: relative;
+            top: 5px;
+            margin-right: 10px;
+            width: 26px;
+            height: 26px;
+            border-radius: 13px;
+            border: 2px solid $color-gray-border;
+            background-color: transparent;
+          }
+
+          input[type=radio] {
+            display: none;
+          }
+
+          input[type=radio]:checked + label:after {
+            content: " ";
+            border-radius: 7px;
+            width: 14px;
+            height: 14px;
+            position: absolute;
+            top: 25px;
+            left: 30px;
+            display: block;
+            background: $color-text;
+          }
+        }
+      }
+
     }
 }
 
@@ -988,6 +1092,10 @@ div.page-clinical-progress-report {
         grid-template-columns: 150px 150px 150px 150px;
 
         .progress-photo {
+
+          img {
+            height: 150px;
+          }
 
           .ega {
             background-color: $color-gray;

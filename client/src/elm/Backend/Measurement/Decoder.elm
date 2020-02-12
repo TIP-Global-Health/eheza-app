@@ -24,6 +24,7 @@ module Backend.Measurement.Decoder exposing
     , decodePrenatalPhoto
     , decodeResource
     , decodeSocialHistory
+    , decodeSocialHistoryHivTestingResult
     , decodeVitals
     , decodeWeight
     )
@@ -743,9 +744,6 @@ decodeSocialHistorySign =
                     "partner-hiv-counseling" ->
                         succeed PartnerHivCounseling
 
-                    "mental-health-history" ->
-                        succeed MentalHealthHistory
-
                     "none" ->
                         succeed NoSocialHistorySign
 
@@ -754,10 +752,34 @@ decodeSocialHistorySign =
             )
 
 
+decodeSocialHistoryHivTestingResult : Decoder SocialHistoryHivTestingResult
+decodeSocialHistoryHivTestingResult =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "positive" ->
+                        succeed ResultHivPositive
+
+                    "negative" ->
+                        succeed ResultHivNegative
+
+                    "indeterminate" ->
+                        succeed ResultHivIndeterminate
+
+                    "none" ->
+                        succeed NoHivTesting
+
+                    _ ->
+                        fail <| s ++ " is not a recognized SocialHistorySign"
+            )
+
+
 decodeSocialHistory : Decoder SocialHistory
 decodeSocialHistory =
-    decodeEverySet decodeSocialHistorySign
-        |> field "social_history"
+    succeed SocialHistoryValue
+        |> required "social_history" (decodeEverySet decodeSocialHistorySign)
+        |> required "partner_hiv_testing" decodeSocialHistoryHivTestingResult
         |> decodePrenatalMeasurement
 
 

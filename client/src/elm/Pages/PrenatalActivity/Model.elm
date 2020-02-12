@@ -51,7 +51,7 @@ type Msg
     | SetLmpDate Date
     | SetLmpDateConfident Bool
     | SetLmpRange String
-    | SavePregnancyDating PrenatalEncounterId PersonId (Maybe ( LastMenstrualPeriodId, LastMenstrualPeriod ))
+    | SavePregnancyDating PrenatalEncounterId IndividualEncounterParticipantId PersonId (Maybe ( LastMenstrualPeriodId, LastMenstrualPeriod ))
       -- HistoryMsgs
     | SetActiveHistoryTask HistoryTask
       -- HistoryMsgs, OB, Step 1
@@ -70,6 +70,7 @@ type Msg
     | SaveMedicalHistory PrenatalEncounterId PersonId (Maybe ( MedicalHistoryId, MedicalHistory ))
       -- HistoryMsgs, Social
     | SetSocialBoolInput (Bool -> SocialHistoryForm -> SocialHistoryForm) Bool
+    | SetSocialHivTestingResult String
     | SaveSocialHistory PrenatalEncounterId PersonId (Maybe ( SocialHistoryId, SocialHistory ))
       -- ExaminationMsgs
     | SetActiveExaminationTask ExaminationTask
@@ -79,7 +80,7 @@ type Msg
     | SaveVitals PrenatalEncounterId PersonId (Maybe ( VitalsId, Vitals ))
       -- ExaminationMsgs, Nutrition Assessment
     | SetNutritionAssessmentMeasurement (Maybe Float -> NutritionAssessmentForm -> NutritionAssessmentForm) String
-    | SaveNutritionAssessment PrenatalEncounterId PersonId (Maybe ( PrenatalNutritionId, PrenatalNutrition ))
+    | SaveNutritionAssessment PrenatalEncounterId PersonId (Maybe ( PrenatalNutritionId, PrenatalNutrition )) (Maybe Float)
       -- ExaminationMsgs, Core Physical Exam
     | SetCorePhysicalExamBoolInput (Bool -> CorePhysicalExamForm -> CorePhysicalExamForm) Bool
     | SetCorePhysicalExamHeart HeartCPESign
@@ -107,7 +108,7 @@ type Msg
     | SetActivePatientProvisionsTask PatientProvisionsTask
       -- PatientProvisionsMsgs, Medication
     | SetMedicationBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
-    | SaveMedication PrenatalEncounterId PersonId (Maybe ( MedicationId, Medication ))
+    | SaveMedication PrenatalEncounterId PersonId (Maybe ( MedicationId, Medication )) Bool
       -- PatientProvisionsMsgs, Resources
     | SetResourcesBoolInput (Bool -> ResourcesForm -> ResourcesForm) Bool
     | SaveResources PrenatalEncounterId PersonId (Maybe ( ResourceId, Resource ))
@@ -367,13 +368,14 @@ emptyMedicalHistoryForm =
 type alias SocialHistoryForm =
     { accompaniedByPartner : Maybe Bool
     , partnerReceivedCounseling : Maybe Bool
-    , mentalHealthHistory : Maybe Bool
+    , partnerReceivedTesting : Maybe Bool
+    , partnerTestingResult : Maybe SocialHistoryHivTestingResult
     }
 
 
 emptySocialHistoryForm : SocialHistoryForm
 emptySocialHistoryForm =
-    SocialHistoryForm Nothing Nothing Nothing
+    SocialHistoryForm Nothing Nothing Nothing Nothing
 
 
 type LmpRange
