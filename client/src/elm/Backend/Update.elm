@@ -563,6 +563,36 @@ updateIndexedDb currentDate nurseId msg model =
             , appMsgs
             )
 
+        PatchPerson personId person ->
+            ( { model | postPerson = Loading }
+            , sw.patchFull personEndpoint personId person
+                |> toCmd (RemoteData.fromResult >> HandlePatchedPerson personId)
+            , []
+            )
+
+        HandlePatchedPerson personId data ->
+            let
+                appMsgs =
+                    -- If we succeed, we reset the form, and go to the page
+                    -- showing the new person.
+                    data
+                        |> RemoteData.map
+                            (\person ->
+                                [ Pages.Person.Model.ResetEditForm
+                                    |> App.Model.MsgPageEditPerson
+                                    |> App.Model.MsgLoggedIn
+                                , PersonPage personId
+                                    |> UserPage
+                                    |> App.Model.SetActivePage
+                                ]
+                            )
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postPerson = Success personId }
+            , Cmd.none
+            , appMsgs
+            )
+
         PostSession session ->
             ( { model | postSession = Loading }
             , sw.post sessionEndpoint session

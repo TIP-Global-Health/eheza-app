@@ -4,8 +4,7 @@ import AllDict
 import AllDictList
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Form exposing (ExpectedAge(..))
-import Backend.Person.Model exposing (Person)
+import Backend.Person.Model exposing (ExpectedAge(..), Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Dict
 import Gizra.Html exposing (emptyNode, showMaybe)
