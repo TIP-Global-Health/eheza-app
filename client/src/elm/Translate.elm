@@ -139,8 +139,10 @@ type Adherence
 type Dashboard
     = CaseManagementHelper
     | CaseManagementLabel
+    | CompletedProgramLabel
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
     | GoodNutritionLabel
+    | MissedSessionsLabel
     | Moderate
     | ModeratelyMalnourished
     | NewBeneficiaries
@@ -2502,6 +2504,11 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
+        CompletedProgramLabel ->
+            { english = "Completed Program"
+            , kinyarwanda = Nothing
+            }
+
         FamilyPlanningOutOfWomen { total, useFamilyPlanning } ->
             { english = String.fromInt useFamilyPlanning ++ " out of " ++ String.fromInt total ++ " women"
             , kinyarwanda = Nothing
@@ -2524,6 +2531,11 @@ translateDashboard trans =
 
         Moderate ->
             { english = "Moderate"
+            , kinyarwanda = Nothing
+            }
+
+        MissedSessionsLabel ->
+            { english = "Missed Session"
             , kinyarwanda = Nothing
             }
 

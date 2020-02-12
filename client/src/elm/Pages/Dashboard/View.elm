@@ -394,6 +394,17 @@ viewMiscCards language stats monthBeforeStats =
             stats.childrenBeneficiaries
                 |> List.length
 
+        totalNewBeneficiariesBefore =
+            monthBeforeStats.childrenBeneficiaries
+                |> List.length
+
+        totalNewBeneficiariesDiff =
+            totalNewBeneficiaries - totalNewBeneficiariesBefore
+
+        totalNewBeneficiariesPercentage =
+            calculatePercentage totalNewBeneficiaries totalNewBeneficiariesDiff
+                |> round
+
         totalNewBeneficiariesCard =
             { title = translate language <| Translate.Dashboard Translate.NewBeneficiaries
             , cardClasses = "new-beneficiaries"
@@ -401,13 +412,69 @@ viewMiscCards language stats monthBeforeStats =
             , value = totalNewBeneficiaries
             , valueSeverity = Neutral
             , valueIsPercentage = False
-            , previousPercentage = totalNewBeneficiaries
+            , previousPercentage = totalNewBeneficiariesPercentage
+            , previousPercentageLabel = ThisMonth
+            , newCases = Nothing
+            }
+
+        completedProgram =
+            stats.completedProgram
+                |> List.length
+
+        completedProgramBefore =
+            monthBeforeStats.completedProgram
+                |> List.length
+
+        completedProgramDiff =
+            completedProgram - completedProgramBefore
+
+        completedProgramPercentage =
+            calculatePercentage completedProgram completedProgramDiff
+                |> round
+
+        completedProgramCard =
+            { title = translate language <| Translate.Dashboard Translate.CompletedProgramLabel
+            , cardClasses = "completed-program"
+            , cardAction = Just CaseManagementPage
+            , value = completedProgram
+            , valueSeverity = Good
+            , valueIsPercentage = False
+            , previousPercentage = completedProgramPercentage
+            , previousPercentageLabel = ThisMonth
+            , newCases = Nothing
+            }
+
+        missedSessions =
+            stats.missedSessions
+                |> List.length
+
+        missedSessionsBefore =
+            monthBeforeStats.missedSessions
+                |> List.length
+
+        missedSessionsDiff =
+            missedSessions - missedSessionsBefore
+
+        missedSessionsPercentage =
+            calculatePercentage missedSessions missedSessionsDiff
+                |> round
+
+        missedSessionsCard =
+            { title = translate language <| Translate.Dashboard Translate.MissedSessionsLabel
+            , cardClasses = "missed-sessions"
+            , cardAction = Just CaseManagementPage
+            , value = missedSessions
+            , valueSeverity = Severe
+            , valueIsPercentage = False
+            , previousPercentage = missedSessionsPercentage
             , previousPercentageLabel = ThisMonth
             , newCases = Nothing
             }
     in
     div [ class "row" ]
         [ div [ class "column" ] [ viewCard language totalNewBeneficiariesCard ]
+        , div [ class "column" ] [ viewCard language completedProgramCard ]
+        , div [ class "column" ] [ viewCard language missedSessionsCard ]
         ]
 
 
@@ -632,22 +699,22 @@ filterStatsByAge currentDate func stats =
 filterStatsByPeriod : NominalDate -> Model -> DashboardStats -> DashboardStats
 filterStatsByPeriod currentDate model stats =
     let
-        startDate =
+        ( startDate, endDate ) =
             case model.period of
                 OneYear ->
-                    Date.add Years -1 currentDate
+                    ( Date.add Years -1 currentDate, currentDate )
 
                 ThisMonth ->
-                    currentDate
+                    ( Date.add Months -1 currentDate, currentDate )
 
                 LastMonth ->
-                    Date.add Months -1 currentDate
+                    ( Date.add Months -2 currentDate, Date.add Months -1 currentDate )
 
                 ThreeMonths ->
-                    Date.add Months -3 currentDate
+                    ( Date.add Months -3 currentDate, Date.add Months -2 currentDate )
 
         filterPartial =
-            isBetween startDate currentDate
+            isBetween startDate endDate
 
         childrenBeneficiariesUpdated =
             stats.childrenBeneficiaries
