@@ -202,10 +202,20 @@ update msg model =
                         MsgPageCreatePerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Person.Update.update currentDate subMsg model.indexedDb.people data.createPersonPage
+                                    Pages.Person.Update.update currentDate subMsg model.indexedDb data.createPersonPage
                             in
                             ( { data | createPersonPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageCreatePerson) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPageEditPerson subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.Person.Update.update currentDate subMsg model.indexedDb data.editPersonPage
+                            in
+                            ( { data | editPersonPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageEditPerson) subCmd
                             , appMsgs
                             )
 
@@ -365,20 +375,11 @@ update msg model =
                     model.url
                         |> (\url -> { url | fragment = fragment, query = Nothing })
 
-                cmds =
+                cmd =
                     Nav.pushUrl model.navigationKey (Url.toString redirectUrl)
-                        :: (case page of
-                                -- When switching to registration form, bind
-                                -- DropZone to be able to take pictures.
-                                UserPage (CreatePersonPage _) ->
-                                    [ App.Ports.bindDropZone () ]
-
-                                _ ->
-                                    []
-                           )
             in
             ( { model | activePage = page }
-            , Cmd.batch cmds
+            , cmd
             )
 
         SendRollbar level message data ->
@@ -591,9 +592,22 @@ update msg model =
             let
                 activePage =
                     activePageByUrl url
+
+                cmd =
+                    case activePage of
+                        -- When at 'create / edit person' oage, bind
+                        -- DropZone to be able to take pictures.
+                        UserPage (CreatePersonPage _) ->
+                            App.Ports.bindDropZone ()
+
+                        UserPage (EditPersonPage _) ->
+                            App.Ports.bindDropZone ()
+
+                        _ ->
+                            Cmd.none
             in
             ( { model | url = url, activePage = activePage }
-            , Cmd.none
+            , cmd
             )
 
 
