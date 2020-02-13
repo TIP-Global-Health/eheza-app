@@ -1,4 +1,4 @@
-module Config exposing (configs, counselingPantheon, ***REMOVED***, livePantheon, prenatalPantheon, ***REMOVED***, ***REMOVED***, ***REMOVED***)
+module Config exposing (configs)
 
 import Config.Model as Config exposing (Model)
 import Dict exposing (..)
@@ -51,17 +51,6 @@ ehezaGlobal =
     }
 
 
-counselingPantheon : Model
-counselingPantheon =
-    { backendUrl = "https://counseling-ihangane.pantheonsite.io"
-    , name = "counselingPantheon"
-    , pusherKey = PusherAppKey "" UsEast1
-    , debug = False
-    , rollbarToken = Rollbar.token "***REMOVED***"
-    , sandbox = False
-    }
-
-
 ***REMOVED*** : Model
 ***REMOVED*** =
     { backendUrl = "https://***REMOVED***"
@@ -104,10 +93,9 @@ configs =
         [ ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", livePantheon )
-        , ( "***REMOVED***", ***REMOVED*** )
-        , ( "counseling-ihangane.pantheonsite.io", counselingPantheon )
         , ( "***REMOVED***", ehezaGlobal )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "prenatal-ihangane.pantheonsite.io", prenatalPantheon )
+        , ( "***REMOVED***", ***REMOVED*** )
         ]
         |> Dict.union localConfigs
