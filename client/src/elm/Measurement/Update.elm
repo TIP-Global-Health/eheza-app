@@ -1,5 +1,6 @@
 module Measurement.Update exposing (updateChild, updateMother)
 
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MeasurementData, MotherMeasurements, PhotoUrl(..))
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
@@ -148,9 +149,9 @@ updateMother measurements msg model =
         SetCounselorSigned formId signed ->
             let
                 updated =
-                    EveryDict.get formId model.participantConsent.progress
+                    Dict.get formId model.participantConsent.progress
                         |> Maybe.withDefault emptyParticipantFormProgress
-                        |> (\progress -> EveryDict.insert formId { progress | counselorSigned = signed } model.participantConsent.progress)
+                        |> (\progress -> Dict.insert formId { progress | counselorSigned = signed } model.participantConsent.progress)
             in
             (\consent ->
                 ( { model | participantConsent = { consent | progress = updated } }
@@ -163,9 +164,9 @@ updateMother measurements msg model =
         SetParticipantSigned formId signed ->
             let
                 updated =
-                    EveryDict.get formId model.participantConsent.progress
+                    Dict.get formId model.participantConsent.progress
                         |> Maybe.withDefault emptyParticipantFormProgress
-                        |> (\progress -> EveryDict.insert formId { progress | participantSigned = signed } model.participantConsent.progress)
+                        |> (\progress -> Dict.insert formId { progress | participantSigned = signed } model.participantConsent.progress)
             in
             (\consent ->
                 ( { model | participantConsent = { consent | progress = updated } }
@@ -238,7 +239,7 @@ selectNextForm measurements formId model =
 
         expectedFormIds =
             model.participantConsent.expected
-                |> EveryDictList.keys
+                |> Dict.keys
                 |> EverySet.fromList
 
         remaining =

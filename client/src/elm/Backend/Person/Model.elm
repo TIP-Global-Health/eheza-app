@@ -1,6 +1,6 @@
-module Backend.Person.Model exposing (EducationLevel(..), Gender(..), HIVStatus(..), MaritalStatus(..), ModeOfDelivery(..), Person, RegistrationInitiator(..), Ubudehe(..), VaginalDelivery(..), allEducationLevels, allHivStatuses, allMaritalStatuses, allModesOfDelivery, allUbudehes)
+module Backend.Person.Model exposing (EducationLevel(..), ExpectedAge(..), Gender(..), HIVStatus(..), MaritalStatus(..), ModeOfDelivery(..), Person, RegistrationInitiator(..), Ubudehe(..), VaginalDelivery(..), allEducationLevels, allHivStatuses, allMaritalStatuses, allModesOfDelivery, allUbudehes)
 
-import Backend.Entities exposing (HealthCenterId)
+import Backend.Entities exposing (HealthCenterId, PersonId)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Gizra.NominalDate exposing (NominalDate)
 
@@ -132,3 +132,22 @@ allMaritalStatuses =
 type RegistrationInitiator
     = ParticipantDirectoryOrigin
     | IndividualEncounterOrigin IndividualEncounterType
+
+
+type ParticipantDirectoryOperation
+    = CreatePerson (Maybe PersonId)
+    | EditPerson PersonId
+
+
+{-| Sometimes, we are in a state where we are expecting the user to enter an
+adult or a child, and sometimes we don't care -- they could be entering either.
+
+This controls various aspects of validation. If set to `ExpectAdultOrChild`, we
+also check the birth date actually entered in the form, and validate the rest
+according that birth date.
+
+-}
+type ExpectedAge
+    = ExpectAdult
+    | ExpectChild
+    | ExpectAdultOrChild

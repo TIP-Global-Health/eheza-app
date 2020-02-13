@@ -5,7 +5,7 @@ import Expect
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Test exposing (Test, describe, test)
 import Time.Date exposing (date)
-import Translate.Model exposing (Language(English))
+import Translate.Model exposing (Language(..))
 import Utils.NominalDate exposing (Days(..), diffDays, renderAgeMonthsDays, renderDate)
 
 

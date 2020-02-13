@@ -14,3 +14,4 @@ src/generated
 
 # Ignore the local config file.
 wdio.local.conf.js
+vendor

@@ -1,5 +1,6 @@
 module Pages.Relationship.View exposing (view)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
@@ -60,23 +61,23 @@ viewContent : Language -> NominalDate -> PersonId -> PersonId -> ModelIndexedDb 
 viewContent language currentDate id1 id2 db model =
     let
         person1 =
-            EveryDict.get id1 db.people
+            Dict.get id1 db.people
                 |> Maybe.withDefault NotAsked
 
         relationships =
-            EveryDict.get id1 db.relationshipsByPerson
+            Dict.get id1 db.relationshipsByPerson
                 |> Maybe.withDefault NotAsked
 
         person2 =
-            EveryDict.get id2 db.people
+            Dict.get id2 db.people
                 |> Maybe.withDefault NotAsked
 
         request =
-            EveryDict.get id1 db.postRelationship
+            Dict.get id1 db.postRelationship
                 |> Maybe.withDefault NotAsked
 
         participants =
-            EveryDict.get id1 db.participantsByPerson
+            Dict.get id1 db.participantsByPerson
                 |> Maybe.withDefault NotAsked
 
         clinics =
@@ -95,9 +96,9 @@ viewContent language currentDate id1 id2 db model =
 type alias FetchedData =
     { person1 : Person
     , person2 : Person
-    , relationships : EveryDictList RelationshipId MyRelationship
-    , participants : EveryDict PmtctParticipantId PmtctParticipant
-    , clinics : EveryDictList ClinicId Clinic
+    , relationships : Dict RelationshipId MyRelationship
+    , participants : Dict PmtctParticipantId PmtctParticipant
+    , clinics : Dict ClinicId Clinic
     }
 
 
@@ -106,7 +107,7 @@ viewFetchedContent language currentDate id1 id2 model request data =
     let
         participants =
             data.participants
-                |> EveryDict.filter
+                |> Dict.filter
                     (\_ participant ->
                         (participant.child == id1 && participant.adult == id2)
                             || (participant.adult == id1 && participant.child == id2)
@@ -114,14 +115,14 @@ viewFetchedContent language currentDate id1 id2 model request data =
 
         currentGroupsIds =
             participants
-                |> EveryDict.values
+                |> Dict.values
                 |> List.map .clinic
 
         viewCurrentGroups =
             currentGroupsIds
                 |> List.filterMap
                     (\clinicId ->
-                        EveryDictList.get clinicId data.clinics
+                        Dict.get clinicId data.clinics
                             |> Maybe.map .name
                     )
                 |> String.join ", "
@@ -140,7 +141,7 @@ viewFetchedContent language currentDate id1 id2 model request data =
 
                 selector =
                     data.clinics
-                        |> EveryDictList.filter
+                        |> Dict.filter
                             (\clinicId clinic ->
                                 -- Clinic is not already selected.
                                 (not <| List.member clinicId currentGroupsIds)
@@ -161,7 +162,7 @@ viewFetchedContent language currentDate id1 id2 model request data =
                                             |> Maybe.withDefault True
                                        )
                             )
-                        |> EveryDictList.map
+                        |> Dict.map
                             (\clinicId clinic ->
                                 option
                                     [ value (fromEntityUuid clinicId)
@@ -169,7 +170,7 @@ viewFetchedContent language currentDate id1 id2 model request data =
                                     ]
                                     [ text clinic.name ]
                             )
-                        |> EveryDictList.values
+                        |> Dict.values
                         |> (::) emptyOption
                         |> select [ onInput AssignToClinicId ]
             in
@@ -183,8 +184,9 @@ viewFetchedContent language currentDate id1 id2 model request data =
 
         savedRelationship =
             data.relationships
-                |> EveryDictList.filter (\_ relationship -> relationship.relatedTo == id2)
-                |> EveryDictList.head
+                |> Dict.filter (\_ relationship -> relationship.relatedTo == id2)
+                |> Dict.toList
+                |> List.head
                 |> Maybe.map (Tuple.second >> .relatedBy)
 
         viewedRelationship =
@@ -238,7 +240,7 @@ viewFetchedContent language currentDate id1 id2 model request data =
                     viewedRelationship == Just possible
 
                 inputId =
-                    "input-relationship-" ++ toString index
+                    "input-relationship-" ++ Debug.toString index
             in
             div
                 [ class "field" ]

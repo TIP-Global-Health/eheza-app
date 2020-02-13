@@ -16,7 +16,7 @@ apt-get -y install g++-4.8 bzip2
 export CXX=g++-4.8
 
 # Install global packages.
-npm install -g elm@~0.18.0
+npm install -g elm@latest-0.19.1
 npm install -g elm-test
 npm install -g bower
 npm install -g gulp
@@ -25,7 +25,7 @@ cd "$ROOT_DIR"/client || exit 1
 npm install
 bower install --allow-root
 
-elm-package install -y
+elm make ./src/elm/Main.elm
 cp "$ROOT_DIR"/ci-scripts/docker_files/LocalConfig.elm src/elm/LocalConfig.elm
 
 # Getting elm-make to run quicker.

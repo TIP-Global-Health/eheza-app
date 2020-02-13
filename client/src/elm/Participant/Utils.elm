@@ -2,6 +2,7 @@ module Participant.Utils exposing (childParticipant, motherParticipant)
 
 import Activity.Model exposing (Activity(..), ChildActivity, MotherActivity)
 import Activity.Utils exposing (summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Utils exposing (getMyMother)
@@ -19,7 +20,7 @@ childParticipant =
     , getMotherId = \childId session -> getMyMother childId session.offlineSession |> Maybe.map Tuple.first
     , getName = .name
     , getParticipants = \session -> session.offlineSession.children
-    , getValue = \id db -> EveryDict.get id db.people |> Maybe.withDefault NotAsked
+    , getValue = \id db -> Dict.get id db.people |> Maybe.withDefault NotAsked
     , getVillage = .village
     , iconClass = "child"
     , showProgressReportTab = True
@@ -40,7 +41,7 @@ motherParticipant =
     , getMotherId = \motherId session -> Just motherId
     , getName = .name
     , getParticipants = \session -> session.offlineSession.mothers
-    , getValue = \id db -> EveryDict.get id db.people |> Maybe.withDefault NotAsked
+    , getValue = \id db -> Dict.get id db.people |> Maybe.withDefault NotAsked
     , getVillage = .village
     , iconClass = "mother"
     , showProgressReportTab = False

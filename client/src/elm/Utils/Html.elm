@@ -1,7 +1,6 @@
 module Utils.Html exposing
     ( debugView
     , divider
-    , script
     , spinner
     , tabItem
     , thumbnailImage
@@ -36,36 +35,6 @@ divider =
     div [ class "ui divider" ] []
 
 
-{-| Inserts the provided string as a `<script>` tag.
-
-You would sometimes like to have some Javascript run at the moment something is
-actually written to the DOM -- something like React's `componentDidMount`. Elm
-deliberately doesn't make that easy to do, but occasionally you really, really
-want to. For instance, perhaps you've written out a tag that you want to attach
-DropZone to, or TinyMCE, or whatever. (You shouldn't want to do that either, of
-course, but it is sometimes very handy).
-
-Now, you can use ports to send a command to run some Javascript. However,
-knowing exactly when to do that is tricky, because you would need to figure
-that out in your `update` function, rather than `view`. This can be done, of
-course, but it's awkward and error prone.
-
-A nicer pattern is to actually write the relevant Javascript as a <script>
-node, along with whatever DOM node you want to attach something two. That way,
-you're guaranteed that the script will run when the nodes are actually written.
-
-Ideally, what you pass to `script` is just a trivial function call ... the guts
-of the function are better defined in a javascript file that gets included on
-your page.
-
--}
-script : String -> Html any
-script code =
-    node "script"
-        []
-        [ text code ]
-
-
 spinner : Html any
 spinner =
     div []
@@ -89,10 +58,8 @@ thumbnailImage subClass maybeAvatarUrl label height width =
         Nothing ->
             span
                 [ class <| "icon-participant " ++ subClass
-                , style
-                    [ ( "height", toString height ++ "px" )
-                    , ( "width", toString width ++ "px" )
-                    ]
+                , style "height" (Debug.toString height ++ "px")
+                , style "width" (Debug.toString width ++ "px")
                 ]
                 []
 
@@ -100,10 +67,8 @@ thumbnailImage subClass maybeAvatarUrl label height width =
             img
                 [ src source
                 , attribute "alt" label
-                , style
-                    [ ( "height", toString height ++ "px" )
-                    , ( "width", toString width ++ "px" )
-                    ]
+                , style "height" (Debug.toString height ++ "px")
+                , style "width" (Debug.toString width ++ "px")
                 , class <| "photo-participant " ++ subClass ++ " rotate-90"
                 ]
                 []

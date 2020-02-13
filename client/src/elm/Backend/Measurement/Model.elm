@@ -84,6 +84,7 @@ module Backend.Measurement.Model exposing
 and cached in local storage.
 -}
 
+import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import EveryDict exposing (EveryDict)
@@ -529,17 +530,17 @@ type alias Vitals =
 
 
 type alias MotherMeasurementList =
-    { attendances : EveryDictList AttendanceId Attendance
-    , familyPlannings : EveryDictList FamilyPlanningId FamilyPlanning
-    , consents : EveryDictList ParticipantConsentId ParticipantConsent
+    { attendances : Dict AttendanceId Attendance
+    , familyPlannings : Dict FamilyPlanningId FamilyPlanning
+    , consents : Dict ParticipantConsentId ParticipantConsent
     }
 
 
 emptyMotherMeasurementList : MotherMeasurementList
 emptyMotherMeasurementList =
-    { attendances = EveryDictList.empty
-    , familyPlannings = EveryDictList.empty
-    , consents = EveryDictList.empty
+    { attendances = Dict.empty
+    , familyPlannings = Dict.empty
+    , consents = Dict.empty
     }
 
 
@@ -552,23 +553,23 @@ simple with a `List` and see how that goes.
 
 -}
 type alias ChildMeasurementList =
-    { heights : EveryDictList HeightId Height
-    , muacs : EveryDictList MuacId Muac
-    , nutritions : EveryDictList ChildNutritionId ChildNutrition
-    , photos : EveryDictList PhotoId Photo
-    , weights : EveryDictList WeightId Weight
-    , counselingSessions : EveryDictList CounselingSessionId CounselingSession
+    { heights : Dict HeightId Height
+    , muacs : Dict MuacId Muac
+    , nutritions : Dict ChildNutritionId ChildNutrition
+    , photos : Dict PhotoId Photo
+    , weights : Dict WeightId Weight
+    , counselingSessions : Dict CounselingSessionId CounselingSession
     }
 
 
 emptyChildMeasurementList : ChildMeasurementList
 emptyChildMeasurementList =
-    { heights = EveryDictList.empty
-    , muacs = EveryDictList.empty
-    , nutritions = EveryDictList.empty
-    , photos = EveryDictList.empty
-    , weights = EveryDictList.empty
-    , counselingSessions = EveryDictList.empty
+    { heights = Dict.empty
+    , muacs = Dict.empty
+    , nutritions = Dict.empty
+    , photos = Dict.empty
+    , weights = Dict.empty
+    , counselingSessions = Dict.empty
     }
 
 
@@ -576,15 +577,15 @@ emptyChildMeasurementList =
 our convenience.
 -}
 type alias HistoricalMeasurements =
-    { mothers : EveryDict PersonId MotherMeasurementList
-    , children : EveryDict PersonId ChildMeasurementList
+    { mothers : Dict PersonId MotherMeasurementList
+    , children : Dict PersonId ChildMeasurementList
     }
 
 
 emptyHistoricalMeasurements : HistoricalMeasurements
 emptyHistoricalMeasurements =
-    { mothers = EveryDict.empty
-    , children = EveryDict.empty
+    { mothers = Dict.empty
+    , children = Dict.empty
     }
 
 
@@ -651,7 +652,7 @@ So, it is a `List` (possibly empty) rather than a `Maybe`.
 type alias MotherMeasurements =
     { attendance : Maybe ( AttendanceId, Attendance )
     , familyPlanning : Maybe ( FamilyPlanningId, FamilyPlanning )
-    , consent : EveryDictList ParticipantConsentId ParticipantConsent
+    , consent : Dict ParticipantConsentId ParticipantConsent
     }
 
 
@@ -659,20 +660,20 @@ emptyMotherMeasurements : MotherMeasurements
 emptyMotherMeasurements =
     { attendance = Nothing
     , familyPlanning = Nothing
-    , consent = EveryDictList.empty
+    , consent = Dict.empty
     }
 
 
 type alias Measurements =
-    { mothers : EveryDict PersonId MotherMeasurements
-    , children : EveryDict PersonId ChildMeasurements
+    { mothers : Dict PersonId MotherMeasurements
+    , children : Dict PersonId ChildMeasurements
     }
 
 
 emptyMeasurements : Measurements
 emptyMeasurements =
-    { mothers = EveryDict.empty
-    , children = EveryDict.empty
+    { mothers = Dict.empty
+    , children = Dict.empty
     }
 
 

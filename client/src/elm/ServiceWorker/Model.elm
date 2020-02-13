@@ -3,13 +3,13 @@ module ServiceWorker.Model exposing (IncomingMsg(..), Model, Msg(..), NewWorker(
 {-| Some state we maintain relating to service workers.
 -}
 
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (Revision)
 import Backend.SyncData.Model exposing (SyncData)
-import EveryDictList exposing (EveryDictList)
 import Json.Encode exposing (Value)
 import RemoteData exposing (RemoteData(..))
-import Time exposing (Time)
+import Time
 
 
 {-| The state of the service worker system.
@@ -29,7 +29,7 @@ type alias Model =
     { active : Bool
     , registration : RemoteData String ()
     , newWorker : Maybe NewWorker
-    , lastUpdateCheck : Maybe Time
+    , lastUpdateCheck : Maybe Time.Posix
     }
 
 
@@ -62,7 +62,7 @@ type IncomingMsg
     = RegistrationSucceeded
     | RegistrationFailed String
     | SetNewWorker NewWorker
-    | SetSyncData (EveryDictList HealthCenterId SyncData)
+    | SetSyncData (Dict HealthCenterId SyncData)
     | NewRevisions (List Revision)
 
 

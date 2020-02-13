@@ -34,8 +34,15 @@
             var uuid = matches[2]; // May be null
 
             if (event.request.method === 'GET') {
+                var isMeasurementType = type === 'child-measurements' || type === 'mother-measurements';
                 if (uuid) {
-                    return event.respondWith(view(url, type, uuid));
+                    if (isMeasurementType) {
+                        return event.respondWith(viewMeasurements(url, type, uuid));
+                    }
+                    else {
+                        return event.respondWith(view(url, type, uuid));
+                    }
+
                 } else {
                     return event.respondWith(index(url, type));
                 }
@@ -365,33 +372,38 @@
                   return viewMeasurements('prenatal_encounter', uuid);
             } else {
                 return getTableForType(type).then(function (table) {
-                    return table.get(uuid).catch(databaseError).then(function (node) {
-                        // We could also check that the type is the expected type.
-                        if (node) {
-                            var body = JSON.stringify({
-                                data: [node]
-                            });
+                  var uuids = uuid.split(',');
 
-                            var response = new Response(body, {
-                                status: 200,
-                                statusText: 'OK',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                }
-                            });
+                  // The key to query by.
+                  var key = 'uuid';
 
-                            return Promise.resolve(response);
-                        } else {
-                            response = new Response('', {
-                                status: 404,
-                                statusText: 'Not found'
-                            });
+                  return table.where(key).anyOf(uuids).toArray().catch(databaseError).then(function (nodes) {
+                      // We could also check that the type is the expected type.
+                      if (nodes) {
 
-                            return Promise.reject(response);
-                        }
-                    });
-                });
-            }
+                          var body = JSON.stringify({
+                              data: nodes
+                          });
+
+                          var response = new Response(body, {
+                              status: 200,
+                              statusText: 'OK',
+                              headers: {
+                                  'Content-Type': 'application/json'
+                              }
+                          });
+
+                          return Promise.resolve(response);
+                      } else {
+                          response = new Response('', {
+                              status: 404,
+                              statusText: 'Not found'
+                          });
+
+                          return Promise.reject(response);
+                      }
+                  });
+              });
         }).catch(sendErrorResponses);
     }
 
@@ -401,36 +413,59 @@
     // Ultimately, it would be better to make this more generic here and do the
     // processing on the client side, but this mirrors the pre-existing
     // division of labour between client and server, so it's easier for now.
-    function viewMeasurements (key, uuid) {
-        var criteria = {};
-        criteria[key] = uuid;
+    function viewMeasurements (url, type, uuid) {
+        // UUID may be multiple list of UUIDs, so we split by it.
+        var uuids = uuid.split(',');
 
-        var query = dbSync.shards.where(criteria);
+        // The key to query by.
+        var key = 'person';
+        var query = dbSync.shards.where(key).anyOf(uuids);
+
+        // Build an empty list of measurements, so we return some value, even
+        // if no measurements were ever taken.
+        var data = {};
+        uuids.forEach(function(uuid) {
+            data[uuid] = {};
+            // Decoder is expecting to have the Person's UUID.
+            data[uuid].uuid = uuid;
+        });
 
         return query.toArray().catch(databaseError).then(function (nodes) {
-            var indexed = {};
+            // We could also check that the type is the expected type.
+            if (nodes) {
 
-            nodes.forEach(function (node) {
-                if (indexed[node.type]) {
-                    indexed[node.type].push(node);
-                } else {
-                    indexed[node.type] = [node];
-                }
-            });
+                nodes.forEach(function (node) {
+                    data[node.person] = data[node.person] || {};
+                    if (data[node.person][node.type]) {
+                        data[node.person][node.type].push(node);
+                    } else {
+                        data[node.person] = data[node.person] || {};
+                        data[node.person][node.type] = [node];
+                    }
+                });
 
-            var body = JSON.stringify({
-                data: [indexed]
-            });
+                var body = JSON.stringify({
+                    // Decoder is expecting a list, so we use Object.values().
+                    data: Object.values(data)
+                });
 
-            var response = new Response(body, {
-                status: 200,
-                statusText: 'OK',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
+                var response = new Response(body, {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-            return Promise.resolve(response);
+                return Promise.resolve(response);
+            } else {
+                response = new Response('', {
+                    status: 404,
+                    statusText: 'Not found'
+                });
+
+                return Promise.reject(response);
+            }
         });
     }
 

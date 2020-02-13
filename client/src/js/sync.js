@@ -485,7 +485,11 @@
 
                                 var request = new Request(uploadUrl, {
                                     method: 'POST',
-                                    body: formData
+                                    body: formData,
+                                    // This prevents attaching cookies to request, to prevent
+                                    // sending authenitaction cookie, as our desired
+                                    // authentication method is token.
+                                    credentials: 'omit'
                                 });
 
                                 return fetchWithTimeout(request, {}, imageTimeout).catch(function (err) {
@@ -556,6 +560,7 @@
                     var remaining = parseInt(json.data.revision_count);
 
                     var table = shardUuid === nodesUuid ? dbSync.nodes : dbSync.shards;
+
 
                     // We keep a list of those nodes successfully saved.
                     var saved = [];
@@ -649,12 +654,6 @@
 
     function checkImageField (table, node, field) {
         if (node.hasOwnProperty(field)) {
-            // First, we want to normalize the property ... we're only
-            // recording the URL for one style.
-            if (node[field]) {
-                node[field] = node[field].styles['patient-photo'];
-            }
-
             // Then, we need to see whether it has changed.
             return table.get(node.uuid).then(function (existing) {
                 if (existing) {

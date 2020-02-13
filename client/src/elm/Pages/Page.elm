@@ -131,6 +131,8 @@ type UserPage
       -- RegistrationInitiator indicates what was the origin of registration request,
       -- so that it would be clear where to proceed after registration is completed / canceled.
     | CreatePersonPage (Maybe PersonId) RegistrationInitiator
+      -- Shows a form for editing existing person.
+    | EditPersonPage PersonId
       -- Shows list of people using search string. If the PersonId is provided,
       -- then we're in a context in which we're looking to add a family member.
     | PersonsPage (Maybe PersonId)

@@ -1,4 +1,4 @@
-module Pages.Participant.Model exposing (Model, Msg(..), Tab(..), emptyModel)
+module Pages.Participant.Model exposing (ChildUpdateReturns, Model, MotherUpdateReturns, Msg(..), Tab(..), emptyModel)
 
 {-| This module models the UI state for showing a particular participant.
 
@@ -16,7 +16,10 @@ mother and child with the appropriate types.
 
 -}
 
-import Pages.Page exposing (Page)
+import Activity.Model exposing (ChildActivity, MotherActivity)
+import Backend.Entities exposing (..)
+import Measurement.Model
+import Pages.Page exposing (Page(..))
 
 
 type Msg activity measurement
@@ -58,4 +61,22 @@ emptyModel : Model any
 emptyModel =
     { selectedActivity = Nothing
     , selectedTab = Pending
+    }
+
+
+type alias ChildUpdateReturns =
+    { model : Model ChildActivity
+    , cmd : Cmd (Msg ChildActivity Measurement.Model.MsgChild)
+    , form : Measurement.Model.ModelChild
+    , outMsg : Maybe Measurement.Model.OutMsgChild
+    , page : Maybe Page
+    }
+
+
+type alias MotherUpdateReturns =
+    { model : Model MotherActivity
+    , cmd : Cmd (Msg MotherActivity Measurement.Model.MsgMother)
+    , form : Measurement.Model.ModelMother
+    , outMsg : Maybe Measurement.Model.OutMsgMother
+    , page : Maybe Page
     }

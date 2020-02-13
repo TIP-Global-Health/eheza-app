@@ -4,6 +4,7 @@ module Measurement.View exposing (viewChild, viewMother, viewMuacIndication)
 -}
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
+import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
@@ -17,7 +18,7 @@ import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, s
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
-import Html.Events exposing (on, onClick, onInput, onWithOptions)
+import Html.Events exposing (on, onClick, onInput)
 import Json.Decode
 import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
@@ -28,7 +29,7 @@ import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
 import Translate as Trans exposing (Language, TranslationId, translate)
-import Utils.Html exposing (script, viewModal)
+import Utils.Html exposing (viewModal)
 import Utils.NominalDate exposing (Days(..), diffDays)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
 import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
@@ -174,8 +175,8 @@ viewFloatForm config language currentDate child measurements zscores model =
             [ type_ "number"
             , placeholder <| translate language config.placeholderText
             , name config.blockName
-            , Attr.min <| toString config.constraints.minVal
-            , Attr.max <| toString config.constraints.maxVal
+            , Attr.min <| String.fromFloat config.constraints.minVal
+            , Attr.max <| String.fromFloat config.constraints.maxVal
             , onInput config.updateMsg
             , value inputValue
             ]
@@ -187,7 +188,6 @@ viewFloatForm config language currentDate child measurements zscores model =
         floatValue =
             inputValue
                 |> String.toFloat
-                |> Result.toMaybe
 
         -- What is the most recent measurement we've saved, either locally or
         -- to the backend (we don't care at the moment which). If this is a new
@@ -264,7 +264,6 @@ viewFloatForm config language currentDate child measurements zscores model =
                             zScoreText =
                                 model.height
                                     |> String.toFloat
-                                    |> Result.toMaybe
                                     |> Maybe.andThen
                                         (\height ->
                                             Maybe.andThen
@@ -469,11 +468,6 @@ viewPhoto language measurement photo =
                         ]
                     ]
                     |> keyed "dropzone"
-
-                -- This runs the function from our `app.js` at the precise moment this gets
-                -- written to the DOM. Isn't that convenient?
-                , script "bindDropZone()"
-                    |> keyed "script"
                 ]
             ]
         , keyed "button" <|
@@ -642,7 +636,7 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
                        ChildActivity Counseling
 
                    allTopicsChecked =
-                       EveryDictList.all
+                       Dict.all
                            (\id _ -> EverySet.member id topics)
                            expected
 
@@ -664,8 +658,8 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
 
                    expected =
                        session.offlineSession.everyCounselingSchedule
-                           |> EveryDict.get timing
-                           |> Maybe.withDefault EveryDictList.empty
+                           |> Dict.get timing
+                           |> Maybe.withDefault Dict.empty
                in
                div
                    [ class "ui full segment counseling"
@@ -692,10 +686,10 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
 -}
 
 
-viewCounselingTopics : Language -> Bool -> EveryDictList CounselingTopicId CounselingTopic -> EverySet CounselingTopicId -> List (Html MsgChild)
+viewCounselingTopics : Language -> Bool -> Dict CounselingTopicId CounselingTopic -> EverySet CounselingTopicId -> List (Html MsgChild)
 viewCounselingTopics language completed expectedTopics selectedTopics =
     expectedTopics
-        |> EveryDictList.map
+        |> Dict.map
             (\topicId topic ->
                 let
                     inputId =
@@ -721,7 +715,7 @@ viewCounselingTopics language completed expectedTopics selectedTopics =
                         [ text <| translate language (Trans.CounselingTopic topic) ]
                     ]
             )
-        |> EveryDictList.values
+        |> Dict.values
 
 
 type alias MotherMeasurementData =
@@ -742,7 +736,7 @@ viewMother language activity measurements model =
 -- ParticipantConsent ->
 --    viewParticipantConsent language (mapMeasurementData .consent measurements) model.participantConsent
 {-
-   viewParticipantConsent : Language -> MeasurementData (EveryDictList ParticipantConsentId ParticipantConsent) -> ParticipantFormUI -> Html MsgMother
+   viewParticipantConsent : Language -> MeasurementData (Dict ParticipantConsentId ParticipantConsent) -> ParticipantFormUI -> Html MsgMother
    viewParticipantConsent language measurement ui =
        let
            activity =
@@ -789,8 +783,8 @@ viewMother language activity measurements model =
                let
                    completedLast =
                        expected
-                           |> EveryDictList.partition (\id _ -> EverySet.member id completedFormIds)
-                           |> (\( completed, todo ) -> EveryDictList.union todo completed)
+                           |> Dict.partition (\id _ -> EverySet.member id completedFormIds)
+                           |> (\( completed, todo ) -> Dict.union todo completed)
                in
                div
                    [ class "ui full segment participant-consent"
@@ -803,8 +797,8 @@ viewMother language activity measurements model =
                            ]
                        , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
                        , completedLast
-                           |> EveryDictList.map viewParticipantForm
-                           |> EveryDictList.values
+                           |> Dict.map viewParticipantForm
+                           |> Dict.values
                            |> div [ class "ui items" ]
                        ]
                    ]
@@ -827,10 +821,10 @@ viewMother language activity measurements model =
                        EverySet.member formId completedFormIds
 
                    form =
-                       EveryDictList.get formId expected
+                       Dict.get formId expected
 
                    progress =
-                       EveryDict.get formId ui.progress
+                       Dict.get formId ui.progress
                            |> Maybe.withDefault emptyParticipantFormProgress
 
                    progressCompleted =

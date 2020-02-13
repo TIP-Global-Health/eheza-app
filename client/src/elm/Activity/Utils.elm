@@ -28,6 +28,7 @@ expected (and not completed).
 -}
 
 import Activity.Model exposing (..)
+import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -37,11 +38,9 @@ import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (..)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
-import EveryDict exposing (EveryDict)
-import EveryDictList exposing (EveryDictList)
 import EverySet
 import Gizra.NominalDate exposing (diffDays)
-import Lazy exposing (force)
+import LocalData
 import Maybe.Extra exposing (isJust, isNothing)
 
 
@@ -216,28 +215,32 @@ expectCounselingActivity session childId =
         -- that one, and not switch to something else.
         cachedTiming =
             getChildMeasurementData childId session
-                |> force
-                |> mapMeasurementData .counselingSession
-                |> currentValue
-                |> Maybe.map (.value >> Tuple.first)
+                |> LocalData.toMaybe
+                |> Maybe.andThen
+                    (mapMeasurementData .counselingSession
+                        >> currentValue
+                        >> Maybe.map (.value >> Tuple.first)
+                    )
 
         -- All the counseling session records from the past
         historical =
             getChildHistoricalMeasurements childId session.offlineSession
-                |> force
-                |> .counselingSessions
+                |> LocalData.map .counselingSessions
+                |> LocalData.withDefault Dict.empty
 
         -- Have we ever completed a counseling session of the specified type?
         completed timing =
-            EveryDictList.any
-                (\_ counseling -> Tuple.first counseling.value == timing)
-                historical
+            historical
+                |> Dict.toList
+                |> List.any
+                    (\( _, counseling ) -> Tuple.first counseling.value == timing)
 
         -- How long ago did we complete a session of the specified type?
         completedDaysAgo timing =
             historical
-                |> EveryDictList.filter (\_ counseling -> Tuple.first counseling.value == timing)
-                |> EveryDictList.head
+                |> Dict.filter (\_ counseling -> Tuple.first counseling.value == timing)
+                |> Dict.toList
+                |> List.head
                 |> Maybe.map (\( _, counseling ) -> diffDays counseling.dateMeasured session.offlineSession.session.startDate)
 
         -- How old will the child be as of the scheduled date of the session?
@@ -399,7 +402,7 @@ whether we would expect to perform this action if checked in.
 -}
 expectMotherActivity : OfflineSession -> PersonId -> MotherActivity -> Bool
 expectMotherActivity session motherId activity =
-    EveryDict.get motherId session.participants.byMotherId
+    Dict.get motherId session.participants.byMotherId
         |> Maybe.withDefault []
         |> List.any
             (\participant ->
@@ -413,7 +416,7 @@ expectMotherActivity session motherId activity =
                                 False
              {- ParticipantConsent ->
                 expectParticipantConsent session motherId
-                    |> EveryDictList.isEmpty
+                    |> Dict.isEmpty
                     |> not
              -}
             )
@@ -421,19 +424,21 @@ expectMotherActivity session motherId activity =
 
 {-| Which participant forms would we expect this mother to consent to in this session?
 -}
-expectParticipantConsent : EditableSession -> PersonId -> EveryDictList ParticipantFormId ParticipantForm
+expectParticipantConsent : EditableSession -> PersonId -> Dict ParticipantFormId ParticipantForm
 expectParticipantConsent session motherId =
     let
         previouslyConsented =
             getMotherHistoricalMeasurements motherId session.offlineSession
-                |> force
-                |> .consents
-                |> EveryDictList.map (\_ consent -> consent.value.formId)
-                |> EveryDictList.values
-                |> EverySet.fromList
+                |> LocalData.map
+                    (.consents
+                        >> Dict.map (\_ consent -> consent.value.formId)
+                        >> Dict.values
+                        >> EverySet.fromList
+                    )
+                |> LocalData.withDefault EverySet.empty
     in
     session.offlineSession.allParticipantForms
-        |> EveryDictList.filter (\id _ -> not (EverySet.member id previouslyConsented))
+        |> Dict.filter (\id _ -> not (EverySet.member id previouslyConsented))
 
 
 {-| For a particular child activity, figure out which children have completed
@@ -441,11 +446,11 @@ the activity and have the activity pending. (This may not add up to all the
 children, because we only consider a child "pending" if they are checked in and
 the activity is expected.
 -}
-summarizeChildActivity : ChildActivity -> OfflineSession -> CheckedIn -> CompletedAndPending (EveryDictList PersonId Person)
+summarizeChildActivity : ChildActivity -> OfflineSession -> CheckedIn -> CompletedAndPending (Dict PersonId Person)
 summarizeChildActivity activity session checkedIn =
     checkedIn.children
-        |> EveryDictList.filter (\childId _ -> expectChildActivity session childId activity)
-        |> EveryDictList.partition (\childId _ -> childHasCompletedActivity childId activity session)
+        |> Dict.filter (\childId _ -> expectChildActivity session childId activity)
+        |> Dict.partition (\childId _ -> childHasCompletedActivity childId activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
 
@@ -454,13 +459,13 @@ the activity and have the activity pending. (This may not add up to all the
 mothers, because we only consider a mother "pending" if they are checked in and
 the activity is expected.
 -}
-summarizeMotherActivity : MotherActivity -> OfflineSession -> CheckedIn -> CompletedAndPending (EveryDictList PersonId Person)
+summarizeMotherActivity : MotherActivity -> OfflineSession -> CheckedIn -> CompletedAndPending (Dict PersonId Person)
 summarizeMotherActivity activity session checkedIn =
     -- For participant consent, we only consider the activity to be completed once
     -- all expected consents have been saved.
     checkedIn.mothers
-        |> EveryDictList.filter (\motherId _ -> expectMotherActivity session motherId activity)
-        |> EveryDictList.partition (\motherId _ -> motherHasCompletedActivity motherId activity session)
+        |> Dict.filter (\motherId _ -> expectMotherActivity session motherId activity)
+        |> Dict.partition (\motherId _ -> motherHasCompletedActivity motherId activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
 
@@ -472,11 +477,11 @@ getParticipantCountForActivity summary activity =
     case activity of
         ChildActivity childActivity ->
             summary.children
-                |> EveryDict.get childActivity
+                |> Dict.get childActivity
                 |> Maybe.map
                     (\{ completed, pending } ->
-                        { completed = EveryDictList.size completed
-                        , pending = EveryDictList.size pending
+                        { completed = Dict.size completed
+                        , pending = Dict.size pending
                         }
                     )
                 |> Maybe.withDefault
@@ -486,11 +491,11 @@ getParticipantCountForActivity summary activity =
 
         MotherActivity motherActivity ->
             summary.mothers
-                |> EveryDict.get motherActivity
+                |> Dict.get motherActivity
                 |> Maybe.map
                     (\{ completed, pending } ->
-                        { completed = EveryDictList.size completed
-                        , pending = EveryDictList.size pending
+                        { completed = Dict.size completed
+                        , pending = Dict.size pending
                         }
                     )
                 |> Maybe.withDefault
@@ -534,7 +539,7 @@ getActivityCountForMother : EditableSession -> PersonId -> Person -> SummaryByPa
 getActivityCountForMother session id mother summary =
     let
         motherCount =
-            EveryDictList.get id summary.mothers
+            Dict.get id summary.mothers
                 |> Maybe.map
                     (\activities ->
                         { pending = List.length activities.pending
@@ -548,7 +553,7 @@ getActivityCountForMother session id mother summary =
     in
     List.foldl
         (\( childId, _ ) accum ->
-            EveryDictList.get childId summary.children
+            Dict.get childId summary.children
                 |> Maybe.map
                     (\activities ->
                         { pending = accum.pending + List.length activities.pending
@@ -585,8 +590,8 @@ hasCompletedChildActivity activityType measurements =
 childHasCompletedActivity : PersonId -> ChildActivity -> OfflineSession -> Bool
 childHasCompletedActivity childId activityType session =
     getChildMeasurementData2 childId session
-        |> force
-        |> hasCompletedChildActivity activityType
+        |> LocalData.map (hasCompletedChildActivity activityType)
+        |> LocalData.withDefault False
 
 
 hasCompletedMotherActivity : OfflineSession -> PersonId -> MotherActivity -> MeasurementData MotherMeasurements -> Bool
@@ -609,15 +614,15 @@ hasCompletedMotherActivity session motherId activityType measurements =
                    |> EverySet.fromList
        in
        expectParticipantConsent session motherId
-           |> EveryDictList.all (\id _ -> EverySet.member id current)
+           |> Dict.all (\id _ -> EverySet.member id current)
 -}
 
 
 motherHasCompletedActivity : PersonId -> MotherActivity -> OfflineSession -> Bool
 motherHasCompletedActivity motherId activityType session =
     getMotherMeasurementData2 motherId session
-        |> force
-        |> hasCompletedMotherActivity session motherId activityType
+        |> LocalData.map (hasCompletedMotherActivity session motherId activityType)
+        |> LocalData.withDefault False
 
 
 {-| Should some measurement be considered completed? Note that this means that it has
@@ -637,7 +642,7 @@ hasAnyCompletedMotherActivity session motherId measurements =
 hasAnyCompletedChildActivity : MeasurementData ChildMeasurements -> Bool
 hasAnyCompletedChildActivity measurements =
     getAllChildActivities
-        |> List.any (flip hasCompletedChildActivity measurements)
+        |> List.any (\a -> hasCompletedChildActivity a measurements)
 
 
 {-| See whether either the mother, or any of her children, has any completed activity.
@@ -670,8 +675,8 @@ motherIsCheckedIn motherId session =
     let
         explicitlyCheckedIn =
             getMotherMeasurementData2 motherId session
-                |> force
-                |> (.current >> .attendance >> Maybe.map (Tuple.second >> .value) >> (==) (Just True))
+                |> LocalData.map (.current >> .attendance >> Maybe.map (Tuple.second >> .value) >> (==) (Just True))
+                |> LocalData.withDefault False
 
         hasCompletedActivity =
             motherOrAnyChildHasAnyCompletedActivity motherId session
@@ -692,8 +697,8 @@ childIsCheckedIn childId session =
 motherHasAnyCompletedActivity : PersonId -> OfflineSession -> Bool
 motherHasAnyCompletedActivity motherId session =
     getMotherMeasurementData2 motherId session
-        |> force
-        |> hasAnyCompletedMotherActivity session motherId
+        |> LocalData.map (hasAnyCompletedMotherActivity session motherId)
+        |> LocalData.withDefault False
 
 
 {-| Does the child have any completed activity?
@@ -701,5 +706,5 @@ motherHasAnyCompletedActivity motherId session =
 childHasAnyCompletedActivity : PersonId -> OfflineSession -> Bool
 childHasAnyCompletedActivity childId session =
     getChildMeasurementData2 childId session
-        |> force
-        |> hasAnyCompletedChildActivity
+        |> LocalData.map hasAnyCompletedChildActivity
+        |> LocalData.withDefault False

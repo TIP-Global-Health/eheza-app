@@ -114,22 +114,22 @@ dbSync.version(5).stores({
 });
 
 dbSync.version(6).stores({
-    nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
+    nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+adult]',
+}).upgrade(function (tx) {
+    return tx.nodes.where({
+        type: 'participant_form'
+    }).delete();
 });
 
 dbSync.version(7).stores({
     nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
-}).upgrade(function (tx) {
-    return tx.nodes.where({
-        type: 'clinic'
-    }).delete();
 });
 
 dbSync.version(8).stores({
     nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
 }).upgrade(function (tx) {
     return tx.nodes.where({
-        type: 'individual_participant'
+        type: 'clinic'
     }).delete();
 });
 

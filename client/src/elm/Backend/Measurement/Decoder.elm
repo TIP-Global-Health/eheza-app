@@ -32,13 +32,10 @@ module Backend.Measurement.Decoder exposing
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Dict exposing (Dict)
-import EveryDict exposing (EveryDict)
-import EveryDictList
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict)
 import Gizra.NominalDate
 import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
+import Json.Decode.Pipeline exposing (custom, hardcoded, optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid, toEntityUuid)
 import Translate.Utils exposing (decodeLanguage)
 import Utils.Json exposing (decodeEverySet)
@@ -56,7 +53,7 @@ decodePrenatalMeasurement =
 
 decodeMeasurement : String -> Decoder value -> Decoder (Measurement (EntityUuid a) value)
 decodeMeasurement encounterTag valueDecoder =
-    decode Measurement
+    succeed Measurement
         |> required "date_measured" Gizra.NominalDate.decodeYYYYMMDD
         |> optional "nurse" (nullable decodeEntityUuid) Nothing
         |> optional "health_center" (nullable decodeEntityUuid) Nothing
@@ -67,28 +64,28 @@ decodeMeasurement encounterTag valueDecoder =
 
 decodeWithEntityUuid : Decoder a -> Decoder ( EntityUuid b, a )
 decodeWithEntityUuid decoder =
-    map2 (,)
+    map2 (\a b -> ( a, b ))
         (field "uuid" decodeEntityUuid)
         decoder
 
 
 decodeMotherMeasurementList : Decoder MotherMeasurementList
 decodeMotherMeasurementList =
-    decode MotherMeasurementList
-        |> optional "attendance" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeAttendance)) EveryDictList.empty
-        |> optional "family_planning" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeFamilyPlanning)) EveryDictList.empty
-        |> optional "participant_consent" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeParticipantConsent)) EveryDictList.empty
+    succeed MotherMeasurementList
+        |> optional "attendance" (map Dict.fromList <| list (decodeWithEntityUuid decodeAttendance)) Dict.empty
+        |> optional "family_planning" (map Dict.fromList <| list (decodeWithEntityUuid decodeFamilyPlanning)) Dict.empty
+        |> optional "participant_consent" (map Dict.fromList <| list (decodeWithEntityUuid decodeParticipantConsent)) Dict.empty
 
 
 decodeChildMeasurementList : Decoder ChildMeasurementList
 decodeChildMeasurementList =
-    decode ChildMeasurementList
-        |> optional "height" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeHeight)) EveryDictList.empty
-        |> optional "muac" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeMuac)) EveryDictList.empty
-        |> optional "nutrition" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeNutrition)) EveryDictList.empty
-        |> optional "photo" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodePhoto)) EveryDictList.empty
-        |> optional "weight" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeWeight)) EveryDictList.empty
-        |> optional "counseling_session" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeCounselingSession)) EveryDictList.empty
+    succeed ChildMeasurementList
+        |> optional "height" (map Dict.fromList <| list (decodeWithEntityUuid decodeHeight)) Dict.empty
+        |> optional "muac" (map Dict.fromList <| list (decodeWithEntityUuid decodeMuac)) Dict.empty
+        |> optional "nutrition" (map Dict.fromList <| list (decodeWithEntityUuid decodeNutrition)) Dict.empty
+        |> optional "photo" (map Dict.fromList <| list (decodeWithEntityUuid decodePhoto)) Dict.empty
+        |> optional "weight" (map Dict.fromList <| list (decodeWithEntityUuid decodeWeight)) Dict.empty
+        |> optional "counseling_session" (map Dict.fromList <| list (decodeWithEntityUuid decodeCounselingSession)) Dict.empty
 
 
 decodePrenatalMeasurements : Decoder PrenatalMeasurements
@@ -97,7 +94,7 @@ decodePrenatalMeasurements =
         decodeHead =
             map List.head << list << decodeWithEntityUuid
     in
-    decode PrenatalMeasurements
+    succeed PrenatalMeasurements
         |> optional "breast_exam" (decodeHead decodeBreastExam) Nothing
         |> optional "core_physical_exam" (decodeHead decodeCorePhysicalExam) Nothing
         |> optional "danger_signs" (decodeHead decodeDangerSigns) Nothing
@@ -170,7 +167,7 @@ decodeParticipantConsent =
 
 decodeParticipantConsentValue : Decoder ParticipantConsentValue
 decodeParticipantConsentValue =
-    decode ParticipantConsentValue
+    succeed ParticipantConsentValue
         |> required "language" decodeLanguage
         |> required "participant_form" decodeEntityUuid
 

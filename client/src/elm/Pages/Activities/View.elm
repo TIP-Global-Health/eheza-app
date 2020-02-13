@@ -1,13 +1,14 @@
 module Pages.Activities.View exposing (view)
 
+import Activity.Model exposing (emptySummaryByActivity)
 import Activity.Utils exposing (getActivityIcon, getAllActivities, getParticipantCountForActivity)
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Lazy exposing (force)
 import List as List
+import LocalData
 import Pages.Activities.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Translate as Trans exposing (Language, translate)
@@ -18,7 +19,8 @@ view : Language -> ( SessionId, EditableSession ) -> Model -> Html Msg
 view language ( sessionId, session ) model =
     let
         summary =
-            force session.summaryByActivity
+            session.summaryByActivity
+                |> LocalData.withDefault emptySummaryByActivity
 
         ( pendingActivities, noPendingActivities ) =
             getAllActivities

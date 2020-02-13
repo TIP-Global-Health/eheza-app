@@ -1,18 +1,19 @@
-port module App.Update exposing (init, subscriptions, updateAndThenFetch)
+module App.Update exposing (init, subscriptions, updateAndThenFetch)
 
-import AnimationFrame
 import App.Fetch
 import App.Model exposing (..)
+import App.Ports exposing (..)
 import App.Utils exposing (getLoggedInData)
+import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.Update
+import Browser
+import Browser.Navigation as Nav
 import Config
-import Date
 import Device.Decoder
 import Device.Encoder
-import Dict
-import EveryDict
+import Dict as LegacyDict
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Http exposing (Error(..))
 import HttpBuilder
@@ -22,6 +23,7 @@ import Pages.Clinics.Update
 import Pages.Device.Model
 import Pages.Device.Update
 import Pages.IndividualEncounterParticipants.Update
+import Pages.Page exposing (..)
 import Pages.People.Update
 import Pages.Person.Update
 import Pages.PinCode.Model
@@ -35,25 +37,27 @@ import Pages.PrenatalEncounter.Update
 import Pages.PrenatalParticipant.Update
 import Pages.Relationship.Model
 import Pages.Relationship.Update
+import Pages.Router exposing (activePageByUrl, pageToFragment)
 import Pages.Session.Model
 import Pages.Session.Update
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, fromEntityId, fromEntityUuid, select, toCmd, toEntityId, toEntityUuid)
+import Restful.Endpoint exposing (fromEntityUuid, select, toCmd)
 import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
 import Task
-import Time exposing (minute)
+import Time
 import Translate.Model exposing (Language(..))
 import Translate.Utils exposing (languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
+import Url
 import Version
 import ZScore.Model
 import ZScore.Update
 
 
-init : Flags -> ( Model, Cmd Msg )
-init flags =
+init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url key =
     let
         activeLanguage =
             case languageFromCode flags.activeLanguage of
@@ -63,8 +67,14 @@ init flags =
                 Err msg ->
                     English
 
+        fragment =
+            pageToFragment PinCodePage
+
+        url_ =
+            { url | fragment = fragment, query = Nothing }
+
         model =
-            emptyModel flags
+            emptyModel key url_ flags
 
         ( updatedModel, cmd ) =
             case Dict.get flags.hostname Config.configs of
@@ -93,7 +103,7 @@ init flags =
                                     )
                                 |> Task.perform HandlePairedDevice
 
-                        cmd =
+                        cmd_ =
                             -- We always check the cache for an offline session, since that affects
                             -- the UI we'll offer to show at a basic level. (An alternative would be
                             -- to fetch it only when we really, really need it).
@@ -108,6 +118,7 @@ init flags =
                                   -}
                                   Task.perform Tick Time.now
                                 , fetchCachedDevice
+                                , Nav.pushUrl model.navigationKey (Url.toString model.url)
                                 ]
 
                         configuredModel =
@@ -126,7 +137,7 @@ init flags =
                                 [ TryPinCode flags.pinCode ]
                     in
                     ( { model | configuration = Success configuredModel }
-                    , cmd
+                    , cmd_
                     )
                         |> sequence update
                             (List.append tryPinCode
@@ -154,7 +165,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
         currentDate =
-            fromLocalDateTime <| Date.fromTime model.currentTime
+            fromLocalDateTime model.currentTime
 
         nurseId =
             getLoggedInData model
@@ -198,10 +209,20 @@ update msg model =
                         MsgPageCreatePerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Person.Update.update currentDate subMsg model.indexedDb.people data.createPersonPage
+                                    Pages.Person.Update.update currentDate subMsg model.indexedDb data.createPersonPage
                             in
                             ( { data | createPersonPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageCreatePerson) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPageEditPerson subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.Person.Update.update currentDate subMsg model.indexedDb data.editPersonPage
+                            in
+                            ( { data | editPersonPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageEditPerson) subCmd
                             , appMsgs
                             )
 
@@ -239,11 +260,11 @@ update msg model =
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.relationshipPages
-                                        |> EveryDict.get ( id1, id2 )
+                                        |> Dict.get ( id1, id2 )
                                         |> Maybe.withDefault Pages.Relationship.Model.emptyModel
                                         |> Pages.Relationship.Update.update id1 id2 subMsg
                             in
-                            ( { data | relationshipPages = EveryDict.insert ( id1, id2 ) subModel data.relationshipPages }
+                            ( { data | relationshipPages = Dict.insert ( id1, id2 ) subModel data.relationshipPages }
                             , Cmd.map (MsgLoggedIn << MsgPageRelationship id1 id2) subCmd
                             , extraMsgs
                             )
@@ -252,11 +273,11 @@ update msg model =
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.sessionPages
-                                        |> EveryDict.get sessionId
+                                        |> Dict.get sessionId
                                         |> Maybe.withDefault Pages.Session.Model.emptyModel
                                         |> Pages.Session.Update.update sessionId model.indexedDb subMsg
                             in
-                            ( { data | sessionPages = EveryDict.insert sessionId subModel data.sessionPages }
+                            ( { data | sessionPages = Dict.insert sessionId subModel data.sessionPages }
                             , Cmd.map (MsgLoggedIn << MsgPageSession sessionId) subCmd
                             , extraMsgs
                             )
@@ -321,7 +342,7 @@ update msg model =
                 (\configured ->
                     let
                         postCode =
-                            HttpBuilder.get (configured.config.backendUrl </> "api/pairing-code" </> code)
+                            HttpBuilder.get (configured.config.backendUrl ++ "/api/pairing-code/" ++ code)
                                 |> HttpBuilder.withExpectJson (Json.Decode.field "data" (Device.Decoder.decode configured.config.backendUrl))
                                 |> HttpBuilder.toTask
 
@@ -418,8 +439,19 @@ update msg model =
             ( model, scrollToElement elementId )
 
         SetActivePage page ->
+            let
+                fragment =
+                    pageToFragment page
+
+                redirectUrl =
+                    model.url
+                        |> (\url -> { url | fragment = fragment, query = Nothing })
+
+                cmd =
+                    Nav.pushUrl model.navigationKey (Url.toString redirectUrl)
+            in
             ( { model | activePage = page }
-            , Cmd.none
+            , cmd
             )
 
         SendRollbar level message data ->
@@ -439,7 +471,7 @@ update msg model =
                                 0
                                 level
                                 message
-                                (Dict.insert "build" version data)
+                                (Dict.insert "build" version data |> Dict.toList |> LegacyDict.fromList)
                                 |> Task.attempt HandleRollbar
                     in
                     ( configured
@@ -489,8 +521,15 @@ update msg model =
                             [ MsgServiceWorker <| ServiceWorker.Model.SendOutgoingMsg ServiceWorker.Model.Update ]
 
                         Just checked ->
+                            let
+                                diffInMillis =
+                                    Time.posixToMillis time - Time.posixToMillis checked
+
+                                diffInMinutes =
+                                    diffInMillis // 60000
+                            in
                             -- Automatically check for updates every hour
-                            if time - checked > 60 * Time.minute then
+                            if diffInMinutes > 60 then
                                 [ MsgServiceWorker <| ServiceWorker.Model.SendOutgoingMsg ServiceWorker.Model.Update ]
 
                             else
@@ -560,20 +599,37 @@ update msg model =
                 -- Update our existing dataWanted to indicate that the data now wanted
                 -- was last wanted now.
                 dataWanted =
-                    List.foldl (\msg -> EveryDict.insert msg model.currentTime) model.dataWanted dataNowWanted
+                    List.foldl
+                        (\msg_ ->
+                            let
+                                -- Since we may send extra messages as part of fetch editable session
+                                -- command, normilise the message as if there're are none,
+                                -- so that we can maintain the remember / forget logic.
+                                normalizedMsg =
+                                    case msg_ of
+                                        MsgIndexedDb (Backend.Model.FetchEditableSession id _) ->
+                                            MsgIndexedDb (Backend.Model.FetchEditableSession id [])
+
+                                        _ ->
+                                            msg_
+                            in
+                            Dict.insert normalizedMsg model.currentTime
+                        )
+                        model.dataWanted
+                        dataNowWanted
 
                 fiveMinutes =
                     5 * 1000 * 60
 
                 -- Figure out what to remember and what to forget.
                 ( dataToForget, dataToRemember ) =
-                    EveryDict.partition (\_ lastWanted -> model.currentTime - lastWanted > fiveMinutes) dataWanted
+                    Dict.partition (\_ lastWanted -> Time.posixToMillis model.currentTime - Time.posixToMillis lastWanted > fiveMinutes) dataWanted
 
                 -- Our new base model, remembering the desired data, and forgetting
                 -- the data to forget.
                 newModel =
                     dataToForget
-                        |> EveryDict.keys
+                        |> Dict.keys
                         |> List.foldl App.Fetch.forget
                             { model
                                 | dataWanted = dataToRemember
@@ -581,6 +637,50 @@ update msg model =
                             }
             in
             sequence update dataToFetch ( newModel, Cmd.none )
+
+        UrlRequested urlRequest ->
+            let
+                ( modelUpdated, cmd ) =
+                    case urlRequest of
+                        Browser.Internal url ->
+                            let
+                                activePage =
+                                    activePageByUrl url
+                            in
+                            ( model, Nav.pushUrl model.navigationKey (Url.toString url) )
+
+                        -- As we use a tag in multiple places in HTML and CSS,
+                        -- we'll get `External ""` msg when it's clicked.
+                        -- Therefore, we will not react to external Url requests,
+                        -- because app does not require it anyway.
+                        Browser.External href ->
+                            ( model, Cmd.none )
+            in
+            ( modelUpdated
+            , cmd
+            )
+
+        UrlChanged url ->
+            let
+                activePage =
+                    activePageByUrl url
+
+                cmd =
+                    case activePage of
+                        -- When at 'create / edit person' oage, bind
+                        -- DropZone to be able to take pictures.
+                        UserPage (CreatePersonPage _) ->
+                            App.Ports.bindDropZone ()
+
+                        UserPage (EditPersonPage _) ->
+                            App.Ports.bindDropZone ()
+
+                        _ ->
+                            Cmd.none
+            in
+            ( { model | url = url, activePage = activePage }
+            , cmd
+            )
 
 
 {-| Updates our `nurse` user if the uuid matches the logged-in user.
@@ -655,13 +755,14 @@ subscriptions model =
     let
         checkDataWanted =
             if model.scheduleDataWantedCheck then
-                [ AnimationFrame.times (always CheckDataWanted) ]
+                [ Time.every 50 (always CheckDataWanted)
+                ]
 
             else
                 []
     in
     Sub.batch
-        ([ Time.every minute Tick
+        ([ Time.every 60000 Tick
          , Sub.map MsgServiceWorker ServiceWorker.Update.subscriptions
          , persistentStorage SetPersistentStorage
          , storageQuota SetStorageQuota
@@ -669,49 +770,3 @@ subscriptions model =
          ]
             ++ checkDataWanted
         )
-
-
-{-| Saves PIN code entered by user, so that we can use it again if
-the browser is reloaded.
--}
-port cachePinCode : String -> Cmd msg
-
-
-{-| Manually kick off a sync event. Normally, handled automatically.
--}
-port trySyncing : () -> Cmd msg
-
-
-{-| Send Pusher key and cluster to JS.
--}
-port pusherKey : ( String, String, List String ) -> Cmd msg
-
-
-{-| Set the user's current language.
--}
-port setLanguage : String -> Cmd msg
-
-
-{-| Let the Javascript tell us if we've successfully requested persistent
-storage.
--}
-port persistentStorage : (Bool -> msg) -> Sub msg
-
-
-{-| Let the Javascript tell us about memory quotas.
--}
-port memoryQuota : (MemoryQuota -> msg) -> Sub msg
-
-
-{-| Let the Javascript tell us about our storage quota.
--}
-port storageQuota : (StorageQuota -> msg) -> Sub msg
-
-
-{-| Saves Health center ID selected by user, so that we can use it again if
-the browser is reloaded.
--}
-port cacheHealthCenter : String -> Cmd msg
-
-
-port scrollToElement : String -> Cmd msg

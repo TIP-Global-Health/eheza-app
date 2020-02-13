@@ -1,6 +1,8 @@
 module Pages.Participants.View exposing (view)
 
+import Activity.Model exposing (emptySummaryByParticipant)
 import Activity.Utils exposing (getActivityCountForMother)
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
@@ -8,7 +10,7 @@ import EveryDictList
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Lazy exposing (force)
+import LocalData
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participants.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Utils exposing (filterDependentNoResultsMessage, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
@@ -30,15 +32,16 @@ view language ( sessionId, session ) model =
             normalizeFilter model.filter
 
         mothersInAttendance =
-            force session.checkedIn
-                |> .mothers
-                |> EveryDictList.filter (matchMotherAndHerChildren filter session.offlineSession)
+            session.checkedIn
+                |> LocalData.unwrap
+                    Dict.empty
+                    (.mothers >> Dict.filter (matchMotherAndHerChildren filter session.offlineSession))
 
         summary =
-            force session.summaryByParticipant
+            session.summaryByParticipant |> LocalData.withDefault emptySummaryByParticipant
 
         ( mothersWithPendingActivity, mothersWithoutPendingActivity ) =
-            EveryDictList.partition
+            Dict.partition
                 (\motherId mother ->
                     getActivityCountForMother session motherId mother summary
                         |> (\count -> count.pending > 0)
@@ -48,12 +51,12 @@ view language ( sessionId, session ) model =
         tabs =
             let
                 pendingTabTitle =
-                    EveryDictList.size mothersWithPendingActivity
+                    Dict.size mothersWithPendingActivity
                         |> Trans.ActivitiesToComplete
                         |> translate language
 
                 completedTabTitle =
-                    EveryDictList.size mothersWithoutPendingActivity
+                    Dict.size mothersWithoutPendingActivity
                         |> Trans.ActivitiesCompleted
                         |> translate language
             in
@@ -94,12 +97,12 @@ view language ( sessionId, session ) model =
                         ]
 
                 mothersCards =
-                    if EveryDictList.size selectedMothers == 0 then
+                    if Dict.size selectedMothers == 0 then
                         [ span [] [ text emptySectionMessage ] ]
 
                     else
                         selectedMothers
-                            |> EveryDictList.toList
+                            |> Dict.toList
                             |> List.sortBy (\( _, mother ) -> mother.name)
                             |> List.map viewMotherCard
             in

@@ -3,12 +3,13 @@ module Backend.Update exposing (updateIndexedDb)
 import Activity.Model exposing (SummaryByActivity, SummaryByParticipant)
 import Activity.Utils exposing (getAllChildActivities, getAllMotherActivities, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
 import App.Model
+import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Update
-import Backend.Measurement.Model exposing (HistoricalMeasurements)
+import Backend.Measurement.Model exposing (HistoricalMeasurements, Measurements)
 import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMeasurements)
 import Backend.Model exposing (..)
 import Backend.Person.Model exposing (RegistrationInitiator(..))
@@ -22,21 +23,18 @@ import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSessio
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getMyMother)
 import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements, mapPrenatalMeasurements)
-import Dict
-import EveryDict
-import EveryDictList
+import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
-import Lazy exposing (lazy)
-import Maybe.Extra
+import LocalData exposing (LocalData(..), ReadyStatus(..))
+import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model
 import Pages.Relationship.Model
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyAccessToken, applyBackendUrl, decodeEntityUuid, decodeSingleDrupalEntity, drupalBackend, drupalEndpoint, encodeEntityUuid, endpoint, fromEntityUuid, toCmd, toEntityUuid, toTask, withKeyEncoder, withParamsEncoder, withValueEncoder, withoutDecoder)
+import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyBackendUrl, toCmd, toTask, withoutDecoder)
 import Task
-import Time.Date
 
 
 updateIndexedDb : NominalDate -> Maybe NurseId -> Maybe HealthCenterId -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
@@ -44,25 +42,58 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
     let
         sw =
             applyBackendUrl "/sw"
+
+        noChange =
+            ( model, Cmd.none, [] )
     in
     case msg of
         FetchChildMeasurements childId ->
-            ( { model | childMeasurements = EveryDict.insert childId Loading model.childMeasurements }
+            ( { model | childMeasurements = Dict.insert childId Loading model.childMeasurements }
             , sw.get childMeasurementListEndpoint childId
                 |> toCmd (RemoteData.fromResult >> HandleFetchedChildMeasurements childId)
             , []
             )
 
+        FetchChildrenMeasurements ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    childMeasurements =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.childMeasurements ids
+                in
+                ( { model | childMeasurements = childMeasurements }
+                , sw.getMany childMeasurementListEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedChildrenMeasurements)
+                , []
+                )
+
         HandleFetchedChildMeasurements childId data ->
-            ( { model | childMeasurements = EveryDict.insert childId data model.childMeasurements }
+            ( { model | childMeasurements = Dict.insert childId data model.childMeasurements }
             , Cmd.none
             , []
             )
 
+        HandleFetchedChildrenMeasurements webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | childMeasurements = Dict.union dictUpdated model.childMeasurements }
+                    , Cmd.none
+                    , []
+                    )
+
         FetchClinics ->
             ( { model | clinics = Loading }
             , sw.select clinicEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList >> EveryDictList.sortBy .name) >> HandleFetchedClinics)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> List.sortBy (Tuple.second >> .name) >> Dict.fromList) >> HandleFetchedClinics)
             , []
             )
 
@@ -72,21 +103,113 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , []
             )
 
-        FetchEditableSession id ->
+        FetchEditableSession id calculationMsgs ->
+            let
+                newEditable =
+                    makeEditableSession id model
+
+                extraMsgs =
+                    if RemoteData.isSuccess newEditable then
+                        calculationMsgs
+
+                    else
+                        []
+            in
             -- This one is a bit special. What we're asking for is not a fetch
             -- from IndexedDB as such, but a certain kind of organization of
             -- the data.
-            ( { model | editableSessions = EveryDict.insert id (makeEditableSession id model) model.editableSessions }
+            ( { model | editableSessions = Dict.insert id newEditable model.editableSessions }
             , Cmd.none
             , []
             )
+                |> sequenceExtra (updateIndexedDb currentDate nurseId) extraMsgs
+
+        FetchEditableSessionCheckedIn id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map
+                    (\editable ->
+                        let
+                            checkedIn =
+                                cacheCheckedIn editable.offlineSession
+
+                            updatedEditable =
+                                { editable | checkedIn = checkedIn }
+                        in
+                        ( { model | editableSessions = Dict.insert id (Success updatedEditable) model.editableSessions }
+                        , Cmd.none
+                        , []
+                        )
+                    )
+                |> RemoteData.withDefault noChange
+
+        FetchEditableSessionMeasurements id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map
+                    (\editable ->
+                        let
+                            measurements =
+                                calculateOfflineSessionMeasurements id editable.offlineSession model
+
+                            updatedOffline =
+                                editable.offlineSession
+                                    |> (\offline -> { offline | measurements = measurements })
+
+                            updatedEditable =
+                                { editable | offlineSession = updatedOffline }
+                        in
+                        ( { model | editableSessions = Dict.insert id (Success updatedEditable) model.editableSessions }
+                        , Cmd.none
+                        , []
+                        )
+                    )
+                |> RemoteData.withDefault noChange
+
+        FetchEditableSessionSummaryByActivity id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map
+                    (\editable ->
+                        let
+                            summaryByActivity =
+                                summarizeByActivity editable.offlineSession editable.checkedIn
+
+                            updatedEditable =
+                                { editable | summaryByActivity = summaryByActivity }
+                        in
+                        ( { model | editableSessions = Dict.insert id (Success updatedEditable) model.editableSessions }
+                        , Cmd.none
+                        , []
+                        )
+                    )
+                |> RemoteData.withDefault noChange
+
+        FetchEditableSessionSummaryByParticipant id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map
+                    (\editable ->
+                        let
+                            summaryByParticipant =
+                                summarizeByParticipant editable.offlineSession editable.checkedIn
+
+                            updatedEditable =
+                                { editable | summaryByParticipant = summaryByParticipant }
+                        in
+                        ( { model | editableSessions = Dict.insert id (Success updatedEditable) model.editableSessions }
+                        , Cmd.none
+                        , []
+                        )
+                    )
+                |> RemoteData.withDefault noChange
 
         FetchEveryCounselingSchedule ->
             let
                 topicTask =
                     sw.select counselingTopicEndpoint ()
                         |> toTask
-                        |> Task.map (.items >> EveryDict.fromList)
+                        |> Task.map (.items >> Dict.fromList)
                         |> RemoteData.fromTask
 
                 scheduleTask =
@@ -116,22 +239,61 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                         |> Just
 
                 indexBy accessor _ value accum =
-                    EveryDict.update (accessor value) (merge value) accum
+                    Dict.update (accessor value) (merge value) accum
 
                 processIndex byId =
                     { byId = byId
-                    , byChildId = EveryDict.foldl (indexBy .child) EveryDict.empty byId
-                    , byMotherId = EveryDict.foldl (indexBy .adult) EveryDict.empty byId
+                    , byChildId = Dict.foldl (indexBy .child) Dict.empty byId
+                    , byMotherId = Dict.foldl (indexBy .adult) Dict.empty byId
                     }
             in
-            ( { model | expectedParticipants = EveryDict.insert sessionId Loading model.expectedParticipants }
+            ( { model | expectedParticipants = Dict.insert sessionId Loading model.expectedParticipants }
             , sw.select pmtctParticipantEndpoint (ParticipantsForSession sessionId)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDict.fromList >> processIndex) >> HandleFetchedExpectedParticipants sessionId)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList >> processIndex) >> HandleFetchedExpectedParticipants sessionId)
             , []
             )
 
         HandleFetchedExpectedParticipants sessionId data ->
-            ( { model | expectedParticipants = EveryDict.insert sessionId data model.expectedParticipants }
+            let
+                expectedParticipants =
+                    Dict.insert sessionId data model.expectedParticipants
+
+                childrenIds =
+                    case RemoteData.toMaybe data of
+                        Just dict ->
+                            Dict.keys dict.byChildId
+
+                        Nothing ->
+                            []
+
+                motherIds =
+                    case RemoteData.toMaybe data of
+                        Just dict ->
+                            Dict.keys dict.byMotherId
+
+                        Nothing ->
+                            []
+
+                peopleIds =
+                    List.concat [ childrenIds, motherIds ]
+
+                -- Mark people to load.
+                people =
+                    List.foldl (\id accum -> Dict.insert id RemoteData.NotAsked accum) model.people peopleIds
+
+                -- Mark Mothers and Children measurements to load.
+                motherMeasurements =
+                    List.foldl (\id accum -> Dict.insert id RemoteData.NotAsked accum) model.motherMeasurements motherIds
+
+                childMeasurements =
+                    List.foldl (\id accum -> Dict.insert id RemoteData.NotAsked accum) model.childMeasurements childrenIds
+            in
+            ( { model
+                | expectedParticipants = expectedParticipants
+                , people = people
+                , motherMeasurements = motherMeasurements
+                , childMeasurements = childMeasurements
+              }
             , Cmd.none
             , []
             )
@@ -145,7 +307,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             -- just to avoid truly pathological cases.
             ( { model | personSearches = Dict.insert trimmed Loading model.personSearches }
             , sw.selectRange personEndpoint { nameContains = Just trimmed } 0 (Just 100)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedPeopleByName trimmed)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleByName trimmed)
             , []
             )
 
@@ -225,23 +387,23 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                 query1 =
                     sw.select pmtctParticipantEndpoint (ParticipantsForChild personId)
                         |> toTask
-                        |> Task.map (.items >> EveryDict.fromList)
+                        |> Task.map (.items >> Dict.fromList)
                         |> RemoteData.fromTask
 
                 query2 =
                     sw.select pmtctParticipantEndpoint (ParticipantsForAdult personId)
                         |> toTask
-                        |> Task.map (.items >> EveryDict.fromList)
+                        |> Task.map (.items >> Dict.fromList)
                         |> RemoteData.fromTask
             in
-            ( { model | participantsByPerson = EveryDict.insert personId Loading model.participantsByPerson }
-            , Task.map2 (RemoteData.map2 EveryDict.union) query1 query2
+            ( { model | participantsByPerson = Dict.insert personId Loading model.participantsByPerson }
+            , Task.map2 (RemoteData.map2 Dict.union) query1 query2
                 |> Task.perform (HandleFetchedParticipantsForPerson personId)
             , []
             )
 
         HandleFetchedParticipantsForPerson personId data ->
-            ( { model | participantsByPerson = EveryDict.insert personId data model.participantsByPerson }
+            ( { model | participantsByPerson = Dict.insert personId data model.participantsByPerson }
             , Cmd.none
             , []
             )
@@ -255,36 +417,54 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                 query1 =
                     sw.select relationshipEndpoint { person = Just personId, relatedTo = Nothing }
                         |> toTask
-                        |> Task.map (.items >> EveryDictList.fromList >> EveryDictList.filterMap (always (toMyRelationship personId)))
+                        |> Task.map
+                            (\val ->
+                                val.items
+                                    |> List.filterMap
+                                        (\( id, relationship ) ->
+                                            toMyRelationship personId relationship
+                                                |> Maybe.map (\myRelationship -> ( id, myRelationship ))
+                                        )
+                                    |> Dict.fromList
+                            )
                         |> RemoteData.fromTask
 
                 query2 =
                     sw.select relationshipEndpoint { person = Nothing, relatedTo = Just personId }
                         |> toTask
-                        |> Task.map (.items >> EveryDictList.fromList >> EveryDictList.filterMap (always (toMyRelationship personId)))
+                        |> Task.map
+                            (\val ->
+                                val.items
+                                    |> List.filterMap
+                                        (\( id, relationship ) ->
+                                            toMyRelationship personId relationship
+                                                |> Maybe.map (\myRelationship -> ( id, myRelationship ))
+                                        )
+                                    |> Dict.fromList
+                            )
                         |> RemoteData.fromTask
             in
-            ( { model | relationshipsByPerson = EveryDict.insert personId Loading model.relationshipsByPerson }
-            , Task.map2 (RemoteData.map2 EveryDictList.union) query1 query2
+            ( { model | relationshipsByPerson = Dict.insert personId Loading model.relationshipsByPerson }
+            , Task.map2 (RemoteData.map2 Dict.union) query1 query2
                 |> Task.perform (HandleFetchedRelationshipsForPerson personId)
             , []
             )
 
         HandleFetchedRelationshipsForPerson personId data ->
-            ( { model | relationshipsByPerson = EveryDict.insert personId data model.relationshipsByPerson }
+            ( { model | relationshipsByPerson = Dict.insert personId data model.relationshipsByPerson }
             , Cmd.none
             , []
             )
 
         FetchExpectedSessions childId ->
-            ( { model | expectedSessions = EveryDict.insert childId Loading model.expectedSessions }
+            ( { model | expectedSessions = Dict.insert childId Loading model.expectedSessions }
             , sw.select sessionEndpoint (ForChild childId)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedExpectedSessions childId)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedExpectedSessions childId)
             , []
             )
 
         HandleFetchedExpectedSessions childId data ->
-            ( { model | expectedSessions = EveryDict.insert childId data model.expectedSessions }
+            ( { model | expectedSessions = Dict.insert childId data model.expectedSessions }
             , Cmd.none
             , []
             )
@@ -292,7 +472,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
         FetchHealthCenters ->
             ( { model | healthCenters = Loading }
             , sw.select healthCenterEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedHealthCenters)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedHealthCenters)
             , []
             )
 
@@ -303,22 +483,52 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             )
 
         FetchMotherMeasurements motherId ->
-            ( { model | motherMeasurements = EveryDict.insert motherId Loading model.motherMeasurements }
+            ( { model | motherMeasurements = Dict.insert motherId Loading model.motherMeasurements }
             , sw.get motherMeasurementListEndpoint motherId
                 |> toCmd (RemoteData.fromResult >> HandleFetchedMotherMeasurements motherId)
             , []
             )
 
+        FetchMothersMeasurements ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    motherMeasurements =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.motherMeasurements ids
+                in
+                ( { model | motherMeasurements = motherMeasurements }
+                , sw.getMany motherMeasurementListEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedMothersMeasurements)
+                , []
+                )
+
         HandleFetchedMotherMeasurements motherId data ->
-            ( { model | motherMeasurements = EveryDict.insert motherId data model.motherMeasurements }
+            ( { model | motherMeasurements = Dict.insert motherId data model.motherMeasurements }
             , Cmd.none
             , []
             )
 
+        HandleFetchedMothersMeasurements webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | motherMeasurements = Dict.union dictUpdated model.motherMeasurements }
+                    , Cmd.none
+                    , []
+                    )
+
         FetchParticipantForms ->
             ( { model | participantForms = Loading }
             , sw.select participantFormEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedParticipantForms)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedParticipantForms)
             , []
             )
 
@@ -328,67 +538,97 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , []
             )
 
+        FetchPeople ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    peopleUpdated =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.people ids
+                in
+                ( { model | people = peopleUpdated }
+                , sw.getMany personEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchPeople)
+                , []
+                )
+
         FetchPerson id ->
-            ( { model | people = EveryDict.insert id Loading model.people }
+            ( { model | people = Dict.insert id Loading model.people }
             , sw.get personEndpoint id
                 |> toCmd (RemoteData.fromResult >> HandleFetchedPerson id)
             , []
             )
 
         HandleFetchedPerson id data ->
-            ( { model | people = EveryDict.insert id data model.people }
+            ( { model | people = Dict.insert id data model.people }
             , Cmd.none
             , []
             )
 
         FetchPrenatalEncounter id ->
-            ( { model | prenatalEncounters = EveryDict.insert id Loading model.prenatalEncounters }
+            ( { model | prenatalEncounters = Dict.insert id Loading model.prenatalEncounters }
             , sw.get prenatalEncounterEndpoint id
                 |> toCmd (RemoteData.fromResult >> HandleFetchedPrenatalEncounter id)
             , []
             )
 
         HandleFetchedPrenatalEncounter id data ->
-            ( { model | prenatalEncounters = EveryDict.insert id data model.prenatalEncounters }
+            ( { model | prenatalEncounters = Dict.insert id data model.prenatalEncounters }
             , Cmd.none
             , []
             )
 
         FetchIndividualEncounterParticipant id ->
-            ( { model | individualParticipants = EveryDict.insert id Loading model.individualParticipants }
+            ( { model | individualParticipants = Dict.insert id Loading model.individualParticipants }
             , sw.get individualEncounterParticipantEndpoint id
                 |> toCmd (RemoteData.fromResult >> HandleFetchedIndividualEncounterParticipant id)
             , []
             )
 
         HandleFetchedIndividualEncounterParticipant id data ->
-            ( { model | individualParticipants = EveryDict.insert id data model.individualParticipants }
+            ( { model | individualParticipants = Dict.insert id data model.individualParticipants }
             , Cmd.none
             , []
             )
 
+        HandleFetchPeople webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | people = Dict.union dictUpdated model.people }
+                    , Cmd.none
+                    , []
+                    )
+
         FetchSession sessionId ->
-            ( { model | sessions = EveryDict.insert sessionId Loading model.sessions }
+            ( { model | sessions = Dict.insert sessionId Loading model.sessions }
             , sw.get sessionEndpoint sessionId
                 |> toCmd (RemoteData.fromResult >> HandleFetchedSession sessionId)
             , []
             )
 
         HandleFetchedSession sessionId data ->
-            ( { model | sessions = EveryDict.insert sessionId data model.sessions }
+            ( { model | sessions = Dict.insert sessionId data model.sessions }
             , Cmd.none
             , []
             )
 
         FetchSessionsByClinic clinicId ->
-            ( { model | sessionsByClinic = EveryDict.insert clinicId Loading model.sessionsByClinic }
+            ( { model | sessionsByClinic = Dict.insert clinicId Loading model.sessionsByClinic }
             , sw.select sessionEndpoint (ForClinic clinicId)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedSessionsByClinic clinicId)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedSessionsByClinic clinicId)
             , []
             )
 
         HandleFetchedSessionsByClinic clinicId data ->
-            ( { model | sessionsByClinic = EveryDict.insert clinicId data model.sessionsByClinic }
+            ( { model | sessionsByClinic = Dict.insert clinicId data model.sessionsByClinic }
             , Cmd.none
             , []
             )
@@ -396,7 +636,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
         FetchSyncData ->
             ( { model | syncData = Loading }
             , sw.select syncDataEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> EveryDictList.fromList) >> HandleFetchedSyncData)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedSyncData)
             , []
             )
 
@@ -407,37 +647,88 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             )
 
         HandleRevisions revisions ->
-            let
-                ( newModel, recalculateEditableSessions ) =
-                    List.foldl handleRevision ( model, False ) revisions
+            case revisions of
+                -- Special handling for a single attendance revision, which means
+                -- there was a check in / check out in Attendance page.
+                -- Here we don't want to rebuild all Editable sessions, but only
+                -- the relevant one, and only the things that are needed.
+                [ AttendanceRevision uuid data ] ->
+                    let
+                        newModel =
+                            mapMotherMeasurements
+                                data.participantId
+                                (\measurements -> { measurements | attendances = Dict.insert uuid data measurements.attendances })
+                                model
 
-                withRecalc =
-                    -- If needed, we recalculate all editable sessions that we
-                    -- actually have.
-                    if recalculateEditableSessions then
-                        let
-                            editableSessions =
-                                -- The `andThen` is so that we only recalculate
-                                -- the editable session if we already have a
-                                -- success.
-                                EveryDict.map
-                                    (\id session ->
-                                        RemoteData.andThen (\_ -> makeEditableSession id newModel) session
+                        withRecalc =
+                            data.sessionId
+                                |> Maybe.map
+                                    (\sessionId ->
+                                        Dict.get sessionId newModel.editableSessions
+                                            |> Maybe.andThen RemoteData.toMaybe
+                                            |> Maybe.map
+                                                (\editableSession ->
+                                                    let
+                                                        updatedOffline =
+                                                            editableSession.offlineSession
+                                                                |> (\offline -> { offline | measurements = LocalData.setRecalculate offline.measurements })
+
+                                                        updatedEditable =
+                                                            Success
+                                                                { editableSession
+                                                                    | update = NotAsked
+                                                                    , offlineSession = updatedOffline
+                                                                    , checkedIn = LocalData.setRecalculate editableSession.checkedIn
+                                                                    , summaryByParticipant = LocalData.setRecalculate editableSession.summaryByParticipant
+                                                                    , summaryByActivity = LocalData.setRecalculate editableSession.summaryByActivity
+                                                                }
+
+                                                        newEditableSessions =
+                                                            Dict.insert sessionId updatedEditable newModel.editableSessions
+                                                    in
+                                                    { newModel | editableSessions = newEditableSessions }
+                                                )
+                                            |> Maybe.withDefault newModel
                                     )
-                                    newModel.editableSessions
-                        in
-                        { newModel | editableSessions = editableSessions }
+                                |> Maybe.withDefault newModel
+                    in
+                    ( withRecalc
+                    , Cmd.none
+                    , []
+                    )
 
-                    else
-                        newModel
-            in
-            ( withRecalc
-            , Cmd.none
-            , []
-            )
+                _ ->
+                    let
+                        ( newModel, recalculateEditableSessions ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        withRecalc =
+                            -- If needed, we recalculate all editable sessions that we
+                            -- actually have.
+                            if recalculateEditableSessions then
+                                let
+                                    editableSessions =
+                                        -- The `andThen` is so that we only recalculate
+                                        -- the editable session if we already have a
+                                        -- success.
+                                        Dict.map
+                                            (\id session ->
+                                                RemoteData.andThen (\_ -> makeEditableSession id newModel) session
+                                            )
+                                            newModel.editableSessions
+                                in
+                                { newModel | editableSessions = editableSessions }
+
+                            else
+                                newModel
+                    in
+                    ( withRecalc
+                    , Cmd.none
+                    , []
+                    )
 
         SaveSyncData uuid data ->
-            ( { model | saveSyncDataRequests = EveryDict.insert uuid Loading model.saveSyncDataRequests }
+            ( { model | saveSyncDataRequests = Dict.insert uuid Loading model.saveSyncDataRequests }
             , sw.put syncDataEndpoint uuid data
                 |> withoutDecoder
                 |> toCmd (RemoteData.fromResult >> HandleSavedSyncData uuid)
@@ -445,20 +736,20 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             )
 
         HandleSavedSyncData uuid data ->
-            ( { model | saveSyncDataRequests = EveryDict.insert uuid data model.saveSyncDataRequests }
+            ( { model | saveSyncDataRequests = Dict.insert uuid data model.saveSyncDataRequests }
             , Cmd.none
             , []
             )
 
         DeleteSyncData uuid ->
-            ( { model | deleteSyncDataRequests = EveryDict.insert uuid Loading model.deleteSyncDataRequests }
+            ( { model | deleteSyncDataRequests = Dict.insert uuid Loading model.deleteSyncDataRequests }
             , sw.delete syncDataEndpoint uuid
                 |> toCmd (RemoteData.fromResult >> HandleDeletedSyncData uuid)
             , []
             )
 
         HandleDeletedSyncData uuid data ->
-            ( { model | deleteSyncDataRequests = EveryDict.insert uuid data model.deleteSyncDataRequests }
+            ( { model | deleteSyncDataRequests = Dict.insert uuid data model.deleteSyncDataRequests }
             , Cmd.none
             , []
             )
@@ -504,32 +795,32 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
         MsgSession sessionId subMsg ->
             let
                 session =
-                    EveryDict.get sessionId model.editableSessions
+                    Dict.get sessionId model.editableSessions
                         |> Maybe.withDefault NotAsked
                         |> RemoteData.map (.offlineSession >> .session)
                         |> RemoteData.toMaybe
 
                 requests =
-                    EveryDict.get sessionId model.sessionRequests
+                    Dict.get sessionId model.sessionRequests
                         |> Maybe.withDefault Backend.Session.Model.emptyModel
 
                 ( subModel, subCmd ) =
                     Backend.Session.Update.update nurseId sessionId session currentDate subMsg requests
             in
-            ( { model | sessionRequests = EveryDict.insert sessionId subModel model.sessionRequests }
+            ( { model | sessionRequests = Dict.insert sessionId subModel model.sessionRequests }
             , Cmd.map (MsgSession sessionId) subCmd
             , []
             )
 
         PostPmtctParticipant data ->
-            ( { model | postPmtctParticipant = EveryDict.insert data.child Loading model.postPmtctParticipant }
+            ( { model | postPmtctParticipant = Dict.insert data.child Loading model.postPmtctParticipant }
             , sw.post pmtctParticipantEndpoint data
                 |> toCmd (RemoteData.fromResult >> HandlePostedPmtctParticipant data.child)
             , []
             )
 
         HandlePostedPmtctParticipant id data ->
-            ( { model | postPmtctParticipant = EveryDict.insert id data model.postPmtctParticipant }
+            ( { model | postPmtctParticipant = Dict.insert id data model.postPmtctParticipant }
             , Cmd.none
             , []
             )
@@ -564,11 +855,11 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                 -- enough so that, if we're in the middle of a group encounter,
                 -- the child will be expected at that group encounter.
                 defaultStartDate =
-                    EveryDict.get normalized.relatedTo model.people
+                    Dict.get normalized.relatedTo model.people
                         |> Maybe.withDefault NotAsked
                         |> RemoteData.toMaybe
                         |> Maybe.andThen .birthDate
-                        |> Maybe.withDefault (Time.Date.addDays -28 currentDate)
+                        |> Maybe.withDefault (Date.add Days -28 currentDate)
 
                 defaultAdultActivities =
                     case normalized.relatedBy of
@@ -589,7 +880,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                         , relatedTo = Just normalized.relatedTo
                         }
                         |> toTask
-                        |> Task.map (.items >> EveryDictList.fromList)
+                        |> Task.map (.items >> Dict.fromList)
 
                 query2 =
                     sw.select relationshipEndpoint
@@ -597,11 +888,11 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                         , relatedTo = Just normalized.person
                         }
                         |> toTask
-                        |> Task.map (.items >> EveryDictList.fromList)
+                        |> Task.map (.items >> Dict.fromList)
 
                 existingRelationship =
-                    Task.map2 EveryDictList.union query1 query2
-                        |> Task.map EveryDictList.head
+                    Task.map2 Dict.union query1 query2
+                        |> Task.map (Dict.toList >> List.head)
 
                 relationshipCmd =
                     existingRelationship
@@ -631,7 +922,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                         |> RemoteData.fromTask
                         |> Task.perform (HandlePostedRelationship personId)
             in
-            ( { model | postRelationship = EveryDict.insert personId Loading model.postRelationship }
+            ( { model | postRelationship = Dict.insert personId Loading model.postRelationship }
             , relationshipCmd
             , []
             )
@@ -650,7 +941,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                             )
                         |> RemoteData.withDefault []
             in
-            ( { model | postRelationship = EveryDict.insert personId data model.postRelationship }
+            ( { model | postRelationship = Dict.insert personId data model.postRelationship }
             , Cmd.none
             , appMsgs
             )
@@ -702,6 +993,36 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                         |> RemoteData.withDefault []
             in
             ( { model | postPerson = data }
+            , Cmd.none
+            , appMsgs
+            )
+
+        PatchPerson personId person ->
+            ( { model | postPerson = Loading }
+            , sw.patchFull personEndpoint personId person
+                |> toCmd (RemoteData.fromResult >> HandlePatchedPerson personId)
+            , []
+            )
+
+        HandlePatchedPerson personId data ->
+            let
+                appMsgs =
+                    -- If we succeed, we reset the form, and go to the page
+                    -- showing the new person.
+                    data
+                        |> RemoteData.map
+                            (\person ->
+                                [ Pages.Person.Model.ResetEditForm
+                                    |> App.Model.MsgPageEditPerson
+                                    |> App.Model.MsgLoggedIn
+                                , PersonPage personId
+                                    |> UserPage
+                                    |> App.Model.SetActivePage
+                                ]
+                            )
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postPerson = Success personId }
             , Cmd.none
             , appMsgs
             )
@@ -779,7 +1100,7 @@ handleRevision revision (( model, recalc ) as noChange) =
         AttendanceRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId
-                (\measurements -> { measurements | attendances = EveryDictList.insert uuid data measurements.attendances })
+                (\measurements -> { measurements | attendances = Dict.insert uuid data measurements.attendances })
                 model
             , True
             )
@@ -798,7 +1119,7 @@ handleRevision revision (( model, recalc ) as noChange) =
         ChildNutritionRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | nutritions = EveryDictList.insert uuid data measurements.nutritions })
+                (\measurements -> { measurements | nutritions = Dict.insert uuid data measurements.nutritions })
                 model
             , True
             )
@@ -806,7 +1127,7 @@ handleRevision revision (( model, recalc ) as noChange) =
         ClinicRevision uuid data ->
             let
                 clinics =
-                    RemoteData.map (EveryDictList.insert uuid data) model.clinics
+                    RemoteData.map (Dict.insert uuid data) model.clinics
             in
             ( { model | clinics = clinics }
             , recalc
@@ -829,7 +1150,7 @@ handleRevision revision (( model, recalc ) as noChange) =
         CounselingSessionRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | counselingSessions = EveryDictList.insert uuid data measurements.counselingSessions })
+                (\measurements -> { measurements | counselingSessions = Dict.insert uuid data measurements.counselingSessions })
                 model
             , True
             )
@@ -850,7 +1171,7 @@ handleRevision revision (( model, recalc ) as noChange) =
         FamilyPlanningRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId
-                (\measurements -> { measurements | familyPlannings = EveryDictList.insert uuid data measurements.familyPlannings })
+                (\measurements -> { measurements | familyPlannings = Dict.insert uuid data measurements.familyPlannings })
                 model
             , True
             )
@@ -858,7 +1179,7 @@ handleRevision revision (( model, recalc ) as noChange) =
         HealthCenterRevision uuid data ->
             let
                 healthCenters =
-                    RemoteData.map (EveryDictList.insert uuid data) model.healthCenters
+                    RemoteData.map (Dict.insert uuid data) model.healthCenters
             in
             ( { model | healthCenters = healthCenters }
             , recalc
@@ -867,7 +1188,7 @@ handleRevision revision (( model, recalc ) as noChange) =
         HeightRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | heights = EveryDictList.insert uuid data measurements.heights })
+                (\measurements -> { measurements | heights = Dict.insert uuid data measurements.heights })
                 model
             , True
             )
@@ -899,7 +1220,7 @@ handleRevision revision (( model, recalc ) as noChange) =
         MuacRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | muacs = EveryDictList.insert uuid data measurements.muacs })
+                (\measurements -> { measurements | muacs = Dict.insert uuid data measurements.muacs })
                 model
             , True
             )
@@ -935,20 +1256,20 @@ handleRevision revision (( model, recalc ) as noChange) =
         ParticipantConsentRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId
-                (\measurements -> { measurements | consents = EveryDictList.insert uuid data measurements.consents })
+                (\measurements -> { measurements | consents = Dict.insert uuid data measurements.consents })
                 model
             , True
             )
 
         ParticipantFormRevision uuid data ->
-            ( { model | participantForms = RemoteData.map (EveryDictList.insert uuid data) model.participantForms }
+            ( { model | participantForms = RemoteData.map (Dict.insert uuid data) model.participantForms }
             , True
             )
 
         PersonRevision uuid data ->
             let
                 people =
-                    EveryDict.update uuid (Maybe.map (always (Success data))) model.people
+                    Dict.update uuid (Maybe.map (always (Success data))) model.people
             in
             ( { model
                 | personSearches = Dict.empty
@@ -960,7 +1281,7 @@ handleRevision revision (( model, recalc ) as noChange) =
         PhotoRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | photos = EveryDictList.insert uuid data measurements.photos })
+                (\measurements -> { measurements | photos = Dict.insert uuid data measurements.photos })
                 model
             , True
             )
@@ -969,14 +1290,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             ( { model
                 | expectedSessions =
                     model.expectedSessions
-                        |> EveryDict.remove data.child
-                        |> EveryDict.remove data.adult
+                        |> Dict.remove data.child
+                        |> Dict.remove data.adult
                 , expectedParticipants =
-                    EveryDict.empty
+                    Dict.empty
                 , participantsByPerson =
                     model.participantsByPerson
-                        |> EveryDict.remove data.child
-                        |> EveryDict.remove data.adult
+                        |> Dict.remove data.child
+                        |> Dict.remove data.adult
               }
             , True
             )
@@ -1036,7 +1357,7 @@ handleRevision revision (( model, recalc ) as noChange) =
             )
 
         RelationshipRevision uuid data ->
-            ( { model | relationshipsByPerson = EveryDict.empty }
+            ( { model | relationshipsByPerson = Dict.empty }
             , True
             )
 
@@ -1055,14 +1376,14 @@ handleRevision revision (( model, recalc ) as noChange) =
                 -- place.
                 sessionsByClinic =
                     model.sessionsByClinic
-                        |> EveryDict.map (always (RemoteData.map (EveryDictList.remove uuid)))
-                        |> EveryDict.update data.clinicId (Maybe.map (RemoteData.map (EveryDictList.insert uuid data)))
+                        |> Dict.map (always (RemoteData.map (Dict.remove uuid)))
+                        |> Dict.update data.clinicId (Maybe.map (RemoteData.map (Dict.insert uuid data)))
             in
             ( { model
                 | sessionsByClinic = sessionsByClinic
-                , expectedParticipants = EveryDict.remove uuid model.expectedParticipants
-                , expectedSessions = EveryDict.empty
-                , sessions = EveryDict.insert uuid (Success data) model.sessions
+                , expectedParticipants = Dict.remove uuid model.expectedParticipants
+                , expectedSessions = Dict.empty
+                , sessions = Dict.insert uuid (Success data) model.sessions
               }
             , True
             )
@@ -1086,7 +1407,7 @@ handleRevision revision (( model, recalc ) as noChange) =
         WeightRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | weights = EveryDictList.insert uuid data measurements.weights })
+                (\measurements -> { measurements | weights = Dict.insert uuid data measurements.weights })
                 model
             , True
             )
@@ -1104,242 +1425,281 @@ existing types).
 makeEditableSession : SessionId -> ModelIndexedDb -> WebData EditableSession
 makeEditableSession sessionId db =
     let
-        sessionData =
-            EveryDict.get sessionId db.sessions
-                |> Maybe.withDefault NotAsked
+        hasNoSuccessValues dict =
+            dict
+                |> Dict.values
+                |> List.filter (\v -> RemoteData.isLoading v || RemoteData.isNotAsked v)
+                |> List.isEmpty
+                |> not
 
-        allParticipantFormsData =
-            db.participantForms
+        hasMothersMeasurementsNotSuccess =
+            hasNoSuccessValues db.motherMeasurements
 
-        everyCounselingScheduleData =
-            db.everyCounselingSchedule
-
-        participantsData =
-            EveryDict.get sessionId db.expectedParticipants
-                |> Maybe.withDefault NotAsked
-
-        mothersData =
-            RemoteData.andThen
-                (\participants ->
-                    EveryDict.keys participants.byMotherId
-                        |> List.map
-                            (\id ->
-                                EveryDict.get id db.people
-                                    |> Maybe.withDefault NotAsked
-                                    |> RemoteData.map (\data -> ( id, data ))
-                            )
-                        |> RemoteData.fromList
-                        |> RemoteData.map (EveryDictList.fromList >> EveryDictList.sortBy .name)
-                )
-                participantsData
-
-        childrenData =
-            RemoteData.andThen
-                (\participants ->
-                    EveryDict.keys participants.byChildId
-                        |> List.map
-                            (\id ->
-                                EveryDict.get id db.people
-                                    |> Maybe.withDefault NotAsked
-                                    |> RemoteData.map (\data -> ( id, data ))
-                            )
-                        |> RemoteData.fromList
-                        |> RemoteData.map EveryDictList.fromList
-                )
-                participantsData
-
-        childMeasurementListData =
-            RemoteData.andThen
-                (\children ->
-                    EveryDictList.keys children
-                        |> List.map
-                            (\childId ->
-                                EveryDict.get childId db.childMeasurements
-                                    |> Maybe.withDefault NotAsked
-                                    |> RemoteData.map (\data -> ( childId, data ))
-                            )
-                        |> RemoteData.fromList
-                        |> RemoteData.map EveryDict.fromList
-                )
-                childrenData
-
-        adultMeasurementListData =
-            RemoteData.andThen
-                (\mothers ->
-                    EveryDictList.keys mothers
-                        |> List.map
-                            (\motherId ->
-                                EveryDict.get motherId db.motherMeasurements
-                                    |> Maybe.withDefault NotAsked
-                                    |> RemoteData.map (\data -> ( motherId, data ))
-                            )
-                        |> RemoteData.fromList
-                        |> RemoteData.map EveryDict.fromList
-                )
-                mothersData
-
-        childMeasurementsSplitData =
-            RemoteData.map (\list -> lazy <| \_ -> splitChildMeasurements sessionId list) childMeasurementListData
-
-        adultMeasurementsSplitData =
-            RemoteData.map (\list -> lazy <| \_ -> splitMotherMeasurements sessionId list) adultMeasurementListData
-
-        historicalMeasurementData =
-            RemoteData.map2 HistoricalMeasurements adultMeasurementListData childMeasurementListData
-
-        currentAndPrevious =
-            RemoteData.map2
-                (Lazy.map2
-                    (\childData motherData ->
-                        { current =
-                            { mothers = EveryDict.map (always .current) motherData
-                            , children = EveryDict.map (always .current) childData
-                            }
-                        , previous =
-                            { mothers = EveryDict.map (always .previous) motherData
-                            , children = EveryDict.map (always .previous) childData
-                            }
-                        }
-                    )
-                )
-                childMeasurementsSplitData
-                adultMeasurementsSplitData
-
-        currentMeasurementData =
-            RemoteData.map (Lazy.map .current) currentAndPrevious
-
-        previousMeasurementData =
-            RemoteData.map (Lazy.map .previous) currentAndPrevious
-
-        measurementData =
-            RemoteData.map3
-                (\historical ->
-                    Lazy.map2
-                        (\current previous ->
-                            { historical = historical
-                            , current = current
-                            , previous = previous
-                            }
-                        )
-                )
-                historicalMeasurementData
-                currentMeasurementData
-                previousMeasurementData
-
-        offlineSession =
-            RemoteData.map OfflineSession sessionData
-                |> RemoteData.andMap allParticipantFormsData
-                |> RemoteData.andMap everyCounselingScheduleData
-                |> RemoteData.andMap participantsData
-                |> RemoteData.andMap mothersData
-                |> RemoteData.andMap childrenData
-                |> RemoteData.andMap measurementData
+        hasChildrenMeasurementsNotSuccess =
+            hasNoSuccessValues db.childMeasurements
     in
-    RemoteData.map
-        (\offline ->
-            let
-                checkedIn =
-                    lazy <|
-                        \_ -> cacheCheckedIn offline
+    -- Make sure we don't still have measurements being lazy loaded. If we do, allow rebuilding the
+    -- `EditableSession`.
+    if hasMothersMeasurementsNotSuccess || hasChildrenMeasurementsNotSuccess then
+        Loading
 
-                summaryByParticipant =
-                    Lazy.map (summarizeByParticipant offline) checkedIn
+    else
+        let
+            sessionData =
+                Dict.get sessionId db.sessions
+                    |> Maybe.withDefault NotAsked
 
-                summaryByActivity =
-                    Lazy.map (summarizeByActivity offline) checkedIn
-            in
-            { offlineSession = offline
-            , update = NotAsked
-            , checkedIn = checkedIn
-            , summaryByParticipant = summaryByParticipant
-            , summaryByActivity = summaryByActivity
-            }
-        )
-        offlineSession
+            allParticipantFormsData =
+                db.participantForms
+
+            everyCounselingScheduleData =
+                db.everyCounselingSchedule
+
+            participantsData =
+                Dict.get sessionId db.expectedParticipants
+                    |> Maybe.withDefault NotAsked
+
+            mothersData =
+                RemoteData.andThen
+                    (\participants ->
+                        Dict.keys participants.byMotherId
+                            |> List.map
+                                (\id ->
+                                    Dict.get id db.people
+                                        |> Maybe.withDefault NotAsked
+                                        |> RemoteData.map (\data -> ( id, data ))
+                                )
+                            |> RemoteData.fromList
+                            |> RemoteData.map (List.sortBy (Tuple.second >> .name) >> Dict.fromList)
+                    )
+                    participantsData
+
+            childrenData =
+                RemoteData.andThen
+                    (\participants ->
+                        Dict.keys participants.byChildId
+                            |> List.map
+                                (\id ->
+                                    Dict.get id db.people
+                                        |> Maybe.withDefault NotAsked
+                                        |> RemoteData.map (\data -> ( id, data ))
+                                )
+                            |> RemoteData.fromList
+                            |> RemoteData.map Dict.fromList
+                    )
+                    participantsData
+
+            measurementData =
+                Success NotNeeded
+
+            offlineSession =
+                RemoteData.map OfflineSession sessionData
+                    |> RemoteData.andMap allParticipantFormsData
+                    |> RemoteData.andMap everyCounselingScheduleData
+                    |> RemoteData.andMap participantsData
+                    |> RemoteData.andMap mothersData
+                    |> RemoteData.andMap childrenData
+                    |> RemoteData.andMap measurementData
+
+            ( previousCheckedIn, previousSummaryByParticipant, previousSummaryByActivity ) =
+                Dict.get sessionId db.editableSessions
+                    |> Maybe.andThen RemoteData.toMaybe
+                    |> Maybe.map
+                        (\editableSessions ->
+                            ( LocalData.setRecalculate editableSessions.checkedIn
+                            , LocalData.setRecalculate editableSessions.summaryByParticipant
+                            , LocalData.setRecalculate editableSessions.summaryByActivity
+                            )
+                        )
+                    |> Maybe.withDefault ( NotNeeded, NotNeeded, NotNeeded )
+        in
+        RemoteData.map
+            (\offline ->
+                { offlineSession = offline
+                , update = NotAsked
+                , checkedIn = previousCheckedIn
+                , summaryByParticipant = previousSummaryByParticipant
+                , summaryByActivity = previousSummaryByActivity
+                }
+            )
+            offlineSession
 
 
 {-| Summarize our data for the editable session in a way that is useful
 for our UI, when we're focused on participants. This only considers children &
 mothers who are checked in to the session.
 -}
-summarizeByParticipant : OfflineSession -> CheckedIn -> SummaryByParticipant
-summarizeByParticipant session checkedIn =
-    let
-        children =
-            EveryDictList.map
-                (\childId _ -> summarizeChildParticipant childId session)
-                checkedIn.children
+summarizeByParticipant : OfflineSession -> LocalData CheckedIn -> LocalData SummaryByParticipant
+summarizeByParticipant session checkedIn_ =
+    LocalData.map
+        (\checkedIn ->
+            let
+                children =
+                    Dict.map
+                        (\childId _ -> summarizeChildParticipant childId session)
+                        checkedIn.children
 
-        mothers =
-            EveryDictList.map
-                (\motherId _ -> summarizeMotherParticipant motherId session)
-                checkedIn.mothers
-    in
-    { children = children
-    , mothers = mothers
-    }
+                mothers =
+                    Dict.map
+                        (\motherId _ -> summarizeMotherParticipant motherId session)
+                        checkedIn.mothers
+            in
+            { children = children
+            , mothers = mothers
+            }
+        )
+        checkedIn_
 
 
 {-| Summarize our data for the editable session in a way that is useful
 for our UI, when we're focused on activities. This only considers children &
 mothers who are checked in to the session.
 -}
-summarizeByActivity : OfflineSession -> CheckedIn -> SummaryByActivity
-summarizeByActivity session checkedIn =
-    let
-        children =
-            getAllChildActivities
-                |> List.map
-                    (\activity ->
-                        ( activity
-                        , summarizeChildActivity activity session checkedIn
-                        )
-                    )
-                |> EveryDict.fromList
+summarizeByActivity : OfflineSession -> LocalData CheckedIn -> LocalData SummaryByActivity
+summarizeByActivity session checkedIn_ =
+    LocalData.map
+        (\checkedIn ->
+            let
+                children =
+                    getAllChildActivities
+                        |> List.map
+                            (\activity ->
+                                ( activity
+                                , summarizeChildActivity activity session checkedIn
+                                )
+                            )
+                        |> Dict.fromList
 
-        mothers =
-            getAllMotherActivities
-                |> List.map
-                    (\activity ->
-                        ( activity
-                        , summarizeMotherActivity activity session checkedIn
-                        )
-                    )
-                |> EveryDict.fromList
-    in
-    { children = children
-    , mothers = mothers
-    }
+                mothers =
+                    getAllMotherActivities
+                        |> List.map
+                            (\activity ->
+                                ( activity
+                                , summarizeMotherActivity activity session checkedIn
+                                )
+                            )
+                        |> Dict.fromList
+            in
+            { children = children
+            , mothers = mothers
+            }
+        )
+        checkedIn_
 
 
 {-| Who is checked in, considering both explicit check in and anyone who has
 any completed activity?
 
-Don't call this directly ... we store it lazily on EditableSession.checkedIn.
-Ideally, we'd move it there and not expose it, but we'd have to rearrange a
-bunch of stuff to avoid circular imports.
+It depends on Measurements at OfflineSession being fully loaded,
+and for this reason we start with 'LocalData.map'
 
 -}
-cacheCheckedIn : OfflineSession -> CheckedIn
+cacheCheckedIn : OfflineSession -> LocalData CheckedIn
 cacheCheckedIn session =
-    let
-        -- A mother is checked in if explicitly checked in or has any completed
-        -- activites.
-        mothers =
-            EveryDictList.filter
-                (\motherId _ -> motherIsCheckedIn motherId session)
-                session.mothers
+    LocalData.map
+        (\_ ->
+            let
+                -- A mother is checked in if explicitly checked in or has any completed
+                -- activities.
+                mothers =
+                    Dict.filter
+                        (\motherId _ -> motherIsCheckedIn motherId session)
+                        session.mothers
 
-        -- A child is checked in if the mother is checked in.
-        children =
-            EveryDictList.filter
-                (\childId _ ->
-                    getMyMother childId session
-                        |> Maybe.map (\( motherId, _ ) -> EveryDictList.member motherId mothers)
-                        |> Maybe.withDefault False
+                -- A child is checked in if the mother is checked in.
+                children =
+                    Dict.filter
+                        (\childId _ ->
+                            getMyMother childId session
+                                |> Maybe.map (\( motherId, _ ) -> Dict.member motherId mothers)
+                                |> Maybe.withDefault False
+                        )
+                        session.children
+            in
+            { mothers = mothers
+            , children = children
+            }
+        )
+        session.measurements
+
+
+calculateOfflineSessionMeasurements :
+    SessionId
+    -> OfflineSession
+    -> ModelIndexedDb
+    ->
+        LocalData
+            { historical : HistoricalMeasurements
+            , current : Measurements
+            , previous : Measurements
+            }
+calculateOfflineSessionMeasurements sessionId offlineSession db =
+    let
+        childMeasurementListData =
+            Dict.keys offlineSession.children
+                |> List.map
+                    (\childId ->
+                        Dict.get childId db.childMeasurements
+                            |> Maybe.withDefault NotAsked
+                            |> RemoteData.map (\data -> ( childId, data ))
+                    )
+                |> List.filter RemoteData.isSuccess
+                |> RemoteData.fromList
+                |> RemoteData.map Dict.fromList
+
+        adultMeasurementListData =
+            Dict.keys offlineSession.mothers
+                |> List.map
+                    (\motherId ->
+                        Dict.get motherId db.motherMeasurements
+                            |> Maybe.withDefault NotAsked
+                            |> RemoteData.map (\data -> ( motherId, data ))
+                    )
+                |> List.filter RemoteData.isSuccess
+                |> RemoteData.fromList
+                |> RemoteData.map Dict.fromList
+
+        childMeasurementsSplitData =
+            RemoteData.map (\list -> splitChildMeasurements sessionId list) childMeasurementListData
+
+        adultMeasurementsSplitData =
+            RemoteData.map (\list -> splitMotherMeasurements sessionId list) adultMeasurementListData
+
+        historicalMeasurementData =
+            RemoteData.map2 HistoricalMeasurements adultMeasurementListData childMeasurementListData
+
+        currentAndPrevious =
+            RemoteData.map2
+                (\childData motherData ->
+                    { current =
+                        { mothers = Dict.map (always .current) motherData
+                        , children = Dict.map (always .current) childData
+                        }
+                    , previous =
+                        { mothers = Dict.map (always .previous) motherData
+                        , children = Dict.map (always .previous) childData
+                        }
+                    }
                 )
-                session.children
+                childMeasurementsSplitData
+                adultMeasurementsSplitData
+
+        currentMeasurementData =
+            RemoteData.map .current currentAndPrevious
+
+        previousMeasurementData =
+            RemoteData.map .previous currentAndPrevious
     in
-    { mothers = mothers
-    , children = children
-    }
+    RemoteData.map3
+        (\historical current previous ->
+            Ready
+                { historical = historical
+                , current = current
+                , previous = previous
+                }
+                NoRecalculate
+        )
+        historicalMeasurementData
+        currentMeasurementData
+        previousMeasurementData
+        |> RemoteData.withDefault NotNeeded

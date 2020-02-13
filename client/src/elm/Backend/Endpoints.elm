@@ -53,7 +53,7 @@ swEndpoint path decodeValue =
         decodeKey =
             Json.Decode.map toEntityUuid (field "uuid" Json.Decode.string)
     in
-    endpoint path decodeKey decodeValue drupalBackend
+    endpoint path decodeKey decodeValue fromEntityUuid drupalBackend
         |> withKeyEncoder fromEntityUuid
 
 

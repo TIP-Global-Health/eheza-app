@@ -1,6 +1,7 @@
 module Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getMotherForm)
 
 import Activity.Utils exposing (expectCounselingActivity, expectParticipantConsent)
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
@@ -9,7 +10,7 @@ import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasure
 import EveryDict
 import EveryDictList
 import EverySet
-import Lazy exposing (force)
+import LocalData
 import Measurement.Model exposing (..)
 import Pages.Session.Model
 
@@ -45,13 +46,13 @@ fromChildMeasurementData data =
         data
             |> mapMeasurementData .height
             |> currentValue
-            |> Maybe.map (.value >> (\(HeightInCm cm) -> toString cm))
+            |> Maybe.map (.value >> (\(HeightInCm cm) -> String.fromFloat cm))
             |> Maybe.withDefault ""
     , muac =
         data
             |> mapMeasurementData .muac
             |> currentValue
-            |> Maybe.map (.value >> (\(MuacInCm cm) -> toString cm))
+            |> Maybe.map (.value >> (\(MuacInCm cm) -> String.fromFloat cm))
             |> Maybe.withDefault ""
     , nutritionSigns =
         data
@@ -73,7 +74,7 @@ fromChildMeasurementData data =
         data
             |> mapMeasurementData .weight
             |> currentValue
-            |> Maybe.map (.value >> (\(WeightInKg kg) -> toString kg))
+            |> Maybe.map (.value >> (\(WeightInKg kg) -> String.fromFloat kg))
             |> Maybe.withDefault ""
     }
 
@@ -90,7 +91,7 @@ fromMotherMeasurementData data =
                 |> currentValues
                 |> List.map (Tuple.second >> .value >> .formId)
                 |> List.map (\formId -> ( formId, completedParticipantFormProgress ))
-                |> EveryDict.fromList
+                |> Dict.fromList
     in
     { familyPlanningSigns =
         data
@@ -99,7 +100,7 @@ fromMotherMeasurementData data =
             |> Maybe.map .value
             |> Maybe.withDefault EverySet.empty
     , participantConsent =
-        { expected = EveryDictList.empty
+        { expected = Dict.empty
         , view = Nothing
         , progress = progress
         }
@@ -110,53 +111,57 @@ getMotherForm : PersonId -> Pages.Session.Model.Model -> EditableSession -> Mode
 getMotherForm motherId pages session =
     -- Could use `Maybe.withDefault` here instead, but then
     -- `fromMotherMeasurementData` would get calculated every time
-    case EveryDict.get motherId pages.motherForms of
+    case Dict.get motherId pages.motherForms of
         Just motherForm ->
             motherForm
 
         Nothing ->
             getMotherMeasurementData motherId session
-                |> force
-                |> fromMotherMeasurementData
-                |> (\form ->
-                        { form
-                            | participantConsent =
-                                { expected = expectParticipantConsent session motherId
-                                , view = Nothing
-                                , progress = form.participantConsent.progress
+                |> LocalData.unwrap
+                    emptyModelMother
+                    (fromMotherMeasurementData
+                        >> (\form ->
+                                { form
+                                    | participantConsent =
+                                        { expected = expectParticipantConsent session motherId
+                                        , view = Nothing
+                                        , progress = form.participantConsent.progress
+                                        }
                                 }
-                        }
-                   )
+                           )
+                    )
 
 
 getChildForm : PersonId -> Pages.Session.Model.Model -> EditableSession -> ModelChild
 getChildForm childId pages session =
     -- Could use `Maybe.withDefault` here instead, but then
     -- `fromChildMeasurementData` would get calculated every time
-    case EveryDict.get childId pages.childForms of
+    case Dict.get childId pages.childForms of
         Just childForm ->
             childForm
 
         Nothing ->
             getChildMeasurementData childId session
-                |> force
-                |> fromChildMeasurementData
-                |> (\form ->
-                        -- We need some special logic for the counseling
-                        -- session, to fill in the correct kind of session.
-                        -- This seems to be the best place to do that, though
-                        -- that may need some more thinking at some point.
-                        case form.counseling of
-                            Just _ ->
-                                form
+                |> LocalData.unwrap
+                    emptyModelChild
+                    (fromChildMeasurementData
+                        >> (\form ->
+                                -- We need some special logic for the counseling
+                                -- session, to fill in the correct kind of session.
+                                -- This seems to be the best place to do that, though
+                                -- that may need some more thinking at some point.
+                                case form.counseling of
+                                    Just _ ->
+                                        form
 
-                            Nothing ->
-                                { form
-                                    | counseling =
-                                        expectCounselingActivity session childId
-                                            |> Maybe.map
-                                                (\timing ->
-                                                    ( timing, EverySet.empty )
-                                                )
-                                }
-                   )
+                                    Nothing ->
+                                        { form
+                                            | counseling =
+                                                expectCounselingActivity session childId
+                                                    |> Maybe.map
+                                                        (\timing ->
+                                                            ( timing, EverySet.empty )
+                                                        )
+                                        }
+                           )
+                    )

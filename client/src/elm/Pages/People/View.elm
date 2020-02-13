@@ -1,13 +1,10 @@
 module Pages.People.View exposing (view)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Form exposing (ExpectedAge(..))
-import Backend.Person.Model exposing (Person, RegistrationInitiator(..))
+import Backend.Person.Model exposing (ExpectedAge(..), Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
-import Dict
-import EveryDict
-import EveryDictList
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -39,7 +36,7 @@ view language currentDate relation model db =
         title =
             case relation of
                 Just relationId ->
-                    EveryDict.get relationId db.people
+                    Dict.get relationId db.people
                         |> Maybe.withDefault NotAsked
                         |> RemoteData.map .name
                         |> RemoteData.withDefault (fromEntityUuid relationId)
@@ -99,7 +96,7 @@ viewSearchForm language currentDate relation model db =
 
         relatedPerson =
             relation
-                |> Maybe.andThen (\id -> EveryDict.get id db.people)
+                |> Maybe.andThen (\id -> Dict.get id db.people)
                 |> Maybe.andThen RemoteData.toMaybe
 
         expectedAge =
@@ -153,13 +150,13 @@ viewSearchForm language currentDate relation model db =
                                 True
 
                             Just personId ->
-                                EveryDict.get personId db.relationshipsByPerson
+                                Dict.get personId db.relationshipsByPerson
                                     |> Maybe.andThen RemoteData.toMaybe
                                     |> unwrap
                                         True
                                         (\relatedPersionRelationships ->
                                             relatedPersionRelationships
-                                                |> EveryDictList.values
+                                                |> Dict.values
                                                 |> List.all
                                                     (\relationship ->
                                                         relationship.relatedTo /= filteredPersonId
@@ -169,7 +166,7 @@ viewSearchForm language currentDate relation model db =
                 Dict.get searchValue db.personSearches
                     |> Maybe.withDefault NotAsked
                     |> RemoteData.map
-                        (EveryDictList.filter
+                        (Dict.filter
                             (\k v ->
                                 -- Applying 3 conditionms explained above
                                 not (relation == Just k) && personTypeCondition v && personRelationCondition k
@@ -183,17 +180,17 @@ viewSearchForm language currentDate relation model db =
                 |> Maybe.withDefault emptyNode
 
         viewSummary data =
-            EveryDictList.length data
+            Dict.size data
                 |> Translate.ReportResultsOfSearch
                 |> translate language
                 |> text
 
         searchResultsParticipants =
             results
-                |> Maybe.withDefault (Success EveryDictList.empty)
-                |> RemoteData.withDefault EveryDictList.empty
-                |> EveryDictList.map (viewParticipant language currentDate relation db)
-                |> EveryDictList.values
+                |> Maybe.withDefault (Success Dict.empty)
+                |> RemoteData.withDefault Dict.empty
+                |> Dict.map (viewParticipant language currentDate relation db)
+                |> Dict.values
 
         searchHelper =
             case relation of

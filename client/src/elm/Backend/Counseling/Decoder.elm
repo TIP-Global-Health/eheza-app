@@ -1,10 +1,9 @@
 module Backend.Counseling.Decoder exposing (combineCounselingSchedules, decodeCounselingSchedule, decodeCounselingTiming, decodeCounselingTopic)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (..)
 import Backend.Entities exposing (..)
-import EveryDict exposing (EveryDict)
-import EveryDictList
-import Json.Decode exposing (..)
+import Json.Decode exposing (Decoder, andThen, fail, list, maybe, string, succeed)
 import Json.Decode.Pipeline exposing (..)
 import Restful.Endpoint exposing (decodeEntityUuid)
 import Translate.Model exposing (TranslationSet)
@@ -12,7 +11,7 @@ import Translate.Model exposing (TranslationSet)
 
 decodeCounselingTopic : Decoder CounselingTopic
 decodeCounselingTopic =
-    decode TranslationSet
+    succeed TranslationSet
         |> required "label" string
         |> required "kinyarwanda_title" (maybe string)
 
@@ -47,7 +46,7 @@ decodeCounselingTiming =
 
 decodeCounselingSchedule : Decoder CounselingSchedule
 decodeCounselingSchedule =
-    decode CounselingSchedule
+    succeed CounselingSchedule
         |> required "timing" decodeCounselingTiming
         |> required "topics" (list decodeEntityUuid)
 
@@ -55,7 +54,7 @@ decodeCounselingSchedule =
 {-| Combines multiple counseling schedule entities into a dictionary keyed by
 the timing. Multiple entities with the same timing are combined.
 -}
-combineCounselingSchedules : EveryDict CounselingTopicId CounselingTopic -> List CounselingSchedule -> EveryCounselingSchedule
+combineCounselingSchedules : Dict CounselingTopicId CounselingTopic -> List CounselingSchedule -> EveryCounselingSchedule
 combineCounselingSchedules allTopics =
     let
         go schedule =
@@ -65,12 +64,12 @@ combineCounselingSchedules allTopics =
                     schedule.topics
                         |> List.filterMap
                             (\id ->
-                                EveryDict.get id allTopics
+                                Dict.get id allTopics
                                     |> Maybe.map (\value -> ( id, value ))
                             )
-                        |> EveryDictList.fromList
+                        |> Dict.fromList
             in
-            EveryDict.update schedule.timing
+            Dict.update schedule.timing
                 (\existingTopics ->
                     case existingTopics of
                         Just existing ->
@@ -78,10 +77,10 @@ combineCounselingSchedules allTopics =
                             -- where we have more than one schedule for a
                             -- timing.
                             Just <|
-                                EveryDictList.union existing newTopics
+                                Dict.union existing newTopics
 
                         Nothing ->
                             Just newTopics
                 )
     in
-    List.foldl go EveryDict.empty
+    List.foldl go Dict.empty

@@ -1,6 +1,7 @@
 module Pages.ProgressReport.View exposing (view)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildMeasurementList, Height, HeightInCm(..), MuacInCm(..), MuacIndication(..), PhotoUrl(..), Weight, WeightInKg(..))
 import Backend.Measurement.Utils exposing (currentValue, currentValueWithId, mapMeasurementData, muacIndication)
@@ -9,17 +10,14 @@ import Backend.Person.Model exposing (Gender(..), Person)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (EditableSession, Session)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother, getMyMother)
-import Date.Extra
-import EveryDict
-import EveryDictList exposing (EveryDictList)
+import Date
 import EverySet
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (toLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Lazy exposing (force)
 import List.Extra exposing (greedyGroupsOf)
+import LocalData
 import Maybe.Extra
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
@@ -27,7 +25,7 @@ import Pages.Session.Model
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
-import Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate)
+import Utils.NominalDate exposing (Days(..), Months(..), diffDays, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), Length(..), ZScore)
 import ZScore.Utils exposing (zScoreLengthHeightForAge, zScoreWeightForAge)
@@ -40,11 +38,11 @@ view language zscores childId ( sessionId, session ) db =
         Just child ->
             let
                 childMeasurements =
-                    EveryDict.get childId db.childMeasurements
+                    Dict.get childId db.childMeasurements
                         |> Maybe.withDefault NotAsked
 
                 expectedSessions =
-                    EveryDict.get childId db.expectedSessions
+                    Dict.get childId db.expectedSessions
                         |> Maybe.withDefault NotAsked
             in
             viewWebData language
@@ -68,7 +66,7 @@ view language zscores childId ( sessionId, session ) db =
 {-| This function is more complex than one would like ... when reviewing the
 data model in future, it might be nice to take this function into account.
 -}
-viewFoundChild : Language -> ZScore.Model.Model -> ( PersonId, Person ) -> ( SessionId, EditableSession ) -> ( EveryDictList SessionId Session, ChildMeasurementList ) -> Html Pages.Session.Model.Msg
+viewFoundChild : Language -> ZScore.Model.Model -> ( PersonId, Person ) -> ( SessionId, EditableSession ) -> ( Dict SessionId Session, ChildMeasurementList ) -> Html Pages.Session.Model.Msg
 viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expectedSessions, historical ) =
     let
         backIcon =
@@ -108,7 +106,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                 |> Maybe.map Tuple.second
 
         relationText =
-            EveryDict.get childId session.offlineSession.participants.byChildId
+            Dict.get childId session.offlineSession.participants.byChildId
                 |> Maybe.withDefault []
                 |> List.head
                 |> Maybe.map
@@ -207,16 +205,18 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                 |> text
                             ]
                         , current
-                            |> force
-                            |> mapMeasurementData .nutrition
-                            |> currentValue
-                            |> Maybe.map .value
-                            |> Maybe.withDefault EverySet.empty
-                            |> EverySet.toList
-                            |> List.map (translate language << Translate.ChildNutritionSignReport)
-                            |> String.join ", "
-                            |> text
-                            |> List.singleton
+                            |> LocalData.unwrap
+                                []
+                                (mapMeasurementData .nutrition
+                                    >> currentValue
+                                    >> Maybe.map .value
+                                    >> Maybe.withDefault EverySet.empty
+                                    >> EverySet.toList
+                                    >> List.map (translate language << Translate.ChildNutritionSignReport)
+                                    >> String.join ", "
+                                    >> text
+                                    >> List.singleton
+                                )
                             |> td []
                         ]
                     ]
@@ -224,32 +224,25 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
 
         -- Do we have any kind of measurement for the child for the specified session?
         hasMeasurement ( id, _ ) =
-            EveryDict.member id heightValuesBySession
-                || EveryDict.member id muacValuesBySession
-                || EveryDict.member id weightValuesBySession
-                || EveryDict.member id nutritionValuesBySession
-                || EveryDict.member id photoValuesBySession
+            Dict.member id heightValuesBySession
+                || Dict.member id muacValuesBySession
+                || Dict.member id weightValuesBySession
+                || Dict.member id nutritionValuesBySession
+                || Dict.member id photoValuesBySession
 
         -- What's the last session for which we have some measurement?
         lastSessionWithMeasurement =
             expectedSessions
-                |> EveryDictList.toList
+                |> Dict.toList
                 |> List.reverse
                 |> List.Extra.find hasMeasurement
 
         sessionsSortFunc ( k1, v1 ) ( k2, v2 ) =
-            let
-                d1 =
-                    toLocalDateTime v1.startDate 0 0 0 0
-
-                d2 =
-                    toLocalDateTime v2.startDate 0 0 0 0
-            in
-            Date.Extra.compare d1 d2
+            Date.compare v1.startDate v2.startDate
 
         heightWeightMuacTable =
             expectedSessions
-                |> EveryDictList.toList
+                |> Dict.toList
                 |> List.sortWith sessionsSortFunc
                 |> List.reverse
                 |> greedyGroupsOf 6
@@ -280,7 +273,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                 groupOfSix
                                     |> List.map
                                         (\( id, _ ) ->
-                                            EveryDict.get id heightValuesBySession
+                                            Dict.get id heightValuesBySession
                                                 |> Maybe.map viewHeightWithIndication
                                                 |> Maybe.withDefault (text "--")
                                                 |> List.singleton
@@ -293,13 +286,13 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                 groupOfSix
                                     |> List.map
                                         (\( id, _ ) ->
-                                            EveryDict.get id muacValuesBySession
+                                            Dict.get id muacValuesBySession
                                                 |> Maybe.map .value
                                                 |> Maybe.map
                                                     (\((MuacInCm cm) as muac) ->
                                                         span
                                                             [ class <| classForIndication <| muacIndicationToIndication <| muacIndication muac ]
-                                                            [ text <| toString cm ++ translate language Translate.CentimeterShorthand ]
+                                                            [ text <| Debug.toString cm ++ translate language Translate.CentimeterShorthand ]
                                                     )
                                                 |> Maybe.withDefault (text "--")
                                                 |> List.singleton
@@ -328,7 +321,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                             |> Maybe.Extra.toList
 
                                     value =
-                                        toString cm ++ translate language Translate.CentimeterShorthand
+                                        Debug.toString cm ++ translate language Translate.CentimeterShorthand
                                 in
                                 span indication [ text value ]
 
@@ -352,7 +345,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                             |> Maybe.Extra.toList
 
                                     value =
-                                        toString kg ++ translate language Translate.KilogramShorthand
+                                        Debug.toString kg ++ translate language Translate.KilogramShorthand
                                 in
                                 span indication [ text value ]
 
@@ -360,7 +353,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                 groupOfSix
                                     |> List.map
                                         (\( id, _ ) ->
-                                            EveryDict.get id weightValuesBySession
+                                            Dict.get id weightValuesBySession
                                                 |> Maybe.map viewWeightWithIndication
                                                 |> Maybe.withDefault (text "--")
                                                 |> List.singleton
@@ -446,7 +439,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
         -- This includes any edits that have been saved locally, but not as-you=type
         -- in the UI before you hit "Save" or "Update".
         getValues func =
-            EveryDictList.values (func historical)
+            Dict.values (func historical)
 
         heightValues =
             getValues .heights
@@ -474,7 +467,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                             Nothing ->
                                 Nothing
                     )
-                |> EveryDict.fromList
+                |> Dict.fromList
 
         heightValuesBySession =
             indexBySession heightValues

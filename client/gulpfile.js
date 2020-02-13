@@ -3,7 +3,11 @@
 
 var gulp = require("gulp");
 
+var transform = require('gulp-transform');
+
 var gulpSequence = require('gulp-sequence');
+
+var uglify = require('gulp-uglify');
 
 // Loads the plugins without having to list all of them, but you need
 // to call them as $.pluginname
@@ -97,7 +101,7 @@ gulp.task("zscore", [], function() {
   };
 
   return gulp.src("src/assets/z-score/*.txt")
-    .pipe($.transform('utf8', function(content) {
+    .pipe(transform('utf8', function(content) {
       return new Promise((resolve, reject) => {
         csvParse(content, parseOptions, function(err, result) {
           if (err) {
@@ -115,7 +119,7 @@ gulp.task("zscore", [], function() {
     // And copy it to a place where the backend can also get it
     .pipe(gulp.dest('../server/hedley/modules/custom/hedley_zscore/json/'))
     // And turn the JSON into an Elm fixture for testing
-    .pipe($.transform('utf8', function(content, file) {
+    .pipe(transform('utf8', function(content, file) {
       var moduleName = capitalize(path.basename(file.path, '.json'));
       return `module ZScore.Fixture.${moduleName} exposing (..)\n\n\njson : String\njson =\n    """${content}"""`;
     })).pipe($.rename(function(path) {
@@ -231,8 +235,7 @@ gulp.task("minify", ["styles", "zscore", "copy:images", "copy:favicon"],
       // Concatenate JavaScript files and preserve important comments.
       // DropZone had a problem if we mangle
       // ... see <https://github.com/rowanwins/vue-dropzone/issues/119>
-      .pipe($.if("*.js", $.uglify({
-        preserveComments: "some",
+      .pipe($.if("*.js", uglify({
         mangle: false
       }))).on('error', function(err) {
         console.error(err);

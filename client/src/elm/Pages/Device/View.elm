@@ -1,10 +1,12 @@
 module Pages.Device.View exposing (view)
 
 import App.Model
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.SyncData.Model exposing (SyncData)
+import Date
 import Device.Model exposing (..)
 import EveryDictList
 import Gizra.Html exposing (emptyNode, showMaybe)
@@ -15,6 +17,7 @@ import Pages.Device.Model exposing (..)
 import Pages.Page exposing (Page(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
+import Time
 import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner)
 import Utils.WebData exposing (viewError)
@@ -59,7 +62,7 @@ view language device app model =
 viewDeviceStatus : Language -> WebData Device -> App.Model.Model -> Model -> Html Msg
 viewDeviceStatus language device app model =
     case device of
-        Success device ->
+        Success _ ->
             div [ class "device-status" ]
                 [ button
                     [ class "ui fluid primary button"
@@ -103,7 +106,7 @@ viewNodes language db =
     case db.syncData of
         Success syncData ->
             syncData
-                |> EveryDictList.get nodesUuid
+                |> Dict.get nodesUuid
                 |> Maybe.map
                     (\data ->
                         div [ class "general-sync" ]
@@ -125,7 +128,74 @@ viewNodes language db =
 
 viewSyncData : Language -> SyncData -> Html Msg
 viewSyncData language data =
-    div [ class "general-status" ] [ text <| toString data ]
+    let
+        viewDateTime time =
+            let
+                normalize number =
+                    if number < 10 then
+                        "0" ++ String.fromInt number
+
+                    else
+                        String.fromInt number
+
+                year =
+                    Time.toYear Time.utc time |> String.fromInt
+
+                month =
+                    Time.toMonth Time.utc time
+                        |> Translate.ResolveMonth
+                        |> translate language
+
+                day =
+                    Time.toDay Time.utc time |> normalize
+
+                hour =
+                    Time.toHour Time.utc time |> normalize
+
+                minute =
+                    Time.toMinute Time.utc time |> normalize
+
+                second =
+                    Time.toSecond Time.utc time |> normalize
+            in
+            day ++ " " ++ month ++ " " ++ year ++ " " ++ hour ++ ":" ++ minute ++ ":" ++ second ++ " UTC"
+
+        viewAttempt attempt =
+            case attempt of
+                Backend.SyncData.Model.NotAsked ->
+                    "NotAsked"
+
+                Backend.SyncData.Model.Downloading _ _ ->
+                    "Downloading"
+
+                Backend.SyncData.Model.Uploading _ ->
+                    "Uploading"
+
+                Backend.SyncData.Model.Failure time error ->
+                    "Failure " ++ viewDateTime time ++ " " ++ Debug.toString error
+
+                Backend.SyncData.Model.Success ->
+                    "Success"
+
+        ( lastSuccessfulContact, remainingForDownload ) =
+            data.downloadStatus
+                |> Maybe.map
+                    (\downloadStatus ->
+                        ( viewDateTime downloadStatus.lastSuccessfulContact, downloadStatus.remaining |> String.fromInt )
+                    )
+                |> Maybe.withDefault ( "NA", "NA" )
+
+        remainingForUpload =
+            data.uploadStatus
+                |> Maybe.map (.remaining >> String.fromInt)
+                |> Maybe.withDefault "NA"
+    in
+    div [ class "general-status" ]
+        [ div [] [ text <| "Last Successful Contact: " ++ lastSuccessfulContact ]
+        , div [] [ text <| "Remaining for Upload: " ++ remainingForUpload ]
+        , div [] [ text <| "Remaining for Download: " ++ remainingForDownload ]
+        , div [] [ text <| "Status: " ++ viewAttempt data.attempt ]
+        ]
 
 
 viewHealthCenters : Language -> ModelIndexedDb -> Html Msg
@@ -134,25 +204,25 @@ viewHealthCenters language db =
         |> RemoteData.map
             (\data ->
                 data
-                    |> EveryDictList.sortBy .name
-                    |> EveryDictList.map (viewHealthCenter language db)
-                    |> EveryDictList.values
+                    |> Dict.toList
+                    |> List.sortBy (Tuple.second >> .name)
+                    |> List.map (viewHealthCenter language db)
                     |> div [ class "health-centers" ]
             )
         |> RemoteData.withDefault spinner
 
 
-viewHealthCenter : Language -> ModelIndexedDb -> HealthCenterId -> HealthCenter -> Html Msg
-viewHealthCenter language db uuid model =
+viewHealthCenter : Language -> ModelIndexedDb -> ( HealthCenterId, HealthCenter ) -> Html Msg
+viewHealthCenter language db ( uuid, model ) =
     let
         sync =
             db.syncData
                 |> RemoteData.map
                     (\syncData ->
-                        case EveryDictList.get uuid syncData of
+                        case Dict.get uuid syncData of
                             Just data ->
                                 div [ class "health-center-info" ]
-                                    [ text <| toString data
+                                    [ viewSyncData language data
                                     , button
                                         [ class "ui button"
                                         , onClick (SetSyncing uuid False)

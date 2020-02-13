@@ -1,4 +1,4 @@
-module Pages.Router exposing (delta2url, parseUrl)
+module Pages.Router exposing (activePageByUrl, pageToFragment)
 
 import Activity.Model exposing (Activity)
 import Activity.Utils
@@ -9,29 +9,32 @@ import Pages.Page exposing (..)
 import PrenatalActivity.Model exposing (PrenatalActivity)
 import PrenatalActivity.Utils
 import Restful.Endpoint exposing (EntityUuid, fromEntityUuid, toEntityUuid)
-import RouteUrl exposing (HistoryEntry(..), UrlChange)
-import UrlParser exposing ((</>), Parser, custom, int, map, oneOf, parseHash, s, string, top)
+import Url
+import Url.Parser as Parser exposing ((</>), Parser, custom, int, map, oneOf, s, string, top)
 
 
-{-| For now, we're given just the previous and current page ...if
-we need any additional information for routing at some point, the
-caller could provide it.
--}
-delta2url : Page -> Page -> Maybe UrlChange
-delta2url previous current =
+activePageByUrl : Url.Url -> Page
+activePageByUrl url =
+    { url | path = Maybe.withDefault "" url.fragment, fragment = Nothing }
+        |> Parser.parse parser
+        |> Maybe.withDefault (PageNotFound "Failed to resolve page by analysing URL")
+
+
+pageToFragment : Page -> Maybe String
+pageToFragment current =
     case current of
         DevicePage ->
-            Just <| UrlChange NewEntry "#device"
+            Just "device"
 
         PinCodePage ->
-            Just <| UrlChange NewEntry "#pincode"
+            Just "pincode"
 
         PageNotFound url ->
             -- If we couldn't interpret the URL, we don't try to change it.
             Nothing
 
         ServiceWorkerPage ->
-            Just <| UrlChange NewEntry "#deployment"
+            Just "deployment"
 
         -- These are pages that required a logged-in user
         UserPage userPage ->
@@ -46,7 +49,7 @@ delta2url previous current =
                                 |> Maybe.map (\id -> "/" ++ fromEntityUuid id)
                                 |> Maybe.withDefault ""
                     in
-                    Just <| UrlChange NewEntry ("#clinics" ++ clinic)
+                    Just ("clinics" ++ clinic)
 
                 ClinicalProgressReportPage prenatalEncounterId ->
                     Just <| UrlChange NewEntry <| "#clinical-progress-report/" ++ fromEntityUuid prenatalEncounterId
@@ -55,7 +58,7 @@ delta2url previous current =
                     Just <| UrlChange NewEntry <| "#demographics-report/" ++ fromEntityUuid prenatalEncounterId
 
                 MyAccountPage ->
-                    Just <| UrlChange NewEntry "#my-account"
+                    Just "my-account"
 
                 CreatePersonPage relationId _ ->
                     let
@@ -64,22 +67,25 @@ delta2url previous current =
                                 |> Maybe.map (\id -> "/" ++ fromEntityUuid id)
                                 |> Maybe.withDefault ""
                     in
-                    Just <| UrlChange NewEntry ("#person/new" ++ relation)
+                    Just ("person/new" ++ relation)
+
+                EditPersonPage id ->
+                    Just ("person/" ++ fromEntityUuid id ++ "/edit")
 
                 PersonPage id ->
-                    Just <| UrlChange NewEntry <| "#person/" ++ fromEntityUuid id
+                    Just ("person/" ++ fromEntityUuid id)
 
                 PersonsPage related ->
                     let
                         url =
                             case related of
                                 Nothing ->
-                                    "#persons"
+                                    "persons"
 
                                 Just relatedId ->
-                                    "#relations/" ++ fromEntityUuid relatedId
+                                    "relations/" ++ fromEntityUuid relatedId
                     in
-                    Just <| UrlChange NewEntry url
+                    Just url
 
                 PrenatalParticipantPage id ->
                     Just <| UrlChange NewEntry <| "#prenatal-participant/" ++ fromEntityUuid id
@@ -88,12 +94,12 @@ delta2url previous current =
                     Just <| UrlChange NewEntry ("#individual-participants/" ++ encoudeIndividualEncounterTypeAsString encounterType)
 
                 RelationshipPage id1 id2 ->
-                    Just <|
-                        UrlChange NewEntry <|
-                            "#relationship/"
-                                ++ fromEntityUuid id1
-                                ++ "/"
-                                ++ fromEntityUuid id2
+                    Just
+                        ("relationship/"
+                            ++ fromEntityUuid id1
+                            ++ "/"
+                            ++ fromEntityUuid id2
+                        )
 
                 SessionPage sessionId sessionPage ->
                     let
@@ -121,9 +127,9 @@ delta2url previous current =
                                     "/progress/" ++ fromEntityUuid id
 
                         url =
-                            "#session/" ++ fromEntityUuid sessionId ++ subUrl
+                            "session/" ++ fromEntityUuid sessionId ++ subUrl
                     in
-                    Just <| UrlChange NewEntry url
+                    Just url
 
                 PrenatalEncounterPage id ->
                     Just <| UrlChange NewEntry <| "#prenatal-encounter/" ++ fromEntityUuid id
@@ -138,13 +144,8 @@ delta2url previous current =
                     Just <| UrlChange NewEntry <| "#pregnancy-outcome/" ++ fromEntityUuid id
 
 
-{-| For now, the only messages we're generating from the URL are messages
-to set the active page. So, we just return a `Page`, and the caller can
-map it to a msg. If we eventually needed to send different kinds of messages,
-we could change that here.
--}
-parseUrl : Parser (Page -> c) c
-parseUrl =
+parser : Parser (Page -> c) c
+parser =
     oneOf
         [ map (UserPage << ClinicsPage << Just) (s "clinics" </> parseUuid)
         , map (UserPage (ClinicsPage Nothing)) (s "clinics")
@@ -158,6 +159,7 @@ parseUrl =
         , map (\id -> UserPage <| PersonsPage (Just id)) (s "relations" </> parseUuid)
         , map (\id -> UserPage <| CreatePersonPage (Just id) ParticipantDirectoryOrigin) (s "person" </> s "new" </> parseUuid)
         , map (UserPage <| CreatePersonPage Nothing ParticipantDirectoryOrigin) (s "person" </> s "new")
+        , map (\id -> UserPage <| EditPersonPage id) (s "person" </> parseUuid </> s "edit")
         , map (\id -> UserPage <| PersonPage id) (s "person" </> parseUuid)
         , map (\id -> UserPage <| PrenatalParticipantPage id) (s "prenatal-participant" </> parseUuid)
         , map (\id1 id2 -> UserPage <| RelationshipPage id1 id2) (s "relationship" </> parseUuid </> parseUuid)

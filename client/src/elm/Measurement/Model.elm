@@ -4,6 +4,7 @@ module Measurement.Model exposing (DropZoneFile, FileId, FloatInputConstraints, 
 participant.
 -}
 
+import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -63,17 +64,17 @@ type alias ModelMother =
 
 -}
 type alias ParticipantFormUI =
-    { expected : EveryDictList ParticipantFormId ParticipantForm
+    { expected : Dict ParticipantFormId ParticipantForm
     , view : Maybe ParticipantFormId
-    , progress : EveryDict ParticipantFormId ParticipantFormProgress
+    , progress : Dict ParticipantFormId ParticipantFormProgress
     }
 
 
 emptyParticipantFormUI : ParticipantFormUI
 emptyParticipantFormUI =
-    { expected = EveryDictList.empty
+    { expected = Dict.empty
     , view = Nothing
-    , progress = EveryDict.empty
+    , progress = Dict.empty
     }
 
 

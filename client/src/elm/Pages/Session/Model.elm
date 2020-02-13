@@ -1,9 +1,9 @@
 module Pages.Session.Model exposing (Model, Msg(..), emptyModel)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity)
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Session.Model
-import EveryDict exposing (EveryDict)
 import Measurement.Model
 import Pages.Activities.Model
 import Pages.Activity.Model
@@ -26,8 +26,8 @@ type alias Model =
 
     -- Shows a page for a single activity. We keep separate UI state for
     -- each activity.
-    , childActivityPages : EveryDict ChildActivity (Pages.Activity.Model.Model PersonId)
-    , motherActivityPages : EveryDict MotherActivity (Pages.Activity.Model.Model PersonId)
+    , childActivityPages : Dict ChildActivity (Pages.Activity.Model.Model PersonId)
+    , motherActivityPages : Dict MotherActivity (Pages.Activity.Model.Model PersonId)
 
     -- Shows a list of participants ... user can select one.
     , participantsPage : Pages.Participants.Model.Model
@@ -38,13 +38,13 @@ type alias Model =
     -- ... we could just keep a single state here if we wanted the selectedTab
     -- and selectedActivity to stay the same when you switch from one
     -- participant to another.
-    , childPages : EveryDict PersonId (Pages.Participant.Model.Model ChildActivity)
-    , motherPages : EveryDict PersonId (Pages.Participant.Model.Model MotherActivity)
+    , childPages : Dict PersonId (Pages.Participant.Model.Model ChildActivity)
+    , motherPages : Dict PersonId (Pages.Participant.Model.Model MotherActivity)
 
     -- These forms appear on multiple pages, and we want to show the same state
     -- on each page. So, we keep them out here, and supply them as arguments.
-    , childForms : EveryDict PersonId Measurement.Model.ModelChild
-    , motherForms : EveryDict PersonId Measurement.Model.ModelMother
+    , childForms : Dict PersonId Measurement.Model.ModelChild
+    , motherForms : Dict PersonId Measurement.Model.ModelMother
     }
 
 
@@ -52,12 +52,12 @@ emptyModel : Model
 emptyModel =
     { activitiesPage = Pages.Activities.Model.emptyModel
     , attendancePage = Pages.Attendance.Model.emptyModel
-    , childActivityPages = EveryDict.empty
-    , motherActivityPages = EveryDict.empty
-    , childPages = EveryDict.empty
-    , motherPages = EveryDict.empty
-    , childForms = EveryDict.empty
-    , motherForms = EveryDict.empty
+    , childActivityPages = Dict.empty
+    , motherActivityPages = Dict.empty
+    , childPages = Dict.empty
+    , motherPages = Dict.empty
+    , childForms = Dict.empty
+    , motherForms = Dict.empty
     , participantsPage = Pages.Participants.Model.emptyModel
     }
 

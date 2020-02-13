@@ -22,6 +22,7 @@ import Pages.PrenatalEncounter.Fetch
 import Pages.PrenatalParticipant.Fetch
 import Pages.Relationship.Fetch
 import Pages.Session.Fetch
+import Time
 
 
 {-| Basically, we're following down the `view` hierarchy to determine, given
@@ -43,7 +44,7 @@ fetch : Model -> List Msg
 fetch model =
     let
         currentDate =
-            fromLocalDateTime (Date.fromTime model.currentTime)
+            fromLocalDateTime model.currentTime
     in
     case model.activePage of
         DevicePage ->
@@ -73,8 +74,12 @@ fetch model =
             Pages.ClinicalProgressReport.Fetch.fetch prenatalEncounterId model.indexedDb
                 |> List.map MsgIndexedDb
 
-        UserPage (CreatePersonPage relatedId _) ->
-            Pages.Person.Fetch.fetchForCreateForm relatedId
+        UserPage (CreatePersonPage relatedId) ->
+            Pages.Person.Fetch.fetchForCreateOrEdit relatedId model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (EditPersonPage relatedId) ->
+            Pages.Person.Fetch.fetchForCreateOrEdit (Just relatedId) model.indexedDb
                 |> List.map MsgIndexedDb
 
         UserPage (DemographicsReportPage prenatalEncounterId) ->

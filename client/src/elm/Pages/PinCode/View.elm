@@ -1,9 +1,9 @@
 module Pages.PinCode.View exposing (view)
 
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse, Role(..))
-import EveryDictList
 import EverySet
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Html exposing (..)
@@ -195,7 +195,7 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                     [ class "ui primary button"
                     , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing
                     ]
-                    [ text <| translate language Translate.RegisterAParticipant ]
+                    [ text <| translate language Translate.ParticipantDirectory ]
         in
         [ loggedInAs
         , healthCenterName
@@ -211,16 +211,16 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                 case db.healthCenters of
                     Success healthCenters ->
                         healthCenters
-                            |> EveryDictList.filter (\uuid _ -> EverySet.member uuid nurse.healthCenters)
-                            |> EveryDictList.toList
+                            |> Dict.filter (\uuid _ -> EverySet.member uuid nurse.healthCenters)
+                            |> Dict.toList
 
                     _ ->
                         []
 
-            selectHealthCenterButton ( healthCenterId, healthCenter ) =
+            selectHealthCenterButton ( healthCenterId_, healthCenter ) =
                 button
                     [ class "ui primary button health-center"
-                    , onClick <| SendOutMsg <| SetHealthCenter healthCenterId
+                    , onClick <| SendOutMsg <| SetHealthCenter healthCenterId_
                     ]
                     [ text healthCenter.name ]
         in

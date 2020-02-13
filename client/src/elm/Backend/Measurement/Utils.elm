@@ -1,11 +1,10 @@
 module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, getCurrentAndPrevious, mapMeasurementData, muacIndication, socialHistoryHivTestingResultFromString, splitChildMeasurements, splitMotherMeasurements)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import EveryDict exposing (EveryDict)
-import EveryDictList exposing (EveryDictList)
+import Gizra.NominalDate exposing (compare)
 import Restful.Endpoint exposing (EntityUuid)
-import Time.Date
 
 
 {-| Given a MUAC in cm, classify according to the measurement tool shown
@@ -42,11 +41,11 @@ currentValueWithId data =
 
 {-| Like `currentValue`, but for cases where we have a list of values.
 -}
-currentValues : MeasurementData (EveryDictList id value) -> List ( Maybe id, value )
+currentValues : MeasurementData (Dict id value) -> List ( Maybe id, value )
 currentValues data =
     data.current
-        |> EveryDictList.map (\k v -> ( Just k, v ))
-        |> EveryDictList.values
+        |> Dict.map (\k v -> ( Just k, v ))
+        |> Dict.values
 
 
 mapMeasurementData : (a -> b) -> MeasurementData a -> MeasurementData b
@@ -57,9 +56,9 @@ mapMeasurementData dataFunc measurements =
     }
 
 
-splitMotherMeasurements : SessionId -> EveryDict PersonId MotherMeasurementList -> EveryDict PersonId { current : MotherMeasurements, previous : MotherMeasurements }
+splitMotherMeasurements : SessionId -> Dict PersonId MotherMeasurementList -> Dict PersonId { current : MotherMeasurements, previous : MotherMeasurements }
 splitMotherMeasurements sessionId =
-    EveryDict.map
+    Dict.map
         (\_ list ->
             let
                 attendance =
@@ -73,8 +72,14 @@ splitMotherMeasurements sessionId =
                         |> .current
             in
             { current =
-                { attendance = EveryDictList.head attendance.current
-                , familyPlanning = EveryDictList.head familyPlanning.current
+                { attendance =
+                    attendance.current
+                        |> Dict.toList
+                        |> List.head
+                , familyPlanning =
+                    familyPlanning.current
+                        |> Dict.toList
+                        |> List.head
                 , consent = consent
                 }
             , previous =
@@ -82,15 +87,15 @@ splitMotherMeasurements sessionId =
                 -- anything for it.
                 { attendance = attendance.previous
                 , familyPlanning = familyPlanning.previous
-                , consent = EveryDictList.empty
+                , consent = Dict.empty
                 }
             }
         )
 
 
-splitChildMeasurements : SessionId -> EveryDict PersonId ChildMeasurementList -> EveryDict PersonId { current : ChildMeasurements, previous : ChildMeasurements }
+splitChildMeasurements : SessionId -> Dict PersonId ChildMeasurementList -> Dict PersonId { current : ChildMeasurements, previous : ChildMeasurements }
 splitChildMeasurements sessionId =
-    EveryDict.map
+    Dict.map
         (\_ list ->
             let
                 height =
@@ -113,12 +118,30 @@ splitChildMeasurements sessionId =
             in
             { current =
                 -- We can only have one per session ... we enforce that here.
-                { height = EveryDictList.head height.current
-                , weight = EveryDictList.head weight.current
-                , muac = EveryDictList.head muac.current
-                , nutrition = EveryDictList.head nutrition.current
-                , photo = EveryDictList.head photo.current
-                , counselingSession = EveryDictList.head counselingSession.current
+                { height =
+                    height.current
+                        |> Dict.toList
+                        |> List.head
+                , weight =
+                    weight.current
+                        |> Dict.toList
+                        |> List.head
+                , muac =
+                    muac.current
+                        |> Dict.toList
+                        |> List.head
+                , nutrition =
+                    nutrition.current
+                        |> Dict.toList
+                        |> List.head
+                , photo =
+                    photo.current
+                        |> Dict.toList
+                        |> List.head
+                , counselingSession =
+                    counselingSession.current
+                        |> Dict.toList
+                        |> List.head
                 }
             , previous =
                 { height = height.previous
@@ -134,15 +157,21 @@ splitChildMeasurements sessionId =
 
 {-| Picks out current and previous values from a list of measurements.
 -}
-getCurrentAndPrevious : SessionId -> EveryDictList (EntityUuid id) (GroupMeasurement b) -> { current : EveryDictList (EntityUuid id) (GroupMeasurement b), previous : Maybe ( EntityUuid id, GroupMeasurement b ) }
+getCurrentAndPrevious : SessionId -> Dict (EntityUuid id) (Measurement b) -> { current : Dict (EntityUuid id) (Measurement b), previous : Maybe ( EntityUuid id, Measurement b ) }
 getCurrentAndPrevious sessionId =
     let
         -- This is designed to iterate through each list only once, to get both
         -- the current and previous value
         go id value acc =
-            if value.encounterId == Just sessionId then
+            if value.sessionId == Just sessionId then
+                let
+                    current_ =
+                        Dict.toList acc.current
+                            |> (::) ( id, value )
+                            |> Dict.fromList
+                in
                 -- If it's got our session ID, then it's current
-                { acc | current = EveryDictList.cons id value acc.current }
+                { acc | current = current_ }
 
             else
                 case acc.previous of
@@ -151,14 +180,14 @@ getCurrentAndPrevious sessionId =
                         { acc | previous = Just ( id, value ) }
 
                     Just ( _, previousValue ) ->
-                        if Time.Date.compare value.dateMeasured previousValue.dateMeasured == GT then
+                        if Gizra.NominalDate.compare value.dateMeasured previousValue.dateMeasured == GT then
                             { acc | previous = Just ( id, value ) }
 
                         else
                             acc
     in
-    EveryDictList.foldl go
-        { current = EveryDictList.empty
+    Dict.foldl go
+        { current = Dict.empty
         , previous = Nothing
         }
 

@@ -1,8 +1,8 @@
 module Backend.Fetch exposing (forget, shouldFetch)
 
+import AssocList as Dict
 import Backend.Model exposing (..)
-import Dict
-import EveryDict
+import LocalData exposing (isNotNeeded)
 import RemoteData exposing (RemoteData(..), isNotAsked, isSuccess)
 
 
@@ -17,39 +17,92 @@ or we will enter an infinite loop.
 -}
 shouldFetch : ModelIndexedDb -> MsgIndexedDb -> Bool
 shouldFetch model msg =
+    let
+        hasNoSuccessValues dict =
+            dict
+                |> Dict.values
+                |> List.filter (\v -> RemoteData.isLoading v || RemoteData.isNotAsked v)
+                |> List.isEmpty
+                |> not
+    in
     case msg of
         FetchChildMeasurements childId ->
-            EveryDict.get childId model.childMeasurements
+            Dict.get childId model.childMeasurements
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
+
+        FetchChildrenMeasurements ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                hasNoSuccessValues model.childMeasurements
 
         FetchClinics ->
             isNotAsked model.clinics
 
-        FetchEditableSession id ->
+        FetchEditableSession id _ ->
             -- This one is a bit special because it is synthetic ...  what
             -- we're asking for here is not the fetch itself, but a certain
             -- organization of the fetched data. We want to re-run the
-            -- organiztion in every case unless we have a success here.
+            -- organization in every case unless we have a success here.
             -- Which means, once we have a success, it's important to
             -- invalidate or modify our successful data if underlying data
             -- changes. (That is, our `handleRevisions` needs to keep the
             -- editable sessions in mind).
-            EveryDict.get id model.editableSessions
+            Dict.get id model.editableSessions
                 |> Maybe.withDefault NotAsked
                 |> isSuccess
                 |> not
+
+        FetchEditableSessionCheckedIn id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map (.checkedIn >> isNotNeeded)
+                |> RemoteData.withDefault False
+
+        FetchEditableSessionMeasurements id ->
+            let
+                -- Make sure we don't still have measurements being lazy loaded. If we do, allow rebuilding the
+                -- `EditableSession`.
+                hasMothersMeasurementsNotSuccess =
+                    hasNoSuccessValues model.motherMeasurements
+
+                hasChildrenMeasurementsNotSuccess =
+                    hasNoSuccessValues model.childMeasurements
+
+                measurementsNotSuccess =
+                    Dict.get id model.editableSessions
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.map (.offlineSession >> .measurements >> isNotNeeded)
+                        |> RemoteData.withDefault False
+            in
+            measurementsNotSuccess
+                || hasMothersMeasurementsNotSuccess
+                || hasChildrenMeasurementsNotSuccess
+
+        FetchEditableSessionSummaryByActivity id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map (.summaryByActivity >> isNotNeeded)
+                |> RemoteData.withDefault False
+
+        FetchEditableSessionSummaryByParticipant id ->
+            Dict.get id model.editableSessions
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.map (.summaryByParticipant >> isNotNeeded)
+                |> RemoteData.withDefault False
 
         FetchEveryCounselingSchedule ->
             isNotAsked model.everyCounselingSchedule
 
         FetchExpectedParticipants sessionId ->
-            EveryDict.get sessionId model.expectedParticipants
+            Dict.get sessionId model.expectedParticipants
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
         FetchExpectedSessions childId ->
-            EveryDict.get childId model.expectedSessions
+            Dict.get childId model.expectedSessions
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
@@ -57,9 +110,16 @@ shouldFetch model msg =
             isNotAsked model.healthCenters
 
         FetchMotherMeasurements motherId ->
-            EveryDict.get motherId model.motherMeasurements
+            Dict.get motherId model.motherMeasurements
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
+
+        FetchMothersMeasurements ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                hasNoSuccessValues model.motherMeasurements
 
         FetchParticipantForms ->
             isNotAsked model.participantForms
@@ -70,52 +130,59 @@ shouldFetch model msg =
                 |> isNotAsked
 
         FetchPerson id ->
-            EveryDict.get id model.people
+            Dict.get id model.people
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchPeople ids ->
+            if List.isEmpty ids then
+                False
+
+            else
+                hasNoSuccessValues model.people
+
         FetchParticipantsForPerson id ->
-            EveryDict.get id model.participantsByPerson
+            Dict.get id model.participantsByPerson
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
         FetchPrenatalEncounter id ->
-            EveryDict.get id model.prenatalEncounters
+            Dict.get id model.prenatalEncounters
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
         FetchPrenatalEncountersForParticipant id ->
-            EveryDict.get id model.prenatalEncountersByParticipant
+            Dict.get id model.prenatalEncountersByParticipant
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
         FetchPrenatalMeasurements id ->
-            EveryDict.get id model.prenatalMeasurements
+            Dict.get id model.prenatalMeasurements
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
         FetchIndividualEncounterParticipant id ->
-            EveryDict.get id model.individualParticipants
+            Dict.get id model.individualParticipants
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
         FetchIndividualEncounterParticipantsForPerson id ->
-            EveryDict.get id model.individualParticipantsByPerson
+            Dict.get id model.individualParticipantsByPerson
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
         FetchRelationshipsForPerson id ->
-            EveryDict.get id model.relationshipsByPerson
+            Dict.get id model.relationshipsByPerson
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
         FetchSession sessionId ->
-            EveryDict.get sessionId model.sessions
+            Dict.get sessionId model.sessions
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
         FetchSessionsByClinic clinicId ->
-            EveryDict.get clinicId model.sessionsByClinic
+            Dict.get clinicId model.sessionsByClinic
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
@@ -133,28 +200,28 @@ forget : MsgIndexedDb -> ModelIndexedDb -> ModelIndexedDb
 forget msg model =
     case msg of
         FetchChildMeasurements childId ->
-            { model | childMeasurements = EveryDict.remove childId model.childMeasurements }
+            { model | childMeasurements = Dict.remove childId model.childMeasurements }
 
         FetchClinics ->
             { model | clinics = NotAsked }
 
-        FetchEditableSession id ->
-            { model | editableSessions = EveryDict.remove id model.editableSessions }
+        FetchEditableSession id _ ->
+            { model | editableSessions = Dict.remove id model.editableSessions }
 
         FetchEveryCounselingSchedule ->
             { model | everyCounselingSchedule = NotAsked }
 
         FetchExpectedParticipants sessionId ->
-            { model | expectedParticipants = EveryDict.remove sessionId model.expectedParticipants }
+            { model | expectedParticipants = Dict.remove sessionId model.expectedParticipants }
 
         FetchExpectedSessions childId ->
-            { model | expectedSessions = EveryDict.remove childId model.expectedSessions }
+            { model | expectedSessions = Dict.remove childId model.expectedSessions }
 
         FetchHealthCenters ->
             { model | healthCenters = NotAsked }
 
         FetchMotherMeasurements motherId ->
-            { model | motherMeasurements = EveryDict.remove motherId model.motherMeasurements }
+            { model | motherMeasurements = Dict.remove motherId model.motherMeasurements }
 
         FetchParticipantForms ->
             { model | participantForms = NotAsked }
@@ -163,34 +230,34 @@ forget msg model =
             { model | personSearches = Dict.remove (String.trim search) model.personSearches }
 
         FetchPerson id ->
-            { model | people = EveryDict.remove id model.people }
+            { model | people = Dict.remove id model.people }
 
         FetchIndividualEncounterParticipantsForPerson id ->
-            { model | individualParticipantsByPerson = EveryDict.remove id model.individualParticipantsByPerson }
+            { model | individualParticipantsByPerson = Dict.remove id model.individualParticipantsByPerson }
 
         FetchParticipantsForPerson id ->
-            { model | participantsByPerson = EveryDict.remove id model.participantsByPerson }
+            { model | participantsByPerson = Dict.remove id model.participantsByPerson }
 
         FetchPrenatalEncounter id ->
-            { model | prenatalEncounters = EveryDict.remove id model.prenatalEncounters }
+            { model | prenatalEncounters = Dict.remove id model.prenatalEncounters }
 
         FetchPrenatalEncountersForParticipant id ->
-            { model | prenatalEncountersByParticipant = EveryDict.remove id model.prenatalEncountersByParticipant }
+            { model | prenatalEncountersByParticipant = Dict.remove id model.prenatalEncountersByParticipant }
 
         FetchPrenatalMeasurements id ->
-            { model | prenatalMeasurements = EveryDict.remove id model.prenatalMeasurements }
+            { model | prenatalMeasurements = Dict.remove id model.prenatalMeasurements }
 
         FetchIndividualEncounterParticipant id ->
-            { model | individualParticipants = EveryDict.remove id model.individualParticipants }
+            { model | individualParticipants = Dict.remove id model.individualParticipants }
 
         FetchRelationshipsForPerson id ->
-            { model | relationshipsByPerson = EveryDict.remove id model.relationshipsByPerson }
+            { model | relationshipsByPerson = Dict.remove id model.relationshipsByPerson }
 
         FetchSession sessionId ->
-            { model | sessions = EveryDict.remove sessionId model.sessions }
+            { model | sessions = Dict.remove sessionId model.sessions }
 
         FetchSessionsByClinic clinicId ->
-            { model | sessionsByClinic = EveryDict.remove clinicId model.sessionsByClinic }
+            { model | sessionsByClinic = Dict.remove clinicId model.sessionsByClinic }
 
         FetchSyncData ->
             { model | syncData = NotAsked }

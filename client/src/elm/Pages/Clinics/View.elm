@@ -6,6 +6,7 @@ available for data-entry.
 -}
 
 import App.Model exposing (MsgLoggedIn(..))
+import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic, ClinicType(..), allClinicTypes)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
@@ -14,8 +15,7 @@ import Backend.Nurse.Utils exposing (assignedToHealthCenter)
 import Backend.Session.Model exposing (Session)
 import Backend.Session.Utils exposing (isClosed)
 import Backend.SyncData.Model exposing (SyncData)
-import EveryDict
-import EveryDictList exposing (EveryDictList)
+import Date exposing (Unit(..))
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
@@ -26,7 +26,6 @@ import Pages.Clinics.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import RemoteData exposing (RemoteData(..), WebData, isLoading)
-import Time.Date exposing (delta)
 import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewError, viewWebData)
 
@@ -91,7 +90,7 @@ we could show something about the sync status here ... might want to know how
 up-to-date things are.
 
 -}
-viewLoadedClinicList : Language -> Nurse -> HealthCenterId -> Model -> ( EveryDictList ClinicId Clinic, EveryDictList HealthCenterId SyncData ) -> Html Msg
+viewLoadedClinicList : Language -> Nurse -> HealthCenterId -> Model -> ( Dict ClinicId Clinic, Dict HealthCenterId SyncData ) -> Html Msg
 viewLoadedClinicList language user selectedHealthCenterId model ( clinics, sync ) =
     let
         showWarningMessage header message =
@@ -100,6 +99,55 @@ viewLoadedClinicList language user selectedHealthCenterId model ( clinics, sync 
                 [ div [ class "header" ] [ text <| translate language header ]
                 , text <| translate language message
                 ]
+
+        synced =
+            case model.clinicType of
+                Just clinicType ->
+                    clinics
+                        |> Dict.filter
+                            (\_ clinic ->
+                                -- Group belongs to seleced health center.
+                                (clinic.healthCenterId == selectedHealthCenterId)
+                                    -- Health center is synced.
+                                    && Dict.member clinic.healthCenterId sync
+                                    -- Group is of selected type.
+                                    && (clinic.clinicType == clinicType)
+                            )
+                        |> Dict.toList
+                        |> List.sortBy (Tuple.second >> .name)
+                        |> Dict.fromList
+
+                Nothing ->
+                    clinics
+                        |> Dict.filter
+                            (\_ clinic ->
+                                -- Group belongs to seleced health center.
+                                (clinic.healthCenterId == selectedHealthCenterId)
+                                    -- Health center is synced.
+                                    && Dict.member clinic.healthCenterId sync
+                            )
+
+        buttonsView =
+            if isJust model.clinicType then
+                synced
+                    |> Dict.toList
+                    |> List.map (viewClinicButton user)
+
+            else
+                synced
+                    |> Dict.values
+                    |> viewClinicTypeButtons language
+
+        message =
+            if Dict.isEmpty synced then
+                div
+                    [ class "ui message warning" ]
+                    [ div [ class "header" ] [ text <| translate language Translate.NoGroupsFound ]
+                    , text <| translate language Translate.HaveYouSynced
+                    ]
+
+            else
+                emptyNode
     in
     EveryDictList.get selectedHealthCenterId sync
         |> unwrap
@@ -222,11 +270,11 @@ viewClinic : Language -> NominalDate -> Nurse -> ClinicId -> ModelIndexedDb -> H
 viewClinic language currentDate nurse clinicId db =
     let
         clinic =
-            RemoteData.map (EveryDictList.get clinicId) db.clinics
+            RemoteData.map (Dict.get clinicId) db.clinics
 
         sessions =
             db.sessionsByClinic
-                |> EveryDict.get clinicId
+                |> Dict.get clinicId
                 |> Maybe.withDefault NotAsked
     in
     viewWebData language
@@ -235,13 +283,13 @@ viewClinic language currentDate nurse clinicId db =
         (RemoteData.append clinic sessions)
 
 
-viewLoadedClinic : Language -> NominalDate -> Nurse -> WebData SessionId -> ClinicId -> ( Maybe Clinic, EveryDictList SessionId Session ) -> Html Msg
+viewLoadedClinic : Language -> NominalDate -> Nurse -> WebData SessionId -> ClinicId -> ( Maybe Clinic, Dict SessionId Session ) -> Html Msg
 viewLoadedClinic language currentDate nurse postSession clinicId ( clinic, sessions ) =
     case clinic of
-        Just clinic ->
+        Just clinic_ ->
             div
                 [ class "wrap wrap-alt-2" ]
-                (viewFoundClinic language currentDate nurse postSession clinicId clinic sessions)
+                (viewFoundClinic language currentDate nurse postSession clinicId clinic_ sessions)
 
         Nothing ->
             Pages.PageNotFound.View.viewPage language
@@ -254,7 +302,7 @@ if it is open. (That is, the dates are correct and it's not explicitly closed).
 We'll show anything which was scheduled to start or end within the last week
 or the next week.
 -}
-viewFoundClinic : Language -> NominalDate -> Nurse -> WebData SessionId -> ClinicId -> Clinic -> EveryDictList SessionId Session -> List (Html Msg)
+viewFoundClinic : Language -> NominalDate -> Nurse -> WebData SessionId -> ClinicId -> Clinic -> Dict SessionId Session -> List (Html Msg)
 viewFoundClinic language currentDate nurse postSession clinicId clinic sessions =
     let
         daysToShow =
@@ -262,28 +310,28 @@ viewFoundClinic language currentDate nurse postSession clinicId clinic sessions 
 
         recentAndUpcomingSessions =
             sessions
-                |> EveryDictList.filter
-                    (\sessionId session ->
+                |> Dict.filter
+                    (\_ session ->
                         let
-                            deltaToEndDate =
+                            deltaToEndDateDays =
                                 session.endDate
                                     |> Maybe.withDefault currentDate
-                                    |> (\endDate -> delta endDate currentDate)
+                                    |> (\endDate -> Date.diff Days endDate currentDate)
 
-                            deltaToStartDate =
-                                delta session.startDate currentDate
+                            deltaToStartDateDays =
+                                Date.diff Days session.startDate currentDate
                         in
                         -- Ends last week or next week
-                        (abs deltaToEndDate.days <= daysToShow)
+                        (abs deltaToEndDateDays <= daysToShow)
                             || -- Starts last week or next week
-                               (abs deltaToStartDate.days <= daysToShow)
+                               (abs deltaToStartDateDays <= daysToShow)
                             || -- Is between start and end date
-                               (deltaToStartDate.days <= 0 && deltaToEndDate.days >= 0)
+                               (deltaToStartDateDays <= 0 && deltaToEndDateDays >= 0)
                     )
 
         sessionsStartedToday =
             recentAndUpcomingSessions
-                |> EveryDictList.filter (\_ session -> session.startDate == currentDate)
+                |> Dict.filter (\_ session -> session.startDate == currentDate)
 
         -- We allow the creation of a new session if there is no session that
         -- was started today. So, there are several scenarios:
@@ -299,7 +347,7 @@ viewFoundClinic language currentDate nurse postSession clinicId clinic sessions 
         -- is created before the first syncs. We could write some code to
         -- automatically "consolidate" those two sessions.
         enableCreateSessionButton =
-            EveryDictList.isEmpty sessionsStartedToday
+            Dict.isEmpty sessionsStartedToday
 
         defaultSession =
             { startDate = currentDate
@@ -334,8 +382,8 @@ viewFoundClinic language currentDate nurse postSession clinicId clinic sessions 
                             ]
                         ]
                     , recentAndUpcomingSessions
-                        |> EveryDictList.map (viewSession language currentDate)
-                        |> EveryDictList.values
+                        |> Dict.map (viewSession language currentDate)
+                        |> Dict.values
                         |> tbody []
                     ]
                 , createSessionButton

@@ -10,9 +10,8 @@ with the other measurements.
 
 -}
 
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import EveryDict exposing (EveryDict)
-import EveryDictList exposing (EveryDictList)
 import Translate.Model exposing (TranslationSet)
 
 
@@ -62,4 +61,4 @@ them on the client.
 
 -}
 type alias EveryCounselingSchedule =
-    EveryDict CounselingTiming (EveryDictList CounselingTopicId CounselingTopic)
+    Dict CounselingTiming (Dict CounselingTopicId CounselingTopic)

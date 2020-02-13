@@ -51,6 +51,7 @@ module Backend.Measurement.Encoder exposing
     , socialHistoryHivTestingResultToString
     )
 
+import AssocList as Dict
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)

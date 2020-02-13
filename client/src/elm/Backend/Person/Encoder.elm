@@ -18,7 +18,7 @@ encodePerson person =
         , ( "photo", maybe string person.avatarUrl )
         , ( "birth_date", maybe encodeYYYYMMDD person.birthDate )
         , ( "birth_date_estimated", bool person.isDateOfBirthEstimated )
-        , ( "gender", encodeGender person.gender )
+        , ( "gender", (encodeGender >> string) person.gender )
         , ( "hiv_status", maybe (encodeHivStatus >> string) person.hivStatus )
         , ( "number_of_children", maybe int person.numberOfChildren )
         , ( "mode_of_delivery", maybe (encodeModeOfDelivery >> string) person.modeOfDelivery )
@@ -72,14 +72,14 @@ encodeHivStatus status =
             "unknown"
 
 
-encodeGender : Gender -> Value
+encodeGender : Gender -> String
 encodeGender gender =
     case gender of
         Male ->
-            string "male"
+            "male"
 
         Female ->
-            string "female"
+            "female"
 
 
 encodeUbudehe : Ubudehe -> Int

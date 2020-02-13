@@ -1,7 +1,7 @@
 module Config exposing (configs)
 
+import AssocList as Dict exposing (Dict)
 import Config.Model as Config exposing (Model)
-import Dict exposing (..)
 import LocalConfig exposing (localConfigs)
 import Pusher.Model exposing (Cluster(..), PusherAppKey)
 import Rollbar
@@ -87,6 +87,17 @@ prenatalPantheon =
     }
 
 
+elm19Pantheon : Model
+elm19Pantheon =
+    { backendUrl = "https://elm19-ihangane.pantheonsite.io"
+    , name = "elm19Pantheon"
+    , pusherKey = PusherAppKey "" UsEast1
+    , debug = False
+    , rollbarToken = Rollbar.token "***REMOVED***"
+    , sandbox = False
+    }
+
+
 configs : Dict String Model
 configs =
     Dict.fromList
@@ -95,7 +106,8 @@ configs =
         , ( "***REMOVED***", livePantheon )
         , ( "***REMOVED***", ehezaGlobal )
         , ( "***REMOVED***", ***REMOVED*** )
-        , ( "prenatal-ihangane.pantheonsite.io", prenatalPantheon )
+        , ( "prenatal-ihangane.pantheonsite.io", prenatalPantheon ) r
         , ( "***REMOVED***", ***REMOVED*** )
+        , ( "elm19-ihangane.pantheonsite.io", elm19Pantheon )
         ]
         |> Dict.union localConfigs
