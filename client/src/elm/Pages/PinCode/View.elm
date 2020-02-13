@@ -229,7 +229,7 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                             [ class "ui primary button"
                             , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing
                             ]
-                            [ text <| translate language Translate.RegisterAParticipant ]
+                            [ text <| translate language Translate.ParticipantDirectory ]
                 in
                 [ loggedInAs
                 , healthCenterName

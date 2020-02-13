@@ -1,4 +1,4 @@
-module Config exposing (configs, ***REMOVED***, livePantheon, ***REMOVED***, ***REMOVED***, ***REMOVED***)
+module Config exposing (configs)
 
 import AssocList as Dict exposing (Dict)
 import Config.Model as Config exposing (Model)
@@ -62,20 +62,6 @@ ehezaGlobal =
     }
 
 
-***REMOVED*** : Model
-***REMOVED*** =
-    { backendUrl = "https://***REMOVED***"
-    , name = "***REMOVED***"
-
-    -- We're not actually using Pusher at the moment, so just filling in a
-    -- blank key for now.
-    , pusherKey = PusherAppKey "" UsEast1
-    , debug = False
-    , rollbarToken = Rollbar.token "***REMOVED***"
-    , sandbox = True
-    }
-
-
 elm19Pantheon : Model
 elm19Pantheon =
     { backendUrl = "https://elm19-ihangane.pantheonsite.io"
@@ -95,7 +81,6 @@ configs =
         , ( "***REMOVED***", livePantheon )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ehezaGlobal )
-        , ( "***REMOVED***", ***REMOVED*** )
         , ( "elm19-ihangane.pantheonsite.io", elm19Pantheon )
         ]
         |> Dict.union localConfigs

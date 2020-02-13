@@ -1,14 +1,15 @@
 module Backend.Person.Form exposing
-    ( ExpectedAge(..)
-    , PersonForm
+    ( PersonForm
     , allDigitsPattern
+    , applyDefaultValues
     , birthDate
     , birthDateEstimated
     , cell
     , district
     , educationLevel
-    , emptyForm
-    , expectedAgeFromForm
+    , emptyCreateForm
+    , emptyEditForm
+    , expectedAgeByForm
     , firstName
     , gender
     , healthCenter
@@ -47,92 +48,277 @@ module Backend.Person.Form exposing
 import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeHivStatus, decodeMaritalStatus, decodeModeOfDelivery, decodeUbudehe)
+import Backend.Person.Encoder
+    exposing
+        ( encodeEducationLevel
+        , encodeGender
+        , encodeHivStatus
+        , encodeMaritalStatus
+        , encodeModeOfDelivery
+        , encodeUbudehe
+        )
 import Backend.Person.Model exposing (..)
-import Backend.Person.Utils exposing (diffInYears, isAdult, isPersonAnAdult)
+import Backend.Person.Utils exposing (diffInYears, expectedAgeByPerson, isAdult, isPersonAnAdult, resolveExpectedAge)
 import Date
 import Form exposing (..)
+import Form.Field
 import Form.Init exposing (..)
 import Form.Validate exposing (..)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
+import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, formatYYYYMMDD)
 import Json.Decode
-import Maybe.Extra exposing (unwrap)
+import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Regex exposing (Regex)
-import Restful.Endpoint exposing (decodeEntityUuid, toEntityId)
+import Restful.Endpoint exposing (decodeEntityUuid, fromEntityId, fromEntityUuid, toEntityId, toEntityUuid)
 import Translate exposing (ValidationError(..))
 import Utils.Form exposing (fromDecoder, nullable)
-import Utils.GeoLocation exposing (geoInfo)
+import Utils.GeoLocation exposing (geoInfo, getGeoLocation)
 
 
 type alias PersonForm =
     Form ValidationError Person
 
 
-{-| Sometimes, we are in a state where we are expecting the user to enter an
-adult or a child, and sometimes we don't care -- they could be entering either.
+emptyCreateForm : PersonForm
+emptyCreateForm =
+    initial []
+        (validatePerson Nothing (CreatePerson Nothing) Nothing)
 
-This controls various aspects of validation. If set to `ExpectAdultOrChild`, we
-also check the birth date actually entered in the form, and validate the rest
-according that birth date.
 
--}
-type ExpectedAge
-    = ExpectAdult
-    | ExpectChild
-    | ExpectAdultOrChild
+emptyEditForm : PersonForm
+emptyEditForm =
+    initial []
+        (validatePerson Nothing (toEntityUuid "1" |> EditPerson) Nothing)
 
 
 {-| Given the birth date actually entered into the form, what age range are we
 looking at?
 -}
-expectedAgeFromForm : NominalDate -> PersonForm -> ExpectedAge
-expectedAgeFromForm currentDate form =
+expectedAgeByForm : NominalDate -> PersonForm -> ParticipantDirectoryOperation -> ExpectedAge
+expectedAgeByForm currentDate form operation =
     Form.getFieldAsString birthDate form
         |> .value
         |> Maybe.andThen (Date.fromIsoString >> Result.toMaybe)
-        |> isAdult currentDate
-        |> (\adult ->
-                case adult of
-                    Just True ->
-                        ExpectAdult
-
-                    Just False ->
-                        ExpectChild
-
-                    Nothing ->
-                        ExpectAdultOrChild
-           )
+        |> (\birthDate_ -> resolveExpectedAge currentDate birthDate_ operation)
 
 
-emptyForm : PersonForm
-emptyForm =
-    initial
-        [ setBool birthDateEstimated False
-        ]
-        (validatePerson Nothing Nothing)
+applyDefaultValues : Maybe Person -> ParticipantDirectoryOperation -> NominalDate -> PersonForm -> PersonForm
+applyDefaultValues maybeRelatedPerson operation currentDate form =
+    let
+        defaultProvinceId =
+            maybeRelatedPerson
+                |> Maybe.andThen .province
+                |> Maybe.andThen (getGeoLocation Nothing)
+                |> Maybe.map Tuple.first
+
+        defaultDistrictId =
+            maybeRelatedPerson
+                |> Maybe.andThen .district
+                |> Maybe.andThen (getGeoLocation defaultProvinceId)
+                |> Maybe.map Tuple.first
+
+        defaultSectorId =
+            maybeRelatedPerson
+                |> Maybe.andThen .sector
+                |> Maybe.andThen (getGeoLocation defaultDistrictId)
+                |> Maybe.map Tuple.first
+
+        defaultCellId =
+            maybeRelatedPerson
+                |> Maybe.andThen .cell
+                |> Maybe.andThen (getGeoLocation defaultSectorId)
+                |> Maybe.map Tuple.first
+
+        defaultVillageId =
+            maybeRelatedPerson
+                |> Maybe.andThen .village
+                |> Maybe.andThen (getGeoLocation defaultCellId)
+                |> Maybe.map Tuple.first
+
+        defaultUbudehe =
+            maybeRelatedPerson
+                |> Maybe.andThen .ubudehe
+
+        defaultHealthCenter =
+            maybeRelatedPerson
+                |> Maybe.andThen .healthCenterId
+
+        defaultHmisNumber =
+            maybeRelatedPerson
+                |> Maybe.andThen .hmisNumber
+
+        defaultModeOfDelivery =
+            maybeRelatedPerson
+                |> Maybe.andThen .modeOfDelivery
+
+        defaultHivStatus =
+            maybeRelatedPerson
+                |> Maybe.andThen .hivStatus
+
+        defaultlEducationLevel =
+            maybeRelatedPerson
+                |> Maybe.andThen .educationLevel
+
+        defaultlNumberOfChildrenl =
+            maybeRelatedPerson
+                |> Maybe.andThen .numberOfChildren
+
+        defaultMaritalStatus =
+            maybeRelatedPerson
+                |> Maybe.andThen .maritalStatus
+
+        defaultFirstName =
+            maybeRelatedPerson |> Maybe.map .firstName
+
+        defaultSecondName =
+            maybeRelatedPerson |> Maybe.map .secondName
+
+        defaultNationalIdNumber =
+            maybeRelatedPerson |> Maybe.andThen .nationalIdNumber
+
+        defaultBirthDate =
+            maybeRelatedPerson |> Maybe.andThen .birthDate
+
+        defaultAvatarUrl =
+            maybeRelatedPerson |> Maybe.andThen .avatarUrl
+
+        defaultTelephoneNumber =
+            maybeRelatedPerson |> Maybe.andThen .telephoneNumber
+
+        validation =
+            validatePerson maybeRelatedPerson operation (Just currentDate)
+
+        formFieldEmpty fieldName form_ =
+            Form.getFieldAsString fieldName form_
+                |> .value
+                |> isNothing
+
+        applyDefaultGender form_ =
+            maybeRelatedPerson
+                |> Maybe.map .gender
+                |> unwrap
+                    form_
+                    (\gender_ ->
+                        if formFieldEmpty gender form_ then
+                            Form.update
+                                validation
+                                (Form.Input gender Form.Radio (Form.Field.String (encodeGender gender_)))
+                                form_
+
+                        else
+                            form_
+                    )
+
+        applyDefaultIsDateOfBirthEstimated form_ =
+            maybeRelatedPerson
+                |> Maybe.map .isDateOfBirthEstimated
+                |> unwrap
+                    form_
+                    (\isEstimated ->
+                        Form.getFieldAsBool birthDateEstimated form_
+                            |> .value
+                            |> isNothing
+                            |> (\useDefault ->
+                                    if useDefault then
+                                        Form.update
+                                            validation
+                                            (Form.Input birthDateEstimated Form.Checkbox (Form.Field.Bool isEstimated))
+                                            form_
+
+                                    else
+                                        form_
+                               )
+                    )
+
+        applyDefaultTextInput fieldName maybeDefault toStringFunc form_ =
+            maybeDefault
+                |> unwrap
+                    form_
+                    (\default ->
+                        if formFieldEmpty fieldName form_ then
+                            Form.update
+                                validation
+                                (Form.Input fieldName Form.Text (Form.Field.String (toStringFunc default)))
+                                form_
+
+                        else
+                            form_
+                    )
+
+        applyDefaultSelectInput fieldName maybeDefault toStringFunc form_ =
+            maybeDefault
+                |> unwrap
+                    form_
+                    (\default ->
+                        if formFieldEmpty fieldName form_ then
+                            Form.update
+                                validation
+                                (Form.Input fieldName Form.Select (Form.Field.String (toStringFunc default)))
+                                form_
+
+                        else
+                            form_
+                    )
+
+        applyDefaultLocation fieldName maybeDefault form_ =
+            case maybeDefault of
+                Just defaultId ->
+                    if formFieldEmpty fieldName form_ then
+                        Form.update
+                            validation
+                            (Form.Input fieldName Form.Select (Form.Field.String (Debug.toString <| fromEntityId defaultId)))
+                            form_
+
+                    else
+                        form_
+
+                Nothing ->
+                    form_
+    in
+    case operation of
+        CreatePerson _ ->
+            form
+                |> applyDefaultSelectInput ubudehe defaultUbudehe (encodeUbudehe >> Debug.toString)
+                |> applyDefaultSelectInput healthCenter defaultHealthCenter fromEntityUuid
+                |> applyDefaultLocation province defaultProvinceId
+                |> applyDefaultLocation district defaultDistrictId
+                |> applyDefaultLocation sector defaultSectorId
+                |> applyDefaultLocation cell defaultCellId
+                |> applyDefaultLocation village defaultVillageId
+
+        EditPerson _ ->
+            form
+                |> applyDefaultTextInput photo defaultAvatarUrl identity
+                |> applyDefaultTextInput firstName defaultFirstName identity
+                |> applyDefaultTextInput secondName defaultSecondName identity
+                |> applyDefaultTextInput nationalIdNumber defaultNationalIdNumber identity
+                |> applyDefaultTextInput birthDate defaultBirthDate formatYYYYMMDD
+                |> applyDefaultIsDateOfBirthEstimated
+                |> applyDefaultSelectInput hmisNumber defaultHmisNumber identity
+                |> applyDefaultGender
+                |> applyDefaultSelectInput hivStatus defaultHivStatus encodeHivStatus
+                |> applyDefaultSelectInput educationLevel defaultlEducationLevel (encodeEducationLevel >> Debug.toString)
+                |> applyDefaultSelectInput maritalStatus defaultMaritalStatus encodeMaritalStatus
+                |> applyDefaultSelectInput modeOfDelivery defaultModeOfDelivery encodeModeOfDelivery
+                |> applyDefaultSelectInput numberOfChildren defaultlNumberOfChildrenl Debug.toString
+                |> applyDefaultSelectInput ubudehe defaultUbudehe (encodeUbudehe >> Debug.toString)
+                |> applyDefaultLocation province defaultProvinceId
+                |> applyDefaultLocation district defaultDistrictId
+                |> applyDefaultLocation sector defaultSectorId
+                |> applyDefaultLocation cell defaultCellId
+                |> applyDefaultLocation village defaultVillageId
+                |> applyDefaultTextInput phoneNumber defaultTelephoneNumber identity
+                |> applyDefaultSelectInput healthCenter defaultHealthCenter fromEntityUuid
 
 
 {-| The person supplied here is the related person, if we're constructing someone
 who is the child or parent of a person we know.
 -}
-validatePerson : Maybe Person -> Maybe NominalDate -> Validation ValidationError Person
-validatePerson maybeRelated maybeCurrentDate =
+validatePerson : Maybe Person -> ParticipantDirectoryOperation -> Maybe NominalDate -> Validation ValidationError Person
+validatePerson maybeRelated operation maybeCurrentDate =
     let
         externalExpectedAge =
             Maybe.map2
-                (\related currentDate ->
-                    case isPersonAnAdult currentDate related of
-                        Just True ->
-                            -- If the related person is an adult, we expect a child
-                            ExpectChild
-
-                        Just False ->
-                            -- If they are a child, we expect an adult
-                            ExpectAdult
-
-                        Nothing ->
-                            -- If we don't know, we expect either
-                            ExpectAdultOrChild
-                )
+                (\related currentDate -> expectedAgeByPerson currentDate related operation)
                 maybeRelated
                 maybeCurrentDate
                 |> Maybe.withDefault ExpectAdultOrChild

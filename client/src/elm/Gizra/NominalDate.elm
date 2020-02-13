@@ -169,7 +169,7 @@ The result is positive if the second parameter is after the first parameter.
 -}
 diffDays : NominalDate -> NominalDate -> Int
 diffDays low high =
-    Date.diff Date.Days high low
+    Date.diff Date.Days low high
 
 
 {-| Difference between two dates, in terms of months and days. This is based on
