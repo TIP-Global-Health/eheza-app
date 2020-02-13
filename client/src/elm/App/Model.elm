@@ -139,6 +139,7 @@ it at the appropriate moment.
 -}
 type alias LoggedInModel =
     { createPersonPage : Pages.Person.Model.Model
+    , editPersonPage : Pages.Person.Model.Model
     , relationshipPages : Dict ( PersonId, PersonId ) Pages.Relationship.Model.Model
     , personsPage : Pages.People.Model.Model
     , clinicsPage : Pages.Clinics.Model.Model
@@ -153,7 +154,8 @@ type alias LoggedInModel =
 
 emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
 emptyLoggedInModel nurse =
-    { createPersonPage = Pages.Person.Model.emptyModel
+    { createPersonPage = Pages.Person.Model.emptyCreateModel
+    , editPersonPage = Pages.Person.Model.emptyEditModel
     , personsPage = Pages.People.Model.emptyModel
     , clinicsPage = Pages.Clinics.Model.emptyModel
     , relationshipPages = Dict.empty
@@ -200,6 +202,7 @@ type Msg
 type MsgLoggedIn
     = MsgPageClinics Pages.Clinics.Model.Msg
     | MsgPageCreatePerson Pages.Person.Model.Msg
+    | MsgPageEditPerson Pages.Person.Model.Msg
     | MsgPagePersons Pages.People.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
