@@ -332,7 +332,6 @@ type TranslationId
     | ProgressReport
     | Province
     | Register
-    | RegisterAParticipant
     | RegisterHelper
     | RegisterNewParticipant
     | RegistratingHealthCenter
@@ -1732,11 +1731,6 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        RegisterAParticipant ->
-            { english = "Register a participant"
-            , kinyarwanda = Nothing
-            }
-
         RegisterHelper ->
             { english = "Not the participant you were looking for?"
             , kinyarwanda = Nothing
@@ -2281,8 +2275,13 @@ translateActivePage page =
                     , kinyarwanda = Just "Compte"
                     }
 
-                CreatePersonPage relationId ->
+                CreatePersonPage _ ->
                     { english = "Create Person"
+                    , kinyarwanda = Nothing
+                    }
+
+                EditPersonPage _ ->
+                    { english = "Edit Person"
                     , kinyarwanda = Nothing
                     }
 
