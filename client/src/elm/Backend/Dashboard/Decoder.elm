@@ -6,7 +6,7 @@ import Backend.Measurement.Decoder exposing (decodeFamilyPlanningSign)
 import Backend.Person.Decoder exposing (decodeGender)
 import Dict as LegacyDict
 import Gizra.Json exposing (decodeInt)
-import Gizra.NominalDate exposing (decodeYYYYMMDD)
+import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 
@@ -129,6 +129,16 @@ decodeParticipantStats =
         |> required "name" string
         |> required "mother_name" string
         |> optional "phone_number" (nullable string) Nothing
+        |> required "dates" (list decodeDatesList)
+
+
+decodeDatesList : Decoder NominalDate
+decodeDatesList =
+    string
+        |> andThen
+            (\date ->
+                decodeYYYYMMDD
+            )
 
 
 decodeFamilyPlanningStats : Decoder FamilyPlanningStats

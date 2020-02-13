@@ -235,6 +235,7 @@ function hedley_stats_get_session_attendance_stats_by_period($health_center_id, 
     return $cache->data;
   }
 
+  // Get PMTCT participants by health center (all expected people).
   $pmtct_by_health_center = hedley_stats_get_pmtct_participants_by_health_center($health_center_id, 10000);
 
   // Get people from the participants.
@@ -252,6 +253,8 @@ function hedley_stats_get_session_attendance_stats_by_period($health_center_id, 
       'name' => $person_wrapper->label(),
       'mother_name' => $mother_wrapper->label(),
       'phone_number' => $mother_wrapper->field_phone_number->value(),
+      'clinic' => !empty($pmtct_wrapper->field_clinic->value()) ? $pmtct_wrapper->field_clinic->getIdentifier() : NULL,
+      'dates' => [],
     ];
   }
 
@@ -261,22 +264,39 @@ function hedley_stats_get_session_attendance_stats_by_period($health_center_id, 
   $completed_program = [];
   $missed_session = [];
   $measurements_types = array_keys(heldey_stats_get_mapped_measurements_content_types());
+
   // Prepare data to be consumed by client side.
   foreach ($sessions as $session_nid) {
     $session_wrapper = entity_metadata_wrapper('node', $session_nid);
     $date = hedley_stats_convert_timestamp_to_nominal($session_wrapper->field_scheduled_date->value->value());
 
-    foreach (array_keys($expected_people_by_health_center) as $person_nid) {
-      // First check if person attended any of the sessions.
-      $attendance = hedley_activity_get_attendance_by_session($session_nid, $person_nid, TRUE, 1);
-      if (!$attendance) {
-        $missed_session[] = $expected_people_by_health_center[$person_nid] + ['date' => $date];
+    foreach ($expected_people_by_health_center as $person_nid => $data) {
+      if ($session_wrapper->field_clinic->getIdentifier() != $data['clinic']) {
+        // Person is not in the same clinic. no need to count them.
+        continue;
+      }
+      // Check if the person has completed the program.
+      $measurements = hedley_activity_get_measurements_by_session($session_nid, $person_nid, $measurements_types);
+      if (empty($measurements)) {
+        if (!isset($missed_session[$person_nid])) {
+          // Remove unwanted info.
+          unset($data['clinic']);
+          // Set data for one time.
+          $missed_session[$person_nid] = $data;
+        }
+
+        $missed_session[$person_nid]['dates'][] = $date;
       }
       else {
-        // Check if the person who attended has completed the program.
-        $measurements = hedley_activity_get_measurements_by_session($session_nid, $person_nid, $measurements_types);
         if (count($measurements) == 4) {
-          $completed_program[] = $expected_people_by_health_center[$person_nid] + ['date' => $date];
+          if (!isset($completed_program[$person_nid])) {
+            // Remove unwanted info.
+            unset($data['clinic']);
+            // Set data for one time.
+            $completed_program[$person_nid] = $data;
+          }
+
+          $completed_program[$person_nid]['dates'][] = $date;
         }
       }
     }
@@ -284,11 +304,11 @@ function hedley_stats_get_session_attendance_stats_by_period($health_center_id, 
 
   // Store in cache.
   cache_set($health_center_cache_id, [
-    $completed_program,
-    $missed_session,
+    array_values($completed_program),
+    array_values($missed_session),
   ], 'cache', CACHE_TEMPORARY);
 
-  return [$completed_program, $missed_session];
+  return [array_values($completed_program), array_values($missed_session)];
 }
 
 /**
@@ -1106,7 +1126,8 @@ function hedley_stats_get_health_center_sessions_by_period($health_center_id, $p
     ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_clinic', 'target_id', $clinics, 'IN')
     // Meaning that we are still expecting those participants.
-    ->fieldCondition('field_scheduled_date', 'value', $dates['start'], '>')
+    ->fieldCondition('field_scheduled_date', 'value', $dates['start'], '>=')
+    ->fieldCondition('field_scheduled_date', 'value2', $dates['end'], '<=')
     ->range(0, $range);
 
   $result = $query->execute();

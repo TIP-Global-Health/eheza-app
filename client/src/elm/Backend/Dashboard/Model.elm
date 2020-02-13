@@ -90,6 +90,7 @@ type alias ParticipantStats =
     { name : String
     , motherName : String
     , phoneNumber : Maybe String
+    , dates : List NominalDate
     }
 
 
