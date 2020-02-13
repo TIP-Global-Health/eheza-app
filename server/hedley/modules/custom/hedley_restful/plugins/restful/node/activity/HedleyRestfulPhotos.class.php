@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulPhotos.
  */
-class HedleyRestfulPhotos extends HedleyRestfulChildActivityBase {
+class HedleyRestfulPhotos extends HedleyRestfulActivityBase {
 
   /**
    * {@inheritdoc}
@@ -25,6 +25,37 @@ class HedleyRestfulPhotos extends HedleyRestfulChildActivityBase {
     ];
 
     return $public_fields;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
+    $query = parent::alterQueryForViewWithDbSelect($query);
+
+    hedley_restful_join_field_to_query($query, 'node', 'field_photo', FALSE);
+
+    // For the Photo, get to the `file`. We'll convert the `uri`
+    // to `field_photo`.
+    $query->innerJoin('file_managed', 'f', 'f.fid = field_photo.field_photo_fid');
+    $query->addField('f', 'uri');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    $items = parent::postExecuteQueryForViewWithDbSelect($items);
+
+    foreach ($items as &$item) {
+      if (!empty($item->photo) && !empty($item->uri)) {
+        $item->photo = image_style_url('patient-photo', $item->uri);
+      }
+
+      unset($item->uri);
+    }
+
+    return $items;
   }
 
   /**

@@ -1,7 +1,6 @@
 module Pages.Person.Fetch exposing (fetch, fetchForCreateOrEdit)
 
-import AllDict
-import AllDictList
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import EverySet
@@ -22,10 +21,10 @@ fetch id db =
         -- We also need to fetch the person data for the other half of
         -- participant pairings even if not a family member.
         participantMembers =
-            AllDict.get id db.participantsByPerson
+            Dict.get id db.participantsByPerson
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.map
-                    (AllDict.values
+                    (Dict.values
                         >> List.foldl addParticipants EverySet.empty
                         >> EverySet.toList
                         >> List.map FetchPerson
@@ -53,7 +52,7 @@ fetchForCreateOrEdit related db =
 
 fetchFamilyMembers : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetchFamilyMembers id db =
-    AllDict.get id db.relationshipsByPerson
+    Dict.get id db.relationshipsByPerson
         |> Maybe.withDefault NotAsked
-        |> RemoteData.map (AllDictList.values >> List.map (.relatedTo >> FetchPerson))
+        |> RemoteData.map (Dict.values >> List.map (.relatedTo >> FetchPerson))
         |> RemoteData.withDefault []

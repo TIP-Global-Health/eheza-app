@@ -6,7 +6,7 @@ import Form.Field exposing (asBool, asString)
 import Form.Input exposing (..)
 import Form.Validate exposing (..)
 import Html exposing (Html, li, text, ul)
-import Json.Decode exposing (Decoder)
+import Json.Decode exposing (Decoder, errorToString)
 import Maybe.Extra exposing (isNothing, unwrap)
 import Translate exposing (Language, ValidationError, translate)
 
@@ -106,7 +106,7 @@ fromDecoder errorTag maybeRequiredTag decoder field =
                         "\"" ++ String.trim s ++ "\""
                 in
                 Json.Decode.decodeString decoder json
-                    |> Result.mapError (customError << errorTag)
+                    |> Result.mapError (customError << errorTag << errorToString)
             )
 
 
@@ -120,4 +120,4 @@ dateInput =
 
 getValueAsInt : Form.FieldState e String -> Maybe Int
 getValueAsInt field =
-    Maybe.andThen (String.toInt >> Result.toMaybe) field.value
+    Maybe.andThen String.toInt field.value

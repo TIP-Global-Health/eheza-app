@@ -8,7 +8,7 @@ import Restful.Endpoint exposing (decodeEntityUuid)
 
 decodeRelationship : Decoder Relationship
 decodeRelationship =
-    decode Relationship
+    succeed Relationship
         |> required "person" decodeEntityUuid
         |> required "related_to" decodeEntityUuid
         |> required "related_by" decodeRelatedBy

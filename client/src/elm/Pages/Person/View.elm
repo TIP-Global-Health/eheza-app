@@ -1,8 +1,7 @@
 module Pages.Person.View exposing (view, viewCreateEditForm)
 
-import AllDict exposing (AllDict)
-import AllDictList
 import App.Model
+import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
@@ -19,13 +18,13 @@ import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), ParticipantDi
 import Backend.Person.Utils exposing (expectedAgeByPerson, isAdult, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
-import Date.Extra as Date exposing (Interval(Year))
+import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import Form exposing (Form)
 import Form.Field
 import Form.Input
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD, fromLocalDateTime, toLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -37,13 +36,10 @@ import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityId, fromEntityUuid, toEntityId)
 import Set
-import Time.Iso8601
 import Translate exposing (Language, TranslationId, translate)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
-import Utils.Form exposing (dateInput, getValueAsInt, isFormFieldSet, viewFormError)
+import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
 import Utils.GeoLocation exposing (GeoInfo, geoInfo)
-import Utils.Html exposing (script, thumbnailImage, viewLoading)
+import Utils.Html exposing (thumbnailImage, viewLoading)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
 
@@ -52,7 +48,7 @@ view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Html App.Model.M
 view language currentDate id db =
     let
         person =
-            AllDict.get id db.people
+            Dict.get id db.people
                 |> Maybe.withDefault NotAsked
 
         headerName =
@@ -103,16 +99,16 @@ viewParticipantDetailsForm language currentDate db id person =
         -- We re-organize our data about relatoinships and group participations
         -- so that we have one record per `OtherPerson`.
         relationshipsData =
-            AllDict.get id db.relationshipsByPerson
+            Dict.get id db.relationshipsByPerson
                 |> Maybe.withDefault NotAsked
 
         participationsData =
-            AllDict.get id db.participantsByPerson
+            Dict.get id db.participantsByPerson
                 |> Maybe.withDefault NotAsked
 
-        addRelationshipToOtherPeople : RelationshipId -> MyRelationship -> EntityUuidDict PersonId OtherPerson -> EntityUuidDict PersonId OtherPerson
+        addRelationshipToOtherPeople : RelationshipId -> MyRelationship -> Dict PersonId OtherPerson -> Dict PersonId OtherPerson
         addRelationshipToOtherPeople relationshipId myRelationship accum =
-            AllDict.update myRelationship.relatedTo
+            Dict.update myRelationship.relatedTo
                 (\existing ->
                     Just
                         { relationship = Just ( relationshipId, myRelationship )
@@ -123,7 +119,7 @@ viewParticipantDetailsForm language currentDate db id person =
                 )
                 accum
 
-        addParticipantToOtherPeople : PmtctParticipantId -> PmtctParticipant -> EntityUuidDict PersonId OtherPerson -> EntityUuidDict PersonId OtherPerson
+        addParticipantToOtherPeople : PmtctParticipantId -> PmtctParticipant -> Dict PersonId OtherPerson -> Dict PersonId OtherPerson
         addParticipantToOtherPeople pmtctParticipantId pmtctParticipant accum =
             let
                 otherParticipantId =
@@ -133,7 +129,7 @@ viewParticipantDetailsForm language currentDate db id person =
                     else
                         pmtctParticipant.child
             in
-            AllDict.update otherParticipantId
+            Dict.update otherParticipantId
                 (\existing ->
                     Just
                         { relationship = Maybe.andThen .relationship existing
@@ -145,28 +141,28 @@ viewParticipantDetailsForm language currentDate db id person =
                 )
                 accum
 
-        otherPeople : WebData (EntityUuidDict PersonId OtherPerson)
+        otherPeople : WebData (Dict PersonId OtherPerson)
         otherPeople =
             RemoteData.append relationshipsData participationsData
                 |> RemoteData.map
                     (\( relationships, participations ) ->
                         let
                             withParticipants =
-                                AllDict.foldl addParticipantToOtherPeople EntityUuidDict.empty participations
+                                Dict.foldl addParticipantToOtherPeople Dict.empty participations
                         in
-                        AllDictList.foldl addRelationshipToOtherPeople withParticipants relationships
+                        Dict.foldl addRelationshipToOtherPeople withParticipants relationships
                     )
 
         viewOtherPeople people =
             people
-                |> AllDict.map
+                |> Dict.map
                     (\otherPersonId otherPerson ->
-                        AllDict.get otherPersonId db.people
+                        Dict.get otherPersonId db.people
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.append db.clinics
                             |> viewWebData language (viewOtherPerson language currentDate id ( otherPersonId, otherPerson )) identity
                     )
-                |> AllDict.values
+                |> Dict.values
                 |> div [ class "ui unstackable items participants-list" ]
 
         isAdult =
@@ -191,10 +187,8 @@ viewParticipantDetailsForm language currentDate db id person =
                         [ class "ui image" ]
                         [ span
                             [ class ("icon-participant add " ++ typeForAddFamilyMember)
-                            , style
-                                [ ( "height", "120px" )
-                                , ( "width", "120px" )
-                                ]
+                            , style "height" "120px"
+                            , style "width" "120px"
                             ]
                             []
                         ]
@@ -293,7 +287,7 @@ viewPerson language currentDate id person =
         ]
 
 
-viewOtherPerson : Language -> NominalDate -> PersonId -> ( PersonId, OtherPerson ) -> ( EntityUuidDictList ClinicId Clinic, Person ) -> Html App.Model.Msg
+viewOtherPerson : Language -> NominalDate -> PersonId -> ( PersonId, OtherPerson ) -> ( Dict ClinicId Clinic, Person ) -> Html App.Model.Msg
 viewOtherPerson language currentDate relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
     let
         typeForThumbnail =
@@ -322,7 +316,7 @@ viewOtherPerson language currentDate relationMainId ( otherPersonId, otherPerson
 
         groupNames =
             otherPerson.groups
-                |> List.map (\( _, group ) -> AllDictList.get group.clinic clinics)
+                |> List.map (\( _, group ) -> Dict.get group.clinic clinics)
                 |> List.filterMap (Maybe.map .name)
                 |> String.join ", "
 
@@ -411,7 +405,7 @@ viewCreateEditForm language currentDate operation model db =
         -- When editing, this is the person that is being edited.
         maybeRelatedPerson =
             personId
-                |> Maybe.andThen (\id -> AllDict.get id db.people)
+                |> Maybe.andThen (\id -> Dict.get id db.people)
                 |> Maybe.andThen RemoteData.toMaybe
 
         personForm =
@@ -495,30 +489,26 @@ viewCreateEditForm language currentDate operation model db =
         selectedBirthDate =
             Form.getFieldAsString Backend.Person.Form.birthDate personForm
                 |> .value
-                |> Maybe.andThen (Time.Iso8601.toDate >> Result.toMaybe)
+                |> Maybe.andThen (Date.fromIsoString >> Result.toMaybe)
+
+        ( birthDateSelectorFrom, birthDateSelectorTo ) =
+            case operation of
+                -- When creating without relation, allow full dates range.
+                CreatePerson Nothing ->
+                    ( Date.add Years -60 currentDate, currentDate )
+
+                _ ->
+                    case expectedAge of
+                        ExpectChild ->
+                            ( Date.add Years -13 currentDate, currentDate )
+
+                        ExpectAdult ->
+                            ( Date.add Years -60 currentDate, Date.add Years -13 currentDate )
+
+                        ExpectAdultOrChild ->
+                            ( Date.add Years -60 currentDate, currentDate )
 
         birthDateInput =
-            let
-                today =
-                    toLocalDateTime currentDate 0 0 0 0
-
-                ( birthDateSelectorFrom, birthDateSelectorTo ) =
-                    case operation of
-                        -- When creating without relation, allow full dates range.
-                        CreatePerson Nothing ->
-                            ( Date.add Year -60 today, today )
-
-                        _ ->
-                            case expectedAge of
-                                ExpectChild ->
-                                    ( Date.add Year -13 today, today )
-
-                                ExpectAdult ->
-                                    ( Date.add Year -60 today, Date.add Year -13 today )
-
-                                ExpectAdultOrChild ->
-                                    ( Date.add Year -60 today, today )
-            in
             div [ class "ui grid" ]
                 [ div
                     [ class "six wide column" ]
@@ -533,7 +523,7 @@ viewCreateEditForm language currentDate operation model db =
                         model.isDateSelectorOpen
                         birthDateSelectorFrom
                         birthDateSelectorTo
-                        (Maybe.map (\date -> toLocalDateTime date 12 0 0 0) selectedBirthDate)
+                        selectedBirthDate
                     ]
                 , div
                     [ class "three wide column" ]
@@ -575,7 +565,7 @@ viewCreateEditForm language currentDate operation model db =
             allEducationLevels
                 |> List.map
                     (\level ->
-                        ( toString (encodeEducationLevel level)
+                        ( Debug.toString (encodeEducationLevel level)
                         , translate language (Translate.LevelOfEducation level)
                         )
                     )
@@ -621,10 +611,10 @@ viewCreateEditForm language currentDate operation model db =
 
                             orderAsString =
                                 if order < 10 then
-                                    "0" ++ toString order
+                                    "0" ++ String.fromInt order
 
                                 else
-                                    toString order
+                                    String.fromInt order
                         in
                         ( orderAsString, orderAsString )
                     )
@@ -656,11 +646,6 @@ viewCreateEditForm language currentDate operation model db =
                         ]
                     ]
                     |> keyed "dropzone"
-
-                -- This runs the function from our `app.js` at the precise moment this gets
-                -- written to the DOM. Indeed very convenient.
-                , script "bindDropZone()"
-                    |> keyed "script"
                 ]
 
         levelOfEducationInput =
@@ -680,7 +665,7 @@ viewCreateEditForm language currentDate operation model db =
                 options =
                     emptyOption
                         :: (List.repeat 5 "."
-                                |> List.indexedMap (\index _ -> ( toString index, toString index ))
+                                |> List.indexedMap (\index _ -> ( Debug.toString index, Debug.toString index ))
                            )
             in
             viewSelectInput language Translate.NumberOfChildrenUnder5 options Backend.Person.Form.numberOfChildren "ten" "select-input" False personForm
@@ -729,8 +714,8 @@ viewCreateEditForm language currentDate operation model db =
             allUbudehes
                 |> List.map
                     (\ubudehe ->
-                        ( toString (encodeUbudehe ubudehe)
-                        , toString (encodeUbudehe ubudehe)
+                        ( Debug.toString (encodeUbudehe ubudehe)
+                        , Debug.toString (encodeUbudehe ubudehe)
                         )
                     )
                 |> (::) emptyOption
@@ -741,15 +726,15 @@ viewCreateEditForm language currentDate operation model db =
 
         geoLocationDictToOptions dict =
             dict
-                |> AllDict.toList
+                |> Dict.toList
                 |> List.map
                     (\( id, geoLocation ) ->
-                        ( toString <| fromEntityId id, geoLocation.name )
+                        ( Debug.toString <| fromEntityId id, geoLocation.name )
                     )
 
         filterGeoLocationDictByParent parentId dict =
             dict
-                |> AllDict.filter
+                |> Dict.filter
                     (\_ geoLocation ->
                         (Just <| toEntityId parentId) == geoLocation.parent
                     )
@@ -954,11 +939,11 @@ viewCreateEditForm language currentDate operation model db =
                                 |> RemoteData.map
                                     (\dict ->
                                         dict
-                                            |> AllDictList.toList
+                                            |> Dict.toList
                                             |> List.map
-                                                (\( id, healthCenter ) ->
+                                                (\( id, healthCenter_ ) ->
                                                     ( fromEntityUuid id
-                                                    , healthCenter.name
+                                                    , healthCenter_.name
                                                     )
                                                 )
                                             |> List.sortBy (\( id, name ) -> name)

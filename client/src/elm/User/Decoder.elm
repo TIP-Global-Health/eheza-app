@@ -9,7 +9,7 @@ import User.Model exposing (..)
 
 decodeUser : Decoder User
 decodeUser =
-    decode User
+    succeed User
         |> required "id" decodeEntityId
         |> required "label" string
         |> optional "avatar_url" string "https://github.com/foo.png?s=90"

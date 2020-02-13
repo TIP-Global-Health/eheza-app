@@ -1,19 +1,18 @@
 module Pages.Person.Update exposing (update)
 
-import AllDict
-import AllDictList
 import App.Model
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PersonId)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form exposing (PersonForm, applyDefaultValues, birthDate, validatePerson)
 import Backend.Person.Model exposing (ExpectedAge(..), ParticipantDirectoryOperation(..), Person)
+import Date
 import Form
 import Form.Field
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD, fromLocalDateTime)
 import Maybe.Extra exposing (isJust)
 import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
 
 
 update : NominalDate -> Msg -> ModelIndexedDb -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -31,7 +30,7 @@ update currentDate msg db model =
 
                 related =
                     relation
-                        |> Maybe.andThen (\personId -> AllDict.get personId db.people)
+                        |> Maybe.andThen (\personId -> Dict.get personId db.people)
                         |> Maybe.andThen RemoteData.toMaybe
 
                 newForm =
@@ -125,7 +124,7 @@ update currentDate msg db model =
         DateSelected operation date ->
             let
                 dateAsString =
-                    fromLocalDateTime date |> formatYYYYMMDD
+                    Date.format "yyyy-MM-dd" date
 
                 setFieldMsg =
                     Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm operation
@@ -158,16 +157,16 @@ generateMsgsForPersonEdit currentDate personId person form db =
             if List.any (.value >> isJust) [ province, district, sector, cell, village ] then
                 let
                     childrenIds =
-                        AllDict.get personId db.relationshipsByPerson
+                        Dict.get personId db.relationshipsByPerson
                             |> Maybe.withDefault NotAsked
-                            |> RemoteData.map (AllDictList.values >> List.map .relatedTo)
+                            |> RemoteData.map (Dict.values >> List.map .relatedTo)
                             |> RemoteData.withDefault []
 
                     updatedChildren =
                         childrenIds
                             |> List.map
                                 (\childId ->
-                                    AllDict.get childId db.people
+                                    Dict.get childId db.people
                                         |> Maybe.withDefault NotAsked
                                         |> RemoteData.map
                                             (\child ->

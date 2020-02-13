@@ -45,7 +45,7 @@ module Backend.Person.Form exposing
     , withDefault
     )
 
-import AllDict
+import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
 import Backend.Person.Decoder exposing (decodeEducationLevel, decodeGender, decodeHivStatus, decodeMaritalStatus, decodeModeOfDelivery, decodeUbudehe)
 import Backend.Person.Encoder
@@ -64,13 +64,11 @@ import Form exposing (..)
 import Form.Field
 import Form.Init exposing (..)
 import Form.Validate exposing (..)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, formatYYYYMMDD, fromLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, formatYYYYMMDD)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Regex exposing (Regex)
 import Restful.Endpoint exposing (decodeEntityUuid, fromEntityId, fromEntityUuid, toEntityId, toEntityUuid)
-import Time.Date
-import Time.Iso8601
 import Translate exposing (ValidationError(..))
 import Utils.Form exposing (fromDecoder, nullable)
 import Utils.GeoLocation exposing (geoInfo, getGeoLocation)
@@ -99,7 +97,7 @@ expectedAgeByForm : NominalDate -> PersonForm -> ParticipantDirectoryOperation -
 expectedAgeByForm currentDate form operation =
     Form.getFieldAsString birthDate form
         |> .value
-        |> Maybe.andThen (Time.Iso8601.toDate >> Result.toMaybe)
+        |> Maybe.andThen (Date.fromIsoString >> Result.toMaybe)
         |> (\birthDate_ -> resolveExpectedAge currentDate birthDate_ operation)
 
 
@@ -267,7 +265,7 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
                     if formFieldEmpty fieldName form_ then
                         Form.update
                             validation
-                            (Form.Input fieldName Form.Select (Form.Field.String (toString <| fromEntityId defaultId)))
+                            (Form.Input fieldName Form.Select (Form.Field.String (Debug.toString <| fromEntityId defaultId)))
                             form_
 
                     else
@@ -279,7 +277,7 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
     case operation of
         CreatePerson _ ->
             form
-                |> applyDefaultSelectInput ubudehe defaultUbudehe (encodeUbudehe >> toString)
+                |> applyDefaultSelectInput ubudehe defaultUbudehe (encodeUbudehe >> Debug.toString)
                 |> applyDefaultSelectInput healthCenter defaultHealthCenter fromEntityUuid
                 |> applyDefaultLocation province defaultProvinceId
                 |> applyDefaultLocation district defaultDistrictId
@@ -298,11 +296,11 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
                 |> applyDefaultSelectInput hmisNumber defaultHmisNumber identity
                 |> applyDefaultGender
                 |> applyDefaultSelectInput hivStatus defaultHivStatus encodeHivStatus
-                |> applyDefaultSelectInput educationLevel defaultlEducationLevel (encodeEducationLevel >> toString)
+                |> applyDefaultSelectInput educationLevel defaultlEducationLevel (encodeEducationLevel >> Debug.toString)
                 |> applyDefaultSelectInput maritalStatus defaultMaritalStatus encodeMaritalStatus
                 |> applyDefaultSelectInput modeOfDelivery defaultModeOfDelivery encodeModeOfDelivery
-                |> applyDefaultSelectInput numberOfChildren defaultlNumberOfChildrenl toString
-                |> applyDefaultSelectInput ubudehe defaultUbudehe (encodeUbudehe >> toString)
+                |> applyDefaultSelectInput numberOfChildren defaultlNumberOfChildrenl Debug.toString
+                |> applyDefaultSelectInput ubudehe defaultUbudehe (encodeUbudehe >> Debug.toString)
                 |> applyDefaultLocation province defaultProvinceId
                 |> applyDefaultLocation district defaultDistrictId
                 |> applyDefaultLocation sector defaultSectorId
@@ -429,7 +427,6 @@ validateHmisNumber =
                         customError InvalidHmisNumber
                 in
                 String.toInt s
-                    |> Result.toMaybe
                     |> Maybe.map
                         (\number ->
                             if number > 0 && number < 16 then
@@ -459,7 +456,7 @@ validateProvince related =
         |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
-                AllDict.get (toEntityId id) geoInfo.provinces
+                Dict.get (toEntityId id) geoInfo.provinces
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownProvince)
             )
@@ -472,7 +469,7 @@ validateDistrict related =
         |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
-                AllDict.get (toEntityId id) geoInfo.districts
+                Dict.get (toEntityId id) geoInfo.districts
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownDistrict)
             )
@@ -485,7 +482,7 @@ validateSector related =
         |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
-                AllDict.get (toEntityId id) geoInfo.sectors
+                Dict.get (toEntityId id) geoInfo.sectors
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownSector)
             )
@@ -498,7 +495,7 @@ validateCell related =
         |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
-                AllDict.get (toEntityId id) geoInfo.cells
+                Dict.get (toEntityId id) geoInfo.cells
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownCell)
             )
@@ -511,7 +508,7 @@ validateVillage related =
         |> mapError (\_ -> customError RequiredField)
         |> andThen
             (\id ->
-                AllDict.get (toEntityId id) geoInfo.villages
+                Dict.get (toEntityId id) geoInfo.villages
                     |> Maybe.map (.name >> Just >> succeed)
                     |> Maybe.withDefault (fail <| customError UnknownVillage)
             )
@@ -543,15 +540,13 @@ validateBirthDate expectedAge maybeCurrentDate =
                             let
                                 -- Convert to NominalDate.
                                 maybeBirthDate =
-                                    Time.Iso8601.toDate s
+                                    Date.fromIsoString s
                                         |> Result.toMaybe
                             in
-                            maybeBirthDate
-                                -- Calculate difference of years between input birt
-                                -- date and current date.
-                                |> Maybe.map (Time.Date.delta currentDate >> .years)
+                            -- Calculate difference of years between input birth
+                            -- date and current date.
+                            diffInYears currentDate maybeBirthDate
                                 |> unwrap
-                                    -- Conversion to NominalDate failed.
                                     (fail <| customError InvalidBirthDate)
                                     (\delta ->
                                         if delta > 12 && expectedAge == ExpectChild then
@@ -627,7 +622,8 @@ validateHealthCenterId related =
 
 allDigitsPattern : Regex
 allDigitsPattern =
-    Regex.regex "^[0-9]*$"
+    Regex.fromString "^[0-9]*$"
+        |> Maybe.withDefault Regex.never
 
 
 

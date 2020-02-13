@@ -1,9 +1,9 @@
 module Backend.Person.Utils exposing (ageInYears, diffInYears, expectedAgeByPerson, isAdult, isPersonAnAdult, resolveExpectedAge)
 
 import Backend.Person.Model exposing (ExpectedAge(..), ParticipantDirectoryOperation(..), Person)
-import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
+import Date
+import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
-import Time.Date
 
 
 ageInYears : NominalDate -> Person -> Maybe Int
@@ -13,7 +13,7 @@ ageInYears currentDate person =
 
 diffInYears : NominalDate -> Maybe NominalDate -> Maybe Int
 diffInYears currentDate comparedDate =
-    Maybe.map (Time.Date.delta currentDate >> .years) comparedDate
+    Maybe.map (\compared -> Date.diff Date.Years compared currentDate) comparedDate
 
 
 isAdult : NominalDate -> Maybe NominalDate -> Maybe Bool

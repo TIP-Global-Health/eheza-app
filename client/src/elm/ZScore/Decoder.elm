@@ -1,14 +1,14 @@
 module ZScore.Decoder exposing (decodeForAge, decodeForCentimetres)
 
-import AllDict exposing (AllDict)
 import Backend.Person.Model exposing (Gender(..))
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
+import Utils.AllDict as AllDict exposing (AllDict)
 import ZScore.Model exposing (..)
 
 
 {-| This is a type which matches the structure of our JSON. We initially
-decode this, and then turn it into a type that is more oriented to our
+succeed this, and then turn it into a type that is more oriented to our
 app's needs.
 -}
 type alias JsonByAge key value =
@@ -45,7 +45,7 @@ decodeGender =
                     succeed Female
 
                 _ ->
-                    fail <| "Not a recognized code for a gender: " ++ toString gender
+                    fail <| "Not a recognized code for a gender: " ++ String.fromInt gender
         )
         int
 
@@ -54,7 +54,7 @@ decodeGender =
 -}
 decodeJsonByAge : (Int -> key) -> (Float -> value) -> Decoder (JsonByAge key value)
 decodeJsonByAge tagKey tagValue =
-    decode JsonByAge
+    succeed JsonByAge
         |> required "sex" decodeGender
         |> required "age" (map tagKey int)
         |> required "l" float
@@ -64,7 +64,7 @@ decodeJsonByAge tagKey tagValue =
 
 decodeJsonKgByCm : String -> (Float -> key) -> Decoder (JsonKgByCm key)
 decodeJsonKgByCm label tagKey =
-    decode JsonKgByCm
+    succeed JsonKgByCm
         |> required "sex" decodeGender
         |> required label (map tagKey float)
         |> required "l" float

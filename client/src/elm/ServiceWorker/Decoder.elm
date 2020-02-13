@@ -1,11 +1,12 @@
 module ServiceWorker.Decoder exposing (decodeIncomingMsg)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Decoder exposing (decodeRevision)
 import Backend.SyncData.Decoder exposing (decodeSyncData)
 import Json.Decode exposing (..)
 import Restful.Endpoint exposing (decodeEntityUuid)
 import ServiceWorker.Model exposing (..)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
+import Utils.Json exposing (decodeArray2)
 
 
 {-| Given some JSON our port sends in, decode it into a Msg we can handle. So,
@@ -29,7 +30,7 @@ decodeIncomingMsg =
                             |> map SetNewWorker
 
                     "SyncData" ->
-                        field "data" (EntityUuidDictList.decodeArray2 (field "uuid" decodeEntityUuid) decodeSyncData)
+                        field "data" (decodeArray2 (field "uuid" decodeEntityUuid) decodeSyncData)
                             |> map SetSyncData
 
                     "NewRevisions" ->

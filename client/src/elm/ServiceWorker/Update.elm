@@ -16,10 +16,10 @@ import RemoteData exposing (RemoteData(..))
 import ServiceWorker.Decoder exposing (decodeIncomingMsg)
 import ServiceWorker.Encoder exposing (encodeOutgoingMsg)
 import ServiceWorker.Model exposing (..)
-import Time exposing (Time)
+import Time
 
 
-update : Time -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update : Time.Posix -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentTime msg model =
     case msg of
         BackToPinCodePage ->
@@ -40,11 +40,11 @@ update currentTime msg model =
                     in
                     ( model, Cmd.none, [] )
 
-        SendOutgoingMsg msg ->
-            sendOutgoingMsg currentTime msg model
+        SendOutgoingMsg msg_ ->
+            sendOutgoingMsg currentTime msg_ model
 
 
-handleIncomingMsg : Time -> IncomingMsg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+handleIncomingMsg : Time.Posix -> IncomingMsg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 handleIncomingMsg currentTime msg model =
     case msg of
         RegistrationSucceeded ->
@@ -98,7 +98,7 @@ handleIncomingMsg currentTime msg model =
             )
 
 
-sendOutgoingMsg : Time -> OutgoingMsg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+sendOutgoingMsg : Time.Posix -> OutgoingMsg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 sendOutgoingMsg currentTime msg model =
     case msg of
         Register ->

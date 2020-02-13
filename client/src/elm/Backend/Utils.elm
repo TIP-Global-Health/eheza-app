@@ -1,6 +1,6 @@
 module Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements)
 
-import AllDict
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildMeasurementList, MotherMeasurementList)
 import Backend.Model exposing (..)
@@ -11,19 +11,19 @@ mapChildMeasurements : PersonId -> (ChildMeasurementList -> ChildMeasurementList
 mapChildMeasurements childId func model =
     let
         childMeasurements =
-            AllDict.get childId model.childMeasurements
+            Dict.get childId model.childMeasurements
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.map func
     in
-    { model | childMeasurements = AllDict.insert childId childMeasurements model.childMeasurements }
+    { model | childMeasurements = Dict.insert childId childMeasurements model.childMeasurements }
 
 
 mapMotherMeasurements : PersonId -> (MotherMeasurementList -> MotherMeasurementList) -> ModelIndexedDb -> ModelIndexedDb
 mapMotherMeasurements motherId func model =
     let
         motherMeasurements =
-            AllDict.get motherId model.motherMeasurements
+            Dict.get motherId model.motherMeasurements
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.map func
     in
-    { model | motherMeasurements = AllDict.insert motherId motherMeasurements model.motherMeasurements }
+    { model | motherMeasurements = Dict.insert motherId motherMeasurements model.motherMeasurements }
