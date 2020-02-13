@@ -24,7 +24,7 @@ function hedley_person_image_default_styles() {
   $styles['patient-photo'] = array(
     'label' => 'Patient photo',
     'effects' => array(
-      2 => array(
+      1 => array(
         'name' => 'image_scale_and_crop',
         'data' => array(
           'width' => 200,
@@ -34,7 +34,7 @@ function hedley_person_image_default_styles() {
       ),
     ),
   );
-
+  
   return $styles;
 }
 

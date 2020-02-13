@@ -27,15 +27,39 @@ import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
-import Backend.Person.Model exposing (EducationLevel(..), Gender(..), HIVStatus(..), MaritalStatus(..), ModeOfDelivery(..), VaginalDelivery(..))
+import Backend.Person.Model
+    exposing
+        ( EducationLevel(..)
+        , Gender(..)
+        , HIVStatus(..)
+        , MaritalStatus(..)
+        , ModeOfDelivery(..)
+        , VaginalDelivery(..)
+        )
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month(..))
 import Form.Error exposing (ErrorValue(..))
 import Http
 import Pages.Page exposing (..)
-import Pages.PrenatalActivity.Model exposing (CSectionReason(..), ExaminationTask(..), HistoryTask(..), LmpRange(..), PatientProvisionsTask(..), PreviousDeliveryPeriod(..))
-import PrenatalActivity.Model exposing (PrenatalActivity(..))
+import Pages.PrenatalActivity.Model
+    exposing
+        ( ExaminationTask(..)
+        , HistoryTask(..)
+        , LmpRange(..)
+        , PatientProvisionsTask(..)
+        )
+import PrenatalActivity.Model
+    exposing
+        ( HighRiskFactor(..)
+        , HighSeverityAlert(..)
+        , MedicalDiagnosis(..)
+        , ObstetricalDiagnosis(..)
+        , PregnancyTrimester(..)
+        , PrenatalActivity(..)
+        , RiskFactor(..)
+        )
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
 import Translate.Model exposing (TranslationSet)
@@ -132,6 +156,7 @@ type TranslationId
     = Abdomen
     | AbdomenCPESign AbdomenCPESign
     | Abnormal
+    | Abortions
     | AccompaniedByPartner
     | AccessDenied
     | Activities
@@ -169,7 +194,9 @@ type TranslationId
     | BabyName String
     | Back
     | BackendError
+    | BegingNewEncounter
     | BloodPressure
+    | BloodPressureElevatedOcassions
     | BloodPressureDiaLabel
     | BloodPressureSysLabel
     | BMI
@@ -187,7 +214,7 @@ type TranslationId
     | CaregiverName
     | CaregiverNationalId
     | CentimeterShorthand
-    | Celcius
+    | Celsius
     | Cell
     | ChartPhrase ChartPhrase
     | CheckIn
@@ -197,15 +224,20 @@ type TranslationId
     | ChildNutritionSignReport ChildNutritionSign
     | ChildOf
     | Children
+    | ChildrenNames
+    | ChildrenNationalId
     | ClickTheCheckMark
     | ClinicType ClinicType
     | Clinical
-    | ConvulsionsAndUnconciousPreviousDelivery
+    | ClinicalProgressReport
+    | ConvulsionsAndUnconsciousPreviousDelivery
     | ConvulsionsPreviousDelivery
+    | CSectionScar CSectionScar
     | GroupNotFound
     | Group
     | Groups
     | GroupUnauthorized
+    | Close
     | Closed
     | ConfirmationRequired
     | ConfirmDeleteTrainingGroupEncounters
@@ -227,13 +259,17 @@ type TranslationId
     | DangerSign DangerSign
     | Dashboard
     | DateOfLastAssessment
+    | DatePregnancyConcluded
     | Day
     | DaySinglePlural Int
     | DateOfBirth
     | Days
     | Delete
     | DeleteTrainingGroupEncounters
+    | DeliveryLocation
+    | DeliveryOutcome
     | DemographicInformation
+    | DemographicsReport
     | Device
     | DeviceNotAuthorized
     | DeviceStatus
@@ -241,12 +277,14 @@ type TranslationId
     | District
     | DOB
     | DropzoneDefaultMessage
+    | DueDate
     | Edd
     | EddHeader
     | Edema
     | EditRelationship
     | Ega
     | EgaHeader
+    | EgaWeeks
     | EmptyString
     | EndEncounter
     | EndGroupEncounter
@@ -257,6 +295,7 @@ type TranslationId
     | ExaminationTask ExaminationTask
     | Extremities
     | Eyes
+    | Facility
     | Failure
     | FamilyInformation
     | FamilyMembers
@@ -271,32 +310,45 @@ type TranslationId
     | FatherName
     | FatherNationalId
     | FilterByName
+    | FirstAntenatalVisit
     | FirstName
+    | FiveVisits
+    | ForIllustrativePurposesOnly
     | FormError (ErrorValue ValidationError)
     | FormField String
     | FundalHeight
     | Gender Gender
     | GenderLabel
-    | GestatipnalDiabetesPreviousPregnancy
+    | GestationalDiabetesPreviousPregnancy
     | GoHome
     | GroupAssessment
     | Gravida
     | Hands
     | HandsCPESign HandsCPESign
-    | HaveYouSynced
     | HeadHair
     | HealthCenter
     | Heart
+    | HeartMurmur
+    | HeartCPESign HeartCPESign
     | HeartRate
     | Height
+    | High
+    | HighRiskFactor HighRiskFactor
+    | HighRiskFactors
+    | HighSeverityAlert HighSeverityAlert
+    | HighSeverityAlerts
     | HistoryTask HistoryTask
     | HIV
     | HIVStatus HIVStatus
     | HIVStatusLabel
+    | Home
     | HouseholdSize
     | HttpError Http.Error
     | HypertensionBeforePregnancy
     | IncompleteCervixPreviousPregnancy
+    | IndividualEncounter
+    | IndividualEncounterType IndividualEncounterType
+    | IndividualEncounterTypes
     | KilogramShorthand
     | LastChecked
     | Legs
@@ -304,11 +356,13 @@ type TranslationId
     | LevelOfEducationLabel
     | LevelOfEducation EducationLevel
     | LinkToMother
+    | LiveChildren
     | LmpDateConfidentHeader
     | LmpDateHeader
     | LmpRangeHeader
     | LmpRange LmpRange
     | LoginPhrase LoginPhrase
+    | Low
     | Lungs
     | LungsCPESign LungsCPESign
     | MakeSureYouAreConnected
@@ -317,10 +371,11 @@ type TranslationId
     | MeasurementNoChange
     | MeasurementGained Float
     | MeasurementLost Float
+    | MedicalDiagnosis
+    | MedicalDiagnosisAlert MedicalDiagnosis
     | MedicalFormHelper
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MMHGUnit
-    | MentalHealthHistory
     | MiddleName
     | MinutesAgo Int
     | ModeOfDelivery ModeOfDelivery
@@ -339,6 +394,7 @@ type TranslationId
     | MyAccount
     | MyRelatedBy MyRelatedBy
     | MyRelatedByQuestion MyRelatedBy
+    | Name
     | NationalIdNumber
     | Neck
     | NeckCPESign NeckCPESign
@@ -365,8 +421,11 @@ type TranslationId
     | NumberOfLiveChildren
     | NumberOfStillbirthsAtTerm
     | NumberOfStillbirthsPreTerm
+    | ObstetricalDiagnosis
+    | ObstetricalDiagnosisAlert ObstetricalDiagnosis
     | OK
     | Old
+    | OneVisit
     | OnceYouEndYourGroupEncounter
     | Page
     | Page404
@@ -382,7 +441,11 @@ type TranslationId
     | ParticipantSummary
     | ParticipantDemographicInformation
     | ParticipantInformation
-    | PartnerReceivedCounseling
+    | PartnerHivTestResult
+    | PartnerReceivedHivCounseling
+    | PartnerReceivedHivTesting
+    | PatientProgress
+    | PatientInformation
     | PatientProvisionsTask PatientProvisionsTask
     | People
     | PersistentStorage Bool
@@ -393,9 +456,16 @@ type TranslationId
     | PlaceholderEnterParticipantName
     | PlaceholderEnterWeight
     | PleaseSelectGroup
+    | PleaseSync
     | PreeclampsiaPreviousPregnancy
+    | PregnancyTrimester PregnancyTrimester
     | PrenatalActivitiesTitle PrenatalActivity
     | PrenatalEncounter
+    | PrenatalPhotoHelper
+    | PreTerm
+    | PregnancyConcludedLabel
+    | PregnancyOutcomeLabel
+    | PregnancyOutcome PregnancyOutcome
     | PreviousCSectionScar
     | PreviousDelivery
     | PreviousDeliveryPeriods PreviousDeliveryPeriod
@@ -403,13 +473,19 @@ type TranslationId
     | PreviousMeasurementNotFound
     | Profession
     | Programs
+    | ProgressPhotos
     | ProgressReport
+    | ProgressTimeline
+    | ProgressTrends
+    | PrenatalParticipant
+    | PrenatalParticipants
     | PreTermPregnancy
     | Province
     | ReasonForCSection
     | ReceivedDewormingPill
     | ReceivedIronFolicAcid
     | ReceivedMosquitoNet
+    | RecordPregnancyOutcome
     | Register
     | RegisterAParticipant
     | RegisterHelper
@@ -434,21 +510,30 @@ type TranslationId
     | RespiratoryRate
     | Retry
     | RhNegative
+    | RiskFactorAlert RiskFactor
+    | RiskFactors
     | Save
     | SaveAndNext
     | SaveError
     | Search
     | SearchByName
+    | SearchExistingParticipants
     | SearchHelper
     | SearchHelperFamilyMember
     | SecondName
     | Sector
+    | SelectAntenatalVisit
     | SelectDangerSigns
+    | SelectEncounterType
     | SelectGroup
     | SelectProgram
     | SelectLanguage
     | SelectYourGroup
     | SelectYourHealthCenter
+    | SelectedHCDownloading
+    | SelectedHCNotSynced
+    | SelectedHCSyncing
+    | SelectedHCUploading
     | ServiceWorkerActive
     | ServiceWorkerCurrent
     | ServiceWorkerCheckForUpdates
@@ -466,9 +551,11 @@ type TranslationId
     | ServiceWorkerRegSuccess
     | ServiceWorkerStatus
     | SevereHemorrhagingPreviousDelivery
+    | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
     | StillbornPreviousDelivery
+    | SubsequentAntenatalVisit
     | SuccessiveAbortions
-    | SuccessivePrimatureDeliveries
+    | SuccessivePrematureDeliveries
     | GroupEncounterClosed
     | GroupEncounterClosed2 SessionId
     | GroupEncounterLoading
@@ -488,6 +575,7 @@ type TranslationId
     | TakenCareOfBy
     | TasksCompleted Int Int
     | TelephoneNumber
+    | Term
     | TermPregnancy
     | ThisActionCannotBeUndone
     | ThisGroupHasNoMothers
@@ -497,6 +585,7 @@ type TranslationId
     | TrySyncing
     | TuberculosisPast
     | TuberculosisPresent
+    | TwoVisits
     | UbudeheLabel
     | Unknown
     | Update
@@ -504,6 +593,7 @@ type TranslationId
     | UterineMyoma
     | ValidationErrors
     | Version
+    | View
     | ViewProgressReport
     | Village
     | WeekSinglePlural Int
@@ -531,8 +621,8 @@ translationSet trans =
 
         AbdomenCPESign option ->
             case option of
-                Heptomegaly ->
-                    { english = "Heptomegaly"
+                Hepatomegaly ->
+                    { english = "Hepatomegaly"
                     , kinyarwanda = Nothing
                     }
 
@@ -571,6 +661,11 @@ translationSet trans =
 
         Abnormal ->
             { english = "Abnormal"
+            , kinyarwanda = Nothing
+            }
+
+        Abortions ->
+            { english = "Abortions"
             , kinyarwanda = Nothing
             }
 
@@ -903,18 +998,28 @@ translationSet trans =
             , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
             }
 
+        BegingNewEncounter ->
+            { english = "Beging a New Encounter"
+            , kinyarwanda = Nothing
+            }
+
         BloodPressure ->
             { english = "Blood Pressure"
             , kinyarwanda = Nothing
             }
 
+        BloodPressureElevatedOcassions ->
+            { english = "Blood Pressure Elevated occasions"
+            , kinyarwanda = Nothing
+            }
+
         BloodPressureDiaLabel ->
-            { english = "DIA"
+            { english = "Diastolic"
             , kinyarwanda = Nothing
             }
 
         BloodPressureSysLabel ->
-            { english = "SYS"
+            { english = "Systolic"
             , kinyarwanda = Nothing
             }
 
@@ -1013,8 +1118,8 @@ translationSet trans =
             , kinyarwanda = Just "cm"
             }
 
-        Celcius ->
-            { english = "celcius"
+        Celsius ->
+            { english = "Celsius"
             , kinyarwanda = Nothing
             }
 
@@ -1107,6 +1212,16 @@ translationSet trans =
             , kinyarwanda = Just "Abana"
             }
 
+        ChildrenNames ->
+            { english = "Children's names"
+            , kinyarwanda = Nothing
+            }
+
+        ChildrenNationalId ->
+            { english = "Children's National ID"
+            , kinyarwanda = Nothing
+            }
+
         ChildOf ->
             { english = "Child of"
             , kinyarwanda = Just "Umwana wa"
@@ -1139,7 +1254,12 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        ConvulsionsAndUnconciousPreviousDelivery ->
+        ClinicalProgressReport ->
+            { english = "Clinical Progress Report"
+            , kinyarwanda = Nothing
+            }
+
+        ConvulsionsAndUnconsciousPreviousDelivery ->
             { english = "Experienced convulsions and resulted in becoming unconscious after delivery"
             , kinyarwanda = Nothing
             }
@@ -1148,6 +1268,23 @@ translationSet trans =
             { english = "Experienced convulsions in previous delivery"
             , kinyarwanda = Nothing
             }
+
+        CSectionScar scar ->
+            case scar of
+                Vertical ->
+                    { english = "Vertical"
+                    , kinyarwanda = Nothing
+                    }
+
+                Horizontal ->
+                    { english = "Horizontal"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoScar ->
+                    { english = "None"
+                    , kinyarwanda = Nothing
+                    }
 
         GroupNotFound ->
             { english = "Group not found"
@@ -1161,6 +1298,11 @@ translationSet trans =
 
         Groups ->
             { english = "Groups"
+            , kinyarwanda = Nothing
+            }
+
+        Close ->
+            { english = "Close"
             , kinyarwanda = Nothing
             }
 
@@ -1249,7 +1391,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                Pages.PrenatalActivity.Model.None ->
+                Backend.Measurement.Model.None ->
                     { english = "None"
                     , kinyarwanda = Nothing
                     }
@@ -1281,6 +1423,16 @@ translationSet trans =
 
         DeleteTrainingGroupEncounters ->
             { english = "Delete All Training Group Encounters"
+            , kinyarwanda = Nothing
+            }
+
+        DeliveryLocation ->
+            { english = "Delivery Loaction"
+            , kinyarwanda = Nothing
+            }
+
+        DeliveryOutcome ->
+            { english = "Delivery Outcome"
             , kinyarwanda = Nothing
             }
 
@@ -1336,6 +1488,11 @@ translationSet trans =
             , kinyarwanda = Just "Amakuru y'ipimwa ry'ubushize"
             }
 
+        DatePregnancyConcluded ->
+            { english = "Date Pregnancy Concluded"
+            , kinyarwanda = Nothing
+            }
+
         Day ->
             { english = "Day"
             , kinyarwanda = Just "Umunsi"
@@ -1369,6 +1526,11 @@ translationSet trans =
 
         DemographicInformation ->
             { english = "Demographic Information"
+            , kinyarwanda = Nothing
+            }
+
+        DemographicsReport ->
+            { english = "Demographics Report"
             , kinyarwanda = Nothing
             }
 
@@ -1412,6 +1574,11 @@ translationSet trans =
             , kinyarwanda = Just "Kanda hano niba ushaka gufotora cg ukure ifoto mu bubiko hano."
             }
 
+        DueDate ->
+            { english = "Due Date"
+            , kinyarwanda = Nothing
+            }
+
         Edd ->
             { english = "EDD"
             , kinyarwanda = Nothing
@@ -1439,6 +1606,11 @@ translationSet trans =
 
         EgaHeader ->
             { english = "Estimated Gestational Age"
+            , kinyarwanda = Nothing
+            }
+
+        EgaWeeks ->
+            { english = "EGA (Weeks)"
             , kinyarwanda = Nothing
             }
 
@@ -1532,6 +1704,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Facility ->
+            { english = "Facility"
+            , kinyarwanda = Nothing
+            }
+
         FamilyInformation ->
             { english = "Family Information"
             , kinyarwanda = Nothing
@@ -1549,9 +1726,39 @@ translationSet trans =
 
         FamilyPlanningSignLabel sign ->
             case sign of
+                AutoObservation ->
+                    { english = "Auto-observation"
+                    , kinyarwanda = Nothing
+                    }
+
                 Condoms ->
                     { english = "Condoms"
                     , kinyarwanda = Just "Udukingirizo"
+                    }
+
+                CycleBeads ->
+                    { english = "Cycle beads"
+                    , kinyarwanda = Nothing
+                    }
+
+                CycleCounting ->
+                    { english = "Cycle counting"
+                    , kinyarwanda = Nothing
+                    }
+
+                Hysterectomy ->
+                    { english = "Hysterectomy"
+                    , kinyarwanda = Nothing
+                    }
+
+                Implants ->
+                    { english = "Implants"
+                    , kinyarwanda = Nothing
+                    }
+
+                Injectables ->
+                    { english = "Injectables"
+                    , kinyarwanda = Nothing
                     }
 
                 IUD ->
@@ -1559,29 +1766,34 @@ translationSet trans =
                     , kinyarwanda = Just "Akapira ko mu mura (agapira ko munda ibyara)"
                     }
 
-                Implant ->
-                    { english = "Implant"
-                    , kinyarwanda = Just "Akapira ko mu kaboko"
-                    }
-
-                Injection ->
-                    { english = "Injection"
-                    , kinyarwanda = Just "Urushinge"
-                    }
-
-                Necklace ->
-                    { english = "Necklace"
-                    , kinyarwanda = Just "Urunigi"
-                    }
-
-                Pill ->
-                    { english = "Pill"
-                    , kinyarwanda = Just "Ibinini"
+                LactationAmenorrhea ->
+                    { english = "Lactation amenorrhea"
+                    , kinyarwanda = Nothing
                     }
 
                 NoFamilyPlanning ->
                     { english = "None of these"
                     , kinyarwanda = Just "nta buryo bwo kuboneza urubyaro akoresha"
+                    }
+
+                OralContraceptives ->
+                    { english = "Oral contraceptives"
+                    , kinyarwanda = Nothing
+                    }
+
+                Spermicide ->
+                    { english = "Spermicide"
+                    , kinyarwanda = Nothing
+                    }
+
+                TubalLigatures ->
+                    { english = "Tubal ligatures"
+                    , kinyarwanda = Nothing
+                    }
+
+                Vasectomy ->
+                    { english = "Vasectomy"
+                    , kinyarwanda = Nothing
                     }
 
         FamilyUbudehe ->
@@ -1616,8 +1828,8 @@ translationSet trans =
 
         FetalPresentation option ->
             case option of
-                Breach ->
-                    { english = "Breach"
+                FetalBreech ->
+                    { english = "Breech"
                     , kinyarwanda = Nothing
                     }
 
@@ -1631,6 +1843,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Twins ->
+                    { english = "Twins"
+                    , kinyarwanda = Nothing
+                    }
+
+                Backend.Measurement.Model.Unknown ->
+                    { english = "Unknown"
+                    , kinyarwanda = Nothing
+                    }
+
         Fetch ->
             { english = "Fetch"
             , kinyarwanda = Just "Gushakisha"
@@ -1641,8 +1863,23 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        FirstAntenatalVisit ->
+            { english = "First Antenatal Visit"
+            , kinyarwanda = Nothing
+            }
+
         FirstName ->
             { english = "First Name"
+            , kinyarwanda = Nothing
+            }
+
+        FiveVisits ->
+            { english = "Five visits"
+            , kinyarwanda = Nothing
+            }
+
+        ForIllustrativePurposesOnly ->
+            { english = "For illustrative purposes only"
             , kinyarwanda = Nothing
             }
 
@@ -1674,8 +1911,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        GestatipnalDiabetesPreviousPregnancy ->
-            { english = "Gestatipnal Diabetes in previous pregnancy"
+        GestationalDiabetesPreviousPregnancy ->
+            { english = "Gestational Diabetes in previous pregnancy"
             , kinyarwanda = Nothing
             }
 
@@ -1710,11 +1947,6 @@ translationSet trans =
                 NormalHands ->
                     translationSet Normal
 
-        HaveYouSynced ->
-            { english = "Have you synced data for the health center you are working with?"
-            , kinyarwanda = Nothing
-            }
-
         HeadHair ->
             { english = "Head/Hair"
             , kinyarwanda = Nothing
@@ -1730,6 +1962,28 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        HeartMurmur ->
+            { english = "Heart Murmur"
+            , kinyarwanda = Nothing
+            }
+
+        HeartCPESign sign ->
+            case sign of
+                IrregularRhythm ->
+                    { english = "Irregular Rhythm"
+                    , kinyarwanda = Nothing
+                    }
+
+                NormalRateAndRhythm ->
+                    { english = "Normal Rate And Rhythm"
+                    , kinyarwanda = Nothing
+                    }
+
+                SinusTachycardia ->
+                    { english = "Sinus Tachycardia"
+                    , kinyarwanda = Nothing
+                    }
+
         HeartRate ->
             { english = "Heart Rate"
             , kinyarwanda = Nothing
@@ -1738,6 +1992,65 @@ translationSet trans =
         Height ->
             { english = "Height"
             , kinyarwanda = Just "Uburebure"
+            }
+
+        High ->
+            { english = "High"
+            , kinyarwanda = Nothing
+            }
+
+        HighRiskFactor factor ->
+            case factor of
+                PrenatalActivity.Model.ConvulsionsAndUnconsciousPreviousDelivery ->
+                    { english = "Patient experienced convulsions in previous delivery and became unconscious after delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalActivity.Model.ConvulsionsPreviousDelivery ->
+                    { english = "Patient experienced convulsions in previous delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+        HighRiskFactors ->
+            { english = "High Risk Factors"
+            , kinyarwanda = Nothing
+            }
+
+        HighSeverityAlert alert ->
+            case alert of
+                PrenatalActivity.Model.BodyTemperature ->
+                    { english = "Body Temperature"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalActivity.Model.BloodPressure ->
+                    { english = "Blood Pressure"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalActivity.Model.FetalHeartRate ->
+                    { english = "No fetal heart rate noted"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalActivity.Model.FetalMovement ->
+                    { english = "No fetal movement noted"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalActivity.Model.HeartRate ->
+                    { english = "Heart Rate"
+                    , kinyarwanda = Nothing
+                    }
+
+                PrenatalActivity.Model.RespiratoryRate ->
+                    { english = "Respiratory Rate"
+                    , kinyarwanda = Nothing
+                    }
+
+        HighSeverityAlerts ->
+            { english = "High Severity Alerts"
+            , kinyarwanda = Nothing
             }
 
         HistoryTask task ->
@@ -1753,7 +2066,7 @@ translationSet trans =
                     }
 
                 Social ->
-                    { english = "Social History"
+                    { english = "Partner Information"
                     , kinyarwanda = Nothing
                     }
 
@@ -1794,6 +2107,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Home ->
+            { english = "Home"
+            , kinyarwanda = Nothing
+            }
+
         HouseholdSize ->
             { english = "Household Size"
             , kinyarwanda = Nothing
@@ -1809,6 +2127,33 @@ translationSet trans =
 
         IncompleteCervixPreviousPregnancy ->
             { english = "Incomplete Cervix in previous pregnancy"
+            , kinyarwanda = Nothing
+            }
+
+        IndividualEncounter ->
+            { english = "Individual Encounter"
+            , kinyarwanda = Nothing
+            }
+
+        IndividualEncounterType type_ ->
+            case type_ of
+                AntenatalEncounter ->
+                    { english = "Antenatal"
+                    , kinyarwanda = Nothing
+                    }
+
+                InmmunizationEncounter ->
+                    { english = "Inmmunization"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounter ->
+                    { english = "Nutrition"
+                    , kinyarwanda = Nothing
+                    }
+
+        IndividualEncounterTypes ->
+            { english = "Individual Encounter Types"
             , kinyarwanda = Nothing
             }
 
@@ -1885,6 +2230,11 @@ translationSet trans =
             , kinyarwanda = Just "Guhuza n'amakuru y'umubyeyi"
             }
 
+        LiveChildren ->
+            { english = "Live Children"
+            , kinyarwanda = Nothing
+            }
+
         LmpDateConfidentHeader ->
             { english = "Is the Patient confident of LMP Date"
             , kinyarwanda = Nothing
@@ -1919,6 +2269,11 @@ translationSet trans =
 
         LoginPhrase phrase ->
             translateLoginPhrase phrase
+
+        Low ->
+            { english = "Low"
+            , kinyarwanda = Nothing
+            }
 
         Lungs ->
             { english = "Lungs"
@@ -1987,18 +2342,65 @@ translationSet trans =
             , kinyarwanda = Just <| "Kwiyongera " ++ toString amount
             }
 
+        MedicalDiagnosis ->
+            { english = "Medical Diagnosis"
+            , kinyarwanda = Nothing
+            }
+
+        MedicalDiagnosisAlert diagnosis ->
+            case diagnosis of
+                DiagnosisUterineMyoma ->
+                    { english = "Uterine Myoma"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisDiabetes ->
+                    { english = "Diabetes"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisCardiacDisease ->
+                    { english = "Cardiac Disease"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisRenalDisease ->
+                    { english = "Renal Disease"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHypertensionBeforePregnancy ->
+                    { english = "Hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisTuberculosis ->
+                    { english = "Tuberculosis"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisAsthma ->
+                    { english = "Asthma"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisBowedLegs ->
+                    { english = "Bowed Legs"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHIV ->
+                    { english = "HIV"
+                    , kinyarwanda = Nothing
+                    }
+
         MedicalFormHelper ->
-            { english = "Please recode if the mother was diagnosed with the following medical issues"
+            { english = "Please record if the mother was diagnosed with the following medical issues"
             , kinyarwanda = Nothing
             }
 
         MMHGUnit ->
             { english = "mmHG"
-            , kinyarwanda = Nothing
-            }
-
-        MentalHealthHistory ->
-            { english = "Mental Health History"
             , kinyarwanda = Nothing
             }
 
@@ -2124,6 +2526,11 @@ translationSet trans =
 
         MyRelatedByQuestion relationship ->
             translateMyRelatedByQuestion relationship
+
+        Name ->
+            { english = "Name"
+            , kinyarwanda = Nothing
+            }
 
         NationalIdNumber ->
             { english = "National ID Number"
@@ -2265,6 +2672,73 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        ObstetricalDiagnosis ->
+            { english = "Obstetrical Diagnosis"
+            , kinyarwanda = Nothing
+            }
+
+        ObstetricalDiagnosisAlert diagnosis ->
+            case diagnosis of
+                DiagnosisRhNegative ->
+                    { english = "Patient is RH Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisModerateUnderweight ->
+                    { english = "Moderate underweight"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSevereUnderweight ->
+                    { english = "Severe underweight"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisOverweight ->
+                    { english = "Overweight"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisObese ->
+                    { english = "Obese"
+                    , kinyarwanda = Nothing
+                    }
+
+                DisgnosisPeripheralEdema ->
+                    { english = "Peripheral Edema"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisFetusBreech ->
+                    { english = "Fetus is in breech"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisFetusTransverse ->
+                    { english = "Fetus is transverse"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisBreastExamination ->
+                    { english = "Breast exam showed"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisHypotension ->
+                    { english = "Hypotension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPregnancyInducedHypertension ->
+                    { english = "Pregnancy-induced hypertension"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisPreeclampsiaHighRisk ->
+                    { english = "High Risk for Preeclampsia"
+                    , kinyarwanda = Nothing
+                    }
+
         OK ->
             { english = "OK"
             , kinyarwanda = Just "Nibyo, yego"
@@ -2273,6 +2747,11 @@ translationSet trans =
         Old ->
             { english = "old"
             , kinyarwanda = Just "imyaka"
+            }
+
+        OneVisit ->
+            { english = "One visit"
+            , kinyarwanda = Nothing
             }
 
         OnceYouEndYourGroupEncounter ->
@@ -2350,8 +2829,28 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        PartnerReceivedCounseling ->
-            { english = "Did partner receive HIV Counseling and Testing during this pregnancy"
+        PartnerHivTestResult ->
+            { english = "What was the partners Hiv Test result"
+            , kinyarwanda = Nothing
+            }
+
+        PartnerReceivedHivCounseling ->
+            { english = "Did partner receive HIV Counseling during this pregnancy"
+            , kinyarwanda = Nothing
+            }
+
+        PartnerReceivedHivTesting ->
+            { english = "Did partner receive HIV Testing during this pregnancy"
+            , kinyarwanda = Nothing
+            }
+
+        PatientProgress ->
+            { english = "Patient Progress"
+            , kinyarwanda = Nothing
+            }
+
+        PatientInformation ->
+            { english = "Patient Information"
             , kinyarwanda = Nothing
             }
 
@@ -2418,10 +2917,32 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PleaseSync ->
+            { english = "Please sync data for selected Health Center."
+            , kinyarwanda = Nothing
+            }
+
         PreeclampsiaPreviousPregnancy ->
             { english = "Preeclampsia in previous pregnancy "
             , kinyarwanda = Nothing
             }
+
+        PregnancyTrimester trimester ->
+            case trimester of
+                FirstTrimester ->
+                    { english = "First Trimester"
+                    , kinyarwanda = Nothing
+                    }
+
+                SecondTrimester ->
+                    { english = "Second Trimester"
+                    , kinyarwanda = Nothing
+                    }
+
+                ThirdTrimester ->
+                    { english = "Third Trimester"
+                    , kinyarwanda = Nothing
+                    }
 
         PrenatalActivitiesTitle activity ->
             case activity of
@@ -2455,13 +2976,65 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                PrenatalPhoto ->
+                    { english = "Photo"
+                    , kinyarwanda = Nothing
+                    }
+
         PrenatalEncounter ->
-            { english = "Prenatal Encounter"
+            { english = "Antenatal Encounter"
             , kinyarwanda = Nothing
             }
 
+        PrenatalPhotoHelper ->
+            { english = "Take a picture of the mother's belly. Then you and the mother will see how the belly has grown!"
+            , kinyarwanda = Nothing
+            }
+
+        PreTerm ->
+            { english = "Pre Term"
+            , kinyarwanda = Nothing
+            }
+
+        PregnancyConcludedLabel ->
+            { english = "or Pregnancy Concluded"
+            , kinyarwanda = Nothing
+            }
+
+        PregnancyOutcomeLabel ->
+            { english = "Pregnancy Outcome"
+            , kinyarwanda = Nothing
+            }
+
+        PregnancyOutcome outcome ->
+            case outcome of
+                OutcomeLiveAtTerm ->
+                    { english = "Live Birth at Term (38 weeks EGA or more)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeLivePreTerm ->
+                    { english = "Live Birth Preterm (less than 38 weeks EGA)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeStillAtTerm ->
+                    { english = "Stillbirth at Term (38 weeks EGA or more)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeStillPreTerm ->
+                    { english = "Stillbirth Preterm (less than 38 weeks EGA)"
+                    , kinyarwanda = Nothing
+                    }
+
+                OutcomeAbortions ->
+                    { english = "Abortions (before 24 weeks EGA)"
+                    , kinyarwanda = Nothing
+                    }
+
         PreviousCSectionScar ->
-            { english = "Presence of previous C-section scar"
+            { english = "Previous C-section scar"
             , kinyarwanda = Nothing
             }
 
@@ -2507,13 +3080,38 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        ProgressPhotos ->
+            { english = "Progress Photos"
+            , kinyarwanda = Nothing
+            }
+
         ProgressReport ->
             { english = "Progress Report"
             , kinyarwanda = Just "Raporo igaragaza imikurire y'umwana"
             }
 
+        ProgressTimeline ->
+            { english = "Progress Timeline"
+            , kinyarwanda = Nothing
+            }
+
+        ProgressTrends ->
+            { english = "Progress Trends"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalParticipant ->
+            { english = "Antenatal Participant"
+            , kinyarwanda = Nothing
+            }
+
+        PrenatalParticipants ->
+            { english = "Antenatal Participants"
+            , kinyarwanda = Nothing
+            }
+
         PreTermPregnancy ->
-            { english = "Pre Term Pregnancy"
+            { english = "Number of Pre-term Pregnancies (Live Birth)"
             , kinyarwanda = Nothing
             }
 
@@ -2539,6 +3137,11 @@ translationSet trans =
 
         ReceivedMosquitoNet ->
             { english = "Has the mother received a mosquito net"
+            , kinyarwanda = Nothing
+            }
+
+        RecordPregnancyOutcome ->
+            { english = "Record Pregnancy Outcome"
             , kinyarwanda = Nothing
             }
 
@@ -2667,6 +3270,99 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        RiskFactorAlert factor ->
+            case factor of
+                FactorNumberOfCSections number ->
+                    if number == 1 then
+                        { english = "1 previous C-section"
+                        , kinyarwanda = Nothing
+                        }
+
+                    else
+                        { english = toString number ++ " previous C-sections"
+                        , kinyarwanda = Nothing
+                        }
+
+                FactorCSectionInPreviousDelivery ->
+                    { english = "C-section in previous delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorCSectionReason ->
+                    { english = "C-section in previous delivery due to"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorPreviousDeliveryPeriod ->
+                    { english = "Previous delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorSuccessiveAbortions ->
+                    { english = "Patient experienced successive abortions"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorSuccessivePrematureDeliveries ->
+                    { english = "Patient experienced successive preterm deliveries"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorStillbornPreviousDelivery ->
+                    { english = "Stillbirth in previous delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorBabyDiedOnDayOfBirthPreviousDelivery ->
+                    { english = "Live Birth but the baby died the same day in previous delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorPartialPlacentaPreviousDelivery ->
+                    { english = "Patient had partial placenta in previous pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorSevereHemorrhagingPreviousDelivery ->
+                    { english = "Patient experienced severe hemorrhage in previous pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorPreeclampsiaPreviousPregnancy ->
+                    { english = "Patient had preeclampsia in previous pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorConvulsionsPreviousDelivery ->
+                    { english = "Patient experienced convulsions in previous delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorConvulsionsAndUnconsciousPreviousDelivery ->
+                    { english = "Patient experienced convulsions and resulted in becoming unconscious after delivery"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorIncompleteCervixPreviousPregnancy ->
+                    { english = "Patient had an Incomplete Cervix in previous pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorVerticalCSectionScar ->
+                    { english = "Vertical C-Section Scar"
+                    , kinyarwanda = Nothing
+                    }
+
+                FactorGestationalDiabetesPreviousPregnancy ->
+                    { english = "Patient had Gestational Diabetes in previous pregnancy"
+                    , kinyarwanda = Nothing
+                    }
+
+        RiskFactors ->
+            { english = "Risk Factors"
+            , kinyarwanda = Nothing
+            }
+
         Save ->
             { english = "Save"
             , kinyarwanda = Just "Kubika"
@@ -2692,6 +3388,11 @@ translationSet trans =
             , kinyarwanda = Just "Gushakisha izina"
             }
 
+        SearchExistingParticipants ->
+            { english = "Search Existing Participants"
+            , kinyarwanda = Nothing
+            }
+
         SearchHelper ->
             { english = "Search to see if the participant already exists in E-Heza. If the person you are looking for does not appear in the search, please create a new record for them."
             , kinyarwanda = Nothing
@@ -2712,8 +3413,18 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        SelectAntenatalVisit ->
+            { english = "Select an Antenatal Visit"
+            , kinyarwanda = Nothing
+            }
+
         SelectDangerSigns ->
             { english = "Please select one or more of the danger signs the patient is experiencing"
+            , kinyarwanda = Nothing
+            }
+
+        SelectEncounterType ->
+            { english = "Select encounter type"
             , kinyarwanda = Nothing
             }
 
@@ -2739,6 +3450,26 @@ translationSet trans =
 
         SelectYourHealthCenter ->
             { english = "Select your Health Center"
+            , kinyarwanda = Nothing
+            }
+
+        SelectedHCDownloading ->
+            { english = "Downloading data for selected Health Center. Please wait until completed."
+            , kinyarwanda = Nothing
+            }
+
+        SelectedHCNotSynced ->
+            { english = "Data is not synced"
+            , kinyarwanda = Nothing
+            }
+
+        SelectedHCSyncing ->
+            { english = "Data is syncing"
+            , kinyarwanda = Nothing
+            }
+
+        SelectedHCUploading ->
+            { english = "Uploading data for selected Health Center. Please wait until completed."
             , kinyarwanda = Nothing
             }
 
@@ -2827,8 +3558,35 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        SocialHistoryHivTestingResult result ->
+            case result of
+                ResultHivPositive ->
+                    { english = "Positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResultHivNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResultHivIndeterminate ->
+                    { english = "Indeterminate"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoHivTesting ->
+                    { english = "Ntibiboneste"
+                    , kinyarwanda = Nothing
+                    }
+
         StillbornPreviousDelivery ->
             { english = "Stillborn in previous delivery"
+            , kinyarwanda = Nothing
+            }
+
+        SubsequentAntenatalVisit ->
+            { english = "Subsequent Antenatal Visit"
             , kinyarwanda = Nothing
             }
 
@@ -2837,8 +3595,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        SuccessivePrimatureDeliveries ->
-            { english = "Successive Primature Deliveries"
+        SuccessivePrematureDeliveries ->
+            { english = "Successive Premature Deliveries"
             , kinyarwanda = Nothing
             }
 
@@ -2937,8 +3695,13 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        Term ->
+            { english = "Term"
+            , kinyarwanda = Nothing
+            }
+
         TermPregnancy ->
-            { english = "Term Pregnancy"
+            { english = "Number of Term Pregnancies (Live Birth)"
             , kinyarwanda = Nothing
             }
 
@@ -2982,6 +3745,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        TwoVisits ->
+            { english = "Two visits"
+            , kinyarwanda = Nothing
+            }
+
         UbudeheLabel ->
             { english = "Ubudehe: "
             , kinyarwanda = Nothing
@@ -3015,6 +3783,11 @@ translationSet trans =
         -- As in, the version the app
         Version ->
             { english = "Version"
+            , kinyarwanda = Nothing
+            }
+
+        View ->
+            { english = "View"
             , kinyarwanda = Nothing
             }
 
@@ -3177,19 +3950,34 @@ translateActivePage page =
 
         UserPage userPage ->
             case userPage of
+                ClinicalPage ->
+                    { english = "Clinical"
+                    , kinyarwanda = Nothing
+                    }
+
                 ClinicsPage _ ->
                     { english = "Groups"
+                    , kinyarwanda = Nothing
+                    }
+
+                ClinicalProgressReportPage _ ->
+                    { english = "Clinical Progress Report"
+                    , kinyarwanda = Nothing
+                    }
+
+                CreatePersonPage _ _ ->
+                    { english = "Create Person"
+                    , kinyarwanda = Nothing
+                    }
+
+                DemographicsReportPage _ ->
+                    { english = "Demographics Report"
                     , kinyarwanda = Nothing
                     }
 
                 MyAccountPage ->
                     { english = "My Account"
                     , kinyarwanda = Just "Compte"
-                    }
-
-                CreatePersonPage relationId ->
-                    { english = "Create Person"
-                    , kinyarwanda = Nothing
                     }
 
                 PersonPage id ->
@@ -3201,6 +3989,28 @@ translateActivePage page =
                     { english = "Participant Directory"
                     , kinyarwanda = Nothing
                     }
+
+                PrenatalParticipantPage _ ->
+                    { english = "Antenatal Participant"
+                    , kinyarwanda = Nothing
+                    }
+
+                IndividualEncounterParticipantsPage encounterType ->
+                    case encounterType of
+                        AntenatalEncounter ->
+                            { english = "Antenatal Participants"
+                            , kinyarwanda = Nothing
+                            }
+
+                        InmmunizationEncounter ->
+                            { english = "Inmmunization Participants"
+                            , kinyarwanda = Nothing
+                            }
+
+                        NutritionEncounter ->
+                            { english = "Nutrition Participants"
+                            , kinyarwanda = Nothing
+                            }
 
                 RelationshipPage _ _ ->
                     { english = "Relationship"
@@ -3245,12 +4055,22 @@ translateActivePage page =
                             }
 
                 PrenatalEncounterPage _ ->
-                    { english = "Prenatal Encounter"
+                    { english = "Antenatal Encounter"
                     , kinyarwanda = Nothing
                     }
 
                 PrenatalActivityPage _ _ ->
-                    { english = "Prenatal Activity"
+                    { english = "Antenatal Activity"
+                    , kinyarwanda = Nothing
+                    }
+
+                IndividualEncounterTypesPage ->
+                    { english = "Encounter Types"
+                    , kinyarwanda = Nothing
+                    }
+
+                PregnancyOutcomePage _ ->
+                    { english = "Pregnancy Outcome"
                     , kinyarwanda = Nothing
                     }
 

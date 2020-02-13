@@ -1,10 +1,10 @@
 module Backend.Session.Update exposing (update)
 
-import AllDict
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (..)
 import Backend.Session.Model exposing (..)
+import EveryDict
 import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
 import Json.Encode exposing (object)
 import Json.Encode.Extra
@@ -57,6 +57,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     , dateMeasured = currentDate
                                     , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value = height
                                     }
                                         |> sw.post heightEndpoint
@@ -71,7 +72,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                         |> withoutDecoder
                                         |> toCmd (RemoteData.fromResult >> HandleSaveHeight childId)
                     in
-                    ( { model | saveHeightRequest = AllDict.insert childId Loading model.saveHeightRequest }
+                    ( { model | saveHeightRequest = EveryDict.insert childId Loading model.saveHeightRequest }
                     , cmd
                     )
 
@@ -84,6 +85,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     , dateMeasured = currentDate
                                     , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value = weight
                                     }
                                         |> sw.post weightEndpoint
@@ -98,7 +100,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                         |> withoutDecoder
                                         |> toCmd (RemoteData.fromResult >> HandleSaveWeight childId)
                     in
-                    ( { model | saveWeightRequest = AllDict.insert childId Loading model.saveWeightRequest }
+                    ( { model | saveWeightRequest = EveryDict.insert childId Loading model.saveWeightRequest }
                     , cmd
                     )
 
@@ -111,6 +113,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     , dateMeasured = currentDate
                                     , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value = muac
                                     }
                                         |> sw.post muacEndpoint
@@ -125,7 +128,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                         |> withoutDecoder
                                         |> toCmd (RemoteData.fromResult >> HandleSaveMuac childId)
                     in
-                    ( { model | saveMuacRequest = AllDict.insert childId Loading model.saveMuacRequest }
+                    ( { model | saveMuacRequest = EveryDict.insert childId Loading model.saveMuacRequest }
                     , cmd
                     )
 
@@ -138,6 +141,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     , dateMeasured = currentDate
                                     , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value = ( timing, topics )
                                     }
                                         |> sw.post counselingSessionEndpoint
@@ -153,7 +157,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                         |> withoutDecoder
                                         |> toCmd (RemoteData.fromResult >> HandleSaveCounselingSession childId)
                     in
-                    ( { model | saveCounselingSessionRequest = AllDict.insert childId Loading model.saveCounselingSessionRequest }
+                    ( { model | saveCounselingSessionRequest = EveryDict.insert childId Loading model.saveCounselingSessionRequest }
                     , cmd
                     )
 
@@ -166,6 +170,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     , dateMeasured = currentDate
                                     , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value = signs
                                     }
                                         |> sw.post nutritionEndpoint
@@ -180,7 +185,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                         |> withoutDecoder
                                         |> toCmd (RemoteData.fromResult >> HandleSaveNutrition childId)
                     in
-                    ( { model | saveNutritionRequest = AllDict.insert childId Loading model.saveNutritionRequest }
+                    ( { model | saveNutritionRequest = EveryDict.insert childId Loading model.saveNutritionRequest }
                     , cmd
                     )
 
@@ -193,6 +198,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     , dateMeasured = currentDate
                                     , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value = photo
                                     }
                                         |> sw.post photoEndpoint
@@ -207,7 +213,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                         |> withoutDecoder
                                         |> toCmd (RemoteData.fromResult >> HandleSavePhoto childId)
                     in
-                    ( { model | savePhotoRequest = AllDict.insert childId Loading model.savePhotoRequest }
+                    ( { model | savePhotoRequest = EveryDict.insert childId Loading model.savePhotoRequest }
                     , cmd
                     )
 
@@ -226,6 +232,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     , dateMeasured = currentDate
                                     , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value = attended
                                     }
                                         |> sw.post attendanceEndpoint
@@ -240,7 +247,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                         |> withoutDecoder
                                         |> toCmd (RemoteData.fromResult >> HandleSaveAttendance motherId)
                     in
-                    ( { model | saveAttendanceRequest = AllDict.insert motherId Loading model.saveAttendanceRequest }
+                    ( { model | saveAttendanceRequest = EveryDict.insert motherId Loading model.saveAttendanceRequest }
                     , cmd
                     )
 
@@ -253,6 +260,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     , dateMeasured = currentDate
                                     , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value = signs
                                     }
                                         |> sw.post familyPlanningEndpoint
@@ -267,7 +275,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                         |> withoutDecoder
                                         |> toCmd (RemoteData.fromResult >> HandleSaveFamilyPlanning motherId)
                     in
-                    ( { model | saveFamilyPlanningRequest = AllDict.insert motherId Loading model.saveFamilyPlanningRequest }
+                    ( { model | saveFamilyPlanningRequest = EveryDict.insert motherId Loading model.saveFamilyPlanningRequest }
                     , cmd
                     )
 
@@ -280,6 +288,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     , dateMeasured = currentDate
                                     , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value =
                                         { language = language
                                         , formId = formId
@@ -300,51 +309,51 @@ update nurseId sessionId maybeSession currentDate msg model =
                                         |> withoutDecoder
                                         |> toCmd (RemoteData.fromResult >> HandleSaveParticipantConsent motherId)
                     in
-                    ( { model | saveParticipantConsentRequest = AllDict.insert motherId Loading model.saveParticipantConsentRequest }
+                    ( { model | saveParticipantConsentRequest = EveryDict.insert motherId Loading model.saveParticipantConsentRequest }
                     , cmd
                     )
 
         HandleSaveAttendance motherId data ->
-            ( { model | saveAttendanceRequest = AllDict.insert motherId data model.saveAttendanceRequest }
+            ( { model | saveAttendanceRequest = EveryDict.insert motherId data model.saveAttendanceRequest }
             , Cmd.none
             )
 
         HandleSaveCounselingSession childId data ->
-            ( { model | saveCounselingSessionRequest = AllDict.insert childId data model.saveCounselingSessionRequest }
+            ( { model | saveCounselingSessionRequest = EveryDict.insert childId data model.saveCounselingSessionRequest }
             , Cmd.none
             )
 
         HandleSaveParticipantConsent motherId data ->
-            ( { model | saveParticipantConsentRequest = AllDict.insert motherId data model.saveParticipantConsentRequest }
+            ( { model | saveParticipantConsentRequest = EveryDict.insert motherId data model.saveParticipantConsentRequest }
             , Cmd.none
             )
 
         HandleSaveFamilyPlanning motherId data ->
-            ( { model | saveFamilyPlanningRequest = AllDict.insert motherId data model.saveFamilyPlanningRequest }
+            ( { model | saveFamilyPlanningRequest = EveryDict.insert motherId data model.saveFamilyPlanningRequest }
             , Cmd.none
             )
 
         HandleSaveHeight childId data ->
-            ( { model | saveHeightRequest = AllDict.insert childId data model.saveHeightRequest }
+            ( { model | saveHeightRequest = EveryDict.insert childId data model.saveHeightRequest }
             , Cmd.none
             )
 
         HandleSaveWeight childId data ->
-            ( { model | saveWeightRequest = AllDict.insert childId data model.saveWeightRequest }
+            ( { model | saveWeightRequest = EveryDict.insert childId data model.saveWeightRequest }
             , Cmd.none
             )
 
         HandleSaveMuac childId data ->
-            ( { model | saveMuacRequest = AllDict.insert childId data model.saveMuacRequest }
+            ( { model | saveMuacRequest = EveryDict.insert childId data model.saveMuacRequest }
             , Cmd.none
             )
 
         HandleSavePhoto childId data ->
-            ( { model | savePhotoRequest = AllDict.insert childId data model.savePhotoRequest }
+            ( { model | savePhotoRequest = EveryDict.insert childId data model.savePhotoRequest }
             , Cmd.none
             )
 
         HandleSaveNutrition childId data ->
-            ( { model | saveNutritionRequest = AllDict.insert childId data model.saveNutritionRequest }
+            ( { model | saveNutritionRequest = EveryDict.insert childId data model.saveNutritionRequest }
             , Cmd.none
             )

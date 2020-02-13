@@ -136,6 +136,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create obstetric_history_step2 content'.
+  $permissions['create obstetric_history_step2 content'] = array(
+    'name' => 'create obstetric_history_step2 content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create obstetrical_exam content'.
   $permissions['create obstetrical_exam content'] = array(
     'name' => 'create obstetrical_exam content',
@@ -149,6 +159,17 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'create photo content'.
   $permissions['create photo content'] = array(
     'name' => 'create photo content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create prenatal_photo content'.
+  $permissions['create prenatal_photo content'] = array(
+    'name' => 'create prenatal_photo content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
@@ -326,6 +347,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any obstetric_history_step2 content'.
+  $permissions['delete any obstetric_history_step2 content'] = array(
+    'name' => 'delete any obstetric_history_step2 content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any obstetrical_exam content'.
   $permissions['delete any obstetrical_exam content'] = array(
     'name' => 'delete any obstetrical_exam content',
@@ -338,6 +368,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete any photo content'.
   $permissions['delete any photo content'] = array(
     'name' => 'delete any photo content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any prenatal_photo content'.
+  $permissions['delete any prenatal_photo content'] = array(
+    'name' => 'delete any prenatal_photo content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -506,6 +545,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete own obstetric_history_step2 content'.
+  $permissions['delete own obstetric_history_step2 content'] = array(
+    'name' => 'delete own obstetric_history_step2 content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own obstetrical_exam content'.
   $permissions['delete own obstetrical_exam content'] = array(
     'name' => 'delete own obstetrical_exam content',
@@ -518,6 +566,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own photo content'.
   $permissions['delete own photo content'] = array(
     'name' => 'delete own photo content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own prenatal_photo content'.
+  $permissions['delete own prenatal_photo content'] = array(
+    'name' => 'delete own prenatal_photo content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -703,6 +760,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any obstetric_history_step2 content'.
+  $permissions['edit any obstetric_history_step2 content'] = array(
+    'name' => 'edit any obstetric_history_step2 content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any obstetrical_exam content'.
   $permissions['edit any obstetrical_exam content'] = array(
     'name' => 'edit any obstetrical_exam content',
@@ -716,6 +783,17 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit any photo content'.
   $permissions['edit any photo content'] = array(
     'name' => 'edit any photo content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any prenatal_photo content'.
+  $permissions['edit any prenatal_photo content'] = array(
+    'name' => 'edit any prenatal_photo content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
@@ -910,6 +988,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit own obstetric_history_step2 content'.
+  $permissions['edit own obstetric_history_step2 content'] = array(
+    'name' => 'edit own obstetric_history_step2 content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit own obstetrical_exam content'.
   $permissions['edit own obstetrical_exam content'] = array(
     'name' => 'edit own obstetrical_exam content',
@@ -923,6 +1011,17 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit own photo content'.
   $permissions['edit own photo content'] = array(
     'name' => 'edit own photo content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own prenatal_photo content'.
+  $permissions['edit own prenatal_photo content'] = array(
+    'name' => 'edit own prenatal_photo content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',

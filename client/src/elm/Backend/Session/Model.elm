@@ -19,12 +19,12 @@ import Backend.Measurement.Model exposing (..)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
+import EveryDict exposing (EveryDict)
+import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate, NominalDateRange)
 import Lazy exposing (Lazy)
 import Measurement.Model
 import RemoteData exposing (RemoteData(..), WebData)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 {-| This is the basic `Session` data ... essentially, for scheduling purposes.
@@ -51,15 +51,15 @@ overkill for now.
 
 -}
 type alias ExpectedParticipants =
-    { byId : EntityUuidDict PmtctParticipantId PmtctParticipant
-    , byChildId : EntityUuidDict PersonId (List PmtctParticipant)
-    , byMotherId : EntityUuidDict PersonId (List PmtctParticipant)
+    { byId : EveryDict PmtctParticipantId PmtctParticipant
+    , byChildId : EveryDict PersonId (List PmtctParticipant)
+    , byMotherId : EveryDict PersonId (List PmtctParticipant)
     }
 
 
 type alias CheckedIn =
-    { mothers : EntityUuidDictList PersonId Person
-    , children : EntityUuidDictList PersonId Person
+    { mothers : EveryDictList PersonId Person
+    , children : EveryDictList PersonId Person
     }
 
 
@@ -74,7 +74,7 @@ type alias OfflineSession =
     { session : Session
 
     -- Some configuration data.
-    , allParticipantForms : EntityUuidDictList ParticipantFormId ParticipantForm
+    , allParticipantForms : EveryDictList ParticipantFormId ParticipantForm
     , everyCounselingSchedule : EveryCounselingSchedule
 
     -- This reflects everyone who is expected at the session, given the
@@ -83,8 +83,8 @@ type alias OfflineSession =
 
     -- These reflect the `Person` record for each person included in
     -- `participants`.
-    , mothers : EntityUuidDictList PersonId Person
-    , children : EntityUuidDictList PersonId Person
+    , mothers : EveryDictList PersonId Person
+    , children : EveryDictList PersonId Person
 
     -- This is lazy because it requires some significant calculation, and we
     -- don't always need it.
@@ -113,7 +113,7 @@ type alias EditableSession =
     { offlineSession : OfflineSession
     , update : WebData ()
     , checkedIn :
-        Lazy { mothers : EntityUuidDictList PersonId Person, children : EntityUuidDictList PersonId Person }
+        Lazy { mothers : EveryDictList PersonId Person, children : EveryDictList PersonId Person }
     , summaryByParticipant : Lazy SummaryByParticipant
     , summaryByActivity : Lazy SummaryByActivity
     }
@@ -124,30 +124,30 @@ to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
     { closeSessionRequest : WebData ()
-    , saveAttendanceRequest : EntityUuidDict PersonId (WebData ())
-    , saveCounselingSessionRequest : EntityUuidDict PersonId (WebData ())
-    , saveFamilyPlanningRequest : EntityUuidDict PersonId (WebData ())
-    , saveHeightRequest : EntityUuidDict PersonId (WebData ())
-    , saveMuacRequest : EntityUuidDict PersonId (WebData ())
-    , saveNutritionRequest : EntityUuidDict PersonId (WebData ())
-    , saveParticipantConsentRequest : EntityUuidDict PersonId (WebData ())
-    , savePhotoRequest : EntityUuidDict PersonId (WebData ())
-    , saveWeightRequest : EntityUuidDict PersonId (WebData ())
+    , saveAttendanceRequest : EveryDict PersonId (WebData ())
+    , saveCounselingSessionRequest : EveryDict PersonId (WebData ())
+    , saveFamilyPlanningRequest : EveryDict PersonId (WebData ())
+    , saveHeightRequest : EveryDict PersonId (WebData ())
+    , saveMuacRequest : EveryDict PersonId (WebData ())
+    , saveNutritionRequest : EveryDict PersonId (WebData ())
+    , saveParticipantConsentRequest : EveryDict PersonId (WebData ())
+    , savePhotoRequest : EveryDict PersonId (WebData ())
+    , saveWeightRequest : EveryDict PersonId (WebData ())
     }
 
 
 emptyModel : Model
 emptyModel =
     { closeSessionRequest = NotAsked
-    , saveAttendanceRequest = EntityUuidDict.empty
-    , saveCounselingSessionRequest = EntityUuidDict.empty
-    , saveFamilyPlanningRequest = EntityUuidDict.empty
-    , saveHeightRequest = EntityUuidDict.empty
-    , saveMuacRequest = EntityUuidDict.empty
-    , saveNutritionRequest = EntityUuidDict.empty
-    , saveParticipantConsentRequest = EntityUuidDict.empty
-    , savePhotoRequest = EntityUuidDict.empty
-    , saveWeightRequest = EntityUuidDict.empty
+    , saveAttendanceRequest = EveryDict.empty
+    , saveCounselingSessionRequest = EveryDict.empty
+    , saveFamilyPlanningRequest = EveryDict.empty
+    , saveHeightRequest = EveryDict.empty
+    , saveMuacRequest = EveryDict.empty
+    , saveNutritionRequest = EveryDict.empty
+    , saveParticipantConsentRequest = EveryDict.empty
+    , savePhotoRequest = EveryDict.empty
+    , saveWeightRequest = EveryDict.empty
     }
 
 

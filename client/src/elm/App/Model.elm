@@ -11,12 +11,15 @@ import Http
 import Json.Encode exposing (Value)
 import Pages.Clinics.Model
 import Pages.Device.Model
+import Pages.IndividualEncounterParticipants.Model
 import Pages.Page exposing (Page(..))
 import Pages.People.Model
 import Pages.Person.Model
 import Pages.PinCode.Model
+import Pages.PregnancyOutcome.Model
 import Pages.PrenatalActivity.Model
 import Pages.PrenatalEncounter.Model
+import Pages.PrenatalParticipant.Model
 import Pages.Relationship.Model
 import Pages.Session.Model
 import PrenatalActivity.Model exposing (PrenatalActivity)
@@ -26,7 +29,6 @@ import Rollbar
 import ServiceWorker.Model
 import Time exposing (Time)
 import Translate.Model exposing (Language(..))
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
 import Uuid exposing (Uuid)
 import ZScore.Model
 
@@ -68,7 +70,7 @@ type alias Model =
     , zscores : ZScore.Model.Model
 
     -- What data did we want last time we checked? We track this so we can
-    -- forget data we don't want any longer. Using an EntityUuidDict relies on the
+    -- forget data we don't want any longer. Using an EveryDict relies on the
     -- relevant `Msg` values behaving well for `toString`, which should
     -- typically be fine. The time reflects the last time the data was wanted,
     -- permitting us to keep recently wanted data around for a little while
@@ -141,15 +143,17 @@ type alias LoggedInModel =
     { createPersonPage : Pages.Person.Model.Model
     , relationshipPages : EveryDict ( PersonId, PersonId ) Pages.Relationship.Model.Model
     , personsPage : Pages.People.Model.Model
+    , individualEncounterParticipantsPage : Pages.IndividualEncounterParticipants.Model.Model
     , clinicsPage : Pages.Clinics.Model.Model
 
     -- The nurse who has logged in.
     , nurse : ( NurseId, Nurse )
 
     -- A set of pages for every "open" editable session.
-    , sessionPages : EntityUuidDict SessionId Pages.Session.Model.Model
-    , prenatalEncounterPages : EveryDict PersonId Pages.PrenatalEncounter.Model.Model
-    , prenatalActivityPages : EveryDict ( PersonId, PrenatalActivity ) Pages.PrenatalActivity.Model.Model
+    , prenatalEncounterPages : EveryDict PrenatalEncounterId Pages.PrenatalEncounter.Model.Model
+    , prenatalActivityPages : EveryDict ( PrenatalEncounterId, PrenatalActivity ) Pages.PrenatalActivity.Model.Model
+    , pregnancyOutcomePages : EveryDict IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Model
+    , sessionPages : EveryDict SessionId Pages.Session.Model.Model
     }
 
 
@@ -157,12 +161,14 @@ emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
 emptyLoggedInModel nurse =
     { createPersonPage = Pages.Person.Model.emptyModel
     , personsPage = Pages.People.Model.emptyModel
+    , individualEncounterParticipantsPage = Pages.IndividualEncounterParticipants.Model.emptyModel
     , clinicsPage = Pages.Clinics.Model.emptyModel
     , relationshipPages = EveryDict.empty
     , nurse = nurse
-    , sessionPages = EntityUuidDict.empty
     , prenatalEncounterPages = EveryDict.empty
     , prenatalActivityPages = EveryDict.empty
+    , pregnancyOutcomePages = EveryDict.empty
+    , sessionPages = EveryDict.empty
     }
 
 
@@ -187,6 +193,7 @@ type Msg
     | SendRollbar Rollbar.Level String (Dict String Value)
     | HandleRollbar (Result Http.Error Uuid)
       -- Manage our own model
+    | ScrollToElement String
     | SetActivePage Page
     | SetLanguage Language
     | SetPersistentStorage Bool
@@ -203,10 +210,13 @@ type MsgLoggedIn
     = MsgPageClinics Pages.Clinics.Model.Msg
     | MsgPageCreatePerson Pages.Person.Model.Msg
     | MsgPagePersons Pages.People.Model.Msg
+    | MsgPagePrenatalParticipant PersonId Pages.PrenatalParticipant.Model.Msg
+    | MsgPageIndividualEncounterParticipants Pages.IndividualEncounterParticipants.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
-    | MsgPagePrenatalEncounter PersonId Pages.PrenatalEncounter.Model.Msg
-    | MsgPagePrenatalActivity PersonId PrenatalActivity Pages.PrenatalActivity.Model.Msg
+    | MsgPagePrenatalEncounter PrenatalEncounterId Pages.PrenatalEncounter.Model.Msg
+    | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.PrenatalActivity.Model.Msg
+    | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Msg
 
 
 type alias Flags =

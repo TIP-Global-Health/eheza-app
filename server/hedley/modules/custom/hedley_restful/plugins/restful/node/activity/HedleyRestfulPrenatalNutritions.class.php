@@ -19,7 +19,6 @@ class HedleyRestfulPrenatalNutritions extends HedleyRestfulPrenatalActivityBase 
     $standard_fields_names = [
       'field_height',
       'field_weight',
-      'field_bmi',
       'field_muac',
     ];
 

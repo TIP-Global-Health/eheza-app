@@ -21,20 +21,21 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
-import Backend.Person.Model exposing (Person)
+import Backend.Person.Model exposing (Person, RegistrationInitiator)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
-import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
 import Dict exposing (Dict)
+import EveryDict exposing (EveryDict)
+import EveryDictList exposing (EveryDictList)
+import Http
 import RemoteData exposing (RemoteData(..), WebData)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 {-| This tracks data we fetch from IndexedDB via the service worker. Gradually, we'll
@@ -45,15 +46,15 @@ type alias ModelIndexedDb =
     -- instance, all basic data for clinics, health centers, etc. We might not
     -- actually need all the clinics at once, but there should be a reasonable
     -- number.
-    { clinics : WebData (EntityUuidDictList ClinicId Clinic)
+    { clinics : WebData (EveryDictList ClinicId Clinic)
     , everyCounselingSchedule : WebData EveryCounselingSchedule
-    , healthCenters : WebData (EntityUuidDictList HealthCenterId HealthCenter)
-    , participantForms : WebData (EntityUuidDictList ParticipantFormId ParticipantForm)
+    , healthCenters : WebData (EveryDictList HealthCenterId HealthCenter)
+    , participantForms : WebData (EveryDictList ParticipantFormId ParticipantForm)
 
     -- Data and requests relating to sync data
-    , syncData : WebData (EntityUuidDictList HealthCenterId SyncData)
-    , saveSyncDataRequests : EntityUuidDict HealthCenterId (WebData ())
-    , deleteSyncDataRequests : EntityUuidDict HealthCenterId (WebData ())
+    , syncData : WebData (EveryDictList HealthCenterId SyncData)
+    , saveSyncDataRequests : EveryDict HealthCenterId (WebData ())
+    , deleteSyncDataRequests : EveryDict HealthCenterId (WebData ())
 
     -- For basic session data, we organize it in several ways in memory. One is
     -- by clinic, which we use when you navigate to a clinic page. The other
@@ -63,76 +64,96 @@ type alias ModelIndexedDb =
     -- missed sessions.  Because a child could change clinics, it's easier to
     -- ask the service worker to figure out the expected sessions rather than
     -- deriving it from data we already have in memory.
-    , expectedSessions : EntityUuidDict PersonId (WebData (EntityUuidDictList SessionId Session))
-    , sessionsByClinic : EntityUuidDict ClinicId (WebData (EntityUuidDictList SessionId Session))
-    , sessions : EntityUuidDict SessionId (WebData Session)
+    , expectedSessions : EveryDict PersonId (WebData (EveryDictList SessionId Session))
+    , sessionsByClinic : EveryDict ClinicId (WebData (EveryDictList SessionId Session))
+    , sessions : EveryDict SessionId (WebData Session)
 
     -- Then, we also have a "synthetic" type `EditableSession`, which organizes
     -- the session data in a way that is congenial for our views. Ideally, we would
     -- redesign the views to use more "basic" data, but there is a fair bit of logic
     -- involved, so it require substantial work. For now, at least we remember the
     -- organized data here, and recalculate it when necessary.
-    , editableSessions : EntityUuidDict SessionId (WebData EditableSession)
+    , editableSessions : EveryDict SessionId (WebData EditableSession)
 
-    -- Tracks requests in progress to update sessions
-    , sessionRequests : EntityUuidDict SessionId Backend.Session.Model.Model
+    -- Tracks requests in progress to update sessions, prenatal sessions or prenatal encounters.
+    , sessionRequests : EveryDict SessionId Backend.Session.Model.Model
+    , prenatalEncounterRequests : EveryDict PrenatalEncounterId Backend.PrenatalEncounter.Model.Model
+    , prenatalSessionRequests : EveryDict IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
-    , expectedParticipants : EntityUuidDict SessionId (WebData ExpectedParticipants)
+    , expectedParticipants : EveryDict SessionId (WebData ExpectedParticipants)
 
     -- Measurement data for children and mothers. From this, we can construct
     -- the things we need for an `EditableSession` or for use on the progress
     -- report.
-    , childMeasurements : EntityUuidDict PersonId (WebData ChildMeasurementList)
-    , motherMeasurements : EntityUuidDict PersonId (WebData MotherMeasurementList)
+    , childMeasurements : EveryDict PersonId (WebData ChildMeasurementList)
+    , motherMeasurements : EveryDict PersonId (WebData MotherMeasurementList)
 
     -- Tracks searchs for participants by name. The key is the phrase we are
     -- searching for.
-    , personSearches : Dict String (WebData (EntityUuidDictList PersonId Person))
+    , personSearches : Dict String (WebData (EveryDictList PersonId Person))
 
-    -- A simple cache of people.
-    , people : EntityUuidDict PersonId (WebData Person)
+    -- A simple cache of several things.
+    , people : EveryDict PersonId (WebData Person)
+    , prenatalEncounters : EveryDict PrenatalEncounterId (WebData PrenatalEncounter)
+    , individualParticipants : EveryDict IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
+
+    -- Cache things organized in certain ways.
+    , individualParticipantsByPerson : EveryDict PersonId (WebData (EveryDictList IndividualEncounterParticipantId IndividualEncounterParticipant))
+    , prenatalEncountersByParticipant : EveryDict IndividualEncounterParticipantId (WebData (EveryDictList PrenatalEncounterId PrenatalEncounter))
+    , prenatalMeasurements : EveryDict PrenatalEncounterId (WebData PrenatalMeasurements)
 
     -- From the point of view of the specified person, all of their relationships.
-    , relationshipsByPerson : EntityUuidDict PersonId (WebData (EntityUuidDictList RelationshipId MyRelationship))
+    , relationshipsByPerson : EveryDict PersonId (WebData (EveryDictList RelationshipId MyRelationship))
 
     -- Track what PMTCT groups a participant is in. (Inside a session, we can use
     -- `expectedParticipants`, but for registration etc. this is useful.
-    , participantsByPerson : EntityUuidDict PersonId (WebData (EntityUuidDict PmtctParticipantId PmtctParticipant))
+    , participantsByPerson : EveryDict PersonId (WebData (EveryDict PmtctParticipantId PmtctParticipant))
 
     -- Track requests to mutate data
     , postPerson : WebData PersonId
-    , postPmtctParticipant : EntityUuidDict PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
-    , postRelationship : EntityUuidDict PersonId (WebData MyRelationship)
+    , postPmtctParticipant : EveryDict PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
+    , postRelationship : EveryDict PersonId (WebData MyRelationship)
     , postSession : WebData SessionId
+    , postIndividualSession : EveryDict PersonId (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
+    , postPrenatalEncounter : EveryDict IndividualEncounterParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))
     }
 
 
 emptyModelIndexedDb : ModelIndexedDb
 emptyModelIndexedDb =
-    { childMeasurements = EntityUuidDict.empty
+    { childMeasurements = EveryDict.empty
     , clinics = NotAsked
-    , deleteSyncDataRequests = EntityUuidDict.empty
-    , editableSessions = EntityUuidDict.empty
+    , deleteSyncDataRequests = EveryDict.empty
+    , editableSessions = EveryDict.empty
     , everyCounselingSchedule = NotAsked
-    , expectedParticipants = EntityUuidDict.empty
-    , expectedSessions = EntityUuidDict.empty
+    , expectedParticipants = EveryDict.empty
+    , expectedSessions = EveryDict.empty
     , healthCenters = NotAsked
-    , motherMeasurements = EntityUuidDict.empty
+    , motherMeasurements = EveryDict.empty
     , participantForms = NotAsked
-    , participantsByPerson = EntityUuidDict.empty
-    , people = EntityUuidDict.empty
+    , participantsByPerson = EveryDict.empty
+    , people = EveryDict.empty
     , personSearches = Dict.empty
     , postPerson = NotAsked
-    , postPmtctParticipant = EntityUuidDict.empty
-    , postRelationship = EntityUuidDict.empty
+    , postPmtctParticipant = EveryDict.empty
+    , postIndividualSession = EveryDict.empty
+    , postPrenatalEncounter = EveryDict.empty
+    , postRelationship = EveryDict.empty
     , postSession = NotAsked
-    , relationshipsByPerson = EntityUuidDict.empty
-    , saveSyncDataRequests = EntityUuidDict.empty
-    , sessionRequests = EntityUuidDict.empty
-    , sessions = EntityUuidDict.empty
-    , sessionsByClinic = EntityUuidDict.empty
+    , prenatalEncounters = EveryDict.empty
+    , prenatalEncounterRequests = EveryDict.empty
+    , prenatalSessionRequests = EveryDict.empty
+    , individualParticipants = EveryDict.empty
+    , individualParticipantsByPerson = EveryDict.empty
+    , prenatalEncountersByParticipant = EveryDict.empty
+    , prenatalMeasurements = EveryDict.empty
+    , relationshipsByPerson = EveryDict.empty
+    , saveSyncDataRequests = EveryDict.empty
+    , sessionRequests = EveryDict.empty
+    , sessions = EveryDict.empty
+    , sessionsByClinic = EveryDict.empty
     , syncData = NotAsked
     }
 
@@ -153,6 +174,11 @@ type MsgIndexedDb
     | FetchParticipantsForPerson PersonId
     | FetchPeopleByName String
     | FetchPerson PersonId
+    | FetchPrenatalEncounter PrenatalEncounterId
+    | FetchIndividualEncounterParticipantsForPerson PersonId
+    | FetchPrenatalEncountersForParticipant IndividualEncounterParticipantId
+    | FetchPrenatalMeasurements PrenatalEncounterId
+    | FetchIndividualEncounterParticipant IndividualEncounterParticipantId
     | FetchRelationshipsForPerson PersonId
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
@@ -161,28 +187,37 @@ type MsgIndexedDb
     | HandleFetchedChildMeasurements PersonId (WebData ChildMeasurementList)
     | HandleFetchedEveryCounselingSchedule (WebData EveryCounselingSchedule)
     | HandleFetchedMotherMeasurements PersonId (WebData MotherMeasurementList)
-    | HandleFetchedClinics (WebData (EntityUuidDictList ClinicId Clinic))
+    | HandleFetchedClinics (WebData (EveryDictList ClinicId Clinic))
     | HandleFetchedExpectedParticipants SessionId (WebData ExpectedParticipants)
-    | HandleFetchedExpectedSessions PersonId (WebData (EntityUuidDictList SessionId Session))
-    | HandleFetchedHealthCenters (WebData (EntityUuidDictList HealthCenterId HealthCenter))
-    | HandleFetchedParticipantForms (WebData (EntityUuidDictList ParticipantFormId ParticipantForm))
-    | HandleFetchedParticipantsForPerson PersonId (WebData (EntityUuidDict PmtctParticipantId PmtctParticipant))
-    | HandleFetchedPeopleByName String (WebData (EntityUuidDictList PersonId Person))
+    | HandleFetchedExpectedSessions PersonId (WebData (EveryDictList SessionId Session))
+    | HandleFetchedHealthCenters (WebData (EveryDictList HealthCenterId HealthCenter))
+    | HandleFetchedParticipantForms (WebData (EveryDictList ParticipantFormId ParticipantForm))
+    | HandleFetchedParticipantsForPerson PersonId (WebData (EveryDict PmtctParticipantId PmtctParticipant))
+    | HandleFetchedPeopleByName String (WebData (EveryDictList PersonId Person))
     | HandleFetchedPerson PersonId (WebData Person)
-    | HandleFetchedRelationshipsForPerson PersonId (WebData (EntityUuidDictList RelationshipId MyRelationship))
+    | HandleFetchedPrenatalEncounter PrenatalEncounterId (WebData PrenatalEncounter)
+    | HandleFetchedIndividualEncounterParticipantsForPerson PersonId (WebData (EveryDictList IndividualEncounterParticipantId IndividualEncounterParticipant))
+    | HandleFetchedPrenatalEncountersForParticipant IndividualEncounterParticipantId (WebData (EveryDictList PrenatalEncounterId PrenatalEncounter))
+    | HandleFetchedPrenatalMeasurements PrenatalEncounterId (WebData PrenatalMeasurements)
+    | HandleFetchedIndividualEncounterParticipant IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
+    | HandleFetchedRelationshipsForPerson PersonId (WebData (EveryDictList RelationshipId MyRelationship))
     | HandleFetchedSession SessionId (WebData Session)
-    | HandleFetchedSessionsByClinic ClinicId (WebData (EntityUuidDictList SessionId Session))
-    | HandleFetchedSyncData (WebData (EntityUuidDictList HealthCenterId SyncData))
+    | HandleFetchedSessionsByClinic ClinicId (WebData (EveryDictList SessionId Session))
+    | HandleFetchedSyncData (WebData (EveryDictList HealthCenterId SyncData))
       -- Messages which mutate data
-    | PostPerson (Maybe PersonId) Person -- The first person is a person we ought to offer setting a relationship to.
+    | PostPerson (Maybe PersonId) RegistrationInitiator Person -- The first parameter is a person we ought to offer setting a relationship to.
     | PostRelationship PersonId MyRelationship (Maybe ClinicId)
     | PostPmtctParticipant PmtctParticipant
     | PostSession Session
+    | PostIndividualSession IndividualEncounterParticipant
+    | PostPrenatalEncounter PrenatalEncounter
       -- Messages which handle responses to mutating data
-    | HandlePostedPerson (Maybe PersonId) (WebData PersonId)
+    | HandlePostedPerson (Maybe PersonId) RegistrationInitiator (WebData PersonId)
     | HandlePostedRelationship PersonId (WebData MyRelationship)
     | HandlePostedPmtctParticipant PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
     | HandlePostedSession (WebData SessionId)
+    | HandlePostedIndividualSession PersonId (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
+    | HandlePostedPrenatalEncounter IndividualEncounterParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))
       -- Process some revisions we've received from the backend. In some cases,
       -- we can update our in-memory structures appropriately. In other cases, we
       -- can set them to `NotAsked` and let the "fetch" mechanism re-fetch them.
@@ -192,8 +227,13 @@ type MsgIndexedDb
     | DeleteSyncData HealthCenterId
     | HandleSavedSyncData HealthCenterId (WebData ())
     | HandleDeletedSyncData HealthCenterId (WebData ())
-      -- Handling edits to session data
+      -- Handling edits to session data or prenatal encounter data
     | MsgSession SessionId Backend.Session.Model.Msg
+    | MsgPrenatalEncounter PrenatalEncounterId Backend.PrenatalEncounter.Model.Msg
+    | MsgPrenatalSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
+      -- Temporary, until we have a real UI for picking out a PrenatalEncounter
+    | GoToRandomPrenatalEncounter
+    | HandleRandomPrenatalEncounter (Result Http.Error (Maybe PrenatalEncounterId))
 
 
 {-| Wrapper for all the revisions we can receive.
@@ -219,6 +259,7 @@ type Revision
     | NurseRevision NurseId Nurse
     | ObstetricalExamRevision ObstetricalExamId ObstetricalExam
     | ObstetricHistoryRevision ObstetricHistoryId ObstetricHistory
+    | ObstetricHistoryStep2Revision ObstetricHistoryStep2Id ObstetricHistoryStep2
     | ParticipantConsentRevision ParticipantConsentId ParticipantConsent
     | ParticipantFormRevision ParticipantFormId ParticipantForm
     | PersonRevision PersonId Person
@@ -226,8 +267,9 @@ type Revision
     | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
     | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
     | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
-    | PrenatalParticipantRevision PrenatalParticipantId PrenatalParticipant
+    | IndividualEncounterParticipantRevision IndividualEncounterParticipantId IndividualEncounterParticipant
     | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
+    | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto
     | RelationshipRevision RelationshipId Relationship
     | ResourceRevision ResourceId Resource
     | SessionRevision SessionId Session

@@ -1,4 +1,4 @@
-module Pages.PinCode.Model exposing (DisplayMenu(..), Model, Msg(..), OutMsg(..), emptyModel)
+module Pages.PinCode.Model exposing (Model, Msg(..), OutMsg(..), emptyModel)
 
 {-| This models the PinCode entered by the user.
 -}
@@ -9,7 +9,6 @@ import Pages.Page exposing (Page)
 
 type alias Model =
     { code : String
-    , menu : DisplayMenu
     }
 
 
@@ -17,7 +16,6 @@ type Msg
     = ClearPinCode
     | HandleLoginClicked
     | HandleLogoutClicked
-    | SetDisplayMenu DisplayMenu
     | SendOutMsg OutMsg
     | SetPinCode String
 
@@ -29,16 +27,11 @@ type OutMsg
     = Logout
     | TryPinCode String
     | SetActivePage Page
+    | GoToRandomPrenatalEncounter
     | SetHealthCenter HealthCenterId
-
-
-type DisplayMenu
-    = ClinicalMenu
-    | MainMenu
 
 
 emptyModel : Model
 emptyModel =
     { code = ""
-    , menu = MainMenu
     }

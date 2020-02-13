@@ -4,6 +4,8 @@ module Backend.Measurement.Model exposing
     , BreastExam
     , BreastExamSign(..)
     , BreastExamValue
+    , CSectionReason(..)
+    , CSectionScar(..)
     , ChildMeasurementList
     , ChildMeasurements
     , ChildNutrition
@@ -42,6 +44,9 @@ module Backend.Measurement.Model exposing
     , MuacIndication(..)
     , NeckCPESign(..)
     , ObstetricHistory
+    , ObstetricHistorySign(..)
+    , ObstetricHistoryStep2
+    , ObstetricHistoryStep2Value
     , ObstetricHistoryValue
     , ObstetricalExam
     , ObstetricalExamValue
@@ -51,12 +56,18 @@ module Backend.Measurement.Model exposing
     , PhotoUrl(..)
     , PrenatalFamilyPlanning
     , PrenatalMeasurement
+    , PrenatalMeasurements
     , PrenatalNutrition
     , PrenatalNutritionValue
+    , PrenatalPhoto
+    , PreviousDeliveryPeriod(..)
+    , PreviousDeliverySign(..)
     , Resource
     , ResourceSign(..)
     , SocialHistory
+    , SocialHistoryHivTestingResult(..)
     , SocialHistorySign(..)
+    , SocialHistoryValue
     , Vitals
     , VitalsValue
     , Weight
@@ -75,12 +86,12 @@ and cached in local storage.
 
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
+import EveryDict exposing (EveryDict)
+import EveryDictList exposing (EveryDictList)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate.Model exposing (Language)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 
@@ -98,6 +109,7 @@ have in common, plus two things whose type varies:
 type alias Measurement encounter value =
     { dateMeasured : NominalDate
     , nurse : Maybe NurseId
+    , healthCenter : Maybe HealthCenterId
     , participantId : PersonId
     , encounterId : Maybe encounter
     , value : value
@@ -164,13 +176,20 @@ type alias Weight =
 
 
 type FamilyPlanningSign
-    = Condoms
+    = AutoObservation
+    | Condoms
+    | CycleBeads
+    | CycleCounting
+    | Hysterectomy
+    | Implants
+    | Injectables
     | IUD
-    | Implant
-    | Injection
-    | Necklace
+    | LactationAmenorrhea
     | NoFamilyPlanning
-    | Pill
+    | OralContraceptives
+    | Spermicide
+    | TubalLigatures
+    | Vasectomy
 
 
 type alias FamilyPlanning =
@@ -238,6 +257,7 @@ type alias CorePhysicalExamValue =
     { hairHead : EverySet HairHeadCPESign
     , eyes : EverySet EyesCPESign
     , heart : EverySet HeartCPESign
+    , heartMurmur : Bool
     , neck : EverySet NeckCPESign
     , lungs : EverySet LungsCPESign
     , abdomen : EverySet AbdomenCPESign
@@ -257,8 +277,9 @@ type EyesCPESign
 
 
 type HeartCPESign
-    = AbnormalHeart
-    | NormalHeart
+    = IrregularRhythm
+    | NormalRateAndRhythm
+    | SinusTachycardia
 
 
 type NeckCPESign
@@ -274,7 +295,7 @@ type LungsCPESign
 
 
 type AbdomenCPESign
-    = Heptomegaly
+    = Hepatomegaly
     | Splenomegaly
     | TPRightUpper
     | TPRightLower
@@ -354,7 +375,7 @@ type alias ObstetricalExamValue =
     , fetalPresentation : FetalPresentation
     , fetalMovement : Bool
     , fetalHeartRate : Int
-    , cSectionScar : Bool
+    , cSectionScar : CSectionScar
     }
 
 
@@ -364,16 +385,24 @@ type alias ObstetricalExam =
 
 type FetalPresentation
     = Transverse
-    | Breach
+    | FetalBreech
     | Cephalic
+    | Twins
+    | Unknown
+
+
+type CSectionScar
+    = Vertical
+    | Horizontal
+    | NoScar
 
 
 type alias ObstetricHistoryValue =
     { currentlyPregnant : Bool
     , termPregnancy : Int
-    , pretermPregnancy : Int
-    , stillBirthsAtTerm : Int
-    , stillBirthsPreTerm : Int
+    , preTermPregnancy : Int
+    , stillbirthsAtTerm : Int
+    , stillbirthsPreTerm : Int
     , abortions : Int
     , liveChildren : Int
     }
@@ -381,6 +410,54 @@ type alias ObstetricHistoryValue =
 
 type alias ObstetricHistory =
     PrenatalMeasurement ObstetricHistoryValue
+
+
+type alias ObstetricHistoryStep2Value =
+    { cSections : Int
+    , cSectionReason : EverySet CSectionReason
+    , previousDelivery : EverySet PreviousDeliverySign
+    , previousDeliveryPeriod : EverySet PreviousDeliveryPeriod
+    , obstetricHistory : EverySet ObstetricHistorySign
+    }
+
+
+type CSectionReason
+    = Breech
+    | Emergency
+    | FailureToProgress
+    | None
+    | Other
+
+
+type PreviousDeliveryPeriod
+    = LessThan18Month
+    | MoreThan5Years
+    | Neither
+
+
+type PreviousDeliverySign
+    = CSectionInPreviousDelivery
+    | StillbornPreviousDelivery
+    | BabyDiedOnDayOfBirthPreviousDelivery
+    | PartialPlacentaPreviousDelivery
+    | SevereHemorrhagingPreviousDelivery
+    | ConvulsionsPreviousDelivery
+    | ConvulsionsAndUnconsciousPreviousDelivery
+    | NoPreviousDeliverySign
+
+
+type ObstetricHistorySign
+    = SuccessiveAbortions
+    | SuccessivePrematureDeliveries
+    | PreeclampsiaPreviousPregnancy
+    | GestationalDiabetesPreviousPregnancy
+    | IncompleteCervixPreviousPregnancy
+    | RhNegative
+    | NoObstetricHistorySign
+
+
+type alias ObstetricHistoryStep2 =
+    PrenatalMeasurement ObstetricHistoryStep2Value
 
 
 type alias PrenatalFamilyPlanning =
@@ -403,6 +480,10 @@ type ResourceSign
     | NoResource
 
 
+type alias PrenatalPhoto =
+    PrenatalMeasurement PhotoUrl
+
+
 type alias Resource =
     PrenatalMeasurement (EverySet ResourceSign)
 
@@ -410,12 +491,24 @@ type alias Resource =
 type SocialHistorySign
     = AccompaniedByPartner
     | PartnerHivCounseling
-    | MentalHealthHistory
     | NoSocialHistorySign
 
 
+type SocialHistoryHivTestingResult
+    = ResultHivPositive
+    | ResultHivNegative
+    | ResultHivIndeterminate
+    | NoHivTesting
+
+
+type alias SocialHistoryValue =
+    { socialHistory : EverySet SocialHistorySign
+    , hivTestingResult : SocialHistoryHivTestingResult
+    }
+
+
 type alias SocialHistory =
-    PrenatalMeasurement (EverySet SocialHistorySign)
+    PrenatalMeasurement SocialHistoryValue
 
 
 type alias VitalsValue =
@@ -436,17 +529,17 @@ type alias Vitals =
 
 
 type alias MotherMeasurementList =
-    { attendances : EntityUuidDictList AttendanceId Attendance
-    , familyPlannings : EntityUuidDictList FamilyPlanningId FamilyPlanning
-    , consents : EntityUuidDictList ParticipantConsentId ParticipantConsent
+    { attendances : EveryDictList AttendanceId Attendance
+    , familyPlannings : EveryDictList FamilyPlanningId FamilyPlanning
+    , consents : EveryDictList ParticipantConsentId ParticipantConsent
     }
 
 
 emptyMotherMeasurementList : MotherMeasurementList
 emptyMotherMeasurementList =
-    { attendances = EntityUuidDictList.empty
-    , familyPlannings = EntityUuidDictList.empty
-    , consents = EntityUuidDictList.empty
+    { attendances = EveryDictList.empty
+    , familyPlannings = EveryDictList.empty
+    , consents = EveryDictList.empty
     }
 
 
@@ -459,23 +552,23 @@ simple with a `List` and see how that goes.
 
 -}
 type alias ChildMeasurementList =
-    { heights : EntityUuidDictList HeightId Height
-    , muacs : EntityUuidDictList MuacId Muac
-    , nutritions : EntityUuidDictList ChildNutritionId ChildNutrition
-    , photos : EntityUuidDictList PhotoId Photo
-    , weights : EntityUuidDictList WeightId Weight
-    , counselingSessions : EntityUuidDictList CounselingSessionId CounselingSession
+    { heights : EveryDictList HeightId Height
+    , muacs : EveryDictList MuacId Muac
+    , nutritions : EveryDictList ChildNutritionId ChildNutrition
+    , photos : EveryDictList PhotoId Photo
+    , weights : EveryDictList WeightId Weight
+    , counselingSessions : EveryDictList CounselingSessionId CounselingSession
     }
 
 
 emptyChildMeasurementList : ChildMeasurementList
 emptyChildMeasurementList =
-    { heights = EntityUuidDictList.empty
-    , muacs = EntityUuidDictList.empty
-    , nutritions = EntityUuidDictList.empty
-    , photos = EntityUuidDictList.empty
-    , weights = EntityUuidDictList.empty
-    , counselingSessions = EntityUuidDictList.empty
+    { heights = EveryDictList.empty
+    , muacs = EveryDictList.empty
+    , nutritions = EveryDictList.empty
+    , photos = EveryDictList.empty
+    , weights = EveryDictList.empty
+    , counselingSessions = EveryDictList.empty
     }
 
 
@@ -483,20 +576,42 @@ emptyChildMeasurementList =
 our convenience.
 -}
 type alias HistoricalMeasurements =
-    { mothers : EntityUuidDict PersonId MotherMeasurementList
-    , children : EntityUuidDict PersonId ChildMeasurementList
+    { mothers : EveryDict PersonId MotherMeasurementList
+    , children : EveryDict PersonId ChildMeasurementList
     }
 
 
 emptyHistoricalMeasurements : HistoricalMeasurements
 emptyHistoricalMeasurements =
-    { mothers = EntityUuidDict.empty
-    , children = EntityUuidDict.empty
+    { mothers = EveryDict.empty
+    , children = EveryDict.empty
     }
 
 
 
 -- ONE OF EACH KIND OF MEASUREMENT
+
+
+{-| A set of prenatal measurements that correspond to the same prenatal
+encounter.
+-}
+type alias PrenatalMeasurements =
+    { breastExam : Maybe ( BreastExamId, BreastExam )
+    , corePhysicalExam : Maybe ( CorePhysicalExamId, CorePhysicalExam )
+    , dangerSigns : Maybe ( DangerSignsId, DangerSigns )
+    , lastMenstrualPeriod : Maybe ( LastMenstrualPeriodId, LastMenstrualPeriod )
+    , medicalHistory : Maybe ( MedicalHistoryId, MedicalHistory )
+    , medication : Maybe ( MedicationId, Medication )
+    , obstetricalExam : Maybe ( ObstetricalExamId, ObstetricalExam )
+    , obstetricHistory : Maybe ( ObstetricHistoryId, ObstetricHistory )
+    , obstetricHistoryStep2 : Maybe ( ObstetricHistoryStep2Id, ObstetricHistoryStep2 )
+    , familyPlanning : Maybe ( PrenatalFamilyPlanningId, PrenatalFamilyPlanning )
+    , nutrition : Maybe ( PrenatalNutritionId, PrenatalNutrition )
+    , resource : Maybe ( ResourceId, Resource )
+    , socialHistory : Maybe ( SocialHistoryId, SocialHistory )
+    , vitals : Maybe ( VitalsId, Vitals )
+    , prenatalPhoto : Maybe ( PrenatalPhotoId, PrenatalPhoto )
+    }
 
 
 {-| This is like `ChildMeasurementList`, except that it just covers one
@@ -536,7 +651,7 @@ So, it is a `List` (possibly empty) rather than a `Maybe`.
 type alias MotherMeasurements =
     { attendance : Maybe ( AttendanceId, Attendance )
     , familyPlanning : Maybe ( FamilyPlanningId, FamilyPlanning )
-    , consent : EntityUuidDictList ParticipantConsentId ParticipantConsent
+    , consent : EveryDictList ParticipantConsentId ParticipantConsent
     }
 
 
@@ -544,20 +659,20 @@ emptyMotherMeasurements : MotherMeasurements
 emptyMotherMeasurements =
     { attendance = Nothing
     , familyPlanning = Nothing
-    , consent = EntityUuidDictList.empty
+    , consent = EveryDictList.empty
     }
 
 
 type alias Measurements =
-    { mothers : EntityUuidDict PersonId MotherMeasurements
-    , children : EntityUuidDict PersonId ChildMeasurements
+    { mothers : EveryDict PersonId MotherMeasurements
+    , children : EveryDict PersonId ChildMeasurements
     }
 
 
 emptyMeasurements : Measurements
 emptyMeasurements =
-    { mothers = EntityUuidDict.empty
-    , children = EntityUuidDict.empty
+    { mothers = EveryDict.empty
+    , children = EveryDict.empty
     }
 
 

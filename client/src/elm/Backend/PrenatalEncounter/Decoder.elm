@@ -10,6 +10,6 @@ import Restful.Endpoint exposing (decodeEntityUuid)
 decodePrenatalEncounter : Decoder PrenatalEncounter
 decodePrenatalEncounter =
     decode PrenatalEncounter
+        |> required "individual_participant" decodeEntityUuid
         |> requiredAt [ "scheduled_date", "value" ] decodeYYYYMMDD
         |> optionalAt [ "scheduled_date", "value2" ] (nullable decodeYYYYMMDD) Nothing
-        |> required "prenatal_participant" decodeEntityUuid

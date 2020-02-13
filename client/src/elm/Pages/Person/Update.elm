@@ -1,27 +1,26 @@
 module Pages.Person.Update exposing (update)
 
-import AllDict
 import App.Model
 import Backend.Entities exposing (PersonId)
 import Backend.Model
 import Backend.Person.Form exposing (ExpectedAge(..), birthDate, validatePerson)
 import Backend.Person.Model exposing (Person)
+import EveryDict exposing (EveryDict)
 import Form
 import Form.Field
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD, fromLocalDateTime)
 import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
 
 
-update : NominalDate -> Msg -> EntityUuidDict PersonId (WebData Person) -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update : NominalDate -> Msg -> EveryDict PersonId (WebData Person) -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate msg people model =
     case msg of
-        MsgForm relation subMsg ->
+        MsgForm relation initiator subMsg ->
             let
                 related =
                     relation
-                        |> Maybe.andThen (\personId -> AllDict.get personId people)
+                        |> Maybe.andThen (\personId -> EveryDict.get personId people)
                         |> Maybe.andThen RemoteData.toMaybe
 
                 newForm =
@@ -34,7 +33,7 @@ update currentDate msg people model =
                                 |> Maybe.map
                                     (\person ->
                                         [ person
-                                            |> Backend.Model.PostPerson relation
+                                            |> Backend.Model.PostPerson relation initiator
                                             |> App.Model.MsgIndexedDb
                                         ]
                                     )
@@ -43,7 +42,7 @@ update currentDate msg people model =
                                 -- `NotAsked` (to reset network errors
                                 -- etc.)
                                 |> Maybe.withDefault
-                                    [ Backend.Model.HandlePostedPerson relation NotAsked
+                                    [ Backend.Model.HandlePostedPerson relation initiator NotAsked
                                         |> App.Model.MsgIndexedDb
                                     ]
 
@@ -55,12 +54,12 @@ update currentDate msg people model =
             , appMsgs
             )
 
-        DropZoneComplete relation result ->
+        DropZoneComplete relation initiator result ->
             let
                 subMsg =
                     Form.Input Backend.Person.Form.photo Form.Text (Form.Field.String result.url)
             in
-            update currentDate (MsgForm relation subMsg) people model
+            update currentDate (MsgForm relation initiator subMsg) people model
 
         ResetCreateForm ->
             ( Pages.Person.Model.emptyModel
@@ -80,12 +79,12 @@ update currentDate msg people model =
             , []
             )
 
-        DateSelected relation date ->
+        DateSelected relation initiator date ->
             let
                 dateAsString =
                     fromLocalDateTime date |> formatYYYYMMDD
 
                 setFieldMsg =
-                    Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm relation
+                    Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm relation initiator
             in
             update currentDate setFieldMsg people model

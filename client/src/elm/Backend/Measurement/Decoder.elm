@@ -14,30 +14,33 @@ module Backend.Measurement.Decoder exposing
     , decodeMuac
     , decodeNutrition
     , decodeObstetricHistory
+    , decodeObstetricHistoryStep2
     , decodeObstetricalExam
     , decodeParticipantConsent
     , decodePhoto
     , decodePrenatalFamilyPlanning
+    , decodePrenatalMeasurements
     , decodePrenatalNutrition
+    , decodePrenatalPhoto
     , decodeResource
     , decodeSocialHistory
+    , decodeSocialHistoryHivTestingResult
     , decodeVitals
     , decodeWeight
     )
 
-import AllDict
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Dict exposing (Dict)
+import EveryDict exposing (EveryDict)
+import EveryDictList
 import Gizra.Json exposing (decodeEmptyArrayAs, decodeFloat, decodeInt, decodeIntDict)
 import Gizra.NominalDate
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (custom, decode, hardcoded, optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid, toEntityUuid)
 import Translate.Utils exposing (decodeLanguage)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 import Utils.Json exposing (decodeEverySet)
 
 
@@ -56,35 +59,10 @@ decodeMeasurement encounterTag valueDecoder =
     decode Measurement
         |> required "date_measured" Gizra.NominalDate.decodeYYYYMMDD
         |> optional "nurse" (nullable decodeEntityUuid) Nothing
+        |> optional "health_center" (nullable decodeEntityUuid) Nothing
         |> required "person" decodeEntityUuid
         |> optional encounterTag (nullable decodeEntityUuid) Nothing
         |> custom valueDecoder
-
-
-{-| Decodes `HistoricalMeasurements` as sent by `/api/offline_sessions/`
--}
-decodeHistoricalMeasurements : Decoder HistoricalMeasurements
-decodeHistoricalMeasurements =
-    decode HistoricalMeasurements
-        |> requiredAt [ "participants", "mother_activity" ]
-            (oneOf
-                [ decodeEmptyArrayAs EntityUuidDict.empty
-                , map toEntityUuidDict (dict decodeMotherMeasurementList)
-                ]
-            )
-        |> requiredAt [ "participants", "child_activity" ]
-            (oneOf
-                [ decodeEmptyArrayAs EntityUuidDict.empty
-                , map toEntityUuidDict (dict decodeChildMeasurementList)
-                ]
-            )
-
-
-{-| TODO: Put in elm-essentials.
--}
-toEntityUuidDict : Dict String v -> EntityUuidDict (EntityUuid k) v
-toEntityUuidDict =
-    Dict.foldl (\key value acc -> AllDict.insert (toEntityUuid key) value acc) EntityUuidDict.empty
 
 
 decodeWithEntityUuid : Decoder a -> Decoder ( EntityUuid b, a )
@@ -97,20 +75,44 @@ decodeWithEntityUuid decoder =
 decodeMotherMeasurementList : Decoder MotherMeasurementList
 decodeMotherMeasurementList =
     decode MotherMeasurementList
-        |> optional "attendance" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeAttendance)) EntityUuidDictList.empty
-        |> optional "family_planning" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeFamilyPlanning)) EntityUuidDictList.empty
-        |> optional "participant_consent" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeParticipantConsent)) EntityUuidDictList.empty
+        |> optional "attendance" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeAttendance)) EveryDictList.empty
+        |> optional "family_planning" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeFamilyPlanning)) EveryDictList.empty
+        |> optional "participant_consent" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeParticipantConsent)) EveryDictList.empty
 
 
 decodeChildMeasurementList : Decoder ChildMeasurementList
 decodeChildMeasurementList =
     decode ChildMeasurementList
-        |> optional "height" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeHeight)) EntityUuidDictList.empty
-        |> optional "muac" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeMuac)) EntityUuidDictList.empty
-        |> optional "nutrition" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeNutrition)) EntityUuidDictList.empty
-        |> optional "photo" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodePhoto)) EntityUuidDictList.empty
-        |> optional "weight" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeWeight)) EntityUuidDictList.empty
-        |> optional "counseling_session" (map EntityUuidDictList.fromList <| list (decodeWithEntityUuid decodeCounselingSession)) EntityUuidDictList.empty
+        |> optional "height" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeHeight)) EveryDictList.empty
+        |> optional "muac" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeMuac)) EveryDictList.empty
+        |> optional "nutrition" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeNutrition)) EveryDictList.empty
+        |> optional "photo" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodePhoto)) EveryDictList.empty
+        |> optional "weight" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeWeight)) EveryDictList.empty
+        |> optional "counseling_session" (map EveryDictList.fromList <| list (decodeWithEntityUuid decodeCounselingSession)) EveryDictList.empty
+
+
+decodePrenatalMeasurements : Decoder PrenatalMeasurements
+decodePrenatalMeasurements =
+    let
+        decodeHead =
+            map List.head << list << decodeWithEntityUuid
+    in
+    decode PrenatalMeasurements
+        |> optional "breast_exam" (decodeHead decodeBreastExam) Nothing
+        |> optional "core_physical_exam" (decodeHead decodeCorePhysicalExam) Nothing
+        |> optional "danger_signs" (decodeHead decodeDangerSigns) Nothing
+        |> optional "last_menstrual_period" (decodeHead decodeLastMenstrualPeriod) Nothing
+        |> optional "medical_history" (decodeHead decodeMedicalHistory) Nothing
+        |> optional "medication" (decodeHead decodeMedication) Nothing
+        |> optional "obstetrical_exam" (decodeHead decodeObstetricalExam) Nothing
+        |> optional "obstetric_history" (decodeHead decodeObstetricHistory) Nothing
+        |> optional "obstetric_history_step2" (decodeHead decodeObstetricHistoryStep2) Nothing
+        |> optional "prenatal_family_planning" (decodeHead decodePrenatalFamilyPlanning) Nothing
+        |> optional "prenatal_nutrition" (decodeHead decodePrenatalNutrition) Nothing
+        |> optional "resource" (decodeHead decodeResource) Nothing
+        |> optional "social_history" (decodeHead decodeSocialHistory) Nothing
+        |> optional "vitals" (decodeHead decodeVitals) Nothing
+        |> optional "prenatal_photo" (decodeHead decodePrenatalPhoto) Nothing
 
 
 decodePhoto : Decoder Photo
@@ -118,6 +120,13 @@ decodePhoto =
     field "photo" string
         |> map PhotoUrl
         |> decodeGroupMeasurement
+
+
+decodePrenatalPhoto : Decoder PrenatalPhoto
+decodePrenatalPhoto =
+    field "photo" string
+        |> map PhotoUrl
+        |> decodePrenatalMeasurement
 
 
 decodeHeight : Decoder Height
@@ -233,26 +242,47 @@ decodeFamilyPlanningSign =
         |> andThen
             (\sign ->
                 case sign of
-                    "pill" ->
-                        succeed Pill
+                    "auto-observation" ->
+                        succeed AutoObservation
 
                     "condoms" ->
                         succeed Condoms
 
+                    "necklace" ->
+                        succeed CycleBeads
+
+                    "cycle-counting" ->
+                        succeed CycleCounting
+
+                    "hysterectomy" ->
+                        succeed Hysterectomy
+
+                    "implant" ->
+                        succeed Implants
+
+                    "injection" ->
+                        succeed Injectables
+
                     "iud" ->
                         succeed IUD
 
-                    "implant" ->
-                        succeed Implant
-
-                    "injection" ->
-                        succeed Injection
-
-                    "necklace" ->
-                        succeed Necklace
+                    "lactation-amenorrhea" ->
+                        succeed LactationAmenorrhea
 
                     "none" ->
                         succeed NoFamilyPlanning
+
+                    "pill" ->
+                        succeed OralContraceptives
+
+                    "spermicide" ->
+                        succeed Spermicide
+
+                    "tubal-ligatures" ->
+                        succeed TubalLigatures
+
+                    "vasectomy" ->
+                        succeed Vasectomy
 
                     _ ->
                         fail <|
@@ -338,11 +368,14 @@ decodeHeartCPESign =
         |> andThen
             (\s ->
                 case s of
-                    "abnormal" ->
-                        succeed AbnormalHeart
+                    "irregular-rhythm" ->
+                        succeed IrregularRhythm
 
-                    "normal" ->
-                        succeed NormalHeart
+                    "normal-rate-and-rhythm" ->
+                        succeed NormalRateAndRhythm
+
+                    "sinus-tachycardia" ->
+                        succeed SinusTachycardia
 
                     _ ->
                         fail <|
@@ -399,8 +432,8 @@ decodeAbdomenCPESign =
         |> andThen
             (\s ->
                 case s of
-                    "heptomegaly" ->
-                        succeed Heptomegaly
+                    "hepatomegaly" ->
+                        succeed Hepatomegaly
 
                     "splenomegaly" ->
                         succeed Splenomegaly
@@ -474,6 +507,7 @@ decodeCorePhysicalExam =
         |> required "head_hair" (decodeEverySet decodeHairHeadCPESign)
         |> required "eyes" (decodeEverySet decodeEyesCPESign)
         |> required "heart" (decodeEverySet decodeHeartCPESign)
+        |> required "heart_murmur" bool
         |> required "neck" (decodeEverySet decodeNeckCPESign)
         |> required "lungs" (decodeEverySet decodeLungsCPESign)
         |> required "abdomen" (decodeEverySet decodeAbdomenCPESign)
@@ -620,8 +654,14 @@ decodeFetalPresentation =
                     "cephalic" ->
                         succeed Cephalic
 
-                    "breach" ->
-                        succeed Breach
+                    "breech" ->
+                        succeed FetalBreech
+
+                    "twins" ->
+                        succeed Twins
+
+                    "unknown" ->
+                        succeed Unknown
 
                     _ ->
                         fail <| s ++ " is not a recognized FetalPresentation"
@@ -635,7 +675,7 @@ decodeObstetricalExam =
         |> required "fetal_presentation" decodeFetalPresentation
         |> required "fetal_movement" bool
         |> required "fetal_heart_rate" decodeInt
-        |> required "c_section_scar" bool
+        |> required "c_section_scar" decodeCSectionScar
         |> decodePrenatalMeasurement
 
 
@@ -704,9 +744,6 @@ decodeSocialHistorySign =
                     "partner-hiv-counseling" ->
                         succeed PartnerHivCounseling
 
-                    "mental-health-history" ->
-                        succeed MentalHealthHistory
-
                     "none" ->
                         succeed NoSocialHistorySign
 
@@ -715,10 +752,34 @@ decodeSocialHistorySign =
             )
 
 
+decodeSocialHistoryHivTestingResult : Decoder SocialHistoryHivTestingResult
+decodeSocialHistoryHivTestingResult =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "positive" ->
+                        succeed ResultHivPositive
+
+                    "negative" ->
+                        succeed ResultHivNegative
+
+                    "indeterminate" ->
+                        succeed ResultHivIndeterminate
+
+                    "none" ->
+                        succeed NoHivTesting
+
+                    _ ->
+                        fail <| s ++ " is not a recognized SocialHistorySign"
+            )
+
+
 decodeSocialHistory : Decoder SocialHistory
 decodeSocialHistory =
-    decodeEverySet decodeSocialHistorySign
-        |> field "social_history"
+    succeed SocialHistoryValue
+        |> required "social_history" (decodeEverySet decodeSocialHistorySign)
+        |> required "partner_hiv_testing" decodeSocialHistoryHivTestingResult
         |> decodePrenatalMeasurement
 
 
@@ -730,4 +791,148 @@ decodeVitals =
         |> required "heart_rate" decodeInt
         |> required "respiratory_rate" decodeInt
         |> required "body_temperature" decodeFloat
+        |> decodePrenatalMeasurement
+
+
+decodeCSectionReason : Decoder CSectionReason
+decodeCSectionReason =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "breech" ->
+                        succeed Breech
+
+                    "emergency" ->
+                        succeed Emergency
+
+                    "failure-to-progress" ->
+                        succeed FailureToProgress
+
+                    "none" ->
+                        succeed None
+
+                    "other" ->
+                        succeed Other
+
+                    _ ->
+                        fail <| s ++ " is not a recognized CSectionReason"
+            )
+
+
+decodeCSectionScar : Decoder CSectionScar
+decodeCSectionScar =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "vertical" ->
+                        succeed Vertical
+
+                    "horizontal" ->
+                        succeed Horizontal
+
+                    "none" ->
+                        succeed NoScar
+
+                    _ ->
+                        fail <| s ++ " is not a recognized CSectionScar"
+            )
+
+
+decodePreviousDeliveryPeriod : Decoder PreviousDeliveryPeriod
+decodePreviousDeliveryPeriod =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "less-than-18-month" ->
+                        succeed LessThan18Month
+
+                    "more-than-5-years" ->
+                        succeed MoreThan5Years
+
+                    "neither" ->
+                        succeed Neither
+
+                    _ ->
+                        fail <| s ++ " is not a recognized PreviousDeliveryPeriod"
+            )
+
+
+decodePreviousDeliverySign : Decoder PreviousDeliverySign
+decodePreviousDeliverySign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "c-section-in-previous-delivery" ->
+                        succeed CSectionInPreviousDelivery
+
+                    "stillborn-previous-delivery" ->
+                        succeed StillbornPreviousDelivery
+
+                    "baby-died-on-day-of-birth-previous-delivery" ->
+                        succeed BabyDiedOnDayOfBirthPreviousDelivery
+
+                    "partial-placenta-previous-delivery" ->
+                        succeed PartialPlacentaPreviousDelivery
+
+                    "severe-hemorrhaging-previous-delivery" ->
+                        succeed SevereHemorrhagingPreviousDelivery
+
+                    "convulsions-previous-delivery" ->
+                        succeed ConvulsionsPreviousDelivery
+
+                    "convulsions-and-unconscious-previous-delivery" ->
+                        succeed ConvulsionsAndUnconsciousPreviousDelivery
+
+                    "none" ->
+                        succeed NoPreviousDeliverySign
+
+                    _ ->
+                        fail <| s ++ " is not a recognized PreviousDeliverySign"
+            )
+
+
+decodeObstetricHistorySign : Decoder ObstetricHistorySign
+decodeObstetricHistorySign =
+    string
+        |> andThen
+            (\s ->
+                case s of
+                    "successive-abortions" ->
+                        succeed SuccessiveAbortions
+
+                    "successive-premature-deliveries" ->
+                        succeed SuccessivePrematureDeliveries
+
+                    "preeclampsia-previous-pregnancy" ->
+                        succeed PreeclampsiaPreviousPregnancy
+
+                    "gestational-diabetes-previous-pregnancy" ->
+                        succeed GestationalDiabetesPreviousPregnancy
+
+                    "incomplete-cervix-previous-pregnancy" ->
+                        succeed IncompleteCervixPreviousPregnancy
+
+                    "rh-negative" ->
+                        succeed RhNegative
+
+                    "none" ->
+                        succeed NoObstetricHistorySign
+
+                    _ ->
+                        fail <| s ++ " is not a recognized ObstetricHistorySign"
+            )
+
+
+decodeObstetricHistoryStep2 : Decoder ObstetricHistoryStep2
+decodeObstetricHistoryStep2 =
+    succeed ObstetricHistoryStep2Value
+        |> required "c_sections" decodeInt
+        |> required "c_section_reason" (decodeEverySet decodeCSectionReason)
+        |> required "previous_delivery" (decodeEverySet decodePreviousDeliverySign)
+        |> required "previous_delivery_period" (decodeEverySet decodePreviousDeliveryPeriod)
+        |> required "obstetric_history" (decodeEverySet decodeObstetricHistorySign)
         |> decodePrenatalMeasurement

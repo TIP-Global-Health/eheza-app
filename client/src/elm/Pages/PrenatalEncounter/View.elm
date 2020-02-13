@@ -1,11 +1,16 @@
 module Pages.PrenatalEncounter.View exposing (view, viewMotherAndMeasurements)
 
-import AllDict
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
+import Backend.Measurement.Model exposing (ObstetricHistoryValue, PrenatalMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
+import Date.Extra as Date exposing (Interval(Day))
+import EveryDict
+import EveryDictList
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -13,11 +18,14 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.Model exposing (..)
-import PrenatalActivity.Utils exposing (getActivityIcon, getAllActivities)
+import Pages.PrenatalEncounter.Utils exposing (..)
+import PrenatalActivity.Model exposing (..)
+import PrenatalActivity.Utils exposing (generateHighRiskAlertData, generateHighSeverityAlertData, getActivityIcon, getAllActivities)
 import RemoteData exposing (RemoteData(..), WebData)
 import Time.Date exposing (date)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (script, tabItem, thumbnailImage, viewLoading)
+import Utils.Html exposing (script, tabItem, thumbnailImage, viewLoading, viewModal)
+import Utils.WebData exposing (viewWebData)
 
 
 thumbnailDimensions : { width : Int, height : Int }
@@ -27,31 +35,33 @@ thumbnailDimensions =
     }
 
 
-view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Model -> Html Msg
+view : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id db model =
     let
+        data =
+            generateAssembledData id db
+
+        header =
+            viewWebData language (viewHeader language) identity data
+
         content =
-            AllDict.get id db.people
-                |> unwrap
-                    []
-                    (RemoteData.toMaybe
-                        >> unwrap
-                            []
-                            (\mother ->
-                                [ div [ class "ui unstackable items" ] <|
-                                    viewMotherAndMeasurements language currentDate mother
-                                        ++ viewMainPageContent language currentDate id model
-                                ]
-                            )
-                    )
+            viewWebData language (viewContent language currentDate model) identity data
     in
     div [ class "page-prenatal-encounter" ] <|
-        viewHeader language
-            :: content
+        [ header
+        , content
+        ]
 
 
-viewHeader : Language -> Html Msg
-viewHeader language =
+viewContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
+viewContent language currentDate model data =
+    div [ class "ui unstackable items" ] <|
+        viewMotherAndMeasurements language currentDate data model.showAlertsDialog SetAlertsDialogState
+            ++ viewMainPageContent language currentDate data model
+
+
+viewHeader : Language -> AssembledData -> Html Msg
+viewHeader language data =
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -59,7 +69,7 @@ viewHeader language =
             [ text <| translate language Translate.PrenatalEncounter ]
         , a
             [ class "link-back"
-            , onClick <| SetActivePage PinCodePage
+            , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage data.participant.person
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -67,15 +77,41 @@ viewHeader language =
         ]
 
 
-viewMotherAndMeasurements : Language -> NominalDate -> Person -> List (Html any)
-viewMotherAndMeasurements language currentDate mother =
-    [ viewMotherDetails language currentDate mother
-    , viewMeasurements language currentDate
+viewMotherAndMeasurements : Language -> NominalDate -> AssembledData -> Bool -> (Bool -> msg) -> List (Html msg)
+viewMotherAndMeasurements language currentDate data isDialogOpen setAlertsDialogStateMsg =
+    [ viewMotherDetails language currentDate data isDialogOpen setAlertsDialogStateMsg
+    , viewMeasurements language currentDate data.globalLmpDate data.globalObstetricHistory
     ]
 
 
-viewMotherDetails : Language -> NominalDate -> Person -> Html any
-viewMotherDetails language currentDate mother =
+viewMotherDetails : Language -> NominalDate -> AssembledData -> Bool -> (Bool -> msg) -> Html msg
+viewMotherDetails language currentDate data isDialogOpen setAlertsDialogStateMsg =
+    let
+        mother =
+            data.person
+
+        firstEncounterMeasurements =
+            getFirstEncounterMeasurements data
+
+        highRiskAlertsData =
+            allHighRiskFactors
+                |> List.filterMap (generateHighRiskAlertData language firstEncounterMeasurements)
+
+        highSeverityAlertsData =
+            allHighSeverityAlerts
+                |> List.filterMap (generateHighSeverityAlertData language currentDate data)
+
+        alertSign =
+            if List.isEmpty highRiskAlertsData && List.isEmpty highSeverityAlertsData then
+                emptyNode
+
+            else
+                div
+                    [ class "alerts"
+                    , onClick <| setAlertsDialogStateMsg True
+                    ]
+                    [ img [ src "assets/images/exclamation-red.png" ] [] ]
+    in
     div [ class "item" ]
         [ div [ class "ui image" ]
             [ thumbnailImage "mother" mother.avatarUrl mother.name thumbnailDimensions.height thumbnailDimensions.width ]
@@ -92,58 +128,159 @@ viewMotherDetails language currentDate mother =
                     )
                     (ageInYears currentDate mother)
             ]
+        , alertSign
+        , viewModal <| alertsDialog language highRiskAlertsData highSeverityAlertsData isDialogOpen setAlertsDialogStateMsg
         ]
 
 
-viewMeasurements : Language -> NominalDate -> Html any
-viewMeasurements language currentDate =
+alertsDialog : Language -> List String -> List ( String, String ) -> Bool -> (Bool -> msg) -> Maybe (Html msg)
+alertsDialog language highRiskAlertsData highSeverityAlertsData isOpen setAlertsDialogStateMsg =
+    if isOpen then
+        let
+            sectionLabel title =
+                div [ class "section-label-wrapper" ]
+                    [ img [ src "assets/images/exclamation-red.png" ] []
+                    , div [ class "section-label" ] [ text <| translate language title ++ ":" ]
+                    ]
+
+            viewAlertWithValue message value =
+                div [ class "alert" ]
+                    [ span [ class "alert-text" ] [ text <| "- " ++ message ++ ":" ]
+                    , span [ class "alert-value" ] [ text value ]
+                    ]
+
+            viewAlertWithoutValue message =
+                div [ class "alert" ] [ text <| "- " ++ message ]
+
+            viewHighSeverityAlert ( message, value ) =
+                if value == "" then
+                    viewAlertWithoutValue message
+
+                else
+                    viewAlertWithValue message value
+
+            highRiskAlerts =
+                highRiskAlertsData
+                    |> List.map viewAlertWithoutValue
+
+            highSeverityAlerts =
+                highSeverityAlertsData
+                    |> List.map viewHighSeverityAlert
+        in
+        Just <|
+            div [ class "ui active modal alerts-dialog" ]
+                [ div [ class "content" ]
+                    [ div [ class "high-risk-alerts" ]
+                        [ sectionLabel Translate.HighRiskFactors
+                        , highRiskAlerts
+                            |> div [ class "section-items" ]
+                        ]
+                        |> showIf (List.isEmpty highRiskAlerts |> not)
+                    , div [ class "high-severity-alerts" ]
+                        [ sectionLabel Translate.HighSeverityAlerts
+                        , highSeverityAlerts
+                            |> div [ class "section-items" ]
+                        ]
+                        |> showIf (List.isEmpty highSeverityAlerts |> not)
+                    ]
+                , div
+                    [ class "actions" ]
+                    [ button
+                        [ class "ui primary fluid button"
+                        , onClick <| setAlertsDialogStateMsg False
+                        ]
+                        [ text <| translate language Translate.Close ]
+                    ]
+                ]
+
+    else
+        Nothing
+
+
+viewMeasurements : Language -> NominalDate -> Maybe NominalDate -> Maybe ObstetricHistoryValue -> Html any
+viewMeasurements language currentDate lmpDate obstetricHistory =
     let
-        dummyDate =
-            date 2019 12 10
+        ( edd, ega ) =
+            generateEDDandEGA language currentDate ( "--/--/----", "----" ) lmpDate
 
-        diffInDays =
-            diffDays currentDate dummyDate
-
-        diffInWeeks =
-            diffInDays // 7
-
-        egaWeeks =
-            translate language <| Translate.WeekSinglePlural diffInWeeks
-
-        egaDays =
-            translate language <| Translate.DaySinglePlural (diffInDays - 7 * diffInWeeks)
-
-        dummyGravida =
-            2
-
-        dummyPara =
-            "0102"
+        ( gravida, para ) =
+            unwrap
+                ( "----", "----" )
+                (\value ->
+                    ( generateGravida value
+                    , generatePara value
+                    )
+                )
+                obstetricHistory
     in
     div [ class "item measurements" ]
         [ div [ class "ui edd" ]
             [ div [ class "label" ] [ text <| translate language Translate.Edd ++ ":" ]
-            , div [ class "value" ] [ text <| formatMMDDYYYY dummyDate ]
+            , div [ class "value" ] [ text edd ]
             ]
         , div [ class "ui ega" ]
             [ div [ class "label" ] [ text <| translate language Translate.Ega ++ ":" ]
-            , div [ class "value" ] [ text <| egaWeeks ++ ", " ++ egaDays ]
+            , div [ class "value" ] [ text ega ]
             ]
         , div [ class "ui gravida" ]
             [ div [ class "label" ] [ text <| translate language Translate.Gravida ++ ":" ]
-            , div [ class "value" ] [ text <| toString dummyGravida ]
+            , div [ class "value" ] [ text gravida ]
             ]
         , div [ class "ui para" ]
             [ div [ class "label" ] [ text <| translate language Translate.Para ++ ":" ]
-            , div [ class "value" ] [ text dummyPara ]
+            , div [ class "value" ] [ text para ]
             ]
         ]
 
 
-viewMainPageContent : Language -> NominalDate -> PersonId -> Model -> List (Html Msg)
-viewMainPageContent language currentDate motherId model =
+viewMainPageContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language currentDate data model =
     let
-        ( pendingActivities, completedActivities ) =
-            ( getAllActivities, [] )
+        ( completedActivities, pendingActivities ) =
+            getAllActivities
+                |> List.filter (expectPrenatalActivity currentDate data)
+                |> List.partition
+                    (\activity ->
+                        case activity of
+                            PregnancyDating ->
+                                isJust data.measurements.lastMenstrualPeriod
+
+                            History ->
+                                if List.isEmpty data.previousMeasurementsWithDates then
+                                    -- First antenatal encounter - all tasks should be completed
+                                    isJust data.measurements.obstetricHistory
+                                        && isJust data.measurements.obstetricHistoryStep2
+                                        && isJust data.measurements.medicalHistory
+                                        && isJust data.measurements.socialHistory
+
+                                else
+                                    -- Subsequent antenatal encounter - only Social history task
+                                    -- needs to be completed.
+                                    isJust data.measurements.socialHistory
+
+                            Examination ->
+                                isJust data.measurements.vitals
+                                    && isJust data.measurements.nutrition
+                                    && isJust data.measurements.corePhysicalExam
+                                    && isJust data.measurements.obstetricalExam
+                                    && isJust data.measurements.breastExam
+
+                            FamilyPlanning ->
+                                isJust data.measurements.familyPlanning
+
+                            PatientProvisions ->
+                                if shouldShowPatientProvisionsResourcesTask data then
+                                    isJust data.measurements.medication && isJust data.measurements.resource
+
+                                else
+                                    isJust data.measurements.medication
+
+                            DangerSigns ->
+                                isJust data.measurements.dangerSigns
+
+                            PrenatalPhoto ->
+                                isJust data.measurements.prenatalPhoto
+                    )
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -165,7 +302,7 @@ viewMainPageContent language currentDate motherId model =
             div [ class "card" ]
                 [ div
                     [ class "image"
-                    , onClick <| SetActivePage <| UserPage <| PrenatalActivityPage motherId activity
+                    , onClick <| SetActivePage <| UserPage <| PrenatalActivityPage data.id activity
                     ]
                     [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
                 , div [ class "content" ]
@@ -187,12 +324,29 @@ viewMainPageContent language currentDate motherId model =
                     ( completedActivities, translate language Translate.NoActivitiesCompleted )
 
                 Reports ->
-                    ( [], "Under construction..." )
+                    ( [], "" )
 
-        activities =
-            div [ class "ui full segment" ]
-                [ div
-                    [ class "full content" ]
+        viewReportLink labelTransId redirectPage =
+            div
+                [ class "report-wrapper"
+                , onClick <| SetActivePage redirectPage
+                ]
+                [ div [ class "icon-progress-report" ] []
+                , div [ class "report-text" ]
+                    [ div [ class "report-label" ] [ text <| translate language labelTransId ]
+                    , div [ class "report-link" ] [ text <| translate language Translate.View ]
+                    ]
+                ]
+
+        innerContent =
+            if model.selectedTab == Reports then
+                div [ class "reports-wrapper" ]
+                    [ viewReportLink Translate.ClinicalProgressReport (UserPage <| ClinicalProgressReportPage data.id)
+                    , viewReportLink Translate.DemographicsReport (UserPage <| DemographicsReportPage data.id)
+                    ]
+
+            else
+                div [ class "full content" ]
                     [ div [ class "wrap-cards" ]
                         [ div [ class "ui four cards" ] <|
                             if List.isEmpty selectedActivities then
@@ -202,15 +356,39 @@ viewMainPageContent language currentDate motherId model =
                                 List.map viewCard selectedActivities
                         ]
                     ]
+
+        allowEndEcounter =
+            case pendingActivities of
+                -- Either all activities are completed
+                [] ->
+                    True
+
+                -- Or only one none mandatory activity remains
+                [ PrenatalPhoto ] ->
+                    True
+
+                _ ->
+                    False
+
+        endEcounterButtonAttributes =
+            if allowEndEcounter then
+                [ class "ui fluid primary button"
+                , onClick <| CloseEncounter data.id
+                ]
+
+            else
+                [ class "ui fluid primary button disabled" ]
+
+        content =
+            div [ class "ui full segment" ]
+                [ innerContent
                 , div [ class "actions" ]
                     [ button
-                        [ class "ui fluid primary button"
-                        , onClick <| SetActivePage PinCodePage
-                        ]
+                        endEcounterButtonAttributes
                         [ text <| translate language Translate.EndEncounter ]
                     ]
                 ]
     in
     [ tabs
-    , activities
+    , content
     ]

@@ -202,7 +202,11 @@ function hedley_device_assign_uuid($node, $wrapper) {
  * Fill in field_shards with the shards this node should be sent to.
  */
 function hedley_device_assign_shards($node, $wrapper) {
-  $shards = hedley_device_shards_for_person($wrapper->field_person->getIdentifier());
+  if (!$person_id = $wrapper->field_person->getIdentifier()) {
+    return;
+  }
+
+  $shards = hedley_device_shards_for_person($person_id);
   $wrapper->field_shards->set($shards);
 }
 
@@ -242,12 +246,10 @@ function hedley_device_shards_for_person($nid) {
 
   $shards = $query->execute()->fetchCol();
 
-  $person = entity_metadata_wrapper($nid);
+  $person = entity_metadata_wrapper('node', $nid);
 
-  if (isset($person->field_health_center)) {
-    $shard = $person->field_health_center->getIdentifier();
-
-    if (isset($shard) && !in_array($shard, $shards)) {
+  if ($shard = $person->field_health_center->getIdentifier()) {
+    if (!in_array($shard, $shards)) {
       $shards[] = $shard;
     }
   }

@@ -2,6 +2,9 @@ module Pages.Router exposing (delta2url, parseUrl)
 
 import Activity.Model exposing (Activity)
 import Activity.Utils
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
+import Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString, encoudeIndividualEncounterTypeAsString)
+import Backend.Person.Model exposing (RegistrationInitiator(..))
 import Pages.Page exposing (..)
 import PrenatalActivity.Model exposing (PrenatalActivity)
 import PrenatalActivity.Utils
@@ -33,6 +36,9 @@ delta2url previous current =
         -- These are pages that required a logged-in user
         UserPage userPage ->
             case userPage of
+                ClinicalPage ->
+                    Just <| UrlChange NewEntry "#clinical"
+
                 ClinicsPage clinicId ->
                     let
                         clinic =
@@ -42,10 +48,16 @@ delta2url previous current =
                     in
                     Just <| UrlChange NewEntry ("#clinics" ++ clinic)
 
+                ClinicalProgressReportPage prenatalEncounterId ->
+                    Just <| UrlChange NewEntry <| "#clinical-progress-report/" ++ fromEntityUuid prenatalEncounterId
+
+                DemographicsReportPage prenatalEncounterId ->
+                    Just <| UrlChange NewEntry <| "#demographics-report/" ++ fromEntityUuid prenatalEncounterId
+
                 MyAccountPage ->
                     Just <| UrlChange NewEntry "#my-account"
 
-                CreatePersonPage relationId ->
+                CreatePersonPage relationId _ ->
                     let
                         relation =
                             relationId
@@ -68,6 +80,12 @@ delta2url previous current =
                                     "#relations/" ++ fromEntityUuid relatedId
                     in
                     Just <| UrlChange NewEntry url
+
+                PrenatalParticipantPage id ->
+                    Just <| UrlChange NewEntry <| "#prenatal-participant/" ++ fromEntityUuid id
+
+                IndividualEncounterParticipantsPage encounterType ->
+                    Just <| UrlChange NewEntry ("#individual-participants/" ++ encoudeIndividualEncounterTypeAsString encounterType)
 
                 RelationshipPage id1 id2 ->
                     Just <|
@@ -113,6 +131,12 @@ delta2url previous current =
                 PrenatalActivityPage id activity ->
                     Just <| UrlChange NewEntry <| "#prenatal-activity/" ++ fromEntityUuid id ++ "/" ++ PrenatalActivity.Utils.encodeActivityAsString activity
 
+                IndividualEncounterTypesPage ->
+                    Just <| UrlChange NewEntry "#encounter-types/"
+
+                PregnancyOutcomePage id ->
+                    Just <| UrlChange NewEntry <| "#pregnancy-outcome/" ++ fromEntityUuid id
+
 
 {-| For now, the only messages we're generating from the URL are messages
 to set the active page. So, we just return a `Page`, and the caller can
@@ -128,15 +152,22 @@ parseUrl =
         , map PinCodePage (s "pincode")
         , map ServiceWorkerPage (s "deployment")
         , map (UserPage MyAccountPage) (s "my-account")
+        , map (UserPage ClinicalPage) (s "clinical")
         , map (\id page -> UserPage <| SessionPage id page) (s "session" </> parseUuid </> parseSessionPage)
         , map (UserPage <| PersonsPage Nothing) (s "persons")
         , map (\id -> UserPage <| PersonsPage (Just id)) (s "relations" </> parseUuid)
-        , map (\id -> UserPage <| CreatePersonPage (Just id)) (s "person" </> s "new" </> parseUuid)
-        , map (UserPage <| CreatePersonPage Nothing) (s "person" </> s "new")
+        , map (\id -> UserPage <| CreatePersonPage (Just id) ParticipantDirectoryOrigin) (s "person" </> s "new" </> parseUuid)
+        , map (UserPage <| CreatePersonPage Nothing ParticipantDirectoryOrigin) (s "person" </> s "new")
         , map (\id -> UserPage <| PersonPage id) (s "person" </> parseUuid)
+        , map (\id -> UserPage <| PrenatalParticipantPage id) (s "prenatal-participant" </> parseUuid)
         , map (\id1 id2 -> UserPage <| RelationshipPage id1 id2) (s "relationship" </> parseUuid </> parseUuid)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
+        , map (\id -> UserPage <| ClinicalProgressReportPage id) (s "clinical-progress-report" </> parseUuid)
+        , map (\id -> UserPage <| DemographicsReportPage id) (s "demographics-report" </> parseUuid)
+        , map (UserPage <| IndividualEncounterTypesPage) (s "individual-encounter-types")
+        , map (\encounterType -> UserPage <| IndividualEncounterParticipantsPage encounterType) (s "individual-participants" </> parseIndividualEncounterType)
+        , map (\id -> UserPage <| PregnancyOutcomePage id) (s "pregnancy-outcome" </> parseUuid)
 
         -- `top` represents the page without any segements ... i.e. the
         -- root page.
@@ -184,3 +215,15 @@ parsePrenatalActivity =
 
                 Nothing ->
                     Err <| part ++ " is not an PrenatalActivity"
+
+
+parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c
+parseIndividualEncounterType =
+    custom "IndividualEncounterType" <|
+        \part ->
+            case decodeIndividualEncounterTypeFromString part of
+                Just encounterType ->
+                    Ok encounterType
+
+                Nothing ->
+                    Err <| part ++ " is not an IndividualEncounterType"

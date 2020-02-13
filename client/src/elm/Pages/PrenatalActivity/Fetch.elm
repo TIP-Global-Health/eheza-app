@@ -1,12 +1,10 @@
 module Pages.PrenatalActivity.Fetch exposing (fetch)
 
 import Backend.Entities exposing (..)
-import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import EveryDict
-import EveryDictList
-import RemoteData exposing (RemoteData(..))
+import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb)
+import Pages.PrenatalEncounter.Fetch
 
 
-fetch : PersonId -> List MsgIndexedDb
-fetch id =
-    []
+fetch : PrenatalEncounterId -> ModelIndexedDb -> List MsgIndexedDb
+fetch id db =
+    Pages.PrenatalEncounter.Fetch.fetch id db

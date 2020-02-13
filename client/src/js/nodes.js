@@ -94,15 +94,17 @@
         nurse: 'nodes',
         nutrition: 'shards',
         obstetric_history: 'shards',
+        obstetric_history_step2: 'shards',
         obstetrical_exam: 'shards',
         participant_consent: 'shards',
         participant_form: 'nodes',
         person: 'nodes',
         photo: 'shards',
+        prenatal_photo: 'shards',
         pmtct_participant: 'nodes',
         prenatal_family_planning: 'shards',
         prenatal_nutrition: 'shards',
-        prenatal_participant: 'nodes',
+        individual_participant: 'nodes',
         prenatal_encounter: 'nodes',
         relationship: 'nodes',
         resource: 'shards',
@@ -358,7 +360,9 @@
             if (type === 'child-measurements') {
                 return viewMeasurements('person', uuid);
             } else if (type === 'mother-measurements') {
-                return viewMeasurements('person', uuid);
+                  return viewMeasurements('person', uuid);
+            } else if (type === 'prenatal-measurements') {
+                  return viewMeasurements('prenatal_encounter', uuid);
             } else {
                 return getTableForType(type).then(function (table) {
                     return table.get(uuid).catch(databaseError).then(function (node) {
@@ -392,7 +396,7 @@
     }
 
     // This is a kind of special-case for now, at least. We're wanting to get
-    // back all of a particular child's or mother's measurements.
+    // back all of measuremnts for whom the key is equal to the value.
     //
     // Ultimately, it would be better to make this more generic here and do the
     // processing on the client side, but this mirrors the pre-existing
@@ -514,6 +518,20 @@
                     }
                 }
 
+                if (type === 'prenatal_encounter') {
+                  var prenatalSessionId = params.get('individual_participant');
+                  if (prenatalSessionId) {
+                    modifyQuery = modifyQuery.then(function () {
+                        criteria.individual_participant = prenatalSessionId;
+                        query = table.where(criteria);
+
+                        countQuery = query.clone();
+
+                        return Promise.resolve();
+                    });
+                  }
+                }
+
                 // For session endpoint, check child param and only return
                 // those sessions which the child was expected at.
                 if (type === 'session') {
@@ -581,6 +599,10 @@
     // shard a node should be assigned to. For now, it seems simplest to do it
     // here, but we can revisit that.
     function determineShard (node) {
+        if (node.health_center) {
+            return Promise.resolve(node.health_center);
+        }
+
         if (node.session) {
             return dbSync.nodes.get(node.session).then (function (session) {
                 return dbSync.nodes.get(session.clinic).then(function (clinic) {

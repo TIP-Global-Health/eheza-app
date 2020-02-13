@@ -2,42 +2,60 @@ module Backend.Measurement.Encoder exposing
     ( encodeAttendance
     , encodeAttendanceValue
     , encodeBreastExam
+    , encodeBreastExamValue
     , encodeCorePhysicalExam
+    , encodeCorePhysicalExamValue
     , encodeCounselingSession
     , encodeCounselingSessionValue
     , encodeDangerSigns
+    , encodeDangerSignsValue
     , encodeFamilyPlanning
     , encodeFamilyPlanningSignAsString
     , encodeFamilyPlanningValue
     , encodeHeight
     , encodeHeightValue
     , encodeLastMenstrualPeriod
+    , encodeLastMenstrualPeriodValue
     , encodeMedicalHistory
+    , encodeMedicalHistoryValue
     , encodeMedication
+    , encodeMedicationValue
     , encodeMuac
     , encodeMuacValue
     , encodeNutrition
     , encodeNutritionSignAsString
     , encodeNutritionValue
     , encodeObstetricHistory
+    , encodeObstetricHistoryStep2
+    , encodeObstetricHistoryStep2Value
+    , encodeObstetricHistoryValue
     , encodeObstetricalExam
+    , encodeObstetricalExamValue
     , encodeParticipantConsent
     , encodeParticipantConsentValue
     , encodePhoto
     , encodePhotoUrl
     , encodePrenatalFamilyPlanning
     , encodePrenatalNutrition
+    , encodePrenatalNutritionValue
+    , encodePrenatalPhoto
     , encodeResource
+    , encodeResourceValue
     , encodeSocialHistory
+    , encodeSocialHistoryHivTestingResult
+    , encodeSocialHistoryValue
     , encodeVitals
+    , encodeVitalsValue
     , encodeWeight
     , encodeWeightValue
+    , socialHistoryHivTestingResultToString
     )
 
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import EveryDictList
 import EverySet exposing (EverySet)
 import Gizra.NominalDate
 import Json.Encode as Encoder exposing (Value, bool, float, int, list, object, string)
@@ -86,6 +104,11 @@ encodeWeightValue (WeightInKg weight) =
 encodePhoto : Photo -> List ( String, Value )
 encodePhoto =
     encodeGroupMeasurement encodePhotoUrl
+
+
+encodePrenatalPhoto : PrenatalPhoto -> List ( String, Value )
+encodePrenatalPhoto =
+    encodePrenatalMeasurement encodePhotoUrl
 
 
 encodePhotoUrl : PhotoUrl -> List ( String, Value )
@@ -174,6 +197,7 @@ encodeMeasurement encounterTag encoder measurement =
           , ( encounterTag, maybe encodeEntityUuid measurement.encounterId )
           , ( "date_measured", Gizra.NominalDate.encodeYYYYMMDD measurement.dateMeasured )
           , ( "nurse", maybe encodeEntityUuid measurement.nurse )
+          , ( "health_center", maybe encodeEntityUuid measurement.healthCenter )
           ]
         , encoder measurement.value
         ]
@@ -217,26 +241,47 @@ encodeFamilyPlanningSign =
 encodeFamilyPlanningSignAsString : FamilyPlanningSign -> String
 encodeFamilyPlanningSignAsString sign =
     case sign of
+        AutoObservation ->
+            "auto-observation"
+
         Condoms ->
             "condoms"
+
+        CycleBeads ->
+            "necklace"
+
+        CycleCounting ->
+            "cycle-counting"
+
+        Hysterectomy ->
+            "hysterectomy"
+
+        Implants ->
+            "implant"
+
+        Injectables ->
+            "injection"
 
         IUD ->
             "iud"
 
-        Implant ->
-            "implant"
-
-        Injection ->
-            "injection"
-
-        Necklace ->
-            "necklace"
+        LactationAmenorrhea ->
+            "lactation-amenorrhea"
 
         NoFamilyPlanning ->
             "none"
 
-        Pill ->
+        OralContraceptives ->
             "pill"
+
+        Spermicide ->
+            "spermicide"
+
+        TubalLigatures ->
+            "tubal-ligatures"
+
+        Vasectomy ->
+            "vasectomy"
 
 
 encodeBreastExamSign : BreastExamSign -> Value
@@ -294,11 +339,14 @@ encodeHeartCPESign : HeartCPESign -> Value
 encodeHeartCPESign sign =
     string <|
         case sign of
-            AbnormalHeart ->
-                "abnormal"
+            IrregularRhythm ->
+                "irregular-rhythm"
 
-            NormalHeart ->
-                "normal"
+            NormalRateAndRhythm ->
+                "normal-rate-and-rhythm"
+
+            SinusTachycardia ->
+                "sinus-tachycardia"
 
 
 encodeNeckCPESign : NeckCPESign -> Value
@@ -319,8 +367,8 @@ encodeAbdomenCPESign : AbdomenCPESign -> Value
 encodeAbdomenCPESign sign =
     string <|
         case sign of
-            Heptomegaly ->
-                "heptomegaly"
+            Hepatomegaly ->
+                "hepatomegaly"
 
             Splenomegaly ->
                 "splenomegaly"
@@ -391,6 +439,7 @@ encodeCorePhysicalExamValue value =
     [ ( "head_hair", encodeEverySet encodeHairHeadCPESign value.hairHead )
     , ( "eyes", encodeEverySet encodeEyesCPESign value.eyes )
     , ( "heart", encodeEverySet encodeHeartCPESign value.heart )
+    , ( "heart_murmur", bool value.heartMurmur )
     , ( "neck", encodeEverySet encodeNeckCPESign value.neck )
     , ( "lungs", encodeEverySet encodeLungsCPESign value.lungs )
     , ( "abdomen", encodeEverySet encodeAbdomenCPESign value.abdomen )
@@ -445,12 +494,14 @@ encodeDangerSigns =
 
 encodeLastMenstrualPeriod : LastMenstrualPeriod -> List ( String, Value )
 encodeLastMenstrualPeriod =
-    encodePrenatalMeasurement
-        (\value ->
-            [ ( "last_menstrual_period", Gizra.NominalDate.encodeYYYYMMDD value.date )
-            , ( "confident", bool value.confident )
-            ]
-        )
+    encodePrenatalMeasurement encodeLastMenstrualPeriodValue
+
+
+encodeLastMenstrualPeriodValue : LastMenstrualPeriodValue -> List ( String, Value )
+encodeLastMenstrualPeriodValue value =
+    [ ( "last_menstrual_period", Gizra.NominalDate.encodeYYYYMMDD value.date )
+    , ( "confident", bool value.confident )
+    ]
 
 
 encodeMedicalHistorySign : MedicalHistorySign -> Value
@@ -493,10 +544,12 @@ encodeMedicalHistorySign sign =
 
 encodeMedicalHistory : MedicalHistory -> List ( String, Value )
 encodeMedicalHistory =
-    encodePrenatalMeasurement
-        (\value ->
-            [ ( "medical_history", encodeEverySet encodeMedicalHistorySign value ) ]
-        )
+    encodePrenatalMeasurement encodeMedicalHistoryValue
+
+
+encodeMedicalHistoryValue : EverySet MedicalHistorySign -> List ( String, Value )
+encodeMedicalHistoryValue value =
+    [ ( "medical_history", encodeEverySet encodeMedicalHistorySign value ) ]
 
 
 encodeMedicationSign : MedicationSign -> Value
@@ -515,10 +568,12 @@ encodeMedicationSign sign =
 
 encodeMedication : Medication -> List ( String, Value )
 encodeMedication =
-    encodePrenatalMeasurement
-        (\value ->
-            [ ( "medication", encodeEverySet encodeMedicationSign value ) ]
-        )
+    encodePrenatalMeasurement encodeMedicationValue
+
+
+encodeMedicationValue : EverySet MedicationSign -> List ( String, Value )
+encodeMedicationValue value =
+    [ ( "medication", encodeEverySet encodeMedicationSign value ) ]
 
 
 encodeFetalPresentation : FetalPresentation -> Value
@@ -531,8 +586,14 @@ encodeFetalPresentation sign =
             Cephalic ->
                 "cephalic"
 
-            Breach ->
-                "breach"
+            FetalBreech ->
+                "breech"
+
+            Twins ->
+                "twins"
+
+            Unknown ->
+                "unknown"
 
 
 encodeHeightInCm : HeightInCm -> Value
@@ -556,7 +617,7 @@ encodeObstetricalExamValue value =
     , ( "fetal_presentation", encodeFetalPresentation value.fetalPresentation )
     , ( "fetal_movement", bool value.fetalMovement )
     , ( "fetal_heart_rate", int value.fetalHeartRate )
-    , ( "c_section_scar", bool value.cSectionScar )
+    , ( "c_section_scar", encodeCSectionScar value.cSectionScar )
     ]
 
 
@@ -567,33 +628,155 @@ encodeObstetricalExam =
 
 encodeObstetricHistory : ObstetricHistory -> List ( String, Value )
 encodeObstetricHistory =
-    encodePrenatalMeasurement <|
-        \value ->
-            [ ( "currently_pregnant", bool value.currentlyPregnant )
-            , ( "term_pregnancy", int value.termPregnancy )
-            , ( "preterm_pregnancy", int value.pretermPregnancy )
-            , ( "stillbirths_at_term", int value.stillBirthsAtTerm )
-            , ( "stillbirths_preterm", int value.stillBirthsPreTerm )
-            , ( "abortions", int value.abortions )
-            , ( "live_children", int value.liveChildren )
-            ]
+    encodePrenatalMeasurement encodeObstetricHistoryValue
+
+
+encodeObstetricHistoryValue : ObstetricHistoryValue -> List ( String, Value )
+encodeObstetricHistoryValue value =
+    [ ( "currently_pregnant", bool value.currentlyPregnant )
+    , ( "term_pregnancy", int value.termPregnancy )
+    , ( "preterm_pregnancy", int value.preTermPregnancy )
+    , ( "stillbirths_at_term", int value.stillbirthsAtTerm )
+    , ( "stillbirths_preterm", int value.stillbirthsPreTerm )
+    , ( "abortions", int value.abortions )
+    , ( "live_children", int value.liveChildren )
+    ]
+
+
+encodeCSectionReason : CSectionReason -> Value
+encodeCSectionReason sign =
+    string <|
+        case sign of
+            Breech ->
+                "breech"
+
+            Emergency ->
+                "emergency"
+
+            FailureToProgress ->
+                "failure-to-progress"
+
+            None ->
+                "none"
+
+            Other ->
+                "other"
+
+
+encodeCSectionScar : CSectionScar -> Value
+encodeCSectionScar sign =
+    string <|
+        case sign of
+            Vertical ->
+                "vertical"
+
+            Horizontal ->
+                "horizontal"
+
+            NoScar ->
+                "none"
+
+
+encodePreviousDeliveryPeriod : PreviousDeliveryPeriod -> Value
+encodePreviousDeliveryPeriod sign =
+    string <|
+        case sign of
+            LessThan18Month ->
+                "less-than-18-month"
+
+            MoreThan5Years ->
+                "more-than-5-years"
+
+            Neither ->
+                "neither"
+
+
+encodePreviousDeliverySign : PreviousDeliverySign -> Value
+encodePreviousDeliverySign sign =
+    string <|
+        case sign of
+            CSectionInPreviousDelivery ->
+                "c-section-in-previous-delivery"
+
+            StillbornPreviousDelivery ->
+                "stillborn-previous-delivery"
+
+            BabyDiedOnDayOfBirthPreviousDelivery ->
+                "baby-died-on-day-of-birth-previous-delivery"
+
+            PartialPlacentaPreviousDelivery ->
+                "partial-placenta-previous-delivery"
+
+            SevereHemorrhagingPreviousDelivery ->
+                "severe-hemorrhaging-previous-delivery"
+
+            ConvulsionsPreviousDelivery ->
+                "convulsions-previous-delivery"
+
+            ConvulsionsAndUnconsciousPreviousDelivery ->
+                "convulsions-and-unconscious-previous-delivery"
+
+            NoPreviousDeliverySign ->
+                "none"
+
+
+encodeObstetricHistorySign : ObstetricHistorySign -> Value
+encodeObstetricHistorySign sign =
+    string <|
+        case sign of
+            SuccessiveAbortions ->
+                "successive-abortions"
+
+            SuccessivePrematureDeliveries ->
+                "successive-premature-deliveries"
+
+            PreeclampsiaPreviousPregnancy ->
+                "preeclampsia-previous-pregnancy"
+
+            GestationalDiabetesPreviousPregnancy ->
+                "gestational-diabetes-previous-pregnancy"
+
+            IncompleteCervixPreviousPregnancy ->
+                "incomplete-cervix-previous-pregnancy"
+
+            RhNegative ->
+                "rh-negative"
+
+            NoObstetricHistorySign ->
+                "none"
+
+
+encodeObstetricHistoryStep2 : ObstetricHistoryStep2 -> List ( String, Value )
+encodeObstetricHistoryStep2 =
+    encodePrenatalMeasurement encodeObstetricHistoryStep2Value
+
+
+encodeObstetricHistoryStep2Value : ObstetricHistoryStep2Value -> List ( String, Value )
+encodeObstetricHistoryStep2Value value =
+    [ ( "c_sections", int value.cSections )
+    , ( "c_section_reason", encodeEverySet encodeCSectionReason value.cSectionReason )
+    , ( "obstetric_history", encodeEverySet encodeObstetricHistorySign value.obstetricHistory )
+    , ( "previous_delivery", encodeEverySet encodePreviousDeliverySign value.previousDelivery )
+    , ( "previous_delivery_period", encodeEverySet encodePreviousDeliveryPeriod value.previousDeliveryPeriod )
+    ]
 
 
 encodePrenatalFamilyPlanning : PrenatalFamilyPlanning -> List ( String, Value )
 encodePrenatalFamilyPlanning =
-    encodePrenatalMeasurement <|
-        \value ->
-            [ ( "family_planning_signs", encodeEverySet encodeFamilyPlanningSign value ) ]
+    encodePrenatalMeasurement encodeFamilyPlanningValue
 
 
 encodePrenatalNutrition : PrenatalNutrition -> List ( String, Value )
 encodePrenatalNutrition =
-    encodePrenatalMeasurement <|
-        \value ->
-            [ ( "height", encodeHeightInCm value.height )
-            , ( "weight", encodeWeightInKg value.weight )
-            , ( "muac", encodeMuacInCm value.muac )
-            ]
+    encodePrenatalMeasurement encodePrenatalNutritionValue
+
+
+encodePrenatalNutritionValue : PrenatalNutritionValue -> List ( String, Value )
+encodePrenatalNutritionValue value =
+    [ ( "height", encodeHeightInCm value.height )
+    , ( "weight", encodeWeightInKg value.weight )
+    , ( "muac", encodeMuacInCm value.muac )
+    ]
 
 
 encodeResourceSign : ResourceSign -> Value
@@ -609,9 +792,12 @@ encodeResourceSign sign =
 
 encodeResource : Resource -> List ( String, Value )
 encodeResource =
-    encodePrenatalMeasurement <|
-        \value ->
-            [ ( "resources", encodeEverySet encodeResourceSign value ) ]
+    encodePrenatalMeasurement encodeResourceValue
+
+
+encodeResourceValue : EverySet ResourceSign -> List ( String, Value )
+encodeResourceValue value =
+    [ ( "resources", encodeEverySet encodeResourceSign value ) ]
 
 
 encodeSocialHistorySign : SocialHistorySign -> Value
@@ -624,27 +810,53 @@ encodeSocialHistorySign sign =
             PartnerHivCounseling ->
                 "partner-hiv-counseling"
 
-            MentalHealthHistory ->
-                "mental-health-history"
-
             NoSocialHistorySign ->
                 "none"
 
 
+socialHistoryHivTestingResultToString : SocialHistoryHivTestingResult -> String
+socialHistoryHivTestingResultToString result =
+    case result of
+        ResultHivPositive ->
+            "positive"
+
+        ResultHivNegative ->
+            "negative"
+
+        ResultHivIndeterminate ->
+            "indeterminate"
+
+        NoHivTesting ->
+            "none"
+
+
+encodeSocialHistoryHivTestingResult : SocialHistoryHivTestingResult -> Value
+encodeSocialHistoryHivTestingResult result =
+    socialHistoryHivTestingResultToString result |> string
+
+
 encodeSocialHistory : SocialHistory -> List ( String, Value )
 encodeSocialHistory =
-    encodePrenatalMeasurement <|
-        \value ->
-            [ ( "social_history", encodeEverySet encodeSocialHistorySign value ) ]
+    encodePrenatalMeasurement encodeSocialHistoryValue
+
+
+encodeSocialHistoryValue : SocialHistoryValue -> List ( String, Value )
+encodeSocialHistoryValue value =
+    [ ( "social_history", encodeEverySet encodeSocialHistorySign value.socialHistory )
+    , ( "partner_hiv_testing", encodeSocialHistoryHivTestingResult value.hivTestingResult )
+    ]
 
 
 encodeVitals : Vitals -> List ( String, Value )
 encodeVitals =
-    encodePrenatalMeasurement <|
-        \value ->
-            [ ( "sys", float value.sys )
-            , ( "dia", float value.dia )
-            , ( "heart_rate", int value.heartRate )
-            , ( "respiratory_rate", int value.respiratoryRate )
-            , ( "body_temperature", float value.bodyTemperature )
-            ]
+    encodePrenatalMeasurement encodeVitalsValue
+
+
+encodeVitalsValue : VitalsValue -> List ( String, Value )
+encodeVitalsValue value =
+    [ ( "sys", float value.sys )
+    , ( "dia", float value.dia )
+    , ( "heart_rate", int value.heartRate )
+    , ( "respiratory_rate", int value.respiratoryRate )
+    , ( "body_temperature", float value.bodyTemperature )
+    ]

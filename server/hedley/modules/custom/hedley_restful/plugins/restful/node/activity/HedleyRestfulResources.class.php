@@ -17,7 +17,7 @@ class HedleyRestfulResources extends HedleyRestfulPrenatalActivityBase {
     $public_fields = parent::publicFieldsInfo();
 
     $standard_fields_names = [
-      'field_resource',
+      'field_resources',
     ];
 
     foreach ($standard_fields_names as $field_name) {

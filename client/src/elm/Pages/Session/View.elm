@@ -1,8 +1,6 @@
 module Pages.Session.View exposing (view)
 
 import Activity.Model exposing (Activity(..))
-import AllDict
-import AllDictList
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
@@ -10,6 +8,7 @@ import Backend.Nurse.Utils exposing (assignedToHealthCenter)
 import Backend.Session.Model exposing (EditableSession, Session)
 import Backend.Session.Utils exposing (isClosed)
 import EveryDict
+import EveryDictList
 import Gizra.Html exposing (showMaybe)
 import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
 import Html exposing (..)
@@ -36,7 +35,7 @@ view : Language -> NominalDate -> ZScore.Model.Model -> Nurse -> SessionId -> Se
 view language currentDate zscores nurse sessionId page model db =
     let
         sessionData =
-            AllDict.get sessionId db.sessions
+            EveryDict.get sessionId db.sessions
                 |> Maybe.withDefault NotAsked
     in
     viewWebData language
@@ -70,13 +69,13 @@ viewFoundSession : Language -> NominalDate -> ZScore.Model.Model -> Nurse -> ( S
 viewFoundSession language currentDate zscores nurse ( sessionId, session ) page model db =
     let
         editableSession =
-            AllDict.get sessionId db.editableSessions
+            EveryDict.get sessionId db.editableSessions
                 |> Maybe.withDefault NotAsked
 
         healthCenterId =
             db.clinics
                 |> RemoteData.toMaybe
-                |> Maybe.andThen (AllDictList.get session.clinicId)
+                |> Maybe.andThen (EveryDictList.get session.clinicId)
                 |> Maybe.map .healthCenterId
 
         authorized =
@@ -132,13 +131,13 @@ viewEditableSession language currentDate zscores nurse sessionId page model db s
             Pages.ProgressReport.View.view language zscores childId ( sessionId, session ) db
 
         ChildPage childId ->
-            AllDict.get childId model.childPages
+            EveryDict.get childId model.childPages
                 |> Maybe.withDefault Pages.Participant.Model.emptyModel
                 |> Pages.Participant.View.viewChild language currentDate zscores childId ( sessionId, session ) model
                 |> Html.map (MsgChild childId)
 
         MotherPage motherId ->
-            AllDict.get motherId model.motherPages
+            EveryDict.get motherId model.motherPages
                 |> Maybe.withDefault Pages.Participant.Model.emptyModel
                 |> Pages.Participant.View.viewMother language motherId ( sessionId, session ) model
                 |> Html.map (MsgMother motherId)
@@ -154,7 +153,7 @@ viewClosedSession language sessionId session db =
                 [ class "ui header" ]
                 [ db.clinics
                     |> RemoteData.toMaybe
-                    |> Maybe.andThen (\clinics -> AllDictList.get session.clinicId clinics)
+                    |> Maybe.andThen (\clinics -> EveryDictList.get session.clinicId clinics)
                     |> Maybe.map (.name >> text)
                     |> showMaybe
                 ]
@@ -184,7 +183,7 @@ viewUnauthorizedSession language sessionId session db =
                 [ class "ui header" ]
                 [ db.clinics
                     |> RemoteData.toMaybe
-                    |> Maybe.andThen (\clinics -> AllDictList.get session.clinicId clinics)
+                    |> Maybe.andThen (\clinics -> EveryDictList.get session.clinicId clinics)
                     |> Maybe.map (.name >> text)
                     |> showMaybe
                 ]

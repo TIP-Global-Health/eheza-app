@@ -1,4 +1,4 @@
-module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), attendanceEndpoint, breastExamEndpoint, childMeasurementListEndpoint, clinicEndpoint, corePhysicalExamEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, dangerSignsEndpoint, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, lastMenstrualPeriodEndpoint, medicalHistoryEndpoint, medicationEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, obstetricHistoryEndpoint, obstetricalExamEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, prenatalEncounterEndpoint, prenatalFamilyPlanningEndpoint, prenatalNutritionEndpoint, prenatalParticipantEndpoint, relationshipEndpoint, resourceEndpoint, sessionEndpoint, socialHistoryEndpoint, swEndpoint, syncDataEndpoint, vitalsEndpoint, weightEndpoint)
+module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), attendanceEndpoint, breastExamEndpoint, childMeasurementListEndpoint, clinicEndpoint, corePhysicalExamEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, dangerSignsEndpoint, encodeIndividualEncounterParticipantParams, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodePrenatalEncounterParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, individualEncounterParticipantEndpoint, lastMenstrualPeriodEndpoint, medicalHistoryEndpoint, medicationEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, obstetricHistoryEndpoint, obstetricHistoryStep2Endpoint, obstetricalExamEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, prenatalEncounterEndpoint, prenatalFamilyPlanningEndpoint, prenatalMeasurementsEndpoint, prenatalNutritionEndpoint, prenatalPhotoEndpoint, relationshipEndpoint, resourceEndpoint, sessionEndpoint, socialHistoryEndpoint, swEndpoint, syncDataEndpoint, vitalsEndpoint, weightEndpoint)
 
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
@@ -9,6 +9,9 @@ import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Decoder exposing (decodeHealthCenter)
 import Backend.HealthCenter.Model exposing (HealthCenter)
+import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Encoder exposing (encodeIndividualEncounterParticipant)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Decoder exposing (..)
 import Backend.Measurement.Encoder exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -26,9 +29,6 @@ import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalEncounter)
 import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalEncounter)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
-import Backend.PrenatalParticipant.Decoder exposing (decodePrenatalParticipant)
-import Backend.PrenatalParticipant.Encoder exposing (encodePrenatalParticipant)
-import Backend.PrenatalParticipant.Model exposing (PrenatalParticipant)
 import Backend.Relationship.Decoder exposing (decodeRelationship)
 import Backend.Relationship.Encoder exposing (encodeRelationship)
 import Backend.Relationship.Model exposing (Relationship)
@@ -156,6 +156,12 @@ photoEndpoint =
         |> withValueEncoder (object << encodePhoto)
 
 
+prenatalPhotoEndpoint : ReadWriteEndPoint Error PrenatalPhotoId PrenatalPhoto PrenatalPhoto ()
+prenatalPhotoEndpoint =
+    swEndpoint "nodes/prenatal_photo" decodePrenatalPhoto
+        |> withValueEncoder (object << encodePrenatalPhoto)
+
+
 familyPlanningEndpoint : ReadWriteEndPoint Error FamilyPlanningId FamilyPlanning FamilyPlanning ()
 familyPlanningEndpoint =
     swEndpoint "nodes/family_planning" decodeFamilyPlanning
@@ -214,6 +220,11 @@ childMeasurementListEndpoint =
     swEndpoint "nodes/child-measurements" decodeChildMeasurementList
 
 
+prenatalMeasurementsEndpoint : ReadOnlyEndPoint Error PrenatalEncounterId PrenatalMeasurements ()
+prenatalMeasurementsEndpoint =
+    swEndpoint "nodes/prenatal-measurements" decodePrenatalMeasurements
+
+
 {-| Type-safe params ... how nice!
 -}
 type SessionParams
@@ -268,16 +279,38 @@ pmtctParticipantEndpoint =
         |> withParamsEncoder encodePmtctParticipantParams
 
 
-prenatalEncounterEndpoint : ReadWriteEndPoint Error PrenatalEncounterId PrenatalEncounter PrenatalEncounter ()
+prenatalEncounterEndpoint : ReadWriteEndPoint Error PrenatalEncounterId PrenatalEncounter PrenatalEncounter (Maybe IndividualEncounterParticipantId)
 prenatalEncounterEndpoint =
     swEndpoint "nodes/prenatal_encounter" decodePrenatalEncounter
         |> withValueEncoder (object << encodePrenatalEncounter)
+        |> withParamsEncoder encodePrenatalEncounterParams
 
 
-prenatalParticipantEndpoint : ReadWriteEndPoint Error PrenatalParticipantId PrenatalParticipant PrenatalParticipant ()
-prenatalParticipantEndpoint =
-    swEndpoint "nodes/prenatal_participant" decodePrenatalParticipant
-        |> withValueEncoder encodePrenatalParticipant
+encodePrenatalEncounterParams : Maybe IndividualEncounterParticipantId -> List ( String, String )
+encodePrenatalEncounterParams params =
+    case params of
+        Just id ->
+            [ ( "individual_participant", fromEntityUuid id ) ]
+
+        Nothing ->
+            []
+
+
+individualEncounterParticipantEndpoint : ReadWriteEndPoint Error IndividualEncounterParticipantId IndividualEncounterParticipant IndividualEncounterParticipant (Maybe PersonId)
+individualEncounterParticipantEndpoint =
+    swEndpoint "nodes/individual_participant" decodeIndividualEncounterParticipant
+        |> withValueEncoder encodeIndividualEncounterParticipant
+        |> withParamsEncoder encodeIndividualEncounterParticipantParams
+
+
+encodeIndividualEncounterParticipantParams : Maybe PersonId -> List ( String, String )
+encodeIndividualEncounterParticipantParams params =
+    case params of
+        Just id ->
+            [ ( "person", fromEntityUuid id ) ]
+
+        Nothing ->
+            []
 
 
 breastExamEndpoint : ReadWriteEndPoint Error BreastExamId BreastExam BreastExam ()
@@ -326,6 +359,12 @@ obstetricHistoryEndpoint : ReadWriteEndPoint Error ObstetricHistoryId ObstetricH
 obstetricHistoryEndpoint =
     swEndpoint "nodes/obstetric_history" decodeObstetricHistory
         |> withValueEncoder (object << encodeObstetricHistory)
+
+
+obstetricHistoryStep2Endpoint : ReadWriteEndPoint Error ObstetricHistoryStep2Id ObstetricHistoryStep2 ObstetricHistoryStep2 ()
+obstetricHistoryStep2Endpoint =
+    swEndpoint "nodes/obstetric_history_step2" decodeObstetricHistoryStep2
+        |> withValueEncoder (object << encodeObstetricHistoryStep2)
 
 
 prenatalFamilyPlanningEndpoint : ReadWriteEndPoint Error PrenatalFamilyPlanningId PrenatalFamilyPlanning PrenatalFamilyPlanning ()
