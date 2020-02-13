@@ -221,7 +221,7 @@ update msg model =
                             , Cmd.map (MsgLoggedIn << MsgPageDashboard) subCmd
                             , appMsgs
                             )
-                            
+
                         MsgPageEditPerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
