@@ -312,7 +312,7 @@ viewMalnourishedCards language stats monthBeforeStats =
 
         totalCard =
             { title = translate language <| Translate.Dashboard Translate.TotalMalnourished
-            , cardClasses = "stats total-malnourished"
+            , cardClasses = "stats-card total-malnourished"
             , cardAction = Just CaseManagementPage
             , value = total
             , valueSeverity = Neutral
@@ -341,7 +341,7 @@ viewMalnourishedCards language stats monthBeforeStats =
 
         severeCard =
             { title = translate language <| Translate.Dashboard Translate.SeverelyMalnourished
-            , cardClasses = "stats severely-malnourished"
+            , cardClasses = "stats-card severely-malnourished"
             , cardAction = Just CaseManagementPage
             , value = severe
             , valueSeverity = Severe
@@ -370,7 +370,7 @@ viewMalnourishedCards language stats monthBeforeStats =
 
         moderateCard =
             { title = translate language <| Translate.Dashboard Translate.ModeratelyMalnourished
-            , cardClasses = "stats moderately-malnourished"
+            , cardClasses = "stats-card moderately-malnourished"
             , cardAction = Just CaseManagementPage
             , value = moderate
             , valueSeverity = Moderate
@@ -407,7 +407,7 @@ viewMiscCards language stats monthBeforeStats =
 
         totalNewBeneficiariesCard =
             { title = translate language <| Translate.Dashboard Translate.NewBeneficiaries
-            , cardClasses = "new-beneficiaries"
+            , cardClasses = "stats-card new-beneficiaries"
             , cardAction = Just CaseManagementPage
             , value = totalNewBeneficiaries
             , valueSeverity = Neutral
@@ -434,7 +434,7 @@ viewMiscCards language stats monthBeforeStats =
 
         completedProgramCard =
             { title = translate language <| Translate.Dashboard Translate.CompletedProgramLabel
-            , cardClasses = "completed-program"
+            , cardClasses = "stats-card completed-program"
             , cardAction = Just CaseManagementPage
             , value = completedProgram
             , valueSeverity = Good
@@ -461,7 +461,7 @@ viewMiscCards language stats monthBeforeStats =
 
         missedSessionsCard =
             { title = translate language <| Translate.Dashboard Translate.MissedSessionsLabel
-            , cardClasses = "missed-sessions"
+            , cardClasses = "stats-card missed-sessions"
             , cardAction = Just CaseManagementPage
             , value = missedSessions
             , valueSeverity = Severe
@@ -727,11 +727,31 @@ filterStatsByPeriod currentDate model stats =
         malnourishedUpdated =
             stats.malnourished
                 |> List.filter (\malnourished -> filterPartial malnourished.created)
+
+        completedProgramUpdated =
+            stats.completedProgram
+                |> List.filter
+                    (\completedProgram ->
+                        List.filter (\date -> filterPartial date) completedProgram.dates
+                            |> not
+                            << List.isEmpty
+                    )
+
+        missedSessionsUpdated =
+            stats.missedSessions
+                |> List.filter
+                    (\missedSessions ->
+                        List.filter (\date -> filterPartial date) missedSessions.dates
+                            |> not
+                            << List.isEmpty
+                    )
     in
     { stats
         | childrenBeneficiaries = childrenBeneficiariesUpdated
         , familyPlanning = familyPlanningUpdated
         , malnourished = malnourishedUpdated
+        , completedProgram = completedProgramUpdated
+        , missedSessions = missedSessionsUpdated
     }
 
 

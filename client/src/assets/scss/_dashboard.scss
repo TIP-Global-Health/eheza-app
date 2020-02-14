@@ -31,6 +31,13 @@
     }
   }
 
+  &.stats {
+
+    .ui.grid {
+      margin-bottom: 25px;
+    }
+  }
+
   &.case {
 
     .ui.segment {
@@ -223,8 +230,12 @@
       background: white url(#{$img-path}icon-card-link.svg) no-repeat 97% 7px;
     }
 
-    &.stats {
+    &.stats-card {
       padding: 1.5rem 2.5rem;
+
+      .header {
+        padding: 0 10px;
+      }
 
       .last-year {
         right: 10px;
