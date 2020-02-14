@@ -36,6 +36,16 @@
     .ui.grid {
       margin-bottom: 25px;
     }
+
+    .overlay {
+
+      .ui.modal {
+        margin-left: -365px !important;
+        width: 730px !important;
+        height: 400px;
+        overflow: scroll;
+      }
+    }
   }
 
   &.case {
@@ -150,7 +160,7 @@
     }
 
     &.severity-severe {
-      color: $color-red;
+      color: $color-velvet;
     }
   }
 
@@ -231,6 +241,7 @@
     }
 
     &.stats-card {
+      min-height: 135px;
       padding: 1.5rem 2.5rem;
 
       .header {

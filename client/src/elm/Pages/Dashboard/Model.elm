@@ -21,7 +21,7 @@ module Pages.Dashboard.Model exposing
 
 import AssocList exposing (Dict)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
-import Html exposing (Html)
+import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (DashboardPage(..), Page(..))
 
 
@@ -78,12 +78,23 @@ filterCharts =
     ]
 
 
+type alias ParticipantStats =
+    { name : String
+    , motherName : String
+    , phoneNumber : Maybe String
+    , dates : List NominalDate
+    }
+
+
 type alias Model =
     { period : FilterPeriod
     , beneficiariesGender : FilterGender
     , currentTotalChartsFilter : FilterCharts
     , currentCaseManagementFilter : FilterCharts
     , latestPage : DashboardPage
+    , modalTable : List ParticipantStats
+    , modalTitle : String
+    , modalState : Bool
     }
 
 
@@ -94,6 +105,9 @@ emptyModel =
     , currentTotalChartsFilter = Stunting
     , currentCaseManagementFilter = Stunting
     , latestPage = MainPage
+    , modalTable = []
+    , modalTitle = ""
+    , modalState = False
     }
 
 
@@ -126,7 +140,7 @@ type alias Card =
 type alias StatsCard =
     { title : String
     , cardClasses : String
-    , cardAction : Maybe DashboardPage
+    , cardAction : Maybe Msg
     , value : Int
     , valueSeverity : CardValueSeverity
     , valueIsPercentage : Bool
@@ -142,7 +156,8 @@ type FilterType
 
 
 type Msg
-    = SetFilterGender FilterGender
+    = ModalToggle Bool (List ParticipantStats) String
+    | SetFilterGender FilterGender
     | SetFilterPeriod FilterPeriod
     | SetFilterTotalsChart FilterCharts
     | SetFilterCaseManagement FilterCharts

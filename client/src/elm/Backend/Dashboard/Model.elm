@@ -67,6 +67,9 @@ type alias ChildrenBeneficiariesStats =
     { gender : Gender
     , birthdate : NominalDate
     , memberSince : NominalDate
+    , name : String
+    , motherName : String
+    , phoneNumber : Maybe String
     }
 
 
@@ -80,9 +83,6 @@ type alias MalnourishedStats =
     { created : NominalDate
     , gender : Gender
     , zscore : ZScore
-    , name : String
-    , motherName : String
-    , phoneNumber : Maybe String
     }
 
 

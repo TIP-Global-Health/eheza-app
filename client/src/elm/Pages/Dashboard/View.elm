@@ -1,7 +1,7 @@
 module Pages.Dashboard.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, DashboardStats, GoodNutrition, Nutrition, NutritionValue, Periods, TotalBeneficiaries)
+import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, DashboardStats, GoodNutrition, Nutrition, NutritionValue, ParticipantStats, Periods, TotalBeneficiaries)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
@@ -15,6 +15,7 @@ import Html exposing (..)
 import Html.Attributes exposing (class, classList, src)
 import Html.Events exposing (onClick)
 import List.Extra
+import Maybe exposing (Maybe)
 import Pages.Dashboard.GraphUtils exposing (..)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
@@ -25,11 +26,12 @@ import Shape exposing (Arc, defaultPieConfig)
 import Svg
 import Svg.Attributes exposing (cx, cy, r)
 import Time exposing (Month(..))
-import Translate exposing (Language, translate, translateText)
+import Translate exposing (Language, TranslationId, translate, translateText)
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..))
+import Utils.Html exposing (viewModal)
 
 
 {-| Shows a dashboard page.
@@ -108,9 +110,7 @@ viewStatsPage language currentDate stats model healthCenterId db =
                     ]
                 ]
             ]
-        , div [ class "ui segment" ]
-            [ text <| Debug.toString <| getFamilyPlanningSignsCounter stats
-            ]
+        , viewStatsTableModal language model
         ]
 
 
@@ -313,7 +313,7 @@ viewMalnourishedCards language stats monthBeforeStats =
         totalCard =
             { title = translate language <| Translate.Dashboard Translate.TotalMalnourished
             , cardClasses = "stats-card total-malnourished"
-            , cardAction = Just CaseManagementPage
+            , cardAction = Just (SetActivePage <| UserPage <| DashboardPage <| CaseManagementPage)
             , value = total
             , valueSeverity = Neutral
             , valueIsPercentage = False
@@ -342,7 +342,7 @@ viewMalnourishedCards language stats monthBeforeStats =
         severeCard =
             { title = translate language <| Translate.Dashboard Translate.SeverelyMalnourished
             , cardClasses = "stats-card severely-malnourished"
-            , cardAction = Just CaseManagementPage
+            , cardAction = Just (SetActivePage <| UserPage <| DashboardPage <| CaseManagementPage)
             , value = severe
             , valueSeverity = Severe
             , valueIsPercentage = False
@@ -371,7 +371,7 @@ viewMalnourishedCards language stats monthBeforeStats =
         moderateCard =
             { title = translate language <| Translate.Dashboard Translate.ModeratelyMalnourished
             , cardClasses = "stats-card moderately-malnourished"
-            , cardAction = Just CaseManagementPage
+            , cardAction = Just (SetActivePage <| UserPage <| DashboardPage <| CaseManagementPage)
             , value = moderate
             , valueSeverity = Moderate
             , valueIsPercentage = False
@@ -398,6 +398,19 @@ viewMiscCards language stats monthBeforeStats =
             monthBeforeStats.childrenBeneficiaries
                 |> List.length
 
+        totalNewBeneficiariesTable =
+            List.foldl
+                (\childrenBeneficiaries accum ->
+                    { name = childrenBeneficiaries.name
+                    , motherName = childrenBeneficiaries.motherName
+                    , phoneNumber = childrenBeneficiaries.phoneNumber
+                    , dates = []
+                    }
+                        :: accum
+                )
+                []
+                stats.childrenBeneficiaries
+
         totalNewBeneficiariesDiff =
             totalNewBeneficiaries - totalNewBeneficiariesBefore
 
@@ -405,10 +418,13 @@ viewMiscCards language stats monthBeforeStats =
             calculatePercentage totalNewBeneficiaries totalNewBeneficiariesDiff
                 |> round
 
+        totalNewBeneficiariesTitle =
+            translate language <| Translate.Dashboard Translate.NewBeneficiaries
+
         totalNewBeneficiariesCard =
-            { title = translate language <| Translate.Dashboard Translate.NewBeneficiaries
+            { title = totalNewBeneficiariesTitle
             , cardClasses = "stats-card new-beneficiaries"
-            , cardAction = Just CaseManagementPage
+            , cardAction = Just (ModalToggle True totalNewBeneficiariesTable totalNewBeneficiariesTitle)
             , value = totalNewBeneficiaries
             , valueSeverity = Neutral
             , valueIsPercentage = False
@@ -432,10 +448,13 @@ viewMiscCards language stats monthBeforeStats =
             calculatePercentage completedProgram completedProgramDiff
                 |> round
 
+        completedProgramTitle =
+            translate language <| Translate.Dashboard Translate.CompletedProgramLabel
+
         completedProgramCard =
-            { title = translate language <| Translate.Dashboard Translate.CompletedProgramLabel
+            { title = completedProgramTitle
             , cardClasses = "stats-card completed-program"
-            , cardAction = Just CaseManagementPage
+            , cardAction = Just (ModalToggle True stats.completedProgram completedProgramTitle)
             , value = completedProgram
             , valueSeverity = Good
             , valueIsPercentage = False
@@ -459,10 +478,13 @@ viewMiscCards language stats monthBeforeStats =
             calculatePercentage missedSessions missedSessionsDiff
                 |> round
 
+        missedSessionsTitle =
+            translate language <| Translate.Dashboard Translate.MissedSessionsLabel
+
         missedSessionsCard =
-            { title = translate language <| Translate.Dashboard Translate.MissedSessionsLabel
+            { title = missedSessionsTitle
             , cardClasses = "stats-card missed-sessions"
-            , cardAction = Just CaseManagementPage
+            , cardAction = Just (ModalToggle True stats.missedSessions missedSessionsTitle)
             , value = missedSessions
             , valueSeverity = Severe
             , valueIsPercentage = False
@@ -488,8 +510,8 @@ viewCard language statsCard =
                     , ""
                     )
 
-                Just page ->
-                    ( [ onClick <| SetActivePage <| UserPage <| DashboardPage <| page ]
+                Just action ->
+                    ( [ onClick action ]
                     , "link"
                     )
 
@@ -1045,6 +1067,53 @@ viewChart dict =
     in
     svg [ viewBox 0 0 pieChartWidth pieChartHeight ]
         [ annular signsList pieData ]
+
+
+viewStatsTableModal : Language -> Model -> Html Msg
+viewStatsTableModal language model =
+    let
+        participantsStatsDialog =
+            if model.modalState then
+                Just <|
+                    div [ class "ui tiny active modal" ]
+                        [ div
+                            [ class "header" ]
+                            [ div [ class "title" ] [ text model.modalTitle ]
+                            , span
+                                [ class "close"
+                                , onClick <| ModalToggle False [] ""
+                                ]
+                                [ text "X" ]
+                            ]
+                        , div
+                            [ class "content" ]
+                            [ table [ class "ui very basic collapsing celled table" ]
+                                [ thead []
+                                    [ tr []
+                                        [ th [ class "name" ] [ translateText language <| Translate.Name ]
+                                        , th [ class "mother-name" ] [ translateText language <| Translate.MotherNameLabel ]
+                                        , th [ class "phone-number" ] [ translateText language <| Translate.TelephoneNumber ]
+                                        ]
+                                    ]
+                                , tbody []
+                                    (List.map viewModalTableRow model.modalTable)
+                                ]
+                            ]
+                        ]
+
+            else
+                Nothing
+    in
+    viewModal participantsStatsDialog
+
+
+viewModalTableRow : ParticipantStats -> Html Msg
+viewModalTableRow rowData =
+    tr []
+        [ td [ class "name" ] [ text rowData.name ]
+        , td [ class "mother-name" ] [ text rowData.motherName ]
+        , td [ class "phone-number" ] [ text <| Maybe.withDefault "-" rowData.phoneNumber ]
+        ]
 
 
 annular : List FamilyPlanningSign -> List Arc -> Svg msg

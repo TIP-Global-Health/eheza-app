@@ -121,6 +121,9 @@ decodePeopleStats =
         |> required "field_gender" decodeGender
         |> required "field_birth_date" decodeYYYYMMDD
         |> required "created" decodeYYYYMMDD
+        |> required "name" string
+        |> required "mother_name" string
+        |> optional "phone_number" (nullable string) Nothing
 
 
 decodeParticipantStats : Decoder ParticipantStats
@@ -161,9 +164,6 @@ decodeMalnourishedStats =
         |> required "created" decodeYYYYMMDD
         |> required "field_gender" decodeGender
         |> required "field_zscore_age" float
-        |> required "name" string
-        |> required "mother_name" string
-        |> optional "phone_number" (nullable string) Nothing
 
 
 decodePeriods : Decoder Periods

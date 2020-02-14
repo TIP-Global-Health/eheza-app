@@ -8,6 +8,12 @@ import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 update : Msg -> DashboardPage -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update msg subPage model =
     case msg of
+        ModalToggle state table title ->
+            ( { model | modalTable = table, modalState = state, modalTitle = title }
+            , Cmd.none
+            , []
+            )
+
         SetFilterGender gender ->
             ( { model | beneficiariesGender = gender }
             , Cmd.none
