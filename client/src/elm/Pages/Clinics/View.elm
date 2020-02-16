@@ -106,14 +106,20 @@ viewLoadedClinicList language user selectedHealthCenterId model ( clinics, sync 
             (\selectedHealthCenterSyncData ->
                 let
                     isDownloading =
-                        selectedHealthCenterSyncData.downloadStatus
-                            |> Maybe.map (\status -> status.remaining > 0)
-                            |> Maybe.withDefault True
+                        case selectedHealthCenterSyncData.attempt of
+                            Backend.SyncData.Model.Downloading _ _ ->
+                                True
+
+                            _ ->
+                                False
 
                     isUploading =
-                        selectedHealthCenterSyncData.uploadStatus
-                            |> Maybe.map (\status -> status.remaining > 0)
-                            |> Maybe.withDefault False
+                        case selectedHealthCenterSyncData.attempt of
+                            Backend.SyncData.Model.Uploading _ ->
+                                True
+
+                            _ ->
+                                False
                 in
                 if isDownloading then
                     showWarningMessage Translate.SelectedHCSyncing Translate.SelectedHCDownloading
