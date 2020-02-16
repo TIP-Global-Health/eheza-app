@@ -8,10 +8,9 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
-import Date
-import Date.Extra exposing (Interval(Day))
+import Date exposing (Interval(..))
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, diffDays, toLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -286,13 +285,13 @@ viewPatientProgressPane language currentDate data =
                     (\lmpDate ->
                         let
                             eddDate =
-                                toLocalDateTime (calculateEDD lmpDate) 12 0 0 0
+                                calculateEDD lmpDate
                         in
                         ( div [ class "due-date-label" ]
                             [ div [] [ text <| translate language Translate.DueDate ++ ":" ]
                             , div []
                                 [ text <|
-                                    (Date.day eddDate |> toString)
+                                    (Date.day eddDate |> Debug.toString)
                                         ++ " "
                                         ++ translate language (Date.month eddDate |> Translate.ResolveMonth)
                                 ]
@@ -414,7 +413,7 @@ viewPatientProgressPane language currentDate data =
                             (\color ->
                                 p
                                     [ class <| "period " ++ color
-                                    , style [ ( "width", toString periodWidth ++ "px" ) ]
+                                    , style [ ( "width", Debug.toString periodWidth ++ "px" ) ]
                                     ]
                                     []
                             )
@@ -439,10 +438,10 @@ viewPatientProgressPane language currentDate data =
                     trimesterEncountersDates
                         |> List.map
                             (\date ->
-                                span [ style [ ( "width", toString encounterIconWidth ++ "px" ) ] ]
+                                span [ style [ ( "width", Debug.toString encounterIconWidth ++ "px" ) ] ]
                                     [ img
                                         [ src "assets/images/icon-blue-circle.png"
-                                        , style [ ( "width", toString encounterIconWidth ++ "px" ) ]
+                                        , style [ ( "width", Debug.toString encounterIconWidth ++ "px" ) ]
                                         ]
                                         []
                                     , timelineIcons date
@@ -675,7 +674,7 @@ heightWeightBMITable language currentDate maybeLmpDate allMeasurementsWithDates 
                                                         |> .height
                                                         |> (\(Backend.Measurement.Model.HeightInCm cm) -> cm)
                                             in
-                                            [ text <| toString height ++ translate language Translate.CentimeterShorthand ]
+                                            [ text <| Debug.toString height ++ translate language Translate.CentimeterShorthand ]
                                         )
                                     >> Maybe.withDefault [ text "--" ]
                                     >> td [ class "center aligned" ]
@@ -697,7 +696,7 @@ heightWeightBMITable language currentDate maybeLmpDate allMeasurementsWithDates 
                                                         |> .weight
                                                         |> (\(Backend.Measurement.Model.WeightInKg kg) -> kg)
                                             in
-                                            [ text <| toString weight ++ translate language Translate.KilogramShorthand ]
+                                            [ text <| Debug.toString weight ++ translate language Translate.KilogramShorthand ]
                                         )
                                     >> Maybe.withDefault [ text "--" ]
                                     >> td [ class "center aligned" ]
@@ -779,7 +778,7 @@ fundalHeightTable language currentDate maybeLmpDate allMeasurementsWithDates =
                                                         |> .fundalHeight
                                                         |> (\(Backend.Measurement.Model.HeightInCm cm) -> cm)
                                             in
-                                            [ text <| toString height ++ translate language Translate.CentimeterShorthand ]
+                                            [ text <| Debug.toString height ++ translate language Translate.CentimeterShorthand ]
                                         )
                                     >> Maybe.withDefault [ text "--" ]
                                     >> td [ class "center aligned" ]

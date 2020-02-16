@@ -1,6 +1,5 @@
 module Backend.Person.Form exposing
-    ( ExpectedAge(..)
-    , ExpectedGender(..)
+    ( ExpectedGender(..)
     , PersonForm
     , allDigitsPattern
     , applyDefaultValues

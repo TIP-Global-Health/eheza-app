@@ -1504,7 +1504,7 @@ translationSet trans =
                 }
 
             else
-                { english = toString value ++ " Days"
+                { english = Debug.toString value ++ " Days"
                 , kinyarwanda = Nothing
                 }
 
@@ -3060,8 +3060,8 @@ translationSet trans =
                     }
 
         PreviousFloatMeasurement value ->
-            { english = "Previous measurement: " ++ toString value
-            , kinyarwanda = Just <| "Ibipimo by'ubushize: " ++ toString value
+            { english = "Previous measurement: " ++ Debug.toString value
+            , kinyarwanda = Just <| "Ibipimo by'ubushize: " ++ Debug.toString value
             }
 
         PreviousMeasurementNotFound ->
@@ -3117,11 +3117,6 @@ translationSet trans =
         Province ->
             { english = "Province"
             , kinyarwanda = Nothing
-            }
-
-        PreviousFloatMeasurement value ->
-            { english = "Previous measurement: " ++ Debug.toString value
-            , kinyarwanda = Just <| "Ibipimo by'ubushize: " ++ Debug.toString value
             }
 
         ReasonForCSection ->
@@ -3278,7 +3273,7 @@ translationSet trans =
                         }
 
                     else
-                        { english = toString number ++ " previous C-sections"
+                        { english = Debug.toString number ++ " previous C-sections"
                         , kinyarwanda = Nothing
                         }
 
@@ -3685,7 +3680,7 @@ translationSet trans =
             }
 
         TasksCompleted completed total ->
-            { english = toString completed ++ "/" ++ toString total ++ " Tasks Completed"
+            { english = Debug.toString completed ++ "/" ++ Debug.toString total ++ " Tasks Completed"
             , kinyarwanda = Nothing
             }
 
@@ -3807,7 +3802,7 @@ translationSet trans =
                 }
 
             else
-                { english = toString value ++ " Weeks"
+                { english = Debug.toString value ++ " Weeks"
                 , kinyarwanda = Nothing
                 }
 
@@ -3832,7 +3827,7 @@ translationSet trans =
             }
 
         YearsOld int ->
-            { english = toString int ++ " years old"
+            { english = Debug.toString int ++ " years old"
             , kinyarwanda = Nothing
             }
 

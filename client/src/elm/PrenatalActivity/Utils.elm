@@ -173,13 +173,13 @@ generateHighSeverityAlertData language currentDate data alert =
                         if value >= 38.5 then
                             Just
                                 ( trans Translate.High ++ " " ++ transAlert alert
-                                , toString value ++ "°C"
+                                , Debug.toString value ++ "°C"
                                 )
 
                         else if value < 35 then
                             Just
                                 ( trans Translate.Low ++ " " ++ transAlert alert
-                                , toString value ++ "°C"
+                                , Debug.toString value ++ "°C"
                                 )
 
                         else
@@ -202,7 +202,7 @@ generateHighSeverityAlertData language currentDate data alert =
                                 if sys > 180 || dia > 100 then
                                     Just
                                         ( trans Translate.High ++ " " ++ transAlert alert
-                                        , toString sys ++ "/" ++ toString dia ++ trans Translate.MMHGUnit
+                                        , Debug.toString sys ++ "/" ++ Debug.toString dia ++ trans Translate.MMHGUnit
                                         )
 
                                 else
@@ -217,7 +217,7 @@ generateHighSeverityAlertData language currentDate data alert =
                                 |> List.length
                     in
                     if numberOfOccasions > 1 then
-                        Just ( trans Translate.BloodPressureElevatedOcassions, toString numberOfOccasions )
+                        Just ( trans Translate.BloodPressureElevatedOcassions, Debug.toString numberOfOccasions )
 
                     else
                         Nothing
@@ -311,13 +311,13 @@ generateHighSeverityAlertData language currentDate data alert =
                         if value >= 120 then
                             Just
                                 ( trans Translate.High ++ " " ++ transAlert alert
-                                , toString value ++ trans Translate.BpmUnit
+                                , Debug.toString value ++ trans Translate.BpmUnit
                                 )
 
                         else if value < 40 then
                             Just
                                 ( trans Translate.Low ++ " " ++ transAlert alert
-                                , toString value ++ trans Translate.BpmUnit
+                                , Debug.toString value ++ trans Translate.BpmUnit
                                 )
 
                         else
@@ -335,13 +335,13 @@ generateHighSeverityAlertData language currentDate data alert =
                         if value > 30 then
                             Just
                                 ( trans Translate.High ++ " " ++ transAlert alert
-                                , toString value ++ trans Translate.BpmUnit
+                                , Debug.toString value ++ trans Translate.BpmUnit
                                 )
 
                         else if value < 12 then
                             Just
                                 ( trans Translate.Low ++ " " ++ transAlert alert
-                                , toString value ++ trans Translate.BpmUnit
+                                , Debug.toString value ++ trans Translate.BpmUnit
                                 )
 
                         else

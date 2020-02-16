@@ -23,9 +23,9 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Date.Extra as Date exposing (Interval(Day))
+import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime, toLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime)
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import PrenatalActivity.Model exposing (..)
@@ -36,9 +36,8 @@ import Utils.NominalDate exposing (compareDates)
 
 calculateEDD : NominalDate -> NominalDate
 calculateEDD lmpDate =
-    toLocalDateTime lmpDate 12 0 0 0
-        |> Date.add Day 280
-        |> fromLocalDateTime
+    lmpDate
+        |> Date.add Days 280
 
 
 calculateEDDandEGADays : NominalDate -> NominalDate -> ( NominalDate, Int )
@@ -90,18 +89,18 @@ generateGravida value =
                   )
     in
     if total < 10 then
-        "0" ++ toString total
+        "0" ++ Debug.toString total
 
     else
-        toString total
+        Debug.toString total
 
 
 generatePara : ObstetricHistoryValue -> String
 generatePara value =
-    toString (value.termPregnancy + value.stillbirthsAtTerm)
-        ++ toString (value.preTermPregnancy + value.stillbirthsPreTerm)
-        ++ toString value.abortions
-        ++ toString value.liveChildren
+    Debug.toString (value.termPregnancy + value.stillbirthsAtTerm)
+        ++ Debug.toString (value.preTermPregnancy + value.stillbirthsPreTerm)
+        ++ Debug.toString value.abortions
+        ++ Debug.toString value.liveChildren
 
 
 getLmpMeasurement : PrenatalMeasurements -> Maybe NominalDate
@@ -193,24 +192,24 @@ generateAssembledData id db =
         participant =
             encounter
                 |> RemoteData.andThen
-                    (\encounter ->
-                        Dict.get encounter.participant db.individualParticipants
+                    (\encounter_ ->
+                        Dict.get encounter_.participant db.individualParticipants
                             |> Maybe.withDefault NotAsked
                     )
 
         person =
             participant
                 |> RemoteData.andThen
-                    (\participant ->
-                        Dict.get participant.person db.people
+                    (\participant_ ->
+                        Dict.get participant_.person db.people
                             |> Maybe.withDefault NotAsked
                     )
 
         previousMeasurementsWithDates =
             encounter
                 |> RemoteData.andThen
-                    (\encounter ->
-                        generatePreviousMeasurements id encounter.participant db
+                    (\encounter_ ->
+                        generatePreviousMeasurements id encounter_.participant db
                     )
                 |> RemoteData.withDefault []
 

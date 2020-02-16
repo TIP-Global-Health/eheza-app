@@ -411,7 +411,7 @@ viewCreateEditForm language currentDate operation model db =
                 |> Maybe.andThen RemoteData.toMaybe
 
         today =
-            toLocalDateTime currentDate 0 0 0 0
+            currentDate
 
         personForm =
             applyDefaultValues maybeRelatedPerson operation currentDate formBeforeDefaults

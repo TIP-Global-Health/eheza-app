@@ -126,16 +126,16 @@ viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
             else
                 "four"
 
-        viewInput value currentValue setMsg =
+        viewInput value currentValue_ setMsg_ =
             let
                 isChecked =
-                    currentValue == Just value
+                    currentValue_ == Just value
             in
             input
                 [ type_ "radio"
                 , checked isChecked
                 , classList [ ( "checked", isChecked ) ]
-                , onCheck (always (setMsg value))
+                , onCheck (always (setMsg_ value))
                 ]
                 []
     in

@@ -20,8 +20,8 @@ import Backend.Measurement.Model
 import Backend.Measurement.Utils exposing (socialHistoryHivTestingResultFromString)
 import Backend.Model
 import Backend.PrenatalEncounter.Model
-import Date.Extra as Date exposing (Interval(Day))
-import Gizra.NominalDate exposing (NominalDate, toLocalDateTime)
+import Date exposing (Unit(..))
+import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
@@ -120,18 +120,18 @@ update currentDate msg model =
                     decodeLmpRange value
 
                 today =
-                    toLocalDateTime currentDate 0 0 0 0
+                    currentDate
 
                 ( lmpDate, isDateSelectorOpen ) =
                     case range of
                         Just OneMonth ->
-                            ( Date.add Day -31 today |> Just, True )
+                            ( Date.add Days -31 today |> Just, True )
 
                         Just ThreeMonth ->
-                            ( Date.add Day -92 today |> Just, True )
+                            ( Date.add Days -92 today |> Just, True )
 
                         Just SixMonth ->
-                            ( Date.add Day -184 today |> Just, True )
+                            ( Date.add Days -184 today |> Just, True )
 
                         Nothing ->
                             ( Nothing, False )
@@ -235,12 +235,7 @@ update currentDate msg model =
                                             model.historyData.obstetricFormFirstStep
 
                                         updatedForm =
-                                            case String.toInt value of
-                                                Ok number ->
-                                                    formUpdateFunc (Just number) form
-
-                                                Err _ ->
-                                                    formUpdateFunc Nothing form
+                                            formUpdateFunc (String.toInt value) form
                                     in
                                     model.historyData
                                         |> (\data -> { data | obstetricFormFirstStep = updatedForm })
@@ -343,12 +338,7 @@ update currentDate msg model =
                                         updatedForm =
                                             let
                                                 updatedValue =
-                                                    case String.toInt value of
-                                                        Ok number ->
-                                                            Just number
-
-                                                        Err _ ->
-                                                            Nothing
+                                                    String.toInt value
                                             in
                                             { form | cSections = updatedValue, cSectionsDirty = True }
                                     in
@@ -605,12 +595,7 @@ update currentDate msg model =
                 updatedData =
                     let
                         updatedForm =
-                            case String.toInt value of
-                                Ok number ->
-                                    formUpdateFunc (Just number) model.examinationData.vitalsForm
-
-                                Err _ ->
-                                    formUpdateFunc Nothing model.examinationData.vitalsForm
+                            formUpdateFunc (String.toInt value) model.examinationData.vitalsForm
                     in
                     model.examinationData
                         |> (\data -> { data | vitalsForm = updatedForm })
@@ -625,12 +610,7 @@ update currentDate msg model =
                 updatedData =
                     let
                         updatedForm =
-                            case String.toFloat value of
-                                Ok number ->
-                                    formUpdateFunc (Just number) model.examinationData.vitalsForm
-
-                                Err _ ->
-                                    formUpdateFunc Nothing model.examinationData.vitalsForm
+                            formUpdateFunc (String.toFloat value) model.examinationData.vitalsForm
                     in
                     model.examinationData
                         |> (\data -> { data | vitalsForm = updatedForm })
@@ -674,12 +654,7 @@ update currentDate msg model =
                 updatedData =
                     let
                         updatedForm =
-                            case String.toFloat value of
-                                Ok number ->
-                                    formUpdateFunc (Just number) model.examinationData.nutritionAssessmentForm
-
-                                Err _ ->
-                                    formUpdateFunc Nothing model.examinationData.nutritionAssessmentForm
+                            formUpdateFunc (String.toFloat value) model.examinationData.nutritionAssessmentForm
                     in
                     model.examinationData
                         |> (\data -> { data | nutritionAssessmentForm = updatedForm })
@@ -1051,12 +1026,7 @@ update currentDate msg model =
                 updatedData =
                     let
                         updatedForm =
-                            case String.toInt value of
-                                Ok number ->
-                                    formUpdateFunc (Just number) model.examinationData.obstetricalExamForm
-
-                                Err _ ->
-                                    formUpdateFunc Nothing model.examinationData.obstetricalExamForm
+                            formUpdateFunc (String.toInt value) model.examinationData.obstetricalExamForm
                     in
                     model.examinationData
                         |> (\data -> { data | obstetricalExamForm = updatedForm })
@@ -1071,12 +1041,7 @@ update currentDate msg model =
                 updatedData =
                     let
                         updatedForm =
-                            case String.toFloat value of
-                                Ok number ->
-                                    formUpdateFunc (Just number) model.examinationData.obstetricalExamForm
-
-                                Err _ ->
-                                    formUpdateFunc Nothing model.examinationData.obstetricalExamForm
+                            formUpdateFunc (String.toFloat value) model.examinationData.obstetricalExamForm
                     in
                     model.examinationData
                         |> (\data -> { data | obstetricalExamForm = updatedForm })

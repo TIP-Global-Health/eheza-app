@@ -29,6 +29,7 @@ module Backend.Measurement.Decoder exposing
     , decodeWeight
     )
 
+import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -182,7 +183,7 @@ decodeNutrition =
 decodeCounselingSession : Decoder CounselingSession
 decodeCounselingSession =
     decodeGroupMeasurement <|
-        map2 (,)
+        map2 (\a b -> ( a, b ))
             (field "timing" decodeCounselingTiming)
             (field "topics" (decodeEverySet decodeEntityUuid))
 

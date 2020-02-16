@@ -2,7 +2,7 @@ module Pages.PrenatalActivity.Utils exposing (breastExamFormWithDefault, calcula
 
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime, toLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime)
 import Maybe.Extra exposing (andMap, isNothing, or, unwrap)
 import Pages.PrenatalActivity.Model exposing (..)
 
@@ -160,7 +160,7 @@ toDangerSignsValue form =
 fromLastMenstrualPeriodValue : Maybe LastMenstrualPeriodValue -> PregnancyDatingForm
 fromLastMenstrualPeriodValue saved =
     { lmpRange = Nothing
-    , lmpDate = Maybe.map (.date >> (\date -> toLocalDateTime date 12 0 0 0)) saved
+    , lmpDate = Maybe.map .date saved
     , lmpDateConfident = Maybe.map .confident saved
     , isDateSelectorOpen = False
     }
@@ -173,7 +173,7 @@ lastMenstrualPeriodFormWithDefault form saved =
             form
             (\value ->
                 { lmpRange = or form.lmpRange (Just SixMonth)
-                , lmpDate = or form.lmpDate (Just (toLocalDateTime value.date 12 0 0 0))
+                , lmpDate = or form.lmpDate (Just value.date)
                 , lmpDateConfident = or form.lmpDateConfident (Just value.confident)
                 , isDateSelectorOpen = form.isDateSelectorOpen
                 }
@@ -191,7 +191,7 @@ toLastMenstrualPeriodValueWithDefault saved form =
 
 toLastMenstrualPeriodValue : PregnancyDatingForm -> Maybe LastMenstrualPeriodValue
 toLastMenstrualPeriodValue form =
-    Maybe.map LastMenstrualPeriodValue (Maybe.map fromLocalDateTime form.lmpDate)
+    Maybe.map LastMenstrualPeriodValue form.lmpDate
         |> andMap form.lmpDateConfident
 
 

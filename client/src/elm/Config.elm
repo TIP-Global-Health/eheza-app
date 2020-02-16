@@ -106,7 +106,7 @@ configs =
         , ( "***REMOVED***", livePantheon )
         , ( "***REMOVED***", ehezaGlobal )
         , ( "***REMOVED***", ***REMOVED*** )
-        , ( "prenatal-ihangane.pantheonsite.io", prenatalPantheon ) r
+        , ( "prenatal-ihangane.pantheonsite.io", prenatalPantheon )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "elm19-ihangane.pantheonsite.io", elm19Pantheon )
         ]

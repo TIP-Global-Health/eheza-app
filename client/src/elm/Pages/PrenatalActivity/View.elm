@@ -8,11 +8,11 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
-import Date.Extra as Date exposing (Interval(Day, Month))
+import Date exposing (Interval(..))
 import DateSelector.SelectorDropdown
 import EverySet
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime, toLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -143,7 +143,7 @@ viewPregnancyDatingContent language currentDate assembled data =
                 |> select [ onInput SetLmpRange, class "form-input range" ]
 
         today =
-            toLocalDateTime currentDate 0 0 0 0
+            currentDate
 
         lmpDateInput =
             if isJust form.lmpRange then
@@ -2235,7 +2235,7 @@ viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId 
             maybeCurrentValue
                 |> unwrap
                     ""
-                    toString
+                    Debug.toString
 
         ( labelWidth, inputWidth, alert ) =
             maybeAlertConditions
@@ -2328,7 +2328,7 @@ viewMeasurementInput language maybeCurrentValue setMsg inputClass unitTranslatio
     let
         currentValue =
             maybeCurrentValue
-                |> Maybe.map toString
+                |> Maybe.map Debug.toString
                 |> Maybe.withDefault ""
 
         inputAttrs =

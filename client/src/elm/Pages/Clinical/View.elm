@@ -1,6 +1,6 @@
 module Pages.Clinical.View exposing (view)
 
-import App.Model exposing (Msg(SetActivePage))
+import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)

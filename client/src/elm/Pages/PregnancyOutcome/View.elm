@@ -6,10 +6,10 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Encoder exposing (pregnancyOutcomeToString)
 import Backend.IndividualEncounterParticipant.Model exposing (PregnancyOutcome(..), allPregnancyOutcome)
 import Backend.Model exposing (ModelIndexedDb)
-import Date.Extra as Date exposing (Interval(Day, Month))
+import Date exposing (Interval(..))
 import DateSelector.SelectorDropdown
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime, toLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
@@ -101,7 +101,7 @@ viewPregnancyOutcome language currentDate data model =
                 |> select [ onInput SetPregnancyOutcome, class "form-input pregnancy-outcome" ]
 
         today =
-            toLocalDateTime currentDate 0 0 0 0
+            currentDate
 
         pregnancyConcludedDateInput =
             DateSelector.SelectorDropdown.view
