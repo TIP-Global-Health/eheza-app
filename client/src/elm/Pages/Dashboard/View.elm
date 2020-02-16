@@ -1075,12 +1075,12 @@ viewStatsTableModal language model =
         participantsStatsDialog =
             if model.modalState then
                 Just <|
-                    div [ class "ui tiny active modal" ]
+                    div [ class "ui tiny active modal segment blue" ]
                         [ div
                             [ class "header" ]
-                            [ div [ class "title" ] [ text model.modalTitle ]
+                            [ div [ class "title left floated column" ] [ text model.modalTitle ]
                             , span
-                                [ class "close"
+                                [ class "overlay-close right floated column"
                                 , onClick <| ModalToggle False [] ""
                                 ]
                                 [ text "X" ]

@@ -44,6 +44,72 @@
         width: 730px !important;
         height: 400px;
         overflow: scroll;
+
+        .header {
+          padding: 0;
+
+          .title {
+            font-size: 30px;
+            line-height: 35px;
+            font-weight: normal;
+            font-family: Nunito;
+            text-transform: none;
+            text-align: left;
+          }
+
+          .overlay-close {
+            position: absolute;
+            top: 4px;
+            right: 10px;
+            cursor: pointer;
+            font-weight: normal;
+            text-transform: none;
+            font-size: 20px;
+          }
+        }
+
+        .content {
+          padding: 1rem 0 2.5rem 0;
+
+          .table {
+
+            thead {
+
+              th {
+                font-size: 16px;
+                line-height: 24px;
+                font-weight: normal;
+                padding: 2px 4px 2px;
+                border-left: 0 none;
+                border-right: 0 none;
+                border-bottom: 1px solid $color-text;
+                color: $color-text;
+                text-transform: uppercase;
+
+                &.phone-number {
+                  width: 26%;
+                }
+              }
+            }
+
+            tbody {
+
+              td {
+                font-weight: normal;
+                font-size: 20px;
+                line-height: 24px;
+                border: 0 none;
+                color: black;
+                padding: 12px 4px;
+
+                &.phone-number {
+                  justify-content: center;
+                  text-align-last: center;
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
