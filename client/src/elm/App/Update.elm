@@ -40,6 +40,7 @@ import Pages.Relationship.Update
 import Pages.Router exposing (activePageByUrl, pageToFragment)
 import Pages.Session.Model
 import Pages.Session.Update
+import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid, select, toCmd)
 import Rollbar
@@ -673,6 +674,9 @@ update msg model =
                             App.Ports.bindDropZone ()
 
                         UserPage (EditPersonPage _) ->
+                            App.Ports.bindDropZone ()
+
+                        UserPage (PrenatalActivityPage _ PrenatalPhoto) ->
                             App.Ports.bindDropZone ()
 
                         _ ->
