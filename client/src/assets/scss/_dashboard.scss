@@ -29,6 +29,49 @@
         }
       }
     }
+
+    .content {
+
+      .very.basic.table {
+        width: 100%;
+
+        thead {
+
+          th {
+            font-size: 16px;
+            line-height: 24px;
+            font-weight: normal;
+            padding: 2px 4px 2px;
+            border-left: 0 none;
+            border-right: 0 none;
+            border-bottom: 1px solid $color-text;
+            color: $color-text;
+            text-transform: uppercase;
+
+            &.phone-number {
+              width: 26%;
+            }
+          }
+        }
+
+        tbody {
+
+          td {
+            font-weight: normal;
+            font-size: 20px;
+            line-height: 24px;
+            border: 0 none;
+            color: black;
+            padding: 12px 4px;
+
+            &.phone-number {
+              justify-content: center;
+              text-align-last: center;
+            }
+          }
+        }
+      }
+    }
   }
 
   &.stats {
@@ -70,45 +113,6 @@
 
         .content {
           padding: 1rem 0 2.5rem 0;
-
-          .table {
-
-            thead {
-
-              th {
-                font-size: 16px;
-                line-height: 24px;
-                font-weight: normal;
-                padding: 2px 4px 2px;
-                border-left: 0 none;
-                border-right: 0 none;
-                border-bottom: 1px solid $color-text;
-                color: $color-text;
-                text-transform: uppercase;
-
-                &.phone-number {
-                  width: 26%;
-                }
-              }
-            }
-
-            tbody {
-
-              td {
-                font-weight: normal;
-                font-size: 20px;
-                line-height: 24px;
-                border: 0 none;
-                color: black;
-                padding: 12px 4px;
-
-                &.phone-number {
-                  justify-content: center;
-                  text-align-last: center;
-                }
-              }
-            }
-          }
         }
       }
     }
@@ -127,7 +131,7 @@
         overflow-y: visible;
         width: 100%;
 
-        .table.basic {
+        .very.basic.table {
           width: 100%;
           margin-left: 407px;
 
@@ -333,6 +337,7 @@
   }
 
   .dashboards-monthly-chart,
+  .fbf-beneficiaries,
   .case-management {
 
     .header {
@@ -356,7 +361,7 @@
         color: $color-background;
         margin-top: 6px;
 
-        .chart-filters {
+        .dashboard-filters {
           padding: 4px 5px;
           cursor: pointer;
 
@@ -444,6 +449,22 @@
 
         .column text {
           display: none;
+        }
+      }
+    }
+  }
+
+  .fbf-beneficiaries {
+
+    .table {
+      margin-top: 60px;
+
+      th,
+      td {
+        text-align: center;
+
+        &.label {
+          text-align: left;
         }
       }
     }

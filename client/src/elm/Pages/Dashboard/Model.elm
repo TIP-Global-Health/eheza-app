@@ -47,16 +47,14 @@ filterPeriodsForStatsPage =
 {-| We don't use the existing `Gender`, as we want to have an `All` option as-well
 -}
 type FilterGender
-    = All
-    | Female
-    | Male
+    = Boys
+    | Girls
 
 
 filterGenders : List FilterGender
 filterGenders =
-    [ All
-    , Female
-    , Male
+    [ Boys
+    , Girls
     ]
 
 
@@ -101,7 +99,7 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { period = OneYear
-    , beneficiariesGender = All
+    , beneficiariesGender = Boys
     , currentTotalChartsFilter = Stunting
     , currentCaseManagementFilter = Stunting
     , latestPage = MainPage

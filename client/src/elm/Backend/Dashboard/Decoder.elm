@@ -162,6 +162,7 @@ decodeMalnourishedStats : Decoder MalnourishedStats
 decodeMalnourishedStats =
     succeed MalnourishedStats
         |> required "created" decodeYYYYMMDD
+        |> required "field_birth_date" decodeYYYYMMDD
         |> required "field_gender" decodeGender
         |> required "field_zscore_age" float
 

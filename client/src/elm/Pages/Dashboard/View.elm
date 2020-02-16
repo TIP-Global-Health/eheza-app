@@ -585,18 +585,26 @@ viewBeneficiariesGenderFilter : Language -> Model -> Html Msg
 viewBeneficiariesGenderFilter language model =
     let
         renderButton gender =
-            -- @todo: Translate
-            button
+            let
+                genderTranslated =
+                    case gender of
+                        Boys ->
+                            translateText language <| Translate.Dashboard Translate.BoysFilterLabel
+
+                        Girls ->
+                            translateText language <| Translate.Dashboard Translate.GirlsFilterLabel
+            in
+            span
                 [ classList
-                    [ ( "primary", model.beneficiariesGender == gender )
-                    , ( "ui button", True )
+                    [ ( "active", model.beneficiariesGender == gender )
+                    , ( "dashboard-filters", True )
                     ]
                 , onClick <| SetFilterGender gender
                 ]
-                [ text <| Debug.toString gender
+                [ genderTranslated
                 ]
     in
-    div []
+    div [ class "filters" ]
         (List.map renderButton filterGenders)
 
 
@@ -613,17 +621,17 @@ viewBeneficiariesTable language currentDate stats model =
                 func
                 statsFilteredByGender
 
-        stats0_2 =
-            filterStatsByAgeDo (\{ months } -> months >= 0 && months <= (2 * 12))
+        stats0_5 =
+            filterStatsByAgeDo (\{ months } -> months >= 0 && months < 6)
 
-        stats3_7 =
-            filterStatsByAgeDo (\{ months } -> months > (2 * 12) && months <= (7 * 12))
+        stats6_8 =
+            filterStatsByAgeDo (\{ months } -> months >= 6 && months <= 8)
 
-        stats8_11 =
-            filterStatsByAgeDo (\{ months } -> months > (7 * 12) && months <= (11 * 12))
+        stats9_11 =
+            filterStatsByAgeDo (\{ months } -> months >= 9 && months <= 11)
 
-        stats12_plus =
-            filterStatsByAgeDo (\{ months } -> months > (11 * 12))
+        stats12_23 =
+            filterStatsByAgeDo (\{ months } -> months >= 12 && months <= 23)
 
         getNewBeneficiariesCount stats_ =
             stats_.childrenBeneficiaries
@@ -635,32 +643,38 @@ viewBeneficiariesTable language currentDate stats model =
                 |> List.length
                 |> String.fromInt
     in
-    div [ class "ui blue segment" ]
-        [ viewBeneficiariesGenderFilter language model
-        , table [ class "ui celled table" ]
-            [ thead []
-                [ tr []
-                    [ th [] [ text "Grouped by age (Years)" ]
-                    , th [] [ text "0-2" ]
-                    , th [] [ text "3-7" ]
-                    , th [] [ text "8-11" ]
-                    , th [] [ text "12+" ]
+    div [ class "ui blue segment fbf-beneficiaries" ]
+        [ div [ class "header" ]
+            [ h3 [ class "title left floated column" ] [ translateText language <| Translate.Dashboard Translate.BeneficiariesLabel ]
+            , viewBeneficiariesGenderFilter language model
+            ]
+        , div
+            [ class "content" ]
+            [ table [ class "ui very basic collapsing table" ]
+                [ thead []
+                    [ tr []
+                        [ th [ class "label" ] [ translateText language <| Translate.Dashboard Translate.BeneficiariesTableLabel ]
+                        , th [] [ text "0-5" ]
+                        , th [] [ text "6-8" ]
+                        , th [] [ text "9-11" ]
+                        , th [] [ text "12-23" ]
+                        ]
                     ]
-                ]
-            , tbody []
-                [ tr []
-                    [ td [] [ text "New beneficiaries to program" ]
-                    , td [] [ text <| getNewBeneficiariesCount stats0_2 ]
-                    , td [] [ text <| getNewBeneficiariesCount stats3_7 ]
-                    , td [] [ text <| getNewBeneficiariesCount stats8_11 ]
-                    , td [] [ text <| getNewBeneficiariesCount stats12_plus ]
-                    ]
-                , tr []
-                    [ td [] [ text "Malnourished beneficiaries" ]
-                    , td [] [ text <| getTotalMalnourishedCount stats0_2 ]
-                    , td [] [ text <| getTotalMalnourishedCount stats3_7 ]
-                    , td [] [ text <| getTotalMalnourishedCount stats8_11 ]
-                    , td [] [ text <| getTotalMalnourishedCount stats12_plus ]
+                , tbody []
+                    [ tr []
+                        [ td [ class "label" ] [ text "New beneficiaries to program" ]
+                        , td [] [ text <| getNewBeneficiariesCount stats0_5 ]
+                        , td [] [ text <| getNewBeneficiariesCount stats6_8 ]
+                        , td [] [ text <| getNewBeneficiariesCount stats9_11 ]
+                        , td [] [ text <| getNewBeneficiariesCount stats12_23 ]
+                        ]
+                    , tr []
+                        [ td [ class "label" ] [ text "Malnourished beneficiaries" ]
+                        , td [] [ text <| getTotalMalnourishedCount stats0_5 ]
+                        , td [] [ text <| getTotalMalnourishedCount stats6_8 ]
+                        , td [] [ text <| getTotalMalnourishedCount stats9_11 ]
+                        , td [] [ text <| getTotalMalnourishedCount stats12_23 ]
+                        ]
                     ]
                 ]
             ]
@@ -708,7 +722,7 @@ filterStatsByAge currentDate func stats =
 
         malnourished =
             stats.malnourished
-                |> List.filter (\row -> isDiffTruthy row.created currentDate func)
+                |> List.filter (\row -> isDiffTruthy row.birthdate currentDate func)
     in
     { stats
         | childrenBeneficiaries = childrenBeneficiaries
@@ -784,24 +798,19 @@ filterStatsByGender currentDate model stats =
     let
         -- Filter by gender
         filterDo data =
-            if model.beneficiariesGender == All then
-                -- No change
-                data
+            data
+                |> List.filter
+                    (\personStats ->
+                        case ( personStats.gender, model.beneficiariesGender ) of
+                            ( Backend.Person.Model.Male, Pages.Dashboard.Model.Boys ) ->
+                                True
 
-            else
-                data
-                    |> List.filter
-                        (\personStats ->
-                            case ( personStats.gender, model.beneficiariesGender ) of
-                                ( Backend.Person.Model.Female, Pages.Dashboard.Model.Female ) ->
-                                    True
+                            ( Backend.Person.Model.Female, Pages.Dashboard.Model.Girls ) ->
+                                True
 
-                                ( Backend.Person.Model.Male, Pages.Dashboard.Model.Male ) ->
-                                    True
-
-                                _ ->
-                                    False
-                        )
+                            _ ->
+                                False
+                    )
     in
     { stats
         | childrenBeneficiaries = filterDo stats.childrenBeneficiaries
@@ -1013,7 +1022,7 @@ viewFilters filterType currentChartFilter filter =
     in
     span
         [ classList
-            [ ( "chart-filters", True )
+            [ ( "dashboard-filters", True )
             , ( "active", filter == currentChartFilter )
             ]
         , onClick <| filterAction

@@ -137,10 +137,14 @@ type Adherence
 
 
 type Dashboard
-    = CaseManagementHelper
+    = BeneficiariesLabel
+    | BeneficiariesTableLabel
+    | BoysFilterLabel
+    | CaseManagementHelper
     | CaseManagementLabel
     | CompletedProgramLabel
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
+    | GirlsFilterLabel
     | GoodNutritionLabel
     | MissedSessionsLabel
     | Moderate
@@ -2494,6 +2498,21 @@ translateChartPhrase phrase =
 translateDashboard : Dashboard -> TranslationSet String
 translateDashboard trans =
     case trans of
+        BeneficiariesLabel ->
+            { english = "FBF Beneficiaries"
+            , kinyarwanda = Nothing
+            }
+
+        BeneficiariesTableLabel ->
+            { english = "Grouped by age (Months)"
+            , kinyarwanda = Nothing
+            }
+
+        BoysFilterLabel ->
+            { english = "Boys"
+            , kinyarwanda = Just "Umuhungu"
+            }
+
         CaseManagementHelper ->
             { english = "Review list of malnourished children"
             , kinyarwanda = Nothing
@@ -2512,6 +2531,11 @@ translateDashboard trans =
         FamilyPlanningOutOfWomen { total, useFamilyPlanning } ->
             { english = String.fromInt useFamilyPlanning ++ " out of " ++ String.fromInt total ++ " women"
             , kinyarwanda = Nothing
+            }
+
+        GirlsFilterLabel ->
+            { english = "Girls"
+            , kinyarwanda = Just "Umukobwa"
             }
 
         GoodNutritionLabel ->
