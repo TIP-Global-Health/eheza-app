@@ -77,10 +77,9 @@ class HedleyRestfulPrenatalEncounters extends HedleyRestfulSyncBase {
       $item->scheduled_date = [
         'value' => $value1 ? hedley_restful_timestamp_only_date($value1) : NULL,
         'value2' => $value2 ? hedley_restful_timestamp_only_date($value2) : NULL,
-
       ];
-
       unset($item->field_scheduled_date_field_scheduled_date_value2);
+
       unset($item->label);
     }
 

@@ -10,17 +10,8 @@
  */
 class HedleyRestfulMedicalHistories extends HedleyRestfulPrenatalActivityBase {
 
-  /**
-   * {@inheritdoc}
-   */
-  public function publicFieldsInfo() {
-    $public_fields = parent::publicFieldsInfo();
-
-    $public_fields['medical_history'] = [
-      'property' => 'field_medical_history',
-    ];
-
-    return $public_fields;
-  }
+  protected $multi_fields = [
+    'field_medical_history',
+  ];
 
 }

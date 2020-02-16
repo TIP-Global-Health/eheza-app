@@ -30,7 +30,15 @@ abstract class HedleyRestfulGroupActivityBase extends HedleyRestfulActivityBase 
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     $query = parent::alterQueryForViewWithDbSelect($query);
 
-    // Get the UUID of the Nurse.
+    $field_names = [
+      'field_session',
+    ];
+
+    foreach ($field_names as $field_name) {
+      hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
+    }
+
+    // Get the UUID of the Session.
     hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_session.field_session_target_id", 'uuid_session');
 
     return $query;

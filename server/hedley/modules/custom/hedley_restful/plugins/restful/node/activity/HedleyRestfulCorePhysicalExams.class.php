@@ -10,32 +10,19 @@
  */
 class HedleyRestfulCorePhysicalExams extends HedleyRestfulPrenatalActivityBase {
 
-  /**
-   * {@inheritdoc}
-   */
-  public function publicFieldsInfo() {
-    $public_fields = parent::publicFieldsInfo();
+  protected $fields = [
+    'field_head_hair',
+    'field_eyes',
+    'field_heart',
+    'field_heart_murmur',
+  ];
 
-    $standard_fields_names = [
-      'field_head_hair',
-      'field_eyes',
-      'field_neck',
-      'field_heart',
-      'field_heart_murmur',
-      'field_lungs',
-      'field_abdomen',
-      'field_hands',
-      'field_legs',
-    ];
-
-    foreach ($standard_fields_names as $field_name) {
-      $public_name = str_replace('field_', '', $field_name);
-      $public_fields[$public_name] = [
-        'property' => $field_name,
-      ];
-    }
-
-    return $public_fields;
-  }
+  protected $multi_fields = [
+    'field_neck',
+    'field_lungs',
+    'field_abdomen',
+    'field_hands',
+    'field_legs',
+  ];
 
 }

@@ -115,10 +115,15 @@ class HedleyRestfulIndividualParticipants extends HedleyRestfulSyncBase {
       $item->expected = [
         'value' => $value1 ? hedley_restful_timestamp_only_date($value1) : NULL,
         'value2' => $value2 ? hedley_restful_timestamp_only_date($value2) : NULL,
-
       ];
-
       unset($item->field_expected_field_expected_value2);
+
+      $date = explode(' ', $item->expected_date_concluded);
+      $item->expected_date_concluded = !empty($date[0]) ? $date[0] : NULL;
+
+      $date = explode(' ', $item->date_concluded);
+      $item->date_concluded = !empty($date[0]) ? $date[0] : NULL;
+
       unset($item->label);
     }
 
