@@ -13,18 +13,15 @@ class HedleyRestfulSocialHistories extends HedleyRestfulPrenatalActivityBase {
   /**
    * {@inheritdoc}
    */
-  public function publicFieldsInfo() {
-    $public_fields = parent::publicFieldsInfo();
+  protected $fields = [
+    'field_partner_hiv_testing'
+  ];
 
-    $public_fields['social_history'] = [
-      'property' => 'field_social_history',
-    ];
-
-    $public_fields['partner_hiv_testing'] = [
-      'property' => 'field_partner_hiv_testing',
-    ];
-
-    return $public_fields;
-  }
+  /**
+   * {@inheritdoc}
+   */
+  protected $multi_fields = [
+    'field_social_history'
+  ];
 
 }
