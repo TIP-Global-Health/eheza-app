@@ -30,7 +30,6 @@ define('HEDLEY_PERSON_RELATED_BY_CAREGIVER_FOR', 'caregiver');
  * @param string $relation_type
  *   Optional; the type of the relation, can be either "parent" or "child".
  *
- *
  * @return array
  *   Node IDs if they exist or empty array if no nodes exist.
  */
@@ -45,7 +44,8 @@ function hedley_person_get_relationships($person_id, $relation_type = HEDLEY_PER
   if ($relation_type == HEDLEY_PERSON_RELATED_BY_PARENT_OF) {
     $query
       ->fieldCondition('field_person', 'target_id', $person_id);
-  } else {
+  }
+  else {
     $query
       ->fieldCondition('field_related_to', 'target_id', $person_id);
   }
