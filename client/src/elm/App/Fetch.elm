@@ -74,7 +74,7 @@ fetch model =
             Pages.ClinicalProgressReport.Fetch.fetch prenatalEncounterId model.indexedDb
                 |> List.map MsgIndexedDb
 
-        UserPage (CreatePersonPage relatedId) ->
+        UserPage (CreatePersonPage relatedId _) ->
             Pages.Person.Fetch.fetchForCreateOrEdit relatedId model.indexedDb
                 |> List.map MsgIndexedDb
 

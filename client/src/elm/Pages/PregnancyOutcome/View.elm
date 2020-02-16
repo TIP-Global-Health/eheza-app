@@ -6,7 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Encoder exposing (pregnancyOutcomeToString)
 import Backend.IndividualEncounterParticipant.Model exposing (PregnancyOutcome(..), allPregnancyOutcome)
 import Backend.Model exposing (ModelIndexedDb)
-import Date exposing (Interval(..))
+import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
@@ -108,7 +108,7 @@ viewPregnancyOutcome language currentDate data model =
                 ToggleDateSelector
                 SetPregnancyConcludedDate
                 model.isDateSelectorOpen
-                (Date.add Day -92 today)
+                (Date.add Days -92 today)
                 today
                 model.pregnancyConcludedDate
 

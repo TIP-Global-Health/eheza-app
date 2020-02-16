@@ -99,55 +99,6 @@ viewLoadedClinicList language user selectedHealthCenterId model ( clinics, sync 
                 [ div [ class "header" ] [ text <| translate language header ]
                 , text <| translate language message
                 ]
-
-        synced =
-            case model.clinicType of
-                Just clinicType ->
-                    clinics
-                        |> Dict.filter
-                            (\_ clinic ->
-                                -- Group belongs to seleced health center.
-                                (clinic.healthCenterId == selectedHealthCenterId)
-                                    -- Health center is synced.
-                                    && Dict.member clinic.healthCenterId sync
-                                    -- Group is of selected type.
-                                    && (clinic.clinicType == clinicType)
-                            )
-                        |> Dict.toList
-                        |> List.sortBy (Tuple.second >> .name)
-                        |> Dict.fromList
-
-                Nothing ->
-                    clinics
-                        |> Dict.filter
-                            (\_ clinic ->
-                                -- Group belongs to seleced health center.
-                                (clinic.healthCenterId == selectedHealthCenterId)
-                                    -- Health center is synced.
-                                    && Dict.member clinic.healthCenterId sync
-                            )
-
-        buttonsView =
-            if isJust model.clinicType then
-                synced
-                    |> Dict.toList
-                    |> List.map (viewClinicButton user)
-
-            else
-                synced
-                    |> Dict.values
-                    |> viewClinicTypeButtons language
-
-        message =
-            if Dict.isEmpty synced then
-                div
-                    [ class "ui message warning" ]
-                    [ div [ class "header" ] [ text <| translate language Translate.NoGroupsFound ]
-                    , text <| translate language Translate.HaveYouSynced
-                    ]
-
-            else
-                emptyNode
     in
     Dict.get selectedHealthCenterId sync
         |> unwrap
@@ -190,15 +141,17 @@ viewLoadedClinicList language user selectedHealthCenterId model ( clinics, sync 
                             case model.clinicType of
                                 Just clinicType ->
                                     clinics
-                                        |> DictList.filter
+                                        |> Dict.filter
                                             (\_ clinic ->
                                                 -- Group belongs to seleced health center.
                                                 (clinic.healthCenterId == selectedHealthCenterId)
+                                                    -- Health center is synced.
+                                                    && Dict.member clinic.healthCenterId sync
                                                     -- Group is of selected type.
                                                     && (clinic.clinicType == clinicType)
                                             )
                                         |> Dict.toList
-                                        |> List.sortBy (Tuple.second >>. name)
+                                        |> List.sortBy (Tuple.second >> .name)
                                         |> Dict.fromList
 
                                 Nothing ->
@@ -206,7 +159,9 @@ viewLoadedClinicList language user selectedHealthCenterId model ( clinics, sync 
                                         |> Dict.filter
                                             (\_ clinic ->
                                                 -- Group belongs to seleced health center.
-                                                clinic.healthCenterId == selectedHealthCenterId
+                                                (clinic.healthCenterId == selectedHealthCenterId)
+                                                    -- Health center is synced.
+                                                    && Dict.member clinic.healthCenterId sync
                                             )
 
                         buttonsView =

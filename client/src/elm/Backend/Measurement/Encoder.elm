@@ -67,8 +67,7 @@ import Translate.Utils exposing (encodeLanguage)
 encodeEverySet : (a -> Value) -> EverySet a -> Value
 encodeEverySet encoder set =
     EverySet.toList set
-        |> List.map encoder
-        |> list
+        |> list encoder
 
 
 encodeHeight : Height -> List ( String, Value )

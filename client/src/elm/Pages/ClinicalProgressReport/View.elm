@@ -272,12 +272,12 @@ viewPatientProgressPane language currentDate data =
                 |> List.head
                 |> Maybe.map Tuple.first
 
-        egaWeeksDaysLabel language encounterDate lmpDate =
+        egaWeeksDaysLabel language_ encounterDate lmpDate =
             let
                 diffInDays =
                     diffDays lmpDate encounterDate
             in
-            generateEGAWeeksDaysLabel language diffInDays
+            generateEGAWeeksDaysLabel language_ diffInDays
 
         ( eddLabel, fetalHeartRateLabel, fetalMovementsLabel ) =
             data.globalLmpDate
@@ -380,7 +380,7 @@ viewPatientProgressPane language currentDate data =
                     span [ class "fetal-movements" ]
                         [ img
                             [ src "assets/images/icon-fetal-movement.png"
-                            , style [ ( "height", "30px" ) ]
+                            , style "height" "30px"
                             ]
                             []
                         ]
@@ -388,11 +388,11 @@ viewPatientProgressPane language currentDate data =
                 fetalHeartRateIcon rightMargin =
                     span
                         [ class "fetal-heart-rate"
-                        , style [ ( "margin-right", rightMargin ) ]
+                        , style "margin-right" rightMargin
                         ]
                         [ img
                             [ src "assets/images/icon-fetal-heartrate.png"
-                            , style [ ( "height", "30px" ) ]
+                            , style "height" "30px"
                             ]
                             []
                         ]
@@ -413,23 +413,23 @@ viewPatientProgressPane language currentDate data =
                             (\color ->
                                 p
                                     [ class <| "period " ++ color
-                                    , style [ ( "width", Debug.toString periodWidth ++ "px" ) ]
+                                    , style "width" (Debug.toString periodWidth ++ "px")
                                     ]
                                     []
                             )
 
                 timelineIcons date =
                     if fetalMovementsDate == Just date && fetalHeartRateDate == Just date then
-                        div [ style [ ( "margin-left", "-25px" ), ( "width", "65px" ) ] ]
+                        div [ style "margin-left" "-25px", style "width" "65px" ]
                             [ fetalHeartRateIcon "5px"
                             , fetalMovementsIcon
                             ]
 
                     else if fetalHeartRateDate == Just date then
-                        div [ style [ ( "margin-left", "-6px" ), ( "width", "35px" ) ] ] [ fetalHeartRateIcon "0" ]
+                        div [ style "margin-left" "-6px", style "width" "35px" ] [ fetalHeartRateIcon "0" ]
 
                     else if fetalMovementsDate == Just date then
-                        div [ style [ ( "margin-left", "-2px" ), ( "width", "30px" ) ] ] [ fetalMovementsIcon ]
+                        div [ style "margin-left" "-2px", style "width" "30px" ] [ fetalMovementsIcon ]
 
                     else
                         emptyNode
@@ -438,10 +438,10 @@ viewPatientProgressPane language currentDate data =
                     trimesterEncountersDates
                         |> List.map
                             (\date ->
-                                span [ style [ ( "width", Debug.toString encounterIconWidth ++ "px" ) ] ]
+                                span [ style "width" (Debug.toString encounterIconWidth ++ "px") ]
                                     [ img
                                         [ src "assets/images/icon-blue-circle.png"
-                                        , style [ ( "width", Debug.toString encounterIconWidth ++ "px" ) ]
+                                        , style "width" (Debug.toString encounterIconWidth ++ "px")
                                         ]
                                         []
                                     , timelineIcons date
@@ -648,9 +648,9 @@ tableEgaHeading language currentDate maybeLmpDate measurementsWithDates =
 heightWeightBMITable : Language -> NominalDate -> Maybe NominalDate -> List ( NominalDate, PrenatalMeasurements ) -> Html any
 heightWeightBMITable language currentDate maybeLmpDate allMeasurementsWithDates =
     let
-        cell language transId =
+        cell language_ transId =
             td [ class "uppercase" ]
-                [ text <| translate language transId ]
+                [ text <| translate language_ transId ]
     in
     allMeasurementsWithDates
         |> greedyGroupsOf 6
@@ -752,9 +752,9 @@ heightWeightBMITable language currentDate maybeLmpDate allMeasurementsWithDates 
 fundalHeightTable : Language -> NominalDate -> Maybe NominalDate -> List ( NominalDate, PrenatalMeasurements ) -> Html any
 fundalHeightTable language currentDate maybeLmpDate allMeasurementsWithDates =
     let
-        cell language transId =
+        cell language_ transId =
             td [ class "uppercase" ]
-                [ text <| translate language transId ]
+                [ text <| translate language_ transId ]
     in
     allMeasurementsWithDates
         |> greedyGroupsOf 6

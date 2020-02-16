@@ -1,6 +1,5 @@
 module Backend.Person.Form exposing
-    ( ExpectedGender(..)
-    , PersonForm
+    ( PersonForm
     , allDigitsPattern
     , applyDefaultValues
     , birthDate
@@ -89,12 +88,6 @@ emptyEditForm : PersonForm
 emptyEditForm =
     initial []
         (validatePerson Nothing (toEntityUuid "1" |> EditPerson) Nothing)
-
-
-type ExpectedGender
-    = ExpectMale
-    | ExpectFemale
-    | ExpectMaleOrFemale
 
 
 {-| Given the birth date actually entered into the form, what age range are we

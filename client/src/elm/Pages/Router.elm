@@ -40,7 +40,7 @@ pageToFragment current =
         UserPage userPage ->
             case userPage of
                 ClinicalPage ->
-                    Just <| UrlChange NewEntry "#clinical"
+                    Just "#clinical"
 
                 ClinicsPage clinicId ->
                     let
@@ -52,10 +52,10 @@ pageToFragment current =
                     Just ("clinics" ++ clinic)
 
                 ClinicalProgressReportPage prenatalEncounterId ->
-                    Just <| UrlChange NewEntry <| "#clinical-progress-report/" ++ fromEntityUuid prenatalEncounterId
+                    Just <| "clinical-progress-report/" ++ fromEntityUuid prenatalEncounterId
 
                 DemographicsReportPage prenatalEncounterId ->
-                    Just <| UrlChange NewEntry <| "#demographics-report/" ++ fromEntityUuid prenatalEncounterId
+                    Just <| "demographics-report/" ++ fromEntityUuid prenatalEncounterId
 
                 MyAccountPage ->
                     Just "my-account"
@@ -88,10 +88,10 @@ pageToFragment current =
                     Just url
 
                 PrenatalParticipantPage id ->
-                    Just <| UrlChange NewEntry <| "#prenatal-participant/" ++ fromEntityUuid id
+                    Just <| "prenatal-participant/" ++ fromEntityUuid id
 
                 IndividualEncounterParticipantsPage encounterType ->
-                    Just <| UrlChange NewEntry ("#individual-participants/" ++ encoudeIndividualEncounterTypeAsString encounterType)
+                    Just <| "individual-participants/" ++ encoudeIndividualEncounterTypeAsString encounterType
 
                 RelationshipPage id1 id2 ->
                     Just
@@ -132,16 +132,16 @@ pageToFragment current =
                     Just url
 
                 PrenatalEncounterPage id ->
-                    Just <| UrlChange NewEntry <| "#prenatal-encounter/" ++ fromEntityUuid id
+                    Just <| "prenatal-encounter/" ++ fromEntityUuid id
 
                 PrenatalActivityPage id activity ->
-                    Just <| UrlChange NewEntry <| "#prenatal-activity/" ++ fromEntityUuid id ++ "/" ++ PrenatalActivity.Utils.encodeActivityAsString activity
+                    Just <| "prenatal-activity/" ++ fromEntityUuid id ++ "/" ++ PrenatalActivity.Utils.encodeActivityAsString activity
 
                 IndividualEncounterTypesPage ->
-                    Just <| UrlChange NewEntry "#encounter-types/"
+                    Just "encounter-types/"
 
                 PregnancyOutcomePage id ->
-                    Just <| UrlChange NewEntry <| "#pregnancy-outcome/" ++ fromEntityUuid id
+                    Just <| "pregnancy-outcome/" ++ fromEntityUuid id
 
 
 parser : Parser (Page -> c) c
@@ -197,35 +197,14 @@ parseUuid =
 
 parseActivity : Parser (Activity -> c) c
 parseActivity =
-    custom "Activity" <|
-        \part ->
-            case Activity.Utils.decodeActivityFromString part of
-                Just activity ->
-                    Ok activity
-
-                Nothing ->
-                    Err <| part ++ " is not an Activity"
+    custom "Activity" Activity.Utils.decodeActivityFromString
 
 
 parsePrenatalActivity : Parser (PrenatalActivity -> c) c
 parsePrenatalActivity =
-    custom "PrenatalActivity" <|
-        \part ->
-            case PrenatalActivity.Utils.decodeActivityFromString part of
-                Just activity ->
-                    Ok activity
-
-                Nothing ->
-                    Err <| part ++ " is not an PrenatalActivity"
+    custom "PrenatalActivity" PrenatalActivity.Utils.decodeActivityFromString
 
 
 parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c
 parseIndividualEncounterType =
-    custom "IndividualEncounterType" <|
-        \part ->
-            case decodeIndividualEncounterTypeFromString part of
-                Just encounterType ->
-                    Ok encounterType
-
-                Nothing ->
-                    Err <| part ++ " is not an IndividualEncounterType"
+    custom "IndividualEncounterType" decodeIndividualEncounterTypeFromString

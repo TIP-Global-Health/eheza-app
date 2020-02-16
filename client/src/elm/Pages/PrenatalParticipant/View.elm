@@ -1,7 +1,7 @@
 module Pages.PrenatalParticipant.View exposing (view)
 
 import App.Model
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
@@ -170,8 +170,8 @@ viewPrenatalActions language currentDate id db prenatalSessions =
                     -- When there's an encounrer, we'll view it.
                     navigateToEncounterAction
 
-        navigateToEncounterAction id =
-            [ Pages.Page.PrenatalEncounterPage id
+        navigateToEncounterAction id_ =
+            [ Pages.Page.PrenatalEncounterPage id_
                 |> UserPage
                 |> App.Model.SetActivePage
                 |> onClick

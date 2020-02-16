@@ -1,6 +1,7 @@
 module Backend.Person.Model exposing
     ( EducationLevel(..)
     , ExpectedAge(..)
+    , ExpectedGender(..)
     , Gender(..)
     , HIVStatus(..)
     , MaritalStatus(..)
@@ -168,3 +169,9 @@ type ExpectedAge
     = ExpectAdult
     | ExpectChild
     | ExpectAdultOrChild
+
+
+type ExpectedGender
+    = ExpectMale
+    | ExpectFemale
+    | ExpectMaleOrFemale

@@ -423,7 +423,7 @@ frame =
         ]
 
 
-withinRange : comparable -> comparable -> comparable -> Bool
+withinRange : number -> number -> number -> Bool
 withinRange value min max =
     if value < 0 || value > (max - min) then
         False

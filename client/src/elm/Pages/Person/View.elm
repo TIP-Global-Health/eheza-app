@@ -15,7 +15,20 @@ import Backend.Person.Encoder
         , encodeUbudehe
         )
 import Backend.Person.Form exposing (PersonForm, applyDefaultValues, expectedAgeByForm, validatePerson)
-import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), ParticipantDirectoryOperation(..), Person, allEducationLevels, allHivStatuses, allMaritalStatuses, allModesOfDelivery, allUbudehes)
+import Backend.Person.Model
+    exposing
+        ( ExpectedAge(..)
+        , ExpectedGender(..)
+        , Gender(..)
+        , ParticipantDirectoryOperation(..)
+        , Person
+        , RegistrationInitiator(..)
+        , allEducationLevels
+        , allHivStatuses
+        , allMaritalStatuses
+        , allModesOfDelivery
+        , allUbudehes
+        )
 import Backend.Person.Utils exposing (expectedAgeByPerson, isAdult, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
@@ -388,8 +401,8 @@ viewPhotoThumb url =
         ]
 
 
-viewCreateEditForm : Language -> NominalDate -> ParticipantDirectoryOperation -> Model -> ModelIndexedDb -> Html Msg
-viewCreateEditForm language currentDate operation model db =
+viewCreateEditForm : Language -> NominalDate -> ParticipantDirectoryOperation -> RegistrationInitiator -> Model -> ModelIndexedDb -> Html Msg
+viewCreateEditForm language currentDate operation initiator model db =
     let
         formBeforeDefaults =
             model.form
@@ -426,18 +439,18 @@ viewCreateEditForm language currentDate operation model db =
             case initiator of
                 ParticipantDirectoryOrigin ->
                     let
-                        goBackAction =
+                        goBackPage =
                             case operation of
                                 CreatePerson _ ->
-                                    SetActivePage <| UserPage <| PersonsPage personId
+                                    UserPage <| PersonsPage personId
 
                                 EditPerson _ ->
                                     personId
                                         |> Maybe.map
                                             (\personId_ ->
-                                                SetActivePage <| UserPage <| PersonPage personId_
+                                                UserPage <| PersonPage personId_
                                             )
-                                        |> Maybe.withDefault (SetActivePage PinCodePage)
+                                        |> Maybe.withDefault PinCodePage
 
                         expectedAge =
                             maybeRelatedPerson
@@ -465,7 +478,7 @@ viewCreateEditForm language currentDate operation model db =
                                         ExpectAdultOrChild ->
                                             ( Date.add Years -60 currentDate, currentDate )
                     in
-                    { goBackPage = goBackAction
+                    { goBackPage = goBackPage
                     , expectedAge = expectedAge
                     , expectedGender = ExpectMaleOrFemale
                     , birthDateSelectorFrom = birthDateSelectorFrom
@@ -478,8 +491,8 @@ viewCreateEditForm language currentDate operation model db =
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage AntenatalEncounter)
                             , expectedAge = ExpectAdult
                             , expectedGender = ExpectFemale
-                            , birthDateSelectorFrom = Date.add Year -45 today
-                            , birthDateSelectorTo = Date.add Year -13 today
+                            , birthDateSelectorFrom = Date.add Years -45 today
+                            , birthDateSelectorTo = Date.add Years -13 today
                             }
 
                         -- This will be redefined after we add support for more
@@ -488,7 +501,7 @@ viewCreateEditForm language currentDate operation model db =
                             { goBackPage = PinCodePage
                             , expectedAge = ExpectAdultOrChild
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Year -60 today
+                            , birthDateSelectorFrom = Date.add Years -60 today
                             , birthDateSelectorTo = today
                             }
 
@@ -557,8 +570,8 @@ viewCreateEditForm language currentDate operation model db =
                         ToggleDateSelector
                         (DateSelected operation initiator)
                         model.isDateSelectorOpen
-                        birthDateSelectorFrom
-                        birthDateSelectorTo
+                        originBasedSettings.birthDateSelectorFrom
+                        originBasedSettings.birthDateSelectorTo
                         selectedBirthDate
                     ]
                 , div

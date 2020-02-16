@@ -114,8 +114,8 @@ getAllActivities =
 generateHighRiskAlertData : Language -> PrenatalMeasurements -> HighRiskFactor -> Maybe String
 generateHighRiskAlertData language measurements factor =
     let
-        transAlert factor =
-            translate language (Translate.HighRiskFactor factor)
+        transAlert factor_ =
+            translate language (Translate.HighRiskFactor factor_)
     in
     case factor of
         PrenatalActivity.Model.ConvulsionsAndUnconsciousPreviousDelivery ->
@@ -155,8 +155,8 @@ generateHighSeverityAlertData language currentDate data alert =
         trans =
             translate language
 
-        transAlert alert =
-            trans (Translate.HighSeverityAlert alert)
+        transAlert alert_ =
+            trans (Translate.HighSeverityAlert alert_)
 
         lastEncounterMeasurementsWithDate =
             getLastEncounterMeasurementsWithDate currentDate data
@@ -615,8 +615,8 @@ generateRiskFactorAlertData language currentDate measurements factor =
 generateMedicalDiagnosisAlertData : Language -> NominalDate -> PrenatalMeasurements -> MedicalDiagnosis -> Maybe String
 generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
     let
-        transAlert diagnosis =
-            translate language (Translate.MedicalDiagnosisAlert diagnosis)
+        transAlert diagnosis_ =
+            translate language (Translate.MedicalDiagnosisAlert diagnosis_)
     in
     case diagnosis of
         DiagnosisUterineMyoma ->
@@ -761,8 +761,8 @@ generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
 generateObstetricalDiagnosisAlertData : Language -> NominalDate -> PrenatalMeasurements -> AssembledData -> ObstetricalDiagnosis -> Maybe String
 generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasurements data diagnosis =
     let
-        transAlert diagnosis =
-            translate language (Translate.ObstetricalDiagnosisAlert diagnosis)
+        transAlert diagnosis_ =
+            translate language (Translate.ObstetricalDiagnosisAlert diagnosis_)
 
         lastEncounterMeasurements =
             getLastEncounterMeasurements currentDate data

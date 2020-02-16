@@ -4,7 +4,7 @@ import Backend.Endpoints exposing (individualEncounterParticipantEndpoint)
 import Backend.Entities exposing (IndividualEncounterParticipantId)
 import Backend.IndividualEncounterParticipant.Encoder exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (..)
-import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD, fromLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
 import Json.Encode exposing (object)
 import Json.Encode.Extra
 import Maybe.Extra exposing (unwrap)
@@ -31,7 +31,7 @@ update participantId maybeParticipant currentDate msg model =
                                     , ( "value2", encodeYYYYMMDD currentDate )
                                     ]
                               )
-                            , ( "date_concluded", encodeYYYYMMDD (fromLocalDateTime pregnancyConcludedDate) )
+                            , ( "date_concluded", encodeYYYYMMDD pregnancyConcludedDate )
                             , ( "outcome", encodePregnancyOutcome pregnancyOutcome )
                             , ( "outcome_location", encodeDeliveryLocation isFacilityDelivery )
                             ]

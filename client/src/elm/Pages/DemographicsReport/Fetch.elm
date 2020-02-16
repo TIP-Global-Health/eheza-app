@@ -18,7 +18,7 @@ fetch id db =
 
         personId =
             participantId
-                |> Maybe.andThen (\id -> Dict.get id db.individualParticipants)
+                |> Maybe.andThen (\id_ -> Dict.get id_ db.individualParticipants)
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
                 |> Maybe.map .person

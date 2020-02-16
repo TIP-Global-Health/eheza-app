@@ -47,16 +47,16 @@ view language currentDate prenatalEncounterId db =
         participant =
             encounter
                 |> RemoteData.andThen
-                    (\encounter ->
-                        Dict.get encounter.participant db.individualParticipants
+                    (\encounter_ ->
+                        Dict.get encounter_.participant db.individualParticipants
                             |> Maybe.withDefault NotAsked
                     )
 
         person =
             participant
                 |> RemoteData.andThen
-                    (\participant ->
-                        Dict.get participant.person db.people
+                    (\participant_ ->
+                        Dict.get participant_.person db.people
                             |> Maybe.withDefault NotAsked
                     )
 

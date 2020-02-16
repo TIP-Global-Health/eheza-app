@@ -1,6 +1,6 @@
 module Pages.IndividualEncounterTypes.View exposing (view)
 
-import App.Model exposing (Msg(SetActivePage))
+import App.Model exposing (Msg(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)

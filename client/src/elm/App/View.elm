@@ -3,10 +3,11 @@ module App.View exposing (view)
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
-import Backend.Person.Model exposing (ParticipantDirectoryOperation(..))
+import Backend.Person.Model exposing (ParticipantDirectoryOperation(..), RegistrationInitiator(..))
 import Browser
 import Config.View
 import Date
+import EverySet
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
@@ -219,7 +220,7 @@ viewUserPage page model configured =
                             |> flexPageWrapper model
 
                     CreatePersonPage relation initiator ->
-                        Pages.Person.View.viewCreateForm model.language currentDate relation initiator loggedInModel.createPersonPage model.indexedDb
+                        Pages.Person.View.viewCreateEditForm model.language currentDate (CreatePerson relation) initiator loggedInModel.createPersonPage model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
                             |> flexPageWrapper model
 
@@ -228,7 +229,7 @@ viewUserPage page model configured =
                             |> flexPageWrapper model
 
                     EditPersonPage id ->
-                        Pages.Person.View.viewCreateEditForm model.language currentDate (EditPerson id) loggedInModel.editPersonPage model.indexedDb
+                        Pages.Person.View.viewCreateEditForm model.language currentDate (EditPerson id) ParticipantDirectoryOrigin loggedInModel.editPersonPage model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPageEditPerson)
                             |> flexPageWrapper model
 
@@ -252,11 +253,11 @@ viewUserPage page model configured =
 
                     RelationshipPage id1 id2 ->
                         let
-                            page =
+                            page_ =
                                 Dict.get ( id1, id2 ) loggedInModel.relationshipPages
                                     |> Maybe.withDefault Pages.Relationship.Model.emptyModel
                         in
-                        Pages.Relationship.View.view model.language currentDate id1 id2 model.indexedDb page
+                        Pages.Relationship.View.view model.language currentDate id1 id2 model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageRelationship id1 id2)
                             |> flexPageWrapper model
 
@@ -280,21 +281,21 @@ viewUserPage page model configured =
 
                     PrenatalEncounterPage id ->
                         let
-                            page =
+                            page_ =
                                 Dict.get id loggedInModel.prenatalEncounterPages
                                     |> Maybe.withDefault Pages.PrenatalEncounter.Model.emptyModel
                         in
-                        Pages.PrenatalEncounter.View.view model.language currentDate id model.indexedDb page
+                        Pages.PrenatalEncounter.View.view model.language currentDate id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalEncounter id)
                             |> flexPageWrapper model
 
                     PrenatalActivityPage id activity ->
                         let
-                            page =
+                            page_ =
                                 Dict.get ( id, activity ) loggedInModel.prenatalActivityPages
                                     |> Maybe.withDefault Pages.PrenatalActivity.Model.emptyModel
                         in
-                        Pages.PrenatalActivity.View.view model.language currentDate id activity model.indexedDb page
+                        Pages.PrenatalActivity.View.view model.language currentDate id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalActivity id activity)
                             |> flexPageWrapper model
 
@@ -304,11 +305,11 @@ viewUserPage page model configured =
 
                     PregnancyOutcomePage id ->
                         let
-                            page =
+                            page_ =
                                 Dict.get id loggedInModel.pregnancyOutcomePages
                                     |> Maybe.withDefault Pages.PregnancyOutcome.Model.emptyModel
                         in
-                        Pages.PregnancyOutcome.View.view model.language currentDate id model.indexedDb page
+                        Pages.PregnancyOutcome.View.view model.language currentDate id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePregnancyOutcome id)
                             |> flexPageWrapper model
 

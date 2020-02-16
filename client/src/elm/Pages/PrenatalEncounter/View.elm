@@ -21,7 +21,7 @@ import PrenatalActivity.Model exposing (..)
 import PrenatalActivity.Utils exposing (generateHighRiskAlertData, generateHighSeverityAlertData, getActivityIcon, getAllActivities)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (script, tabItem, thumbnailImage, viewLoading, viewModal)
+import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
 import Utils.WebData exposing (viewWebData)
 
 

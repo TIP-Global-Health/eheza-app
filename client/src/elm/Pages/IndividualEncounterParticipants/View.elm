@@ -1,13 +1,11 @@
 module Pages.IndividualEncounterParticipants.View exposing (view)
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Form exposing (ExpectedAge(..))
-import Backend.Person.Model exposing (Person, RegistrationInitiator(..))
+import Backend.Person.Model exposing (ExpectedAge(..), Person, RegistrationInitiator(..))
 import Backend.Person.Utils exposing (ageInYears, isPersonAFertileWoman)
-import Dict
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -42,7 +40,7 @@ view language currentDate healthCenterId encounterType model db =
     div
         [ class "wrap wrap-alt-2 page-prenatal-participants" ]
         [ viewHeader title
-        , viewContent language currentDate healthCenterId encounterType model db
+        , viewBody language currentDate healthCenterId encounterType model db
         ]
 
 
@@ -63,8 +61,8 @@ viewHeader title =
         ]
 
 
-viewContent : Language -> NominalDate -> HealthCenterId -> IndividualEncounterType -> Model -> ModelIndexedDb -> Html Msg
-viewContent language currentDate selectedHealthCenterId encounterType model db =
+viewBody : Language -> NominalDate -> HealthCenterId -> IndividualEncounterType -> Model -> ModelIndexedDb -> Html Msg
+viewBody language currentDate selectedHealthCenterId encounterType model db =
     let
         sync =
             db.syncData |> RemoteData.withDefault Dict.empty
@@ -160,7 +158,7 @@ viewSearchForm language currentDate selectedHealthCenterId encounterType model d
                 |> Maybe.withDefault emptyNode
 
         viewSummary data =
-            Dict.length data
+            Dict.size data
                 |> Translate.ReportResultsOfSearch
                 |> translate language
                 |> text

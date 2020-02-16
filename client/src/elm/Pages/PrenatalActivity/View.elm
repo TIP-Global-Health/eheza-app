@@ -8,11 +8,11 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
-import Date exposing (Interval(..))
+import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import EverySet
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -48,7 +48,6 @@ import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (script)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -151,7 +150,7 @@ viewPregnancyDatingContent language currentDate assembled data =
                     ToggleDateSelector
                     SetLmpDate
                     form.isDateSelectorOpen
-                    (Date.add Day -280 today)
+                    (Date.add Days -280 today)
                     today
                     form.lmpDate
 
@@ -159,8 +158,7 @@ viewPregnancyDatingContent language currentDate assembled data =
                 emptyNode
 
         ( edd, ega ) =
-            Maybe.map fromLocalDateTime form.lmpDate
-                |> generateEDDandEGA language currentDate ( "", "" )
+            generateEDDandEGA language currentDate ( "", "" ) form.lmpDate
 
         totalTasks =
             2
@@ -562,7 +560,7 @@ viewExaminationContent language currentDate assembled data =
                             else
                                 form_
 
-                        tasks =
+                        tasks_ =
                             if hideHeightInput then
                                 [ form.weight, form.muac ]
 
@@ -577,7 +575,7 @@ viewExaminationContent language currentDate assembled data =
                                 [ form.height, form.weight ]
                     in
                     ( viewNutritionAssessmentForm language currentDate assembled form hideHeightInput
-                    , (List.map taskCompleted tasks |> List.sum)
+                    , (List.map taskCompleted tasks_ |> List.sum)
                         -- This is for BMI task, which is considered as completed
                         -- when both height and weight are set.
                         + taskListCompleted tasksForBmi
@@ -976,8 +974,9 @@ viewPrenatalPhotoContent language currentDate assembled data =
 
                 -- This runs the function from our `app.js` at the precise moment this gets
                 -- written to the DOM. Isn't that convenient?
-                , script "bindDropZone()"
-                    |> keyed "script"
+                -- Todo: implement
+                -- , script "bindDropZone()"
+                --     |> keyed "script"
                 ]
             ]
         , keyed "button" <|
