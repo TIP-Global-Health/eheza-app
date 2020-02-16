@@ -53,8 +53,11 @@ function hedley_stats_node_presave($node) {
       // Clear cache for all the periods.
       $measurements_query_cache_id = 'measurements_query_grouped_by_person_' . $health_center->nid . '_' . $period;
       $session_attendance_cache_id = 'session_attendance_stats_' . $health_center->nid . '_' . $period;
+      $children_beneficiaries_cache_id = 'children_beneficiaries_stats_' . $health_center->nid . '_' . $period;
+
       cache_clear_all($measurements_query_cache_id, 'cache');
       cache_clear_all($session_attendance_cache_id, 'cache');
+      cache_clear_all($children_beneficiaries_cache_id, 'cache');
     }
   }
 }
@@ -75,6 +78,14 @@ function hedley_stats_node_presave($node) {
  * @throws \Exception
  */
 function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
+  // Set the query options as strings for creating cache ID.
+  $health_center_cache_id = 'children_beneficiaries_stats_' . $health_center_id . '_' . $period;
+  $cache = cache_get($health_center_cache_id);
+
+  if (!empty($cache)) {
+    return $cache->data;
+  }
+
   $query = hedley_stats_get_base_query($health_center_id, 'person', $period);
 
   // Get gender and age.
@@ -119,6 +130,10 @@ function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_
     unset($row->type);
     unset($row->field_health_center);
   }
+
+  // Store in cache.
+  cache_set($health_center_cache_id, array_values($result), 'cache', CACHE_TEMPORARY);
+
 
   return array_values($result);
 }
