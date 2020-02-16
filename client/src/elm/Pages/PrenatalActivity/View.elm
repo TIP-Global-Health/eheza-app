@@ -579,7 +579,7 @@ viewExaminationContent language currentDate assembled data =
                         -- This is for BMI task, which is considered as completed
                         -- when both height and weight are set.
                         + taskListCompleted tasksForBmi
-                    , List.length tasks + 1
+                    , List.length tasks_ + 1
                     )
 
                 CorePhysicalExam ->
