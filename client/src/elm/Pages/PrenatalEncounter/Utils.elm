@@ -19,12 +19,11 @@ module Pages.PrenatalEncounter.Utils exposing
     , shouldShowPatientProvisionsResourcesTask
     )
 
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Date.Extra as Date exposing (Interval(Day))
-import EveryDict
-import EveryDictList
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime, toLocalDateTime)
 import Maybe.Extra exposing (isJust, unwrap)
@@ -157,10 +156,10 @@ resolveGlobalObstetricHistory measurements previousMeasurements =
 
 generatePreviousMeasurements : PrenatalEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, PrenatalMeasurements ))
 generatePreviousMeasurements currentEncounterId participantId db =
-    EveryDict.get participantId db.prenatalEncountersByParticipant
+    Dict.get participantId db.prenatalEncountersByParticipant
         |> Maybe.withDefault NotAsked
         |> RemoteData.map
-            (EveryDictList.toList
+            (Dict.toList
                 >> List.filterMap
                     (\( encounterId, encounter ) ->
                         -- We do not want to get data of current encounter.
@@ -168,7 +167,7 @@ generatePreviousMeasurements currentEncounterId participantId db =
                             Nothing
 
                         else
-                            case EveryDict.get encounterId db.prenatalMeasurements of
+                            case Dict.get encounterId db.prenatalMeasurements of
                                 Just (Success data) ->
                                     Just ( encounter.startDate, data )
 
@@ -184,18 +183,18 @@ generateAssembledData : PrenatalEncounterId -> ModelIndexedDb -> WebData Assembl
 generateAssembledData id db =
     let
         encounter =
-            EveryDict.get id db.prenatalEncounters
+            Dict.get id db.prenatalEncounters
                 |> Maybe.withDefault NotAsked
 
         measurements =
-            EveryDict.get id db.prenatalMeasurements
+            Dict.get id db.prenatalMeasurements
                 |> Maybe.withDefault NotAsked
 
         participant =
             encounter
                 |> RemoteData.andThen
                     (\encounter ->
-                        EveryDict.get encounter.participant db.individualParticipants
+                        Dict.get encounter.participant db.individualParticipants
                             |> Maybe.withDefault NotAsked
                     )
 
@@ -203,7 +202,7 @@ generateAssembledData id db =
             participant
                 |> RemoteData.andThen
                     (\participant ->
-                        EveryDict.get participant.person db.people
+                        Dict.get participant.person db.people
                             |> Maybe.withDefault NotAsked
                     )
 

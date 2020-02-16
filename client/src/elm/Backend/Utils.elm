@@ -4,7 +4,6 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ChildMeasurementList, MotherMeasurementList, PrenatalMeasurements)
 import Backend.Model exposing (..)
-import EveryDict
 import RemoteData exposing (RemoteData(..))
 
 

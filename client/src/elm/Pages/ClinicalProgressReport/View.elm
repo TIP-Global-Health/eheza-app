@@ -10,7 +10,6 @@ import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Date
 import Date.Extra exposing (Interval(Day))
-import EveryDict
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, toLocalDateTime)
 import Html exposing (..)

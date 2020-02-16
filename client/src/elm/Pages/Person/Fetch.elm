@@ -3,8 +3,6 @@ module Pages.Person.Fetch exposing (fetch, fetchForCreateOrEdit)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import EveryDict
-import EveryDictList
 import EverySet
 import RemoteData exposing (RemoteData(..))
 

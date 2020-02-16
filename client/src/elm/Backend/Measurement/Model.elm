@@ -87,8 +87,6 @@ and cached in local storage.
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
-import EveryDict exposing (EveryDict)
-import EveryDictList exposing (EveryDictList)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)

@@ -15,7 +15,6 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession)
-import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (Html)
 import Pages.Activity.Model

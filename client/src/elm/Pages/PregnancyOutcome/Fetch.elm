@@ -1,9 +1,8 @@
 module Pages.PregnancyOutcome.Fetch exposing (fetch)
 
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import EveryDict
-import EveryDictList
 import RemoteData exposing (RemoteData(..))
 
 
@@ -11,15 +10,15 @@ fetch : IndividualEncounterParticipantId -> ModelIndexedDb -> List MsgIndexedDb
 fetch participantId db =
     let
         personId =
-            EveryDict.get participantId db.individualParticipants
+            Dict.get participantId db.individualParticipants
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
                 |> Maybe.map .person
 
         encountersIds =
-            EveryDict.get participantId db.prenatalEncountersByParticipant
+            Dict.get participantId db.prenatalEncountersByParticipant
                 |> Maybe.withDefault NotAsked
-                |> RemoteData.map EveryDictList.keys
+                |> RemoteData.map Dict.keys
                 |> RemoteData.withDefault []
 
         lastEncounterId =

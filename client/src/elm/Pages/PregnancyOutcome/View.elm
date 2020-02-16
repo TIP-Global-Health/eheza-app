@@ -1,14 +1,13 @@
 module Pages.PregnancyOutcome.View exposing (view)
 
 import App.Model
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Encoder exposing (pregnancyOutcomeToString)
 import Backend.IndividualEncounterParticipant.Model exposing (PregnancyOutcome(..), allPregnancyOutcome)
 import Backend.Model exposing (ModelIndexedDb)
 import Date.Extra as Date exposing (Interval(Day, Month))
 import DateSelector.SelectorDropdown
-import EveryDict
-import EveryDictList
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime, toLocalDateTime)
 import Html exposing (..)
@@ -29,9 +28,9 @@ view : Language -> NominalDate -> IndividualEncounterParticipantId -> ModelIndex
 view language currentDate id db model =
     let
         lastEncounterId =
-            EveryDict.get id db.prenatalEncountersByParticipant
+            Dict.get id db.prenatalEncountersByParticipant
                 |> Maybe.withDefault NotAsked
-                |> RemoteData.map EveryDictList.keys
+                |> RemoteData.map Dict.keys
                 |> RemoteData.withDefault []
                 |> List.reverse
                 |> List.head

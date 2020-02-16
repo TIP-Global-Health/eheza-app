@@ -21,8 +21,6 @@ import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
-import EveryDict exposing (EveryDict)
-import EveryDictList exposing (EveryDictList)
 import Form exposing (Form)
 import Form.Field
 import Form.Input

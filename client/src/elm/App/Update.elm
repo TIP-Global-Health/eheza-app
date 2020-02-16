@@ -286,11 +286,11 @@ update msg model =
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.prenatalEncounterPages
-                                        |> EveryDict.get id
+                                        |> Dict.get id
                                         |> Maybe.withDefault Pages.PrenatalEncounter.Model.emptyModel
                                         |> Pages.PrenatalEncounter.Update.update subMsg
                             in
-                            ( { data | prenatalEncounterPages = EveryDict.insert id subModel data.prenatalEncounterPages }
+                            ( { data | prenatalEncounterPages = Dict.insert id subModel data.prenatalEncounterPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalEncounter id) subCmd
                             , extraMsgs
                             )
@@ -299,11 +299,11 @@ update msg model =
                             let
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.prenatalActivityPages
-                                        |> EveryDict.get ( id, activity )
+                                        |> Dict.get ( id, activity )
                                         |> Maybe.withDefault Pages.PrenatalActivity.Model.emptyModel
                                         |> Pages.PrenatalActivity.Update.update currentDate subMsg
                             in
-                            ( { data | prenatalActivityPages = EveryDict.insert ( id, activity ) subModel data.prenatalActivityPages }
+                            ( { data | prenatalActivityPages = Dict.insert ( id, activity ) subModel data.prenatalActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalActivity id activity) subCmd
                             , extraMsgs
                             )
@@ -312,11 +312,11 @@ update msg model =
                             let
                                 ( subModel, subCmd, appMsgs ) =
                                     data.pregnancyOutcomePages
-                                        |> EveryDict.get id
+                                        |> Dict.get id
                                         |> Maybe.withDefault Pages.PregnancyOutcome.Model.emptyModel
                                         |> Pages.PregnancyOutcome.Update.update currentDate id subMsg
                             in
-                            ( { data | pregnancyOutcomePages = EveryDict.insert id subModel data.pregnancyOutcomePages }
+                            ( { data | pregnancyOutcomePages = Dict.insert id subModel data.pregnancyOutcomePages }
                             , Cmd.map (MsgLoggedIn << MsgPagePregnancyOutcome id) subCmd
                             , appMsgs
                             )

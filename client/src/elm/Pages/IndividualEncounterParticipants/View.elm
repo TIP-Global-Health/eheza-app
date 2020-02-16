@@ -1,5 +1,6 @@
 module Pages.IndividualEncounterParticipants.View exposing (view)
 
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
@@ -7,8 +8,6 @@ import Backend.Person.Form exposing (ExpectedAge(..))
 import Backend.Person.Model exposing (Person, RegistrationInitiator(..))
 import Backend.Person.Utils exposing (ageInYears, isPersonAFertileWoman)
 import Dict
-import EveryDict
-import EveryDictList
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -68,7 +67,7 @@ viewContent : Language -> NominalDate -> HealthCenterId -> IndividualEncounterTy
 viewContent language currentDate selectedHealthCenterId encounterType model db =
     let
         sync =
-            db.syncData |> RemoteData.withDefault EveryDictList.empty
+            db.syncData |> RemoteData.withDefault Dict.empty
 
         showWarningMessage header message =
             div [ class "ui basic segment" ]
@@ -79,7 +78,7 @@ viewContent language currentDate selectedHealthCenterId encounterType model db =
                     ]
                 ]
     in
-    EveryDictList.get selectedHealthCenterId sync
+    Dict.get selectedHealthCenterId sync
         |> unwrap
             (showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync)
             (\selectedHealthCenterSyncData ->
@@ -152,7 +151,7 @@ viewSearchForm language currentDate selectedHealthCenterId encounterType model d
                 Dict.get searchValue db.personSearches
                     |> Maybe.withDefault NotAsked
                     |> RemoteData.map
-                        (EveryDictList.filter participantsFilter)
+                        (Dict.filter participantsFilter)
                     |> Just
 
         summary =
@@ -161,17 +160,17 @@ viewSearchForm language currentDate selectedHealthCenterId encounterType model d
                 |> Maybe.withDefault emptyNode
 
         viewSummary data =
-            EveryDictList.length data
+            Dict.length data
                 |> Translate.ReportResultsOfSearch
                 |> translate language
                 |> text
 
         searchResultsParticipants =
             results
-                |> Maybe.withDefault (Success EveryDictList.empty)
-                |> RemoteData.withDefault EveryDictList.empty
-                |> EveryDictList.map (viewParticipant language currentDate encounterType db)
-                |> EveryDictList.values
+                |> Maybe.withDefault (Success Dict.empty)
+                |> RemoteData.withDefault Dict.empty
+                |> Dict.map (viewParticipant language currentDate encounterType db)
+                |> Dict.values
 
         searchHelper =
             Translate.SearchHelper

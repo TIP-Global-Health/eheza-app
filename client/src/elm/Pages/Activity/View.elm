@@ -4,7 +4,6 @@ import Activity.Utils exposing (getActivityIcon)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
-import EveryDictList exposing (EveryDictList)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)

@@ -1,10 +1,9 @@
 module Pages.DemographicsReport.Fetch exposing (fetch)
 
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
-import EveryDict
-import EveryDictList
 import RemoteData exposing (RemoteData(..))
 
 
@@ -12,14 +11,14 @@ fetch : PrenatalEncounterId -> ModelIndexedDb -> List MsgIndexedDb
 fetch id db =
     let
         participantId =
-            EveryDict.get id db.prenatalEncounters
+            Dict.get id db.prenatalEncounters
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
                 |> Maybe.map .participant
 
         personId =
             participantId
-                |> Maybe.andThen (\id -> EveryDict.get id db.individualParticipants)
+                |> Maybe.andThen (\id -> Dict.get id db.individualParticipants)
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
                 |> Maybe.map .person
@@ -28,10 +27,10 @@ fetch id db =
             personId
                 |> Maybe.map
                     (\motherId ->
-                        EveryDict.get motherId db.relationshipsByPerson
+                        Dict.get motherId db.relationshipsByPerson
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.map
-                                (EveryDictList.values
+                                (Dict.values
                                     >> List.filter (\person -> person.relatedBy == MyChild)
                                     >> List.map (.relatedTo >> FetchPerson >> Just)
                                 )

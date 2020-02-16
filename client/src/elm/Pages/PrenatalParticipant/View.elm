@@ -1,12 +1,11 @@
 module Pages.PrenatalParticipant.View exposing (view)
 
 import App.Model
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
-import EveryDict
-import EveryDictList exposing (EveryDictList)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
@@ -26,7 +25,7 @@ view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Html App.Model.M
 view language currentDate id db =
     let
         prenatalSessions =
-            EveryDict.get id db.individualParticipantsByPerson
+            Dict.get id db.individualParticipantsByPerson
                 |> Maybe.withDefault NotAsked
     in
     div
@@ -56,13 +55,13 @@ viewHeader language id =
         ]
 
 
-viewPrenatalActions : Language -> NominalDate -> PersonId -> ModelIndexedDb -> EveryDictList IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
+viewPrenatalActions : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
 viewPrenatalActions language currentDate id db prenatalSessions =
     let
         -- Person prenatal session.
         maybeSessionId =
             prenatalSessions
-                |> EveryDictList.toList
+                |> Dict.toList
                 |> List.filter (Tuple.second >> isPregnancyActive currentDate)
                 |> List.head
                 |> Maybe.map Tuple.first
@@ -77,20 +76,20 @@ viewPrenatalActions language currentDate id db prenatalSessions =
             maybeSessionId
                 |> Maybe.map
                     (\sessionId ->
-                        EveryDict.get sessionId db.prenatalEncountersByParticipant
+                        Dict.get sessionId db.prenatalEncountersByParticipant
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.map
                                 (\dict ->
                                     let
                                         activeEncounters =
-                                            EveryDictList.toList dict
+                                            Dict.toList dict
                                                 |> List.filter (\( _, encounter ) -> isNothing encounter.endDate)
                                     in
                                     ( activeEncounters
                                         |> List.head
                                         |> Maybe.map Tuple.first
-                                    , EveryDictList.size dict - List.length activeEncounters
-                                    , EveryDictList.toList dict
+                                    , Dict.size dict - List.length activeEncounters
+                                    , Dict.toList dict
                                         |> List.filter
                                             (\( _, encounter ) ->
                                                 encounter.startDate == currentDate && encounter.endDate == Just currentDate
@@ -109,10 +108,10 @@ viewPrenatalActions language currentDate id db prenatalSessions =
             maybeSessionId
                 |> Maybe.map
                     (\sessionId ->
-                        EveryDict.get sessionId db.prenatalEncountersByParticipant
+                        Dict.get sessionId db.prenatalEncountersByParticipant
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.map
-                                (EveryDictList.values
+                                (Dict.values
                                     >> (\encounters ->
                                             let
                                                 activeEncounters =

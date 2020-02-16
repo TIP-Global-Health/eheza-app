@@ -149,7 +149,7 @@ viewLoadedClinicList language user selectedHealthCenterId model ( clinics, sync 
             else
                 emptyNode
     in
-    EveryDictList.get selectedHealthCenterId sync
+    Dict.get selectedHealthCenterId sync
         |> unwrap
             (showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync)
             (\selectedHealthCenterSyncData ->
@@ -190,18 +190,20 @@ viewLoadedClinicList language user selectedHealthCenterId model ( clinics, sync 
                             case model.clinicType of
                                 Just clinicType ->
                                     clinics
-                                        |> EveryDictList.filter
+                                        |> DictList.filter
                                             (\_ clinic ->
                                                 -- Group belongs to seleced health center.
                                                 (clinic.healthCenterId == selectedHealthCenterId)
                                                     -- Group is of selected type.
                                                     && (clinic.clinicType == clinicType)
                                             )
-                                        |> EveryDictList.sortBy .name
+                                        |> Dict.toList
+                                        |> List.sortBy (Tuple.second >>. name)
+                                        |> Dict.fromList
 
                                 Nothing ->
                                     clinics
-                                        |> EveryDictList.filter
+                                        |> Dict.filter
                                             (\_ clinic ->
                                                 -- Group belongs to seleced health center.
                                                 clinic.healthCenterId == selectedHealthCenterId
@@ -210,12 +212,12 @@ viewLoadedClinicList language user selectedHealthCenterId model ( clinics, sync 
                         buttonsView =
                             if isJust model.clinicType then
                                 synced
-                                    |> EveryDictList.toList
+                                    |> Dict.toList
                                     |> List.map (viewClinicButton user)
 
                             else
                                 synced
-                                    |> EveryDictList.values
+                                    |> Dict.values
                                     |> viewClinicTypeButtons language
                     in
                     div []

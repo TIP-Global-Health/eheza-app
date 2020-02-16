@@ -6,7 +6,6 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Utils exposing (getMyMother)
-import EveryDict
 import Measurement.Model
 import Pages.Activity.Utils exposing (viewChildMeasurements, viewMotherMeasurements)
 import Participant.Model exposing (Participant, ParticipantId(..))

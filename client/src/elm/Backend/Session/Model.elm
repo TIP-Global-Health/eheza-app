@@ -20,8 +20,6 @@ import Backend.Measurement.Model exposing (..)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
-import EveryDict exposing (EveryDict)
-import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate, NominalDateRange)
 import LocalData exposing (LocalData(..))
 import Measurement.Model

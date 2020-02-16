@@ -1,9 +1,8 @@
 module Pages.PrenatalEncounter.Fetch exposing (fetch)
 
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import EveryDict
-import EveryDictList
 import RemoteData exposing (RemoteData(..))
 
 
@@ -11,14 +10,14 @@ fetch : PrenatalEncounterId -> ModelIndexedDb -> List MsgIndexedDb
 fetch id db =
     let
         participantId =
-            EveryDict.get id db.prenatalEncounters
+            Dict.get id db.prenatalEncounters
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
                 |> Maybe.map .participant
 
         personId =
             participantId
-                |> Maybe.andThen (\id -> EveryDict.get id db.individualParticipants)
+                |> Maybe.andThen (\id -> Dict.get id db.individualParticipants)
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
                 |> Maybe.map .person
@@ -27,9 +26,9 @@ fetch id db =
             participantId
                 |> Maybe.map
                     (\participantId_ ->
-                        EveryDict.get participantId_ db.prenatalEncountersByParticipant
+                        Dict.get participantId_ db.prenatalEncountersByParticipant
                             |> Maybe.withDefault NotAsked
-                            |> RemoteData.map EveryDictList.keys
+                            |> RemoteData.map Dict.keys
                             |> RemoteData.withDefault []
                     )
                 |> Maybe.withDefault []

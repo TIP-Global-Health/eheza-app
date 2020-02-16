@@ -8,8 +8,6 @@ import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Date.Extra as Date exposing (Interval(Day))
-import EveryDict
-import EveryDictList
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
 import Html exposing (..)

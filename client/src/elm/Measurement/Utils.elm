@@ -7,8 +7,6 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData)
-import EveryDict
-import EveryDictList
 import EverySet
 import LocalData
 import Measurement.Model exposing (..)

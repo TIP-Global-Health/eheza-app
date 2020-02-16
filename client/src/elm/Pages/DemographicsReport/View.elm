@@ -1,6 +1,7 @@
 module Pages.DemographicsReport.View exposing (view, viewHeader, viewItemHeading)
 
 import App.Model exposing (Msg(..))
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
@@ -8,8 +9,6 @@ import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
-import EveryDict
-import EveryDictList
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatMMDDYYYY)
 import Html exposing (..)
@@ -42,14 +41,14 @@ view : Language -> NominalDate -> PrenatalEncounterId -> ModelIndexedDb -> Html 
 view language currentDate prenatalEncounterId db =
     let
         encounter =
-            EveryDict.get prenatalEncounterId db.prenatalEncounters
+            Dict.get prenatalEncounterId db.prenatalEncounters
                 |> Maybe.withDefault NotAsked
 
         participant =
             encounter
                 |> RemoteData.andThen
                     (\encounter ->
-                        EveryDict.get encounter.participant db.individualParticipants
+                        Dict.get encounter.participant db.individualParticipants
                             |> Maybe.withDefault NotAsked
                     )
 
@@ -57,7 +56,7 @@ view language currentDate prenatalEncounterId db =
             participant
                 |> RemoteData.andThen
                     (\participant ->
-                        EveryDict.get participant.person db.people
+                        Dict.get participant.person db.people
                             |> Maybe.withDefault NotAsked
                     )
 
@@ -169,12 +168,12 @@ viewFamilyInformationPane language currentDate db data =
                 |> Maybe.withDefault ""
 
         children =
-            EveryDict.get data.participant.person db.relationshipsByPerson
+            Dict.get data.participant.person db.relationshipsByPerson
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.map
-                    (EveryDictList.values
+                    (Dict.values
                         >> List.filter (\person -> person.relatedBy == MyChild)
-                        >> List.filterMap (\person -> EveryDict.get person.relatedTo db.people)
+                        >> List.filterMap (\person -> Dict.get person.relatedTo db.people)
                     )
                 |> RemoteData.withDefault []
 
@@ -234,7 +233,7 @@ viewContactInformationPane language currentDate db data =
                 |> Maybe.andThen
                     (\id ->
                         RemoteData.toMaybe db.healthCenters
-                            |> Maybe.andThen (EveryDictList.get id)
+                            |> Maybe.andThen (Dict.get id)
                     )
                 |> Maybe.map .name
                 |> Maybe.withDefault ""

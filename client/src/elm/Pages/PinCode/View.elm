@@ -160,7 +160,7 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                     |> Maybe.andThen
                         (\id ->
                             RemoteData.toMaybe db.healthCenters
-                                |> Maybe.andThen (EveryDictList.get id)
+                                |> Maybe.andThen (Dict.get id)
                         )
                     |> Maybe.map
                         (\healthCenter ->

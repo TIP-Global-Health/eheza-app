@@ -8,7 +8,6 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.SyncData.Model exposing (SyncData)
 import Date
 import Device.Model exposing (..)
-import EveryDictList
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)

@@ -6,7 +6,6 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
-import EveryDictList
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)

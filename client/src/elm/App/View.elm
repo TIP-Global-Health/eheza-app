@@ -253,7 +253,7 @@ viewUserPage page model configured =
                     RelationshipPage id1 id2 ->
                         let
                             page =
-                                EveryDict.get ( id1, id2 ) loggedInModel.relationshipPages
+                                Dict.get ( id1, id2 ) loggedInModel.relationshipPages
                                     |> Maybe.withDefault Pages.Relationship.Model.emptyModel
                         in
                         Pages.Relationship.View.view model.language currentDate id1 id2 model.indexedDb page
@@ -263,7 +263,7 @@ viewUserPage page model configured =
                     SessionPage sessionId subPage ->
                         let
                             sessionPages =
-                                EveryDict.get sessionId loggedInModel.sessionPages
+                                Dict.get sessionId loggedInModel.sessionPages
                                     |> Maybe.withDefault Pages.Session.Model.emptyModel
                         in
                         Pages.Session.View.view
@@ -281,7 +281,7 @@ viewUserPage page model configured =
                     PrenatalEncounterPage id ->
                         let
                             page =
-                                EveryDict.get id loggedInModel.prenatalEncounterPages
+                                Dict.get id loggedInModel.prenatalEncounterPages
                                     |> Maybe.withDefault Pages.PrenatalEncounter.Model.emptyModel
                         in
                         Pages.PrenatalEncounter.View.view model.language currentDate id model.indexedDb page
@@ -291,7 +291,7 @@ viewUserPage page model configured =
                     PrenatalActivityPage id activity ->
                         let
                             page =
-                                EveryDict.get ( id, activity ) loggedInModel.prenatalActivityPages
+                                Dict.get ( id, activity ) loggedInModel.prenatalActivityPages
                                     |> Maybe.withDefault Pages.PrenatalActivity.Model.emptyModel
                         in
                         Pages.PrenatalActivity.View.view model.language currentDate id activity model.indexedDb page
@@ -305,7 +305,7 @@ viewUserPage page model configured =
                     PregnancyOutcomePage id ->
                         let
                             page =
-                                EveryDict.get id loggedInModel.pregnancyOutcomePages
+                                Dict.get id loggedInModel.pregnancyOutcomePages
                                     |> Maybe.withDefault Pages.PregnancyOutcome.Model.emptyModel
                         in
                         Pages.PregnancyOutcome.View.view model.language currentDate id model.indexedDb page

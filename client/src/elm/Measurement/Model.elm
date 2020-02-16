@@ -9,8 +9,6 @@ import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.ParticipantConsent.Model exposing (..)
-import EveryDict exposing (EveryDict)
-import EveryDictList exposing (EveryDictList)
 import EverySet exposing (EverySet)
 import Translate.Model exposing (Language)
 

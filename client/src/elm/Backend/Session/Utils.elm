@@ -5,8 +5,6 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (..)
-import EveryDict
-import EveryDictList exposing (EveryDictList)
 import Gizra.NominalDate exposing (NominalDate)
 import LocalData exposing (LocalData)
 import RemoteData exposing (RemoteData(..))

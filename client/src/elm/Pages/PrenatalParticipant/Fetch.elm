@@ -1,9 +1,8 @@
 module Pages.PrenatalParticipant.Fetch exposing (fetch)
 
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import EveryDict
-import EveryDictList
 import RemoteData exposing (RemoteData(..))
 
 
@@ -11,10 +10,10 @@ fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetch id db =
     let
         fetchEncounters =
-            EveryDict.get id db.individualParticipantsByPerson
+            Dict.get id db.individualParticipantsByPerson
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.map
-                    (EveryDictList.keys
+                    (Dict.keys
                         >> List.map FetchPrenatalEncountersForParticipant
                     )
                 |> RemoteData.withDefault []
