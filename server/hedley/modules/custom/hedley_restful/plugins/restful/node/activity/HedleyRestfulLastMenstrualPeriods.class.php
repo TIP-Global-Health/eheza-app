@@ -52,4 +52,17 @@ class HedleyRestfulLastMenstrualPeriods extends HedleyRestfulPrenatalActivityBas
     return !empty($date[0]) ? $date[0] : NULL;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    $items = parent::postExecuteQueryForViewWithDbSelect($items);
+
+    foreach ($items as &$item) {
+      $item->confident = (bool) $item->confident;
+    }
+
+    return $items;
+  }
+
 }

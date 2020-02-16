@@ -23,4 +23,17 @@ class HedleyRestfulObstetricHistories extends HedleyRestfulPrenatalActivityBase 
     'field_live_children',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    $items = parent::postExecuteQueryForViewWithDbSelect($items);
+
+    foreach ($items as &$item) {
+      $item->currently_pregnant = (bool) $item->currently_pregnant;
+    }
+
+    return $items;
+  }
+
 }

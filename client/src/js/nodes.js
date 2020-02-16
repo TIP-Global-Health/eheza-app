@@ -34,13 +34,13 @@
             var uuid = matches[2]; // May be null
 
             if (event.request.method === 'GET') {
-                var isMeasurementType = type === 'child-measurements' || type === 'mother-measurements';
+                var isMeasurementType = type === 'child-measurements' || type === 'mother-measurements' || type == 'prenatal-measurements';
                 if (uuid) {
                     if (isMeasurementType) {
-                        return event.respondWith(viewMeasurements(url, type, uuid));
+                        return event.respondWith(viewMeasurements(type, uuid));
                     }
                     else {
-                        return event.respondWith(view(url, type, uuid));
+                        return event.respondWith(view(type, uuid));
                     }
 
                 } else {
@@ -362,49 +362,41 @@
         }).catch(sendErrorResponses);
     }
 
-    function view (url, type, uuid) {
+    function view (type, uuid) {
         return dbSync.open().catch(databaseError).then(function () {
-            if (type === 'child-measurements') {
-                return viewMeasurements('person', uuid);
-            } else if (type === 'mother-measurements') {
-                  return viewMeasurements('person', uuid);
-            } else if (type === 'prenatal-measurements') {
-                  return viewMeasurements('prenatal_encounter', uuid);
-            } else {
-                return getTableForType(type).then(function (table) {
-                  var uuids = uuid.split(',');
+            return getTableForType(type).then(function (table) {
+              var uuids = uuid.split(',');
 
-                  // The key to query by.
-                  var key = 'uuid';
+              // The key to query by.
+              var key = 'uuid';
 
-                  return table.where(key).anyOf(uuids).toArray().catch(databaseError).then(function (nodes) {
-                      // We could also check that the type is the expected type.
-                      if (nodes) {
+              return table.where(key).anyOf(uuids).toArray().catch(databaseError).then(function (nodes) {
+                  // We could also check that the type is the expected type.
+                  if (nodes) {
 
-                          var body = JSON.stringify({
-                              data: nodes
-                          });
+                      var body = JSON.stringify({
+                          data: nodes
+                      });
 
-                          var response = new Response(body, {
-                              status: 200,
-                              statusText: 'OK',
-                              headers: {
-                                  'Content-Type': 'application/json'
-                              }
-                          });
+                      var response = new Response(body, {
+                          status: 200,
+                          statusText: 'OK',
+                          headers: {
+                              'Content-Type': 'application/json'
+                          }
+                      });
 
-                          return Promise.resolve(response);
-                      } else {
-                          response = new Response('', {
-                              status: 404,
-                              statusText: 'Not found'
-                          });
+                      return Promise.resolve(response);
+                  } else {
+                      response = new Response('', {
+                          status: 404,
+                          statusText: 'Not found'
+                      });
 
-                          return Promise.reject(response);
-                      }
-                  });
+                      return Promise.reject(response);
+                  }
               });
-            }
+          });
         }).catch(sendErrorResponses);
     }
 
@@ -420,6 +412,10 @@
 
         // The key to query by.
         var key = 'person';
+        if (type === 'prenatal-measurements') {
+          key = 'prenatal_encounter';
+        }
+
         var query = dbSync.shards.where(key).anyOf(uuids);
 
         // Build an empty list of measurements, so we return some value, even
@@ -434,14 +430,20 @@
         return query.toArray().catch(databaseError).then(function (nodes) {
             // We could also check that the type is the expected type.
             if (nodes) {
-
+              console.log(key);
                 nodes.forEach(function (node) {
-                    data[node.person] = data[node.person] || {};
-                    if (data[node.person][node.type]) {
-                        data[node.person][node.type].push(node);
+                    var target = node.person;
+
+                    if (key === 'prenatal_encounter') {
+                      target = node.prenatal_encounter;
+                    }
+
+                    data[target] = data[target] || {};
+                    if (data[target][target]) {
+                        data[target][node.type].push(node);
                     } else {
-                        data[node.person] = data[node.person] || {};
-                        data[node.person][node.type] = [node];
+                        data[target] = data[target] || {};
+                        data[target][node.type] = [node];
                     }
                 });
 
