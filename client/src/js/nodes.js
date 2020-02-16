@@ -404,6 +404,7 @@
                       }
                   });
               });
+            }
         }).catch(sendErrorResponses);
     }
 
@@ -413,7 +414,7 @@
     // Ultimately, it would be better to make this more generic here and do the
     // processing on the client side, but this mirrors the pre-existing
     // division of labour between client and server, so it's easier for now.
-    function viewMeasurements (url, type, uuid) {
+    function viewMeasurements (type, uuid) {
         // UUID may be multiple list of UUIDs, so we split by it.
         var uuids = uuid.split(',');
 

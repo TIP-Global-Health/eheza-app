@@ -40,7 +40,7 @@ pageToFragment current =
         UserPage userPage ->
             case userPage of
                 ClinicalPage ->
-                    Just "#clinical"
+                    Just "clinical"
 
                 ClinicsPage clinicId ->
                     let
@@ -138,7 +138,7 @@ pageToFragment current =
                     Just <| "prenatal-activity/" ++ fromEntityUuid id ++ "/" ++ PrenatalActivity.Utils.encodeActivityAsString activity
 
                 IndividualEncounterTypesPage ->
-                    Just "encounter-types/"
+                    Just "individual-encounter-types/"
 
                 PregnancyOutcomePage id ->
                     Just <| "pregnancy-outcome/" ++ fromEntityUuid id
