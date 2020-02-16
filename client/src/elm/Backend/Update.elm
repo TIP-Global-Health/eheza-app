@@ -122,7 +122,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate nurseId) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate nurseId healthCenterId) extraMsgs
 
         FetchEditableSessionCheckedIn id ->
             Dict.get id model.editableSessions
@@ -661,7 +661,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                                 model
 
                         withRecalc =
-                            data.sessionId
+                            data.encounterId
                                 |> Maybe.map
                                     (\sessionId ->
                                         Dict.get sessionId newModel.editableSessions

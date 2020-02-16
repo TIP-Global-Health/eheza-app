@@ -667,9 +667,9 @@ update msg model =
 
                 cmd =
                     case activePage of
-                        -- When at 'create / edit person' oage, bind
+                        -- When at 'create / edit person' page, bind
                         -- DropZone to be able to take pictures.
-                        UserPage (CreatePersonPage _) ->
+                        UserPage (CreatePersonPage _ _) ->
                             App.Ports.bindDropZone ()
 
                         UserPage (EditPersonPage _) ->
