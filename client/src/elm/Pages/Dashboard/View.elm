@@ -103,11 +103,10 @@ viewStatsPage language currentDate stats model healthCenterId db =
         , viewAllStatsCards language stats currentDate model healthCenterId db
         , viewBeneficiariesTable language currentDate stats model
         , div
-            [ class "ui placeholder segment" ]
-            [ div [ class "ui two column stackable center aligned grid" ]
+            [ class "ui blue segment family-planning" ]
+            [ div [ class "ui center aligned grid" ]
                 [ div [ class "middle aligned row" ]
-                    [ div [ class "column" ] [ viewDonutChart language stats ]
-                    ]
+                    [ viewDonutChart language stats ]
                 ]
             ]
         , viewStatsTableModal language model
@@ -924,7 +923,7 @@ viewDonutChart language stats =
             totalPercent =
                 useFamilyPlanning * 100 // totalCount
         in
-        div []
+        div [ class "content" ]
             [ viewChart dictWithoutNoFamilyPlanning
             , div [ class "stats" ]
                 [ span [ class "neutral" ] [ text <| String.fromInt totalPercent ++ "%" ]
@@ -1112,7 +1111,7 @@ viewChart dict =
                         , cornerRadius = 0
                     }
     in
-    svg [ viewBox 0 0 pieChartWidth pieChartHeight ]
+    svg [ Explicit.class [ "pie-chart" ], viewBox 0 0 pieChartWidth pieChartHeight ]
         [ annular signsList pieData ]
 
 

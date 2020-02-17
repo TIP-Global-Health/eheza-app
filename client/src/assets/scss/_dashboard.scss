@@ -72,6 +72,24 @@
         }
       }
     }
+
+    &.family-planning {
+
+      .row {
+        position: relative;
+
+        .content {
+
+          svg.pie-chart {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            top: 50px;
+            left: 40px;
+          }
+        }
+      }
+    }
   }
 
   &.stats {

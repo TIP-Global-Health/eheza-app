@@ -114,12 +114,12 @@ barChartHeight =
 
 pieChartWidth : Float
 pieChartWidth =
-    990
+    1000
 
 
 pieChartHeight : Float
 pieChartHeight =
-    500
+    1000
 
 
 familyPlanningSignToColor : FamilyPlanningSign -> Color
@@ -190,4 +190,4 @@ colors =
 
 radius : Float
 radius =
-    min (barChartWidth / 2) barChartHeight / 2 - 10
+    min (pieChartWidth / 2) pieChartHeight / 2 - 10
