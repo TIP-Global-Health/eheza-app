@@ -1752,7 +1752,7 @@ translationSet trans =
 
                 Implants ->
                     { english = "Implants"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Akapira ko mu kaboko"
                     }
 
                 Injectables ->
