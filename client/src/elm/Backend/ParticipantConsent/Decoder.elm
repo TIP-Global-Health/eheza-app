@@ -32,9 +32,5 @@ decodeBody =
             }
     in
     map2 go
-        (at [ "body", "value" ] string)
-        (oneOf
-            [ at [ "kinyarwanda_body", "value" ] (nullable string)
-            , field "kinyarwanda_body" (null Nothing)
-            ]
-        )
+        (field "body" string)
+        (field "kinyarwanda_body" (nullable string))

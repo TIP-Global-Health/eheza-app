@@ -6,7 +6,7 @@ projects[admin_menu][subdir] = "contrib"
 projects[admin_menu][version] = "3.0-rc6"
 
 projects[admin_views][subdir] = "contrib"
-projects[admin_views][version] = "1.6"
+projects[admin_views][version] = "1.7"
 
 projects[auto_entitylabel][subdir] = "contrib"
 projects[auto_entitylabel][version] = "1.4"
@@ -19,7 +19,7 @@ projects[composer_manager][subdir] = "contrib"
 projects[composer_manager][version] = "1.8"
 
 projects[date][subdir] = "contrib"
-projects[date][version] = "2.10"
+projects[date][version] = "2.11-beta3"
 
 projects[diff][subdir] = "contrib"
 projects[diff][version] = "3.2"
