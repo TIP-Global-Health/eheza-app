@@ -1,12 +1,13 @@
 module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, MemoryQuota, Model, Msg(..), MsgLoggedIn(..), StorageQuota, Version, emptyLoggedInModel, emptyModel)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model
 import Backend.Nurse.Model exposing (Nurse)
+import Browser
+import Browser.Navigation as Nav
 import Config.Model
 import Device.Model exposing (Device)
-import Dict exposing (Dict)
-import EveryDict exposing (EveryDict)
 import Http
 import Json.Encode exposing (Value)
 import Pages.Clinics.Model
@@ -18,12 +19,12 @@ import Pages.PinCode.Model
 import Pages.Relationship.Model
 import Pages.Session.Model
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing ((</>), decodeSingleDrupalEntity, fromEntityId, select, toCmd, toEntityId, toEntityUuid)
+import Restful.Endpoint exposing (toEntityUuid)
 import Rollbar
 import ServiceWorker.Model
-import Time exposing (Time)
+import Time
 import Translate.Model exposing (Language(..))
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
+import Url exposing (Url)
 import Uuid exposing (Uuid)
 import ZScore.Model
 
@@ -44,6 +45,8 @@ default.
 -}
 type alias Model =
     { activePage : Page
+    , navigationKey : Nav.Key
+    , url : Url
 
     -- Access to things stored in IndexedDB. Eventually, most of this probably
     -- ought to be in LoggedInModel instead, but it's not urgent.
@@ -59,18 +62,18 @@ type alias Model =
     , storageQuota : Maybe StorageQuota
     , memoryQuota : Maybe MemoryQuota
     , configuration : RemoteData String ConfiguredModel
-    , currentTime : Time
+    , currentTime : Time.Posix
     , language : Language
     , serviceWorker : ServiceWorker.Model.Model
     , zscores : ZScore.Model.Model
 
     -- What data did we want last time we checked? We track this so we can
-    -- forget data we don't want any longer. Using an EntityUuidDict relies on the
-    -- relevant `Msg` values behaving well for `toString`, which should
+    -- forget data we don't want any longer. Using an Dict relies on the
+    -- relevant `Msg` values behaving well for `Debug.toString`, which should
     -- typically be fine. The time reflects the last time the data was wanted,
     -- permitting us to keep recently wanted data around for a little while
     -- after it is not wanted. (Often, it may be wanted again soon).
-    , dataWanted : EveryDict Msg Time
+    , dataWanted : Dict Msg Time.Posix
 
     -- Should we check what data is needed? We set this at the end of every
     -- update, and clear it when we do the checking. Our subscriptions turn on
@@ -136,7 +139,8 @@ it at the appropriate moment.
 -}
 type alias LoggedInModel =
     { createPersonPage : Pages.Person.Model.Model
-    , relationshipPages : EveryDict ( PersonId, PersonId ) Pages.Relationship.Model.Model
+    , editPersonPage : Pages.Person.Model.Model
+    , relationshipPages : Dict ( PersonId, PersonId ) Pages.Relationship.Model.Model
     , personsPage : Pages.People.Model.Model
     , clinicsPage : Pages.Clinics.Model.Model
 
@@ -144,18 +148,19 @@ type alias LoggedInModel =
     , nurse : ( NurseId, Nurse )
 
     -- A set of pages for every "open" editable session.
-    , sessionPages : EntityUuidDict SessionId Pages.Session.Model.Model
+    , sessionPages : Dict SessionId Pages.Session.Model.Model
     }
 
 
 emptyLoggedInModel : ( NurseId, Nurse ) -> LoggedInModel
 emptyLoggedInModel nurse =
-    { createPersonPage = Pages.Person.Model.emptyModel
+    { createPersonPage = Pages.Person.Model.emptyCreateModel
+    , editPersonPage = Pages.Person.Model.emptyEditModel
     , personsPage = Pages.People.Model.emptyModel
     , clinicsPage = Pages.Clinics.Model.emptyModel
-    , relationshipPages = EveryDict.empty
+    , relationshipPages = Dict.empty
     , nurse = nurse
-    , sessionPages = EntityUuidDict.empty
+    , sessionPages = Dict.empty
     }
 
 
@@ -186,8 +191,10 @@ type Msg
     | SetStorageQuota StorageQuota
     | SetMemoryQuota MemoryQuota
     | SetHealthCenter (Maybe HealthCenterId)
-    | Tick Time
+    | Tick Time.Posix
     | CheckDataWanted
+    | UrlRequested Browser.UrlRequest
+    | UrlChanged Url.Url
 
 
 {-| Messages we can only handle if we're logged in.
@@ -195,6 +202,7 @@ type Msg
 type MsgLoggedIn
     = MsgPageClinics Pages.Clinics.Model.Msg
     | MsgPageCreatePerson Pages.Person.Model.Msg
+    | MsgPageEditPerson Pages.Person.Model.Msg
     | MsgPagePersons Pages.People.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
@@ -209,8 +217,8 @@ type alias Flags =
     }
 
 
-emptyModel : Flags -> Model
-emptyModel flags =
+emptyModel : Nav.Key -> Url -> Flags -> Model
+emptyModel key url flags =
     let
         healthCenterId =
             if flags.healthCenterId == "" then
@@ -220,9 +228,11 @@ emptyModel flags =
                 Just (toEntityUuid flags.healthCenterId)
     in
     { activePage = PinCodePage
+    , navigationKey = key
+    , url = url
     , configuration = NotAsked
-    , currentTime = 0
-    , dataWanted = EveryDict.empty
+    , currentTime = Time.millisToPosix 0
+    , dataWanted = Dict.empty
     , indexedDb = Backend.Model.emptyModelIndexedDb
     , language = English
     , memoryQuota = Nothing

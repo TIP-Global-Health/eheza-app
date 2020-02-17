@@ -1,4 +1,4 @@
-module Backend.Session.Model exposing (CheckedIn, EditableSession, ExpectedParticipants, Model, Msg(..), OfflineSession, Session, emptyModel)
+module Backend.Session.Model exposing (CheckedIn, EditableSession, ExpectedParticipants, Model, Msg(..), OfflineSession, Session, batchSize, emptyModel)
 
 {-| A "session" refers to a group session with mothers and babies ... that is,
 an occasion on which measurements are taken in a group setting.
@@ -13,6 +13,7 @@ because there was so much code written in terms of an `EditableSession`.
 -}
 
 import Activity.Model exposing (SummaryByActivity, SummaryByParticipant)
+import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -20,11 +21,9 @@ import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Gizra.NominalDate exposing (NominalDate, NominalDateRange)
-import Lazy exposing (Lazy)
+import LocalData exposing (LocalData(..))
 import Measurement.Model
 import RemoteData exposing (RemoteData(..), WebData)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 {-| This is the basic `Session` data ... essentially, for scheduling purposes.
@@ -51,15 +50,15 @@ overkill for now.
 
 -}
 type alias ExpectedParticipants =
-    { byId : EntityUuidDict PmtctParticipantId PmtctParticipant
-    , byChildId : EntityUuidDict PersonId (List PmtctParticipant)
-    , byMotherId : EntityUuidDict PersonId (List PmtctParticipant)
+    { byId : Dict PmtctParticipantId PmtctParticipant
+    , byChildId : Dict PersonId (List PmtctParticipant)
+    , byMotherId : Dict PersonId (List PmtctParticipant)
     }
 
 
 type alias CheckedIn =
-    { mothers : EntityUuidDictList PersonId Person
-    , children : EntityUuidDictList PersonId Person
+    { mothers : Dict PersonId Person
+    , children : Dict PersonId Person
     }
 
 
@@ -74,7 +73,7 @@ type alias OfflineSession =
     { session : Session
 
     -- Some configuration data.
-    , allParticipantForms : EntityUuidDictList ParticipantFormId ParticipantForm
+    , allParticipantForms : Dict ParticipantFormId ParticipantForm
     , everyCounselingSchedule : EveryCounselingSchedule
 
     -- This reflects everyone who is expected at the session, given the
@@ -83,13 +82,13 @@ type alias OfflineSession =
 
     -- These reflect the `Person` record for each person included in
     -- `participants`.
-    , mothers : EntityUuidDictList PersonId Person
-    , children : EntityUuidDictList PersonId Person
+    , mothers : Dict PersonId Person
+    , children : Dict PersonId Person
 
     -- This is lazy because it requires some significant calculation, and we
     -- don't always need it.
     , measurements :
-        Lazy
+        LocalData
             -- These are all the measurements which have been saved. (Not necessarily
             -- synced to the backend yet).
             { historical : HistoricalMeasurements
@@ -112,42 +111,41 @@ type alias OfflineSession =
 type alias EditableSession =
     { offlineSession : OfflineSession
     , update : WebData ()
-    , checkedIn :
-        Lazy { mothers : EntityUuidDictList PersonId Person, children : EntityUuidDictList PersonId Person }
-    , summaryByParticipant : Lazy SummaryByParticipant
-    , summaryByActivity : Lazy SummaryByActivity
+    , checkedIn : LocalData CheckedIn
+    , summaryByParticipant : LocalData SummaryByParticipant
+    , summaryByActivity : LocalData SummaryByActivity
     }
 
 
 {-| This is a subdivision of ModelIndexedDb that tracks requests in-progress
-to peform the updates indicated by the `Msg` type below.
+to perform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
     { closeSessionRequest : WebData ()
-    , saveAttendanceRequest : EntityUuidDict PersonId (WebData ())
-    , saveCounselingSessionRequest : EntityUuidDict PersonId (WebData ())
-    , saveFamilyPlanningRequest : EntityUuidDict PersonId (WebData ())
-    , saveHeightRequest : EntityUuidDict PersonId (WebData ())
-    , saveMuacRequest : EntityUuidDict PersonId (WebData ())
-    , saveNutritionRequest : EntityUuidDict PersonId (WebData ())
-    , saveParticipantConsentRequest : EntityUuidDict PersonId (WebData ())
-    , savePhotoRequest : EntityUuidDict PersonId (WebData ())
-    , saveWeightRequest : EntityUuidDict PersonId (WebData ())
+    , saveAttendanceRequest : Dict PersonId (WebData ())
+    , saveCounselingSessionRequest : Dict PersonId (WebData ())
+    , saveFamilyPlanningRequest : Dict PersonId (WebData ())
+    , saveHeightRequest : Dict PersonId (WebData ())
+    , saveMuacRequest : Dict PersonId (WebData ())
+    , saveNutritionRequest : Dict PersonId (WebData ())
+    , saveParticipantConsentRequest : Dict PersonId (WebData ())
+    , savePhotoRequest : Dict PersonId (WebData ())
+    , saveWeightRequest : Dict PersonId (WebData ())
     }
 
 
 emptyModel : Model
 emptyModel =
     { closeSessionRequest = NotAsked
-    , saveAttendanceRequest = EntityUuidDict.empty
-    , saveCounselingSessionRequest = EntityUuidDict.empty
-    , saveFamilyPlanningRequest = EntityUuidDict.empty
-    , saveHeightRequest = EntityUuidDict.empty
-    , saveMuacRequest = EntityUuidDict.empty
-    , saveNutritionRequest = EntityUuidDict.empty
-    , saveParticipantConsentRequest = EntityUuidDict.empty
-    , savePhotoRequest = EntityUuidDict.empty
-    , saveWeightRequest = EntityUuidDict.empty
+    , saveAttendanceRequest = Dict.empty
+    , saveCounselingSessionRequest = Dict.empty
+    , saveFamilyPlanningRequest = Dict.empty
+    , saveHeightRequest = Dict.empty
+    , saveMuacRequest = Dict.empty
+    , saveNutritionRequest = Dict.empty
+    , saveParticipantConsentRequest = Dict.empty
+    , savePhotoRequest = Dict.empty
+    , saveWeightRequest = Dict.empty
     }
 
 
@@ -165,3 +163,8 @@ type Msg
     | HandleSaveParticipantConsent PersonId (WebData ())
     | HandleSavePhoto PersonId (WebData ())
     | HandleSaveWeight PersonId (WebData ())
+
+
+batchSize : Int
+batchSize =
+    1000

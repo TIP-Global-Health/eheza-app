@@ -9,7 +9,7 @@ import Restful.Endpoint exposing (decodeEntityUuid)
 
 decodeNurse : Decoder Nurse
 decodeNurse =
-    decode Nurse
+    succeed Nurse
         |> required "label" string
         |> optional "health_centers" (map EverySet.fromList (list decodeEntityUuid)) EverySet.empty
         |> optional "role" (map EverySet.fromList (list decodeRole)) EverySet.empty

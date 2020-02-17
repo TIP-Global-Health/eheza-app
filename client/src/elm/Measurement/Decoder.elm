@@ -8,6 +8,6 @@ import Measurement.Model exposing (..)
 
 decodeDropZoneFile : Decoder DropZoneFile
 decodeDropZoneFile =
-    decode DropZoneFile
+    succeed DropZoneFile
         |> requiredAt [ "detail", "file", "xhr", "responseText" ]
             (decodeJsonInString (field "url" string))

@@ -9,11 +9,11 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import RemoteData exposing (RemoteData(..))
 import ServiceWorker.Model exposing (..)
-import Time exposing (Time)
+import Time
 import Translate exposing (Language, translate)
 
 
-view : Time -> Language -> Model -> Html Msg
+view : Time.Posix -> Language -> Model -> Html Msg
 view currentTime language model =
     div [ class "wrap wrap-alt-2" ]
         [ div
@@ -99,7 +99,7 @@ viewRegistrationStatus language model =
             p [] [ text <| translate language Translate.ServiceWorkerRegSuccess ]
 
 
-viewUpdateStatus : Time -> Language -> Model -> Html Msg
+viewUpdateStatus : Time.Posix -> Language -> Model -> Html Msg
 viewUpdateStatus currentTime language model =
     case model.newWorker of
         Nothing ->
@@ -155,13 +155,16 @@ viewUpdateStatus currentTime language model =
                 ]
 
 
-viewLastChecked : Language -> Time -> Maybe Time -> Html msg
+viewLastChecked : Language -> Time.Posix -> Maybe Time.Posix -> Html msg
 viewLastChecked language currentTime checkedTime =
     case checkedTime of
         Just checked ->
             let
+                diffInMillis =
+                    Time.posixToMillis currentTime - Time.posixToMillis checked
+
                 diffInMinutes =
-                    round ((currentTime - checked) / Time.minute)
+                    diffInMillis // 60000
             in
             p []
                 [ text <| translate language Translate.LastChecked

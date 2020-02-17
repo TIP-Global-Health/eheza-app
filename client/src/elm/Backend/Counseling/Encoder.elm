@@ -36,5 +36,5 @@ encodeCounselingSchedule : CounselingSchedule -> Value
 encodeCounselingSchedule schedule =
     object
         [ ( "timing", encodeCounselingTiming schedule.timing )
-        , ( "topics", list <| List.map encodeEntityUuid schedule.topics )
+        , ( "topics", list encodeEntityUuid schedule.topics )
         ]

@@ -3,20 +3,40 @@ module Pages.Session.Fetch exposing (fetch)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Session.Fetch exposing (fetchEditableSession)
+import Pages.Activities.Fetch
+import Pages.Activity.Fetch
+import Pages.Attendance.Fetch
 import Pages.Page exposing (SessionPage(..))
+import Pages.Participant.Fetch
+import Pages.Participants.Fetch
 import Pages.ProgressReport.Fetch
 
 
 fetch : SessionId -> SessionPage -> ModelIndexedDb -> List MsgIndexedDb
 fetch sessionId sessionPage db =
     let
-        forSessionPage =
+        ( forSessionPage, calculations ) =
             case sessionPage of
+                ActivityPage _ ->
+                    Pages.Activity.Fetch.fetch sessionId
+
+                ActivitiesPage ->
+                    Pages.Activities.Fetch.fetch sessionId
+
+                AttendancePage ->
+                    Pages.Attendance.Fetch.fetch sessionId
+
+                ChildPage _ ->
+                    Pages.Participant.Fetch.fetch sessionId
+
+                MotherPage _ ->
+                    Pages.Participant.Fetch.fetch sessionId
+
+                ParticipantsPage ->
+                    Pages.Participants.Fetch.fetch sessionId
+
                 ProgressReportPage childId ->
                     Pages.ProgressReport.Fetch.fetch childId
-
-                _ ->
-                    []
 
         -- We gather all the msgs needed to construct an editable session, and
         -- also the message that indicates that we want the EditableSession
@@ -24,4 +44,9 @@ fetch sessionId sessionPage db =
         forEditableSession =
             fetchEditableSession sessionId db
     in
-    forSessionPage ++ forEditableSession ++ [ FetchEditableSession sessionId ]
+    -- We send 'calculations' in 2 places here:
+    -- 1. To be sent after 'FetchEditableSession' is completed, which may bring
+    --    new editableSession, with all LocalData parts as NotNeeded.
+    -- 2. Separatly, for case when 'FetchEditableSession' will not do anything
+    --    as it's already fetched.
+    forSessionPage ++ calculations ++ forEditableSession ++ [ FetchEditableSession sessionId calculations ]

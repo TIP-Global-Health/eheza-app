@@ -1,16 +1,26 @@
-module Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, endField, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate, setNominalDateRange, startField, validateNominalDate, validateNominalDateRange)
+module Utils.NominalDate exposing
+    ( Days(..)
+    , Months(..)
+    , diffDays
+    , endField
+    , renderAgeMonthsDays
+    , renderAgeMonthsDaysAbbrev
+    , renderAgeMonthsDaysHtml
+    , renderDate
+    , setNominalDateRange
+    , startField
+    )
 
 {-| An extra utility for elm-community/elm-time ... should integrate with
 Gizra.NominalDate.
 -}
 
-import Date.Extra exposing (Interval(Day), diff, fromParts, numberToMonth)
+import Date
 import Form.Field exposing (Field)
 import Form.Init exposing (setGroup, setString)
 import Form.Validate as Validate exposing (Validation, field)
-import Gizra.NominalDate exposing (NominalDate, NominalDateRange, diffCalendarMonthsAndDays, formatYYYYMMDD, fromLocalDateTime, toLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, NominalDateRange, diffCalendarMonthsAndDays, formatYYYYMMDD, fromLocalDateTime)
 import Html exposing (Html)
-import Time.Date exposing (date, day, daysInMonth, delta, month, year)
 import Translate exposing (Language, translate)
 
 
@@ -42,15 +52,6 @@ diffDays low high =
     -- }
     Gizra.NominalDate.diffDays low high
         |> Days
-
-
-{-| Like `diffDays`, but shows whole completed months.
--}
-diffMonths : NominalDate -> NominalDate -> Months
-diffMonths low high =
-    delta high low
-        |> .months
-        |> Months
 
 
 {-| Shows the difference between the first date (the birthdate)
@@ -116,7 +117,7 @@ renderAgeMonthsDaysAbbrev language birthDate now =
 
             else
                 Just <|
-                    toString days
+                    Debug.toString days
                         ++ " "
                         ++ translate language Translate.Days
 
@@ -126,7 +127,7 @@ renderAgeMonthsDaysAbbrev language birthDate now =
 
             else
                 Just <|
-                    toString months
+                    Debug.toString months
                         ++ " "
                         ++ translate language Translate.MonthAbbrev
     in
@@ -158,7 +159,7 @@ renderAgeMonthsDaysHtml language birthDate now =
 
             else
                 Just <|
-                    toString days
+                    Debug.toString days
                         ++ " "
                         ++ translate language Translate.Days
 
@@ -168,7 +169,7 @@ renderAgeMonthsDaysHtml language birthDate now =
 
             else
                 Just <|
-                    toString months
+                    Debug.toString months
                         ++ " "
                         ++ translate language Translate.MonthAbbrev
     in
@@ -182,46 +183,26 @@ renderDate : Language -> NominalDate -> String
 renderDate language date =
     let
         day =
-            Time.Date.day date
+            Date.day date
 
         month =
-            Time.Date.month date
-                |> numberToMonth
+            Date.month date
                 |> Translate.ResolveMonth
                 |> translate language
 
         year =
-            Time.Date.year date
+            Date.year date
     in
     (if day < 10 then
-        "0" ++ toString day
+        "0" ++ String.fromInt day
 
      else
-        toString day
+        String.fromInt day
     )
         ++ " "
         ++ month
         ++ " "
-        ++ toString year
-
-
-{-| Validates a NominalDate.
--}
-validateNominalDate : Validation e NominalDate
-validateNominalDate =
-    -- It might be nice to do something more predictable than what `date` does,
-    -- but it's certainly convenient.
-    Validate.map fromLocalDateTime Validate.date
-
-
-{-| Validates a `NominalDateRange`, on the assumption that it is represented
-by a field group, which has the sub-fields `start` and `end`.
--}
-validateNominalDateRange : Validation e NominalDateRange
-validateNominalDateRange =
-    Validate.succeed NominalDateRange
-        |> Validate.andMap (field startField validateNominalDate)
-        |> Validate.andMap (field endField validateNominalDate)
+        ++ String.fromInt year
 
 
 {-| The name of the field we use for the start date.

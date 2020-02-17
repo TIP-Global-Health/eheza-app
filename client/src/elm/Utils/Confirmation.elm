@@ -170,7 +170,7 @@ view model =
                     , div
                         [ class "content" ]
                         [ p
-                            [ style [ ( "color", "black" ) ] ]
+                            [ style "color" "black" ]
                             [ text dialog.body ]
                         ]
                     , div

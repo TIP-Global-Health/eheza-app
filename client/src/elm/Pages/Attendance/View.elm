@@ -7,7 +7,7 @@ at a session.
 
 -}
 
-import AllDictList
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (EditableSession)
@@ -15,7 +15,7 @@ import Backend.Session.Utils exposing (getChildren, getMotherMeasurementData)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
-import Lazy exposing (force)
+import LocalData exposing (LocalData(..))
 import Pages.Attendance.Model exposing (..)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
@@ -39,7 +39,7 @@ view language ( sessionId, session ) model =
                 matchMotherAndHerChildren filter session.offlineSession
 
         mothers =
-            if AllDictList.isEmpty session.offlineSession.mothers then
+            if Dict.isEmpty session.offlineSession.mothers then
                 [ div
                     [ class "ui message warning" ]
                     [ text <| translate language Translate.ThisGroupHasNoMothers ]
@@ -48,15 +48,15 @@ view language ( sessionId, session ) model =
             else
                 let
                     matching =
-                        AllDictList.filter matches session.offlineSession.mothers
+                        Dict.filter matches session.offlineSession.mothers
                 in
-                if AllDictList.isEmpty matching then
+                if Dict.isEmpty matching then
                     [ span [] [ text <| translate language Translate.NoMatchesFound ] ]
 
                 else
                     matching
-                        |> AllDictList.map (viewMother session)
-                        |> AllDictList.values
+                        |> Dict.map (viewMother session)
+                        |> Dict.values
     in
     div [ class "wrap wrap-alt-2 page-attendance" ]
         [ div
@@ -109,14 +109,14 @@ viewMother session motherId mother =
     let
         attendanceId =
             getMotherMeasurementData motherId session
-                |> (force >> .current >> .attendance)
-                |> Maybe.map Tuple.first
-
-        checkedIn =
-            force session.checkedIn
+                |> LocalData.map (.current >> .attendance >> Maybe.map Tuple.first)
+                |> LocalData.withDefault Nothing
 
         isCheckedIn =
-            AllDictList.member motherId checkedIn.mothers
+            session.checkedIn
+                |> LocalData.unwrap
+                    False
+                    (\checkedIn -> Dict.member motherId checkedIn.mothers)
 
         checkIn =
             if isCheckedIn then
