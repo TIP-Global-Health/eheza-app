@@ -141,9 +141,7 @@ viewSyncData language data =
                     Time.toYear Time.utc time |> String.fromInt
 
                 month =
-                    Time.toMonth Time.utc time
-                        |> Translate.ResolveMonth
-                        |> translate language
+                    translate language <| Translate.ResolveMonth (Time.toMonth Time.utc time) False
 
                 day =
                     Time.toDay Time.utc time |> normalize
