@@ -1,6 +1,6 @@
 module ZScore.Test exposing (all)
 
-import AllDict exposing (AllDict)
+import AssocList as Dict exposing (Dict)
 import Backend.Person.Model exposing (Gender(..))
 import Expect exposing (Expectation, FloatingPointTolerance(..))
 import Http
@@ -67,12 +67,12 @@ fetchForAge wrapper tables =
         (decodeFixture (decodeForAge Months (\(Months x) -> x) wrapper) tables.months)
 
 
-fetchForHeight : String -> WebData (MaleAndFemale (AllDict Height (ZScoreEntry Kilograms) Int))
+fetchForHeight : String -> WebData (MaleAndFemale (Dict.Height (ZScoreEntry Kilograms) Int))
 fetchForHeight table =
     decodeFixture (decodeForCentimetres "height" Height (\(Height x) -> x)) table
 
 
-fetchForLength : String -> WebData (MaleAndFemale (AllDict Length (ZScoreEntry Kilograms) Int))
+fetchForLength : String -> WebData (MaleAndFemale (Dict.Length (ZScoreEntry Kilograms) Int))
 fetchForLength table =
     decodeFixture (decodeForCentimetres "length" Length (\(Length x) -> x)) table
 
@@ -2596,10 +2596,10 @@ expectNear expected actual =
             Expect.pass
 
         ( Nothing, a ) ->
-            Expect.fail <| "Expected Nothing, got " ++ toString a
+            Expect.fail <| "Expected Nothing, got " ++ Debug.toString a
 
         ( e, Nothing ) ->
-            Expect.fail <| "Expected " ++ toString e ++ ", got Nothing"
+            Expect.fail <| "Expected " ++ Debug.toString e ++ ", got Nothing"
 
 
 {-| This makes a test for each of the data points above. Again, this isn't
@@ -2623,7 +2623,7 @@ calculateZScoreTest =
             (\index ( func, scale, gender, measurement, expected ) ->
                 let
                     testName =
-                        String.join " " [ toString index, func, toString scale, toString gender, toString measurement, toString expected ]
+                        String.join " " [ Debug.toString index, func, Debug.toString scale, Debug.toString gender, Debug.toString measurement, Debug.toString expected ]
                 in
                 case func of
                     "lfa" ->

@@ -1,11 +1,12 @@
 module App.View exposing (view)
 
-import AllDict
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInData)
+import AssocList as Dict
+import Backend.Person.Model exposing (ParticipantDirectoryOperation(..))
+import Browser
 import Config.View
 import Date
-import EveryDict
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
@@ -30,19 +31,22 @@ import Utils.Html exposing (spinner, wrapPage)
 import Version
 
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
-    case model.configuration of
-        Failure err ->
-            Config.View.view model.language err
+    { title = translate model.language Translate.AppName
+    , body =
+        case model.configuration of
+            Failure err ->
+                [ Config.View.view model.language err ]
 
-        Success configuration ->
-            viewConfiguredModel model configuration
+            Success configuration ->
+                [ viewConfiguredModel model configuration ]
 
-        _ ->
-            -- Don't show anything if config resolution is in process but
-            -- hasn't failed yet.
-            viewLoading
+            _ ->
+                -- Don't show anything if config resolution is in process but
+                -- hasn't failed yet.
+                [ viewLoading ]
+    }
 
 
 {-| Given some HTML, wrap it in the new flex-box based structure.
@@ -173,7 +177,7 @@ viewUserPage : UserPage -> Model -> ConfiguredModel -> Html Msg
 viewUserPage page model configured =
     let
         currentDate =
-            fromLocalDateTime <| Date.fromTime model.currentTime
+            fromLocalDateTime model.currentTime
     in
     case getLoggedInData model of
         Just ( healthCenterId, loggedInModel ) ->
@@ -188,8 +192,13 @@ viewUserPage page model configured =
                         |> flexPageWrapper model
 
                 CreatePersonPage relation ->
-                    Pages.Person.View.viewCreateForm model.language currentDate relation loggedInModel.createPersonPage model.indexedDb
+                    Pages.Person.View.viewCreateEditForm model.language currentDate (CreatePerson relation) loggedInModel.createPersonPage model.indexedDb
                         |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
+                        |> flexPageWrapper model
+
+                EditPersonPage id ->
+                    Pages.Person.View.viewCreateEditForm model.language currentDate (EditPerson id) loggedInModel.editPersonPage model.indexedDb
+                        |> Html.map (MsgLoggedIn << MsgPageEditPerson)
                         |> flexPageWrapper model
 
                 PersonPage id ->
@@ -203,18 +212,18 @@ viewUserPage page model configured =
 
                 RelationshipPage id1 id2 ->
                     let
-                        page =
-                            EveryDict.get ( id1, id2 ) loggedInModel.relationshipPages
+                        page_ =
+                            Dict.get ( id1, id2 ) loggedInModel.relationshipPages
                                 |> Maybe.withDefault Pages.Relationship.Model.emptyModel
                     in
-                    Pages.Relationship.View.view model.language currentDate id1 id2 model.indexedDb page
+                    Pages.Relationship.View.view model.language currentDate id1 id2 model.indexedDb page_
                         |> Html.map (MsgLoggedIn << MsgPageRelationship id1 id2)
                         |> flexPageWrapper model
 
                 SessionPage sessionId subPage ->
                     let
                         sessionPages =
-                            AllDict.get sessionId loggedInModel.sessionPages
+                            Dict.get sessionId loggedInModel.sessionPages
                                 |> Maybe.withDefault Pages.Session.Model.emptyModel
                     in
                     Pages.Session.View.view
