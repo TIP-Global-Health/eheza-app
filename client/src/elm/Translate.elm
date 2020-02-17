@@ -341,7 +341,6 @@ type TranslationId
     | ProgressReport
     | Province
     | Register
-    | RegisterAParticipant
     | RegisterHelper
     | RegisterNewParticipant
     | RegistratingHealthCenter
@@ -1132,9 +1131,39 @@ translationSet trans =
 
         FamilyPlanningSignLabel sign ->
             case sign of
+                AutoObservation ->
+                    { english = "Auto-observation"
+                    , kinyarwanda = Nothing
+                    }
+
                 Condoms ->
                     { english = "Condoms"
                     , kinyarwanda = Just "Udukingirizo"
+                    }
+
+                CycleBeads ->
+                    { english = "Cycle beads"
+                    , kinyarwanda = Nothing
+                    }
+
+                CycleCounting ->
+                    { english = "Cycle counting"
+                    , kinyarwanda = Nothing
+                    }
+
+                Hysterectomy ->
+                    { english = "Hysterectomy"
+                    , kinyarwanda = Nothing
+                    }
+
+                Implants ->
+                    { english = "Implants"
+                    , kinyarwanda = Just "Akapira ko mu kaboko"
+                    }
+
+                Injectables ->
+                    { english = "Injectables"
+                    , kinyarwanda = Nothing
                     }
 
                 IUD ->
@@ -1142,29 +1171,34 @@ translationSet trans =
                     , kinyarwanda = Just "Akapira ko mu mura (agapira ko munda ibyara)"
                     }
 
-                Implant ->
-                    { english = "Implant"
-                    , kinyarwanda = Just "Akapira ko mu kaboko"
-                    }
-
-                Injection ->
-                    { english = "Injection"
-                    , kinyarwanda = Just "Urushinge"
-                    }
-
-                Necklace ->
-                    { english = "Necklace"
-                    , kinyarwanda = Just "Urunigi"
-                    }
-
-                Pill ->
-                    { english = "Pill"
-                    , kinyarwanda = Just "Ibinini"
+                LactationAmenorrhea ->
+                    { english = "Lactation amenorrhea"
+                    , kinyarwanda = Nothing
                     }
 
                 NoFamilyPlanning ->
                     { english = "None of these"
                     , kinyarwanda = Just "nta buryo bwo kuboneza urubyaro akoresha"
+                    }
+
+                OralContraceptives ->
+                    { english = "Oral contraceptives"
+                    , kinyarwanda = Nothing
+                    }
+
+                Spermicide ->
+                    { english = "Spermicide"
+                    , kinyarwanda = Nothing
+                    }
+
+                TubalLigatures ->
+                    { english = "Tubal ligatures"
+                    , kinyarwanda = Nothing
+                    }
+
+                Vasectomy ->
+                    { english = "Vasectomy"
+                    , kinyarwanda = Nothing
                     }
 
         FamilyUbudehe ->
@@ -1741,11 +1775,6 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        RegisterAParticipant ->
-            { english = "Register a participant"
-            , kinyarwanda = Nothing
-            }
-
         RegisterHelper ->
             { english = "Not the participant you were looking for?"
             , kinyarwanda = Nothing
@@ -2290,8 +2319,13 @@ translateActivePage page =
                     , kinyarwanda = Just "Compte"
                     }
 
-                CreatePersonPage relationId ->
+                CreatePersonPage _ ->
                     { english = "Create Person"
+                    , kinyarwanda = Nothing
+                    }
+
+                EditPersonPage _ ->
+                    { english = "Edit Person"
                     , kinyarwanda = Nothing
                     }
 
