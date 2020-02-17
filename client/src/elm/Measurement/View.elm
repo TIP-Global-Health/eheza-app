@@ -1025,10 +1025,10 @@ viewFamilyPlanningSelector : Language -> EverySet FamilyPlanningSign -> List (Ht
 viewFamilyPlanningSelector language familyPlanningSigns =
     let
         familyPlanningSignFirst =
-            [ Pill, Condoms, IUD ]
+            [ AutoObservation, Condoms, CycleBeads, CycleCounting, Hysterectomy, Implants, Injectables ]
 
         familyPlanningSignSecond =
-            [ Implant, Injection, Necklace ]
+            [ IUD, LactationAmenorrhea, OralContraceptives, Spermicide, TubalLigatures, Vasectomy ]
     in
     [ div [ class "ui grid" ]
         [ familyPlanningSignFirst

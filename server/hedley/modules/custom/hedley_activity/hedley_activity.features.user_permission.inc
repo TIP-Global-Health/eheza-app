@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * hedley_activity.features.user_permission.inc
