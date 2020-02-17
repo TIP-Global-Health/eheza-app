@@ -74,18 +74,89 @@
     }
 
     &.family-planning {
+      margin-bottom: 40px;
+
+      .header {
+
+        .title {
+          font-size: 30px;
+          line-height: 35px;
+          max-width: 40%;
+          font-weight: normal;
+          font-family: Nunito;
+        }
+      }
 
       .row {
         position: relative;
 
         .content {
+          width: 100%;
+          text-align: center;
+          padding: 0 1rem;
+
+          .in-chart {
+            font-family: Nunito;
+            position: relative;
+            top: 70px;
+            width: 100%;
+
+            .stats {
+              width: 120px;
+              margin: 0 auto;
+
+              .percentage {
+                display: block;
+                font-style: normal;
+                font-weight: bold;
+                font-size: 40px;
+                line-height: 28px;
+              }
+
+              .use-label {
+                font-style: normal;
+                font-weight: normal;
+                font-size: 20px;
+                line-height: 20px;
+              }
+
+              .count {
+                font-size: 12px;
+                line-height: 12px;
+              }
+            }
+          }
 
           svg.pie-chart {
             position: absolute;
             width: 400px;
             height: 400px;
-            top: 50px;
-            left: 40px;
+            top: 35px;
+            left: 55px;
+          }
+
+          .legend {
+            width: 50%;
+            display: flex;
+            justify-content: left;
+            flex-flow: column wrap;
+            align-content: stretch;
+            margin: 140px auto 0;
+            max-height: 300px;
+
+            .legend-item {
+              margin-bottom: 5px;
+              text-align: left;
+
+              span {
+                font-family: Nunito;
+                font-style: normal;
+                font-weight: 600;
+                font-size: 15px;
+                line-height: 22px;
+                margin-left: 9px;
+              }
+            }
           }
         }
       }

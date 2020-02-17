@@ -144,6 +144,7 @@ type Dashboard
     | CaseManagementHelper
     | CaseManagementLabel
     | CompletedProgramLabel
+    | FamilyPlanningLabel
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
     | GirlsFilterLabel
     | GoodNutritionLabel
@@ -2587,6 +2588,11 @@ translateDashboard trans =
 
         CompletedProgramLabel ->
             { english = "Completed Program"
+            , kinyarwanda = Nothing
+            }
+
+        FamilyPlanningLabel ->
+            { english = "Family Planning"
             , kinyarwanda = Nothing
             }
 
