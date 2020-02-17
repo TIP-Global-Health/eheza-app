@@ -458,26 +458,47 @@ getFamilyPlanningSignsCounter stats =
 familyPlanningSignToColor : FamilyPlanningSign -> Color
 familyPlanningSignToColor sign =
     case sign of
-        Condoms ->
-            Color.red
-
-        IUD ->
-            Color.orange
-
-        Implant ->
-            Color.yellow
-
-        Injection ->
-            Color.green
-
-        Necklace ->
+        AutoObservation ->
             Color.blue
 
-        NoFamilyPlanning ->
+        Condoms ->
+            Color.lightOrange
+
+        CycleBeads ->
+            Color.orange
+
+        CycleCounting ->
+            Color.purple
+
+        Hysterectomy ->
+            Color.lightPurple
+
+        Implants ->
             Color.black
 
-        Pill ->
-            Color.purple
+        Injectables ->
+            Color.lightGreen
+
+        NoFamilyPlanning ->
+            Color.grey
+
+        IUD ->
+            Color.darkGreen
+
+        LactationAmenorrhea ->
+            Color.darkOrange
+
+        OralContraceptives ->
+            Color.darkPurple
+
+        Spermicide ->
+            Color.darkBlue
+
+        TubalLigatures ->
+            Color.lightRed
+
+        Vasectomy ->
+            Color.lightGreen
 
 
 
@@ -497,13 +518,20 @@ h =
 colors : Dict FamilyPlanningSign Color
 colors =
     Dict.fromList
-        [ ( Condoms, familyPlanningSignToColor Condoms )
-        , ( IUD, familyPlanningSignToColor IUD )
-        , ( Implant, familyPlanningSignToColor Implant )
-        , ( Injection, familyPlanningSignToColor Injection )
-        , ( Necklace, familyPlanningSignToColor Necklace )
+        [ ( AutoObservation, familyPlanningSignToColor AutoObservation )
+        , ( Condoms, familyPlanningSignToColor Condoms )
+        , ( CycleBeads, familyPlanningSignToColor CycleBeads )
+        , ( CycleCounting, familyPlanningSignToColor CycleCounting )
+        , ( Hysterectomy, familyPlanningSignToColor Hysterectomy )
+        , ( Implants, familyPlanningSignToColor Implants )
+        , ( Injectables, familyPlanningSignToColor Injectables )
         , ( NoFamilyPlanning, familyPlanningSignToColor NoFamilyPlanning )
-        , ( Pill, familyPlanningSignToColor Pill )
+        , ( IUD, familyPlanningSignToColor IUD )
+        , ( LactationAmenorrhea, familyPlanningSignToColor LactationAmenorrhea )
+        , ( OralContraceptives, familyPlanningSignToColor OralContraceptives )
+        , ( Spermicide, familyPlanningSignToColor Spermicide )
+        , ( TubalLigatures, familyPlanningSignToColor TubalLigatures )
+        , ( Vasectomy, familyPlanningSignToColor Vasectomy )
         ]
 
 
