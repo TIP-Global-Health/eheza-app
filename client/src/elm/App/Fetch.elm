@@ -59,7 +59,11 @@ fetch model =
                 |> Maybe.withDefault []
 
         UserPage (CreatePersonPage relatedId) ->
-            Pages.Person.Fetch.fetchForCreateForm relatedId
+            Pages.Person.Fetch.fetchForCreateOrEdit relatedId model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (EditPersonPage relatedId) ->
+            Pages.Person.Fetch.fetchForCreateOrEdit (Just relatedId) model.indexedDb
                 |> List.map MsgIndexedDb
 
         UserPage (PersonPage id) ->
