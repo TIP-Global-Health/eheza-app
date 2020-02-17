@@ -34,15 +34,16 @@
             var uuid = matches[2]; // May be null
 
             if (event.request.method === 'GET') {
-                var isMeasurementType = type === 'child-measurements' || type === 'mother-measurements' || type == 'prenatal-measurements';
                 if (uuid) {
-                    if (isMeasurementType) {
-                        return event.respondWith(viewMeasurements(type, uuid));
+                    if (type === 'child-measurements' || type === 'mother-measurements') {
+                        return event.respondWith(viewMeasurements('person', uuid));
+                    }
+                    else if (type === 'prenatal-measurements') {
+                      return event.respondWith(viewMeasurements('prenatal_encounter', uuid));
                     }
                     else {
                         return event.respondWith(view(type, uuid));
                     }
-
                 } else {
                     return event.respondWith(index(url, type));
                 }
@@ -406,15 +407,9 @@
     // Ultimately, it would be better to make this more generic here and do the
     // processing on the client side, but this mirrors the pre-existing
     // division of labour between client and server, so it's easier for now.
-    function viewMeasurements (type, uuid) {
+    function viewMeasurements (key, uuid) {
         // UUID may be multiple list of UUIDs, so we split by it.
         var uuids = uuid.split(',');
-
-        // The key to query by.
-        var key = 'person';
-        if (type === 'prenatal-measurements') {
-          key = 'prenatal_encounter';
-        }
 
         var query = dbSync.shards.where(key).anyOf(uuids);
 
@@ -430,16 +425,14 @@
         return query.toArray().catch(databaseError).then(function (nodes) {
             // We could also check that the type is the expected type.
             if (nodes) {
-              console.log(key);
                 nodes.forEach(function (node) {
                     var target = node.person;
-
                     if (key === 'prenatal_encounter') {
                       target = node.prenatal_encounter;
                     }
 
                     data[target] = data[target] || {};
-                    if (data[target][target]) {
+                    if (data[target][node.type]) {
                         data[target][node.type].push(node);
                     } else {
                         data[target] = data[target] || {};
