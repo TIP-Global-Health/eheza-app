@@ -402,6 +402,8 @@ viewMiscCards language stats monthBeforeStats =
             List.foldl
                 (\childrenBeneficiaries accum ->
                     { name = childrenBeneficiaries.name
+                    , gender = childrenBeneficiaries.gender
+                    , birthDate = childrenBeneficiaries.birthDate
                     , motherName = childrenBeneficiaries.motherName
                     , phoneNumber = childrenBeneficiaries.phoneNumber
                     , dates = []
@@ -638,6 +640,16 @@ viewBeneficiariesTable language currentDate stats model =
                 |> List.length
                 |> String.fromInt
 
+        getCompletedProgramBeneficiariesCount stats_ =
+            stats_.completedProgram
+                |> List.length
+                |> String.fromInt
+
+        getMissedSessionBeneficiariesCount stats_ =
+            stats_.missedSessions
+                |> List.length
+                |> String.fromInt
+
         getTotalMalnourishedCount stats_ =
             stats_.malnourished
                 |> List.length
@@ -667,6 +679,20 @@ viewBeneficiariesTable language currentDate stats model =
                         , td [] [ text <| getNewBeneficiariesCount stats6_8 ]
                         , td [] [ text <| getNewBeneficiariesCount stats9_11 ]
                         , td [] [ text <| getNewBeneficiariesCount stats12_23 ]
+                        ]
+                    , tr []
+                        [ td [ class "label" ] [ text "Beneficiaries completed program" ]
+                        , td [] [ text <| getCompletedProgramBeneficiariesCount stats0_5 ]
+                        , td [] [ text <| getCompletedProgramBeneficiariesCount stats6_8 ]
+                        , td [] [ text <| getCompletedProgramBeneficiariesCount stats9_11 ]
+                        , td [] [ text <| getCompletedProgramBeneficiariesCount stats12_23 ]
+                        ]
+                    , tr []
+                        [ td [ class "label" ] [ text "Missed session by beneficiaries" ]
+                        , td [] [ text <| getMissedSessionBeneficiariesCount stats0_5 ]
+                        , td [] [ text <| getMissedSessionBeneficiariesCount stats6_8 ]
+                        , td [] [ text <| getMissedSessionBeneficiariesCount stats9_11 ]
+                        , td [] [ text <| getMissedSessionBeneficiariesCount stats12_23 ]
                         ]
                     , tr []
                         [ td [ class "label" ] [ text "Malnourished beneficiaries" ]
@@ -718,14 +744,24 @@ filterStatsByAge currentDate func stats =
     let
         childrenBeneficiaries =
             stats.childrenBeneficiaries
-                |> List.filter (\row -> isDiffTruthy row.birthdate currentDate func)
+                |> List.filter (\row -> isDiffTruthy row.birthDate currentDate func)
+
+        completedProgram =
+            stats.completedProgram
+                |> List.filter (\row -> isDiffTruthy row.birthDate currentDate func)
+
+        missedSessions =
+            stats.missedSessions
+                |> List.filter (\row -> isDiffTruthy row.birthDate currentDate func)
 
         malnourished =
             stats.malnourished
-                |> List.filter (\row -> isDiffTruthy row.birthdate currentDate func)
+                |> List.filter (\row -> isDiffTruthy row.birthDate currentDate func)
     in
     { stats
         | childrenBeneficiaries = childrenBeneficiaries
+        , completedProgram = completedProgram
+        , missedSessions = missedSessions
         , malnourished = malnourished
     }
 
@@ -814,6 +850,8 @@ filterStatsByGender currentDate model stats =
     in
     { stats
         | childrenBeneficiaries = filterDo stats.childrenBeneficiaries
+        , completedProgram = filterDo stats.completedProgram
+        , missedSessions = filterDo stats.missedSessions
         , malnourished = filterDo stats.malnourished
     }
 

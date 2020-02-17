@@ -270,6 +270,8 @@ function hedley_stats_get_session_attendance_stats_by_period($health_center_id, 
 
     $expected_people_by_health_center[$person_wrapper->getIdentifier()] = [
       'name' => $person_wrapper->label(),
+      'gender' => $person_wrapper->field_gender->value(),
+      'birth_date' => hedley_stats_convert_timestamp_to_nominal($person_wrapper->field_birth_date->value()),
       'mother_id' => $mother_wrapper->getIdentifier(),
       'mother_name' => $mother_wrapper->label(),
       'phone_number' => $mother_wrapper->field_phone_number->value(),

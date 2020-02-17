@@ -21,6 +21,7 @@ module Pages.Dashboard.Model exposing
 
 import AssocList exposing (Dict)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
+import Backend.Person.Model exposing (Gender)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (DashboardPage(..), Page(..))
 
@@ -78,6 +79,8 @@ filterCharts =
 
 type alias ParticipantStats =
     { name : String
+    , gender : Gender
+    , birthDate : NominalDate
     , motherName : String
     , phoneNumber : Maybe String
     , dates : List NominalDate

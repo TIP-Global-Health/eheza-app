@@ -130,6 +130,8 @@ decodeParticipantStats : Decoder ParticipantStats
 decodeParticipantStats =
     succeed ParticipantStats
         |> required "name" string
+        |> required "gender" decodeGender
+        |> required "birth_date" decodeYYYYMMDD
         |> required "mother_name" string
         |> optional "phone_number" (nullable string) Nothing
         |> required "dates" (list decodeDatesList)

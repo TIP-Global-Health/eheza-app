@@ -456,15 +456,32 @@
 
   .fbf-beneficiaries {
 
-    .table {
-      margin-top: 60px;
+    .header {
 
-      th,
-      td {
-        text-align: center;
+      .filters {
 
-        &.label {
-          text-align: left;
+        :first-child {
+          margin-right: 10px;
+        }
+
+        .dashboard-filters {
+          padding: 0 5px;
+        }
+      }
+    }
+
+    .content {
+
+      .table {
+        margin-top: 60px;
+
+        th,
+        td {
+          text-align: center;
+
+          &.label {
+            text-align: left;
+          }
         }
       }
     }

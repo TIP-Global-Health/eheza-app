@@ -65,7 +65,7 @@ type alias CaseNutrition =
 
 type alias ChildrenBeneficiariesStats =
     { gender : Gender
-    , birthdate : NominalDate
+    , birthDate : NominalDate
     , memberSince : NominalDate
     , name : String
     , motherName : String
@@ -81,7 +81,7 @@ type alias FamilyPlanningStats =
 
 type alias MalnourishedStats =
     { created : NominalDate
-    , birthdate : NominalDate
+    , birthDate : NominalDate
     , gender : Gender
     , zscore : ZScore
     }
@@ -89,6 +89,8 @@ type alias MalnourishedStats =
 
 type alias ParticipantStats =
     { name : String
+    , gender : Gender
+    , birthDate : NominalDate
     , motherName : String
     , phoneNumber : Maybe String
     , dates : List NominalDate
