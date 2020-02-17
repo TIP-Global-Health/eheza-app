@@ -138,6 +138,7 @@ type Adherence
 
 type Dashboard
     = BeneficiariesLabel
+    | BeneficiariesTableColumnLabel String
     | BeneficiariesTableLabel
     | BoysFilterLabel
     | CaseManagementHelper
@@ -2502,6 +2503,33 @@ translateDashboard trans =
             { english = "FBF Beneficiaries"
             , kinyarwanda = Nothing
             }
+
+        BeneficiariesTableColumnLabel name ->
+            case name of
+                "new" ->
+                    { english = "New beneficiaries to program"
+                    , kinyarwanda = Nothing
+                    }
+
+                "completed" ->
+                    { english = "Beneficiaries completed program"
+                    , kinyarwanda = Nothing
+                    }
+
+                "missed" ->
+                    { english = "Missed session by beneficiaries"
+                    , kinyarwanda = Nothing
+                    }
+
+                "malnourished" ->
+                    { english = "Malnourished beneficiaries"
+                    , kinyarwanda = Nothing
+                    }
+
+                _ ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
 
         BeneficiariesTableLabel ->
             { english = "Grouped by age (Months)"

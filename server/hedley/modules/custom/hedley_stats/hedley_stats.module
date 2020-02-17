@@ -134,7 +134,6 @@ function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_
   // Store in cache.
   cache_set($health_center_cache_id, array_values($result), 'cache', CACHE_TEMPORARY);
 
-
   return array_values($result);
 }
 
