@@ -13,7 +13,7 @@ class HedleyRestfulResources extends HedleyRestfulPrenatalActivityBase {
   /**
    * {@inheritdoc}
    */
-  protected $fields = [
+  protected $multi_fields = [
     'field_resources',
   ];
 

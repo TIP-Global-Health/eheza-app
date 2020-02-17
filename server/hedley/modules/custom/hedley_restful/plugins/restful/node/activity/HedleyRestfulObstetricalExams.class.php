@@ -21,4 +21,17 @@ class HedleyRestfulObstetricalExams extends HedleyRestfulPrenatalActivityBase {
     'field_c_section_scar',
   ];
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    $items = parent::postExecuteQueryForViewWithDbSelect($items);
+
+    foreach ($items as &$item) {
+      $item->fetal_movement = (bool) $item->fetal_movement;
+    }
+
+    return $items;
+  }
+
 }

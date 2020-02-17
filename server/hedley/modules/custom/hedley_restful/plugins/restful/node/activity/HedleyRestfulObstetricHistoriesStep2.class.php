@@ -15,14 +15,15 @@ class HedleyRestfulObstetricHistoriesStep2 extends HedleyRestfulPrenatalActivity
    */
   protected $fields = [
     'field_c_sections',
-    'field_c_section_reason',
-    'field_previous_delivery_period',
+
   ];
 
   /**
    * {@inheritdoc}
    */
   protected $multi_fields = [
+    'field_c_section_reason',
+    'field_previous_delivery_period',
     'field_obstetric_history',
     'field_previous_delivery',
   ];
