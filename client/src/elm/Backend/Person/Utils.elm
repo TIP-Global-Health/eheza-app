@@ -1,4 +1,4 @@
-module Backend.Person.Utils exposing (ageInYears, diffInMonths, diffInYears, expectedAgeByPerson, isAdult, isPersonAnAdult, resolveExpectedAge)
+module Backend.Person.Utils exposing (ageInYears, diffInYears, expectedAgeByPerson, isAdult, isPersonAnAdult, resolveExpectedAge)
 
 import Backend.Person.Model exposing (ExpectedAge(..), ParticipantDirectoryOperation(..), Person)
 import Date
@@ -14,11 +14,6 @@ ageInYears currentDate person =
 diffInYears : NominalDate -> Maybe NominalDate -> Maybe Int
 diffInYears currentDate comparedDate =
     Maybe.map (\compared -> Date.diff Date.Years compared currentDate) comparedDate
-
-
-diffInMonths : NominalDate -> NominalDate -> Int
-diffInMonths currentDate comparedDate =
-    Date.diff Date.Months comparedDate currentDate
 
 
 isAdult : NominalDate -> Maybe NominalDate -> Maybe Bool

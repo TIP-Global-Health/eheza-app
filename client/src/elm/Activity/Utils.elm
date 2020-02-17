@@ -35,12 +35,11 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (diffInMonths)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (..)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
 import EverySet
-import Gizra.NominalDate exposing (NominalDate, diffDays)
+import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths)
 import LocalData
 import Maybe.Extra exposing (isJust, isNothing)
 
@@ -188,7 +187,7 @@ expectChildActivity currentDate session childId activity =
                 |> Maybe.andThen .birthDate
                 |> Maybe.map
                     (\birthDate ->
-                        if diffInMonths currentDate birthDate < 6 then
+                        if diffMonths birthDate currentDate < 6 then
                             False
 
                         else
