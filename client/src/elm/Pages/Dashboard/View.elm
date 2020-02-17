@@ -1,16 +1,14 @@
 module Pages.Dashboard.View exposing (view)
 
-import Array exposing (Array)
 import AssocList as Dict exposing (Dict)
 import Backend.Dashboard.Model exposing (DashboardStats)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString)
 import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model
 import Color exposing (Color)
 import Date exposing (Unit(..), fromCalendarDate, isBetween)
-import Gizra.NominalDate exposing (NominalDate, diffCalendarMonthsAndDays, isDiffTruthy)
+import Gizra.NominalDate exposing (NominalDate, isDiffTruthy)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
@@ -20,9 +18,9 @@ import Path
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
 import Svg.Attributes exposing (cx, cy, height, r, width)
-import Translate exposing (Language, translate, translateText)
+import Translate exposing (Language, translateText)
 import TypedSvg exposing (g, svg)
-import TypedSvg.Attributes exposing (fill, stroke, transform, viewBox)
+import TypedSvg.Attributes exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (Fill(..), Transform(..))
 
@@ -394,26 +392,47 @@ getFamilyPlanningSignsCounter stats =
 familyPlanningSignToColor : FamilyPlanningSign -> Color
 familyPlanningSignToColor sign =
     case sign of
-        Condoms ->
-            Color.red
-
-        IUD ->
-            Color.orange
-
-        Implant ->
-            Color.yellow
-
-        Injection ->
-            Color.green
-
-        Necklace ->
+        AutoObservation ->
             Color.blue
 
-        NoFamilyPlanning ->
+        Condoms ->
+            Color.lightOrange
+
+        CycleBeads ->
+            Color.orange
+
+        CycleCounting ->
+            Color.purple
+
+        Hysterectomy ->
+            Color.lightPurple
+
+        Implants ->
             Color.black
 
-        Pill ->
-            Color.purple
+        Injectables ->
+            Color.lightGreen
+
+        NoFamilyPlanning ->
+            Color.grey
+
+        IUD ->
+            Color.darkGreen
+
+        LactationAmenorrhea ->
+            Color.darkOrange
+
+        OralContraceptives ->
+            Color.darkPurple
+
+        Spermicide ->
+            Color.darkBlue
+
+        TubalLigatures ->
+            Color.lightRed
+
+        Vasectomy ->
+            Color.lightGreen
 
 
 
@@ -433,13 +452,20 @@ h =
 colors : Dict FamilyPlanningSign Color
 colors =
     Dict.fromList
-        [ ( Condoms, familyPlanningSignToColor Condoms )
-        , ( IUD, familyPlanningSignToColor IUD )
-        , ( Implant, familyPlanningSignToColor Implant )
-        , ( Injection, familyPlanningSignToColor Injection )
-        , ( Necklace, familyPlanningSignToColor Necklace )
+        [ ( AutoObservation, familyPlanningSignToColor AutoObservation )
+        , ( Condoms, familyPlanningSignToColor Condoms )
+        , ( CycleBeads, familyPlanningSignToColor CycleBeads )
+        , ( CycleCounting, familyPlanningSignToColor CycleCounting )
+        , ( Hysterectomy, familyPlanningSignToColor Hysterectomy )
+        , ( Implants, familyPlanningSignToColor Implants )
+        , ( Injectables, familyPlanningSignToColor Injectables )
         , ( NoFamilyPlanning, familyPlanningSignToColor NoFamilyPlanning )
-        , ( Pill, familyPlanningSignToColor Pill )
+        , ( IUD, familyPlanningSignToColor IUD )
+        , ( LactationAmenorrhea, familyPlanningSignToColor LactationAmenorrhea )
+        , ( OralContraceptives, familyPlanningSignToColor OralContraceptives )
+        , ( Spermicide, familyPlanningSignToColor Spermicide )
+        , ( TubalLigatures, familyPlanningSignToColor TubalLigatures )
+        , ( Vasectomy, familyPlanningSignToColor Vasectomy )
         ]
 
 
