@@ -2,9 +2,10 @@ module Pages.Router exposing (activePageByUrl, pageToFragment)
 
 import Activity.Model exposing (Activity)
 import Activity.Utils
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString, encoudeIndividualEncounterTypeAsString)
 import Backend.Person.Model exposing (RegistrationInitiator(..))
+import Backend.Person.Utils exposing (decodeRegistrationInitiatorFromString)
 import Pages.Page exposing (..)
 import PrenatalActivity.Model exposing (PrenatalActivity)
 import PrenatalActivity.Utils
@@ -60,14 +61,30 @@ pageToFragment current =
                 MyAccountPage ->
                     Just "my-account"
 
-                CreatePersonPage relationId _ ->
+                CreatePersonPage relationId initiator ->
                     let
+                        origin =
+                            case initiator of
+                                ParticipantDirectoryOrigin ->
+                                    "directory"
+
+                                IndividualEncounterOrigin encounterType ->
+                                    case encounterType of
+                                        AntenatalEncounter ->
+                                            "antenatal"
+
+                                        InmmunizationEncounter ->
+                                            "inmmunization"
+
+                                        NutritionEncounter ->
+                                            "nutrition"
+
                         relation =
                             relationId
                                 |> Maybe.map (\id -> "/" ++ fromEntityUuid id)
                                 |> Maybe.withDefault ""
                     in
-                    Just ("person/new" ++ relation)
+                    Just ("person/" ++ origin ++ "/new" ++ relation)
 
                 EditPersonPage id ->
                     Just ("person/" ++ fromEntityUuid id ++ "/edit")
@@ -157,8 +174,8 @@ parser =
         , map (\id page -> UserPage <| SessionPage id page) (s "session" </> parseUuid </> parseSessionPage)
         , map (UserPage <| PersonsPage Nothing) (s "persons")
         , map (\id -> UserPage <| PersonsPage (Just id)) (s "relations" </> parseUuid)
-        , map (\id -> UserPage <| CreatePersonPage (Just id) ParticipantDirectoryOrigin) (s "person" </> s "new" </> parseUuid)
-        , map (UserPage <| CreatePersonPage Nothing ParticipantDirectoryOrigin) (s "person" </> s "new")
+        , map (\origin id -> UserPage <| CreatePersonPage (Just id) origin) (s "person" </> parseOrigin </> s "new" </> parseUuid)
+        , map (\origin -> UserPage <| CreatePersonPage Nothing origin) (s "person" </> parseOrigin </> s "new")
         , map (\id -> UserPage <| EditPersonPage id) (s "person" </> parseUuid </> s "edit")
         , map (\id -> UserPage <| PersonPage id) (s "person" </> parseUuid)
         , map (\id -> UserPage <| PrenatalParticipantPage id) (s "prenatal-participant" </> parseUuid)
@@ -208,3 +225,8 @@ parsePrenatalActivity =
 parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c
 parseIndividualEncounterType =
     custom "IndividualEncounterType" decodeIndividualEncounterTypeFromString
+
+
+parseOrigin : Parser (RegistrationInitiator -> c) c
+parseOrigin =
+    custom "RegistrationInitiator" decodeRegistrationInitiatorFromString

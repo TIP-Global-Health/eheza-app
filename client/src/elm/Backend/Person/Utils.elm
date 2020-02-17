@@ -1,6 +1,7 @@
-module Backend.Person.Utils exposing (ageInYears, diffInYears, expectedAgeByPerson, isAdult, isPersonAFertileWoman, isPersonAnAdult, resolveExpectedAge)
+module Backend.Person.Utils exposing (ageInYears, decodeRegistrationInitiatorFromString, diffInYears, expectedAgeByPerson, isAdult, isPersonAFertileWoman, isPersonAnAdult, resolveExpectedAge)
 
-import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), ParticipantDirectoryOperation(..), Person)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), ParticipantDirectoryOperation(..), Person, RegistrationInitiator(..))
 import Date
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
@@ -79,3 +80,22 @@ resolveExpectedAge currentDate birthDate operation =
 
         Nothing ->
             ExpectAdultOrChild
+
+
+decodeRegistrationInitiatorFromString : String -> Maybe RegistrationInitiator
+decodeRegistrationInitiatorFromString s =
+    case s of
+        "directory" ->
+            Just ParticipantDirectoryOrigin
+
+        "antenatal" ->
+            IndividualEncounterOrigin AntenatalEncounter |> Just
+
+        "inmmunization" ->
+            IndividualEncounterOrigin InmmunizationEncounter |> Just
+
+        "nutrition" ->
+            IndividualEncounterOrigin NutritionEncounter |> Just
+
+        _ ->
+            Nothing
