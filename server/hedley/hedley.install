@@ -220,10 +220,10 @@ function hedley_standard_install() {
   // Set this as the administrator role.
   variable_set('user_admin_role', $admin_role->rid);
 
-  // Creating a Health worker role and add the permissions.
-  $health_worker_role = new stdClass();
-  $health_worker_role->name = 'health worker';
-  user_role_save($health_worker_role);
+  // Creating a E-ledger viewer role and add the permissions.
+  $ledger_viewer_role = new stdClass();
+  $ledger_viewer_role->name = 'E-ledger viewer';
+  user_role_save($ledger_viewer_role);
 
   // Creating a Nurse role and add the permissions.
   $nurse_role = new stdClass();
@@ -538,10 +538,10 @@ function hedley_update_7021() {
 }
 
 /**
- * Health worker role.
+ * E-ledger viewer role.
  */
 function hedley_update_7022() {
-  $health_worker_role = new stdClass();
-  $health_worker_role->name = 'health worker';
-  user_role_save($health_worker_role);
+  $ledger_viewer_role = new stdClass();
+  $ledger_viewer_role->name = 'E-ledger viewer';
+  user_role_save($ledger_viewer_role);
 }

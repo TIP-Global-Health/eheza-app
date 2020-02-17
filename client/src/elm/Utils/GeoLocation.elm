@@ -1,13 +1,10 @@
 module Utils.GeoLocation exposing (GeoInfo, ReverseGeoInfo, geoInfo, getGeoLocation, reverseGeoInfo)
 
-import AllDict
-import Dict exposing (Dict)
-import EveryDict exposing (EveryDict)
+import AssocList as Dict exposing (Dict)
 import Restful.Endpoint exposing (EntityId, toEntityId)
-import Utils.EntityIdDict as EntityIdDict exposing (EntityIdDict)
 
 
-{-| This is here to have a partially type-safe key for the EveryDict.
+{-| This is here to have a partially type-safe key for the Dict.
 We're not actually storing these on the backend at the moment, and if
 we did, they would need to be an EntityUuid rather than an EntityId.
 -}
@@ -20,11 +17,11 @@ type GeoLocationIdType
 
 
 type alias GeoInfo =
-    { provinces : EntityIdDict GeoLocationId GeoLocation
-    , districts : EntityIdDict GeoLocationId GeoLocation
-    , sectors : EntityIdDict GeoLocationId GeoLocation
-    , cells : EntityIdDict GeoLocationId GeoLocation
-    , villages : EntityIdDict GeoLocationId GeoLocation
+    { provinces : Dict GeoLocationId GeoLocation
+    , districts : Dict GeoLocationId GeoLocation
+    , sectors : Dict GeoLocationId GeoLocation
+    , cells : Dict GeoLocationId GeoLocation
+    , villages : Dict GeoLocationId GeoLocation
     }
 
 
@@ -53,7 +50,7 @@ type alias Name =
 
 
 type alias ReverseGeoInfo =
-    EveryDict (Maybe ParentId) (Dict Name ( GeoLocationId, GeoLocation ))
+    Dict (Maybe ParentId) (Dict Name ( GeoLocationId, GeoLocation ))
 
 
 reverseGeoInfo : ReverseGeoInfo
@@ -66,13 +63,13 @@ reverseGeoInfo =
                 |> Just
 
         addGeo id loc accum =
-            EveryDict.update loc.parent (merge id loc) accum
+            Dict.update loc.parent (merge id loc) accum
 
         handleSource source accum =
-            AllDict.foldl addGeo accum source
+            Dict.foldl addGeo accum source
     in
     List.foldl handleSource
-        EveryDict.empty
+        Dict.empty
         [ geoInfo.provinces
         , geoInfo.districts
         , geoInfo.sectors
@@ -83,27 +80,27 @@ reverseGeoInfo =
 
 getGeoLocation : Maybe ParentId -> Name -> Maybe ( GeoLocationId, GeoLocation )
 getGeoLocation parent name =
-    EveryDict.get parent reverseGeoInfo
+    Dict.get parent reverseGeoInfo
         |> Maybe.andThen (Dict.get name)
 
 
-getGeoProvinces : EntityIdDict GeoLocationId GeoLocation
+getGeoProvinces : Dict GeoLocationId GeoLocation
 getGeoProvinces =
-    EntityIdDict.fromList
+    Dict.fromList
         [ ( toEntityId 1, GeoLocation "Amajyaruguru" Nothing ) ]
 
 
-getGeoDistricts : EntityIdDict GeoLocationId GeoLocation
+getGeoDistricts : Dict GeoLocationId GeoLocation
 getGeoDistricts =
-    EntityIdDict.fromList
+    Dict.fromList
         [ ( toEntityId 2, GeoLocation "Gakenke" (Just <| toEntityId 1) )
         , ( toEntityId 736, GeoLocation "Rulindo" (Just <| toEntityId 1) )
         ]
 
 
-getGeoSectors : EntityIdDict GeoLocationId GeoLocation
+getGeoSectors : Dict GeoLocationId GeoLocation
 getGeoSectors =
-    EntityIdDict.fromList
+    Dict.fromList
         [ ( toEntityId 3, GeoLocation "Busengo" (Just <| toEntityId 2) )
         , ( toEntityId 49, GeoLocation "Coko" (Just <| toEntityId 2) )
         , ( toEntityId 82, GeoLocation "Cyabingo" (Just <| toEntityId 2) )
@@ -144,9 +141,9 @@ getGeoSectors =
         ]
 
 
-getGeoCells : EntityIdDict GeoLocationId GeoLocation
+getGeoCells : Dict GeoLocationId GeoLocation
 getGeoCells =
-    EntityIdDict.fromList
+    Dict.fromList
         [ ( toEntityId 4, GeoLocation "Birambo" (Just <| toEntityId 3) )
         , ( toEntityId 9, GeoLocation "Butereri" (Just <| toEntityId 3) )
         , ( toEntityId 17, GeoLocation "Byibuhiro" (Just <| toEntityId 3) )
@@ -319,9 +316,9 @@ getGeoCells =
         ]
 
 
-getGeoVillages : EntityIdDict GeoLocationId GeoLocation
+getGeoVillages : Dict GeoLocationId GeoLocation
 getGeoVillages =
-    EntityIdDict.fromList <|
+    Dict.fromList <|
         [ ( toEntityId 5, GeoLocation "Birambo" (Just <| toEntityId 4) )
         , ( toEntityId 6, GeoLocation "Gitwa" (Just <| toEntityId 4) )
         , ( toEntityId 7, GeoLocation "Kirwa" (Just <| toEntityId 4) )

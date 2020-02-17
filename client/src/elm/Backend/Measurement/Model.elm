@@ -4,14 +4,13 @@ module Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, Chi
 and cached in local storage.
 -}
 
+import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate.Model exposing (Language)
-import Utils.EntityUuidDict as EntityUuidDict exposing (EntityUuidDict)
-import Utils.EntityUuidDictList as EntityUuidDictList exposing (EntityUuidDictList)
 
 
 
@@ -162,17 +161,17 @@ type SavedMeasurement
 
 
 type alias MotherMeasurementList =
-    { attendances : EntityUuidDictList AttendanceId Attendance
-    , familyPlannings : EntityUuidDictList FamilyPlanningId FamilyPlanning
-    , consents : EntityUuidDictList ParticipantConsentId ParticipantConsent
+    { attendances : Dict AttendanceId Attendance
+    , familyPlannings : Dict FamilyPlanningId FamilyPlanning
+    , consents : Dict ParticipantConsentId ParticipantConsent
     }
 
 
 emptyMotherMeasurementList : MotherMeasurementList
 emptyMotherMeasurementList =
-    { attendances = EntityUuidDictList.empty
-    , familyPlannings = EntityUuidDictList.empty
-    , consents = EntityUuidDictList.empty
+    { attendances = Dict.empty
+    , familyPlannings = Dict.empty
+    , consents = Dict.empty
     }
 
 
@@ -185,23 +184,23 @@ simple with a `List` and see how that goes.
 
 -}
 type alias ChildMeasurementList =
-    { heights : EntityUuidDictList HeightId Height
-    , muacs : EntityUuidDictList MuacId Muac
-    , nutritions : EntityUuidDictList ChildNutritionId ChildNutrition
-    , photos : EntityUuidDictList PhotoId Photo
-    , weights : EntityUuidDictList WeightId Weight
-    , counselingSessions : EntityUuidDictList CounselingSessionId CounselingSession
+    { heights : Dict HeightId Height
+    , muacs : Dict MuacId Muac
+    , nutritions : Dict ChildNutritionId ChildNutrition
+    , photos : Dict PhotoId Photo
+    , weights : Dict WeightId Weight
+    , counselingSessions : Dict CounselingSessionId CounselingSession
     }
 
 
 emptyChildMeasurementList : ChildMeasurementList
 emptyChildMeasurementList =
-    { heights = EntityUuidDictList.empty
-    , muacs = EntityUuidDictList.empty
-    , nutritions = EntityUuidDictList.empty
-    , photos = EntityUuidDictList.empty
-    , weights = EntityUuidDictList.empty
-    , counselingSessions = EntityUuidDictList.empty
+    { heights = Dict.empty
+    , muacs = Dict.empty
+    , nutritions = Dict.empty
+    , photos = Dict.empty
+    , weights = Dict.empty
+    , counselingSessions = Dict.empty
     }
 
 
@@ -209,15 +208,15 @@ emptyChildMeasurementList =
 our convenience.
 -}
 type alias HistoricalMeasurements =
-    { mothers : EntityUuidDict PersonId MotherMeasurementList
-    , children : EntityUuidDict PersonId ChildMeasurementList
+    { mothers : Dict PersonId MotherMeasurementList
+    , children : Dict PersonId ChildMeasurementList
     }
 
 
 emptyHistoricalMeasurements : HistoricalMeasurements
 emptyHistoricalMeasurements =
-    { mothers = EntityUuidDict.empty
-    , children = EntityUuidDict.empty
+    { mothers = Dict.empty
+    , children = Dict.empty
     }
 
 
@@ -262,7 +261,7 @@ So, it is a `List` (possibly empty) rather than a `Maybe`.
 type alias MotherMeasurements =
     { attendance : Maybe ( AttendanceId, Attendance )
     , familyPlanning : Maybe ( FamilyPlanningId, FamilyPlanning )
-    , consent : EntityUuidDictList ParticipantConsentId ParticipantConsent
+    , consent : Dict ParticipantConsentId ParticipantConsent
     }
 
 
@@ -270,20 +269,20 @@ emptyMotherMeasurements : MotherMeasurements
 emptyMotherMeasurements =
     { attendance = Nothing
     , familyPlanning = Nothing
-    , consent = EntityUuidDictList.empty
+    , consent = Dict.empty
     }
 
 
 type alias Measurements =
-    { mothers : EntityUuidDict PersonId MotherMeasurements
-    , children : EntityUuidDict PersonId ChildMeasurements
+    { mothers : Dict PersonId MotherMeasurements
+    , children : Dict PersonId ChildMeasurements
     }
 
 
 emptyMeasurements : Measurements
 emptyMeasurements =
-    { mothers = EntityUuidDict.empty
-    , children = EntityUuidDict.empty
+    { mothers = Dict.empty
+    , children = Dict.empty
     }
 
 

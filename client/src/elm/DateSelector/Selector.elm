@@ -6,13 +6,13 @@ module DateSelector.Selector exposing (view)
 
 -}
 
-import Date exposing (Date, Month(..), day, month, year)
-import Date.Extra as Date exposing (Interval(..), numberToMonth)
+import Date exposing (Date, Interval(..), Unit(..), day, month, numberToMonth, year)
 import Html exposing (Html, div, li, ol, table, tbody, td, text, th, thead, tr)
 import Html.Attributes exposing (class, classList, property)
 import Html.Events exposing (on)
 import Json.Decode
 import Json.Encode
+import Time exposing (Month(..), Weekday(..))
 
 
 groupsOf : Int -> List a -> List (List a)
@@ -35,7 +35,7 @@ monthDates y m =
         start =
             Date.floor Monday <| Date.fromCalendarDate y m 1
     in
-    Date.range Day 1 start <| Date.add Day 42 start
+    Date.range Day 1 start <| Date.add Days 42 start
 
 
 dateWithYear : Date -> Int -> Date
@@ -68,7 +68,7 @@ dateWithMonth date m =
 
 isLeapYear : Int -> Bool
 isLeapYear y =
-    y % 4 == 0 && y % 100 /= 0 || y % 400 == 0
+    modBy 4 y == 0 && modBy 100 y /= 0 || modBy 400 y == 0
 
 
 daysInMonth : Int -> Month -> Int
@@ -235,7 +235,7 @@ viewYearList minimum maximum maybeSelected =
                             else
                                 Json.Encode.null
                         ]
-                        [ text (toString y) ]
+                        [ text (String.fromInt y) ]
                 )
         )
 
@@ -347,8 +347,8 @@ viewDateTable minimum maximum selected =
         , tbody
             [ on "click" <|
                 Json.Decode.map
-                    Date.fromTime
-                    (Json.Decode.at [ "target", "time" ] Json.Decode.float)
+                    Date.fromRataDie
+                    (Json.Decode.at [ "target", "time" ] Json.Decode.int)
             ]
             (weeks
                 |> List.map
@@ -358,8 +358,13 @@ viewDateTable minimum maximum selected =
                                 |> List.map
                                     (\date ->
                                         let
+                                            equalByDay date1 date2 =
+                                                (day date1 == day date2)
+                                                    && (month date1 == month date2)
+                                                    && (year date1 == year date2)
+
                                             state =
-                                                if Date.equalBy Day date selected then
+                                                if equalByDay date selected then
                                                     Selected
 
                                                 else if not (Date.isBetween minimum maximum date) || isInvertedMinMax then
@@ -375,12 +380,12 @@ viewDateTable minimum maximum selected =
                                             [ class <| classNameFromState state
                                             , property "time" <|
                                                 if isSelectable state then
-                                                    Json.Encode.float (Date.toTime date)
+                                                    Json.Encode.int (Date.toRataDie date)
 
                                                 else
                                                     Json.Encode.null
                                             ]
-                                            [ text (day date |> toString) ]
+                                            [ text (day date |> String.fromInt) ]
                                     )
                             )
                     )
@@ -406,10 +411,10 @@ viewDateTableDisabled date =
                         tr []
                             (week
                                 |> List.map
-                                    (\date ->
+                                    (\date_ ->
                                         td
                                             [ class disabled ]
-                                            [ text (day date |> toString) ]
+                                            [ text (day date_ |> String.fromInt) ]
                                     )
                             )
                     )

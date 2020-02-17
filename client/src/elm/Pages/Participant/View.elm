@@ -11,7 +11,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (onClick)
-import Lazy exposing (force)
+import LocalData
 import Maybe.Extra
 import Measurement.Model
 import Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getMotherForm)
@@ -153,16 +153,18 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                 case selectedActivity of
                     Just activity ->
                         let
-                            measurements =
-                                getChildMeasurementData childId session
-
                             form =
                                 getChildForm childId pages session
                         in
-                        [ Measurement.View.viewChild language currentDate child activity (force measurements) zscores session form
-                            |> Html.map MsgMeasurement
-                            |> keyed "content"
-                        ]
+                        getChildMeasurementData childId session
+                            |> LocalData.unwrap
+                                []
+                                (\measurements ->
+                                    [ Measurement.View.viewChild language currentDate child activity measurements zscores session form
+                                        |> Html.map MsgMeasurement
+                                        |> keyed "content"
+                                    ]
+                                )
 
                     Nothing ->
                         []
@@ -225,7 +227,7 @@ viewFoundMother language ( motherId, mother ) ( sessionId, session ) pages model
             getChildren motherId session.offlineSession
                 |> List.indexedMap
                     (\index ( _, child ) ->
-                        text <| translate language Translate.Baby ++ " " ++ toString (index + 1) ++ ": " ++ child.name
+                        text <| translate language Translate.Baby ++ " " ++ Debug.toString (index + 1) ++ ": " ++ child.name
                     )
                 |> List.intersperse break
 
@@ -267,16 +269,18 @@ viewFoundMother language ( motherId, mother ) ( sessionId, session ) pages model
             case selectedActivity of
                 Just activity ->
                     let
-                        measurements =
-                            getMotherMeasurementData motherId session
-
                         form =
                             getMotherForm motherId pages session
                     in
-                    [ Measurement.View.viewMother language activity (force measurements) form
-                        |> Html.map MsgMeasurement
-                        |> keyed "content"
-                    ]
+                    getMotherMeasurementData motherId session
+                        |> LocalData.unwrap
+                            []
+                            (\measurements ->
+                                [ Measurement.View.viewMother language activity measurements form
+                                    |> Html.map MsgMeasurement
+                                    |> keyed "content"
+                                ]
+                            )
 
                 Nothing ->
                     []
@@ -442,9 +446,9 @@ viewFamilyLinks config language participantId ( sessionId, session ) =
 
         -- Generate markup for each child
         childrenMarkup =
-            List.indexedMap viewChild children
+            List.indexedMap viewChildMarkup children
 
-        viewChild index childId =
+        viewChildMarkup index childId =
             let
                 -- This determines whether this child is the one we were given
                 active =
@@ -467,16 +471,16 @@ viewFamilyLinks config language participantId ( sessionId, session ) =
                     [ span [ class "icon-baby" ] []
                     , span
                         [ class "count" ]
-                        [ text <| toString (index + 1) ]
+                        [ text <| Debug.toString (index + 1) ]
                     ]
                 ]
 
         motherMarkup =
-            Maybe.map viewMother maybeMotherId
+            Maybe.map viewMotherMarkup maybeMotherId
                 |> Maybe.Extra.toList
 
         -- Generate the markup for the mother, given a definite motherId
-        viewMother motherId =
+        viewMotherMarkup motherId =
             let
                 -- Figures out whether we're actually looking at this mother
                 active =

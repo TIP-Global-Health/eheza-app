@@ -1,27 +1,23 @@
 module Utils.Json exposing
-    ( decodeDate
+    ( decodeArray2
     , decodeEmptyArrayAsEmptyDict
     , decodeError
     , decodeEverySet
-    , decodeListAsDict
-    , decodeListAsDictByProperty
-    , decodeListAsIntDict
-    , decodeListAsIntDictByProperty
     , decodeNullAsEmptyArray
     )
 
+import AssocList as Dict exposing (Dict)
 import Date exposing (Date)
-import Dict exposing (Dict)
 import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
-import Json.Decode exposing (Decoder, andThen, dict, fail, field, float, index, int, list, map, map2, nullable, oneOf, string, succeed, value)
-import Json.Decode.Extra exposing (date)
+import Json.Decode exposing (Decoder, andThen, decodeString, dict, fail, field, float, index, int, list, map, map2, nullable, oneOf, string, succeed, value)
 
 
-decodeDate : Decoder Date
-decodeDate =
-    string
-        |> andThen (\val -> date)
+decodeArray2 : Decoder k -> Decoder v -> Decoder (Dict k v)
+decodeArray2 keyDecoder valueDecoder =
+    Json.Decode.map2 (\k v -> ( k, v )) keyDecoder valueDecoder
+        |> Json.Decode.list
+        |> Json.Decode.map Dict.fromList
 
 
 decodeEmptyArrayAsEmptyDict : Decoder (Dict.Dict k v)
@@ -37,45 +33,13 @@ decodeEmptyArrayAsEmptyDict =
                     succeed Dict.empty
 
                 else
-                    fail <| "Expected an empty array, not an array with length: " ++ toString length
+                    fail <| "Expected an empty array, not an array with length: " ++ Debug.toString length
             )
 
 
 decodeError : Decoder String
 decodeError =
     field "title" string
-
-
-decodeListAsDict : Decoder a -> Decoder (Dict String a)
-decodeListAsDict decoder =
-    decodeListAsDictByProperty "id" decodeInt decoder toString
-
-
-decodeListAsIntDict : Decoder a -> Decoder (Dict Int a)
-decodeListAsIntDict decoder =
-    decodeListAsIntDictByProperty "id" decodeInt decoder identity
-
-
-decodeListAsDictByProperty : String -> Decoder a -> Decoder v -> (a -> comparable) -> Decoder (Dict String v)
-decodeListAsDictByProperty property keyDecoder valDecoder stringFunc =
-    list (map2 (,) (field property keyDecoder) valDecoder)
-        |> andThen
-            (\valList ->
-                List.map (\( id, value ) -> ( stringFunc id, value )) valList
-                    |> Dict.fromList
-                    |> succeed
-            )
-
-
-decodeListAsIntDictByProperty : String -> Decoder a -> Decoder v -> (a -> comparable) -> Decoder (Dict Int v)
-decodeListAsIntDictByProperty property keyDecoder valDecoder stringFunc =
-    list (map2 (,) (field property keyDecoder) valDecoder)
-        |> andThen
-            (\valList ->
-                List.map (\( id, value ) -> ( stringFunc id, value )) valList
-                    |> Dict.fromList
-                    |> succeed
-            )
 
 
 decodeNullAsEmptyArray : Decoder (List a)
@@ -88,7 +52,7 @@ decodeNullAsEmptyArray =
                         succeed []
 
                     Just res ->
-                        fail <| "Expected Null, not an array with length: " ++ (toString <| List.length res)
+                        fail <| "Expected Null, not an array with length: " ++ (Debug.toString <| List.length res)
             )
 
 

@@ -1,7 +1,7 @@
 module Pages.Activity.View exposing (view)
 
 import Activity.Utils exposing (getActivityIcon)
-import AllDictList
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Session.Model exposing (EditableSession)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed)
@@ -9,8 +9,8 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Lazy exposing (force)
 import List as List
+import LocalData
 import Maybe.Extra
 import Pages.Activity.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Session.Model
@@ -41,12 +41,18 @@ view : Participant id value activity msg -> Language -> NominalDate -> ZScore.Mo
 view config language currentDate zscores selectedActivity ( sessionId, session ) pages model =
     let
         participants =
-            config.summarizeParticipantsForActivity selectedActivity session.offlineSession (force session.checkedIn)
-                |> applyNameFilter
+            session.checkedIn
+                |> LocalData.unwrap
+                    { completed = Dict.empty
+                    , pending = Dict.empty
+                    }
+                    (config.summarizeParticipantsForActivity selectedActivity session.offlineSession
+                        >> applyNameFilter
+                    )
 
         applyNameFilter { pending, completed } =
-            { pending = AllDictList.filter filterParticipantNames pending
-            , completed = AllDictList.filter filterParticipantNames completed
+            { pending = Dict.filter filterParticipantNames pending
+            , completed = Dict.filter filterParticipantNames completed
             }
 
         filterParticipantNames _ participant =
@@ -71,12 +77,12 @@ view config language currentDate zscores selectedActivity ( sessionId, session )
         tabs =
             let
                 pendingTabTitle =
-                    AllDictList.size participants.pending
+                    Dict.size participants.pending
                         |> Translate.ActivitiesToComplete
                         |> translate language
 
                 completedTabTitle =
-                    AllDictList.size participants.completed
+                    Dict.size participants.completed
                         |> Translate.ActivitiesCompleted
                         |> translate language
             in
@@ -92,25 +98,25 @@ view config language currentDate zscores selectedActivity ( sessionId, session )
                     model.selectedParticipant
                         |> Maybe.andThen
                             (\participant ->
-                                if AllDictList.member participant participants.completed then
+                                if Dict.member participant participants.completed then
                                     Just participant
 
                                 else
                                     Nothing
                             )
-                        |> Maybe.Extra.orElse (Maybe.map Tuple.first (AllDictList.head participants.completed))
+                        |> Maybe.Extra.orElse (Maybe.map Tuple.first (Dict.toList participants.completed |> List.head))
 
                 Pending ->
                     model.selectedParticipant
                         |> Maybe.andThen
                             (\participant ->
-                                if AllDictList.member participant participants.pending then
+                                if Dict.member participant participants.pending then
                                     Just participant
 
                                 else
                                     Nothing
                             )
-                        |> Maybe.Extra.orElse (Maybe.map Tuple.first (AllDictList.head participants.pending))
+                        |> Maybe.Extra.orElse (Maybe.map Tuple.first (Dict.toList participants.pending |> List.head))
 
         participantsHtml =
             let
@@ -150,12 +156,12 @@ view config language currentDate zscores selectedActivity ( sessionId, session )
                         ]
 
                 participantsCards =
-                    if AllDictList.size selectedParticipants == 0 then
+                    if Dict.size selectedParticipants == 0 then
                         [ span [] [ text emptySectionMessage ] ]
 
                     else
                         selectedParticipants
-                            |> AllDictList.toList
+                            |> Dict.toList
                             |> List.map viewParticipantCard
             in
             div

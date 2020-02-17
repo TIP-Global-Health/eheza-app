@@ -14,13 +14,13 @@ far it doesn't seem to be a performance problem, so no premature optimization!
 
 -}
 
-import AllDict exposing (AllDict)
 import Html exposing (Html)
 import RemoteData
 import Round
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Translate exposing (ChartPhrase(..), Language, TranslationId(ChartPhrase), translate)
+import Translate exposing (ChartPhrase(..), Language, TranslationId(..), translate)
+import Utils.AllDict as AllDict exposing (AllDict)
 import Utils.NominalDate exposing (Days(..))
 import ZScore.Model exposing (..)
 import ZScore.Utils exposing (valueForZScore)
@@ -106,7 +106,7 @@ type alias Bounds =
 
 heightForAgeConfig : PlotConfig Days Centimetres
 heightForAgeConfig =
-    { toFloatX = \(Days days) -> toFloat days
+    { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
     , toFloatY = \(Centimetres cm) -> cm
     , input = { minY = 42, maxY = 99, minX = 0, maxX = 365 * 2 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
@@ -116,7 +116,7 @@ heightForAgeConfig =
 
 weightForAgeConfig : PlotConfig Days Kilograms
 weightForAgeConfig =
-    { toFloatX = \(Days days) -> toFloat days
+    { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
     , toFloatY = \(Kilograms kg) -> kg
     , input = { minY = 1.4, maxY = 17.8, minX = 0, maxX = 365 * 2 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
