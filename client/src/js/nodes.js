@@ -39,13 +39,13 @@
                         return event.respondWith(viewMeasurements('person', uuid));
                     }
                     else if (type === 'prenatal-measurements') {
-                      return event.respondWith(viewMeasurements('prenatal_encounter', uuid));
+                        return event.respondWith(viewMeasurements('prenatal_encounter', uuid));
                     }
                     else {
                         return event.respondWith(view(type, uuid));
                     }
                 } else {
-                    return event.respondWith(index(url, type));
+                      return event.respondWith(index(url, type));
                 }
             }
 
