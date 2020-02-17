@@ -742,6 +742,10 @@ h3.ui.header {
               margin-left: 2px;
               margin-top: 2px;
 
+              &.edit {
+                background: url(#{$img-path}icon-edit.svg) no-repeat center;
+              }
+
               &.forward {
                 background: url(#{$img-path}icon-forward.svg) no-repeat center;
               }

@@ -59,7 +59,19 @@ function hedley_activity_node_update($node) {
   entity_get_controller('node')->resetCache([$node->nid]);
 
   if ($node->type == 'person') {
-    hedley_activity_handle_child_zscores($node->nid);
+    // Recalculate z-score values when gender or birth date changes.
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper_orig = entity_metadata_wrapper('node', $node->original);
+
+    $birth_date = $wrapper->field_birth_date->value();
+    $birth_date_orig = $wrapper_orig->field_birth_date->value();
+    $gender = $wrapper->field_gender->value();
+    $gender_orig = $wrapper_orig->field_gender->value();
+
+    if ($birth_date !== $birth_date_orig || $gender !== $gender_orig) {
+      hedley_activity_handle_child_zscores($node->nid);
+    }
+
     return;
   }
 
