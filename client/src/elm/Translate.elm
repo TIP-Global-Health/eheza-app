@@ -1426,7 +1426,7 @@ translationSet trans =
             }
 
         DeliveryLocation ->
-            { english = "Delivery Loaction"
+            { english = "Delivery Location"
             , kinyarwanda = Nothing
             }
 
