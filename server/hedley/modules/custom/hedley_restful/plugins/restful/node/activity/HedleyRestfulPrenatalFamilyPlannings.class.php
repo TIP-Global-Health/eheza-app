@@ -13,7 +13,7 @@ class HedleyRestfulPrenatalFamilyPlannings extends HedleyRestfulPrenatalActivity
   /**
    * {@inheritdoc}
    */
-  protected $multi_fields = [
+  protected $multiFields = [
     'field_family_planning_signs',
   ];
 

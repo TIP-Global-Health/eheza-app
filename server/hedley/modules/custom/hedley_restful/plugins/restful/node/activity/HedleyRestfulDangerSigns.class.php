@@ -13,7 +13,7 @@ class HedleyRestfulDangerSigns extends HedleyRestfulPrenatalActivityBase {
   /**
    * {@inheritdoc}
    */
-  protected $multi_fields = [
+  protected $multiFields = [
     'field_danger_signs',
   ];
 

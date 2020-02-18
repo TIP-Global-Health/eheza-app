@@ -20,13 +20,13 @@ abstract class HedleyRestfulPrenatalActivityBase extends HedleyRestfulActivityBa
    * @var array
    *   A list of fields that are assigned multiple values.
    */
-  protected $multi_fields = [];
+  protected $multiFields = [];
 
   /**
    * @var array
    *   A list of fields that are dates. This is a sub list of $fields.
    */
-  protected $date_fields = [];
+  protected $dateFields = [];
 
   /**
    * {@inheritdoc}
@@ -34,7 +34,7 @@ abstract class HedleyRestfulPrenatalActivityBase extends HedleyRestfulActivityBa
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    foreach (array_merge($this->fields, $this->multi_fields) as $field_name) {
+    foreach (array_merge($this->fields, $this->multiFields) as $field_name) {
       $public_name = str_replace('field_', '', $field_name);
       $public_fields[$public_name] = [
         'property' => $field_name,
@@ -55,11 +55,11 @@ abstract class HedleyRestfulPrenatalActivityBase extends HedleyRestfulActivityBa
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     $query = parent::alterQueryForViewWithDbSelect($query);
 
-    foreach (array_merge($this->fields, $this->multi_fields) as $field_name) {
+    foreach (array_merge($this->fields, $this->multiFields) as $field_name) {
       hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
     }
 
-    foreach ($this->multi_fields as $field_name) {
+    foreach ($this->multiFields as $field_name) {
       $query->addExpression("GROUP_CONCAT(DISTINCT $field_name.{$field_name}_value)", $field_name);
     }
 
@@ -79,12 +79,12 @@ abstract class HedleyRestfulPrenatalActivityBase extends HedleyRestfulActivityBa
     $items = parent::postExecuteQueryForViewWithDbSelect($items);
 
     foreach ($items as &$item) {
-      foreach ($this->multi_fields as $field_name) {
+      foreach ($this->multiFields as $field_name) {
         $public_name = str_replace('field_', '', $field_name);
         $item->{$public_name} = explode(',', $item->{$public_name});
       }
 
-      foreach ($this->date_fields as $field_name) {
+      foreach ($this->dateFields as $field_name) {
         $public_name = str_replace('field_', '', $field_name);
         $date = explode(' ', $item->{$public_name});
         $item->{$public_name} = !empty($date[0]) ? $date[0] : NULL;

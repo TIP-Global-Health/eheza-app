@@ -21,7 +21,7 @@ class HedleyRestfulLastMenstrualPeriods extends HedleyRestfulPrenatalActivityBas
   /**
    * {@inheritdoc}
    */
-  protected $date_fields = [
+  protected $dateFields = [
     'field_last_menstrual_period',
   ];
 

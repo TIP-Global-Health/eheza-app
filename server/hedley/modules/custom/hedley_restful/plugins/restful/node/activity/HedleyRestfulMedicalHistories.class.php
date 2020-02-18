@@ -13,7 +13,7 @@ class HedleyRestfulMedicalHistories extends HedleyRestfulPrenatalActivityBase {
   /**
    * {@inheritdoc}
    */
-  protected $multi_fields = [
+  protected $multiFields = [
     'field_medical_history',
   ];
 

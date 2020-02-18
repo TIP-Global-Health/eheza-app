@@ -20,7 +20,7 @@ class HedleyRestfulBreastExams extends HedleyRestfulPrenatalActivityBase {
   /**
    * {@inheritdoc}
    */
-  protected $multi_fields = [
+  protected $multiFields = [
     'field_breast',
   ];
 

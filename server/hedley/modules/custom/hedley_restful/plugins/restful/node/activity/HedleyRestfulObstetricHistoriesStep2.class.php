@@ -21,7 +21,7 @@ class HedleyRestfulObstetricHistoriesStep2 extends HedleyRestfulPrenatalActivity
   /**
    * {@inheritdoc}
    */
-  protected $multi_fields = [
+  protected $multiFields = [
     'field_c_section_reason',
     'field_previous_delivery_period',
     'field_obstetric_history',

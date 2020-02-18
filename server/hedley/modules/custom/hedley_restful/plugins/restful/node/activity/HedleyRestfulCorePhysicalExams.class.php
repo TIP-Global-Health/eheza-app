@@ -20,7 +20,7 @@ class HedleyRestfulCorePhysicalExams extends HedleyRestfulPrenatalActivityBase {
   /**
    * {@inheritdoc}
    */
-  protected $multi_fields = [
+  protected $multiFields = [
     'field_head_hair',
     'field_eyes',
     'field_heart',
