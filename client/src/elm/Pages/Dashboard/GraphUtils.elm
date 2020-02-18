@@ -126,7 +126,7 @@ familyPlanningSignToColor : FamilyPlanningSign -> Color
 familyPlanningSignToColor sign =
     case sign of
         AutoObservation ->
-            Color.black
+            Color.rgb (6 / 255) (185 / 255) (255 / 255)
 
         Condoms ->
             Color.rgb (255 / 255) (209 / 255) (102 / 255)
