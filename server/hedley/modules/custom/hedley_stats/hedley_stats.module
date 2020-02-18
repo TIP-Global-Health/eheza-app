@@ -269,7 +269,8 @@ function hedley_stats_get_session_attendance_stats_by_period($health_center_id, 
       // Date of the session converted to a format the frontend can read.
       $date = hedley_stats_convert_timestamp_to_nominal($session_wrapper->field_scheduled_date->value->value());
 
-      // Get PMTCT participants by clinic and session dates (all expected people).
+      // Get PMTCT participants by clinic and session dates
+      // (all expected people).
       $pmtct_by_clinic = hedley_stats_get_pmtct_participants_by_clinic($clinic_id, $date, 10000);
 
       if (empty($pmtct_by_clinic)) {
@@ -314,14 +315,15 @@ function hedley_stats_get_session_attendance_stats_by_period($health_center_id, 
             $missed_session[$person_nid] = $expected_people_by_clinic[$person_nid];
           }
 
-          // This person missed the session because they don't have an attendance
-          // entity nor any measurements found for that session on this date so we
-          // add it to the list of dates to be able to filter it in the frontend.
+          // This person missed the session because they don't have an
+          // attendance entity nor any measurements found for that session on
+          // this date so we add it to the list of dates to be able to filter it
+          // in the frontend.
           $missed_session[$person_nid]['dates'][] = $date;
         }
         else {
-          // This person either has an attendance and should definitely have also
-          // measurements so if count of the measurements is 5
+          // This person either has an attendance and should definitely have
+          // also measurements so if count of the measurements is 5
           // (photo, height, weight, muac, nutrition), then we assume the person
           // has completed the program.
           if (count($measurements) == 5) {
