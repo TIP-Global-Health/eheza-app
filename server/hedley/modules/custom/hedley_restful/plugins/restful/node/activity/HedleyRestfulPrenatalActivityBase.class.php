@@ -11,20 +11,23 @@
 abstract class HedleyRestfulPrenatalActivityBase extends HedleyRestfulActivityBase {
 
   /**
+   * A list of fields that are assigned single value.
+   *
    * @var array
-   *   A list of fields that are assigned single value.
    */
   protected $fields = [];
 
   /**
+   * A list of fields that are assigned multiple values.
+   *
    * @var array
-   *   A list of fields that are assigned multiple values.
    */
   protected $multiFields = [];
 
   /**
+   * A list of fields that are dates. This is a sub list of $fields.
+   *
    * @var array
-   *   A list of fields that are dates. This is a sub list of $fields.
    */
   protected $dateFields = [];
 
