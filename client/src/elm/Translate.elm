@@ -2711,7 +2711,7 @@ translateDashboard trans =
             }
 
         UseFamilyPlanning ->
-            { english = "Use family planning"
+            { english = "use family planning"
             , kinyarwanda = Nothing
             }
 

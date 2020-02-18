@@ -757,13 +757,8 @@ viewDonutChart language stats =
 
     else
         let
-            -- Remove the No family planning, as it won't be used for the chart
-            dictWithoutNoFamilyPlanning =
-                dict
-                    |> Dict.filter (\k _ -> not (k == NoFamilyPlanning))
-
             totalCount =
-                dictWithoutNoFamilyPlanning
+                dict
                     |> Dict.values
                     |> List.foldl (\val accum -> val + accum) 0
 
@@ -778,7 +773,7 @@ viewDonutChart language stats =
                 useFamilyPlanning * 100 // totalCount
         in
         div [ class "content" ]
-            [ viewChart dictWithoutNoFamilyPlanning
+            [ viewChart dict
             , div [ class "in-chart" ]
                 [ div [ class "stats" ]
                     [ span [ class "percentage neutral" ] [ text <| String.fromInt totalPercent ++ "%" ]
@@ -794,7 +789,7 @@ viewDonutChart language stats =
                         ]
                     ]
                 ]
-            , viewFamilyPlanningChartLegend language dictWithoutNoFamilyPlanning
+            , viewFamilyPlanningChartLegend language dict
             ]
 
 
@@ -929,8 +924,7 @@ viewFamilyPlanningChartLegend language dict =
         listSorted =
             dict
                 |> Dict.toList
-                |> List.sortBy (\( _, val ) -> val)
-                |> List.reverse
+                |> List.sortBy (\( name, val ) -> Debug.toString name)
     in
     div [ class "legend" ]
         (List.map

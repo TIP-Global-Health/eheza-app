@@ -126,46 +126,46 @@ familyPlanningSignToColor : FamilyPlanningSign -> Color
 familyPlanningSignToColor sign =
     case sign of
         AutoObservation ->
-            Color.blue
-
-        Condoms ->
-            Color.lightOrange
-
-        CycleBeads ->
-            Color.orange
-
-        CycleCounting ->
-            Color.purple
-
-        Hysterectomy ->
-            Color.lightPurple
-
-        Implants ->
             Color.black
 
+        Condoms ->
+            Color.rgb (255 / 255) (209 / 255) (102 / 255)
+
+        CycleBeads ->
+            Color.rgb (247 / 255) (147 / 255) (30 / 255)
+
+        CycleCounting ->
+            Color.rgb (165 / 255) (131 / 255) (255 / 255)
+
+        Hysterectomy ->
+            Color.rgb (247 / 255) (170 / 255) (198 / 255)
+
+        Implants ->
+            Color.rgb (2 / 255) (52 / 255) (54 / 255)
+
         Injectables ->
-            Color.lightGreen
+            Color.rgb (3 / 255) (181 / 255) (170 / 255)
 
         NoFamilyPlanning ->
-            Color.grey
+            Color.rgb (204 / 255) (204 / 255) (204 / 255)
 
         IUD ->
-            Color.darkGreen
+            Color.rgb (2 / 255) (110 / 255) (164 / 255)
 
         LactationAmenorrhea ->
-            Color.darkOrange
+            Color.rgb (255 / 255) (182 / 255) (13 / 255)
 
         OralContraceptives ->
-            Color.darkPurple
+            Color.rgb (210 / 255) (193 / 255) (255 / 255)
 
         Spermicide ->
-            Color.darkBlue
+            Color.rgb (55 / 255) (0 / 255) (196 / 255)
 
         TubalLigatures ->
-            Color.lightRed
+            Color.rgb (239 / 255) (86 / 255) (142 / 255)
 
         Vasectomy ->
-            Color.lightGreen
+            Color.rgb (3 / 255) (121 / 255) (113 / 255)
 
 
 colors : Dict FamilyPlanningSign Color

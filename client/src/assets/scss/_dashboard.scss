@@ -115,14 +115,16 @@
 
               .use-label {
                 font-style: normal;
-                font-weight: normal;
                 font-size: 20px;
                 line-height: 20px;
+                display: block;
+                margin: 8px auto;
               }
 
               .count {
                 font-size: 12px;
                 line-height: 12px;
+                display: block;
               }
             }
           }
@@ -142,7 +144,7 @@
             flex-flow: column wrap;
             align-content: stretch;
             margin: 140px auto 0;
-            max-height: 300px;
+            max-height: 285px;
 
             .legend-item {
               margin-bottom: 5px;
