@@ -20,7 +20,7 @@ define('HEDLEY_STATS_GOOD', 'good_nutrition');
  * Implements hook_node_update().
  */
 function hedley_stats_node_presave($node) {
-  $measurements_content_types = heldey_stats_get_mapped_measurements_content_types();
+  $measurements_content_types = hedley_activity_get_measurements_content_types();
 
   if (!in_array($node->type, array_keys($measurements_content_types))) {
     // Reset cache only when a measurement is changed.
@@ -50,14 +50,20 @@ function hedley_stats_node_presave($node) {
   // it has changed.
   foreach ($health_centers as $health_center) {
     foreach ($periods as $period) {
-      // Clear cache for all the periods.
-      $measurements_query_cache_id = 'measurements_query_grouped_by_person_' . $health_center->nid . '_' . $period;
-      $session_attendance_cache_id = 'session_attendance_stats_' . $health_center->nid . '_' . $period;
-      $children_beneficiaries_cache_id = 'children_beneficiaries_stats_' . $health_center->nid . '_' . $period;
+      if ($node->type == 'family_planning') {
+        $family_planning_cache_id = 'family_planning_stats_' . $health_center->nid . '_' . $period;
+        cache_clear_all($family_planning_cache_id, 'cache');
+      }
+      else {
+        // Clear cache for all the periods.
+        $measurements_query_cache_id = 'measurements_query_grouped_by_person_' . $health_center->nid . '_' . $period;
+        $session_attendance_cache_id = 'session_attendance_stats_' . $health_center->nid . '_' . $period;
+        $children_beneficiaries_cache_id = 'children_beneficiaries_stats_' . $health_center->nid . '_' . $period;
 
-      cache_clear_all($measurements_query_cache_id, 'cache');
-      cache_clear_all($session_attendance_cache_id, 'cache');
-      cache_clear_all($children_beneficiaries_cache_id, 'cache');
+        cache_clear_all($measurements_query_cache_id, 'cache');
+        cache_clear_all($session_attendance_cache_id, 'cache');
+        cache_clear_all($children_beneficiaries_cache_id, 'cache');
+      }
     }
   }
 }
@@ -153,6 +159,14 @@ function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_
  * @throws \Exception
  */
 function hedley_stats_get_family_planning_stats_by_period($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
+  // Set the query options as strings for creating cache ID.
+  $health_center_cache_id = 'family_planning_stats_' . $health_center_id . '_' . $period;
+  $cache = cache_get($health_center_cache_id);
+
+  if (!empty($cache)) {
+    return $cache->data;
+  }
+
   $query = hedley_stats_get_base_query($health_center_id, 'family_planning', $period);
 
   // Join `Signs` field (e.g. Pill, Condoms, etc').
@@ -176,6 +190,8 @@ function hedley_stats_get_family_planning_stats_by_period($health_center_id, $pe
     unset($row->field_shards);
     unset($row->field_family_planning_signs);
   }
+
+  cache_set($health_center_cache_id, array_values($result), 'cache', CACHE_TEMPORARY);
 
   return array_values($result);
 }
