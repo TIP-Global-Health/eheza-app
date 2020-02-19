@@ -62,10 +62,22 @@ ehezaGlobal =
     }
 
 
+
 elm19Pantheon : Model
 elm19Pantheon =
     { backendUrl = "https://elm19-ihangane.pantheonsite.io"
     , name = "elm19Pantheon"
+    , pusherKey = PusherAppKey "" UsEast1
+    , debug = False
+    , rollbarToken = Rollbar.token "***REMOVED***"
+    , sandbox = False
+    }
+
+
+***REMOVED*** : Model
+***REMOVED*** =
+    { backendUrl = "https://***REMOVED***"
+    , name = "***REMOVED***"
     , pusherKey = PusherAppKey "" UsEast1
     , debug = False
     , rollbarToken = Rollbar.token "***REMOVED***"
@@ -82,5 +94,6 @@ configs =
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ehezaGlobal )
         , ( "elm19-ihangane.pantheonsite.io", elm19Pantheon )
+        , ( "***REMOVED***", ***REMOVED*** )
         ]
         |> Dict.union localConfigs
