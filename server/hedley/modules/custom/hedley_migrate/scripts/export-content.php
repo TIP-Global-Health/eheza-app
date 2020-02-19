@@ -238,8 +238,9 @@ foreach ($health_centers_ids as $health_center_id) {
     $national_id = '1199270' . $faker->numberBetween(100000000, 199999999);
     $phone_number = '0' . $faker->numberBetween(700000000, 799999999);
 
-    $people[] = [
-      $wrapper->getIdentifier(),
+    $person_id = $wrapper->getIdentifier();
+    $people[$person_id] = [
+      $person_id,
       "$second_name $first_name",
       $first_name,
       $second_name,
@@ -348,7 +349,7 @@ $mapping = [
   'nurse' => array_values($nurses),
   'session' => $group_encounters,
   'pmtct_participant' => $participants,
-  'person' => $people,
+  'person' => array_values($people),
   'relationship' => $relationships,
   'attendance' => $measurements['attendance'],
   'family_planning' => $measurements['family_planning'],
