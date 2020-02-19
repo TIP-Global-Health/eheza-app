@@ -644,7 +644,7 @@ function hedley_migrate_query_random_alter($query) {
 }
 
 /**
- * Resolves the IDs of nodes which value at '$field' is withing '$values'.
+ * Resolves the IDs of nodes which value at '$field' is within '$values'.
  *
  * @param string $type
  *   Node type.
@@ -661,7 +661,7 @@ function hedley_migrate_resolve_for_export($type, $field, array $values) {
 
   $result = $query->entityCondition('entity_type', 'node')
     ->propertyCondition('type', $type)
-    ->propertyCondition('status', 1)
+    ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition($field, 'target_id', $values, 'IN')
     ->execute();
 
@@ -676,7 +676,7 @@ function hedley_migrate_resolve_for_export($type, $field, array $values) {
  * @param array $date
  *   Input date.
  * @param bool $force_end_date
- *   Wither to force setting end date. If True, sets current date.
+ *   Whether to force setting end date. If True, sets current date.
  *
  * @return string
  *   Start date as 'yyyy-mm-dd'.
