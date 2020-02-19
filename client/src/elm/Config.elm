@@ -62,7 +62,6 @@ ehezaGlobal =
     }
 
 
-
 elm19Pantheon : Model
 elm19Pantheon =
     { backendUrl = "https://elm19-ihangane.pantheonsite.io"
