@@ -49,6 +49,10 @@ function hedley_stats_node_presave($node) {
   // Reset the cache for the stats of the health center because a measurement in
   // it has changed.
   foreach ($health_centers as $health_center) {
+    // First, clear the stats hash cache.
+    $health_center_cache_id = 'sync_stats_' . $health_center->nid;
+    cache_clear_all($health_center_cache_id, 'cache');
+
     foreach ($periods as $period) {
       if ($node->type == 'family_planning') {
         $family_planning_cache_id = 'family_planning_stats_' . $health_center->nid . '_' . $period;
@@ -706,7 +710,7 @@ function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_ST
 
         foreach ($values as $field_name => $value) {
           // Round up the value, the class will indicate the zscore level.
-          $formatted_value = number_format($value, 0);
+          $formatted_value = number_format((float) $value, 0);
 
           switch ($type) {
             case 'height':

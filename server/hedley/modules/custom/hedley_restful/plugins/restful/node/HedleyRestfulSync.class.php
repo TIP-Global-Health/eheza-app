@@ -225,25 +225,60 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       $output = array_merge($output, $rendered_items);
     }
 
-    if (isset($request['health_center_uuid']) && !empty($request['health_center_uuid'])) {
+    // Check if we have HC UUID and then check if we need to send statistics for
+    // the Dashboard of that HC.
+    if (isset($request['health_center_uuid']) && !empty($request['health_center_uuid']) && isset($request['stats_cache_hash'])) {
+      // If we have HC then check the cache hash ID.
       if ($health_center_nid = hedley_restful_resolve_nid_for_uuid($request['health_center_uuid'])) {
-        list($completed_program, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_period($health_center_nid, HEDLEY_STATS_PERIOD_THREE_MONTHS);
-        $output[] = [
-          'type' => 'statistics',
-          // UUID of the health center.
-          'uuid' => $request['health_center_uuid'],
-          'case_management' => hedley_stats_get_case_management($health_center_nid),
-          'children_beneficiaries' => hedley_stats_get_children_beneficiaries_stats_by_period($health_center_nid, HEDLEY_STATS_PERIOD_THREE_MONTHS),
-          'completed_program' => $completed_program,
-          'completed_program_count' => 0,
-          'good_nutrition' => hedley_stats_get_good_nutrition($health_center_nid),
-          'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_nid),
-          'malnourished_beneficiaries' => hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_center_nid),
-          'missed_sessions' => $missed_sessions,
-          'missed_sessions_count' => 0,
-          'total_beneficiaries' => hedley_stats_get_total_beneficiaries($health_center_nid),
-          'total_encounters' => hedley_stats_get_total_encounters($health_center_nid),
-        ];
+        $health_center_cache_id = 'sync_stats_' . $health_center_nid;
+        $cache = cache_get($health_center_cache_id);
+
+        $calculate_stats = FALSE;
+        // Check if we need to calculate the statistics for this HC.
+        if (!empty($cache) && !empty($request['stats_cache_hash'])) {
+          if ($cache->data != $request['stats_cache_hash']) {
+            // Cache hash from the frontend doesn't match the one we have in the
+            // backend, this means that stats has been changed because it's only
+            // reset when a measurement has changed.
+            $calculate_stats = TRUE;
+          }
+        }
+        else {
+          // We either don't have cache hash yet or this frontend doesn't have
+          // it, in any case, we will calculate the statistics and send it to
+          // the frontend.
+          // We don't cache here because each statistic has its own cache inside
+          // the function.
+          $calculate_stats = TRUE;
+        }
+
+        if ($calculate_stats) {
+          // Calculate the stats.
+          list($completed_program, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_period($health_center_nid, HEDLEY_STATS_PERIOD_THREE_MONTHS);
+          $stats = [
+            'type' => 'statistics',
+            // UUID of the health center.
+            'uuid' => $request['health_center_uuid'],
+            'case_management' => hedley_stats_get_case_management($health_center_nid),
+            'children_beneficiaries' => hedley_stats_get_children_beneficiaries_stats_by_period($health_center_nid, HEDLEY_STATS_PERIOD_THREE_MONTHS),
+            'completed_program' => $completed_program,
+            'completed_program_count' => 0,
+            'good_nutrition' => hedley_stats_get_good_nutrition($health_center_nid),
+            'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_nid),
+            'malnourished_beneficiaries' => hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_center_nid),
+            'missed_sessions' => $missed_sessions,
+            'missed_sessions_count' => 0,
+            'total_beneficiaries' => hedley_stats_get_total_beneficiaries($health_center_nid),
+            'total_encounters' => hedley_stats_get_total_encounters($health_center_nid),
+          ];
+
+          $stats['stats_cache_hash'] = md5(serialize($stats));
+
+          // Store in cache only the hash, inner statistics has their own cache.
+          cache_set($health_center_cache_id, $stats['stats_cache_hash'], 'cache', CACHE_TEMPORARY);
+
+          $output[] = $stats;
+        }
       }
     }
 
