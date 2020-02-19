@@ -190,7 +190,6 @@ foreach ($health_centers_ids as $health_center_id) {
       }
     }
 
-    $nurse_id = $wrapper->getIdentifier();
     $nurses[$nurse_id] = [
       $nurse_id,
       str_replace(',', ' ', $wrapper->label()),
@@ -238,7 +237,6 @@ foreach ($health_centers_ids as $health_center_id) {
     $national_id = '1199270' . $faker->numberBetween(100000000, 199999999);
     $phone_number = '0' . $faker->numberBetween(700000000, 799999999);
 
-    $person_id = $wrapper->getIdentifier();
     $people[$person_id] = [
       $person_id,
       "$second_name $first_name",
@@ -269,8 +267,9 @@ foreach ($health_centers_ids as $health_center_id) {
   $relationships_ids = hedley_migrate_resolve_for_export('relationship', 'field_person', $unique_mothers_ids);
   foreach ($relationships_ids as $relationship_id) {
     $wrapper = entity_metadata_wrapper('node', $relationship_id);
-    $relationships[] = [
-      $wrapper->getIdentifier(),
+
+    $relationships[$relationship_id] = [
+      $relationship_id,
       $wrapper->field_person->getIdentifier(),
       $wrapper->field_related_by->value(),
       $wrapper->field_related_to->getIdentifier(),
@@ -350,7 +349,7 @@ $mapping = [
   'session' => $group_encounters,
   'pmtct_participant' => $participants,
   'person' => array_values($people),
-  'relationship' => $relationships,
+  'relationship' => array_values($relationships),
   'attendance' => $measurements['attendance'],
   'family_planning' => $measurements['family_planning'],
   'height' => $measurements['height'],
