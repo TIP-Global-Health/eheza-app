@@ -190,8 +190,9 @@ foreach ($health_centers_ids as $health_center_id) {
       }
     }
 
-    $nurses[] = [
-      $wrapper->getIdentifier(),
+    $nurse_id = $wrapper->getIdentifier();
+    $nurses[$nurse_id] = [
+      $nurse_id,
       $wrapper->label(),
       implode('|', $wrapper->field_role->value()),
       implode('|', array_values($hc_ids)),
@@ -344,7 +345,7 @@ $mapping = [
   'catchment_area' => $catchment_areas,
   'health_center' => $health_centers,
   'clinic' => $groups,
-  'nurse' => $nurses,
+  'nurse' => array_values($nurses),
   'session' => $group_encounters,
   'pmtct_participant' => $participants,
   'person' => $people,
