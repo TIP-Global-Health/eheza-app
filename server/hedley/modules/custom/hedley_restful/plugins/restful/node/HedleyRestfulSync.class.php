@@ -237,10 +237,12 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'case_management' => hedley_stats_get_case_management($health_center_id),
       'children_beneficiaries' => hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id, HEDLEY_STATS_PERIOD_THREE_MONTHS),
       'completed_program' => $completed_program,
+      'completed_program_count' => 0,
       'good_nutrition' => hedley_stats_get_good_nutrition($health_center_id),
       'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_id),
       'malnourished_beneficiaries' => hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_center_id),
       'missed_sessions' => $missed_sessions,
+      'missed_sessions_count' => 0,
       'total_beneficiaries' => hedley_stats_get_total_beneficiaries($health_center_id),
       'total_encounters' => hedley_stats_get_total_encounters($health_center_id),
     ];

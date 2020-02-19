@@ -278,82 +278,75 @@ function hedley_stats_get_session_attendance_stats_by_period($health_center_id, 
       continue;
     }
 
+    // Get PMTCT participants by clinic and session dates
+    // (all expected people).
+    $pmtct_by_clinic = hedley_stats_get_pmtct_participants_by_clinic($clinic_id, 1000);
+
+    if (empty($pmtct_by_clinic)) {
+      // No participants were found.
+      continue;
+    }
+
     foreach ($session_ids as $session_id) {
       // Sessions (Group encounter) for current health center which happened in
       // the given period.
       $session_wrapper = entity_metadata_wrapper('node', $session_id);
       // Date of the session converted to a format the frontend can read.
-      $date = hedley_stats_convert_timestamp_to_nominal($session_wrapper->field_scheduled_date->value->value());
-
-      // Get PMTCT participants by clinic and session dates
-      // (all expected people).
-      $pmtct_by_clinic = hedley_stats_get_pmtct_participants_by_clinic($clinic_id, $date, 10000);
-
-      if (empty($pmtct_by_clinic)) {
-        // No participants were found.
-        continue;
-      }
+      $session_dates = $session_wrapper->field_scheduled_date->value();
+      $date = hedley_stats_convert_timestamp_to_nominal(strtotime($session_dates['value']));
 
       $expected_people_by_clinic = [];
       foreach ($pmtct_by_clinic as $pmtct_id) {
         $pmtct_wrapper = entity_metadata_wrapper('node', $pmtct_id);
-        $person_nid = $pmtct_wrapper->field_person->getIdentifier();
-        $person_wrapper = $pmtct_wrapper->field_person;
-        $mother_wrapper = $pmtct_wrapper->field_adult;
 
-        if (empty($person_wrapper) || empty($mother_wrapper)) {
-          continue;
-        }
+        // Check if participant is supposed to be in this session.
+        $expected_date = $pmtct_wrapper->field_expected->value();
+        if (!empty($expected_date) && $expected_date['value'] <= $session_dates['value'] && (is_null($expected_date['value2']) || $expected_date['value2'] >= $session_dates['value2'])) {
+          $child_id = $pmtct_wrapper->field_person->getIdentifier();
+          $child_wrapper = $pmtct_wrapper->field_person;
+          $mother_wrapper = $pmtct_wrapper->field_adult;
 
-        $expected_people_by_clinic[$person_nid] = [
-          'name' => $person_wrapper->label(),
-          'gender' => $person_wrapper->field_gender->value(),
-          'birth_date' => hedley_stats_convert_timestamp_to_nominal($person_wrapper->field_birth_date->value()),
-          'mother_id' => $mother_wrapper->getIdentifier(),
-          'mother_name' => $mother_wrapper->label(),
-          'phone_number' => $mother_wrapper->field_phone_number->value(),
-          'clinic' => !empty($pmtct_wrapper->field_clinic->value()) ? $pmtct_wrapper->field_clinic->getIdentifier() : NULL,
-          'dates' => [],
-        ];
-
-        // First, check if the mother has attended the session at all.
-        $attendance = hedley_activity_get_attendance_by_session($session_id, $expected_people_by_clinic[$person_nid]['mother_id'], TRUE, 1);
-        // Then, Check if the person (patient) has any measurements.
-        $measurements = hedley_activity_get_measurements_by_session($session_id, $person_nid, $measurements_types);
-
-        if (empty($attendance) && empty($measurements)) {
-          // If this person is not listed in the "missed sessions" list already,
-          // add their data and unset some unused info.
-          if (!isset($missed_session[$person_nid])) {
-            // Remove unused info.
-            unset($expected_people_by_clinic[$person_nid]['mother_id']);
-            unset($expected_people_by_clinic[$person_nid]['clinic']);
-
-            // Set data for one time.
-            $missed_session[$person_nid] = $expected_people_by_clinic[$person_nid];
+          if (empty($child_wrapper) || empty($mother_wrapper)) {
+            continue;
           }
 
-          // This person missed the session because they don't have an
-          // attendance entity nor any measurements found for that session on
-          // this date so we add it to the list of dates to be able to filter it
-          // in the frontend.
-          $missed_session[$person_nid]['dates'][] = $date;
-        }
-        else {
-          // This person either has an attendance and should definitely have
-          // also measurements so if count of the measurements is 5
-          // (photo, height, weight, muac, nutrition), then we assume the person
-          // has completed the program.
-          if (count($measurements) == 5) {
-            if (!isset($completed_program[$person_nid])) {
-              // Remove unwanted info.
-              unset($expected_people_by_clinic[$person_nid]['mother_id']);
-              unset($expected_people_by_clinic[$person_nid]['clinic']);
+          $expected_people_by_clinic[$child_id] = [
+            'name' => $child_wrapper->label(),
+            'mother_name' => $mother_wrapper->label(),
+            'phone_number' => $mother_wrapper->field_phone_number->value(),
+            'dates' => [],
+          ];
+
+          // Check if the person (patient) has any measurements.
+          $measurements = hedley_activity_get_measurements_by_session($session_id, $child_id, $measurements_types);
+
+          if (empty($measurements)) {
+            // If this person is not listed in the "missed sessions" list
+            // already, add their data and unset some unused info.
+            if (!isset($missed_session[$child_id])) {
               // Set data for one time.
-              $completed_program[$person_nid] = $expected_people_by_clinic[$person_nid];
+              $missed_session[$child_id] = $expected_people_by_clinic[$child_id];
             }
 
-            $completed_program[$person_nid]['dates'][] = $date;
+            // This person missed the session because they don't have an
+            // attendance entity nor any measurements found for that session on
+            // this date so we add it to the list of dates to be able to filter
+            // it in the frontend.
+            $missed_session[$child_id]['dates'][] = $date;
+          }
+          else {
+            // This person either has an attendance and should definitely have
+            // also measurements so if count of the measurements is 5
+            // (photo, height, weight, muac, nutrition), then we assume the
+            // person has completed the program.
+            if (count($measurements) == 5) {
+              if (!isset($completed_program[$child_id])) {
+                // Set data for one time.
+                $completed_program[$child_id] = $expected_people_by_clinic[$child_id];
+              }
+
+              $completed_program[$child_id]['dates'][] = $date;
+            }
           }
         }
       }
@@ -1125,16 +1118,13 @@ function hedley_stats_nutrition_signs() {
  *
  * @param int $clinic_id
  *   The clinic node ID.
- * @param string $expected_date
- *   The expected date for the participants.
  * @param int $range
  *   The queries' range.
  *
  * @return array
  *   Node IDs if they exist or empty array if no nodes exist.
  */
-function hedley_stats_get_pmtct_participants_by_clinic($clinic_id, $expected_date, $range = 100) {
-  $expected_date = date('Y-m-d h:i:s', strtotime($expected_date));
+function hedley_stats_get_pmtct_participants_by_clinic($clinic_id, $range = 100) {
 
   $query = new EntityFieldQuery();
   $query
@@ -1142,9 +1132,6 @@ function hedley_stats_get_pmtct_participants_by_clinic($clinic_id, $expected_dat
     ->propertyCondition('type', 'pmtct_participant')
     ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_clinic', 'target_id', $clinic_id)
-    ->fieldCondition('field_expected', 'value', $expected_date, '<=')
-    // Meaning that we are still expecting those participants.
-    ->fieldCondition('field_expected', 'value2', NULL)
     ->range(0, $range);
 
   $result = $query->execute();

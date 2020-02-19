@@ -14,10 +14,12 @@ type alias DashboardStats =
     { caseManagement : List CaseManagement
     , childrenBeneficiaries : List ChildrenBeneficiariesStats
     , completedProgram : List ParticipantStats
+    , completedProgramCount : Int
     , familyPlanning : List FamilyPlanningStats
     , goodNutrition : GoodNutrition
     , malnourished : List MalnourishedStats
     , missedSessions : List ParticipantStats
+    , missedSessionsCount : Int
     , totalBeneficiaries : Dict Int TotalBeneficiaries
     , totalEncounters : Periods
     }
@@ -28,6 +30,7 @@ emptyModel =
     { caseManagement = []
     , childrenBeneficiaries = []
     , completedProgram = []
+    , completedProgramCount = 0
     , familyPlanning = []
     , goodNutrition =
         { all =
@@ -41,6 +44,7 @@ emptyModel =
         }
     , malnourished = []
     , missedSessions = []
+    , missedSessionsCount = 0
     , totalEncounters =
         { lastYear = 0
         , thisYear = 0
