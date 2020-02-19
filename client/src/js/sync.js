@@ -218,7 +218,7 @@
                     backendUrl, '/api/v1.0/sync', shardUrlPart,
                     '?access_token=', token,
                     '&db_version=', dbVersion,
-                    '&healthCenterUuid=', syncData['uuid']
+                    '&health_center_uuid=', syncData['uuid']
                 ].join('');
             }
             else {
