@@ -205,31 +205,42 @@
 
         var shardUrlPart = shard.uuid === nodesUuid ? '' : '/' + shard.uuid;
 
-        var criteria = {
-            uuid: healthCenterUuid
-        };
+        if (healthCenterUuid) {
+            var criteria = {
+                uuid: healthCenterUuid
+            };
 
-        var statsTable = dbSync.statistics;
-        var query = statsTable.where(criteria);
+            var statsTable = dbSync.statistics;
+            var query = statsTable.where(criteria);
 
-        return query.first().then(function (syncData) {
-            if (syncData) {
-                return [
-                    backendUrl, '/api/v1.0/sync', shardUrlPart,
-                    '?access_token=', token,
-                    '&db_version=', dbVersion,
-                    '&health_center_uuid=', syncData['uuid'],
-                    '&stats_cache_hash=', syncData['stats_cache_hash']
-                ].join('');
-            }
-            else {
-                return [
-                    backendUrl, '/api/v1.0/sync', shardUrlPart,
-                    '?access_token=', token,
-                    '&db_version=', dbVersion
-                ].join('');
-            }
-        }).catch(formatDatabaseError);
+            return query.first().then(function (syncData) {
+                if (syncData) {
+                    return [
+                        backendUrl, '/api/v1.0/sync', shardUrlPart,
+                        '?access_token=', token,
+                        '&db_version=', dbVersion,
+                        '&health_center_uuid=', syncData['uuid'],
+                        '&stats_cache_hash=', syncData['stats_cache_hash']
+                    ].join('');
+                }
+                else {
+                    return [
+                        backendUrl, '/api/v1.0/sync', shardUrlPart,
+                        '?access_token=', token,
+                        '&db_version=', dbVersion,
+                        '&health_center_uuid=', healthCenterUuid,
+                    ].join('');
+                }
+            }).catch(formatDatabaseError);
+        }
+        else {
+            // Sync without health center ID.
+            return [
+                backendUrl, '/api/v1.0/sync', shardUrlPart,
+                '?access_token=', token,
+                '&db_version=', dbVersion
+            ].join('');
+        }
     }
 
     function getUploadUrl (credentials) {
