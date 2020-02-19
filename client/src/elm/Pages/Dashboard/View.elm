@@ -429,12 +429,10 @@ viewMiscCards language stats monthBeforeStats =
             }
 
         completedProgram =
-            stats.completedProgram
-                |> List.length
+            stats.completedProgramCount
 
         completedProgramBefore =
-            monthBeforeStats.completedProgram
-                |> List.length
+            monthBeforeStats.completedProgramCount
 
         completedProgramDiff =
             completedProgram - completedProgramBefore
@@ -459,12 +457,10 @@ viewMiscCards language stats monthBeforeStats =
             }
 
         missedSessions =
-            stats.missedSessions
-                |> List.length
+            stats.missedSessionsCount
 
         missedSessionsBefore =
-            monthBeforeStats.missedSessions
-                |> List.length
+            monthBeforeStats.missedSessionsCount
 
         missedSessionsDiff =
             missedSessions - missedSessionsBefore
@@ -1073,30 +1069,34 @@ filterStatsByPeriod currentDate model stats =
             stats.malnourished
                 |> List.filter (\malnourished -> filterPartial malnourished.created)
 
-        completedProgramUpdated =
-            stats.completedProgram
-                |> List.filter
-                    (\completedProgram ->
-                        List.filter (\date -> filterPartial date) completedProgram.dates
-                            |> not
-                            << List.isEmpty
+        completedProgramCount =
+            List.foldl
+                (\completedProgram accum ->
+                    (List.filter (\date -> filterPartial date) completedProgram.dates
+                        |> List.length
                     )
+                        + accum
+                )
+                stats.completedProgramCount
+                stats.completedProgram
 
-        missedSessionsUpdated =
-            stats.missedSessions
-                |> List.filter
-                    (\missedSessions ->
-                        List.filter (\date -> filterPartial date) missedSessions.dates
-                            |> not
-                            << List.isEmpty
+        missedSessionsCount =
+            List.foldl
+                (\completedProgram accum ->
+                    (List.filter (\date -> filterPartial date) completedProgram.dates
+                        |> List.length
                     )
+                        + accum
+                )
+                stats.missedSessionsCount
+                stats.missedSessions
     in
     { stats
         | childrenBeneficiaries = childrenBeneficiariesUpdated
         , familyPlanning = familyPlanningUpdated
         , malnourished = malnourishedUpdated
-        , completedProgram = completedProgramUpdated
-        , missedSessions = missedSessionsUpdated
+        , completedProgramCount = completedProgramCount
+        , missedSessionsCount = missedSessionsCount
     }
 
 

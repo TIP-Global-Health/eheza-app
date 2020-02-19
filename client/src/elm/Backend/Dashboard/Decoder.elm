@@ -17,10 +17,12 @@ decodeDashboardStats =
         |> required "case_management" (list decodeCaseManagement)
         |> required "children_beneficiaries" (list decodePeopleStats)
         |> required "completed_program" (list decodeParticipantStats)
+        |> required "completed_program_count" decodeInt
         |> required "family_planning" (list decodeFamilyPlanningStats)
         |> required "good_nutrition" decodeGoodNutrition
         |> required "malnourished_beneficiaries" (list decodeMalnourishedStats)
         |> required "missed_sessions" (list decodeParticipantStats)
+        |> required "missed_sessions_count" decodeInt
         |> required "total_beneficiaries" decodeTotalBeneficiariesDict
         |> required "total_encounters" decodePeriods
 
