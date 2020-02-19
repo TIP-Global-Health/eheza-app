@@ -155,7 +155,7 @@ foreach ($health_centers_ids as $health_center_id) {
 
   $health_centers[] = [
     $wrapper->getIdentifier(),
-    $wrapper->label(),
+    str_replace( ',', ' ', $wrapper->label()),
     $catchment_area_id,
   ];
 
@@ -163,7 +163,7 @@ foreach ($health_centers_ids as $health_center_id) {
     $wrapper = entity_metadata_wrapper('node', $catchment_area_id);
     $catchment_areas[] = [
       $wrapper->getIdentifier(),
-      $wrapper->label(),
+      str_replace( ',', ' ', $wrapper->label()),
     ];
     $catchment_area_ids[] = $catchment_area_id;
   }
@@ -173,7 +173,7 @@ foreach ($health_centers_ids as $health_center_id) {
     $wrapper = entity_metadata_wrapper('node', $group_id);
     $groups[] = [
       $wrapper->getIdentifier(),
-      $wrapper->label(),
+      str_replace( ',', ' ', $wrapper->label()),
       $wrapper->field_group_type->value(),
       $wrapper->field_health_center->getIdentifier(),
     ];
@@ -193,7 +193,7 @@ foreach ($health_centers_ids as $health_center_id) {
     $nurse_id = $wrapper->getIdentifier();
     $nurses[$nurse_id] = [
       $nurse_id,
-      $wrapper->label(),
+      str_replace( ',', ' ', $wrapper->label()),
       implode('|', $wrapper->field_role->value()),
       implode('|', array_values($hc_ids)),
       $wrapper->field_pin_code->value(),
