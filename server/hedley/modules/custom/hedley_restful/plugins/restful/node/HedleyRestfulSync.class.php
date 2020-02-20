@@ -227,7 +227,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
     // Check if we have HC UUID and then check if we need to send statistics for
     // the Dashboard of that HC.
-    if (isset($request['health_center_uuid']) && !empty($request['health_center_uuid'])) {
+    if (!empty($request['health_center_uuid'])) {
       // If we have HC then check the cache hash ID.
       if ($health_center_nid = hedley_restful_resolve_nid_for_uuid($request['health_center_uuid'])) {
         $health_center_cache_id = 'sync_stats_' . $health_center_nid;
@@ -235,7 +235,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
         $calculate_stats = FALSE;
         // Check if we need to calculate the statistics for this HC.
-        if (!empty($cache) && isset($request['stats_cache_hash']) && !empty($request['stats_cache_hash'])) {
+        if (!empty($cache) && !empty($request['stats_cache_hash'])) {
           if ($cache->data != $request['stats_cache_hash']) {
             // Cache hash from the frontend doesn't match the one we have in the
             // backend, this means that stats has been changed because it's only

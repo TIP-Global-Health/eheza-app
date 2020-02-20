@@ -14,6 +14,18 @@ define('HEDLEY_STATS_SEVERE', 'severe_nutrition');
 define('HEDLEY_STATS_MODERATE', 'moderate_nutrition');
 define('HEDLEY_STATS_GOOD', 'good_nutrition');
 
+// Cache IDs.
+define('HEDLEY_STATS_SYNC_STATS_CACHE', 'sync_stats_general');
+define('HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON', 'measurements_query_grouped_by_person');
+define('HEDLEY_STATS_SYNC_SESSION_ATTENDANCE', 'session_attendance_stats');
+define('HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES', 'children_beneficiaries_stats');
+define('HEDLEY_STATS_SYNC_FAMILY_PLANNING', 'family_planning_stats');
+
+// Cache methods.
+define('HEDLEY_STATS_CACHE_GET', 'get');
+define('HEDLEY_STATS_CACHE_SET', 'set');
+define('HEDLEY_STATS_CACHE_CLEAR', 'clear');
+
 /**
  * Reset the cache of measurements because a measurement has changed.
  *
@@ -50,23 +62,17 @@ function hedley_stats_node_presave($node) {
   // it has changed.
   foreach ($health_centers as $health_center) {
     // First, clear the stats hash cache.
-    $health_center_cache_id = 'sync_stats_' . $health_center->nid;
-    cache_clear_all($health_center_cache_id, 'cache');
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center->nid);
 
     foreach ($periods as $period) {
       if ($node->type == 'family_planning') {
-        $family_planning_cache_id = 'family_planning_stats_' . $health_center->nid . '_' . $period;
-        cache_clear_all($family_planning_cache_id, 'cache');
+        hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_FAMILY_PLANNING, $health_center->nid, $period);
       }
       else {
         // Clear cache for all the periods.
-        $measurements_query_cache_id = 'measurements_query_grouped_by_person_' . $health_center->nid . '_' . $period;
-        $session_attendance_cache_id = 'session_attendance_stats_' . $health_center->nid . '_' . $period;
-        $children_beneficiaries_cache_id = 'children_beneficiaries_stats_' . $health_center->nid . '_' . $period;
-
-        cache_clear_all($measurements_query_cache_id, 'cache');
-        cache_clear_all($session_attendance_cache_id, 'cache');
-        cache_clear_all($children_beneficiaries_cache_id, 'cache');
+        hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON, $health_center->nid, $period);
+        hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center->nid, $period);
+        hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES, $health_center->nid, $period);
       }
     }
   }
@@ -1190,4 +1196,43 @@ function hedley_stats_get_clinic_sessions_by_period($clinic_id, $period = HEDLEY
   $result = $query->execute();
 
   return !empty($result['node']) ? array_keys($result['node']) : [];
+}
+
+/**
+ * Handle stats cache.
+ *
+ * @param string $method
+ *   Whether to get or set cache.
+ * @param string $cache_name
+ *   The cache name.
+ * @param int $health_center_id
+ *   The health center node ID.
+ * @param string $period
+ *   Optional; A period for the cache ID.
+ *
+ * @return mixed|null
+ *   Either the cache data or nothing if we are setting it.
+ */
+function hedley_stats_handle_cache($method, $cache_name, $health_center_id, $period = '') {
+  $cache_id = $period ? $cache_name . '_' . $health_center_id : $cache_name . '_' . $health_center_id . '_' . $period;
+
+  switch ($method) {
+    case HEDLEY_STATS_CACHE_GET:
+      $cache = cache_get($cache_id . '_' . $health_center_id);
+
+      if (!empty($cache)) {
+        return $cache->data;
+      }
+      else {
+        return NULL;
+      }
+      break;
+
+    case HEDLEY_STATS_CACHE_SET:
+      cache_set($cache_id . $health_center_id, 'cache', CACHE_TEMPORARY);
+      break;
+
+    case HEDLEY_STATS_CACHE_CLEAR:
+      cache_clear_all($cache_id);
+  }
 }
