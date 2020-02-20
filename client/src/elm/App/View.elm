@@ -11,6 +11,7 @@ import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
+import Pages.Clinical.View
 import Pages.Clinics.View
 import Pages.Device.View
 import Pages.MyAccount.View
@@ -190,6 +191,10 @@ viewUserPage page model configured =
                 MyAccountPage ->
                     Pages.MyAccount.View.view model.language loggedInModel.nurse
                         |> oldPageWrapper model
+
+                ClinicalPage ->
+                    Pages.Clinical.View.view model.language
+                        |> flexPageWrapper model
 
                 ClinicsPage clinicId ->
                     Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) healthCenterId clinicId loggedInModel.clinicsPage model.indexedDb

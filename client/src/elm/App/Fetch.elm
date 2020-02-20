@@ -5,6 +5,7 @@ import App.Utils exposing (getLoggedInData)
 import Backend.Fetch
 import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
+import Pages.Clinical.Fetch
 import Pages.Clinics.Fetch
 import Pages.Device.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
@@ -44,6 +45,19 @@ fetch model =
         PinCodePage ->
             List.map MsgIndexedDb Pages.PinCode.Fetch.fetch
 
+        PageNotFound _ ->
+            []
+
+        ServiceWorkerPage ->
+            []
+
+        UserPage MyAccountPage ->
+            []
+
+        UserPage ClinicalPage ->
+            Pages.Clinical.Fetch.fetch
+                |> List.map MsgIndexedDb
+
         UserPage (ClinicsPage clinicId) ->
             Pages.Clinics.Fetch.fetch clinicId
                 |> List.map MsgIndexedDb
@@ -77,8 +91,7 @@ fetch model =
             Pages.Session.Fetch.fetch sessionId sessionPage model.indexedDb
                 |> List.map MsgIndexedDb
 
-        _ ->
-            []
+
 
 
 {-| Given a `Msg`, do we need to fetch the data it would fetch? We only answer

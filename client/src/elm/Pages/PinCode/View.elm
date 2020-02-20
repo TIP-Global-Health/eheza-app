@@ -37,23 +37,7 @@ viewHeader language nurseData healthCenterId model =
                         |> Maybe.withDefault False
             in
             if selectedAuthorizedHealthCenter then
-                case model.menu of
-                    ClinicalMenu ->
-                        div [ class "ui basic head segment" ]
-                            [ h1
-                                [ class "ui header" ]
-                                [ text <| translate language Translate.Clinical ]
-                            , a
-                                [ class "link-back"
-                                , onClick <| SetDisplayMenu MainMenu
-                                ]
-                                [ span [ class "icon-back" ] []
-                                , span [] []
-                                ]
-                            ]
-
-                    MainMenu ->
-                        viewLogo language
+                viewLogo language
 
             else
                 div [ class "ui basic head segment" ]
@@ -163,71 +147,53 @@ viewWhenLoggedIn language nurse ( healthCenterId, villageId ) model db =
                 |> Maybe.withDefault False
     in
     if selectedAuthorizedHealthCenter then
-        case model.menu of
-            ClinicalMenu ->
-                let
-                    groupAssessmentButton =
-                        button
-                            [ class "ui primary button group-assessment"
-                            , onClick <| SendOutMsg <| SetActivePage <| UserPage <| ClinicsPage Nothing
-                            ]
-                            [ span [ class "icon-group" ] []
-                            , span [ class "text" ] [ text <| translate language Translate.GroupAssessment ]
-                            , span [ class "icon-back" ] []
-                            ]
-                in
-                [ p [] [ text <| translate language Translate.WhatDoYouWantToDo ]
-                , groupAssessmentButton
-                ]
+        let
+            loggedInAs =
+                p [ class "logged-in-as" ]
+                    [ Translate.LoginPhrase Translate.LoggedInAs
+                        |> translate language
+                        |> text
+                    , text <| ": " ++ nurse.name
+                    ]
 
-            MainMenu ->
-                let
-                    loggedInAs =
-                        p [ class "logged-in-as" ]
-                            [ Translate.LoginPhrase Translate.LoggedInAs
-                                |> translate language
-                                |> text
-                            , text <| ": " ++ nurse.name
-                            ]
+            deviceStatusButton =
+                button
+                    [ class "ui primary button"
+                    , Pages.Page.DevicePage
+                        |> SetActivePage
+                        |> SendOutMsg
+                        |> onClick
+                    ]
+                    [ Translate.ActivePage DevicePage
+                        |> translate language
+                        |> text
+                    ]
 
-                    deviceStatusButton =
-                        button
-                            [ class "ui primary button"
-                            , Pages.Page.DevicePage
-                                |> SetActivePage
-                                |> SendOutMsg
-                                |> onClick
-                            ]
-                            [ Translate.ActivePage DevicePage
-                                |> translate language
-                                |> text
-                            ]
+            clinicalButton =
+                button
+                    [ class "ui primary button"
+                    , onClick <| SendOutMsg <| SetActivePage <| UserPage ClinicalPage
+                    ]
+                    [ text <| translate language Translate.Clinical ]
 
-                    clinicalButton =
-                        button
-                            [ class "ui primary button"
-                            , onClick <| SetDisplayMenu ClinicalMenu
-                            ]
-                            [ text <| translate language Translate.Clinical ]
+            registerParticipantButton =
+                if isCommunityHealthWorker nurse then
+                    emptyNode
 
-                    registerParticipantButton =
-                        if isCommunityHealthWorker nurse then
-                            emptyNode
-
-                        else
-                            button
-                                [ class "ui primary button"
-                                , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing
-                                ]
-                                [ text <| translate language Translate.ParticipantDirectory ]
-                in
-                [ loggedInAs
-                , viewLocationName nurse ( healthCenterId, villageId ) db
-                , clinicalButton
-                , registerParticipantButton
-                , deviceStatusButton
-                , logoutButton
-                ]
+                else
+                    button
+                        [ class "ui primary button"
+                        , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing
+                        ]
+                        [ text <| translate language Translate.ParticipantDirectory ]
+        in
+        [ loggedInAs
+        , viewLocationName nurse ( healthCenterId, villageId ) db
+        , clinicalButton
+        , registerParticipantButton
+        , deviceStatusButton
+        , logoutButton
+        ]
 
     else
         let
