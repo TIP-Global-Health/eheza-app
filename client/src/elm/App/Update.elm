@@ -329,14 +329,17 @@ update msg model =
 
                                             Pages.PinCode.Model.Logout ->
                                                 ( [ SetLoggedIn NotAsked, SetHealthCenter Nothing ]
-                                                , [ cachePinCode "", cacheHealthCenter "" ]
+                                                , [ cachePinCode "", cacheHealthCenter "", cacheVillage "" ]
                                                 )
 
                                             Pages.PinCode.Model.SetActivePage page ->
                                                 ( [ SetActivePage page ], [] )
 
-                                            Pages.PinCode.Model.SetHealthCenter healthCenterId ->
-                                                ( [ SetHealthCenter (Just healthCenterId) ], [] )
+                                            Pages.PinCode.Model.SetHealthCenter id ->
+                                                ( [ SetHealthCenter (Just id) ], [] )
+
+                                            Pages.PinCode.Model.SetVillage id ->
+                                                ( [ SetVillage (Just id) ], [] )
                                     )
                                 |> Maybe.withDefault ( [], [] )
                     in
@@ -433,13 +436,32 @@ update msg model =
             , Cmd.none
             )
 
-        SetHealthCenter healthCenterId ->
-            ( { model | healthCenterId = healthCenterId }
-            , healthCenterId
+        SetHealthCenter maybeHealthCenterId ->
+            ( { model | healthCenterId = maybeHealthCenterId }
+            , maybeHealthCenterId
                 |> Maybe.map fromEntityUuid
                 |> Maybe.withDefault ""
                 |> cacheHealthCenter
             )
+
+        SetVillage maybeVillageId ->
+            let
+                maybeHealthCenterId =
+                    maybeVillageId
+                        |> Maybe.andThen
+                            (\villageId ->
+                                RemoteData.toMaybe model.indexedDb.villages
+                                    |> Maybe.andThen (Dict.get villageId)
+                                    |> Maybe.andThen (.healthCenterId >> Just)
+                            )
+            in
+            ( { model | villageId = maybeVillageId }
+            , maybeVillageId
+                |> Maybe.map fromEntityUuid
+                |> Maybe.withDefault ""
+                |> cacheVillage
+            )
+                |> sequence update [ SetHealthCenter maybeHealthCenterId ]
 
         Tick time ->
             let

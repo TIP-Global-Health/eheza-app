@@ -4,6 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse, Role(..))
+import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker)
 import EverySet
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Html exposing (..)
@@ -16,13 +17,13 @@ import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner, viewLogo)
 
 
-view : Language -> Page -> WebData ( NurseId, Nurse ) -> Maybe HealthCenterId -> Model -> ModelIndexedDb -> Html Msg
-view language activePage nurseData healthCenterId model db =
+view : Language -> Page -> WebData ( NurseId, Nurse ) -> ( Maybe HealthCenterId, Maybe VillageId ) -> Model -> ModelIndexedDb -> Html Msg
+view language activePage nurseData ( healthCenterId, villageId ) model db =
     div
         [ class "ui basic segment page-pincode" ]
     <|
         viewHeader language nurseData healthCenterId model
-            :: viewContent language activePage nurseData healthCenterId model db
+            :: viewContent language activePage nurseData ( healthCenterId, villageId ) model db
 
 
 viewHeader : Language -> WebData ( NurseId, Nurse ) -> Maybe HealthCenterId -> Model -> Html Msg
@@ -65,11 +66,11 @@ viewHeader language nurseData healthCenterId model =
             viewLogo language
 
 
-viewContent : Language -> Page -> WebData ( NurseId, Nurse ) -> Maybe HealthCenterId -> Model -> ModelIndexedDb -> List (Html Msg)
-viewContent language activePage nurseData healthCenterId model db =
+viewContent : Language -> Page -> WebData ( NurseId, Nurse ) -> ( Maybe HealthCenterId, Maybe VillageId ) -> Model -> ModelIndexedDb -> List (Html Msg)
+viewContent language activePage nurseData ( healthCenterId, villageId ) model db =
     case nurseData of
         Success ( _, nurse ) ->
-            viewWhenLoggedIn language nurse healthCenterId model db
+            viewWhenLoggedIn language nurse ( healthCenterId, villageId ) model db
 
         _ ->
             let
@@ -143,8 +144,8 @@ viewContent language activePage nurseData healthCenterId model db =
             ]
 
 
-viewWhenLoggedIn : Language -> Nurse -> Maybe HealthCenterId -> Model -> ModelIndexedDb -> List (Html Msg)
-viewWhenLoggedIn language nurse healthCenterId model db =
+viewWhenLoggedIn : Language -> Nurse -> ( Maybe HealthCenterId, Maybe VillageId ) -> Model -> ModelIndexedDb -> List (Html Msg)
+viewWhenLoggedIn language nurse ( healthCenterId, villageId ) model db =
     let
         logoutButton =
             button
@@ -189,21 +190,6 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                             , text <| ": " ++ nurse.name
                             ]
 
-                    healthCenterName =
-                        healthCenterId
-                            |> Maybe.andThen
-                                (\id ->
-                                    RemoteData.toMaybe db.healthCenters
-                                        |> Maybe.andThen (Dict.get id)
-                                )
-                            |> Maybe.map
-                                (\healthCenter ->
-                                    p
-                                        [ class "health-center-name" ]
-                                        [ text healthCenter.name ]
-                                )
-                            |> Maybe.withDefault emptyNode
-
                     deviceStatusButton =
                         button
                             [ class "ui primary button"
@@ -225,14 +211,18 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                             [ text <| translate language Translate.Clinical ]
 
                     registerParticipantButton =
-                        button
-                            [ class "ui primary button"
-                            , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing
-                            ]
-                            [ text <| translate language Translate.ParticipantDirectory ]
+                        if isCommunityHealthWorker nurse then
+                            emptyNode
+
+                        else
+                            button
+                                [ class "ui primary button"
+                                , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing
+                                ]
+                                [ text <| translate language Translate.ParticipantDirectory ]
                 in
                 [ loggedInAs
-                , healthCenterName
+                , viewLocationName nurse ( healthCenterId, villageId ) db
                 , clinicalButton
                 , registerParticipantButton
                 , deviceStatusButton
@@ -241,25 +231,81 @@ viewWhenLoggedIn language nurse healthCenterId model db =
 
     else
         let
-            filteredHealthCenters =
-                case db.healthCenters of
-                    Success healthCenters ->
-                        healthCenters
-                            |> Dict.filter (\uuid _ -> EverySet.member uuid nurse.healthCenters)
-                            |> Dict.toList
+            locationOptions =
+                if isCommunityHealthWorker nurse then
+                    selectVillageOptions language nurse db
 
-                    _ ->
-                        []
-
-            selectHealthCenterButton ( healthCenterId_, healthCenter ) =
-                button
-                    [ class "ui primary button health-center"
-                    , onClick <| SendOutMsg <| SetHealthCenter healthCenterId_
-                    ]
-                    [ text healthCenter.name ]
+                else
+                    selectHeathCenterOptions language nurse db
         in
-        p [ class "select-health-center" ] [ text <| (translate language Translate.SelectYourHealthCenter ++ ":") ]
-            :: (filteredHealthCenters
-                    |> List.map selectHealthCenterButton
-                    |> List.append [ logoutButton ]
-               )
+        locationOptions ++ [ logoutButton ]
+
+
+viewLocationName : Nurse -> ( Maybe HealthCenterId, Maybe VillageId ) -> ModelIndexedDb -> Html Msg
+viewLocationName nurse ( healthCenterId, villageId ) db =
+    let
+        locationName =
+            if isCommunityHealthWorker nurse then
+                villageId
+                    |> Maybe.andThen
+                        (\id ->
+                            RemoteData.toMaybe db.villages
+                                |> Maybe.andThen (Dict.get id)
+                        )
+                    |> Maybe.map .name
+
+            else
+                healthCenterId
+                    |> Maybe.andThen
+                        (\id ->
+                            RemoteData.toMaybe db.healthCenters
+                                |> Maybe.andThen (Dict.get id)
+                        )
+                    |> Maybe.map .name
+    in
+    locationName
+        |> Maybe.map
+            (\name ->
+                p
+                    [ class "location-name" ]
+                    [ text name ]
+            )
+        |> Maybe.withDefault emptyNode
+
+
+selectHeathCenterOptions : Language -> Nurse -> ModelIndexedDb -> List (Html Msg)
+selectHeathCenterOptions language nurse db =
+    let
+        filtered =
+            db.healthCenters
+                |> RemoteData.map (Dict.filter (\uuid _ -> assignedToHealthCenter uuid nurse) >> Dict.toList)
+                |> RemoteData.withDefault []
+
+        selectButton ( id, location ) =
+            button
+                [ class "ui primary button"
+                , onClick <| SendOutMsg <| SetHealthCenter id
+                ]
+                [ text location.name ]
+    in
+    p [ class "select-location" ] [ text <| (translate language Translate.SelectYourHealthCenter ++ ":") ]
+        :: List.map selectButton filtered
+
+
+selectVillageOptions : Language -> Nurse -> ModelIndexedDb -> List (Html Msg)
+selectVillageOptions language nurse db =
+    let
+        filtered =
+            db.villages
+                |> RemoteData.map (Dict.filter (\uuid _ -> assignedToVillage uuid nurse) >> Dict.toList)
+                |> RemoteData.withDefault []
+
+        selectButton ( id, location ) =
+            button
+                [ class "ui primary button"
+                , onClick <| SendOutMsg <| SetVillage id
+                ]
+                [ text location.name ]
+    in
+    p [ class "select-location" ] [ text <| (translate language Translate.SelectYourVillage ++ ":") ]
+        :: List.map selectButton filtered

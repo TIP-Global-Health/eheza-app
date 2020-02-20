@@ -3,7 +3,7 @@ module Pages.PinCode.Model exposing (DisplayMenu(..), Model, Msg(..), OutMsg(..)
 {-| This models the PinCode entered by the user.
 -}
 
-import Backend.Entities exposing (HealthCenterId)
+import Backend.Entities exposing (HealthCenterId, VillageId)
 import Pages.Page exposing (Page)
 
 
@@ -30,6 +30,7 @@ type OutMsg
     | TryPinCode String
     | SetActivePage Page
     | SetHealthCenter HealthCenterId
+    | SetVillage VillageId
 
 
 type DisplayMenu

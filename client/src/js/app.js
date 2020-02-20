@@ -15,7 +15,8 @@ var elmApp = Elm.Main.init({
     activeServiceWorker: !!navigator.serviceWorker.controller,
     hostname: window.location.hostname,
     activeLanguage: localStorage.getItem('language') || '',
-    healthCenterId: localStorage.getItem('healthCenterId') || ''
+    healthCenterId: localStorage.getItem('healthCenterId') || '',
+    villageId: localStorage.getItem('villageId') || ''
   }
 });
 
@@ -75,6 +76,10 @@ elmApp.ports.cachePinCode.subscribe(function(pinCode) {
 
 elmApp.ports.cacheHealthCenter.subscribe(function(healthCenterId) {
   localStorage.setItem('healthCenterId', healthCenterId);
+});
+
+elmApp.ports.cacheVillage.subscribe(function(villageId) {
+  localStorage.setItem('villageId', villageId);
 });
 
 elmApp.ports.setLanguage.subscribe(function(language) {
