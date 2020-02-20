@@ -54,7 +54,15 @@
     // So, we can issue as many of these as we like while offline -- we'll just
     // receive one event here, once we're online again.
     self.addEventListener('sync', function (event) {
-        var data = JSON.parse(event.tag);
+        var data = {};
+        try {
+            data = JSON.parse(event.tag);
+        } catch (e) {
+            data = {
+                msg: event.tag,
+                uuid: null
+            };
+        }
 
         if (data.msg === syncTag) {
             var action = syncAllShards(data.uuid).catch(function (attempt) {
@@ -231,7 +239,7 @@
         }
         else {
             // Sync without health center ID.
-            return getSyncUrlParams(urlArray);
+            return Promise.resolve(getSyncUrlParams(urlArray));
         }
     }
 
