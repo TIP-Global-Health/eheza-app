@@ -186,6 +186,7 @@ function hedley_user_field_default_field_bases() {
       'allowed_values' => array(
         'admin' => 'Administrator',
         'nurse' => 'Nurse',
+        'chw' => 'Community Health Worker',
       ),
       'allowed_values_function' => '',
     ),
