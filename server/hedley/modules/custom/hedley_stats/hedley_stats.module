@@ -1280,6 +1280,10 @@ function hedley_stats_handle_cache($method, $cache_name, $health_center_id, $per
       break;
 
     case HEDLEY_STATS_CACHE_CLEAR:
-      cache_clear_all($cache_id);
+      $cache = cache_get($cache_id);
+
+      if (!empty($cache)) {
+        cache_clear_all($cache_id);
+      }
   }
 }
