@@ -64,7 +64,7 @@ class HedleyRestfulClinics extends HedleyRestfulSyncBase {
       $item->health_center = $item->uuid_health_center;
       unset($item->uuid_health_center);
       $item->village = $item->uuid_village;
-      unset($item->uuid_health_village);
+      unset($item->uuid_village);
     }
 
     return $items;
