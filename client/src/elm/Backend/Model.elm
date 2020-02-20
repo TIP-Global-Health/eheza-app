@@ -241,9 +241,6 @@ type MsgIndexedDb
     | MsgSession SessionId Backend.Session.Model.Msg
     | MsgPrenatalEncounter PrenatalEncounterId Backend.PrenatalEncounter.Model.Msg
     | MsgPrenatalSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
-      -- Temporary, until we have a real UI for picking out a PrenatalEncounter
-    | GoToRandomPrenatalEncounter
-    | HandleRandomPrenatalEncounter (Result Http.Error (Maybe PrenatalEncounterId))
 
 
 {-| Wrapper for all the revisions we can receive.

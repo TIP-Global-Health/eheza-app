@@ -399,9 +399,6 @@ update msg model =
                                                 , [ cachePinCode "", cacheHealthCenter "" ]
                                                 )
 
-                                            Pages.PinCode.Model.GoToRandomPrenatalEncounter ->
-                                                ( [ MsgIndexedDb Backend.Model.GoToRandomPrenatalEncounter ], [] )
-
                                             Pages.PinCode.Model.SetActivePage page ->
                                                 ( [ SetActivePage page ], [] )
 

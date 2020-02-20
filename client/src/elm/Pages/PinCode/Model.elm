@@ -27,7 +27,6 @@ type OutMsg
     = Logout
     | TryPinCode String
     | SetActivePage Page
-    | GoToRandomPrenatalEncounter
     | SetHealthCenter HealthCenterId
 
 
