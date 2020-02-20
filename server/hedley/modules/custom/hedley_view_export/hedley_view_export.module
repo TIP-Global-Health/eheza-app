@@ -1,0 +1,316 @@
+<?php
+
+define('HEDLEY_VIEW_EXPORT_EXPORT_VIEW_QUEUE', 'export_view');
+
+/**
+ * Implements hook_views_api().
+ */
+function hedley_view_export_views_api(): array {
+  return [
+    'api' => '3.0',
+    'path' => drupal_get_path('module', 'hedley_view_export'),
+    'template path' => drupal_get_path('module', 'hedley_view_export') . '/templates',
+  ];
+}
+
+/**
+ * Implements hook_advanced_queue_info().
+ */
+function hedley_view_export_advanced_queue_info(): array {
+  $items[HEDLEY_VIEW_EXPORT_EXPORT_VIEW_QUEUE] = [
+    'label' => t('View export'),
+    'worker callback' => 'hedley_view_export_export_batch_worker',
+    'groups' => ['report'],
+    'pusher integration' => TRUE,
+    'retry after' => 10,
+    // Each batch of the view consumes an attempt.
+    'max attempts' => 1000,
+    'lease time' => 120,
+    'skip hooks' => FALSE,
+  ];
+
+  return $items;
+}
+
+/**
+ * Implements hook_views_pre_render().
+ *
+ * Add export buttons to views with hedley_view_export_X displays, and show
+ * download links for completed exports.
+ *
+ * @param view $view
+ *
+ * @throws Exception
+ */
+function hedley_view_export_views_pre_render(view &$view): void {
+  // Add the export links.
+  $exposed_inputs = !empty($view->exposed_input) ? http_build_query($view->exposed_input): '';
+  $context = http_build_query($view->args);
+
+  $view->feed_icon = $view->feed_icon ?? '';
+
+  // Don't add the export link when there's no display added for it.
+  $display = 'hedley_view_export_csv';
+  if (empty($view->display[$display])) {
+    return;
+  }
+  $url = "add-view-export/csv/$view->name/$display/$exposed_inputs/$context";
+  $options = ['attributes' => ['class' => ['use-ajax']]];
+  $view->feed_icon .= ' ' . l(t('Export CSV'), $url, $options);
+}
+
+/**
+ * Implements hook_menu().
+ */
+function hedley_view_export_menu(): array {
+  $items['add-view-export/%/%/%/%/%'] = [
+    'title' => 'Item by UUID',
+    'description' => 'Add an AQ item for exporting a view',
+    'access callback' => 'hedley_restful_menu_access_by_access_token',
+    'page callback' => 'hedley_view_export_add_item',
+    'page arguments' => [1, 2, 3, 4, 5],
+  ];
+
+  return $items;
+}
+
+/**
+ * Menu callback. Add a view export AQ item.
+ *
+ * @param string $type
+ *   Export type.
+ * @param string $view_name
+ *   View name.
+ * @param string $display
+ *   Display name.
+ * @param string $exposed_inputs
+ *   Exposed inputs array, encoded as a query string.
+ * @param string $context
+ *   Contextual filters, encoded as a query string.
+ *
+ * @throws Exception
+ */
+function hedley_view_export_add_item(string $type, string $view_name, string $display, string $exposed_inputs, string $context): void {
+  global $user;
+
+  if ($type != 'csv') {
+    throw new Exception(format_string('Invalid type @type', ['@type' => $type]));
+  }
+  $view = views_get_view($view_name);
+  if (!$view) {
+    throw new Exception(format_string('Invalid view name @view_name', ['@view_name' => $view_name]));
+  }
+  if (empty($view->display[$display])) {
+    throw new Exception(format_string('View @view_name has no display @display', ['@view_name' => $view_name, '@display' => $display]));
+  }
+
+  // Convert the exposed inputs and contextual filters encoded strings back to
+  // arrays.
+  parse_str($exposed_inputs, $exposed_inputs);
+  parse_str($context, $context);
+
+  // Create a file for the export.
+  $dir = 'private://hedley_view_export';
+
+  // Make sure the directory exists.
+  if (!file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
+    throw new Exception(t('Could not create directory @dir', ['@dir' => $dir]));
+  }
+
+  $random = drupal_random_key(8);
+  $uri = "$dir/$view_name-$random.$type";
+
+  // Save the file into the DB.
+  $file = hedley_view_export_create_file_by_uri($uri, $user->uid);
+
+  $title = format_string('Export @view as @type, by @user on @time', [
+    '@view' => $view->human_name,
+    '@type' => $type,
+    '@user' => $user->name,
+    '@time' => format_date(REQUEST_TIME, 'short'),
+  ]);
+
+  // Add the AQ item.
+  $arguments = [
+    'fid' => $file->fid,
+    'export_status' => 'in_progress',
+    'export_type' => $type,
+    'view_name' => $view_name,
+    'display' => $display,
+    'exposed_inputs' => $exposed_inputs,
+    'context' => $context,
+    'from' => 0,
+    'range' => variable_get("hedley_view_export_range__{$view_name}", 500),
+    'title' => $title,
+  ];
+  hedley_view_export_add_advanced_queue_task(HEDLEY_VIEW_EXPORT_EXPORT_VIEW_QUEUE, $arguments);
+}
+
+/**
+ * Append a view batch to the exported file.
+ *
+ * @param stdClass $item
+ *   AQ item.
+ *
+ * @return array
+ *   AQ result.
+ *
+ * @throws Exception
+ */
+function hedley_view_export_export_batch_worker(stdClass $item): array {
+  // Switch the global user to the one created the item, so the export is
+  // created with their permissions.
+  $manager = new RestfulAuthenticationManager();
+  $account = user_load($item->uid);
+  $manager->setAccount($account);
+//  $item->data['mid']
+  // Set the related message as failed, and return an AQ failure.
+  $failure = function($message) use ($manager) {
+//    $message_wrapper->field_export_status->set('failed');
+
+
+    // Switch back to the original user.
+    $manager->switchUserBack();
+
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE,
+      'result' => $message,
+    ];
+  };
+
+  $file = file_load($item->data['fid']);
+  if (!$file) {
+    return $failure(format_string("Couldn't load file ID: @fid", ['@fid' => $item->data['fid']]));
+  }
+
+  $view_name = $item->data['view_name'];
+  $display = $item->data['display'];
+  $from = $item->data['from'];
+  $range = $item->data['range'];
+
+  // Fetch the view in question from our cache
+  $view = views_get_view($view_name);
+  $view->set_display($display);
+  if ($item->data['exposed_inputs']) {
+    $view->set_exposed_input($item->data['exposed_inputs']);
+  }
+  if ($item->data['context']) {
+    $view->set_arguments($item->data['context']);
+  }
+
+  // Don't display contextual links on the exported view.
+  views_ui_contextual_links_suppress_push();
+
+  $view->set_items_per_page($range);
+  $view->set_offset($from);
+  $view->execute_display($display);
+
+  $output = $view->render($display);
+
+  if (file_put_contents($file->uri, $output, FILE_APPEND) === FALSE) {
+    return $failure(format_string("Couldn't write to file: @uri", ['@fid' => $file->uri]));
+  }
+
+  // Re-queue another batch as long as the current batch is full.
+  if (count($view->result) == $range) {
+    $item->data['from'] += $range;
+    $queue = new AdvancedQueue(HEDLEY_VIEW_EXPORT_EXPORT_VIEW_QUEUE);
+    $queue->requeueItem($item);
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_QUEUED,
+      'result' => format_string('Re-queued for next batch. So far exported @count rows', ['@count' => $item->data['from']]),
+    ];
+  }
+
+  // Reaching here means the results count is less than the range. That means
+  // this was the last batch.
+
+  // Convert the html to pdf.
+  if ($item->data['export_type'] == 'pdf') {
+    $html = file_get_contents($file->uri);
+    if (!hedley_general_generate_pdf_file_from_html($html, $file->uri, [], [], FALSE, FALSE)) {
+      return $failure(format_string("Couldn't write pdf to file: @uri", ['@fid' => $file->uri]));
+    }
+  }
+
+  $message_wrapper->field_export_status->set('ready');
+  $message_wrapper->save();
+
+  $result = [
+    'status' => ADVANCEDQUEUE_STATUS_SUCCESS,
+    'result' => [
+      // Convert the file uri to url when displaying it.
+      // See hedley_restful_get_advanced_queue_output().
+      's3_uri_keys' => ['@url'],
+      '@url' => $file->uri,
+      '@count' => count($view->result) + $from,
+    ],
+  ];
+
+  // Switch user back, in case anything else is done in this request.
+  $manager->switchUserBack();
+
+  return $result;
+}
+
+/**
+ * Print an array as CSV to standard output.
+ *
+ * Needed for printing CSV from within templates.
+ *
+ * @param array $row
+ *   Row values.
+ * @param bool $strip_tags
+ *   Whether to remove html from the values.
+ */
+function hedley_view_export_print_csv(array $row, bool $strip_tags = TRUE): void {
+  $out = fopen('php://output', 'w');
+  if ($strip_tags) {
+    $row = array_map('strip_tags', $row);
+  }
+  fputcsv($out, $row);
+  fclose($out);
+}
+
+/**
+ * Create a new file.
+ *
+ * @param string $uri
+ *   The file uri.
+ * @param int $uid
+ *   File author.
+ *
+ * @return stdClass
+ *   The file object.
+ */
+function hedley_view_export_create_file_by_uri(string $uri, int $uid): stdClass {
+  $file = new stdClass();
+  $file->fid = NULL;
+  $file->uri = $uri;
+  $file->filename = drupal_basename($uri);
+  $file->filemime = file_get_mimetype($file->uri);
+  $file->uid = $uid;
+  $file->status = FILE_STATUS_PERMANENT;
+
+  return file_save($file);
+}
+
+
+/**
+ * Add task to an advanced queue.
+ *
+ * @param string $queue_name
+ *   The machine name of the queue.
+ * @param array $arguments
+ *   Task arguments.
+ *
+ * @return int
+ *   The new advancedqueue_item ID.
+ *
+ * @throws Exception
+ */
+function hedley_view_export_add_advanced_queue_task(string $queue_name, array $arguments): int {
+  $queue = new AdvancedQueue($queue_name);
+  $arguments['timestamp'] = REQUEST_TIME;
+  return $queue->createItem($arguments);
+}

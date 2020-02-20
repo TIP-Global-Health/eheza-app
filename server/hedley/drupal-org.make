@@ -8,6 +8,13 @@ projects[admin_menu][version] = "3.0-rc6"
 projects[admin_views][subdir] = "contrib"
 projects[admin_views][version] = "1.7"
 
+projects[advancedqueue][subdir] = "contrib"
+projects[advancedqueue][version] = "1.x-dev"
+projects[advancedqueue][patch][] = "https://www.drupal.org/files/issues/2019-11-03/2981791-10-stuck-items_0.patch"
+projects[advancedqueue][patch][] = "https://www.drupal.org/files/issues/2019-03-12/3039333-2-view-improvements.patch"
+; Have AdvancedQueue::createItem() return the item_id
+projects[advancedqueue][patch][] = "https://www.drupal.org/files/issues/2020-01-29/return-item-id-from-create-item-0.patch"
+
 projects[auto_entitylabel][subdir] = "contrib"
 projects[auto_entitylabel][version] = "1.4"
 
