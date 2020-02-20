@@ -577,7 +577,6 @@ function hedley_stats_get_total_beneficiaries($health_center_id, $period = HEDLE
     return $cache_data;
   }
 
-
   $nutrition_per_month = [
     'stunting' => [
       HEDLEY_STATS_SEVERE => 0,
