@@ -74,7 +74,13 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
       $item->role = explode(',', $item->role);
       $item->health_centers = explode(',', $item->uuids_health_centers);
       unset($item->uuids_health_centers);
-      $item->villages = explode(',', $item->uuids_villages);
+
+      if (empty($item->uuids_villages)) {
+        $item->villages = [];
+      }
+      else {
+        $item->villages = explode(',', $item->uuids_villages);
+      }
       unset($item->uuids_villages);
     }
 
