@@ -1072,23 +1072,23 @@ filterStatsByPeriod currentDate model stats =
         completedProgramCount =
             List.foldl
                 (\completedProgram accum ->
-                    (List.filter (\date -> filterPartial date) completedProgram.dates
+                    (List.filter filterPartial completedProgram.dates
                         |> List.length
                     )
                         + accum
                 )
-                stats.completedProgramCount
+                0
                 stats.completedProgram
 
         missedSessionsCount =
             List.foldl
-                (\completedProgram accum ->
-                    (List.filter (\date -> filterPartial date) completedProgram.dates
+                (\missedSessions accum ->
+                    (List.filter filterPartial missedSessions.dates
                         |> List.length
                     )
                         + accum
                 )
-                stats.missedSessionsCount
+                0
                 stats.missedSessions
     in
     { stats
