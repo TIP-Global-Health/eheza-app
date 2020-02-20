@@ -414,7 +414,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           'type',
           'status',
           'shard',
-          'clinic_type'
+          'clinic_type',
         ];
 
         foreach ($ignored as $i) {
