@@ -43,9 +43,6 @@ function hedley_view_export_advanced_queue_info(): array {
  * @throws Exception
  */
 function hedley_view_export_views_pre_render(view &$view): void {
-  // Add the export links.
-  $exposed_inputs = !empty($view->exposed_input) ? http_build_query($view->exposed_input): '';
-  $context = http_build_query($view->args);
 
   $view->feed_icon = $view->feed_icon ?? '';
 
@@ -54,8 +51,14 @@ function hedley_view_export_views_pre_render(view &$view): void {
   if (empty($view->display[$display])) {
     return;
   }
-  $url = "add-view-export/csv/$view->name/$display/$exposed_inputs/$context";
-  $options = ['attributes' => ['class' => ['use-ajax']]];
+  $url = "add-view-export/csv/$view->name/$display";
+  $options = [
+    'query' => [
+      'exposed_inputs' => http_build_query($view->exposed_input ?? []),
+      'context' => http_build_query($view->args ?? []),
+    ],
+    'attributes' => ['class' => ['use-ajax']],
+  ];
   $view->feed_icon .= ' ' . l(t('Export CSV'), $url, $options);
 }
 
@@ -63,12 +66,12 @@ function hedley_view_export_views_pre_render(view &$view): void {
  * Implements hook_menu().
  */
 function hedley_view_export_menu(): array {
-  $items['add-view-export/%/%/%/%/%'] = [
+  $items['add-view-export/%/%/%'] = [
     'title' => 'Item by UUID',
     'description' => 'Add an AQ item for exporting a view',
     'access callback' => 'hedley_restful_menu_access_by_access_token',
     'page callback' => 'hedley_view_export_add_item',
-    'page arguments' => [1, 2, 3, 4, 5],
+    'page arguments' => [1, 2, 3],
   ];
 
   return $items;
@@ -83,14 +86,10 @@ function hedley_view_export_menu(): array {
  *   View name.
  * @param string $display
  *   Display name.
- * @param string $exposed_inputs
- *   Exposed inputs array, encoded as a query string.
- * @param string $context
- *   Contextual filters, encoded as a query string.
  *
  * @throws Exception
  */
-function hedley_view_export_add_item(string $type, string $view_name, string $display, string $exposed_inputs, string $context): void {
+function hedley_view_export_add_item(string $type, string $view_name, string $display): void {
   global $user;
 
   if ($type != 'csv') {
@@ -104,8 +103,11 @@ function hedley_view_export_add_item(string $type, string $view_name, string $di
     throw new Exception(format_string('View @view_name has no display @display', ['@view_name' => $view_name, '@display' => $display]));
   }
 
-  // Convert the exposed inputs and contextual filters encoded strings back to
-  // arrays.
+  // Get exposed inputs array, and contextual filters (Encoded as a query
+  // string).
+  $exposed_inputs = $_GET['exposed_inputs'] ?? '';
+  $context = $_GET['context'] ?? '';
+  // Convert the encoded strings back to arrays.
   parse_str($exposed_inputs, $exposed_inputs);
   parse_str($context, $context);
 
@@ -225,16 +227,8 @@ function hedley_view_export_export_batch_worker(stdClass $item): array {
   // Reaching here means the results count is less than the range. That means
   // this was the last batch.
 
-  // Convert the html to pdf.
-  if ($item->data['export_type'] == 'pdf') {
-    $html = file_get_contents($file->uri);
-    if (!hedley_general_generate_pdf_file_from_html($html, $file->uri, [], [], FALSE, FALSE)) {
-      return $failure(format_string("Couldn't write pdf to file: @uri", ['@fid' => $file->uri]));
-    }
-  }
-
-  $message_wrapper->field_export_status->set('ready');
-  $message_wrapper->save();
+//  $message_wrapper->field_export_status->set('ready');
+//  $message_wrapper->save();
 
   $result = [
     'status' => ADVANCEDQUEUE_STATUS_SUCCESS,
