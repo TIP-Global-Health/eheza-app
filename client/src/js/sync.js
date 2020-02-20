@@ -237,13 +237,13 @@
 
     function getSyncUrlParams(urlArray, maybeHealthCenterUuid, maybeStatsCacheHash) {
         if (maybeHealthCenterUuid) {
-            urlArray += ['&health_center_uuid=', maybeHealthCenterUuid];
+            urlArray.push('&health_center_uuid=', maybeHealthCenterUuid);
         }
         if (maybeStatsCacheHash) {
             // We already have stats synced, however we send their md5 hash to
             // the server so it would know if we have the most up to date
             // version. If not, it will send the latest.
-            urlArray += ['&stats_cache_hash=', maybeStatsCacheHash];
+            urlArray.push('&stats_cache_hash=', maybeStatsCacheHash);
         }
 
         return urlArray.join('');
@@ -253,13 +253,11 @@
         var token = credentials.access_token;
         var backendUrl = credentials.backend_url;
 
-        var url = [
+        return [
             backendUrl,
             '/api/file-upload?access_token=',
             token
         ].join('');
-
-        return url;
     }
 
     // Resolves with metadata, or rejects with an attempt result. In either
