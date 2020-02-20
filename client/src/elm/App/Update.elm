@@ -22,7 +22,7 @@ import Json.Encode
 import Pages.Clinics.Update
 import Pages.Device.Model
 import Pages.Device.Update
-import Pages.Page exposing (..)
+import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Participant.Update
 import Pages.People.Update
 import Pages.Person.Update
@@ -461,7 +461,7 @@ update msg model =
                 |> Maybe.withDefault ""
                 |> cacheVillage
             )
-                |> sequence update [ SetHealthCenter maybeHealthCenterId ]
+                |> sequence update [ SetHealthCenter maybeHealthCenterId, SetActivePage <| UserPage ClinicalPage ]
 
         Tick time ->
             let
