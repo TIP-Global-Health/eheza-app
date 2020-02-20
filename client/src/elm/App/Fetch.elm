@@ -55,7 +55,7 @@ fetch model =
             []
 
         UserPage ClinicalPage ->
-            Pages.Clinical.Fetch.fetch
+            Pages.Clinical.Fetch.fetch model.villageId model.indexedDb
                 |> List.map MsgIndexedDb
 
         UserPage (ClinicsPage clinicId) ->
@@ -90,8 +90,6 @@ fetch model =
         UserPage (SessionPage sessionId sessionPage) ->
             Pages.Session.Fetch.fetch sessionId sessionPage model.indexedDb
                 |> List.map MsgIndexedDb
-
-
 
 
 {-| Given a `Msg`, do we need to fetch the data it would fetch? We only answer

@@ -193,7 +193,7 @@ viewUserPage page model configured =
                         |> oldPageWrapper model
 
                 ClinicalPage ->
-                    Pages.Clinical.View.view model.language
+                    Pages.Clinical.View.view model.language currentDate model.villageId model.indexedDb
                         |> flexPageWrapper model
 
                 ClinicsPage clinicId ->

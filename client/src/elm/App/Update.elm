@@ -328,7 +328,7 @@ update msg model =
                                                 ( [ TryPinCode code ], [] )
 
                                             Pages.PinCode.Model.Logout ->
-                                                ( [ SetLoggedIn NotAsked, SetHealthCenter Nothing ]
+                                                ( [ SetLoggedIn NotAsked, SetHealthCenter Nothing, SetVillage Nothing ]
                                                 , [ cachePinCode "", cacheHealthCenter "", cacheVillage "" ]
                                                 )
 
