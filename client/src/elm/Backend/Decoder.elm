@@ -11,6 +11,7 @@ import Backend.Person.Decoder exposing (decodePerson)
 import Backend.PmtctParticipant.Decoder exposing (decodePmtctParticipant)
 import Backend.Relationship.Decoder exposing (decodeRelationship)
 import Backend.Session.Decoder exposing (decodeSession)
+import Backend.Village.Decoder exposing (decodeVillage)
 import Json.Decode exposing (..)
 import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid)
 
@@ -79,6 +80,9 @@ decodeRevision =
 
                     "photo" ->
                         decodeWithUuid PhotoRevision decodePhoto
+
+                    "village" ->
+                        decodeWithUuid VillageRevision decodeVillage
 
                     "weight" ->
                         decodeWithUuid WeightRevision decodeWeight

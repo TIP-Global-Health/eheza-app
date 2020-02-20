@@ -109,6 +109,9 @@ shouldFetch model msg =
         FetchHealthCenters ->
             isNotAsked model.healthCenters
 
+        FetchVillages ->
+            isNotAsked model.villages
+
         FetchMotherMeasurements motherId ->
             Dict.get motherId model.motherMeasurements
                 |> Maybe.withDefault NotAsked
@@ -194,6 +197,9 @@ forget msg model =
 
         FetchHealthCenters ->
             { model | healthCenters = NotAsked }
+
+        FetchVillages ->
+            { model | villages = NotAsked }
 
         FetchMotherMeasurements motherId ->
             { model | motherMeasurements = Dict.remove motherId model.motherMeasurements }

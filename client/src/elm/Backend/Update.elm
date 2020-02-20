@@ -894,6 +894,19 @@ updateIndexedDb currentDate nurseId msg model =
             , []
             )
 
+        FetchVillages ->
+            ( { model | villages = Loading }
+            , sw.select villageEndpoint ()
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedVillages)
+            , []
+            )
+
+        HandleFetchedVillages data ->
+            ( { model | villages = data }
+            , Cmd.none
+            , []
+            )
+
 
 {-| The extra return value indicates whether we need to recalculate our
 successful EditableSessions. Ideally, we would handle this in a more
@@ -1061,6 +1074,15 @@ handleRevision revision ( model, recalc ) =
                 , sessions = Dict.insert uuid (Success data) model.sessions
               }
             , True
+            )
+
+        VillageRevision uuid data ->
+            let
+                villages =
+                    RemoteData.map (Dict.insert uuid data) model.villages
+            in
+            ( { model | villages = villages }
+            , recalc
             )
 
         WeightRevision uuid data ->

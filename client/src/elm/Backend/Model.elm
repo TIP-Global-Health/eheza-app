@@ -30,6 +30,7 @@ import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
+import Backend.Village.Model exposing (Village)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
@@ -44,6 +45,7 @@ type alias ModelIndexedDb =
     { clinics : WebData (Dict ClinicId Clinic)
     , everyCounselingSchedule : WebData EveryCounselingSchedule
     , healthCenters : WebData (Dict HealthCenterId HealthCenter)
+    , villages : WebData (Dict VillageId Village)
     , participantForms : WebData (Dict ParticipantFormId ParticipantForm)
 
     -- Data and requests relating to sync data
@@ -115,6 +117,7 @@ emptyModelIndexedDb =
     , expectedParticipants = Dict.empty
     , expectedSessions = Dict.empty
     , healthCenters = NotAsked
+    , villages = NotAsked
     , motherMeasurements = Dict.empty
     , participantForms = NotAsked
     , participantsByPerson = Dict.empty
@@ -160,6 +163,7 @@ type MsgIndexedDb
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
     | FetchSyncData
+    | FetchVillages
       -- Messages which handle responses to data
     | HandleFetchedChildMeasurements PersonId (WebData ChildMeasurementList)
     | HandleFetchedChildrenMeasurements (WebData (Dict PersonId ChildMeasurementList))
@@ -179,6 +183,7 @@ type MsgIndexedDb
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (Dict SessionId Session))
     | HandleFetchedSyncData (WebData (Dict HealthCenterId SyncData))
+    | HandleFetchedVillages (WebData (Dict VillageId Village))
       -- Messages which mutate data
     | PostPerson (Maybe PersonId) Person -- The first person is a person we ought to offer setting a relationship to.
     | PatchPerson PersonId Person
@@ -226,4 +231,5 @@ type Revision
     | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
     | RelationshipRevision RelationshipId Relationship
     | SessionRevision SessionId Session
+    | VillageRevision VillageId Village
     | WeightRevision WeightId Weight

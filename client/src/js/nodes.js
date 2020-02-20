@@ -102,6 +102,7 @@
         relationship: 'nodes',
         session: 'nodes',
         syncmetadata: 'syncMetadata',
+        village: 'nodes',
         weight: 'shards'
     };
 
