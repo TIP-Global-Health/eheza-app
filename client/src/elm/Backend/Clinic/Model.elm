@@ -9,11 +9,13 @@ type alias Clinic =
     { name : String
     , healthCenterId : HealthCenterId
     , clinicType : ClinicType
+    , villageId : Maybe VillageId
     }
 
 
 type ClinicType
-    = Fbf
+    = Chw
+    | Fbf
     | Pmtct
     | Sorwathe
 
