@@ -16,15 +16,15 @@ define('HEDLEY_STATS_GOOD', 'good_nutrition');
 
 // Cache IDs.
 define('HEDLEY_STATS_SYNC_STATS_CACHE', 'sync_stats_general');
-define('HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON', 'measurements_query_grouped_by_person');
-define('HEDLEY_STATS_SYNC_SESSION_ATTENDANCE', 'session_attendance_stats');
-define('HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES', 'children_beneficiaries_stats');
-define('HEDLEY_STATS_SYNC_FAMILY_PLANNING', 'family_planning_stats');
-define('HEDLEY_STATS_SYNC_MALNOURISHED_BENEFICIARIES', 'malnourished_beneficiaries_stats');
-define('HEDLEY_STATS_SYNC_GOOD_NUTRITION', 'good_nutrition_stats');
-define('HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS', 'total_encounters_stats');
-define('HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES', 'total_beneficiaries_stats');
-define('HEDLEY_STATS_SYNC_CASE_MANAGEMENT', 'case_management_stats');
+define('HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON', 'sync_measurements_query_grouped_by_person');
+define('HEDLEY_STATS_SYNC_SESSION_ATTENDANCE', 'sync_session_attendance_stats');
+define('HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES', 'sync_children_beneficiaries_stats');
+define('HEDLEY_STATS_SYNC_FAMILY_PLANNING', 'sync_family_planning_stats');
+define('HEDLEY_STATS_SYNC_MALNOURISHED_BENEFICIARIES', 'sync_malnourished_beneficiaries_stats');
+define('HEDLEY_STATS_SYNC_GOOD_NUTRITION', 'sync_good_nutrition_stats');
+define('HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS', 'sync_total_encounters_stats');
+define('HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES', 'sync_total_beneficiaries_stats');
+define('HEDLEY_STATS_SYNC_CASE_MANAGEMENT', 'sync_case_management_stats');
 
 // Cache methods.
 define('HEDLEY_STATS_CACHE_GET', 'get');
@@ -1275,7 +1275,7 @@ function hedley_stats_handle_cache($method, $cache_name, $health_center_id, $per
 
     case HEDLEY_STATS_CACHE_SET:
       if ($cache_data) {
-        cache_set($cache_id, $cache_data, CACHE_TEMPORARY);
+        cache_set($cache_id, $cache_data, 'cache', CACHE_TEMPORARY);
       }
       break;
 
