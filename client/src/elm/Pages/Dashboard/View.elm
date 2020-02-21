@@ -31,7 +31,7 @@ import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..))
-import Utils.Html exposing (viewModal)
+import Utils.Html exposing (viewLoading, viewModal)
 
 
 {-| Shows a dashboard page.
@@ -48,13 +48,25 @@ view language page currentDate healthCenterId model db =
         ( pageView, goBackPage ) =
             case page of
                 MainPage ->
-                    ( viewMainPage language currentDate stats model, PinCodePage )
+                    if Dict.isEmpty stats.totalBeneficiaries then
+                        ( viewLoading, PinCodePage )
+
+                    else
+                        ( viewMainPage language currentDate stats model, PinCodePage )
 
                 StatsPage ->
-                    ( viewStatsPage language currentDate stats model healthCenterId db, UserPage <| DashboardPage MainPage )
+                    if List.isEmpty stats.missedSessions && List.isEmpty stats.completedProgram then
+                        ( div [ class "ui segment" ] [ translateText language <| Translate.Dashboard Translate.NoDataGeneral ], PinCodePage )
+
+                    else
+                        ( viewStatsPage language currentDate stats model healthCenterId db, UserPage <| DashboardPage MainPage )
 
                 CaseManagementPage ->
-                    ( viewCaseManagementPage language currentDate stats model, UserPage <| DashboardPage model.latestPage )
+                    if List.isEmpty stats.caseManagement then
+                        ( div [ class "ui segment" ] [ translateText language <| Translate.Dashboard Translate.NoDataGeneral ], PinCodePage )
+
+                    else
+                        ( viewCaseManagementPage language currentDate stats model, UserPage <| DashboardPage model.latestPage )
 
         header =
             div
@@ -276,7 +288,7 @@ viewAllStatsCards language stats currentDate model healthCenterId db =
                 |> filterStatsByPeriod currentDate modelWithLastMonth
     in
     if List.isEmpty stats.malnourished then
-        div [ class "ui segment" ] [ text "No data for the selected period." ]
+        div [ class "ui segment" ] [ translateText language <| Translate.Dashboard Translate.NoDataForPeriod ]
 
     else
         div [ class "ui equal width grid" ]

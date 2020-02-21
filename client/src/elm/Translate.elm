@@ -148,11 +148,14 @@ type Dashboard
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
     | GirlsFilterLabel
     | GoodNutritionLabel
+    | LoadingDataGeneral
     | MissedSessionsLabel
     | Moderate
     | ModeratelyMalnourished
     | NewBeneficiaries
     | NewCasesLabel
+    | NoDataGeneral
+    | NoDataForPeriod
     | PercentageLabel FilterPeriod
     | PeriodFilter FilterPeriod
     | Severe
@@ -2611,13 +2614,8 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
-        NewCasesLabel ->
-            { english = "New Cases"
-            , kinyarwanda = Nothing
-            }
-
-        NewBeneficiaries ->
-            { english = "New Beneficiaries"
+        LoadingDataGeneral ->
+            { english = "Loading dashboard stats..."
             , kinyarwanda = Nothing
             }
 
@@ -2633,6 +2631,26 @@ translateDashboard trans =
 
         ModeratelyMalnourished ->
             { english = "Moderately Malnourished"
+            , kinyarwanda = Nothing
+            }
+
+        NewCasesLabel ->
+            { english = "New Cases"
+            , kinyarwanda = Nothing
+            }
+
+        NewBeneficiaries ->
+            { english = "New Beneficiaries"
+            , kinyarwanda = Nothing
+            }
+
+        NoDataGeneral ->
+            { english = "No data for this health center."
+            , kinyarwanda = Nothing
+            }
+
+        NoDataForPeriod ->
+            { english = "No data for the selected period."
             , kinyarwanda = Nothing
             }
 
