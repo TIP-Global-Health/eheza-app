@@ -6,3 +6,30 @@
  */
 
 include_once 'hedley_health_center.features.inc';
+
+/**
+ * Implements hook_node_insert().
+ *
+ * Crate CHW group for newly created village.
+ */
+function hedley_health_center_node_insert($node) {
+  if ($node->type != 'village') {
+    return;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $health_center_id = $wrapper->field_health_center->getIdentifier();
+  $village_name =  $wrapper->label();
+
+  $clinic_node = entity_create('node', [
+    'type' => 'clinic',
+    'uid' => $node->uid,
+  ]);
+
+  $wrapper = entity_metadata_wrapper('node', $clinic_node);
+  $wrapper->title->set("$village_name CHW group");
+  $wrapper->field_health_center->set($health_center_id);
+  $wrapper->field_village_ref->set($node->nid);
+  $wrapper->field_group_type->set('chw');
+  $wrapper->save();
+}
