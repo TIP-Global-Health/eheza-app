@@ -17,6 +17,9 @@ function hedley_migrate_migrate_api() {
       'missing' => [
         'title' => t('Missing Data'),
       ],
+      'villages' => [
+        'title' => t('Villages'),
+      ],
       'batch_2019_02' => [
         'title' => t('Batch data added 2019/02'),
       ],
@@ -142,6 +145,7 @@ function hedley_migrate_migrate_api() {
       ],
       'HedleyMigrateVillages' => [
         'class_name' => 'HedleyMigrateVillages',
+        'group_name' => 'villages',
       ],
       'HedleyMigrateMissingHeights' => [
         'class_name' => 'HedleyMigrateMissingHeights',
