@@ -36,6 +36,13 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   protected $clinicId;
 
   /**
+   * The nurse.
+   *
+   * @var object
+   */
+  protected $nurse;
+
+  /**
    * Add a main health center and clinic for all the tests.
    *
    * @inheritdoc
@@ -250,6 +257,61 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   }
 
   /**
+   * Testing the syncing and caching.
+   */
+  public function testSyncAndCache() {
+    $health_center_wrapper = entity_metadata_wrapper('node', $this->healthCenterId);
+
+    /** @var RestfulEntityBaseNode $handler */
+    $handler = restful_get_restful_handler('sync');
+
+    // Make sure anonymous user doesn't get the content.
+    $handler->setAccount($this->nurse);
+    $request = [
+      'base_revision' => 202700,
+      'db_version' => 7,
+      'health_center_uuid' => $health_center_wrapper->field_uuid->value(),
+    ];
+
+    $results = $handler->get('', $request);
+
+    // Check the results are NOT empty.
+    $this->assert(!empty($results['batch'][0]));
+
+    // Check that the stats are not empty.
+    $stats = $results['batch'][0];
+    $this->assertEqual($stats['uuid'], $health_center_wrapper->field_uuid->value());
+    $this->assert(!empty($stats['good_nutrition']));
+    $this->assert(!empty($stats['case_management']));
+    $this->assert(!empty($stats['total_beneficiaries']));
+    $this->assert(!empty($stats['total_encounters']));
+
+    // Call again with cache hash to make sure we don't get the results this
+    // time.
+    $request['stats_cache_hash'] = $stats['stats_cache_hash'];
+    $results2 = $handler->get('', $request);
+
+    // Check the results are empty which means that it is cached and won't sent
+    // it again to the frontend.
+    $this->assert(empty($results2['batch'][0]));
+
+    // Remove the cache hash and expect to get the stats again.
+    unset($request['stats_cache_hash']);
+    $results3 = $handler->get('', $request);
+
+    // Check the results are NOT empty.
+    $this->assert(!empty($results3['batch'][0]));
+
+    // Check that the stats are not empty.
+    $stats = $results3['batch'][0];
+    $this->assertEqual($stats['uuid'], $health_center_wrapper->field_uuid->value());
+    $this->assert(!empty($stats['good_nutrition']));
+    $this->assert(!empty($stats['case_management']));
+    $this->assert(!empty($stats['total_beneficiaries']));
+    $this->assert(!empty($stats['total_encounters']));
+  }
+
+  /**
    * Create sessions with attendance.
    *
    * @param int $attendance_last_year
@@ -283,7 +345,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       }
 
       $session_nid = $this->createSession($this->clinicId, $session['date']);
-      $nurse = $this->createNurse($this->clinicId);
+      $this->nurse = $this->createNurse($this->clinicId);
 
       $children = [];
       for ($i = 1; $i <= $session['number_of_attendance']; $i++) {
@@ -296,12 +358,12 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
         $this->createDevice();
         $this->createPMTCT($child_nid, $mother_nid, $this->clinicId, $session['date']);
 
-        $this->createAttendance($this->healthCenterId, $session_nid, $nurse->uid, $child_nid, TRUE, $session['date']);
+        $this->createAttendance($this->healthCenterId, $session_nid, $this->nurse->uid, $child_nid, TRUE, $session['date']);
       }
 
       $sessions[$key]['session_data'] = [
         'session_nid' => $session_nid,
-        'nurse_uid' => $nurse->uid,
+        'nurse_uid' => $this->nurse->uid,
         'children' => $children,
       ];
     }
