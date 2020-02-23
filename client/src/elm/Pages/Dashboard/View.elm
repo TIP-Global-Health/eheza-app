@@ -108,7 +108,10 @@ viewMainPage language currentDate stats model =
                 [ viewTotalEncounters language stats.totalEncounters
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language model stats.totalBeneficiaries model.currentTotalChartsFilter
+                [ viewMonthlyChart language (Translate.Dashboard Translate.TotalBeneficiaries) model stats.totalBeneficiaries model.currentTotalChartsFilter
+                ]
+            , div [ class "sixteen wide column" ]
+                [ viewMonthlyChart language (Translate.Dashboard Translate.IncidenceOf) model stats.totalBeneficiariesIncidence model.currentTotalIncidenceChartsFilter
                 ]
             , div [ class "sixteen wide column" ]
                 [ viewDashboardPagesLinks language
@@ -810,8 +813,8 @@ viewDonutChart language stats =
             ]
 
 
-viewMonthlyChart : Language -> Model -> Dict Int TotalBeneficiaries -> FilterCharts -> Html Msg
-viewMonthlyChart language model data currentFilter =
+viewMonthlyChart : Language -> TranslationId -> Model -> Dict Int TotalBeneficiaries -> FilterCharts -> Html Msg
+viewMonthlyChart language title model data currentFilter =
     let
         chartList =
             data
@@ -871,7 +874,7 @@ viewMonthlyChart language model data currentFilter =
     in
     div [ class "ui segment blue dashboards-monthly-chart" ]
         [ div [ class "header" ]
-            [ h3 [ class "title left floated column" ] [ translateText language <| Translate.Dashboard Translate.TotalBeneficiariesWasting ]
+            [ h3 [ class "title left floated column" ] [ text <| translate language title ++ " " ++ toString currentFilter ]
             , div [ class "filters" ]
                 (List.map (viewFilters FilterTotalsChart currentFilter) filterCharts)
             ]

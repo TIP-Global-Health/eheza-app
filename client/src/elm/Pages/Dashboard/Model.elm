@@ -91,6 +91,7 @@ type alias Model =
     { period : FilterPeriod
     , beneficiariesGender : FilterGender
     , currentTotalChartsFilter : FilterCharts
+    , currentTotalIncidenceChartsFilter : FilterCharts
     , currentCaseManagementFilter : FilterCharts
     , latestPage : DashboardPage
     , modalTable : List ParticipantStats
@@ -104,6 +105,7 @@ emptyModel =
     { period = OneYear
     , beneficiariesGender = Boys
     , currentTotalChartsFilter = Stunting
+    , currentTotalIncidenceChartsFilter = Stunting
     , currentCaseManagementFilter = Stunting
     , latestPage = MainPage
     , modalTable = []

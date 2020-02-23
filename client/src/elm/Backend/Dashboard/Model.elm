@@ -21,6 +21,7 @@ type alias DashboardStats =
     , missedSessions : List ParticipantStats
     , missedSessionsCount : Int
     , totalBeneficiaries : Dict Int TotalBeneficiaries
+    , totalBeneficiariesIncidence : Dict Int TotalBeneficiaries
     , totalEncounters : Periods
     }
 
@@ -50,6 +51,7 @@ emptyModel =
         , thisYear = 0
         }
     , totalBeneficiaries = Dict.empty
+    , totalBeneficiariesIncidence = Dict.empty
     }
 
 

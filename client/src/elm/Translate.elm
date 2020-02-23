@@ -148,6 +148,7 @@ type Dashboard
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
     | GirlsFilterLabel
     | GoodNutritionLabel
+    | IncidenceOf
     | LoadingDataGeneral
     | MissedSessionsLabel
     | Moderate
@@ -162,7 +163,7 @@ type Dashboard
     | SeverelyMalnourished
     | StatisticsHelper
     | SyncNotice
-    | TotalBeneficiariesWasting
+    | TotalBeneficiaries
     | TotalMalnourished
     | TotalEncountersLabel
     | UseFamilyPlanning
@@ -2615,6 +2616,11 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
+        IncidenceOf ->
+            { english = "Incidence of"
+            , kinyarwanda = Nothing
+            }
+
         LoadingDataGeneral ->
             { english = "Loading dashboard stats..."
             , kinyarwanda = Nothing
@@ -2719,8 +2725,8 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
-        TotalBeneficiariesWasting ->
-            { english = "Total Beneficiaries Wasting"
+        TotalBeneficiaries ->
+            { english = "Total Beneficiaries"
             , kinyarwanda = Nothing
             }
 

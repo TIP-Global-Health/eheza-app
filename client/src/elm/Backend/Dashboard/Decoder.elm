@@ -24,6 +24,7 @@ decodeDashboardStats =
         |> required "missed_sessions" (list decodeParticipantStats)
         |> required "missed_sessions_count" decodeInt
         |> required "total_beneficiaries" decodeTotalBeneficiariesDict
+        |> required "total_beneficiaries_incidence" decodeTotalBeneficiariesDict
         |> required "total_encounters" decodePeriods
 
 
