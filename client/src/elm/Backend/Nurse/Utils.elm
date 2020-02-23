@@ -1,5 +1,6 @@
-module Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker)
+module Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isAuthorithedNurse, isCommunityHealthWorker)
 
+import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Nurse.Model exposing (..)
 import EverySet
@@ -22,3 +23,14 @@ isCommunityHealthWorker nurse =
 
     else
         EverySet.member RoleCHW nurse.roles
+
+
+isAuthorithedNurse : Clinic -> Nurse -> Bool
+isAuthorithedNurse clinic nurse =
+    if isCommunityHealthWorker nurse then
+        clinic.villageId
+            |> Maybe.map (\id -> assignedToVillage id nurse)
+            |> Maybe.withDefault False
+
+    else
+        assignedToHealthCenter clinic.healthCenterId nurse
