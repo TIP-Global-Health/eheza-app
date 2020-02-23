@@ -276,15 +276,11 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $results = $handler->get('', $request);
 
     // Check the results are NOT empty.
-    $this->assert(!empty($results['batch'][0]));
+    $this->assert(!empty($results['batch'][0]), t('Stats are not empty for health center.'));
 
     // Check that the stats are not empty.
     $stats = $results['batch'][0];
     $this->assertEqual($stats['uuid'], $health_center_wrapper->field_uuid->value());
-    $this->assert(!empty($stats['good_nutrition']));
-    $this->assert(!empty($stats['case_management']));
-    $this->assert(!empty($stats['total_beneficiaries']));
-    $this->assert(!empty($stats['total_encounters']));
 
     // Call again with cache hash to make sure we don't get the results this
     // time.
@@ -293,22 +289,18 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
     // Check the results are empty which means that it is cached and won't sent
     // it again to the frontend.
-    $this->assert(empty($results2['batch'][0]));
+    $this->assert(empty($results2['batch'][0]), t('Stats are empty because of caching.'));
 
     // Remove the cache hash and expect to get the stats again.
     unset($request['stats_cache_hash']);
     $results3 = $handler->get('', $request);
 
     // Check the results are NOT empty.
-    $this->assert(!empty($results3['batch'][0]));
+    $this->assert(!empty($results3['batch'][0]), t('Stats are not empty for health center.'));
 
     // Check that the stats are not empty.
     $stats = $results3['batch'][0];
     $this->assertEqual($stats['uuid'], $health_center_wrapper->field_uuid->value());
-    $this->assert(!empty($stats['good_nutrition']));
-    $this->assert(!empty($stats['case_management']));
-    $this->assert(!empty($stats['total_beneficiaries']));
-    $this->assert(!empty($stats['total_encounters']));
   }
 
   /**
