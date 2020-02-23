@@ -31,7 +31,7 @@ import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..))
-import Utils.Html exposing (viewLoading, viewModal)
+import Utils.Html exposing (spinner, viewModal)
 
 
 {-| Shows a dashboard page.
@@ -49,7 +49,16 @@ view language page currentDate healthCenterId model db =
             case page of
                 MainPage ->
                     if Dict.isEmpty stats.totalBeneficiaries then
-                        ( viewLoading, PinCodePage )
+                        -- We can use the general "viewLoading" but we need to add a messgae here as well.
+                        ( div [ class "ui segment blue center aligned" ]
+                            [ div []
+                                [ translateText language <| Translate.Dashboard Translate.SyncNotice ]
+                            , div
+                                []
+                                [ spinner ]
+                            ]
+                        , PinCodePage
+                        )
 
                     else
                         ( viewMainPage language currentDate stats model, PinCodePage )
@@ -545,7 +554,7 @@ viewCard language statsCard =
         viewPercentageArrow icon =
             img
                 [ class "arrow"
-                , src <| "/assets/images/" ++ icon ++ ".svg"
+                , src <| "assets/images/" ++ icon ++ ".svg"
                 ]
                 []
 

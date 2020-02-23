@@ -161,6 +161,7 @@ type Dashboard
     | Severe
     | SeverelyMalnourished
     | StatisticsHelper
+    | SyncNotice
     | TotalBeneficiariesWasting
     | TotalMalnourished
     | TotalEncountersLabel
@@ -2710,6 +2711,11 @@ translateDashboard trans =
 
         StatisticsHelper ->
             { english = "See statistics for this month"
+            , kinyarwanda = Nothing
+            }
+
+        SyncNotice ->
+            { english = "If the dashboard statistics doesn't load shortly, please consider syncing data from the backend."
             , kinyarwanda = Nothing
             }
 
