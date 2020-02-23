@@ -98,8 +98,8 @@ function hedley_health_center_node_insert($node) {
       $adult = $relationships_wrapper->field_person->getIdentifier();
       $child = $relationships_wrapper->field_related_to->getIdentifier();
       $related_by = $relationships_wrapper->field_related_by->value();
-      $adult_activities = $related_by == HEDLEY_PERSON_RELATED_BY_PARENT_OF ?
-        HEDLEY_SCHEDULE_PMTCT_ACTIVITIES_MOTHER : HEDLEY_SCHEDULE_PMTCT_ACTIVITIES_CAREGIVER;
+      $adult_activities = $related_by == HEDLEY_PERSON_RELATED_BY_CAREGIVER_FOR ?
+        HEDLEY_SCHEDULE_PMTCT_ACTIVITIES_CAREGIVER : HEDLEY_SCHEDULE_PMTCT_ACTIVITIES_MOTHER;
 
       $participant_node = entity_create('node', [
         'type' => 'pmtct_participant',
