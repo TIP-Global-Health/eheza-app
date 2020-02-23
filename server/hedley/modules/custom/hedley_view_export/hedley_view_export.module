@@ -55,9 +55,6 @@ function hedley_view_export_advanced_queue_info() {
  * @throws Exception
  */
 function hedley_view_export_views_pre_render(view &$view) {
-
-  $view->feed_icon = $view->feed_icon ?? '';
-
   // Don't add the export link when there's no display added for it.
   $display = 'hedley_view_export_csv';
   if (empty($view->display[$display])) {
@@ -66,12 +63,14 @@ function hedley_view_export_views_pre_render(view &$view) {
   $url = "add-view-export/csv/$view->name/$display";
   $options = [
     'query' => [
-      'exposed_inputs' => http_build_query($view->exposed_input ?? []),
-      'context' => http_build_query($view->args ?? []),
+      'exposed_inputs' => http_build_query(!empty($view->exposed_input) ? $view->exposed_input : []),
+      'context' => http_build_query(!empty($view->args) ? $view->args : []),
     ],
     'attributes' => ['class' => ['use-ajax']],
   ];
-  $view->feed_icon .= ' ' . l(t('Export CSV'), $url, $options);
+  // Append the export link to the feed icon region.
+  $link = l(t('Export CSV'), $url, $options);
+  $view->feed_icon = !empty($view->feed_icon) ? $view->feed_icon . ' ' . $link : $link;
 }
 
 /**
@@ -79,7 +78,7 @@ function hedley_view_export_views_pre_render(view &$view) {
  */
 function hedley_view_export_menu() {
   $items['add-view-export/%/%/%'] = [
-    'title' => 'Create views export',
+    'title' => '',
     'description' => 'Add an AQ item for exporting a view',
     'access arguments' => ['hedley export views'],
     'page callback' => 'hedley_view_export_add_item',
@@ -99,6 +98,9 @@ function hedley_view_export_menu() {
  * @param string $display
  *   Display name.
  *
+ * @return string
+ *   Html for export-created page.
+ *
  * @throws Exception
  */
 function hedley_view_export_add_item(string $type, string $view_name, string $display) {
@@ -114,13 +116,15 @@ function hedley_view_export_add_item(string $type, string $view_name, string $di
   if (empty($view->display[$display])) {
     throw new Exception(format_string('View @view_name has no display @display', ['@view_name' => $view_name, '@display' => $display]));
   }
-
-  // TODO: Check user access to this specific view.
+  // Check access to this specific view.
+  if (!$view->access($display, $user)) {
+    throw new Exception(format_string('No access to display @display on view @view_name', ['@view_name' => $view_name, '@display' => $display]));
+  }
 
   // Get exposed inputs array, and contextual filters (Encoded as a query
   // string).
-  $exposed_inputs = $_GET['exposed_inputs'] ?? '';
-  $context = $_GET['context'] ?? '';
+  $exposed_inputs = !empty($_GET['exposed_inputs']) ? $_GET['exposed_inputs'] : '';
+  $context = !empty($_GET['context']) ? $_GET['context'] : '';
   // Convert the encoded strings back to arrays.
   parse_str($exposed_inputs, $exposed_inputs);
   parse_str($context, $context);
@@ -149,7 +153,6 @@ function hedley_view_export_add_item(string $type, string $view_name, string $di
   // Add the AQ item.
   $arguments = [
     'fid' => $file->fid,
-    'export_status' => 'in_progress',
     'export_type' => $type,
     'view_name' => $view_name,
     'display' => $display,
@@ -160,6 +163,9 @@ function hedley_view_export_add_item(string $type, string $view_name, string $di
     'title' => $title,
   ];
   hedley_view_export_add_advanced_queue_task(HEDLEY_VIEW_EXPORT_EXPORT_VIEW_QUEUE, $arguments);
+  // Display a message and a link back to the view.
+  drupal_set_message(t('Exporting view. We will soon email you a link to @email', ['@email' => $user->mail]));
+  return '<a href="javascript:history.back()">' . t('Go back') . '</a>';
 }
 
 /**
@@ -179,11 +185,9 @@ function hedley_view_export_export_batch_worker(stdClass $item) {
   $manager = new RestfulAuthenticationManager();
   $account = user_load($item->uid);
   $manager->setAccount($account);
-//  $item->data['mid']
+
   // Set the related message as failed, and return an AQ failure.
   $failure = function($message) use ($manager) {
-//    $message_wrapper->field_export_status->set('failed');
-
 
     // Switch back to the original user.
     $manager->switchUserBack();
@@ -240,16 +244,9 @@ function hedley_view_export_export_batch_worker(stdClass $item) {
 
   // Reaching here means the results count is less than the range. That means
   // this was the last batch.
-
-//  $message_wrapper->field_export_status->set('ready');
-//  $message_wrapper->save();
-
   $result = [
     'status' => ADVANCEDQUEUE_STATUS_SUCCESS,
     'result' => [
-      // Convert the file uri to url when displaying it.
-      // See hedley_restful_get_advanced_queue_output().
-      's3_uri_keys' => ['@url'],
       '@url' => $file->uri,
       '@count' => count($view->result) + $from,
     ],
