@@ -5,7 +5,7 @@ define('HEDLEY_VIEW_EXPORT_EXPORT_VIEW_QUEUE', 'export_view');
 /**
  * Implements hook_views_api().
  */
-function hedley_view_export_views_api(): array {
+function hedley_view_export_views_api() {
   return [
     'api' => '3.0',
     'path' => drupal_get_path('module', 'hedley_view_export'),
@@ -14,9 +14,21 @@ function hedley_view_export_views_api(): array {
 }
 
 /**
+ * Implements hook_permission().
+ */
+function hedley_view_export_permission() {
+  return [
+    'hedley export views' => [
+      'title' => t('Export views'),
+      'description' => t('Create views exports.'),
+    ],
+  ];
+}
+
+/**
  * Implements hook_advanced_queue_info().
  */
-function hedley_view_export_advanced_queue_info(): array {
+function hedley_view_export_advanced_queue_info() {
   $items[HEDLEY_VIEW_EXPORT_EXPORT_VIEW_QUEUE] = [
     'label' => t('View export'),
     'worker callback' => 'hedley_view_export_export_batch_worker',
@@ -42,7 +54,7 @@ function hedley_view_export_advanced_queue_info(): array {
  *
  * @throws Exception
  */
-function hedley_view_export_views_pre_render(view &$view): void {
+function hedley_view_export_views_pre_render(view &$view) {
 
   $view->feed_icon = $view->feed_icon ?? '';
 
@@ -65,11 +77,11 @@ function hedley_view_export_views_pre_render(view &$view): void {
 /**
  * Implements hook_menu().
  */
-function hedley_view_export_menu(): array {
+function hedley_view_export_menu() {
   $items['add-view-export/%/%/%'] = [
-    'title' => 'Item by UUID',
+    'title' => 'Create views export',
     'description' => 'Add an AQ item for exporting a view',
-    'access callback' => 'hedley_restful_menu_access_by_access_token',
+    'access arguments' => ['hedley export views'],
     'page callback' => 'hedley_view_export_add_item',
     'page arguments' => [1, 2, 3],
   ];
@@ -89,7 +101,7 @@ function hedley_view_export_menu(): array {
  *
  * @throws Exception
  */
-function hedley_view_export_add_item(string $type, string $view_name, string $display): void {
+function hedley_view_export_add_item(string $type, string $view_name, string $display) {
   global $user;
 
   if ($type != 'csv') {
@@ -102,6 +114,8 @@ function hedley_view_export_add_item(string $type, string $view_name, string $di
   if (empty($view->display[$display])) {
     throw new Exception(format_string('View @view_name has no display @display', ['@view_name' => $view_name, '@display' => $display]));
   }
+
+  // TODO: Check user access to this specific view.
 
   // Get exposed inputs array, and contextual filters (Encoded as a query
   // string).
@@ -122,8 +136,8 @@ function hedley_view_export_add_item(string $type, string $view_name, string $di
   $random = drupal_random_key(8);
   $uri = "$dir/$view_name-$random.$type";
 
-  // Save the file into the DB.
-  $file = hedley_view_export_create_file_by_uri($uri, $user->uid);
+  // Create an empty file.
+  $file = file_save_data('', $uri);
 
   $title = format_string('Export @view as @type, by @user on @time', [
     '@view' => $view->human_name,
@@ -159,7 +173,7 @@ function hedley_view_export_add_item(string $type, string $view_name, string $di
  *
  * @throws Exception
  */
-function hedley_view_export_export_batch_worker(stdClass $item): array {
+function hedley_view_export_export_batch_worker(stdClass $item) {
   // Switch the global user to the one created the item, so the export is
   // created with their permissions.
   $manager = new RestfulAuthenticationManager();
@@ -257,7 +271,7 @@ function hedley_view_export_export_batch_worker(stdClass $item): array {
  * @param bool $strip_tags
  *   Whether to remove html from the values.
  */
-function hedley_view_export_print_csv(array $row, bool $strip_tags = TRUE): void {
+function hedley_view_export_print_csv(array $row, bool $strip_tags = TRUE) {
   $out = fopen('php://output', 'w');
   if ($strip_tags) {
     $row = array_map('strip_tags', $row);
@@ -265,30 +279,6 @@ function hedley_view_export_print_csv(array $row, bool $strip_tags = TRUE): void
   fputcsv($out, $row);
   fclose($out);
 }
-
-/**
- * Create a new file.
- *
- * @param string $uri
- *   The file uri.
- * @param int $uid
- *   File author.
- *
- * @return stdClass
- *   The file object.
- */
-function hedley_view_export_create_file_by_uri(string $uri, int $uid): stdClass {
-  $file = new stdClass();
-  $file->fid = NULL;
-  $file->uri = $uri;
-  $file->filename = drupal_basename($uri);
-  $file->filemime = file_get_mimetype($file->uri);
-  $file->uid = $uid;
-  $file->status = FILE_STATUS_PERMANENT;
-
-  return file_save($file);
-}
-
 
 /**
  * Add task to an advanced queue.
@@ -303,7 +293,7 @@ function hedley_view_export_create_file_by_uri(string $uri, int $uid): stdClass 
  *
  * @throws Exception
  */
-function hedley_view_export_add_advanced_queue_task(string $queue_name, array $arguments): int {
+function hedley_view_export_add_advanced_queue_task(string $queue_name, array $arguments) {
   $queue = new AdvancedQueue($queue_name);
   $arguments['timestamp'] = REQUEST_TIME;
   return $queue->createItem($arguments);
