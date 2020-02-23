@@ -19,7 +19,7 @@ function hedley_health_center_node_insert($node) {
 
   // Create CHW group for new village.
   $wrapper = entity_metadata_wrapper('node', $node);
-  $village_name =  $wrapper->label();
+  $village_name = $wrapper->label();
   $province = $wrapper->field_province->value();
   $district = $wrapper->field_district->value();
   $sector = $wrapper->field_sector->value();
