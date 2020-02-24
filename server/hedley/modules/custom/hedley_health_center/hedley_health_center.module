@@ -86,7 +86,6 @@ function hedley_health_center_node_insert($node) {
       ->execute();
 
     if (empty($result['node'])) {
-      // No more z-scores need updating.
       return;
     }
 
@@ -95,6 +94,13 @@ function hedley_health_center_node_insert($node) {
 
     foreach ($relationships as $relationship) {
       $relationships_wrapper = entity_metadata_wrapper('node', $relationship);
+
+      // Skip relationships where child age is over 5 years.
+      $child_birth_date = $relationships_wrapper->field_related_to->field_birth_date->value();
+      if ($child_birth_date < strtotime("-5 year")) {
+        continue;
+      }
+
       $adult = $relationships_wrapper->field_person->getIdentifier();
       $child = $relationships_wrapper->field_related_to->getIdentifier();
       $related_by = $relationships_wrapper->field_related_by->value();
