@@ -19,117 +19,131 @@ import Utils.Html exposing (spinner, viewLogo)
 
 view : Language -> Page -> WebData ( NurseId, Nurse ) -> ( Maybe HealthCenterId, Maybe VillageId ) -> Model -> ModelIndexedDb -> Html Msg
 view language activePage nurseData ( healthCenterId, villageId ) model db =
-    div
-        [ class "ui basic segment page-pincode" ]
-    <|
-        viewHeader language nurseData healthCenterId model
-            :: viewContent language activePage nurseData ( healthCenterId, villageId ) model db
+    let
+        ( header, content ) =
+            case nurseData of
+                Success ( _, nurse ) ->
+                    let
+                        selectedAuthorizedLocation =
+                            if isCommunityHealthWorker nurse then
+                                villageId
+                                    |> Maybe.map (\id -> EverySet.member id nurse.villages)
+                                    |> Maybe.withDefault False
+
+                            else
+                                healthCenterId
+                                    |> Maybe.map (\id -> EverySet.member id nurse.healthCenters)
+                                    |> Maybe.withDefault False
+                    in
+                    ( viewLoggedInHeader language nurse selectedAuthorizedLocation
+                    , viewLoggedInContent language nurse ( healthCenterId, villageId ) selectedAuthorizedLocation db
+                    )
+
+                _ ->
+                    ( viewLogo language
+                    , viewAnonymousContent language activePage nurseData model
+                    )
+    in
+    (header :: content)
+        |> div [ class "ui basic segment page-pincode" ]
 
 
-viewHeader : Language -> WebData ( NurseId, Nurse ) -> Maybe HealthCenterId -> Model -> Html Msg
-viewHeader language nurseData healthCenterId model =
-    case nurseData of
-        Success ( _, nurse ) ->
-            let
-                selectedAuthorizedHealthCenter =
-                    healthCenterId
-                        |> Maybe.map (\id -> EverySet.member id nurse.healthCenters)
-                        |> Maybe.withDefault False
-            in
-            if selectedAuthorizedHealthCenter then
-                viewLogo language
+viewLoggedInHeader : Language -> Nurse -> Bool -> Html Msg
+viewLoggedInHeader language nurse selectedAuthorizedLocation =
+    if selectedAuthorizedLocation then
+        viewLogo language
 
-            else
-                div [ class "ui basic head segment" ]
-                    [ h1
-                        [ class "ui header" ]
-                        [ text <| translate language Translate.HealthCenter ]
-                    ]
+    else
+        let
+            label =
+                if isCommunityHealthWorker nurse then
+                    Translate.Village
 
-        _ ->
-            viewLogo language
-
-
-viewContent : Language -> Page -> WebData ( NurseId, Nurse ) -> ( Maybe HealthCenterId, Maybe VillageId ) -> Model -> ModelIndexedDb -> List (Html Msg)
-viewContent language activePage nurseData ( healthCenterId, villageId ) model db =
-    case nurseData of
-        Success ( _, nurse ) ->
-            viewWhenLoggedIn language nurse ( healthCenterId, villageId ) model db
-
-        _ ->
-            let
-                isLoading =
-                    RemoteData.isLoading nurseData
-
-                disableSubmitButton =
-                    isLoading || model.code == ""
-
-                activePageMsg =
-                    -- Show a little message if the user wanted to view a different page,
-                    -- but got sent here instead ...
-                    showIf (activePage /= Pages.Page.PinCodePage) <|
-                        p []
-                            [ text <| translate language <| Translate.LoginPhrase Translate.YouMustLoginBefore
-                            , text " "
-                            , text <| translate language <| Translate.ActivePage activePage
-                            , text " "
-                            , text <| translate language Translate.Page
-                            ]
-
-                error =
-                    if RemoteData.isFailure nurseData then
-                        div
-                            [ class "ui error message" ]
-                            [ text <| translate language <| Translate.LoginPhrase Translate.PinCodeRejected ]
-
-                    else
-                        emptyNode
-            in
-            [ activePageMsg
-            , Html.form
-                [ onSubmit HandleLoginClicked
-                , action "javascript:void(0);"
-                ]
-                [ div
-                    [ class "ui login form" ]
-                    [ div
-                        [ class "ui transparent left icon input" ]
-                        [ input
-                            [ placeholder <| translate language <| Translate.LoginPhrase Translate.PinCode
-                            , type_ "password"
-                            , name "pincode"
-                            , onInput SetPinCode
-                            , value model.code
-                            , autofocus True
-                            ]
-                            []
-                        , i [ class "icon icon-password" ] []
-                        ]
-                    ]
-                , button
-                    [ class "ui primary button"
-                    , disabled disableSubmitButton
-                    , type_ "submit"
-                    ]
-                    [ span
-                        [ hidden <| not isLoading ]
-                        [ spinner ]
-                    , span
-                        [ hidden isLoading ]
-                        [ text <| translate language <| Translate.LoginPhrase Translate.SignIn ]
-                    ]
-                ]
-            , error
-            , p []
-                [ text <| translate language <| Translate.LoginPhrase Translate.ForgotPassword1
-                , br [] []
-                , text <| translate language <| Translate.LoginPhrase Translate.ForgotPassword2
-                ]
+                else
+                    Translate.HealthCenter
+        in
+        div [ class "ui basic head segment" ]
+            [ h1
+                [ class "ui header" ]
+                [ text <| translate language label ]
             ]
 
 
-viewWhenLoggedIn : Language -> Nurse -> ( Maybe HealthCenterId, Maybe VillageId ) -> Model -> ModelIndexedDb -> List (Html Msg)
-viewWhenLoggedIn language nurse ( healthCenterId, villageId ) model db =
+viewAnonymousContent : Language -> Page -> WebData ( NurseId, Nurse ) -> Model -> List (Html Msg)
+viewAnonymousContent language activePage nurseData model =
+    let
+        isLoading =
+            RemoteData.isLoading nurseData
+
+        disableSubmitButton =
+            isLoading || model.code == ""
+
+        activePageMsg =
+            -- Show a little message if the user wanted to view a different page,
+            -- but got sent here instead ...
+            showIf (activePage /= Pages.Page.PinCodePage) <|
+                p []
+                    [ text <| translate language <| Translate.LoginPhrase Translate.YouMustLoginBefore
+                    , text " "
+                    , text <| translate language <| Translate.ActivePage activePage
+                    , text " "
+                    , text <| translate language Translate.Page
+                    ]
+
+        error =
+            if RemoteData.isFailure nurseData then
+                div
+                    [ class "ui error message" ]
+                    [ text <| translate language <| Translate.LoginPhrase Translate.PinCodeRejected ]
+
+            else
+                emptyNode
+    in
+    [ activePageMsg
+    , Html.form
+        [ onSubmit HandleLoginClicked
+        , action "javascript:void(0);"
+        ]
+        [ div
+            [ class "ui login form" ]
+            [ div
+                [ class "ui transparent left icon input" ]
+                [ input
+                    [ placeholder <| translate language <| Translate.LoginPhrase Translate.PinCode
+                    , type_ "password"
+                    , name "pincode"
+                    , onInput SetPinCode
+                    , value model.code
+                    , autofocus True
+                    ]
+                    []
+                , i [ class "icon icon-password" ] []
+                ]
+            ]
+        , button
+            [ class "ui primary button"
+            , disabled disableSubmitButton
+            , type_ "submit"
+            ]
+            [ span
+                [ hidden <| not isLoading ]
+                [ spinner ]
+            , span
+                [ hidden isLoading ]
+                [ text <| translate language <| Translate.LoginPhrase Translate.SignIn ]
+            ]
+        ]
+    , error
+    , p []
+        [ text <| translate language <| Translate.LoginPhrase Translate.ForgotPassword1
+        , br [] []
+        , text <| translate language <| Translate.LoginPhrase Translate.ForgotPassword2
+        ]
+    ]
+
+
+viewLoggedInContent : Language -> Nurse -> ( Maybe HealthCenterId, Maybe VillageId ) -> Bool -> ModelIndexedDb -> List (Html Msg)
+viewLoggedInContent language nurse ( healthCenterId, villageId ) selectedAuthorizedLocation db =
     let
         logoutButton =
             button
@@ -140,13 +154,8 @@ viewWhenLoggedIn language nurse ( healthCenterId, villageId ) model db =
                     |> translate language
                     |> text
                 ]
-
-        selectedAuthorizedHealthCenter =
-            healthCenterId
-                |> Maybe.map (\id -> EverySet.member id nurse.healthCenters)
-                |> Maybe.withDefault False
     in
-    if selectedAuthorizedHealthCenter then
+    if selectedAuthorizedLocation then
         let
             loggedInAs =
                 p [ class "logged-in-as" ]

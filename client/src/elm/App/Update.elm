@@ -19,6 +19,7 @@ import Http exposing (Error(..))
 import HttpBuilder
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
+import Maybe.Extra exposing (isJust)
 import Pages.Clinics.Update
 import Pages.Device.Model
 import Pages.Device.Update
@@ -454,6 +455,15 @@ update msg model =
                                     |> Maybe.andThen (Dict.get villageId)
                                     |> Maybe.andThen (.healthCenterId >> Just)
                             )
+
+                extraMsgs =
+                    SetHealthCenter maybeHealthCenterId
+                        :: (if isJust maybeHealthCenterId then
+                                [ SetActivePage <| UserPage ClinicalPage ]
+
+                            else
+                                []
+                           )
             in
             ( { model | villageId = maybeVillageId }
             , maybeVillageId
@@ -461,7 +471,7 @@ update msg model =
                 |> Maybe.withDefault ""
                 |> cacheVillage
             )
-                |> sequence update [ SetHealthCenter maybeHealthCenterId, SetActivePage <| UserPage ClinicalPage ]
+                |> sequence update extraMsgs
 
         Tick time ->
             let
