@@ -3,6 +3,8 @@ module Pages.Activities.View exposing (view)
 import Activity.Model exposing (emptySummaryByActivity)
 import Activity.Utils exposing (getActivityIcon, getAllActivities, getParticipantCountForActivity)
 import Backend.Entities exposing (..)
+import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Session.Model exposing (EditableSession)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -15,8 +17,8 @@ import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, viewModal)
 
 
-view : Language -> ( SessionId, EditableSession ) -> Model -> Html Msg
-view language ( sessionId, session ) model =
+view : Language -> Nurse -> ( SessionId, EditableSession ) -> Model -> Html Msg
+view language nurse ( sessionId, session ) model =
     let
         summary =
             session.summaryByActivity
@@ -107,6 +109,13 @@ view language ( sessionId, session ) model =
 
                 Completed ->
                     ( noPendingActivities, translate language Trans.NoActivitiesCompleted )
+
+        goBackPage =
+            if isCommunityHealthWorker nurse then
+                UserPage ClinicalPage
+
+            else
+                UserPage <| ClinicsPage (Just session.offlineSession.session.clinicId)
     in
     div
         [ class "wrap wrap-alt-2" ]
@@ -117,7 +126,7 @@ view language ( sessionId, session ) model =
                 [ text <| translate language Trans.Activities ]
             , a
                 [ class "link-back"
-                , onClick <| SetRedirectPage <| UserPage <| ClinicsPage <| Just session.offlineSession.session.clinicId
+                , onClick <| SetRedirectPage goBackPage
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []

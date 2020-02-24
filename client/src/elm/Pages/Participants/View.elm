@@ -4,6 +4,8 @@ import Activity.Model exposing (emptySummaryByParticipant)
 import Activity.Utils exposing (getActivityCountForMother)
 import AssocList as Dict
 import Backend.Entities exposing (..)
+import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
 import Html exposing (..)
@@ -24,8 +26,8 @@ thumbnailDimensions =
     }
 
 
-view : Language -> ( SessionId, EditableSession ) -> Model -> Html Msg
-view language ( sessionId, session ) model =
+view : Language -> Nurse -> ( SessionId, EditableSession ) -> Model -> Html Msg
+view language nurse ( sessionId, session ) model =
     let
         filter =
             normalizeFilter model.filter
@@ -155,6 +157,13 @@ view language ( sessionId, session ) model =
                     [ text <| translate language Trans.EndGroupEncounter ]
                 ]
 
+        goBackPage =
+            if isCommunityHealthWorker nurse then
+                UserPage ClinicalPage
+
+            else
+                UserPage <| ClinicsPage (Just session.offlineSession.session.clinicId)
+
         header =
             div
                 [ class "ui basic head segment" ]
@@ -163,7 +172,7 @@ view language ( sessionId, session ) model =
                     [ text <| translate language Trans.Participants ]
                 , a
                     [ class "link-back"
-                    , onClick <| SetRedirectPage <| UserPage <| ClinicsPage <| Just session.offlineSession.session.clinicId
+                    , onClick <| SetRedirectPage goBackPage
                     ]
                     [ span [ class "icon-back" ] []
                     , span [] []

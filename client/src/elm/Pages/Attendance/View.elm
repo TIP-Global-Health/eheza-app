@@ -9,6 +9,8 @@ at a session.
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
+import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildren, getMotherMeasurementData)
@@ -23,8 +25,8 @@ import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 
 
-view : Language -> ( SessionId, EditableSession ) -> Model -> Html Msg
-view language ( sessionId, session ) model =
+view : Language -> Nurse -> ( SessionId, EditableSession ) -> Model -> Html Msg
+view language nurse ( sessionId, session ) model =
     let
         filter =
             normalizeFilter model.filter
@@ -57,6 +59,13 @@ view language ( sessionId, session ) model =
                     matching
                         |> Dict.map (viewMother session)
                         |> Dict.values
+
+        goBackPage =
+            if isCommunityHealthWorker nurse then
+                UserPage ClinicalPage
+
+            else
+                UserPage <| ClinicsPage (Just session.offlineSession.session.clinicId)
     in
     div [ class "wrap wrap-alt-2 page-attendance" ]
         [ div
@@ -66,11 +75,7 @@ view language ( sessionId, session ) model =
                 [ text <| translate language Translate.Attendance ]
             , a
                 [ class "link-back"
-                , Just session.offlineSession.session.clinicId
-                    |> ClinicsPage
-                    |> UserPage
-                    |> SetActivePage
-                    |> onClick
+                , onClick <| SetActivePage goBackPage
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []
