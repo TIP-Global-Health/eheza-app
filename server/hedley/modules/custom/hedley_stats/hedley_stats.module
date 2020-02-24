@@ -17,6 +17,7 @@ define('HEDLEY_STATS_GOOD', 'good_nutrition');
 // Cache IDs.
 define('HEDLEY_STATS_SYNC_STATS_CACHE', 'sync_stats_general');
 define('HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON', 'sync_measurements_query_grouped_by_person');
+define('HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON_INCIDENCE', 'sync_measurements_query_grouped_by_person_incidence');
 define('HEDLEY_STATS_SYNC_SESSION_ATTENDANCE', 'sync_session_attendance_stats');
 define('HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES', 'sync_children_beneficiaries_stats');
 define('HEDLEY_STATS_SYNC_FAMILY_PLANNING', 'sync_family_planning_stats');
@@ -82,10 +83,12 @@ function hedley_stats_node_presave($node) {
       else {
         // Clear cache for all the periods.
         hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON, $health_center->nid, $period);
+        hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON_INCIDENCE, $health_center->nid, $period);
         hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center->nid, $period);
         hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES, $health_center->nid, $period);
         hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_MALNOURISHED_BENEFICIARIES, $health_center->nid, $period);
-        hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES, $health_center->nid, $period);
+        hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_GRAPH, $health_center->nid, $period);
+        hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_INCIDENCE_GRAPH, $health_center->nid, $period);
         hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $health_center->nid, $period);
       }
     }
@@ -866,8 +869,10 @@ function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_ST
  * @throws \Exception
  */
 function hedley_stats_get_measurements_query_grouped_by_person($health_center_id, $period, $created = NULL) {
+  $cache_name = $created ? HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON_INCIDENCE : HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON;
+
   // Return the cache if exists.
-  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON, $health_center_id, $period)) {
+  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, $cache_name, $health_center_id, $period)) {
     return $cache_data;
   }
 
@@ -909,8 +914,10 @@ function hedley_stats_get_measurements_query_grouped_by_person($health_center_id
   foreach ($result as $measurement) {
     if ($created) {
       $person_wrapper = entity_metadata_wrapper('node', $measurement->field_person);
-      if ($person_wrapper->created->value() < $created) {
-        // Don't include people who were created before the specified timestamp.
+      $birthday = !empty($person_wrapper->field_birth_date->value()) ? $person_wrapper->field_birth_date->value() : NULL;
+      if ($person_wrapper->created->value() < $created || !$birthday || $birthday < strtotime("-24 months")) {
+        // Don't include people who were created before the specified period or
+        // they don't have a birthday or they are older than 2 years.
         continue;
       }
     }
@@ -924,7 +931,7 @@ function hedley_stats_get_measurements_query_grouped_by_person($health_center_id
   }
 
   // Set the cache.
-  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON, $health_center_id, $period, $people);
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, $cache_name, $health_center_id, $period, $people);
 
   return $people;
 }

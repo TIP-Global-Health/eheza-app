@@ -108,10 +108,10 @@ viewMainPage language currentDate stats model =
                 [ viewTotalEncounters language stats.totalEncounters
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language (Translate.Dashboard Translate.TotalBeneficiaries) model stats.totalBeneficiaries model.currentTotalChartsFilter
+                [ viewMonthlyChart language (Translate.Dashboard Translate.TotalBeneficiaries) FilterBeneficiariesChart stats.totalBeneficiaries model.currentBeneficiariesChartsFilter
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language (Translate.Dashboard Translate.IncidenceOf) model stats.totalBeneficiariesIncidence model.currentTotalIncidenceChartsFilter
+                [ viewMonthlyChart language (Translate.Dashboard Translate.IncidenceOf) FilterBeneficiariesIncidenceChart stats.totalBeneficiariesIncidence model.currentBeneficiariesIncidenceChartsFilter
                 ]
             , div [ class "sixteen wide column" ]
                 [ viewDashboardPagesLinks language
@@ -813,8 +813,8 @@ viewDonutChart language stats =
             ]
 
 
-viewMonthlyChart : Language -> TranslationId -> Model -> Dict Int TotalBeneficiaries -> FilterCharts -> Html Msg
-viewMonthlyChart language title model data currentFilter =
+viewMonthlyChart : Language -> TranslationId -> FilterType -> Dict Int TotalBeneficiaries -> FilterCharts -> Html Msg
+viewMonthlyChart language title filterType data currentFilter =
     let
         chartList =
             data
@@ -876,7 +876,7 @@ viewMonthlyChart language title model data currentFilter =
         [ div [ class "header" ]
             [ h3 [ class "title left floated column" ] [ text <| translate language title ++ " " ++ toString currentFilter ]
             , div [ class "filters" ]
-                (List.map (viewFilters FilterTotalsChart currentFilter) filterCharts)
+                (List.map (viewFilters filterType currentFilter) filterCharts)
             ]
         , div [ class "content" ]
             [ viewBarsChartLegend language
@@ -922,8 +922,11 @@ viewFilters filterType currentChartFilter filter =
     let
         filterAction =
             case filterType of
-                FilterTotalsChart ->
-                    SetFilterTotalsChart filter
+                FilterBeneficiariesChart ->
+                    SetFilterBeneficiariesChart filter FilterBeneficiariesChart
+
+                FilterBeneficiariesIncidenceChart ->
+                    SetFilterBeneficiariesChart filter FilterBeneficiariesIncidenceChart
 
                 FilterCaseManagement ->
                     SetFilterCaseManagement filter
