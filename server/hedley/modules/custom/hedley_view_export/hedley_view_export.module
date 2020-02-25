@@ -309,14 +309,6 @@ function hedley_view_export_add_advanced_queue_task(string $queue_name, array $a
  * Implements hook_mail().
  *
  * Create the export ready email.
- *
- * @param $message
- *   Reference to the message array being built.
- * @param $params
- *   Array of parameters to indicate what kind of text to include in the message
- *   body. This is a keyed array of message type ('core' or 'contrib') as the
- *   keys, and the status reason constant (UPDATE_NOT_SECURE, etc) for the
- *   values.
  */
 function hedley_view_export_mail($key, &$message, $params) {
   if ($key != 'export_ready') {
