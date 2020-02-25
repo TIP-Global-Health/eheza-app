@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Export views with advanced queue.
+ */
+
 define('HEDLEY_VIEW_EXPORT_EXPORT_VIEW_QUEUE', 'export_view');
 define('HEDLEY_VIEW_EXPORT_DIR', 'private://hedley_view_export');
 
@@ -48,10 +53,7 @@ function hedley_view_export_advanced_queue_info() {
 /**
  * Implements hook_views_pre_render().
  *
- * Add export buttons to views with hedley_view_export_X displays, and show
- * download links for completed exports.
- *
- * @param view $view
+ * Add export buttons to views with hedley_view_export_X displays.
  *
  * @throws Exception
  */
@@ -169,7 +171,7 @@ function hedley_view_export_add_item(string $type, string $view_name, string $di
 /**
  * Append a view batch to the exported file.
  *
- * @param stdClass $item
+ * @param object $item
  *   AQ item.
  *
  * @return array
@@ -177,7 +179,7 @@ function hedley_view_export_add_item(string $type, string $view_name, string $di
  *
  * @throws Exception
  */
-function hedley_view_export_export_batch_worker(stdClass $item) {
+function hedley_view_export_export_batch_worker($item) {
   // Switch the global user to the one created the item, so the export is
   // created with their permissions.
   $manager = new RestfulAuthenticationManager();
@@ -185,7 +187,7 @@ function hedley_view_export_export_batch_worker(stdClass $item) {
   $manager->setAccount($account);
 
   // Set the related message as failed, and return an AQ failure.
-  $failure = function($message) use ($manager) {
+  $failure = function ($message) use ($manager) {
 
     // Switch back to the original user.
     $manager->switchUserBack();
@@ -206,7 +208,7 @@ function hedley_view_export_export_batch_worker(stdClass $item) {
   $from = $item->data['from'];
   $range = $item->data['range'];
 
-  // Fetch the view in question from our cache
+  // Set the exposed inputs and context variables.
   $view = views_get_view($view_name);
   $view->set_display($display);
   if ($item->data['exposed_inputs']) {
