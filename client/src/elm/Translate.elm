@@ -2721,7 +2721,7 @@ translateDashboard trans =
             }
 
         SyncNotice ->
-            { english = "If the dashboard statistics doesn't load shortly, please consider syncing data from the backend."
+            { english = "If the dashboard statistics doesn't load shortly, please sync data from the backend."
             , kinyarwanda = Nothing
             }
 

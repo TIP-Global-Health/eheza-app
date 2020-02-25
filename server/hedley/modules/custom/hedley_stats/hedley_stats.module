@@ -1291,14 +1291,7 @@ function hedley_stats_handle_cache($method, $cache_name, $health_center_id, $per
   switch ($method) {
     case HEDLEY_STATS_CACHE_GET:
       $cache = cache_get($cache_id);
-
-      if (!empty($cache)) {
-        return $cache->data;
-      }
-      else {
-        return NULL;
-      }
-      break;
+      return !empty($cache) ? $cache->data : NULL;
 
     case HEDLEY_STATS_CACHE_SET:
       if ($cache_data) {
@@ -1308,9 +1301,9 @@ function hedley_stats_handle_cache($method, $cache_name, $health_center_id, $per
 
     case HEDLEY_STATS_CACHE_CLEAR:
       $cache = cache_get($cache_id);
-
       if (!empty($cache)) {
-        cache_clear_all($cache_id);
+        cache_clear_all($cache_id, 'cache');
       }
+      break;
   }
 }
