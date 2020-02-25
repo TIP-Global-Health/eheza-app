@@ -252,7 +252,6 @@ function hedley_view_export_export_batch_worker(stdClass $item) {
   if (empty($mail_result['result'])) {
     return $failure(format_string("Couldn't send export ready email to @email", ['@email' => $account->mail]));
   }
-  var_dump($mail_result);
 
   $result = [
     'status' => ADVANCEDQUEUE_STATUS_SUCCESS,
