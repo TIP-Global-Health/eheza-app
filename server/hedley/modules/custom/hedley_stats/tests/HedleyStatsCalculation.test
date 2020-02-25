@@ -317,34 +317,43 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
     $stats = end($results['batch']);
 
-    // Check the results are NOT empty.
-    $this->assertFalse(empty($stats));
+    // Check that we got the stats.
+    $this->assertEqual($stats['type'], 'statistics');
 
     // Check that the stats are not empty.
     $this->assertEqual($stats['uuid'], $health_center_wrapper->field_uuid->value());
+    $this->assertFalse(empty($stats['case_management']));
+    $this->assertFalse(empty($stats['good_nutrition']));
+    $this->assertFalse(empty($stats['total_encounters']));
 
     // Call again with cache hash to make sure we don't get the results this
     // time.
     $request['stats_cache_hash'] = $stats['stats_cache_hash'];
     $results2 = $handler->get('', $request);
 
-    $stats2 = end($results2['batch']);
-
     // Check the results are empty which means that it is cached and won't sent
     // it again to the frontend.
-    $this->assertTrue(empty($stats2));
+    $stats2 = end($results2['batch']);
+    // We establish this by making sure the stats are not an array and therefore
+    // they are an entity from the sync, so it was not sent back this time.
+    $this->assertFalse(is_array($stats2));
+
+    // Send with a random hash to dummy an old cache hash.
+    $request['stats_cache_hash'] = 'some-old-cache';
+    $results3 = $handler->get('', $request);
+    $stats3 = end($results3['batch']);
+
+    // Check that we got the stats.
+    $this->assertEqual($stats3['type'], 'statistics');
+    $this->assertEqual($stats3['uuid'], $health_center_wrapper->field_uuid->value());
 
     // Remove the cache hash and expect to get the stats again.
     unset($request['stats_cache_hash']);
-    $results3 = $handler->get('', $request);
+    $results4 = $handler->get('', $request);
+    $stats4 = end($results4['batch']);
 
-    $stats3 = end($results3['batch']);
-
-    // Check the results are NOT empty.
-    $this->assertFalse(empty($stats3));
-
-    // Check that the stats are not empty.
-    $this->assertEqual($stats3['uuid'], $health_center_wrapper->field_uuid->value());
+    // Check that we got the stats.
+    $this->assertEqual($stats4['type'], 'statistics');
   }
 
   /**
