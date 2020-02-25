@@ -180,7 +180,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
       $month = date('n', $session['date']);
 
-      $total_beneficiaries = hedley_stats_get_total_beneficiaries($this->healthCenterId);
+      $total_beneficiaries = hedley_stats_get_fbf_beneficiaries_graphs_data($this->healthCenterId, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_GRAPH);
 
       // Assert the amount of total beneficiaries.
       $this->assertEqual($severe_people, $total_beneficiaries[$month]['stunting'][HEDLEY_STATS_SEVERE]);
