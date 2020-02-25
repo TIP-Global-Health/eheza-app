@@ -4,8 +4,8 @@
  * @file
  * Locates duplicates by UUID and deletes all, but first one.
  *
- * Execution:
- *   drush scr profiles/hedley/modules/custom/hedley_admin/scripts/locate-duplicates.php.
+ * Execution: drush scr
+ *   profiles/hedley/modules/custom/hedley_admin/scripts/locate-duplicates.php.
  */
 
 if (!drupal_is_cli()) {
@@ -23,7 +23,7 @@ $query->fields('uuid', ['field_uuid_value']);
 $query->addExpression('COUNT(uuid.field_uuid_value)', 'total');
 $query->groupBy('uuid.field_uuid_value');
 $query->havingCondition('total', 1, '>');
-$query->range(0,2000);
+$query->range(0, 2000);
 $result = $query->execute()->fetchAllAssoc('field_uuid_value');
 $duplicate_uuids = array_keys($result);
 
@@ -41,7 +41,7 @@ foreach ($chunks as $uuids) {
     $result = $query
       ->entityCondition('entity_type', 'node')
       ->fieldCondition('field_uuid', 'value', $uuid)
-      ->range(0,500)
+      ->range(0, 500)
       ->execute();
 
     if (empty($result['node'])) {
@@ -59,13 +59,13 @@ foreach ($chunks as $uuids) {
       // delete them as well.
       // This makes sure we clear all relationships, group participations
       // and measurements that were taken for that person.
-      foreach($ids as $index => $id) {
+      foreach ($ids as $index => $id) {
         // Pull all reference made with 'field_person' field.
         $query1 = new EntityFieldQuery();
         $result1 = $query1
           ->entityCondition('entity_type', 'node')
           ->fieldCondition('field_person', 'target_id', $id)
-          ->range(0,500)
+          ->range(0, 500)
           ->execute();
 
         // Pull all reference made with 'field_adult' field.
@@ -73,7 +73,7 @@ foreach ($chunks as $uuids) {
         $result2 = $query2
           ->entityCondition('entity_type', 'node')
           ->fieldCondition('field_adult', 'target_id', $id)
-          ->range(0,500)
+          ->range(0, 500)
           ->execute();
 
         // Pull all reference made with 'field_related_to' field.
@@ -81,7 +81,7 @@ foreach ($chunks as $uuids) {
         $result3 = $query3
           ->entityCondition('entity_type', 'node')
           ->fieldCondition('field_related_to', 'target_id', $id)
-          ->range(0,500)
+          ->range(0, 500)
           ->execute();
 
         // Combine the results of 3 queries.
@@ -103,4 +103,3 @@ foreach ($chunks as $uuids) {
 }
 
 drush_print("Done! Total of $count duplicate nodes were deleted.");
-
