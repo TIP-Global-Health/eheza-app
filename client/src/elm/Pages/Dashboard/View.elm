@@ -31,7 +31,7 @@ import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..))
-import Utils.Html exposing (spinner, viewModal)
+import Utils.Html exposing (viewModal)
 
 
 {-| Shows a dashboard page.
@@ -53,9 +53,6 @@ view language page currentDate healthCenterId model db =
                         ( div [ class "ui segment blue center aligned" ]
                             [ div []
                                 [ translateText language <| Translate.Dashboard Translate.SyncNotice ]
-                            , div
-                                []
-                                [ spinner ]
                             ]
                         , PinCodePage
                         )

@@ -1283,7 +1283,7 @@ function hedley_stats_handle_cache($method, $cache_name, $health_center_id, $per
       $cache = cache_get($cache_id);
 
       if (!empty($cache)) {
-        cache_clear_all($cache_id);
+        cache_clear_all($cache_id, 'cache');
       }
   }
 }
