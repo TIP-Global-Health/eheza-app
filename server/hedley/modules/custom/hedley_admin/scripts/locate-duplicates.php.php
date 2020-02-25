@@ -27,6 +27,9 @@ $query->range(0, 2000);
 $result = $query->execute()->fetchAllAssoc('field_uuid_value');
 $duplicate_uuids = array_keys($result);
 
+$total = count($duplicate_uuids);
+drush_print("Located $total instances of duplications.");
+
 $chunks = array_chunk($duplicate_uuids, $batch);
 $count = 0;
 
