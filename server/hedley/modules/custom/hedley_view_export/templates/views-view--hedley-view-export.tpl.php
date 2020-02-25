@@ -4,16 +4,13 @@
  * @file
  * Main view template for AQ export.
  *
+ * @var string $title
  * @var string $header
- *   The view header
  * @var string $footer
- *   The view footer
  * @var string $rows
- *   The results of the view query, if any
+ *   The results of the view query, if any.
  * @var string $empty
- *   The empty text to display if the view is empty
- * @var string $more
- *   A link to view more, if any.
+ *   The empty text to display if the view is empty.
  * @var string $attachment_before
  * @var string $attachment_after
  *
@@ -21,11 +18,8 @@
  * csv.
  */
 ?>
-<?php print render($title_prefix); ?>
 <?php print $title; ?>
-<?php print render($title_suffix); ?>
 <?php print $header; ?>
-
 <?php print $attachment_before; ?>
 <?php if ($rows): ?>
 <?php print $rows; ?>
@@ -33,5 +27,4 @@
 <?php print $empty; ?>
 <?php endif; ?>
 <?php print $attachment_after; ?>
-<?php print $more; ?>
 <?php print $footer; ?>

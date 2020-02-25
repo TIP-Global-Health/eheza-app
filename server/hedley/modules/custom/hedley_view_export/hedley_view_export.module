@@ -265,14 +265,11 @@ function hedley_view_export_export_batch_worker(stdClass $item) {
  *
  * @param array $row
  *   Row values.
- * @param bool $strip_tags
- *   Whether to remove html from the values.
  */
-function hedley_view_export_print_csv(array $row, bool $strip_tags = TRUE) {
+function hedley_view_export_print_csv(array $row) {
   $out = fopen('php://output', 'w');
-  if ($strip_tags) {
-    $row = array_map('strip_tags', $row);
-  }
+  // Strip html tags from all values.
+  $row = array_map('strip_tags', $row);
   fputcsv($out, $row);
   fclose($out);
 }
