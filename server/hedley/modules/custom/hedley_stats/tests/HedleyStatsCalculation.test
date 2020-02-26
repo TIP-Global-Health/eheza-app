@@ -452,7 +452,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       $children = [];
       for ($i = 1; $i <= $session['number_of_attendance']; $i++) {
         $mother_nid = $this->createMother($this->clinicId);
-        $child_nid = $this->createChild($mother_nid, $this->healthCenterId, strtotime('-24 months'), $session['date']);
+        $child_nid = $this->createChild($mother_nid, $this->healthCenterId, strtotime('-20 months'), $session['date']);
         $children[] = $child_nid;
 
         // Create this because the health centers are assigned to "attendance"
@@ -475,16 +475,16 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   /**
    * Assert the stats coming back from the "total beneficiaries" function.
    *
-   * @param $beneficiaries
+   * @param array $beneficiaries
    *   The data from the stats function.
-   * @param $severe_count
+   * @param int $severe_count
    *   The expected "severe" count.
-   * @param $moderate_count
+   * @param int $moderate_count
    *   The expected "moderate" count.
-   * @param $session_month
+   * @param int $session_month
    *   The session month, in order to know where to look in the data.
    */
-  protected function assertTotalBeneficiaries($beneficiaries, $severe_count, $moderate_count, $session_month) {
+  protected function assertTotalBeneficiaries(array $beneficiaries, $severe_count, $moderate_count, $session_month) {
     // Make sure number match the number of people added this year.
     $this->assertEqual($severe_count, $beneficiaries[$session_month]['stunting'][HEDLEY_STATS_SEVERE]);
     $this->assertEqual($moderate_count, $beneficiaries[$session_month]['stunting'][HEDLEY_STATS_MODERATE]);
