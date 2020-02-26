@@ -20,6 +20,9 @@ type ClinicType
     | Sorwathe
 
 
+{-| Chw is a special type used for villages, therefore,
+not included in allowed list.
+-}
 allClinicTypes : List ClinicType
 allClinicTypes =
     [ Pmtct, Fbf, Sorwathe ]
