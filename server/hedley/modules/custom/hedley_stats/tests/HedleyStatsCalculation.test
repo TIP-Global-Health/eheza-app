@@ -200,7 +200,6 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $attendance = 5;
     $sessions = $this->createSessionsWithAttendance(0, $attendance);
     $measurements_state = HEDLEY_STATS_MODERATE;
-    $month = 0;
     foreach ($sessions as $session) {
       if (!isset($session['session_data'])) {
         continue;
