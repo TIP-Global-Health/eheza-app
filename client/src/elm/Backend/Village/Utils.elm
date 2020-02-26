@@ -1,4 +1,4 @@
-module Backend.Village.Utils exposing (getVillageClinicId)
+module Backend.Village.Utils exposing (getVillageClinicId, getVillageHealthCenterId)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -23,3 +23,11 @@ getVillageClinicId villageId db =
                     )
             )
         |> Maybe.andThen List.head
+
+
+getVillageHealthCenterId : VillageId -> ModelIndexedDb -> Maybe HealthCenterId
+getVillageHealthCenterId villageId db =
+    db.villages
+        |> RemoteData.toMaybe
+        |> Maybe.andThen (Dict.get villageId)
+        |> Maybe.map .healthCenterId

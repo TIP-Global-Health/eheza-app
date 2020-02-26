@@ -6,6 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Session.Model exposing (EditableSession)
+import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -116,6 +117,20 @@ view language nurse ( sessionId, session ) model =
 
             else
                 UserPage <| ClinicsPage (Just session.offlineSession.session.clinicId)
+
+        endSessionButton =
+            if isCommunityHealthWorker nurse then
+                emptyNode
+
+            else
+                div
+                    [ class "actions" ]
+                    [ button
+                        [ class "ui fluid primary button"
+                        , onClick <| ShowEndSessionDialog True
+                        ]
+                        [ text <| translate language Trans.EndGroupEncounter ]
+                    ]
     in
     div
         [ class "wrap wrap-alt-2" ]
@@ -157,14 +172,7 @@ view language nurse ( sessionId, session ) model =
                             List.map viewCard selectedActivities
                     ]
                 ]
-            , div
-                [ class "actions" ]
-                [ button
-                    [ class "ui fluid primary button"
-                    , onClick <| ShowEndSessionDialog True
-                    ]
-                    [ text <| translate language Trans.EndGroupEncounter ]
-                ]
+            , endSessionButton
             ]
         , viewModal endSessionDialog
         ]

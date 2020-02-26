@@ -8,6 +8,7 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
+import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -149,13 +150,18 @@ view language nurse ( sessionId, session ) model =
                 Nothing
 
         endSessionButton =
-            div [ class "actions" ]
-                [ button
-                    [ class "ui fluid primary button"
-                    , onClick <| ShowEndSessionDialog True
+            if isCommunityHealthWorker nurse then
+                emptyNode
+
+            else
+                div
+                    [ class "actions" ]
+                    [ button
+                        [ class "ui fluid primary button"
+                        , onClick <| ShowEndSessionDialog True
+                        ]
+                        [ text <| translate language Trans.EndGroupEncounter ]
                     ]
-                    [ text <| translate language Trans.EndGroupEncounter ]
-                ]
 
         goBackPage =
             if isCommunityHealthWorker nurse then
