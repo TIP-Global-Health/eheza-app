@@ -239,6 +239,7 @@ type TranslationId
     | HttpError Http.Error
     | KilogramShorthand
     | LastChecked
+    | LastSuccesfulContactLabel
     | LevelOfEducationLabel
     | LevelOfEducation EducationLevel
     | LinkToMother
@@ -323,6 +324,8 @@ type TranslationId
     | RelationSuccessful
     | RelationSuccessfulChildWithMother
     | RelationSuccessfulMotherWithChild
+    | RemainingForDownloadLabel
+    | RemainingForUploadLabel
     | ReportAge String
     | ReportDOB String
     | ReportRemaining Int
@@ -370,6 +373,7 @@ type TranslationId
     | StartDate
     | EndDate
     | StartSyncing
+    | StatusLabel
     | StopSyncing
     | StorageQuota { usage : Int, quota : Int }
     | Submit
@@ -1060,12 +1064,12 @@ translationSet trans =
 
         MemoryQuota quota ->
             { english = "Memory used " ++ Debug.toString (quota.usedJSHeapSize // (1024 * 1024)) ++ " MB of available " ++ Debug.toString (quota.jsHeapSizeLimit // (1024 * 1024)) ++ " MB"
-            , kinyarwanda = Just "Hamaze gukoreshwa umwanya wa memori (ushobora kubika amakuru igihe gito) ungana na MB" ++ Debug.toString (quota.usedJSHeapSize // (1024 * 1024)) ++ " kuri MB" ++ Debug.toString (quota.jsHeapSizeLimit // (1024 * 1024))
+            , kinyarwanda = Just <| "Hamaze gukoreshwa umwanya wa memori (ushobora kubika amakuru igihe gito) ungana na MB" ++ Debug.toString (quota.usedJSHeapSize // (1024 * 1024)) ++ " kuri MB" ++ Debug.toString (quota.jsHeapSizeLimit // (1024 * 1024))
             }
 
         StorageQuota quota ->
             { english = "Storage used " ++ Debug.toString (quota.usage // (1024 * 1024)) ++ " MB of available " ++ Debug.toString (quota.quota // (1024 * 1024)) ++ " MB"
-            , kinyarwanda = Just "Hamaze gukoreshwa umwanya ungana na MB" ++ Debug.toString (quota.usage // (1024 * 1024)) ++ " umwanya wose ungana na MB" ++ Debug.toString (quota.quota // (1024 * 1024))
+            , kinyarwanda = Just <| "Hamaze gukoreshwa umwanya ungana na MB" ++ Debug.toString (quota.usage // (1024 * 1024)) ++ " umwanya wose ungana na MB" ++ Debug.toString (quota.quota // (1024 * 1024))
             }
 
         SubmitPairingCode ->
@@ -1291,6 +1295,11 @@ translationSet trans =
         LastChecked ->
             { english = "Last checked"
             , kinyarwanda = Just "Isuzuma riheruka"
+            }
+
+        LastSuccesfulContactLabel ->
+            { english = "Last Successful Contact"
+            , kinyarwanda = Just "Itariki n'isaha yanyuma igikoresho giheruka gukoresherezaho interineti bikagenda neza"
             }
 
         LevelOfEducationLabel ->
@@ -1794,6 +1803,16 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        RemainingForDownloadLabel ->
+            { english = "Remaining for Download"
+            , kinyarwanda = Just "Ibisigaye gukurwa kuri seriveri"
+            }
+
+        RemainingForUploadLabel ->
+            { english = "Remaining for Upload"
+            , kinyarwanda = Just "Ibisigaye koherezwa kuri seriveri"
+            }
+
         ReportAge age ->
             { english = "Age: " ++ age
             , kinyarwanda = Just <| "Imyaka: " ++ age
@@ -1818,7 +1837,7 @@ translationSet trans =
 
                 _ ->
                     { english = "There are " ++ Debug.toString total ++ " participants that match your search."
-                    , kinyarwanda = Just "Hari abagenerwabikorwa " ++ Debug.toString total ++ " bahuye nuwo ushaka mu ishakiro"
+                    , kinyarwanda = Just <| "Hari abagenerwabikorwa " ++ Debug.toString total ++ " bahuye nuwo ushaka mu ishakiro"
                     }
 
         RecentAndUpcomingGroupEncounters ->
@@ -2042,6 +2061,11 @@ translationSet trans =
         StartSyncing ->
             { english = "Start Syncing"
             , kinyarwanda = Nothing
+            }
+
+        StatusLabel ->
+            { english = "Status"
+            , kinyarwanda = Just "Uko bihagaze kugeza ubu"
             }
 
         StopSyncing ->
