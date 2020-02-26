@@ -915,7 +915,7 @@ function hedley_stats_get_measurements_query_grouped_by_person($health_center_id
     if ($created) {
       $person_wrapper = entity_metadata_wrapper('node', $measurement->field_person);
       $birthday = !empty($person_wrapper->field_birth_date->value()) ? $person_wrapper->field_birth_date->value() : NULL;
-      if ($person_wrapper->created->value() < $created || !$birthday || $birthday <= strtotime("-24 months")) {
+      if ($person_wrapper->created->value() < $created || !$birthday || $birthday < strtotime("-24 months")) {
         // Don't include people who were created before the specified period or
         // they don't have a birthday or they are older than 2 years.
         continue;
