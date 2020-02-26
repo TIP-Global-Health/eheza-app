@@ -414,7 +414,7 @@ translationSet trans =
 
         AddChild ->
             { english = "Add Child"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Ongeraho umwana"
             }
 
         AddFamilyMember ->
@@ -429,12 +429,12 @@ translationSet trans =
 
         AddParentOrCaregiver ->
             { english = "Add Parent or Caregiver"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Ongeraho umubyeyi cyangwa umurezi"
             }
 
         AddToGroup ->
             { english = "Add to Group..."
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Ongeraho itsinda..."
             }
 
         Admin ->
@@ -444,7 +444,7 @@ translationSet trans =
 
         AddressInformation ->
             { english = "Address Information"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Aho atuye/Aho abarizwa"
             }
 
         AgeWord ->
@@ -743,7 +743,7 @@ translationSet trans =
 
         Cell ->
             { english = "Cell"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Akagali"
             }
 
         CentimeterShorthand ->
@@ -761,7 +761,7 @@ translationSet trans =
 
         ChildHmisNumber ->
             { english = "Child HMIS Number"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Numero y'umwana muri HMIS"
             }
 
         ChildDemographicInformation ->
@@ -877,7 +877,7 @@ translationSet trans =
 
         Clinical ->
             { english = "Clinical"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Ikigo Nderabuzima"
             }
 
         GroupNotFound ->
@@ -887,12 +887,12 @@ translationSet trans =
 
         Group ->
             { english = "Group"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Itsinda"
             }
 
         Groups ->
             { english = "Groups"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Itsinda"
             }
 
         Closed ->
@@ -927,7 +927,7 @@ translationSet trans =
 
         ContactInformation ->
             { english = "Contact Information"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Uburyo bwakwifashishwa mu kugera ku mugenerwabikorwa"
             }
 
         Continue ->
@@ -960,7 +960,7 @@ translationSet trans =
 
         CreateRelationship ->
             { english = "Create Relationship"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Ibijyanye no guhuza amasano"
             }
 
         CreateTrainingGroupEncounters ->
@@ -990,7 +990,7 @@ translationSet trans =
 
         DateOfBirth ->
             { english = "Date of Birth"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Itariki y'amavuko"
             }
 
         Days ->
@@ -1005,7 +1005,7 @@ translationSet trans =
 
         DemographicInformation ->
             { english = "Demographic Information"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Umwirondoro"
             }
 
         Device ->
@@ -1030,7 +1030,7 @@ translationSet trans =
 
         District ->
             { english = "District"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Akarere"
             }
 
         DOB ->
@@ -1050,7 +1050,7 @@ translationSet trans =
 
         EndGroupEncounter ->
             { english = "End Group Encounter"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Gusoza igikorwa"
             }
 
         EnterPairingCode ->
@@ -1060,12 +1060,12 @@ translationSet trans =
 
         MemoryQuota quota ->
             { english = "Memory used " ++ Debug.toString (quota.usedJSHeapSize // (1024 * 1024)) ++ " MB of available " ++ Debug.toString (quota.jsHeapSizeLimit // (1024 * 1024)) ++ " MB"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Hamaze gukoreshwa umwanya wa memori (ushobora kubika amakuru igihe gito) ungana na " ++ Debug.toString (quota.usedJSHeapSize // (1024 * 1024)) ++ "MB kuri " ++ Debug.toString (quota.jsHeapSizeLimit // (1024 * 1024)) ++ "MB"
             }
 
         StorageQuota quota ->
             { english = "Storage used " ++ Debug.toString (quota.usage // (1024 * 1024)) ++ " MB of available " ++ Debug.toString (quota.quota // (1024 * 1024)) ++ " MB"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Hamaze gukoreshwa umwanya ungana na MG" ++ Debug.toString (quota.usage // (1024 * 1024)) ++ " umwanya wose ungana na MG" ++ Debug.toString (quota.quota // (1024 * 1024))
             }
 
         SubmitPairingCode ->
@@ -1085,24 +1085,24 @@ translationSet trans =
 
         Estimated ->
             { english = "Estimated"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Itariki y'amavuko igenekerejwe"
             }
 
         FamilyInformation ->
             { english = "Family Information"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Amakuru ku muryango"
             }
 
         FamilyMembers ->
             { english = "Family Members"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Abagize umuryango"
             }
 
         FamilyPlanningSignLabel sign ->
             case sign of
                 AutoObservation ->
                     { english = "Auto-observation"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Kwigenzura ururenda"
                     }
 
                 Condoms ->
@@ -1112,17 +1112,17 @@ translationSet trans =
 
                 CycleBeads ->
                     { english = "Cycle beads"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Urunigi"
                     }
 
                 CycleCounting ->
                     { english = "Cycle counting"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Kubara "
                     }
 
                 Hysterectomy ->
                     { english = "Hysterectomy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Bakuyemo nyababyeyi"
                     }
 
                 Implants ->
@@ -1132,7 +1132,7 @@ translationSet trans =
 
                 Injectables ->
                     { english = "Injectables"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Urushinge"
                     }
 
                 IUD ->
@@ -1142,7 +1142,7 @@ translationSet trans =
 
                 LactationAmenorrhea ->
                     { english = "Lactation amenorrhea"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Uburyo bwo konsa"
                     }
 
                 NoFamilyPlanning ->
@@ -1152,27 +1152,27 @@ translationSet trans =
 
                 OralContraceptives ->
                     { english = "Oral contraceptives"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Ibinini"
                     }
 
                 Spermicide ->
                     { english = "Spermicide"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Ibinini byica intangangabo bicishwa mu gitsina"
                     }
 
                 TubalLigatures ->
                     { english = "Tubal ligatures"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Gufunga umuyoborantanga ku bagore"
                     }
 
                 Vasectomy ->
                     { english = "Vasectomy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Gufunga umuyoborantanga ku bagabo"
                     }
 
         FamilyUbudehe ->
             { english = "Family Ubudehe"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Icyiciro cy'ubudehe umuryango uherereyemo"
             }
 
         FatherName ->
@@ -1197,7 +1197,7 @@ translationSet trans =
 
         FirstName ->
             { english = "First Name"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Izina ry'idini"
             }
 
         FormError errorValue ->
@@ -1220,7 +1220,7 @@ translationSet trans =
 
         GenderLabel ->
             { english = "Gender"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Igitsina"
             }
 
         GoHome ->
@@ -1240,39 +1240,39 @@ translationSet trans =
 
         HealthCenter ->
             { english = "Health Center"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Ikigo Nderabuzima"
             }
 
         HIVStatus status ->
             case status of
                 HIVExposedInfant ->
                     { english = "HIV-exposed Infant"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Umwana uvuka ku mubyeyi ubana n'ubwandu bwa virusi ya SIDA"
                     }
 
                 Negative ->
                     { english = "Negative"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Nta bwandu afite"
                     }
 
                 NegativeDiscordantCouple ->
                     { english = "Negative - discordant couple"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Nta bwandu afite ariko abana n'ubufite"
                     }
 
                 Positive ->
                     { english = "Positive"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Afite ubwandu"
                     }
 
                 Backend.Person.Model.Unknown ->
                     { english = "Unknown"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Ntabizi"
                     }
 
         HIVStatusLabel ->
             { english = "HIV Status"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Uko ahagaze ku bijyanye n'ubwandu bwa virusi ya SIDA"
             }
 
         HouseholdSize ->
@@ -1350,29 +1350,29 @@ translationSet trans =
 
         MaritalStatusLabel ->
             { english = "Marital Status"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Irangamimerere"
             }
 
         MaritalStatus status ->
             case status of
                 Divorced ->
                     { english = "Divorced"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Yatandukanye n'uwo bashakanye"
                     }
 
                 Married ->
                     { english = "Married"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Arubatse"
                     }
 
                 Single ->
                     { english = "Single"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Ingaragu"
                     }
 
                 Widowed ->
                     { english = "Widowed"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Umupfakazi"
                     }
 
         MeasurementNoChange ->
@@ -1412,27 +1412,27 @@ translationSet trans =
             case mode of
                 VaginalDelivery (Spontaneous True) ->
                     { english = "Spontaneous vaginal delivery with episiotomy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Yabyaye neza ariko bamwongereye"
                     }
 
                 VaginalDelivery (Spontaneous False) ->
                     { english = "Spontaneous vaginal delivery without episiotomy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Yabyaye neza"
                     }
 
                 VaginalDelivery WithVacuumExtraction ->
                     { english = "Vaginal delivery with vacuum extraction"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Yabyaye neza ariko hanifashishijwe icyuma gikurura umwana"
                     }
 
                 CesareanDelivery ->
                     { english = "Cesarean delivery"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Yabyaye bamubaze"
                     }
 
         ModeOfDeliveryLabel ->
             { english = "Mode of delivery"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Uburyo yabyayemo"
             }
 
         Month ->
@@ -1510,7 +1510,7 @@ translationSet trans =
 
         NationalIdNumber ->
             { english = "National ID Number"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Numero y'irangamuntu"
             }
 
         Next ->
@@ -1595,7 +1595,7 @@ translationSet trans =
 
         NumberOfChildrenUnder5 ->
             { english = "Number of Children under 5"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Umubare w'abana bari munsi y'imyaka 5"
             }
 
         OK ->
@@ -1655,7 +1655,7 @@ translationSet trans =
 
         ParticipantDemographicInformation ->
             { english = "Participant Demographic Information"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Umwirondoro w'umugenerwabikorwa"
             }
 
         ParticipantInformation ->
@@ -1665,7 +1665,7 @@ translationSet trans =
 
         People ->
             { english = "People"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Abantu"
             }
 
         PersistentStorage authorized ->
@@ -1676,7 +1676,7 @@ translationSet trans =
 
             else
                 { english = "Persistent storage has not been authorized. The browser may delete locally cached data if storage runs low."
-                , kinyarwanda = Nothing
+                , kinyarwanda = "Ibikwa ry'amakuru ntabwo remejwe. Sisiteme mushakisha ukoreramo ishobora kubisiba umwanya ubaye muto."
                 }
 
         Person ->
@@ -1726,7 +1726,7 @@ translationSet trans =
 
         Programs ->
             { english = "Programs"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Porogaramu"
             }
 
         ProgressReport ->
@@ -1736,7 +1736,7 @@ translationSet trans =
 
         Province ->
             { english = "Province"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Intara"
             }
 
         Register ->
@@ -1746,7 +1746,7 @@ translationSet trans =
 
         RegisterHelper ->
             { english = "Not the participant you were looking for?"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Umugenerwabikorwa ubonye si we washakaga?"
             }
 
         RegisterNewParticipant ->
@@ -1756,7 +1756,7 @@ translationSet trans =
 
         RegistratingHealthCenter ->
             { english = "Registrating Health Center"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Izina ry'ikigo nderabuzima umugenerwabikorwa abarizwamo"
             }
 
         RegistrationSuccessful ->
@@ -1813,17 +1813,17 @@ translationSet trans =
             case total of
                 1 ->
                     { english = "There is 1 participant that matches your search."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Hari abagenerwabikorwa 1 bahuye nuwo ushaka mu ishakiro"
                     }
 
                 _ ->
                     { english = "There are " ++ Debug.toString total ++ " participants that match your search."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Hari abagenerwabikorwa " ++ Debug.toString total ++ " bahuye nuwo ushaka mu ishakiro"
                     }
 
         RecentAndUpcomingGroupEncounters ->
             { english = "Recent and upcoming Group Encounters"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Ahabarizwa amatsinda aheruka gukorerwa n'agiye gukorerwa"
             }
 
         ReportCompleted { pending, completed } ->
@@ -1866,17 +1866,17 @@ translationSet trans =
 
         SearchHelperFamilyMember ->
             { english = "Search to see if the additional family member already exists in E-Heza. If the person you are looking for does not appear in the search, please create a new record for them."
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Kanda ku Ishakiro kugirango urebe niba umugenerwabikorwa asanzwe ari muri E-Heza. Niba uwo muntu atagaragara mu ishakiro, mwandike nk'umugenerwabikorwa mushya."
             }
 
         SecondName ->
             { english = "Second Name"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Izina ry'umuryango"
             }
 
         Sector ->
             { english = "Sector"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Umurenge"
             }
 
         SelectLanguage ->
@@ -1886,12 +1886,12 @@ translationSet trans =
 
         SelectGroup ->
             { english = "Select Group..."
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Hitamo itsinda ryawe..."
             }
 
         SelectProgram ->
             { english = "Select Program"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Hitamo porogaramu"
             }
 
         SelectYourGroup ->
@@ -1906,12 +1906,12 @@ translationSet trans =
 
         ServiceWorkerActive ->
             { english = "The app is installed on this device."
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Apulikasiyo  muri icyi cyuma cy'inkoranabuhanga yinjijwe."
             }
 
         ServiceWorkerCurrent ->
             { english = "You have the current version of the app."
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Ufite apulikasiyo nshya igezweho uyu munsi"
             }
 
         ServiceWorkerCheckForUpdates ->
@@ -1976,12 +1976,12 @@ translationSet trans =
 
         ServiceWorkerRegSuccess ->
             { english = "The app was successfully registered with this device."
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Igikorwa cyo gushyira apulikasiyo kuri iki gikoresho cy'ikoranabuhanga cyagenze neza."
             }
 
         ServiceWorkerStatus ->
             { english = "Deployment Status"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Ibijyanye no kuvugurura no kongerera ubushobozi sisiteme"
             }
 
         GroupEncounterClosed ->
@@ -2021,7 +2021,7 @@ translationSet trans =
 
         ShowAll ->
             { english = "Show All"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Erekana amazina yose"
             }
 
         StartEndDate ->
@@ -2046,7 +2046,7 @@ translationSet trans =
 
         StopSyncing ->
             { english = "Stop Syncing"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Tangira gukura amakuru kuri seriveri"
             }
 
         Submit ->
@@ -2061,7 +2061,7 @@ translationSet trans =
 
         SyncGeneral ->
             { english = "Sync Status (General)"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Ibijyanye no guhuza amakuru yafashwe n'igikoresho cy'ikoranabuhanga n'abitse kuri seriveri"
             }
 
         TakenCareOfBy ->
@@ -2071,7 +2071,7 @@ translationSet trans =
 
         TelephoneNumber ->
             { english = "Telephone Number"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Numero ya telefoni"
             }
 
         ThisActionCannotBeUndone ->
@@ -2101,7 +2101,7 @@ translationSet trans =
 
         TrySyncing ->
             { english = "Try syncing with backend"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Gerageza guhuza amakuru y'iki gikoresho cy'ikoranabuhanga n'abakoze E-Heza"
             }
 
         UbudeheLabel ->
@@ -2142,7 +2142,7 @@ translationSet trans =
 
         Village ->
             { english = "Village"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Umudugudu"
             }
 
         WelcomeUser name ->
@@ -2152,7 +2152,7 @@ translationSet trans =
 
         WhatDoYouWantToDo ->
             { english = "What do you want to do?"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Urashaka gukora iki?"
             }
 
         Year ->
@@ -2229,7 +2229,7 @@ translateMyRelatedByQuestion relationship =
     case relationship of
         MyChild ->
             { english = "is the parent of"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "ni umubyeyi wa"
             }
 
         MyParent ->
@@ -2239,7 +2239,7 @@ translateMyRelatedByQuestion relationship =
 
         MyCaregiven ->
             { english = "is the caregiver for"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "ni umurezi wa"
             }
 
         MyCaregiver ->
@@ -2253,12 +2253,12 @@ translateActivePage page =
     case page of
         DevicePage ->
             { english = "Device Status"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Uko igikoresho cy'ikoranabuhanga gihagaze"
             }
 
         PinCodePage ->
             { english = "PIN Code"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Umubare w'ibanga"
             }
 
         PageNotFound url ->
@@ -2275,7 +2275,7 @@ translateActivePage page =
             case userPage of
                 ClinicsPage _ ->
                     { english = "Groups"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = "Itsinda"
                     }
 
                 MyAccountPage ->
@@ -2548,7 +2548,7 @@ translateLoginPhrase phrase =
 
         PinCodeRejected ->
             { english = "Your PIN code was not recognized."
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Umubare wawe w'ibanga ntabwo uzwi."
             }
 
         SignIn ->
@@ -2558,7 +2558,7 @@ translateLoginPhrase phrase =
 
         SignOut ->
             { english = "Sign Out"
-            , kinyarwanda = Nothing
+            , kinyarwanda = "Gusohoka muri sisiteme"
             }
 
         Username ->
