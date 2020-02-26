@@ -15,8 +15,6 @@ if (!drupal_is_cli()) {
 
 drush_print('Starting export!');
 
-$faker = hedley_faker_create();
-
 // Rukura, Rwankuba, Test.
 $health_centers_ids = [7091, 7092, 28589];
 
