@@ -862,8 +862,21 @@ viewMonthlyChart language title filterType data currentFilter =
             in
             List.map (\( key, value ) -> choose value 0) chartData
 
+        maybeScaleMax =
+            List.maximum yScaleMaxList
+
         yScaleMax =
-            List.maximum yScaleMaxList |> Maybe.withDefault 1
+            maybeScaleMax
+                -- Don't allow the y access to be less than 3.
+                |> Maybe.map
+                    (\max ->
+                        if max < 3 then
+                            3
+
+                        else
+                            max
+                    )
+                |> Maybe.withDefault 1
 
         -- Add 20% to the top of the graph above the max
         yScaleMaxEnhanced =
