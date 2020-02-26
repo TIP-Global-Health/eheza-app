@@ -197,8 +197,8 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       ],
     ];
 
-    $attendance = 10;
-    $sessions = $this->createSessionsWithAttendance(0, $attendance, 0, '-5 months');
+    $attendance = 5;
+    $sessions = $this->createSessionsWithAttendance(0, $attendance);
     $measurements_state = HEDLEY_STATS_MODERATE;
     $month = 0;
     foreach ($sessions as $session) {
@@ -214,12 +214,6 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
         $this->createWeight($session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
         $this->createHeight($session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
         $this->createMuac($session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);;
-      }
-
-      if ($session['date'] > strtotime('-1 year')) {
-        // We need the month of the session to know where to look for results
-        // because it's divided by month.
-        $month = date('n', $session['date']);
       }
     }
 
