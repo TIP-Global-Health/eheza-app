@@ -141,6 +141,7 @@ type Dashboard
     | BeneficiariesTableColumnLabel String
     | BeneficiariesTableLabel
     | BoysFilterLabel
+    | CaseManagementFirstWordHelper
     | CaseManagementHelper
     | CaseManagementLabel
     | CompletedProgramLabel
@@ -161,6 +162,7 @@ type Dashboard
     | PeriodFilter FilterPeriod
     | Severe
     | SeverelyMalnourished
+    | StatisticsFirstWordHelper
     | StatisticsHelper
     | SyncNotice
     | TotalBeneficiaries
@@ -2581,8 +2583,13 @@ translateDashboard trans =
             , kinyarwanda = Just "Umuhungu"
             }
 
+        CaseManagementFirstWordHelper ->
+            { english = "Review"
+            , kinyarwanda = Nothing
+            }
+
         CaseManagementHelper ->
-            { english = "Review list of malnourished children"
+            { english = "list of malnourished children"
             , kinyarwanda = Nothing
             }
 
@@ -2715,8 +2722,13 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
+        StatisticsFirstWordHelper ->
+            { english = "See"
+            , kinyarwanda = Nothing
+            }
+
         StatisticsHelper ->
-            { english = "See statistics for this month"
+            { english = "statistics for this month"
             , kinyarwanda = Nothing
             }
 

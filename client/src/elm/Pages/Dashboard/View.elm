@@ -730,7 +730,9 @@ viewDashboardPagesLinks language =
             [ i [ class "icon" ] []
             , span
                 []
-                [ translateText language <| Translate.Dashboard Translate.StatisticsHelper ]
+                [ span [ class "bold" ] [ translateText language <| Translate.Dashboard Translate.StatisticsFirstWordHelper ]
+                , translateText language <| Translate.Dashboard Translate.StatisticsHelper
+                ]
             , i [ class "arrow" ] []
             ]
         , div
@@ -743,7 +745,9 @@ viewDashboardPagesLinks language =
             [ i [ class "icon" ] []
             , span
                 []
-                [ translateText language <| Translate.Dashboard Translate.CaseManagementHelper ]
+                [ span [ class "bold" ] [ translateText language <| Translate.Dashboard Translate.CaseManagementFirstWordHelper ]
+                , translateText language <| Translate.Dashboard Translate.CaseManagementHelper
+                ]
             , i [ class "arrow" ] []
             ]
         ]

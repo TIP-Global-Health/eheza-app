@@ -594,10 +594,15 @@
         height: 82px;
       }
 
-      span {
+      > span {
         padding: 30px 0 0 26px;
         vertical-align: top;
         display: inline-block;
+
+        .bold {
+          font-weight: bold;
+          padding-right: 6px;
+        }
       }
 
       .arrow {
