@@ -1290,7 +1290,7 @@ translationSet trans =
 
         LastChecked ->
             { english = "Last checked"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Isuzuma riheruka"
             }
 
         LevelOfEducationLabel ->
