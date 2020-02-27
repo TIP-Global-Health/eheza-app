@@ -227,6 +227,15 @@ function hedley_view_export_export_batch_worker($item) {
 
   $output = $view->render($display);
 
+  // Removing the csv header when it's not the first iteration, so we only print
+  // it once.
+  if ($from > 0 && $item->data['export_type'] == 'csv') {
+    // Filter out the first row. This works for simple views, but we'll probably
+    // need to override template_preprocess_views_view_table() to handle more
+    // complex ones.
+    $output = preg_replace('/^.+\n/', '', $output);
+  }
+
   if (file_put_contents($file->uri, $output, FILE_APPEND) === FALSE) {
     return $failure(format_string("Couldn't write to file: @uri", ['@fid' => $file->uri]));
   }
