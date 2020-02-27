@@ -273,7 +273,7 @@
     //
     // The parameter is our shard metadata.
     function uploadSingleShard (shard, credentials, maybeHealthCenterUuid) {
-        getSyncUrl(shard, credentials, maybeHealthCenterUuid).then(function (syncUrl) {
+        return getSyncUrl(shard, credentials, maybeHealthCenterUuid).then(function (syncUrl) {
             var uploadUrl = getUploadUrl(credentials);
 
             return recordAttempt(shard.uuid, {
