@@ -2685,7 +2685,7 @@ translateDashboard trans =
                     , kinyarwanda = Nothing
                     }
 
-                ThreeMonths ->
+                Dashboard.ThreeMonthsAgo ->
                     { english = "from last month"
                     , kinyarwanda = Nothing
                     }
@@ -2707,7 +2707,7 @@ translateDashboard trans =
                     , kinyarwanda = Nothing
                     }
 
-                Dashboard.ThreeMonths ->
+                Dashboard.ThreeMonthsAgo ->
                     { english = "Three months"
                     , kinyarwanda = Nothing
                     }

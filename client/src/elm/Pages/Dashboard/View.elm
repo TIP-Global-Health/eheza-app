@@ -288,7 +288,7 @@ viewAllStatsCards language stats currentDate model healthCenterId db =
                 { model | period = LastMonth }
 
             else
-                { model | period = ThreeMonths }
+                { model | period = ThreeMonthsAgo }
 
         monthBeforeStats =
             Dict.get healthCenterId db.computedDashboard
@@ -1092,7 +1092,7 @@ filterStatsByPeriod currentDate model stats =
                 LastMonth ->
                     ( Date.add Months -2 currentDate, Date.add Months -1 currentDate )
 
-                ThreeMonths ->
+                ThreeMonthsAgo ->
                     ( Date.add Months -3 currentDate, Date.add Months -2 currentDate )
 
         filterPartial =
@@ -1147,8 +1147,8 @@ filterStatsByGender : NominalDate -> Model -> DashboardStats -> DashboardStats
 filterStatsByGender currentDate model stats =
     let
         -- Filter by gender
-        filterDo data =
-            data
+        filterByGender statsList =
+            statsList
                 |> List.filter
                     (\personStats ->
                         case ( personStats.gender, model.beneficiariesGender ) of
@@ -1163,48 +1163,44 @@ filterStatsByGender currentDate model stats =
                     )
     in
     { stats
-        | childrenBeneficiaries = filterDo stats.childrenBeneficiaries
-        , completedProgram = filterDo stats.completedProgram
-        , missedSessions = filterDo stats.missedSessions
-        , malnourished = filterDo stats.malnourished
+        | childrenBeneficiaries = filterByGender stats.childrenBeneficiaries
+        , completedProgram = filterByGender stats.completedProgram
+        , missedSessions = filterByGender stats.missedSessions
+        , malnourished = filterByGender stats.malnourished
     }
 
 
 getFamilyPlanningSignsCounter : DashboardStats -> FamilyPlanningSignsCounter
 getFamilyPlanningSignsCounter stats =
-    if List.isEmpty stats.familyPlanning then
-        Dict.empty
+    List.foldl
+        (\familyPlanning accum ->
+            let
+                currentCount sign =
+                    Dict.get sign accum
+                        |> Maybe.withDefault 0
 
-    else
-        List.foldl
-            (\familyPlanning accum ->
-                let
-                    currentCount sign =
-                        Dict.get sign accum
-                            |> Maybe.withDefault 0
+                incrementCount sign accum_ =
+                    Dict.insert
+                        sign
+                        (currentCount sign + 1)
+                        accum_
+            in
+            if List.isEmpty familyPlanning.signs then
+                accum
 
-                    incrementCount sign accum_ =
-                        Dict.insert
-                            sign
-                            (currentCount sign + 1)
-                            accum_
-                in
-                if List.isEmpty familyPlanning.signs then
+            else if List.member NoFamilyPlanning familyPlanning.signs then
+                -- In case we have a `NoFamilyPlanning` we don't need to iterate over signs.
+                incrementCount NoFamilyPlanning accum
+
+            else
+                -- Iterate over existing signs.
+                List.foldl
+                    (\sign innerAccum -> incrementCount sign innerAccum)
                     accum
-
-                else if List.member NoFamilyPlanning familyPlanning.signs then
-                    -- In case we have a `NoFamilyPlanning` we don't need to iterate over signs.
-                    incrementCount NoFamilyPlanning accum
-
-                else
-                    -- Iterate over existing signs.
-                    List.foldl
-                        (\sign innerAccum -> incrementCount sign innerAccum)
-                        accum
-                        familyPlanning.signs
-            )
-            Dict.empty
-            stats.familyPlanning
+                    familyPlanning.signs
+        )
+        Dict.empty
+        stats.familyPlanning
 
 
 annular : List FamilyPlanningSign -> List Arc -> Svg msg

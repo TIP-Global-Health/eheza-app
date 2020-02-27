@@ -29,7 +29,7 @@ import Pages.Page exposing (DashboardPage(..), Page(..))
 type FilterPeriod
     = ThisMonth
     | LastMonth
-    | ThreeMonths
+    | ThreeMonthsAgo
     | OneYear
 
 
