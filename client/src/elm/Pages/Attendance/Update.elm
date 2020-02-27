@@ -29,3 +29,17 @@ update msg model =
             , Cmd.none
             , []
             )
+
+        ToggleInitialResultsDisplay ->
+            let
+                display =
+                    if model.initialResultsDisplay == InitialResultsHidden then
+                        InitialResultsShown
+
+                    else
+                        InitialResultsHidden
+            in
+            ( { model | initialResultsDisplay = display }
+            , Cmd.none
+            , []
+            )

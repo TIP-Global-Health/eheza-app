@@ -39,7 +39,10 @@ view language ( sessionId, session ) model =
                 matchMotherAndHerChildren filter session.offlineSession
 
         mothers =
-            if Dict.isEmpty session.offlineSession.mothers then
+            if String.isEmpty model.filter && model.initialResultsDisplay == InitialResultsHidden then
+                []
+
+            else if Dict.isEmpty session.offlineSession.mothers then
                 [ div
                     [ class "ui message warning" ]
                     [ text <| translate language Translate.ThisGroupHasNoMothers ]
@@ -97,11 +100,32 @@ view language ( sessionId, session ) model =
                         [ text <| translate language Translate.CheckIn ]
                     , p [] [ text <| translate language Translate.ClickTheCheckMark ]
                     , viewNameFilter language model.filter SetFilter
+                    , viewToggleDisplay language model
                     , div [ class "ui middle aligned divided list" ] mothers
                     ]
                 ]
             ]
         ]
+
+
+viewToggleDisplay : Language -> Model -> Html Msg
+viewToggleDisplay language model =
+    let
+        content =
+            if String.isEmpty model.filter then
+                [ span [] [ text "or" ]
+                , span
+                    [ class "toggle-text"
+                    , onClick ToggleInitialResultsDisplay
+                    ]
+                    [ text <| translate language <| Translate.InitialResultsDisplay model.initialResultsDisplay ]
+                ]
+
+            else
+                []
+    in
+    div [ class "toggle-initial-display" ]
+        content
 
 
 viewMother : EditableSession -> PersonId -> Person -> Html Msg

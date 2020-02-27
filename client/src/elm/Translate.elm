@@ -32,6 +32,7 @@ import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Http
+import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
@@ -175,6 +176,7 @@ type TranslationId
     | ChildNutritionSignReport ChildNutritionSign
     | ChildOf
     | Children
+    | Clear
     | ClickTheCheckMark
     | ClinicType ClinicType
     | Clinical
@@ -237,6 +239,7 @@ type TranslationId
     | HIVStatusLabel
     | HouseholdSize
     | HttpError Http.Error
+    | InitialResultsDisplay InitialResultsDisplay
     | KilogramShorthand
     | LastChecked
     | LevelOfEducationLabel
@@ -853,6 +856,11 @@ translationSet trans =
             , kinyarwanda = Just "Umwana wa"
             }
 
+        Clear ->
+            { english = "Clear"
+            , kinyarwanda = Nothing
+            }
+
         ClickTheCheckMark ->
             { english = "Click the check mark if the mother / caregiver is in attendance. The check mark will appear green when a mother / caregiver has been signed in."
             , kinyarwanda = Just "Kanda (kuri) ku kazu niba umubyeyi ahari. Ku kazu harahita hahindura ibara habe icyaytsi niba wemeje ko umubyeyi ahari"
@@ -1282,6 +1290,18 @@ translationSet trans =
 
         HttpError error ->
             translateHttpError error
+
+        InitialResultsDisplay display ->
+            case display of
+                InitialResultsHidden ->
+                    { english = "Display all mothers / caregivers"
+                    , kinyarwanda = Nothing
+                    }
+
+                InitialResultsShown ->
+                    { english = "Hide all mothers / caregivers"
+                    , kinyarwanda = Nothing
+                    }
 
         KilogramShorthand ->
             { english = "kg"
