@@ -358,3 +358,46 @@ function hedley_view_export_file_download($uri) {
     'Content-Disposition' => 'inline',
   ];
 }
+
+/**
+ * Implements hook_cron().
+ *
+ * Delete old view_export AQ items and their exported files.
+ */
+function hedley_view_export_cron() {
+  // Deleting all AQ items made by this module more than a week ago.
+  $time_to_keep = variable_get('hedley_view_export_days_to_keep_export', 7) * 86400;
+  $items = db_select('advancedqueue', 'a')
+    ->fields('a', ['item_id', 'data'])
+    ->condition('name', 'export_view')
+    ->condition('created', REQUEST_TIME - $time_to_keep, '<')
+    ->range(0, variable_get('hedley_view_export_delete_range', 100))
+    ->execute()
+    // Fetch item data (For file reference), keyed by item ID.
+    ->fetchAllKeyed();
+
+  if (!$items) {
+    return;
+  }
+
+  // Delete the attached files.
+  foreach ($items as $item_id => $serialized_data) {
+    $data = unserialize($serialized_data);
+    $file = file_load($data['fid']);
+    if (!$file) {
+      // File record doesn't exist.
+      continue;
+    }
+    $success = file_delete($file);
+    if (!$success) {
+      watchdog('hedley_view_export', 'Could not delete old export file #@fid', ['@fid' => $data['fid']], WATCHDOG_WARNING);
+    }
+  }
+
+  // Delete the AQ items.
+  db_delete('advancedqueue')
+    ->condition('item_id', array_keys($items), 'IN')
+    ->execute();
+
+  watchdog('hedley_view_export', 'Deleted @count old view_export AQ items', ['@count' => count($items)], WATCHDOG_INFO);
+}
