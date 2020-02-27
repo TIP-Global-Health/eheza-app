@@ -365,7 +365,7 @@ foreach ($mapping as $name => $rows) {
     $content[] = implode(',', $row);
   }
 
-  $path = drupal_get_path('module', 'hedley_migrate') . '/csv';
+  $path = drupal_get_path('module', 'hedley_migrate') . '/csv/exported';
   $fp = fopen("$path/$name.csv", 'w');
   fwrite($fp, implode(PHP_EOL, $content));
 

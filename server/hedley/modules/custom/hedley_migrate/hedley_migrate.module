@@ -278,7 +278,7 @@ function hedley_migrate_generate_geo_terms_vocabulary() {
 
   // Load input file.
   $migrate_dir = variable_get('hedley_migrate_directory', FALSE) ? variable_get('hedley_migrate_directory') : drupal_get_path('module', 'hedley_migrate');
-  $source_file = $migrate_dir . '/csv/villages.csv';
+  $source_file = $migrate_dir . '/csv/geo_fields.csv';
 
   $column_mapping = ['province', 'district', 'sector', 'cell', 'village'];
 
