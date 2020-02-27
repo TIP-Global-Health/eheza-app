@@ -73,7 +73,7 @@ function hedley_view_export_views_pre_render(view &$view) {
   ];
   // Append the export link to the feed icon region.
   $link = l(t('Export CSV'), $url, $options);
-  $view->feed_icon = !empty($view->feed_icon) ? $view->feed_icon . ' ' . $link : $link;
+  $view->exposed_widgets = !empty($view->exposed_widgets) ? $view->exposed_widgets . ' ' . $link : $link;
 }
 
 /**
@@ -381,7 +381,7 @@ function hedley_view_export_cron() {
   }
 
   // Delete the attached files.
-  foreach ($items as $item_id => $serialized_data) {
+  foreach ($items as $serialized_data) {
     $data = unserialize($serialized_data);
     $file = file_load($data['fid']);
     if (!$file) {
