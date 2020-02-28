@@ -1446,7 +1446,7 @@ translationSet trans =
 
         Month ->
             { english = "Month"
-            , kinyarwanda = Just"Ukwezi"
+            , kinyarwanda = Just "Ukwezi"
             }
 
         MonthAbbrev ->
