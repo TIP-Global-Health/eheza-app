@@ -1029,7 +1029,7 @@ translationSet trans =
 
         DeviceStatus ->
             { english = "Device Status"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Uko igikoresho cy'ikoranabuhanga gihagaze"
             }
 
         District ->
@@ -1059,7 +1059,7 @@ translationSet trans =
 
         EnterPairingCode ->
             { english = "Enter pairing code"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare uhuza igikoresho cy'ikoranabuhanga na apulikasiyo"
             }
 
         MemoryQuota quota ->
@@ -1074,7 +1074,7 @@ translationSet trans =
 
         SubmitPairingCode ->
             { english = "Submit Pairing Code"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubare uhuza igikoresho cy'ikoranabuhanga na apulikasiyo"
             }
 
         ErrorCheckLocalConfig ->
@@ -1196,7 +1196,7 @@ translationSet trans =
 
         FilterByName ->
             { english = "Filter by name"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo izina ryuwo ushaka"
             }
 
         FirstName ->
@@ -1234,12 +1234,12 @@ translationSet trans =
 
         GroupAssessment ->
             { english = "Group Assessment"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gukorera itsinda"
             }
 
         HaveYouSynced ->
             { english = "Have you synced data for the health center you are working with?"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Waba wohereje amakuru y' ikigo nderabuzima uri gukorera?"
             }
 
         HealthCenter ->
@@ -1446,7 +1446,7 @@ translationSet trans =
 
         Month ->
             { english = "Month"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just"Ukwezi"
             }
 
         MonthAbbrev ->
@@ -1529,7 +1529,7 @@ translationSet trans =
 
         No ->
             { english = "No"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Oya"
             }
 
         NoActivitiesCompleted ->
@@ -1619,7 +1619,7 @@ translationSet trans =
 
         OnceYouEndYourGroupEncounter ->
             { english = "Once you end your Group Encounter, you will no longer be able to edit or add data."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Igihe ushoze igikorwa, ntabwo ushobora guhindura cg wongeremo andi makuru."
             }
 
         Page ->
@@ -1639,7 +1639,7 @@ translationSet trans =
 
         ParticipantDirectory ->
             { english = "Participant Directory"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ububiko bw'amakuru y'umurwayi"
             }
 
         Participants ->
@@ -1690,12 +1690,12 @@ translationSet trans =
 
         Person ->
             { english = "Person"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umuntu"
             }
 
         PersonHasBeenSaved ->
             { english = "Person has been saved"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Amakuru kuri uyu muntu yabitswe"
             }
 
         PlaceholderEnterHeight ->
@@ -1710,7 +1710,7 @@ translationSet trans =
 
         PlaceholderEnterParticipantName ->
             { english = "Enter participant name here"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Andika izina ry'umurwayi hano"
             }
 
         PlaceholderEnterWeight ->
@@ -1760,7 +1760,7 @@ translationSet trans =
 
         RegisterNewParticipant ->
             { english = "Register a new participant"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Andika umurwayi mushya"
             }
 
         RegistratingHealthCenter ->
@@ -1880,7 +1880,7 @@ translationSet trans =
 
         SearchHelper ->
             { english = "Search to see if the participant already exists in E-Heza. If the person you are looking for does not appear in the search, please create a new record for them."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Shakisha kugirango urebe niba umugenerwabikorwa asanzwe ari muri E-Heza. Niba atagaragara, mwandike nku mushya."
             }
 
         SearchHelperFamilyMember ->
@@ -1915,12 +1915,12 @@ translationSet trans =
 
         SelectYourGroup ->
             { english = "Select your Group"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo itsinda ryawe"
             }
 
         SelectYourHealthCenter ->
             { english = "Select your Health Center"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo ikigo nderabuzima"
             }
 
         ServiceWorkerActive ->
@@ -1935,7 +1935,7 @@ translationSet trans =
 
         ServiceWorkerCheckForUpdates ->
             { english = "Check for updates"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kugenzura ibyavuguruwe"
             }
 
         ServiceWorkerInstalling ->
@@ -2059,7 +2059,7 @@ translationSet trans =
             }
 
         StartSyncing ->
-            { english = "Start Syncing"
+            { english = "Tangira uhuze amakuru kuri seriveri"
             , kinyarwanda = Nothing
             }
 
@@ -2135,7 +2135,7 @@ translationSet trans =
 
         Unknown ->
             { english = "Unknown"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ntabizi"
             }
 
         Update ->
@@ -2181,12 +2181,12 @@ translationSet trans =
 
         Year ->
             { english = "Year"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umwaka"
             }
 
         Yes ->
             { english = "Yes"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Yego"
             }
 
         YouAreNotAnAdmin ->
@@ -2324,7 +2324,7 @@ translateActivePage page =
 
                 PersonsPage _ ->
                     { english = "Participant Directory"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ububiko bw'amakuru y'umurwayi"
                     }
 
                 RelationshipPage _ _ ->
