@@ -75,7 +75,7 @@ encodeActivityAsString activity =
                     "family_planning"
 
                 Lactation ->
-                    "breastfeeding"
+                    "lactation"
 
 
 
