@@ -14,6 +14,7 @@ because there was so much code written in terms of an `EditableSession`.
 
 import Activity.Model exposing (SummaryByActivity, SummaryByParticipant)
 import AssocList as Dict exposing (Dict)
+import Backend.Clinic.Model exposing (ClinicType)
 import Backend.Counseling.Model exposing (EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -38,6 +39,7 @@ type alias Session =
     { startDate : NominalDate
     , endDate : Maybe NominalDate
     , clinicId : ClinicId
+    , clinicType : ClinicType
     }
 
 

@@ -1,5 +1,6 @@
 module Backend.Session.Decoder exposing (decodeSession)
 
+import Backend.Clinic.Decoder exposing (decodeClinicType)
 import Backend.Session.Model exposing (..)
 import Gizra.NominalDate exposing (decodeDrupalRange, decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, at, bool, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
@@ -15,3 +16,4 @@ decodeSession =
         |> requiredAt [ "scheduled_date", "value" ] decodeYYYYMMDD
         |> optionalAt [ "scheduled_date", "value2" ] (nullable decodeYYYYMMDD) Nothing
         |> required "clinic" decodeEntityUuid
+        |> required "clinic_type" decodeClinicType

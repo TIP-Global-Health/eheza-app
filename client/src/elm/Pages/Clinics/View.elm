@@ -291,6 +291,7 @@ viewFoundClinic language currentDate nurse postSession clinicId clinic sessions 
             { startDate = currentDate
             , endDate = Nothing
             , clinicId = clinicId
+            , clinicType = clinic.clinicType
             }
 
         createSessionButton =

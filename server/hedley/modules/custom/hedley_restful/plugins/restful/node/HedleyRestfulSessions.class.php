@@ -28,6 +28,11 @@ class HedleyRestfulSessions extends HedleyRestfulSyncBase {
       'sub_property' => 'field_uuid',
     ];
 
+    $public_fields['clinic_type'] = [
+      'property' => 'field_clinic',
+      'sub_property' => 'field_group_type',
+    ];
+
     // The label is decorative only.
     unset($public_fields['label']);
 
@@ -52,6 +57,8 @@ class HedleyRestfulSessions extends HedleyRestfulSyncBase {
     hedley_restful_join_field_to_query($query, 'node', 'field_scheduled_date', FALSE, NULL, NULL, TRUE);
     // Get the UUID of the Clinic.
     hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_clinic.field_clinic_target_id", 'uuid_clinic');
+    // Get the type of the Clinic.
+    hedley_restful_join_field_to_query($query, 'node', 'field_group_type', TRUE, "field_clinic.field_clinic_target_id");
   }
 
   /**
@@ -63,6 +70,8 @@ class HedleyRestfulSessions extends HedleyRestfulSyncBase {
     foreach ($items as &$item) {
       $item->clinic = $item->uuid_clinic;
       unset($item->uuid_clinic);
+      $item->clinic_type = $item->field_group_type;
+      unset($item->field_group_type);
 
       $value1 = $item->scheduled_date;
       $value2 = $item->field_scheduled_date_field_scheduled_date_value2;

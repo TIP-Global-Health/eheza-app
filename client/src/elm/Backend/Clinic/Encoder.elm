@@ -1,4 +1,4 @@
-module Backend.Clinic.Encoder exposing (encodeClinic)
+module Backend.Clinic.Encoder exposing (encodeClinic, encodeClinicType)
 
 import Backend.Clinic.Model exposing (..)
 import Json.Encode exposing (..)
@@ -10,3 +10,20 @@ encodeClinic clinic =
     [ ( "label", string clinic.name )
     , ( "health_center", encodeEntityUuid clinic.healthCenterId )
     ]
+
+
+encodeClinicType : ClinicType -> Value
+encodeClinicType clinicType =
+    let
+        clinicTypeAsString =
+            case clinicType of
+                Pmtct ->
+                    "pmtct"
+
+                Fbf ->
+                    "fbf"
+
+                Sorwathe ->
+                    "sorwathe"
+    in
+    string clinicTypeAsString
