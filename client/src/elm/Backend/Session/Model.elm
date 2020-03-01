@@ -127,6 +127,7 @@ type alias Model =
     , saveAttendanceRequest : Dict PersonId (WebData ())
     , saveCounselingSessionRequest : Dict PersonId (WebData ())
     , saveFamilyPlanningRequest : Dict PersonId (WebData ())
+    , saveLactationRequest : Dict PersonId (WebData ())
     , saveHeightRequest : Dict PersonId (WebData ())
     , saveMuacRequest : Dict PersonId (WebData ())
     , saveNutritionRequest : Dict PersonId (WebData ())
@@ -142,6 +143,7 @@ emptyModel =
     , saveAttendanceRequest = Dict.empty
     , saveCounselingSessionRequest = Dict.empty
     , saveFamilyPlanningRequest = Dict.empty
+    , saveLactationRequest = Dict.empty
     , saveHeightRequest = Dict.empty
     , saveMuacRequest = Dict.empty
     , saveNutritionRequest = Dict.empty
@@ -159,6 +161,7 @@ type Msg
     | HandleSaveAttendance PersonId (WebData ())
     | HandleSaveCounselingSession PersonId (WebData ())
     | HandleSaveFamilyPlanning PersonId (WebData ())
+    | HandleSaveLactation PersonId (WebData ())
     | HandleSaveHeight PersonId (WebData ())
     | HandleSaveMuac PersonId (WebData ())
     | HandleSaveNutrition PersonId (WebData ())

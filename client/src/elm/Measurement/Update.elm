@@ -146,13 +146,16 @@ updateMother measurements msg model =
 
         SelectLactationSign sign value ->
             let
-                signsUpdated =
+                formUpdated =
                     case sign of
                         Breastfeeding ->
-                            model.lactationSigns
+                            model.lactationForm
                                 |> (\form -> { form | breastfeeding = Just value })
+
+                        NoLactationSigns ->
+                            model.lactationForm
             in
-            ( { model | lactationSigns = signsUpdated }
+            ( { model | lactationForm = formUpdated }
             , Cmd.none
             , Nothing
             )

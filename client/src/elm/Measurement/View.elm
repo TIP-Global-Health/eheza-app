@@ -744,7 +744,7 @@ viewMother language activity measurements model =
             viewFamilyPlanning language (mapMeasurementData .familyPlanning measurements) model.familyPlanningSigns
 
         Lactation ->
-            viewLactation language (mapMeasurementData .lactation measurements) model.lactationSigns
+            viewLactation language (mapMeasurementData .lactation measurements) model.lactationForm
 
 
 
@@ -1077,8 +1077,8 @@ viewFamilyPlanningSelectorItem language familyPlanningSigns sign =
         ]
 
 
-viewLactation : Language -> MeasurementData (Maybe ( LactationId, Lactation )) -> LactationSignsForm -> Html MsgMother
-viewLactation language measurement signs =
+viewLactation : Language -> MeasurementData (Maybe ( LactationId, Lactation )) -> LactationForm -> Html MsgMother
+viewLactation language measurement form =
     let
         activity =
             MotherActivity Lactation
@@ -1087,13 +1087,11 @@ viewLactation language measurement signs =
             Maybe.map Tuple.first measurement.current
 
         saveMsg =
-            -- if EverySet.isEmpty signs then
-            --     Nothing
-            --
-            -- else
-            Nothing
-
-        -- Just <| SendOutMsgMother <| SaveFamilyPlanningSigns existingId signs
+            form.breastfeeding
+                |> Maybe.map
+                    (\_ ->
+                        SendOutMsgMother <| SaveLactation existingId form
+                    )
     in
     div
         [ class "ui full segment lactation"
@@ -1106,16 +1104,14 @@ viewLactation language measurement signs =
                 ]
             , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
             , div [ class "ui form" ] <|
-                p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
-                    :: [ viewQuestionLabel language Trans.IsCurrentlyBreastfeeding
-                       , viewBoolInput language
-                            signs.breastfeeding
-                            (SelectLactationSign Breastfeeding)
-                            "breastfeeding"
-                            Nothing
-                       ]
-
-            -- viewFamilyPlanningSelector language signs
+                [ p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
+                , viewQuestionLabel language Trans.IsCurrentlyBreastfeeding
+                , viewBoolInput language
+                    form.breastfeeding
+                    (SelectLactationSign Breastfeeding)
+                    "breastfeeding"
+                    Nothing
+                ]
             ]
         , div [ class "actions" ] <|
             saveButton language

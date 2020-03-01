@@ -1,4 +1,12 @@
-module Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getMotherForm)
+module Measurement.Utils exposing
+    ( fromChildMeasurementData
+    , fromMotherMeasurementData
+    , getChildForm
+    , getInputConstraintsHeight
+    , getInputConstraintsMuac
+    , getInputConstraintsWeight
+    , getMotherForm
+    )
 
 import Activity.Utils exposing (expectCounselingActivity, expectParticipantConsent)
 import AssocList as Dict exposing (Dict)
@@ -102,15 +110,15 @@ fromMotherMeasurementData data =
         , view = Nothing
         , progress = progress
         }
-    , lactationSigns =
+    , lactationForm =
         data
             |> mapMeasurementData .lactation
             |> currentValue
             |> Maybe.map
                 (\measurement ->
-                    Just (EverySet.member Breastfeeding measurement.value) |> LactationSignsForm
+                    Just (EverySet.member Breastfeeding measurement.value) |> LactationForm
                 )
-            |> Maybe.withDefault (LactationSignsForm Nothing)
+            |> Maybe.withDefault (LactationForm Nothing)
     }
 
 

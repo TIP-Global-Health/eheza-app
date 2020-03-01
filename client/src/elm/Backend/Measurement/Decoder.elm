@@ -7,6 +7,7 @@ module Backend.Measurement.Decoder exposing
     , decodeFamilyPlanningSign
     , decodeHeight
     , decodeHistoricalMeasurements
+    , decodeLactation
     , decodeMeasurement
     , decodeMotherMeasurementList
     , decodeMuac
@@ -333,6 +334,9 @@ decodeLactationSign =
                 case sign of
                     "breastfeeding" ->
                         succeed Breastfeeding
+
+                    "none" ->
+                        succeed NoLactationSigns
 
                     _ ->
                         fail <|

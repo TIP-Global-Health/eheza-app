@@ -16,7 +16,7 @@ class HedleyRestfulLactations extends HedleyRestfulActivityBase {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $public_fields['family_lactation_signs'] = [
+    $public_fields['lactation_signs'] = [
       'property' => 'field_lactation_signs',
     ];
 

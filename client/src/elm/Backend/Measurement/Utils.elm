@@ -1,8 +1,20 @@
-module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, getCurrentAndPrevious, mapMeasurementData, muacIndication, splitChildMeasurements, splitMotherMeasurements)
+module Backend.Measurement.Utils exposing
+    ( currentValue
+    , currentValueWithId
+    , currentValues
+    , getCurrentAndPrevious
+    , lactationFormToSigns
+    , lactationSignsToForm
+    , mapMeasurementData
+    , muacIndication
+    , splitChildMeasurements
+    , splitMotherMeasurements
+    )
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (compare)
 import Restful.Endpoint exposing (EntityUuid)
 
@@ -198,3 +210,26 @@ getCurrentAndPrevious sessionId =
         { current = Dict.empty
         , previous = Nothing
         }
+
+
+lactationSignsToForm : EverySet LactationSign -> LactationForm
+lactationSignsToForm signs =
+    if EverySet.member Breastfeeding signs then
+        LactationForm (Just True)
+
+    else
+        LactationForm Nothing
+
+
+lactationFormToSigns : LactationForm -> EverySet LactationSign
+lactationFormToSigns form =
+    form.breastfeeding
+        |> Maybe.map
+            (\breastfeeding ->
+                if breastfeeding then
+                    EverySet.singleton Breastfeeding
+
+                else
+                    EverySet.singleton NoLactationSigns
+            )
+        |> Maybe.withDefault (EverySet.singleton NoLactationSigns)

@@ -89,6 +89,7 @@
         counseling_session: 'shards',
         counseling_topic: 'nodes',
         family_planning: 'shards',
+        lactation: 'shards',
         health_center: 'nodes',
         height: 'shards',
         muac: 'shards',

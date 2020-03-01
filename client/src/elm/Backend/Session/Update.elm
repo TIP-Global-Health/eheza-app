@@ -5,6 +5,7 @@ import AssocList as Dict
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (..)
+import Backend.Measurement.Utils exposing (lactationFormToSigns)
 import Backend.Session.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
 import Json.Encode exposing (object)
@@ -272,6 +273,36 @@ update nurseId sessionId maybeSession currentDate msg model =
                     , cmd
                     )
 
+                SaveLactation maybeId form ->
+                    let
+                        signs =
+                            lactationFormToSigns form
+
+                        cmd =
+                            case maybeId of
+                                Nothing ->
+                                    { participantId = motherId
+                                    , dateMeasured = currentDate
+                                    , sessionId = Just sessionId
+                                    , nurse = nurseId
+                                    , value = signs
+                                    }
+                                        |> sw.post lactationEndpoint
+                                        |> withoutDecoder
+                                        |> toCmd (RemoteData.fromResult >> HandleSaveLactation motherId)
+
+                                Just id ->
+                                    encodeLactationValue signs
+                                        |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                        |> object
+                                        |> sw.patchAny lactationEndpoint id
+                                        |> withoutDecoder
+                                        |> toCmd (RemoteData.fromResult >> HandleSaveLactation motherId)
+                    in
+                    ( { model | saveLactationRequest = Dict.insert motherId Loading model.saveLactationRequest }
+                    , cmd
+                    )
+
                 SaveCompletedForm maybeId formId language ->
                     let
                         cmd =
@@ -322,6 +353,11 @@ update nurseId sessionId maybeSession currentDate msg model =
 
         HandleSaveFamilyPlanning motherId data ->
             ( { model | saveFamilyPlanningRequest = Dict.insert motherId data model.saveFamilyPlanningRequest }
+            , Cmd.none
+            )
+
+        HandleSaveLactation motherId data ->
+            ( { model | saveLactationRequest = Dict.insert motherId data model.saveLactationRequest }
             , Cmd.none
             )
 

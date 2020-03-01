@@ -1,4 +1,4 @@
-module Backend.Measurement.Encoder exposing (encodeAttendance, encodeAttendanceValue, encodeChildMeasurementList, encodeCounselingSession, encodeCounselingSessionValue, encodeEntity, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeHeight, encodeHeightValue, encodeMeasurement, encodeMotherMeasurementList, encodeMuac, encodeMuacValue, encodeNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodeWeight, encodeWeightValue)
+module Backend.Measurement.Encoder exposing (encodeAttendance, encodeAttendanceValue, encodeChildMeasurementList, encodeCounselingSession, encodeCounselingSessionValue, encodeEntity, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeHeight, encodeHeightValue, encodeLactation, encodeLactationValue, encodeMeasurement, encodeMotherMeasurementList, encodeMuac, encodeMuacValue, encodeNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodeWeight, encodeWeightValue)
 
 import AssocList as Dict
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
@@ -120,6 +120,20 @@ encodeFamilyPlanning =
     encodeMeasurement encodeFamilyPlanningValue
 
 
+encodeLactationValue : EverySet LactationSign -> List ( String, Value )
+encodeLactationValue signs =
+    [ ( "lactation_signs"
+      , EverySet.toList signs
+            |> list encodeLactationSign
+      )
+    ]
+
+
+encodeLactation : Lactation -> List ( String, Value )
+encodeLactation =
+    encodeMeasurement encodeLactationValue
+
+
 encodeMeasurement : (value -> List ( String, Value )) -> Measurement value -> List ( String, Value )
 encodeMeasurement encoder measurement =
     List.concat
@@ -211,6 +225,16 @@ encodeFamilyPlanningSignAsString sign =
 
         Vasectomy ->
             "vasectomy"
+
+
+encodeLactationSign : LactationSign -> Value
+encodeLactationSign sign =
+    case sign of
+        Breastfeeding ->
+            string "breastfeeding"
+
+        NoLactationSigns ->
+            string "none"
 
 
 encodeChildMeasurementList : ChildMeasurementList -> Value
