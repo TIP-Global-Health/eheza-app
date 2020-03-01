@@ -866,7 +866,7 @@ translationSet trans =
         ClinicType clinicType ->
             case clinicType of
                 Chw ->
-                    { english = "Chw"
+                    { english = "CHW"
                     , kinyarwanda = Nothing
                     }
 
@@ -1931,12 +1931,12 @@ translationSet trans =
 
         SelectYourVillage ->
             { english = "Select your village"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo umudugudu wawe"
             }
 
         ServiceWorkerActive ->
             { english = "The app is installed on this device."
-            , kinyarwanda = Just "Apulikasiyo  muri icyi cyuma cy'inkoranabuhanga yinjijwe."
+            , kinyarwanda = Just "Apulikasiyo muri icyi cyuma cy'inkoranabuhanga yinjijwe."
             }
 
         ServiceWorkerCurrent ->
