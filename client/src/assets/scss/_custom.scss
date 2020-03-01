@@ -383,6 +383,11 @@ h3.ui.header {
   background-size: 88px 80px;
 }
 
+.icon-task-lactation {
+  background-image: url(#{$img-path}icon-lactation-active.svg);
+  background-size: 122px 122px;
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {
