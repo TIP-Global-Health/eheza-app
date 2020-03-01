@@ -74,6 +74,9 @@ encodeActivityAsString activity =
                 FamilyPlanning ->
                     "family_planning"
 
+                Lactation ->
+                    "breastfeeding"
+
 
 
 -- ParticipantConsent ->
@@ -148,6 +151,9 @@ getActivityIcon activity =
                 FamilyPlanning ->
                     "planning"
 
+                Lactation ->
+                    "lactation"
+
 
 
 -- ParticipantConsent ->
@@ -170,6 +176,7 @@ getAllChildActivities =
 getAllMotherActivities : List MotherActivity
 getAllMotherActivities =
     [ FamilyPlanning
+    , Lactation
 
     -- , ParticipantConsent
     ]
@@ -414,6 +421,14 @@ expectMotherActivity session motherId activity =
 
                             CaregiverActivities ->
                                 False
+
+                    Lactation ->
+                        case participant.adultActivities of
+                            MotherActivities ->
+                                True
+
+                            CaregiverActivities ->
+                                False
              {- ParticipantConsent ->
                 expectParticipantConsent session motherId
                     |> Dict.isEmpty
@@ -599,6 +614,9 @@ hasCompletedMotherActivity session motherId activityType measurements =
     case activityType of
         FamilyPlanning ->
             isCompleted (Maybe.map Tuple.second measurements.current.familyPlanning)
+
+        Lactation ->
+            isCompleted (Maybe.map Tuple.second measurements.current.lactation)
 
 
 

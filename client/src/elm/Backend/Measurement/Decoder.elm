@@ -135,6 +135,7 @@ decodeMotherMeasurementList =
         |> optional "attendance" (map Dict.fromList <| list (decodeWithEntityUuid decodeAttendance)) Dict.empty
         |> optional "family_planning" (map Dict.fromList <| list (decodeWithEntityUuid decodeFamilyPlanning)) Dict.empty
         |> optional "participant_consent" (map Dict.fromList <| list (decodeWithEntityUuid decodeParticipantConsent)) Dict.empty
+        |> optional "lactation" (map Dict.fromList <| list (decodeWithEntityUuid decodeLactation)) Dict.empty
 
 
 decodeChildMeasurementList : Decoder ChildMeasurementList
@@ -180,6 +181,13 @@ decodeFamilyPlanning : Decoder FamilyPlanning
 decodeFamilyPlanning =
     decodeEverySet decodeFamilyPlanningSign
         |> field "family_planning_signs"
+        |> decodeMeasurement
+
+
+decodeLactation : Decoder Lactation
+decodeLactation =
+    decodeEverySet decodeLactationSign
+        |> field "lactation_signs"
         |> decodeMeasurement
 
 
@@ -314,4 +322,20 @@ decodeFamilyPlanningSign =
                         fail <|
                             sign
                                 ++ " is not a recognized FamilyPlanningSign"
+            )
+
+
+decodeLactationSign : Decoder LactationSign
+decodeLactationSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "breastfeeding" ->
+                        succeed Breastfeeding
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized LactationSign"
             )

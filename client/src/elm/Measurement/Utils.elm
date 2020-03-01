@@ -102,6 +102,12 @@ fromMotherMeasurementData data =
         , view = Nothing
         , progress = progress
         }
+    , lactationSigns =
+        data
+            |> mapMeasurementData .lactation
+            |> currentValue
+            |> Maybe.map .value
+            |> Maybe.withDefault EverySet.empty
     }
 
 

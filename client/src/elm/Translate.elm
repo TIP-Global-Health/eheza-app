@@ -473,6 +473,11 @@ translationSet trans =
                     , kinyarwanda = Just "Buri mubyeyi agomba kubazwa uburyo bwo kuboneza urubyaro akoresha buri kwezi. Niba umubyeyi akeneye kuboneza urubyaro mwohereze ku kigo nderabuzima k'ubishinzwe"
                     }
 
+                MotherActivity Lactation ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
                 {- MotherActivity ParticipantConsent ->
                        { english = "Please review the following forms with the participant."
                        , kinyarwanda = Nothing
@@ -513,6 +518,11 @@ translationSet trans =
                 MotherActivity FamilyPlanning ->
                     { english = "Which, if any, of the following methods do you use?"
                     , kinyarwanda = Just "Ni ubuhe buryo, niba hari ubuhari, mu buryo bukurikira bwo kuboneza urubyaro ukoresha? Muri ubu buryo bukurikira bwo kuboneza urubyaro, ni ubuhe buryo mukoresha?"
+                    }
+
+                MotherActivity Lactation ->
+                    { english = ""
+                    , kinyarwanda = Nothing
                     }
 
                 {- MotherActivity ParticipantConsent ->
@@ -557,6 +567,11 @@ translationSet trans =
                     , kinyarwanda = Just "Kuboneza Urubyaro? nticyaza muri raporo yimikurire yumwana"
                     }
 
+                MotherActivity Lactation ->
+                    { english = "Lactation"
+                    , kinyarwanda = Nothing
+                    }
+
                 {- MotherActivity ParticipantConsent ->
                        { english = "Forms"
                        , kinyarwanda = Nothing
@@ -597,6 +612,11 @@ translationSet trans =
                 MotherActivity FamilyPlanning ->
                     { english = "Family Planning"
                     , kinyarwanda = Just "Kuboneza Urubyaro? nticyaza muri raporo yimikurire yumwana"
+                    }
+
+                MotherActivity Lactation ->
+                    { english = "Lactation"
+                    , kinyarwanda = Nothing
                     }
 
                 {- MotherActivity ParticipantConsent ->

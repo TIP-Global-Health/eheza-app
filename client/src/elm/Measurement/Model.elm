@@ -48,6 +48,7 @@ type alias ModelChild =
 type alias ModelMother =
     { familyPlanningSigns : EverySet FamilyPlanningSign
     , participantConsent : ParticipantFormUI
+    , lactationSigns : EverySet LactationSign
     }
 
 
@@ -177,4 +178,5 @@ emptyModelMother : ModelMother
 emptyModelMother =
     { familyPlanningSigns = EverySet.empty
     , participantConsent = emptyParticipantFormUI
+    , lactationSigns = EverySet.empty
     }

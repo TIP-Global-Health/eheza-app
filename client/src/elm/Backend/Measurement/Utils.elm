@@ -70,6 +70,9 @@ splitMotherMeasurements sessionId =
                 consent =
                     getCurrentAndPrevious sessionId list.consents
                         |> .current
+
+                lactation =
+                    getCurrentAndPrevious sessionId list.lactations
             in
             { current =
                 { attendance =
@@ -81,6 +84,10 @@ splitMotherMeasurements sessionId =
                         |> Dict.toList
                         |> List.head
                 , consent = consent
+                , lactation =
+                    lactation.current
+                        |> Dict.toList
+                        |> List.head
                 }
             , previous =
                 -- We don't "compare" consents, so previous doesn't mean
@@ -88,6 +95,7 @@ splitMotherMeasurements sessionId =
                 { attendance = attendance.previous
                 , familyPlanning = familyPlanning.previous
                 , consent = Dict.empty
+                , lactation = lactation.previous
                 }
             }
         )

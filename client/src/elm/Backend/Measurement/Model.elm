@@ -1,4 +1,4 @@
-module Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, ChildMeasurements, ChildNutrition, ChildNutritionSign(..), CounselingSession, FamilyPlanning, FamilyPlanningSign(..), Height, HeightInCm(..), HistoricalMeasurements, Measurement, MeasurementData, Measurements, MotherMeasurementList, MotherMeasurements, Muac, MuacInCm(..), MuacIndication(..), ParticipantConsent, ParticipantConsentValue, Photo, PhotoUrl(..), SavedMeasurement(..), Weight, WeightInKg(..), emptyChildMeasurementList, emptyChildMeasurements, emptyHistoricalMeasurements, emptyMeasurements, emptyMotherMeasurementList, emptyMotherMeasurements)
+module Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, ChildMeasurements, ChildNutrition, ChildNutritionSign(..), CounselingSession, FamilyPlanning, FamilyPlanningSign(..), Height, HeightInCm(..), HistoricalMeasurements, Lactation, LactationSign(..), Measurement, MeasurementData, Measurements, MotherMeasurementList, MotherMeasurements, Muac, MuacInCm(..), MuacIndication(..), ParticipantConsent, ParticipantConsentValue, Photo, PhotoUrl(..), SavedMeasurement(..), Weight, WeightInKg(..), emptyChildMeasurementList, emptyChildMeasurements, emptyHistoricalMeasurements, emptyMeasurements, emptyMotherMeasurementList, emptyMotherMeasurements)
 
 {-| This module represents various measurements to be stored on the backend,
 and cached in local storage.
@@ -105,6 +105,14 @@ type alias FamilyPlanning =
     Measurement (EverySet FamilyPlanningSign)
 
 
+type LactationSign
+    = Breastfeeding
+
+
+type alias Lactation =
+    Measurement (EverySet LactationSign)
+
+
 type alias ParticipantConsent =
     Measurement ParticipantConsentValue
 
@@ -164,6 +172,7 @@ type alias MotherMeasurementList =
     { attendances : Dict AttendanceId Attendance
     , familyPlannings : Dict FamilyPlanningId FamilyPlanning
     , consents : Dict ParticipantConsentId ParticipantConsent
+    , lactations : Dict LactationId Lactation
     }
 
 
@@ -172,6 +181,7 @@ emptyMotherMeasurementList =
     { attendances = Dict.empty
     , familyPlannings = Dict.empty
     , consents = Dict.empty
+    , lactations = Dict.empty
     }
 
 
@@ -262,6 +272,7 @@ type alias MotherMeasurements =
     { attendance : Maybe ( AttendanceId, Attendance )
     , familyPlanning : Maybe ( FamilyPlanningId, FamilyPlanning )
     , consent : Dict ParticipantConsentId ParticipantConsent
+    , lactation : Maybe ( LactationId, Lactation )
     }
 
 
@@ -270,6 +281,7 @@ emptyMotherMeasurements =
     { attendance = Nothing
     , familyPlanning = Nothing
     , consent = Dict.empty
+    , lactation = Nothing
     }
 
 

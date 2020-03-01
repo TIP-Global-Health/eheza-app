@@ -742,6 +742,9 @@ viewMother language activity measurements model =
         FamilyPlanning ->
             viewFamilyPlanning language (mapMeasurementData .familyPlanning measurements) model.familyPlanningSigns
 
+        Lactation ->
+            viewLactation language (mapMeasurementData .lactation measurements) model.lactationSigns
+
 
 
 -- ParticipantConsent ->
@@ -1070,4 +1073,46 @@ viewFamilyPlanningSelectorItem language familyPlanningSigns sign =
             []
         , label [ for inputId ]
             [ text <| translate language (Trans.FamilyPlanningSignLabel sign) ]
+        ]
+
+
+viewLactation : Language -> MeasurementData (Maybe ( LactationId, Lactation )) -> EverySet LactationSign -> Html MsgMother
+viewLactation language measurement signs =
+    let
+        activity =
+            MotherActivity Lactation
+
+        existingId =
+            Maybe.map Tuple.first measurement.current
+
+        saveMsg =
+            if EverySet.isEmpty signs then
+                Nothing
+
+            else
+                Nothing
+
+        -- Just <| SendOutMsgMother <| SaveFamilyPlanningSigns existingId signs
+    in
+    div
+        [ class "ui full segment lactation"
+        , id "lactationEntryForm"
+        ]
+        [ div [ class "content" ]
+            [ h3
+                [ class "ui header" ]
+                [ text <| translate language (Trans.ActivitiesTitle activity)
+                ]
+            , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+            , div [ class "ui form" ] <|
+                p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
+                    :: []
+
+            -- viewFamilyPlanningSelector language signs
+            ]
+        , div [ class "actions" ] <|
+            saveButton language
+                saveMsg
+                measurement
+                Nothing
         ]
