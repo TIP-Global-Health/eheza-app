@@ -2059,8 +2059,8 @@ translationSet trans =
             }
 
         StartSyncing ->
-            { english = "Tangira uhuze amakuru kuri seriveri"
-            , kinyarwanda = Nothing
+            { english = "Start Syncing"
+            , kinyarwanda = Just "Tangira uhuze amakuru kuri seriveri"
             }
 
         StatusLabel ->
