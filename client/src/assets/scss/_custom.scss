@@ -1304,6 +1304,17 @@ input::placeholder {
   }
 }
 
+.icon-lactation {
+  .active &:after {
+    background-image: url(#{$img-path}icon-lactation-active.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-lactation.svg);
+    background-size: 92px 92px;
+  }
+}
+
 
 // Lists
 
