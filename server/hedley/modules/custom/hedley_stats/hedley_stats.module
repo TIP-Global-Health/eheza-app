@@ -627,7 +627,7 @@ function hedley_stats_get_fbf_beneficiaries_graphs_data($health_center_id, $grap
   $people = hedley_stats_get_measurements_query_grouped_by_person($health_center_id, $period, $created_filter['start']);
 
   if (empty($people)) {
-    return [];
+    return $data_per_month;
   }
 
   $nutrition_signs = hedley_stats_nutrition_signs();

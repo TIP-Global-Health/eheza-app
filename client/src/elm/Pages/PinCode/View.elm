@@ -233,14 +233,23 @@ viewWhenLoggedIn language nurse healthCenterId model db =
 
                     dashboardButton =
                         healthCenterId
+                            |> Maybe.andThen
+                                (\id ->
+                                    RemoteData.toMaybe db.healthCenters
+                                        |> Maybe.andThen (Dict.get id)
+                                )
                             |> Maybe.map
-                                (\_ ->
-                                    button
-                                        [ class "ui primary button"
-                                        , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage MainPage
-                                        ]
-                                        [ text <| translate language Translate.DashboardLabel
-                                        ]
+                                (\healthCenter ->
+                                    if healthCenter.fbfClinics then
+                                        button
+                                            [ class "ui primary button"
+                                            , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage MainPage
+                                            ]
+                                            [ text <| translate language Translate.DashboardLabel
+                                            ]
+
+                                    else
+                                        emptyNode
                                 )
                             |> Maybe.withDefault emptyNode
                 in

@@ -20,6 +20,7 @@ decodeDashboardStats =
         |> required "completed_program_count" decodeInt
         |> required "family_planning" (list decodeFamilyPlanningStats)
         |> required "good_nutrition" decodeGoodNutrition
+        |> required "hc_type" string
         |> required "malnourished_beneficiaries" (list decodeMalnourishedStats)
         |> required "missed_sessions" (list decodeParticipantStats)
         |> required "missed_sessions_count" decodeInt

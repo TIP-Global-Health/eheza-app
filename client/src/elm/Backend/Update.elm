@@ -74,7 +74,18 @@ updateIndexedDb currentDate nurseId msg model =
             let
                 modelUpdated =
                     RemoteData.toMaybe webData
-                        |> Maybe.map (\data -> { model | computedDashboard = data })
+                        |> Maybe.map
+                            (\data ->
+                                let
+                                    data_ =
+                                        if Dict.member healthCenterId data then
+                                            data
+
+                                        else
+                                            model.computedDashboard
+                                in
+                                { model | computedDashboard = data_ }
+                            )
                         |> Maybe.withDefault model
             in
             ( modelUpdated

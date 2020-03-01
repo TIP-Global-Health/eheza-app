@@ -21,6 +21,7 @@ import Pages.Dashboard.Model exposing (..)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 import Pages.Utils exposing (calculatePercentage, monthList)
 import Path
+import RemoteData exposing (RemoteData(..), WebData)
 import Scale exposing (BandConfig, BandScale, ContinuousScale)
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
@@ -48,8 +49,24 @@ view language page currentDate healthCenterId model db =
         ( pageView, goBackPage ) =
             case page of
                 MainPage ->
-                    if Dict.isEmpty stats.totalBeneficiaries then
-                        -- We can use the general "viewLoading" but we need to add a messgae here as well.
+                    let
+                        fbfHealthCenter =
+                            RemoteData.toMaybe db.healthCenters
+                                |> Maybe.andThen (Dict.get healthCenterId)
+                                |> Maybe.map
+                                    (\healthCenter ->
+                                        if healthCenter.fbfClinics then
+                                            True
+
+                                        else
+                                            False
+                                    )
+                                |> Maybe.withDefault False
+                    in
+                    if not fbfHealthCenter then
+                        ( div [ class "ui segment blue center aligned" ] [ translateText language <| Translate.Dashboard Translate.NoDataGeneral ], PinCodePage )
+
+                    else if Dict.isEmpty stats.totalBeneficiaries then
                         ( div [ class "ui segment blue center aligned" ]
                             [ div []
                                 [ translateText language <| Translate.Dashboard Translate.SyncNotice ]
@@ -61,15 +78,15 @@ view language page currentDate healthCenterId model db =
                         ( viewMainPage language currentDate stats model, PinCodePage )
 
                 StatsPage ->
-                    if List.isEmpty stats.missedSessions && List.isEmpty stats.completedProgram then
-                        ( div [ class "ui segment" ] [ translateText language <| Translate.Dashboard Translate.NoDataGeneral ], PinCodePage )
+                    if stats.hcType /= "fbf" then
+                        ( div [ class "ui segment blue center aligned" ] [ translateText language <| Translate.Dashboard Translate.NoDataGeneral ], PinCodePage )
 
                     else
                         ( viewStatsPage language currentDate stats model healthCenterId db, UserPage <| DashboardPage MainPage )
 
                 CaseManagementPage ->
-                    if List.isEmpty stats.caseManagement then
-                        ( div [ class "ui segment" ] [ translateText language <| Translate.Dashboard Translate.NoDataGeneral ], PinCodePage )
+                    if List.isEmpty stats.caseManagement || stats.hcType /= "fbf" then
+                        ( div [ class "ui segment blue center aligned" ] [ translateText language <| Translate.Dashboard Translate.NoDataGeneral ], PinCodePage )
 
                     else
                         ( viewCaseManagementPage language currentDate stats model, UserPage <| DashboardPage model.latestPage )

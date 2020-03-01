@@ -17,6 +17,7 @@ type alias DashboardStats =
     , completedProgramCount : Int
     , familyPlanning : List FamilyPlanningStats
     , goodNutrition : GoodNutrition
+    , hcType : String
     , malnourished : List MalnourishedStats
     , missedSessions : List ParticipantStats
     , missedSessionsCount : Int
@@ -43,6 +44,7 @@ emptyModel =
             , thisYear = 0
             }
         }
+    , hcType = ""
     , malnourished = []
     , missedSessions = []
     , missedSessionsCount = 0
