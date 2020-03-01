@@ -237,6 +237,7 @@ type TranslationId
     | HIVStatusLabel
     | HouseholdSize
     | HttpError Http.Error
+    | IsCurrentlyBreastfeeding
     | KilogramShorthand
     | LastChecked
     | LastSuccesfulContactLabel
@@ -1306,6 +1307,11 @@ translationSet trans =
 
         HttpError error ->
             translateHttpError error
+
+        IsCurrentlyBreastfeeding ->
+            { english = "Is the mother currently breastfeeding her infant"
+            , kinyarwanda = Nothing
+            }
 
         KilogramShorthand ->
             { english = "kg"

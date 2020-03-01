@@ -271,6 +271,56 @@ div.page-person {
     }
 }
 
+div.page-participant {
+
+  .ui.full.segment .content {
+
+    .form-input {
+      margin-bottom: 30px;
+
+      // Bool inputs
+      &.yes-no {
+        padding-bottom: 15px;
+        margin-left: 25px;
+
+        label {
+          font-size: 25px;
+          margin-left: 10px;
+        }
+
+        label:before {
+          content: " ";
+          display: inline-block;
+          position: relative;
+          top: 5px;
+          margin-right: 10px;
+          width: 26px;
+          height: 26px;
+          border-radius: 13px;
+          border: 2px solid $color-gray-border;
+          background-color: transparent;
+        }
+
+        input[type=radio] {
+          display: none;
+        }
+
+        input[type=radio]:checked + label:after {
+          content: " ";
+          border-radius: 7px;
+          width: 14px;
+          height: 14px;
+          position: absolute;
+          top: 25px;
+          left: 30px;
+          display: block;
+          background: $color-text;
+        }
+      }
+    }
+  }
+}
+
 //Device Status Page
 .device-status {
   button {

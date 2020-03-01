@@ -23,6 +23,7 @@ import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
+import Pages.Utils exposing (viewBoolInput, viewQuestionLabel)
 import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
@@ -1076,7 +1077,7 @@ viewFamilyPlanningSelectorItem language familyPlanningSigns sign =
         ]
 
 
-viewLactation : Language -> MeasurementData (Maybe ( LactationId, Lactation )) -> EverySet LactationSign -> Html MsgMother
+viewLactation : Language -> MeasurementData (Maybe ( LactationId, Lactation )) -> LactationSignsForm -> Html MsgMother
 viewLactation language measurement signs =
     let
         activity =
@@ -1086,11 +1087,11 @@ viewLactation language measurement signs =
             Maybe.map Tuple.first measurement.current
 
         saveMsg =
-            if EverySet.isEmpty signs then
-                Nothing
-
-            else
-                Nothing
+            -- if EverySet.isEmpty signs then
+            --     Nothing
+            --
+            -- else
+            Nothing
 
         -- Just <| SendOutMsgMother <| SaveFamilyPlanningSigns existingId signs
     in
@@ -1106,7 +1107,13 @@ viewLactation language measurement signs =
             , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
             , div [ class "ui form" ] <|
                 p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
-                    :: []
+                    :: [ viewQuestionLabel language Trans.IsCurrentlyBreastfeeding
+                       , viewBoolInput language
+                            signs.breastfeeding
+                            (SelectLactationSign Breastfeeding)
+                            "breastfeeding"
+                            Nothing
+                       ]
 
             -- viewFamilyPlanningSelector language signs
             ]

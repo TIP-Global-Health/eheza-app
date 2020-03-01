@@ -2,7 +2,7 @@ module Measurement.Update exposing (updateChild, updateMother)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MeasurementData, MotherMeasurements, PhotoUrl(..))
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), LactationSign(..), MeasurementData, MotherMeasurements, PhotoUrl(..))
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
@@ -140,6 +140,19 @@ updateMother measurements msg model =
                         EverySet.remove sign model.familyPlanningSigns
             in
             ( { model | familyPlanningSigns = signsUpdated }
+            , Cmd.none
+            , Nothing
+            )
+
+        SelectLactationSign sign value ->
+            let
+                signsUpdated =
+                    case sign of
+                        Breastfeeding ->
+                            model.lactationSigns
+                                |> (\form -> { form | breastfeeding = Just value })
+            in
+            ( { model | lactationSigns = signsUpdated }
             , Cmd.none
             , Nothing
             )

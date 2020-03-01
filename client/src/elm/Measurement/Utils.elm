@@ -106,8 +106,11 @@ fromMotherMeasurementData data =
         data
             |> mapMeasurementData .lactation
             |> currentValue
-            |> Maybe.map .value
-            |> Maybe.withDefault EverySet.empty
+            |> Maybe.map
+                (\measurement ->
+                    Just (EverySet.member Breastfeeding measurement.value) |> LactationSignsForm
+                )
+            |> Maybe.withDefault (LactationSignsForm Nothing)
     }
 
 

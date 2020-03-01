@@ -1,4 +1,4 @@
-module Measurement.Model exposing (DropZoneFile, FileId, FloatInputConstraints, ModelChild, ModelMother, MsgChild(..), MsgMother(..), OutMsgChild(..), OutMsgMother(..), ParticipantFormProgress, ParticipantFormUI, completedParticipantFormProgress, emptyModelChild, emptyModelMother, emptyParticipantFormProgress, emptyParticipantFormUI)
+module Measurement.Model exposing (DropZoneFile, FileId, FloatInputConstraints, LactationSignsForm, ModelChild, ModelMother, MsgChild(..), MsgMother(..), OutMsgChild(..), OutMsgMother(..), ParticipantFormProgress, ParticipantFormUI, completedParticipantFormProgress, emptyModelChild, emptyModelMother, emptyParticipantFormProgress, emptyParticipantFormUI)
 
 {-| These modules manage the UI for the various measurements relating to a
 participant.
@@ -48,7 +48,12 @@ type alias ModelChild =
 type alias ModelMother =
     { familyPlanningSigns : EverySet FamilyPlanningSign
     , participantConsent : ParticipantFormUI
-    , lactationSigns : EverySet LactationSign
+    , lactationSigns : LactationSignsForm
+    }
+
+
+type alias LactationSignsForm =
+    { breastfeeding : Maybe Bool
     }
 
 
@@ -134,6 +139,7 @@ type MsgChild
 
 type MsgMother
     = SelectFamilyPlanningSign Bool FamilyPlanningSign
+    | SelectLactationSign LactationSign Bool
     | ViewParticipantForm (Maybe ParticipantFormId)
     | SetCounselorSigned ParticipantFormId Bool
     | SetParticipantSigned ParticipantFormId Bool
@@ -178,5 +184,5 @@ emptyModelMother : ModelMother
 emptyModelMother =
     { familyPlanningSigns = EverySet.empty
     , participantConsent = emptyParticipantFormUI
-    , lactationSigns = EverySet.empty
+    , lactationSigns = LactationSignsForm Nothing
     }
