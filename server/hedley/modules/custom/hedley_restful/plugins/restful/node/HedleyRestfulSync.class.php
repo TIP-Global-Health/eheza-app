@@ -301,10 +301,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           }
           else {
             // Calculate the stats.
-            [
-              $completed_program,
-              $missed_sessions,
-            ] = hedley_stats_get_session_attendance_stats_by_period($health_center_nid, HEDLEY_STATS_PERIOD_THREE_MONTHS);
+            list($completed_program, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_period($health_center_nid, HEDLEY_STATS_PERIOD_THREE_MONTHS);
             $stats = [
               'type' => 'statistics',
               // UUID of the health center.
@@ -326,7 +323,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
             $stats['stats_cache_hash'] = md5(serialize($stats));
 
-            // Store in cache only the hash, inner statistics has their own cache.
+            // Store in cache only the hash, inner statistics has their own
+            // cache.
             cache_set($health_center_cache_id, $stats['stats_cache_hash'], 'cache', CACHE_TEMPORARY);
           }
 
@@ -547,7 +545,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
             break;
         }
       }
-    } catch (Exception $e) {
+    }
+    catch (Exception $e) {
       $transaction->rollback();
 
       $m1 = '[MAIN] - ';
