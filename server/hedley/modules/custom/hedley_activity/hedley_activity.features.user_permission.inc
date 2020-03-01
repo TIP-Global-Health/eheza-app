@@ -44,6 +44,17 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create lactation content'.
+  $permissions['create lactation content'] = array(
+    'name' => 'create lactation content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create muac content'.
   $permissions['create muac content'] = array(
     'name' => 'create muac content',
@@ -115,6 +126,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any lactation content'.
+  $permissions['delete any lactation content'] = array(
+    'name' => 'delete any lactation content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any muac content'.
   $permissions['delete any muac content'] = array(
     'name' => 'delete any muac content',
@@ -172,6 +192,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own height content'.
   $permissions['delete own height content'] = array(
     'name' => 'delete own height content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own lactation content'.
+  $permissions['delete own lactation content'] = array(
+    'name' => 'delete own lactation content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -239,6 +268,17 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit any height content'.
   $permissions['edit any height content'] = array(
     'name' => 'edit any height content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any lactation content'.
+  $permissions['edit any lactation content'] = array(
+    'name' => 'edit any lactation content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
@@ -316,6 +356,17 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit own height content'.
   $permissions['edit own height content'] = array(
     'name' => 'edit own height content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own lactation content'.
+  $permissions['edit own lactation content'] = array(
+    'name' => 'edit own lactation content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',

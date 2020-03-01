@@ -43,6 +43,14 @@ function hedley_activity_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'lactation' => array(
+      'name' => t('Lactation'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'muac' => array(
       'name' => t('MUAC'),
       'base' => 'node_content',
