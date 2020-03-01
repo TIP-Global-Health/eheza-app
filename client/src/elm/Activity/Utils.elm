@@ -108,6 +108,9 @@ decodeActivityFromString s =
         "family_planning" ->
             Just <| MotherActivity FamilyPlanning
 
+        "lactation" ->
+            Just <| MotherActivity Lactation
+
         -- "participants_consent" ->
         --    Just <| MotherActivity ParticipantConsent
         _ ->
