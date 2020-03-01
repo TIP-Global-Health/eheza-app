@@ -61,7 +61,7 @@ view language page currentDate healthCenterId model db =
                                         else
                                             False
                                     )
-                                |> Maybe.withDefault False
+                                |> Maybe.withDefault True
                     in
                     if not fbfHealthCenter then
                         ( div [ class "ui segment blue center aligned" ] [ translateText language <| Translate.Dashboard Translate.NoDataGeneral ], PinCodePage )
