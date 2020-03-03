@@ -388,6 +388,11 @@ h3.ui.header {
   background-size: 122px 122px;
 }
 
+.icon-task-fbf {
+  background-image: url(#{$img-path}icon-fbf-active.svg);
+  background-size: 122px 122px;
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {
@@ -561,6 +566,11 @@ h3.ui.header {
 
 .icon-item-lactation {
   background-image: url(#{$img-path}icon-lactation-blue.svg);
+  background-size: 168px 168px;
+}
+
+.icon-item-fbf {
+  background-image: url(#{$img-path}icon-fbf-blue.svg);
   background-size: 168px 168px;
 }
 
@@ -1320,6 +1330,17 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-lactation.svg);
+    background-size: 92px 92px;
+  }
+}
+
+.icon-fbf {
+  .active &:after {
+    background-image: url(#{$img-path}icon-fbf-active.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-fbf.svg);
     background-size: 92px 92px;
   }
 }
