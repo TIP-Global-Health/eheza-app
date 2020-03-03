@@ -959,6 +959,14 @@ handleRevision revision ( model, recalc ) =
             , True
             )
 
+        LactationRevision uuid data ->
+            ( mapMotherMeasurements
+                data.participantId
+                (\measurements -> { measurements | lactations = Dict.insert uuid data measurements.lactations })
+                model
+            , True
+            )
+
         HealthCenterRevision uuid data ->
             let
                 healthCenters =

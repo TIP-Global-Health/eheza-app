@@ -3,7 +3,7 @@ module Backend.Decoder exposing (decodeRevision)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
-import Backend.Measurement.Decoder exposing (decodeAttendance, decodeCounselingSession, decodeFamilyPlanning, decodeHeight, decodeMuac, decodeNutrition, decodeParticipantConsent, decodePhoto, decodeWeight)
+import Backend.Measurement.Decoder exposing (decodeAttendance, decodeCounselingSession, decodeFamilyPlanning, decodeHeight, decodeLactation, decodeMuac, decodeNutrition, decodeParticipantConsent, decodePhoto, decodeWeight)
 import Backend.Model exposing (..)
 import Backend.Nurse.Decoder exposing (decodeNurse)
 import Backend.ParticipantConsent.Decoder exposing (decodeParticipantForm)
@@ -61,6 +61,9 @@ decodeRevision =
 
                     "family_planning" ->
                         decodeWithUuid FamilyPlanningRevision decodeFamilyPlanning
+
+                    "lactation" ->
+                        decodeWithUuid LactationRevision decodeLactation
 
                     "height" ->
                         decodeWithUuid HeightRevision decodeHeight

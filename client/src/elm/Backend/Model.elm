@@ -22,7 +22,7 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
-import Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, ChildNutrition, CounselingSession, FamilyPlanning, Height, MotherMeasurementList, Muac, ParticipantConsent, Photo, Weight)
+import Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, ChildNutrition, CounselingSession, FamilyPlanning, Height, Lactation, MotherMeasurementList, Muac, ParticipantConsent, Photo, Weight)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
@@ -215,6 +215,7 @@ type Revision
     | CounselingSessionRevision CounselingSessionId CounselingSession
     | CounselingTopicRevision CounselingTopicId CounselingTopic
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
+    | LactationRevision LactationId Lactation
     | HealthCenterRevision HealthCenterId HealthCenter
     | HeightRevision HeightId Height
     | MuacRevision MuacId Muac
