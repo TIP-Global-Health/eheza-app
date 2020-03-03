@@ -772,7 +772,7 @@ function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_ST
 
         foreach ($values as $field_name => $value) {
           // Round up the value, the class will indicate the zscore level.
-          $formatted_value = number_format((float) $value, 0);
+          $formatted_value = number_format((float) $value, 2);
 
           switch ($type) {
             case 'height':
