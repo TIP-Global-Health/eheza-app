@@ -29,6 +29,7 @@ expected (and not completed).
 
 import Activity.Model exposing (..)
 import AssocList as Dict exposing (Dict)
+import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -163,11 +164,11 @@ getActivityIcon activity =
 --    "forms"
 
 
-getAllActivities : List Activity
-getAllActivities =
+getAllActivities : OfflineSession -> List Activity
+getAllActivities offlineSession =
     List.concat
         [ List.map ChildActivity getAllChildActivities
-        , List.map MotherActivity getAllMotherActivities
+        , List.map MotherActivity (getAllMotherActivities offlineSession)
         ]
 
 
@@ -176,13 +177,23 @@ getAllChildActivities =
     [ {- Counseling, -} Height, Muac, NutritionSigns, Weight, ChildPicture ]
 
 
-getAllMotherActivities : List MotherActivity
-getAllMotherActivities =
-    [ FamilyPlanning
-    , Lactation
+getAllMotherActivities : OfflineSession -> List MotherActivity
+getAllMotherActivities offlineSession =
+    let
+        forAllGroupTypes =
+            [ FamilyPlanning
 
-    -- , ParticipantConsent
-    ]
+            -- , ParticipantConsent
+            ]
+
+        forFbf =
+            if offlineSession.session.clinicType == Fbf then
+                [ Lactation ]
+
+            else
+                []
+    in
+    forAllGroupTypes ++ forFbf
 
 
 {-| Do we expect this activity to be performed in this session for this child?
@@ -411,8 +422,8 @@ Note that we don't consider whether the mother is checked in here -- just
 whether we would expect to perform this action if checked in.
 -}
 expectMotherActivity : OfflineSession -> PersonId -> MotherActivity -> Bool
-expectMotherActivity session motherId activity =
-    Dict.get motherId session.participants.byMotherId
+expectMotherActivity offlineSession motherId activity =
+    Dict.get motherId offlineSession.participants.byMotherId
         |> Maybe.withDefault []
         |> List.any
             (\participant ->
@@ -428,12 +439,12 @@ expectMotherActivity session motherId activity =
                     Lactation ->
                         case participant.adultActivities of
                             MotherActivities ->
-                                True
+                                offlineSession.session.clinicType == Fbf
 
                             CaregiverActivities ->
                                 False
              {- ParticipantConsent ->
-                expectParticipantConsent session motherId
+                expectParticipantConsent offlineSession motherId
                     |> Dict.isEmpty
                     |> not
              -}
@@ -540,7 +551,7 @@ activities may not be expected for this mother).
 -}
 summarizeMotherParticipant : PersonId -> OfflineSession -> CompletedAndPending (List MotherActivity)
 summarizeMotherParticipant id session =
-    getAllMotherActivities
+    getAllMotherActivities session
         |> List.filter (expectMotherActivity session id)
         |> List.partition (\activity -> motherHasCompletedActivity id activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
@@ -656,7 +667,7 @@ isCompleted =
 
 hasAnyCompletedMotherActivity : OfflineSession -> PersonId -> MeasurementData MotherMeasurements -> Bool
 hasAnyCompletedMotherActivity session motherId measurements =
-    getAllMotherActivities
+    getAllMotherActivities session
         |> List.any (\activity -> hasCompletedMotherActivity session motherId activity measurements)
 
 

@@ -1238,7 +1238,7 @@ summarizeByActivity session checkedIn_ =
                         |> Dict.fromList
 
                 mothers =
-                    getAllMotherActivities
+                    getAllMotherActivities session
                         |> List.map
                             (\activity ->
                                 ( activity

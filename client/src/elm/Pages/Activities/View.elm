@@ -23,7 +23,7 @@ view language ( sessionId, session ) model =
                 |> LocalData.withDefault emptySummaryByActivity
 
         ( pendingActivities, noPendingActivities ) =
-            getAllActivities
+            getAllActivities session.offlineSession
                 |> List.partition (\activity -> (getParticipantCountForActivity summary activity).pending > 0)
 
         pendingTabTitle =
