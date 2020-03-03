@@ -53,6 +53,9 @@ encodeActivityAsString activity =
     case activity of
         ChildActivity childActivity ->
             case childActivity of
+                ChildFbf ->
+                    "child_fbf"
+
                 ChildPicture ->
                     "picture"
 
@@ -77,6 +80,9 @@ encodeActivityAsString activity =
 
                 Lactation ->
                     "lactation"
+
+                MotherFbf ->
+                    "mother_fbf"
 
 
 
@@ -133,6 +139,9 @@ getActivityIcon activity =
     case activity of
         ChildActivity childActivity ->
             case childActivity of
+                ChildFbf ->
+                    "fbf"
+
                 ChildPicture ->
                     "photo"
 
@@ -157,6 +166,9 @@ getActivityIcon activity =
 
                 Lactation ->
                     "lactation"
+
+                MotherFbf ->
+                    "fbf"
 
 
 
@@ -201,12 +213,15 @@ Note that we don't consider whether the child is checked in here -- just
 whether we would expect to perform this action if checked in.
 -}
 expectChildActivity : OfflineSession -> PersonId -> ChildActivity -> Bool
-expectChildActivity session childId activity =
+expectChildActivity offlineSession childId activity =
     case activity of
         {- Counseling ->
            Maybe.Extra.isJust <|
                expectCounselingActivity session childId
         -}
+        ChildFbf ->
+            offlineSession.session.clinicType == Fbf
+
         _ ->
             -- In all other cases, we expect each ativity each time.
             True
@@ -443,6 +458,15 @@ expectMotherActivity offlineSession motherId activity =
 
                             CaregiverActivities ->
                                 False
+
+                    MotherFbf ->
+                        case participant.adultActivities of
+                            MotherActivities ->
+                                -- Todo: check if breastfeeding
+                                offlineSession.session.clinicType == Fbf
+
+                            CaregiverActivities ->
+                                False
              {- ParticipantConsent ->
                 expectParticipantConsent offlineSession motherId
                     |> Dict.isEmpty
@@ -598,6 +622,9 @@ getActivityCountForMother session id mother summary =
 hasCompletedChildActivity : ChildActivity -> MeasurementData ChildMeasurements -> Bool
 hasCompletedChildActivity activityType measurements =
     case activityType of
+        ChildFbf ->
+            isCompleted (Maybe.map Tuple.second measurements.current.fbf)
+
         ChildPicture ->
             isCompleted (Maybe.map Tuple.second measurements.current.photo)
 
@@ -631,6 +658,9 @@ hasCompletedMotherActivity session motherId activityType measurements =
 
         Lactation ->
             isCompleted (Maybe.map Tuple.second measurements.current.lactation)
+
+        MotherFbf ->
+            isCompleted (Maybe.map Tuple.second measurements.current.fbf)
 
 
 

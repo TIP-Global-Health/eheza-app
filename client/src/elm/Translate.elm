@@ -479,6 +479,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                MotherActivity MotherFbf ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
                 {- MotherActivity ParticipantConsent ->
                        { english = "Please review the following forms with the participant."
                        , kinyarwanda = Nothing
@@ -489,6 +494,11 @@ translationSet trans =
                        , kinyarwanda = Just "Kurikiza iyi lisiti mu gihe utanga ubujyanama, witondere kureba ko buri gikorwa cyakozwe."
                        }
                 -}
+                ChildActivity ChildFbf ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
                 ChildActivity Height ->
                     { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight."
                     , kinyarwanda = Just "Saba Umubyeyi guhagarara inyuma y’umwana we agaramye, afata umutwe ku gice cy’amatwi. Sunikira akabaho ku buryo gakora mu bworo by’ibirenge byombi."
@@ -526,6 +536,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                MotherActivity MotherFbf ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
                 {- MotherActivity ParticipantConsent ->
                        { english = "Forms:"
                        , kinyarwanda = Nothing
@@ -536,6 +551,11 @@ translationSet trans =
                        , kinyarwanda = Just "Kurikiza iyi lisiti mu gihe utanga ubujyanama, witondere kureba ko buri gikorwa cyakozwe."
                        }
                 -}
+                ChildActivity ChildFbf ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
                 ChildActivity Height ->
                     { english = "Height:"
                     , kinyarwanda = Just "Uburere:"
@@ -573,6 +593,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                MotherActivity MotherFbf ->
+                    { english = "FBF"
+                    , kinyarwanda = Nothing
+                    }
+
                 {- MotherActivity ParticipantConsent ->
                        { english = "Forms"
                        , kinyarwanda = Nothing
@@ -583,6 +608,11 @@ translationSet trans =
                        , kinyarwanda = Just "Ubujyanama"
                        }
                 -}
+                ChildActivity ChildFbf ->
+                    { english = "FBF"
+                    , kinyarwanda = Nothing
+                    }
+
                 ChildActivity Height ->
                     { english = "Height"
                     , kinyarwanda = Just "Uburebure"
@@ -620,6 +650,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                MotherActivity MotherFbf ->
+                    { english = "FBF"
+                    , kinyarwanda = Nothing
+                    }
+
                 {- MotherActivity ParticipantConsent ->
                        { english = "Forms"
                        , kinyarwanda = Nothing
@@ -630,6 +665,11 @@ translationSet trans =
                        , kinyarwanda = Nothing
                        }
                 -}
+                ChildActivity ChildFbf ->
+                    { english = "FBF"
+                    , kinyarwanda = Nothing
+                    }
+
                 ChildActivity Height ->
                     { english = "Height"
                     , kinyarwanda = Just "Uburebure"

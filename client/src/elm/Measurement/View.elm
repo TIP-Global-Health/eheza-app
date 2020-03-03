@@ -40,6 +40,10 @@ child when we enter something.
 viewChild : Language -> NominalDate -> Person -> ChildActivity -> MeasurementData ChildMeasurements -> ZScore.Model.Model -> EditableSession -> ModelChild -> Html MsgChild
 viewChild language currentDate child activity measurements zscores session model =
     case activity of
+        ChildFbf ->
+            -- Todo
+            emptyNode
+
         ChildPicture ->
             viewPhoto language (mapMeasurementData .photo measurements) model.photo
 
@@ -745,6 +749,10 @@ viewMother language activity measurements model =
 
         Lactation ->
             viewLactation language (mapMeasurementData .lactation measurements) model.lactationForm
+
+        MotherFbf ->
+            -- Todo
+            emptyNode
 
 
 

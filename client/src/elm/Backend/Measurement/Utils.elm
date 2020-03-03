@@ -85,6 +85,9 @@ splitMotherMeasurements sessionId =
 
                 lactation =
                     getCurrentAndPrevious sessionId list.lactations
+
+                fbf =
+                    getCurrentAndPrevious sessionId list.fbfs
             in
             { current =
                 { attendance =
@@ -100,6 +103,10 @@ splitMotherMeasurements sessionId =
                     lactation.current
                         |> Dict.toList
                         |> List.head
+                , fbf =
+                    fbf.current
+                        |> Dict.toList
+                        |> List.head
                 }
             , previous =
                 -- We don't "compare" consents, so previous doesn't mean
@@ -108,6 +115,7 @@ splitMotherMeasurements sessionId =
                 , familyPlanning = familyPlanning.previous
                 , consent = Dict.empty
                 , lactation = lactation.previous
+                , fbf = fbf.previous
                 }
             }
         )
@@ -135,6 +143,9 @@ splitChildMeasurements sessionId =
 
                 counselingSession =
                     getCurrentAndPrevious sessionId list.counselingSessions
+
+                fbf =
+                    getCurrentAndPrevious sessionId list.fbfs
             in
             { current =
                 -- We can only have one per session ... we enforce that here.
@@ -162,6 +173,10 @@ splitChildMeasurements sessionId =
                     counselingSession.current
                         |> Dict.toList
                         |> List.head
+                , fbf =
+                    fbf.current
+                        |> Dict.toList
+                        |> List.head
                 }
             , previous =
                 { height = height.previous
@@ -170,6 +185,7 @@ splitChildMeasurements sessionId =
                 , nutrition = nutrition.previous
                 , photo = photo.previous
                 , counselingSession = counselingSession.previous
+                , fbf = fbf.previous
                 }
             }
         )
