@@ -268,35 +268,14 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
               'children_beneficiaries' => [],
               'completed_program' => [],
               'completed_program_count' => 0,
-              // Decoder expects a certain format.
-              'good_nutrition' => [
-                'all' =>
-                  [
-                    'last_year' => 0,
-                    'this_year' => 0,
-                  ],
-                'good' =>
-                  [
-                    'last_year' => 0,
-                    'this_year' => 0,
-                  ],
-              ],
-              'hc_type' => 'non-fbf',
+              'good_nutrition' => NULL,
               'family_planning' => [],
               'malnourished_beneficiaries' => [],
               'missed_sessions' => [],
               'missed_sessions_count' => 0,
-              // We need to call the function because it will return the
-              // associative array (Dict) to satisfy the decoder.
-              'total_beneficiaries' => hedley_stats_get_fbf_beneficiaries_graphs_data($health_center_nid, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_GRAPH),
-              // Call the same graph because it's going to be empty anyway and
-              // it's already cached.
-              'total_beneficiaries_incidence' => hedley_stats_get_fbf_beneficiaries_graphs_data($health_center_nid, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_GRAPH),
-              // Decoder expects a certain format.
-              'total_encounters' => [
-                'last_year' => 0,
-                'this_year' => 0,
-              ],
+              'total_beneficiaries' => NULL,
+              'total_beneficiaries_incidence' => NULL,
+              'total_encounters' => NULL,
             ];
           }
           else {
@@ -311,7 +290,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
               'completed_program' => $completed_program,
               'completed_program_count' => 0,
               'good_nutrition' => hedley_stats_get_good_nutrition($health_center_nid),
-              'hc_type' => 'fbf',
               'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_nid),
               'malnourished_beneficiaries' => hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_center_nid),
               'missed_sessions' => $missed_sessions,

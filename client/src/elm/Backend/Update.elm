@@ -77,6 +77,7 @@ updateIndexedDb currentDate nurseId msg model =
                         |> Maybe.map
                             (\data ->
                                 let
+                                    -- Check that we add only data that is related to the desired HC.
                                     data_ =
                                         if Dict.member healthCenterId data then
                                             data

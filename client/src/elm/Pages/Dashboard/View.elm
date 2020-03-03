@@ -32,7 +32,7 @@ import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..))
-import Utils.Html exposing (viewModal)
+import Utils.Html exposing (viewLoading, viewModal)
 
 
 {-| Shows a dashboard page.
@@ -49,47 +49,20 @@ view language page currentDate healthCenterId model db =
         ( pageView, goBackPage ) =
             case page of
                 MainPage ->
-                    let
-                        fbfHealthCenter =
-                            RemoteData.toMaybe db.healthCenters
-                                |> Maybe.andThen (Dict.get healthCenterId)
-                                |> Maybe.map
-                                    (\healthCenter ->
-                                        if healthCenter.fbfClinics then
-                                            True
+                    case stats.maybeGoodNutrition of
+                        Nothing ->
+                            -- Add loading only here because it's the only page reachable from an outside link before
+                            -- fetching the stats.
+                            ( viewLoading, PinCodePage )
 
-                                        else
-                                            False
-                                    )
-                                |> Maybe.withDefault True
-                    in
-                    if not fbfHealthCenter then
-                        ( div [ class "ui segment blue center aligned" ] [ translateText language <| Translate.Dashboard Translate.NoDataGeneral ], PinCodePage )
-
-                    else if Dict.isEmpty stats.totalBeneficiaries then
-                        ( div [ class "ui segment blue center aligned" ]
-                            [ div []
-                                [ translateText language <| Translate.Dashboard Translate.SyncNotice ]
-                            ]
-                        , PinCodePage
-                        )
-
-                    else
-                        ( viewMainPage language currentDate stats model, PinCodePage )
+                        _ ->
+                            ( viewMainPage language currentDate stats model, PinCodePage )
 
                 StatsPage ->
-                    if stats.hcType /= "fbf" then
-                        ( div [ class "ui segment blue center aligned" ] [ translateText language <| Translate.Dashboard Translate.NoDataGeneral ], PinCodePage )
-
-                    else
-                        ( viewStatsPage language currentDate stats model healthCenterId db, UserPage <| DashboardPage MainPage )
+                    ( viewStatsPage language currentDate stats model healthCenterId db, UserPage <| DashboardPage MainPage )
 
                 CaseManagementPage ->
-                    if List.isEmpty stats.caseManagement || stats.hcType /= "fbf" then
-                        ( div [ class "ui segment blue center aligned" ] [ translateText language <| Translate.Dashboard Translate.NoDataGeneral ], PinCodePage )
-
-                    else
-                        ( viewCaseManagementPage language currentDate stats model, UserPage <| DashboardPage model.latestPage )
+                    ( viewCaseManagementPage language currentDate stats model, UserPage <| DashboardPage model.latestPage )
 
         header =
             div
@@ -116,16 +89,16 @@ viewMainPage language currentDate stats model =
         [ viewPeriodFilter language model filterPeriods
         , div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
-                [ viewGoodNutrition language stats.goodNutrition
+                [ viewGoodNutrition language stats.maybeGoodNutrition
                 ]
             , div [ class "eight wide column" ]
-                [ viewTotalEncounters language stats.totalEncounters
+                [ viewTotalEncounters language stats.maybeTotalEncounters
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language (Translate.Dashboard Translate.TotalBeneficiaries) FilterBeneficiariesChart stats.totalBeneficiaries model.currentBeneficiariesChartsFilter
+                [ viewMonthlyChart language (Translate.Dashboard Translate.TotalBeneficiaries) FilterBeneficiariesChart stats.maybeTotalBeneficiaries model.currentBeneficiariesChartsFilter
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language (Translate.Dashboard Translate.IncidenceOf) FilterBeneficiariesIncidenceChart stats.totalBeneficiariesIncidence model.currentBeneficiariesIncidenceChartsFilter
+                [ viewMonthlyChart language (Translate.Dashboard Translate.IncidenceOf) FilterBeneficiariesIncidenceChart stats.maybeTotalBeneficiariesIncidence model.currentBeneficiariesIncidenceChartsFilter
                 ]
             , div [ class "sixteen wide column" ]
                 [ viewDashboardPagesLinks language
@@ -243,58 +216,68 @@ viewPeriodFilter language model filterPeriodsPerPage =
         (List.map renderButton filterPeriodsPerPage)
 
 
-viewGoodNutrition : Language -> GoodNutrition -> Html Msg
-viewGoodNutrition language nutrition =
-    let
-        percentageThisYear =
-            calculatePercentage nutrition.all.thisYear nutrition.good.thisYear
-                |> round
+viewGoodNutrition : Language -> Maybe GoodNutrition -> Html Msg
+viewGoodNutrition language maybeNutrition =
+    case maybeNutrition of
+        Just nutrition ->
+            let
+                percentageThisYear =
+                    calculatePercentage nutrition.all.thisYear nutrition.good.thisYear
+                        |> round
 
-        percentageLastYear =
-            calculatePercentage nutrition.all.lastYear nutrition.good.lastYear
-                |> round
+                percentageLastYear =
+                    calculatePercentage nutrition.all.lastYear nutrition.good.lastYear
+                        |> round
 
-        percentageDiff =
-            percentageThisYear - percentageLastYear
+                percentageDiff =
+                    percentageThisYear - percentageLastYear
 
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.GoodNutritionLabel
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = percentageThisYear
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = percentageDiff
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewCard language statsCard
+                statsCard =
+                    { title = translate language <| Translate.Dashboard Translate.GoodNutritionLabel
+                    , cardClasses = "good-nutrition"
+                    , cardAction = Nothing
+                    , value = percentageThisYear
+                    , valueSeverity = Neutral
+                    , valueIsPercentage = True
+                    , previousPercentage = percentageDiff
+                    , previousPercentageLabel = OneYear
+                    , newCases = Nothing
+                    }
+            in
+            viewCard language statsCard
+
+        Nothing ->
+            emptyNode
 
 
-viewTotalEncounters : Language -> Periods -> Html Msg
-viewTotalEncounters language encounters =
-    let
-        diff =
-            encounters.thisYear - encounters.lastYear
+viewTotalEncounters : Language -> Maybe Periods -> Html Msg
+viewTotalEncounters language maybeEncounters =
+    case maybeEncounters of
+        Just encounters ->
+            let
+                diff =
+                    encounters.thisYear - encounters.lastYear
 
-        percentageDiff =
-            calculatePercentage encounters.thisYear diff
-                |> round
+                percentageDiff =
+                    calculatePercentage encounters.thisYear diff
+                        |> round
 
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.TotalEncountersLabel
-            , cardClasses = "total-encounters"
-            , cardAction = Nothing
-            , value = encounters.thisYear
-            , valueSeverity = Neutral
-            , valueIsPercentage = False
-            , previousPercentage = percentageDiff
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewCard language statsCard
+                statsCard =
+                    { title = translate language <| Translate.Dashboard Translate.TotalEncountersLabel
+                    , cardClasses = "total-encounters"
+                    , cardAction = Nothing
+                    , value = encounters.thisYear
+                    , valueSeverity = Neutral
+                    , valueIsPercentage = False
+                    , previousPercentage = percentageDiff
+                    , previousPercentageLabel = OneYear
+                    , newCases = Nothing
+                    }
+            in
+            viewCard language statsCard
+
+        Nothing ->
+            emptyNode
 
 
 viewAllStatsCards : Language -> DashboardStats -> NominalDate -> Model -> HealthCenterId -> ModelIndexedDb -> Html Msg
@@ -831,89 +814,94 @@ viewDonutChart language stats =
             ]
 
 
-viewMonthlyChart : Language -> TranslationId -> FilterType -> Dict Int TotalBeneficiaries -> FilterCharts -> Html Msg
-viewMonthlyChart language title filterType data currentFilter =
-    let
-        chartList =
-            data
-                |> Dict.toList
-                |> List.sortWith (\t1 t2 -> compare (Tuple.first t1) (Tuple.first t2))
-                |> Dict.fromList
-
-        chartData =
-            Dict.foldl
-                (\key totalBeneficiaries accum ->
-                    let
-                        month =
-                            numberToMonth key
-                    in
-                    case currentFilter of
-                        Stunting ->
-                            Dict.insert month totalBeneficiaries.stunting accum
-
-                        Underweight ->
-                            Dict.insert month totalBeneficiaries.underweight accum
-
-                        Wasting ->
-                            Dict.insert month totalBeneficiaries.wasting accum
-
-                        MUAC ->
-                            Dict.insert month totalBeneficiaries.muac accum
-                )
-                Dict.empty
-                chartList
-                |> Dict.toList
-
-        yScaleMaxList =
+viewMonthlyChart : Language -> TranslationId -> FilterType -> Maybe (Dict Int TotalBeneficiaries) -> FilterCharts -> Html Msg
+viewMonthlyChart language title filterType maybeData currentFilter =
+    case maybeData of
+        Just data ->
             let
-                choose x y =
+                chartList =
+                    data
+                        |> Dict.toList
+                        |> List.sortWith (\t1 t2 -> compare (Tuple.first t1) (Tuple.first t2))
+                        |> Dict.fromList
+
+                chartData =
+                    Dict.foldl
+                        (\key totalBeneficiaries accum ->
+                            let
+                                month =
+                                    numberToMonth key
+                            in
+                            case currentFilter of
+                                Stunting ->
+                                    Dict.insert month totalBeneficiaries.stunting accum
+
+                                Underweight ->
+                                    Dict.insert month totalBeneficiaries.underweight accum
+
+                                Wasting ->
+                                    Dict.insert month totalBeneficiaries.wasting accum
+
+                                MUAC ->
+                                    Dict.insert month totalBeneficiaries.muac accum
+                        )
+                        Dict.empty
+                        chartList
+                        |> Dict.toList
+
+                yScaleMaxList =
                     let
-                        chosenX =
-                            if x.moderateNutrition > x.severeNutrition then
-                                x.moderateNutrition
+                        choose x y =
+                            let
+                                chosenX =
+                                    if x.moderateNutrition > x.severeNutrition then
+                                        x.moderateNutrition
+
+                                    else
+                                        x.severeNutrition
+                            in
+                            if chosenX > y then
+                                chosenX
 
                             else
-                                x.severeNutrition
+                                y
                     in
-                    if chosenX > y then
-                        chosenX
+                    List.map (\( key, value ) -> choose value 0) chartData
 
-                    else
-                        y
+                maybeScaleMax =
+                    List.maximum yScaleMaxList
+
+                yScaleMax =
+                    maybeScaleMax
+                        -- Don't allow the y access to be less than 3.
+                        |> Maybe.map
+                            (\max ->
+                                if max < 3 then
+                                    3
+
+                                else
+                                    max
+                            )
+                        |> Maybe.withDefault 1
+
+                -- Add 20% to the top of the graph above the max
+                yScaleMaxEnhanced =
+                    toFloat yScaleMax + (toFloat yScaleMax * 0.2)
             in
-            List.map (\( key, value ) -> choose value 0) chartData
+            div [ class "ui segment blue dashboards-monthly-chart" ]
+                [ div [ class "header" ]
+                    [ h3 [ class "title left floated column" ] [ text <| translate language title ++ " " ++ toString currentFilter ]
+                    , div [ class "filters" ]
+                        (List.map (viewFilters filterType currentFilter) filterCharts)
+                    ]
+                , div [ class "content" ]
+                    [ viewBarsChartLegend language
+                    , viewBarChart chartData yScaleMaxEnhanced
+                    ]
+                ]
 
-        maybeScaleMax =
-            List.maximum yScaleMaxList
-
-        yScaleMax =
-            maybeScaleMax
-                -- Don't allow the y access to be less than 3.
-                |> Maybe.map
-                    (\max ->
-                        if max < 3 then
-                            3
-
-                        else
-                            max
-                    )
-                |> Maybe.withDefault 1
-
-        -- Add 20% to the top of the graph above the max
-        yScaleMaxEnhanced =
-            toFloat yScaleMax + (toFloat yScaleMax * 0.2)
-    in
-    div [ class "ui segment blue dashboards-monthly-chart" ]
-        [ div [ class "header" ]
-            [ h3 [ class "title left floated column" ] [ text <| translate language title ++ " " ++ toString currentFilter ]
-            , div [ class "filters" ]
-                (List.map (viewFilters filterType currentFilter) filterCharts)
-            ]
-        , div [ class "content" ]
-            [ viewBarsChartLegend language
-            , viewBarChart chartData yScaleMaxEnhanced
-            ]
-        ]
+        Nothing ->
+            emptyNode
 
 
 viewBarChart : List ( Month, Nutrition ) -> Float -> Html Msg

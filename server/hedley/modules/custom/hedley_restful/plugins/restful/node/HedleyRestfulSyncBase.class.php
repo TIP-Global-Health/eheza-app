@@ -123,9 +123,6 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
 
     foreach ($items as &$item) {
       foreach ($fields_info as $public_name => $field_info) {
-        if ($public_name == 'fbf_clinics') {
-          continue;
-        }
         if (strpos($field_info['property'], 'field_') !== 0) {
           continue;
         }

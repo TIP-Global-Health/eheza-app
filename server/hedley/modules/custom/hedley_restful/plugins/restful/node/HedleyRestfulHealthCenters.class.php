@@ -44,7 +44,7 @@ class HedleyRestfulHealthCenters extends HedleyRestfulSyncBase {
       $item->catchment_area = $item->uuid_catchment_area;
       unset($item->uuid_catchment_area);
       // Check if HC has clinics of type "FBF".
-      $item->fbf_clinics = !empty(hedley_health_center_get_clinics_by_health_center($item->id, 'fbf', 1)) ? TRUE : FALSE;
+      $item->fbf_clinics = !empty(hedley_health_center_get_clinics_by_health_center($item->id, 'fbf', 1));
     }
     return $items;
   }
