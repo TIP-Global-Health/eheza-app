@@ -82,6 +82,49 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'datetime',
   );
 
+  // Exported field_base: 'field_distributed_amount'.
+  $field_bases['field_distributed_amount'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_distributed_amount',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
+  );
+
+  // Exported field_base: 'field_distribution_notice'.
+  $field_bases['field_distribution_notice'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_distribution_notice',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'complete' => 'Complete',
+        'lack-of-stock' => 'Lack of stock',
+        'other' => 'Other',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_family_planning_signs'.
   $field_bases['field_family_planning_signs'] = array(
     'active' => 1,

@@ -22,6 +22,17 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create childfbf content'.
+  $permissions['create childfbf content'] = array(
+    'name' => 'create childfbf content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create family_planning content'.
   $permissions['create family_planning content'] = array(
     'name' => 'create family_planning content',
@@ -47,6 +58,17 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'create lactation content'.
   $permissions['create lactation content'] = array(
     'name' => 'create lactation content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create motherfbf content'.
+  $permissions['create motherfbf content'] = array(
+    'name' => 'create motherfbf content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
@@ -108,6 +130,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any childfbf content'.
+  $permissions['delete any childfbf content'] = array(
+    'name' => 'delete any childfbf content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any family_planning content'.
   $permissions['delete any family_planning content'] = array(
     'name' => 'delete any family_planning content',
@@ -129,6 +160,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete any lactation content'.
   $permissions['delete any lactation content'] = array(
     'name' => 'delete any lactation content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any motherfbf content'.
+  $permissions['delete any motherfbf content'] = array(
+    'name' => 'delete any motherfbf content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -180,6 +220,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete own childfbf content'.
+  $permissions['delete own childfbf content'] = array(
+    'name' => 'delete own childfbf content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own family_planning content'.
   $permissions['delete own family_planning content'] = array(
     'name' => 'delete own family_planning content',
@@ -201,6 +250,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own lactation content'.
   $permissions['delete own lactation content'] = array(
     'name' => 'delete own lactation content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own motherfbf content'.
+  $permissions['delete own motherfbf content'] = array(
+    'name' => 'delete own motherfbf content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -254,6 +312,17 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any childfbf content'.
+  $permissions['edit any childfbf content'] = array(
+    'name' => 'edit any childfbf content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any family_planning content'.
   $permissions['edit any family_planning content'] = array(
     'name' => 'edit any family_planning content',
@@ -279,6 +348,17 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit any lactation content'.
   $permissions['edit any lactation content'] = array(
     'name' => 'edit any lactation content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any motherfbf content'.
+  $permissions['edit any motherfbf content'] = array(
+    'name' => 'edit any motherfbf content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
@@ -342,6 +422,17 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit own childfbf content'.
+  $permissions['edit own childfbf content'] = array(
+    'name' => 'edit own childfbf content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit own family_planning content'.
   $permissions['edit own family_planning content'] = array(
     'name' => 'edit own family_planning content',
@@ -367,6 +458,17 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit own lactation content'.
   $permissions['edit own lactation content'] = array(
     'name' => 'edit own lactation content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own motherfbf content'.
+  $permissions['edit own motherfbf content'] = array(
+    'name' => 'edit own motherfbf content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
