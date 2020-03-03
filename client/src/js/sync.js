@@ -607,6 +607,7 @@
     ];
 
     var floatFields = [
+        'distributed_amount',
         'height',
         'muac',
         'weight'
