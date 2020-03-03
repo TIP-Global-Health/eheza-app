@@ -22,9 +22,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'create childfbf content'.
-  $permissions['create childfbf content'] = array(
-    'name' => 'create childfbf content',
+  // Exported permission: 'create child_fbf content'.
+  $permissions['create child_fbf content'] = array(
+    'name' => 'create child_fbf content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
@@ -66,9 +66,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'create motherfbf content'.
-  $permissions['create motherfbf content'] = array(
-    'name' => 'create motherfbf content',
+  // Exported permission: 'create mother_fbf content'.
+  $permissions['create mother_fbf content'] = array(
+    'name' => 'create mother_fbf content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
@@ -130,9 +130,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'delete any childfbf content'.
-  $permissions['delete any childfbf content'] = array(
-    'name' => 'delete any childfbf content',
+  // Exported permission: 'delete any child_fbf content'.
+  $permissions['delete any child_fbf content'] = array(
+    'name' => 'delete any child_fbf content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -166,9 +166,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'delete any motherfbf content'.
-  $permissions['delete any motherfbf content'] = array(
-    'name' => 'delete any motherfbf content',
+  // Exported permission: 'delete any mother_fbf content'.
+  $permissions['delete any mother_fbf content'] = array(
+    'name' => 'delete any mother_fbf content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -220,9 +220,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'delete own childfbf content'.
-  $permissions['delete own childfbf content'] = array(
-    'name' => 'delete own childfbf content',
+  // Exported permission: 'delete own child_fbf content'.
+  $permissions['delete own child_fbf content'] = array(
+    'name' => 'delete own child_fbf content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -256,9 +256,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'delete own motherfbf content'.
-  $permissions['delete own motherfbf content'] = array(
-    'name' => 'delete own motherfbf content',
+  // Exported permission: 'delete own mother_fbf content'.
+  $permissions['delete own mother_fbf content'] = array(
+    'name' => 'delete own mother_fbf content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -312,9 +312,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit any childfbf content'.
-  $permissions['edit any childfbf content'] = array(
-    'name' => 'edit any childfbf content',
+  // Exported permission: 'edit any child_fbf content'.
+  $permissions['edit any child_fbf content'] = array(
+    'name' => 'edit any child_fbf content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
@@ -356,9 +356,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit any motherfbf content'.
-  $permissions['edit any motherfbf content'] = array(
-    'name' => 'edit any motherfbf content',
+  // Exported permission: 'edit any mother_fbf content'.
+  $permissions['edit any mother_fbf content'] = array(
+    'name' => 'edit any mother_fbf content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
@@ -422,9 +422,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit own childfbf content'.
-  $permissions['edit own childfbf content'] = array(
-    'name' => 'edit own childfbf content',
+  // Exported permission: 'edit own child_fbf content'.
+  $permissions['edit own child_fbf content'] = array(
+    'name' => 'edit own child_fbf content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
@@ -466,9 +466,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit own motherfbf content'.
-  $permissions['edit own motherfbf content'] = array(
-    'name' => 'edit own motherfbf content',
+  // Exported permission: 'edit own mother_fbf content'.
+  $permissions['edit own mother_fbf content'] = array(
+    'name' => 'edit own mother_fbf content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',

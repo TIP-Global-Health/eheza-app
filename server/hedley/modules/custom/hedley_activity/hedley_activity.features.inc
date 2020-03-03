@@ -27,8 +27,8 @@ function hedley_activity_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
-    'childfbf' => array(
-      'name' => t('ChildFBF'),
+    'child_fbf' => array(
+      'name' => t('Child FBF'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',
@@ -59,8 +59,8 @@ function hedley_activity_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
-    'motherfbf' => array(
-      'name' => t('MotherFBF'),
+    'mother_fbf' => array(
+      'name' => t('Mother FBF'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',

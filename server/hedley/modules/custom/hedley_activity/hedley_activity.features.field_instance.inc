@@ -320,9 +320,9 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-childfbf-field_date_measured'.
-  $field_instances['node-childfbf-field_date_measured'] = array(
-    'bundle' => 'childfbf',
+  // Exported field_instance: 'node-child_fbf-field_date_measured'.
+  $field_instances['node-child_fbf-field_date_measured'] = array(
+    'bundle' => 'child_fbf',
     'deleted' => 0,
     'description' => '',
     'display' => array(
@@ -376,9 +376,9 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-childfbf-field_distributed_amount'.
-  $field_instances['node-childfbf-field_distributed_amount'] = array(
-    'bundle' => 'childfbf',
+  // Exported field_instance: 'node-child_fbf-field_distributed_amount'.
+  $field_instances['node-child_fbf-field_distributed_amount'] = array(
+    'bundle' => 'child_fbf',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -422,9 +422,9 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-childfbf-field_distribution_notice'.
-  $field_instances['node-childfbf-field_distribution_notice'] = array(
-    'bundle' => 'childfbf',
+  // Exported field_instance: 'node-child_fbf-field_distribution_notice'.
+  $field_instances['node-child_fbf-field_distribution_notice'] = array(
+    'bundle' => 'child_fbf',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -459,9 +459,9 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-childfbf-field_nurse'.
-  $field_instances['node-childfbf-field_nurse'] = array(
-    'bundle' => 'childfbf',
+  // Exported field_instance: 'node-child_fbf-field_nurse'.
+  $field_instances['node-child_fbf-field_nurse'] = array(
+    'bundle' => 'child_fbf',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -503,9 +503,9 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-childfbf-field_person'.
-  $field_instances['node-childfbf-field_person'] = array(
-    'bundle' => 'childfbf',
+  // Exported field_instance: 'node-child_fbf-field_person'.
+  $field_instances['node-child_fbf-field_person'] = array(
+    'bundle' => 'child_fbf',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -547,9 +547,9 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-childfbf-field_session'.
-  $field_instances['node-childfbf-field_session'] = array(
-    'bundle' => 'childfbf',
+  // Exported field_instance: 'node-child_fbf-field_session'.
+  $field_instances['node-child_fbf-field_session'] = array(
+    'bundle' => 'child_fbf',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -591,9 +591,9 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-childfbf-field_shards'.
-  $field_instances['node-childfbf-field_shards'] = array(
-    'bundle' => 'childfbf',
+  // Exported field_instance: 'node-child_fbf-field_shards'.
+  $field_instances['node-child_fbf-field_shards'] = array(
+    'bundle' => 'child_fbf',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -635,9 +635,9 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-childfbf-field_uuid'.
-  $field_instances['node-childfbf-field_uuid'] = array(
-    'bundle' => 'childfbf',
+  // Exported field_instance: 'node-child_fbf-field_uuid'.
+  $field_instances['node-child_fbf-field_uuid'] = array(
+    'bundle' => 'child_fbf',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -1744,9 +1744,9 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-motherfbf-field_date_measured'.
-  $field_instances['node-motherfbf-field_date_measured'] = array(
-    'bundle' => 'motherfbf',
+  // Exported field_instance: 'node-mother_fbf-field_date_measured'.
+  $field_instances['node-mother_fbf-field_date_measured'] = array(
+    'bundle' => 'mother_fbf',
     'deleted' => 0,
     'description' => '',
     'display' => array(
@@ -1800,9 +1800,9 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-motherfbf-field_distributed_amount'.
-  $field_instances['node-motherfbf-field_distributed_amount'] = array(
-    'bundle' => 'motherfbf',
+  // Exported field_instance: 'node-mother_fbf-field_distributed_amount'.
+  $field_instances['node-mother_fbf-field_distributed_amount'] = array(
+    'bundle' => 'mother_fbf',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -1846,9 +1846,9 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-motherfbf-field_distribution_notice'.
-  $field_instances['node-motherfbf-field_distribution_notice'] = array(
-    'bundle' => 'motherfbf',
+  // Exported field_instance: 'node-mother_fbf-field_distribution_notice'.
+  $field_instances['node-mother_fbf-field_distribution_notice'] = array(
+    'bundle' => 'mother_fbf',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -1883,9 +1883,9 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-motherfbf-field_nurse'.
-  $field_instances['node-motherfbf-field_nurse'] = array(
-    'bundle' => 'motherfbf',
+  // Exported field_instance: 'node-mother_fbf-field_nurse'.
+  $field_instances['node-mother_fbf-field_nurse'] = array(
+    'bundle' => 'mother_fbf',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -1927,9 +1927,9 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-motherfbf-field_person'.
-  $field_instances['node-motherfbf-field_person'] = array(
-    'bundle' => 'motherfbf',
+  // Exported field_instance: 'node-mother_fbf-field_person'.
+  $field_instances['node-mother_fbf-field_person'] = array(
+    'bundle' => 'mother_fbf',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -1971,9 +1971,9 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-motherfbf-field_session'.
-  $field_instances['node-motherfbf-field_session'] = array(
-    'bundle' => 'motherfbf',
+  // Exported field_instance: 'node-mother_fbf-field_session'.
+  $field_instances['node-mother_fbf-field_session'] = array(
+    'bundle' => 'mother_fbf',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -2015,9 +2015,9 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-motherfbf-field_shards'.
-  $field_instances['node-motherfbf-field_shards'] = array(
-    'bundle' => 'motherfbf',
+  // Exported field_instance: 'node-mother_fbf-field_shards'.
+  $field_instances['node-mother_fbf-field_shards'] = array(
+    'bundle' => 'mother_fbf',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -2059,9 +2059,9 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-motherfbf-field_uuid'.
-  $field_instances['node-motherfbf-field_uuid'] = array(
-    'bundle' => 'motherfbf',
+  // Exported field_instance: 'node-mother_fbf-field_uuid'.
+  $field_instances['node-mother_fbf-field_uuid'] = array(
+    'bundle' => 'mother_fbf',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',

@@ -14,9 +14,9 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'additional_settings__active_tab_childfbf';
+  $strongarm->name = 'additional_settings__active_tab_child_fbf';
   $strongarm->value = 'edit-submission';
-  $export['additional_settings__active_tab_childfbf'] = $strongarm;
+  $export['additional_settings__active_tab_child_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -28,9 +28,9 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'additional_settings__active_tab_motherfbf';
+  $strongarm->name = 'additional_settings__active_tab_mother_fbf';
   $strongarm->value = 'edit-submission';
-  $export['additional_settings__active_tab_motherfbf'] = $strongarm;
+  $export['additional_settings__active_tab_mother_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -42,9 +42,9 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'auto_entitylabel_node_childfbf';
+  $strongarm->name = 'auto_entitylabel_node_child_fbf';
   $strongarm->value = '1';
-  $export['auto_entitylabel_node_childfbf'] = $strongarm;
+  $export['auto_entitylabel_node_child_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -70,9 +70,9 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'auto_entitylabel_node_motherfbf';
+  $strongarm->name = 'auto_entitylabel_node_mother_fbf';
   $strongarm->value = '1';
-  $export['auto_entitylabel_node_motherfbf'] = $strongarm;
+  $export['auto_entitylabel_node_mother_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -112,9 +112,9 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'auto_entitylabel_pattern_node_childfbf';
+  $strongarm->name = 'auto_entitylabel_pattern_node_child_fbf';
   $strongarm->value = '[node:content-type] - [node:field-person:title] - [node:field-date-measured:custom:Y-m-d] - [node:field-session:nid]';
-  $export['auto_entitylabel_pattern_node_childfbf'] = $strongarm;
+  $export['auto_entitylabel_pattern_node_child_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -140,9 +140,9 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'auto_entitylabel_pattern_node_motherfbf';
+  $strongarm->name = 'auto_entitylabel_pattern_node_mother_fbf';
   $strongarm->value = '[node:content-type] - [node:field-person:title] - [node:field-date-measured:custom:Y-m-d] - [node:field-session:nid]';
-  $export['auto_entitylabel_pattern_node_motherfbf'] = $strongarm;
+  $export['auto_entitylabel_pattern_node_mother_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -182,9 +182,9 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'auto_entitylabel_php_node_childfbf';
+  $strongarm->name = 'auto_entitylabel_php_node_child_fbf';
   $strongarm->value = 0;
-  $export['auto_entitylabel_php_node_childfbf'] = $strongarm;
+  $export['auto_entitylabel_php_node_child_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -210,9 +210,9 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'auto_entitylabel_php_node_motherfbf';
+  $strongarm->name = 'auto_entitylabel_php_node_mother_fbf';
   $strongarm->value = 0;
-  $export['auto_entitylabel_php_node_motherfbf'] = $strongarm;
+  $export['auto_entitylabel_php_node_mother_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -245,9 +245,9 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'auto_entitylabel_strip_node_childfbf';
+  $strongarm->name = 'auto_entitylabel_strip_node_child_fbf';
   $strongarm->value = 1;
-  $export['auto_entitylabel_strip_node_childfbf'] = $strongarm;
+  $export['auto_entitylabel_strip_node_child_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -266,9 +266,9 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'auto_entitylabel_strip_node_motherfbf';
+  $strongarm->name = 'auto_entitylabel_strip_node_mother_fbf';
   $strongarm->value = 1;
-  $export['auto_entitylabel_strip_node_motherfbf'] = $strongarm;
+  $export['auto_entitylabel_strip_node_mother_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -290,7 +290,7 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'field_bundle_settings_node__childfbf';
+  $strongarm->name = 'field_bundle_settings_node__child_fbf';
   $strongarm->value = array(
     'view_modes' => array(),
     'extra_fields' => array(
@@ -302,7 +302,7 @@ function hedley_activity_strongarm() {
       'display' => array(),
     ),
   );
-  $export['field_bundle_settings_node__childfbf'] = $strongarm;
+  $export['field_bundle_settings_node__child_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -358,7 +358,7 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'field_bundle_settings_node__motherfbf';
+  $strongarm->name = 'field_bundle_settings_node__mother_fbf';
   $strongarm->value = array(
     'view_modes' => array(),
     'extra_fields' => array(
@@ -370,7 +370,7 @@ function hedley_activity_strongarm() {
       'display' => array(),
     ),
   );
-  $export['field_bundle_settings_node__motherfbf'] = $strongarm;
+  $export['field_bundle_settings_node__mother_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -465,11 +465,11 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_options_childfbf';
+  $strongarm->name = 'menu_options_child_fbf';
   $strongarm->value = array(
     0 => 'main-menu',
   );
-  $export['menu_options_childfbf'] = $strongarm;
+  $export['menu_options_child_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -501,11 +501,11 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_options_motherfbf';
+  $strongarm->name = 'menu_options_mother_fbf';
   $strongarm->value = array(
     0 => 'main-menu',
   );
-  $export['menu_options_motherfbf'] = $strongarm;
+  $export['menu_options_mother_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -553,9 +553,9 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_parent_childfbf';
+  $strongarm->name = 'menu_parent_child_fbf';
   $strongarm->value = 'main-menu:0';
-  $export['menu_parent_childfbf'] = $strongarm;
+  $export['menu_parent_child_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -581,9 +581,9 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'menu_parent_motherfbf';
+  $strongarm->name = 'menu_parent_mother_fbf';
   $strongarm->value = 'main-menu:0';
-  $export['menu_parent_motherfbf'] = $strongarm;
+  $export['menu_parent_mother_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -626,12 +626,12 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_options_childfbf';
+  $strongarm->name = 'node_options_child_fbf';
   $strongarm->value = array(
     0 => 'status',
     1 => 'promote',
   );
-  $export['node_options_childfbf'] = $strongarm;
+  $export['node_options_child_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -666,12 +666,12 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_options_motherfbf';
+  $strongarm->name = 'node_options_mother_fbf';
   $strongarm->value = array(
     0 => 'status',
     1 => 'promote',
   );
-  $export['node_options_motherfbf'] = $strongarm;
+  $export['node_options_mother_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -721,9 +721,9 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_preview_childfbf';
+  $strongarm->name = 'node_preview_child_fbf';
   $strongarm->value = '1';
-  $export['node_preview_childfbf'] = $strongarm;
+  $export['node_preview_child_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -749,9 +749,9 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_preview_motherfbf';
+  $strongarm->name = 'node_preview_mother_fbf';
   $strongarm->value = '1';
-  $export['node_preview_motherfbf'] = $strongarm;
+  $export['node_preview_mother_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -791,9 +791,9 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_submitted_childfbf';
+  $strongarm->name = 'node_submitted_child_fbf';
   $strongarm->value = 1;
-  $export['node_submitted_childfbf'] = $strongarm;
+  $export['node_submitted_child_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -819,9 +819,9 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_submitted_motherfbf';
+  $strongarm->name = 'node_submitted_mother_fbf';
   $strongarm->value = 1;
-  $export['node_submitted_motherfbf'] = $strongarm;
+  $export['node_submitted_mother_fbf'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
