@@ -276,23 +276,36 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
 }
 
 /**
- * Return Session attendance related states by health center and period.
+ * Return Session attendance related states by health center.
+ *
+ * The period of this statistic is hardcoded for the last three months.
  *
  * @param int $health_center_id
  *   The Health center node ID.
- * @param string $period
- *   The period to calculate. Be default it is for one year, as on the client
- *   side we could filter out items, if requested to show smaller periods of
- *   time.
  *
  * @return array
  *   Array with the result.
  *
  * @throws \Exception
  */
-function hedley_stats_get_session_attendance_stats_by_period($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
+function hedley_stats_get_session_attendance_stats_by_period($health_center_id) {
+  $periods = [
+    'two_months_ago' => [
+      'start' => strtotime("first day of -2 months"),
+      'end' => strtotime("last day of -2 months"),
+    ],
+    'last_months' => [
+      'start' => strtotime("first day of previous month"),
+      'end' => strtotime("last day of previous month"),
+    ],
+    'this_months' => [
+      'start' => strtotime("first day of this month"),
+      'end' => time(),
+    ],
+  ];
+
   // Return the cache if exists.
-  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center_id, $period)) {
+  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center_id)) {
     return $cache_data;
   }
 
@@ -313,38 +326,23 @@ function hedley_stats_get_session_attendance_stats_by_period($health_center_id, 
   // Loop through the clinics and get sessions for each clinic and from there
   // get expected people for each clinic.
   foreach ($clinic_ids as $clinic_id) {
-    // Get sessions for this clinic (Group Encounters).
-    $session_ids = hedley_stats_get_clinic_sessions_by_period($clinic_id, $period, 1000);
-
-    if (empty($session_ids)) {
-      // No sessions found.
-      continue;
-    }
-
     // Get PMTCT participants by clinic and session dates
     // (all expected people).
-    $pmtct_by_clinic = hedley_stats_get_pmtct_participants_by_clinic($clinic_id, 1000);
+    $pmtct_by_clinic = hedley_stats_get_pmtct_participants_by_clinic($clinic_id, 5000);
 
     if (empty($pmtct_by_clinic)) {
       // No participants were found.
       continue;
     }
 
-    foreach ($session_ids as $session_id) {
-      // Sessions (Group encounter) for current health center which happened in
-      // the given period.
-      $session_wrapper = entity_metadata_wrapper('node', $session_id);
-      // Date of the session converted to a format the frontend can read.
-      $session_dates = $session_wrapper->field_scheduled_date->value();
-      $date = hedley_stats_convert_timestamp_to_nominal(strtotime($session_dates['value']));
-
-      $expected_people_by_clinic = [];
+    $expected_people_by_clinic = [];
+    foreach ($periods as $period) {
       foreach ($pmtct_by_clinic as $pmtct_id) {
         $pmtct_wrapper = entity_metadata_wrapper('node', $pmtct_id);
 
         // Check if participant is supposed to be in this session.
         $expected_date = $pmtct_wrapper->field_expected->value();
-        if (!empty($expected_date) && $expected_date['value'] <= $session_dates['value'] && (is_null($expected_date['value2']) || $expected_date['value2'] >= $session_dates['value2'])) {
+        if (is_null($expected_date['value2']) || $expected_date['value2'] >= time()) {
           $child_id = $pmtct_wrapper->field_person->getIdentifier();
           $child_wrapper = $pmtct_wrapper->field_person;
           $mother_wrapper = $pmtct_wrapper->field_adult;
@@ -363,7 +361,7 @@ function hedley_stats_get_session_attendance_stats_by_period($health_center_id, 
           ];
 
           // Check if the person (patient) has any measurements.
-          $measurements = hedley_activity_get_measurements_by_session($session_id, $child_id, $measurements_types);
+          $measurements = hedley_activity_get_measurements_by_period($child_id, $measurements_types, $period);
 
           if (empty($measurements)) {
             // If this person is not listed in the "missed sessions" list
@@ -377,7 +375,7 @@ function hedley_stats_get_session_attendance_stats_by_period($health_center_id, 
             // attendance entity nor any measurements found for that session on
             // this date so we add it to the list of dates to be able to filter
             // it in the frontend.
-            $missed_session[$child_id]['dates'][] = $date;
+            $missed_session[$child_id]['dates'][] = $period['start'];
           }
           else {
             // This person either has an attendance and should definitely have
@@ -390,7 +388,7 @@ function hedley_stats_get_session_attendance_stats_by_period($health_center_id, 
                 $completed_program[$child_id] = $expected_people_by_clinic[$child_id];
               }
 
-              $completed_program[$child_id]['dates'][] = $date;
+              $completed_program[$child_id]['dates'][] = $period['start'];
             }
           }
         }
@@ -399,7 +397,7 @@ function hedley_stats_get_session_attendance_stats_by_period($health_center_id, 
   }
 
   // Set the cache.
-  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center_id, $period, [
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center_id, NULL, [
     array_values($completed_program),
     array_values($missed_session),
   ]);

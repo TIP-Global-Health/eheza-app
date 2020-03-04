@@ -272,7 +272,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           }
           else {
             // Calculate the stats.
-            list($completed_program, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_period($health_center_nid, HEDLEY_STATS_PERIOD_THREE_MONTHS);
+            list($completed_program, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_period($health_center_nid);
             $stats = [
               'type' => 'statistics',
               // UUID of the health center.
