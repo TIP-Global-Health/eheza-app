@@ -1228,7 +1228,7 @@ summarizeByActivity session checkedIn_ =
         (\checkedIn ->
             let
                 children =
-                    getAllChildActivities
+                    getAllChildActivities session
                         |> List.map
                             (\activity ->
                                 ( activity

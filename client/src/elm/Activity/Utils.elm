@@ -179,14 +179,25 @@ getActivityIcon activity =
 getAllActivities : OfflineSession -> List Activity
 getAllActivities offlineSession =
     List.concat
-        [ List.map ChildActivity getAllChildActivities
+        [ List.map ChildActivity (getAllChildActivities offlineSession)
         , List.map MotherActivity (getAllMotherActivities offlineSession)
         ]
 
 
-getAllChildActivities : List ChildActivity
-getAllChildActivities =
-    [ {- Counseling, -} Height, Muac, NutritionSigns, Weight, ChildPicture ]
+getAllChildActivities : OfflineSession -> List ChildActivity
+getAllChildActivities offlineSession =
+    let
+        forAllGroupTypes =
+            [ {- Counseling, -} Height, Muac, NutritionSigns, Weight, ChildPicture ]
+
+        forFbf =
+            if offlineSession.session.clinicType == Fbf then
+                [ ChildFbf ]
+
+            else
+                []
+    in
+    forAllGroupTypes ++ forFbf
 
 
 getAllMotherActivities : OfflineSession -> List MotherActivity
@@ -195,12 +206,12 @@ getAllMotherActivities offlineSession =
         forAllGroupTypes =
             [ FamilyPlanning
 
-            -- , ParticipantConsent
+            {- , ParticipantConsent -}
             ]
 
         forFbf =
             if offlineSession.session.clinicType == Fbf then
-                [ Lactation ]
+                [ Lactation, MotherFbf ]
 
             else
                 []
@@ -563,7 +574,7 @@ activities may not be expected for this child).
 -}
 summarizeChildParticipant : PersonId -> OfflineSession -> CompletedAndPending (List ChildActivity)
 summarizeChildParticipant id session =
-    getAllChildActivities
+    getAllChildActivities session
         |> List.filter (expectChildActivity session id)
         |> List.partition (\activity -> childHasCompletedActivity id activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
@@ -701,9 +712,9 @@ hasAnyCompletedMotherActivity session motherId measurements =
         |> List.any (\activity -> hasCompletedMotherActivity session motherId activity measurements)
 
 
-hasAnyCompletedChildActivity : MeasurementData ChildMeasurements -> Bool
-hasAnyCompletedChildActivity measurements =
-    getAllChildActivities
+hasAnyCompletedChildActivity : OfflineSession -> MeasurementData ChildMeasurements -> Bool
+hasAnyCompletedChildActivity session measurements =
+    getAllChildActivities session
         |> List.any (\a -> hasCompletedChildActivity a measurements)
 
 
@@ -768,5 +779,5 @@ motherHasAnyCompletedActivity motherId session =
 childHasAnyCompletedActivity : PersonId -> OfflineSession -> Bool
 childHasAnyCompletedActivity childId session =
     getChildMeasurementData2 childId session
-        |> LocalData.map hasAnyCompletedChildActivity
+        |> LocalData.map (hasAnyCompletedChildActivity session)
         |> LocalData.withDefault False

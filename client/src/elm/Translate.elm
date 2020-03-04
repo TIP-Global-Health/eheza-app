@@ -594,7 +594,7 @@ translationSet trans =
                     }
 
                 MotherActivity MotherFbf ->
-                    { english = "FBF"
+                    { english = "FBF Mother"
                     , kinyarwanda = Nothing
                     }
 
@@ -609,7 +609,7 @@ translationSet trans =
                        }
                 -}
                 ChildActivity ChildFbf ->
-                    { english = "FBF"
+                    { english = "FBF Child"
                     , kinyarwanda = Nothing
                     }
 
