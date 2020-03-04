@@ -470,11 +470,22 @@ expectMotherActivity offlineSession motherId activity =
                             CaregiverActivities ->
                                 False
 
+                    -- Show at FBF groups, for mothers that are breastfeeding.
                     MotherFbf ->
                         case participant.adultActivities of
                             MotherActivities ->
-                                -- Todo: check if breastfeeding
-                                offlineSession.session.clinicType == Fbf
+                                if offlineSession.session.clinicType == Fbf then
+                                    getMotherMeasurementData2 motherId offlineSession
+                                        |> LocalData.map
+                                            (.current
+                                                >> .lactation
+                                                >> Maybe.map (Tuple.second >> .value >> EverySet.member Breastfeeding)
+                                                >> Maybe.withDefault False
+                                            )
+                                        |> LocalData.withDefault False
+
+                                else
+                                    False
 
                             CaregiverActivities ->
                                 False
