@@ -113,7 +113,7 @@ viewToggleDisplay language model =
     let
         content =
             if String.isEmpty model.filter then
-                [ span [] [ text "or" ]
+                [ span [] [ text <| translate language Translate.Or ]
                 , span
                     [ class "toggle-text"
                     , onClick ToggleInitialResultsDisplay

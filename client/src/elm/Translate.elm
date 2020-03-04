@@ -291,6 +291,7 @@ type TranslationId
     | OK
     | Old
     | OnceYouEndYourGroupEncounter
+    | Or
     | Page
     | Page404
     | PageNotFoundMsg
@@ -1630,6 +1631,11 @@ translationSet trans =
 
         OnceYouEndYourGroupEncounter ->
             { english = "Once you end your Group Encounter, you will no longer be able to edit or add data."
+            , kinyarwanda = Nothing
+            }
+
+        Or ->
+            { english = "or"
             , kinyarwanda = Nothing
             }
 
