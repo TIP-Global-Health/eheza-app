@@ -86,7 +86,7 @@ a {
   border: 0;
   font-size: 1.57rem; //22px light
   font-weight: 300;
-  padding: 2.5rem 2rem; // 35px = 2.5rem
+  padding: 2.5rem 3rem; // 35px = 2.5rem
   margin: 0 0 15px 0;
   box-shadow: 0 0 10px 0 rgba(0,0,0,0.2);
 
@@ -100,6 +100,10 @@ a {
     z-index: 100;
     position: relative;
     box-shadow: 0 5px 20px 2px rgba(0,0,0,0.175);
+  }
+
+  &.task {
+    padding: 2.5rem 2rem; // 35px = 2.5rem
   }
 
   &.tasks {
