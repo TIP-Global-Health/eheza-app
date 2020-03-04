@@ -139,7 +139,9 @@ viewCaseManagementPage language currentDate stats model =
                 )
                 []
                 stats.caseManagement
-                |> List.sortBy .name
+                -- List table by person's name but turn it to lowercase for the comparision so it's truly sorted, this
+                -- will not effect the display.
+                |> List.sortWith (\p1 p2 -> compare (String.toLower p1.name) (String.toLower p2.name))
     in
     div [ class "dashboard case" ]
         [ viewPeriodFilter language model filterPeriods
