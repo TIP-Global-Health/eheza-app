@@ -149,26 +149,28 @@ view language nurse ( sessionId, session ) model =
             else
                 Nothing
 
-        endSessionButton =
-            if isCommunityHealthWorker nurse then
-                emptyNode
-
-            else
-                div
-                    [ class "actions" ]
-                    [ button
-                        [ class "ui fluid primary button"
-                        , onClick <| ShowEndSessionDialog True
-                        ]
-                        [ text <| translate language Trans.EndGroupEncounter ]
-                    ]
-
         goBackPage =
             if isCommunityHealthWorker nurse then
                 UserPage ClinicalPage
 
             else
                 UserPage <| ClinicsPage (Just session.offlineSession.session.clinicId)
+
+        endSessionAction =
+            if isCommunityHealthWorker nurse then
+                SetRedirectPage goBackPage
+
+            else
+                ShowEndSessionDialog True
+
+        endSessionButton =
+            div [ class "actions" ]
+                [ button
+                    [ class "ui fluid primary button"
+                    , onClick endSessionAction
+                    ]
+                    [ text <| translate language Trans.EndGroupEncounter ]
+                ]
 
         header =
             div
