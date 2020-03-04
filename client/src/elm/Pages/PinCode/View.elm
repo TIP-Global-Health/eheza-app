@@ -270,6 +270,9 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                         healthCenters
                             |> Dict.filter (\uuid _ -> EverySet.member uuid nurse.healthCenters)
                             |> Dict.toList
+                            |> List.sortBy (Tuple.second >> .name)
+                            -- Reverse now because we are reversing again when adding the "logout" button.
+                            |> List.reverse
 
                     _ ->
                         []
