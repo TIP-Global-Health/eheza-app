@@ -8,17 +8,17 @@
 use Ramsey\Uuid\Uuid;
 
 /**
- * Nodes synced to all devices.
- *
- * The content types and their restful handler for nodes that
- * we sync to all devices.
- */
-const HEDLEY_RESTFUL_DB_QUERY_RANGE = 500;
-
-/**
  * Class HedleyRestfulSync.
  */
 class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInterface {
+
+  /**
+   * Nodes synced to all devices.
+   *
+   * The content types and their restful handler for nodes that
+   * we sync to all devices.
+   */
+  const HEDLEY_RESTFUL_DB_QUERY_RANGE = 500;
 
   /**
    * Overrides \RestfulBase::controllersInfo().
@@ -168,7 +168,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       ->condition('node.type', array_keys($handlers_by_types), 'IN');
 
     // Get the timestamp of the last revision. We'll also get a count of
-    // remaining revisions, but the timestamp of the last revision will also
+    // remaining nodes, but the timestamp of the last revision will also
     // help us display how far out-of-date the client is.
     $last_revision_query = clone $query;
 
@@ -183,25 +183,17 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     // Restrict to revisions the client doesn't already have.
     $query->condition('node.vid', $base, '>');
 
-    // Get the total number of revisions that are greater than the base
-    // revision. This will help the client show progress. Note that this
-    // includes the revisions in the batch we will return (but not earlier
-    // revisions).
+    // Get the total number of nodes that are greater than the base
+    // revision. This will help the client show progress.
     $count = $query->countQuery()->execute()->fetchField();
 
     // Then, get one batch worth of results.
     $batch = $query
       ->orderBy('node.vid', 'ASC')
-      ->range(0, HEDLEY_RESTFUL_DB_QUERY_RANGE)
+      ->range(0, self::HEDLEY_RESTFUL_DB_QUERY_RANGE)
       ->execute()
       ->fetchAll();
 
-    // Now, we wish to get a restful representation of each revision in this
-    // batch. We need to represent the specific revision, rather than the
-    // current revision, for the reasons noted above. (We can't be sure that
-    // the client will get all batches before going offline, and if we send
-    // revisions out-of-order then we might reference entities the client
-    // doesn't have yet).
     $account = $this->getAccount();
 
     $batch_by_node_type = [];
@@ -371,7 +363,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     // Then, get one batch worth of results.
     $batch = $query
       ->orderBy('node.vid', 'ASC')
-      ->range(0, HEDLEY_RESTFUL_DB_QUERY_RANGE)
+      ->range(0, self::HEDLEY_RESTFUL_DB_QUERY_RANGE)
       ->execute()
       ->fetchAll();
 
