@@ -237,6 +237,7 @@ type TranslationId
     | HIVStatusLabel
     | HouseholdSize
     | HttpError Http.Error
+    | IndividualEncounter
     | KilogramShorthand
     | LastChecked
     | LastSuccesfulContactLabel
@@ -1292,6 +1293,11 @@ translationSet trans =
 
         HttpError error ->
             translateHttpError error
+
+        IndividualEncounter ->
+            { english = "Individual Encounter"
+            , kinyarwanda = Nothing
+            }
 
         KilogramShorthand ->
             { english = "kg"

@@ -96,7 +96,16 @@ viewContent language currentDate maybeVillageId db =
                 , span [ class "text" ] [ text <| translate language Translate.GroupAssessment ]
                 , span [ class "icon-back" ] []
                 ]
+
+        individualEncounterButton =
+            button
+                [ class "ui primary button individual-assessment" ]
+                [ span [ class "icon" ] []
+                , span [ class "text" ] [ text <| translate language Translate.IndividualEncounter ]
+                , span [ class "icon-back" ] []
+                ]
     in
     [ p [] [ text <| translate language Translate.WhatDoYouWantToDo ]
+    , individualEncounterButton
     , groupAssessmentButton
     ]
