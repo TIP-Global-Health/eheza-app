@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse, Role(..))
 import EverySet
-import Gizra.Html exposing (emptyNode, showIf, showMaybe)
+import Gizra.Html exposing (emptyNode, showIf)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
@@ -285,4 +285,5 @@ viewWhenLoggedIn language nurse healthCenterId model db =
             :: (filteredHealthCenters
                     |> List.map selectHealthCenterButton
                     |> List.append [ logoutButton ]
+                    |> List.reverse
                )
