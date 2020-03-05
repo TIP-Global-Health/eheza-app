@@ -475,7 +475,7 @@ translationSet trans =
                     }
 
                 MotherActivity Lactation ->
-                    { english = ""
+                    { english = "Ideally a mother exclusively breastfeeds her infant for at least 6 months. Every mother should be asked about how she is feeding her infant each month."
                     , kinyarwanda = Nothing
                     }
 
