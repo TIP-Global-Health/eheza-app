@@ -290,15 +290,15 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
  */
 function hedley_stats_get_session_attendance_stats_by_period($health_center_id) {
   $periods = [
-    'two_months_ago' => [
+    HEDLEY_STATS_PERIOD_THREE_MONTHS => [
       'start' => strtotime("first day of -2 months"),
       'end' => strtotime("last day of -2 months"),
     ],
-    'last_months' => [
+    HEDLEY_STATS_PERIOD_LAST_MONTH => [
       'start' => strtotime("first day of previous month"),
       'end' => strtotime("last day of previous month"),
     ],
-    'this_months' => [
+    HEDLEY_STATS_PERIOD_THIS_MONTH => [
       'start' => strtotime("first day of this month"),
       'end' => time(),
     ],
@@ -356,7 +356,18 @@ function hedley_stats_get_session_attendance_stats_by_period($health_center_id) 
         'dates' => [],
       ];
 
-      foreach ($periods as $period) {
+      foreach ($periods as $period_name => $period) {
+        if ($period_name == HEDLEY_STATS_PERIOD_THIS_MONTH) {
+          // We need to check if there was any sessions at all this month
+          // because it can be the beginning of the month and we don't find any
+          // measurements because there wasn't any sessions.
+          $session = hedley_stats_get_clinic_sessions_by_period($clinic_id, HEDLEY_STATS_PERIOD_THIS_MONTH, 1);
+
+          if (empty($session)) {
+            continue;
+          }
+        }
+
         // Check if the person (patient) has any measurements.
         $measurements = hedley_activity_get_measurements_by_period($child_id, $measurements_types, $period, 5);
 
