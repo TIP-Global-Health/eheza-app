@@ -554,7 +554,7 @@ translationSet trans =
             case activity of
                 MotherActivity FamilyPlanning ->
                     { english = "Family Planning"
-                    , kinyarwanda = Just "Kuboneza Urubyaro? nticyaza muri raporo yimikurire yumwana"
+                    , kinyarwanda = Just "Kuboneza Urubyaro?"
                     }
 
                 {- MotherActivity ParticipantConsent ->
@@ -1151,7 +1151,7 @@ translationSet trans =
 
                 NoFamilyPlanning ->
                     { english = "None of these"
-                    , kinyarwanda = Just "nta buryo bwo kuboneza urubyaro akoresha"
+                    , kinyarwanda = Just "Nta buryo bwo kuboneza urubyaro akoresha"
                     }
 
                 OralContraceptives ->
