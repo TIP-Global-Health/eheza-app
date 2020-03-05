@@ -95,6 +95,9 @@ encodeActivityAsString activity =
 decodeActivityFromString : String -> Maybe Activity
 decodeActivityFromString s =
     case s of
+        "child_fbf" ->
+            Just <| ChildActivity ChildFbf
+
         "picture" ->
             Just <| ChildActivity ChildPicture
 
@@ -117,6 +120,9 @@ decodeActivityFromString s =
 
         "lactation" ->
             Just <| MotherActivity Lactation
+
+        "mother_fbf" ->
+            Just <| MotherActivity MotherFbf
 
         -- "participants_consent" ->
         --    Just <| MotherActivity ParticipantConsent

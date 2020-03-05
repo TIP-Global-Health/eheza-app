@@ -41,8 +41,7 @@ viewChild : Language -> NominalDate -> Person -> ChildActivity -> MeasurementDat
 viewChild language currentDate child activity measurements zscores session model =
     case activity of
         ChildFbf ->
-            -- Todo
-            emptyNode
+            viewChildFbf language (mapMeasurementData .fbf measurements) model.fbfForm
 
         ChildPicture ->
             viewPhoto language (mapMeasurementData .photo measurements) model.photo
@@ -634,6 +633,46 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
         ]
 
 
+viewChildFbf : Language -> MeasurementData (Maybe ( ChildFbfId, Fbf )) -> FbfForm -> Html MsgChild
+viewChildFbf language measurement form =
+    let
+        activity =
+            ChildActivity ChildFbf
+
+        existingId =
+            Maybe.map Tuple.first measurement.current
+
+        saveMsg =
+            Nothing
+
+        -- if EverySet.isEmpty signs then
+        --     Nothing
+        --
+        -- else
+        --     Just <| SendOutMsgChild <| SaveChildNutritionSigns existingId signs
+    in
+    div
+        [ class "ui full segment fbf"
+        , id "childFbfEntryForm"
+        ]
+        [ div [ class "content" ]
+            [ h3 [ class "ui header" ]
+                [ text <| translate language (Trans.ActivitiesTitle activity)
+                ]
+            , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+            , div [ class "ui form" ] <|
+                p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
+                    :: []
+            ]
+        , div [ class "actions" ] <|
+            saveButton
+                language
+                saveMsg
+                measurement
+                Nothing
+        ]
+
+
 
 {-
    viewCounselingSession : Language -> MeasurementData (Maybe ( CounselingSessionId, CounselingSession )) -> EditableSession -> Maybe ( CounselingTiming, EverySet CounselingTopicId ) -> Html MsgChild
@@ -751,8 +790,7 @@ viewMother language activity measurements model =
             viewLactation language (mapMeasurementData .lactation measurements) model.lactationForm
 
         MotherFbf ->
-            -- Todo
-            emptyNode
+            viewMotherFbf language (mapMeasurementData .fbf measurements) model.fbfForm
 
 
 
@@ -1123,6 +1161,46 @@ viewLactation language measurement form =
             ]
         , div [ class "actions" ] <|
             saveButton language
+                saveMsg
+                measurement
+                Nothing
+        ]
+
+
+viewMotherFbf : Language -> MeasurementData (Maybe ( MotherFbfId, Fbf )) -> FbfForm -> Html MsgMother
+viewMotherFbf language measurement form =
+    let
+        activity =
+            MotherActivity MotherFbf
+
+        existingId =
+            Maybe.map Tuple.first measurement.current
+
+        saveMsg =
+            Nothing
+
+        -- if EverySet.isEmpty signs then
+        --     Nothing
+        --
+        -- else
+        --     Just <| SendOutMsgChild <| SaveChildNutritionSigns existingId signs
+    in
+    div
+        [ class "ui full segment fbf"
+        , id "motherFbfEntryForm"
+        ]
+        [ div [ class "content" ]
+            [ h3 [ class "ui header" ]
+                [ text <| translate language (Trans.ActivitiesTitle activity)
+                ]
+            , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+            , div [ class "ui form" ] <|
+                p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
+                    :: []
+            ]
+        , div [ class "actions" ] <|
+            saveButton
+                language
                 saveMsg
                 measurement
                 Nothing

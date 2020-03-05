@@ -1,15 +1,4 @@
-module Backend.Measurement.Utils exposing
-    ( currentValue
-    , currentValueWithId
-    , currentValues
-    , getCurrentAndPrevious
-    , lactationFormToSigns
-    , lactationSignsToForm
-    , mapMeasurementData
-    , muacIndication
-    , splitChildMeasurements
-    , splitMotherMeasurements
-    )
+module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, fbfFormToValue, fbfValueToForm, getCurrentAndPrevious, lactationFormToSigns, lactationSignsToForm, mapMeasurementData, muacIndication, splitChildMeasurements, splitMotherMeasurements)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -230,11 +219,9 @@ getCurrentAndPrevious sessionId =
 
 lactationSignsToForm : EverySet LactationSign -> LactationForm
 lactationSignsToForm signs =
-    if EverySet.member Breastfeeding signs then
-        LactationForm (Just True)
-
-    else
-        LactationForm Nothing
+    EverySet.member Breastfeeding signs
+        |> Just
+        |> LactationForm
 
 
 lactationFormToSigns : LactationForm -> EverySet LactationSign
@@ -249,3 +236,44 @@ lactationFormToSigns form =
                     EverySet.singleton NoLactationSigns
             )
         |> Maybe.withDefault (EverySet.singleton NoLactationSigns)
+
+
+fbfValueToForm : FbfValue -> FbfForm
+fbfValueToForm value =
+    let
+        distributedFully =
+            value.distributionNotice == DistributedFully |> Just
+    in
+    FbfForm distributedFully (Just value.distributedAmmount) (Just value.distributionNotice)
+
+
+fbfFormToValue : FbfForm -> FbfValue
+fbfFormToValue form =
+    let
+        ammountForMother =
+            4
+
+        -- Todo: if child, ammount based on child age.
+        defaultValue =
+            FbfValue ammountForMother DistributedFully
+    in
+    form.distributedFully
+        |> Maybe.map
+            (\distributedFully ->
+                if distributedFully then
+                    defaultValue
+
+                else
+                    Maybe.map2
+                        (\distributedAmmount distributionNotice ->
+                            FbfValue distributedAmmount distributionNotice
+                        )
+                        form.distributedAmmount
+                        form.distributionNotice
+                        -- We should never get here, as we always expect to have
+                        -- these fields filled, when distribution is not full
+                        |> Maybe.withDefault defaultValue
+            )
+        -- We should never get here, as we always expect to have
+        -- 'distributedFully' filled in form.
+        |> Maybe.withDefault defaultValue

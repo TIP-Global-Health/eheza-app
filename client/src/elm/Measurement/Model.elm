@@ -42,6 +42,7 @@ type alias ModelChild =
     , photo : Maybe PhotoUrl
     , weight : String
     , counseling : Maybe ( CounselingTiming, EverySet CounselingTopicId )
+    , fbfForm : FbfForm
     }
 
 
@@ -49,6 +50,7 @@ type alias ModelMother =
     { familyPlanningSigns : EverySet FamilyPlanningSign
     , participantConsent : ParticipantFormUI
     , lactationForm : LactationForm
+    , fbfForm : FbfForm
     }
 
 
@@ -173,6 +175,7 @@ emptyModelChild =
     , photo = Nothing
     , weight = ""
     , counseling = Nothing
+    , fbfForm = FbfForm Nothing Nothing Nothing
     }
 
 
@@ -181,4 +184,5 @@ emptyModelMother =
     { familyPlanningSigns = EverySet.empty
     , participantConsent = emptyParticipantFormUI
     , lactationForm = LactationForm Nothing
+    , fbfForm = FbfForm Nothing Nothing Nothing
     }
