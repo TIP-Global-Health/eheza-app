@@ -21,7 +21,6 @@ import Pages.Dashboard.Model exposing (..)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 import Pages.Utils exposing (calculatePercentage, monthList)
 import Path
-import RemoteData exposing (RemoteData(..), WebData)
 import Scale exposing (BandConfig, BandScale, ContinuousScale)
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
@@ -32,7 +31,7 @@ import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..))
-import Utils.Html exposing (viewLoading, viewModal)
+import Utils.Html exposing (spinner, viewModal)
 
 
 {-| Shows a dashboard page.
@@ -53,7 +52,7 @@ view language page currentDate healthCenterId model db =
                         Nothing ->
                             -- Add loading only here because it's the only page reachable from an outside link before
                             -- fetching the stats.
-                            ( viewLoading, PinCodePage )
+                            ( spinner, PinCodePage )
 
                         _ ->
                             ( viewMainPage language currentDate stats model, PinCodePage )
