@@ -33,14 +33,14 @@ import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
+import Backend.Measurement.Utils exposing (currentValue, currentValues, fbfAmmountByBirthDate, mapMeasurementData)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (..)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
 import EverySet
-import Gizra.NominalDate exposing (diffDays)
+import Gizra.NominalDate exposing (NominalDate, diffDays)
 import LocalData
 import Maybe.Extra exposing (isJust, isNothing)
 
@@ -229,15 +229,22 @@ getAllMotherActivities offlineSession =
 Note that we don't consider whether the child is checked in here -- just
 whether we would expect to perform this action if checked in.
 -}
-expectChildActivity : OfflineSession -> PersonId -> ChildActivity -> Bool
-expectChildActivity offlineSession childId activity =
+expectChildActivity : NominalDate -> OfflineSession -> PersonId -> ChildActivity -> Bool
+expectChildActivity currentDate offlineSession childId activity =
     case activity of
         {- Counseling ->
            Maybe.Extra.isJust <|
                expectCounselingActivity session childId
         -}
         ChildFbf ->
-            offlineSession.session.clinicType == Fbf
+            if offlineSession.session.clinicType == Fbf then
+                Dict.get childId offlineSession.children
+                    |> Maybe.andThen .birthDate
+                    |> Maybe.map (fbfAmmountByBirthDate currentDate >> (<) 0)
+                    |> Maybe.withDefault False
+
+            else
+                False
 
         _ ->
             -- In all other cases, we expect each ativity each time.
@@ -527,10 +534,10 @@ the activity and have the activity pending. (This may not add up to all the
 children, because we only consider a child "pending" if they are checked in and
 the activity is expected.
 -}
-summarizeChildActivity : ChildActivity -> OfflineSession -> CheckedIn -> CompletedAndPending (Dict PersonId Person)
-summarizeChildActivity activity session checkedIn =
+summarizeChildActivity : NominalDate -> ChildActivity -> OfflineSession -> CheckedIn -> CompletedAndPending (Dict PersonId Person)
+summarizeChildActivity currentDate activity session checkedIn =
     checkedIn.children
-        |> Dict.filter (\childId _ -> expectChildActivity session childId activity)
+        |> Dict.filter (\childId _ -> expectChildActivity currentDate session childId activity)
         |> Dict.partition (\childId _ -> childHasCompletedActivity childId activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
@@ -589,10 +596,10 @@ getParticipantCountForActivity summary activity =
 and which are pending. (This may not add up to all the activities, because some
 activities may not be expected for this child).
 -}
-summarizeChildParticipant : PersonId -> OfflineSession -> CompletedAndPending (List ChildActivity)
-summarizeChildParticipant id session =
+summarizeChildParticipant : NominalDate -> PersonId -> OfflineSession -> CompletedAndPending (List ChildActivity)
+summarizeChildParticipant currentDate id session =
     getAllChildActivities session
-        |> List.filter (expectChildActivity session id)
+        |> List.filter (expectChildActivity currentDate session id)
         |> List.partition (\activity -> childHasCompletedActivity id activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 

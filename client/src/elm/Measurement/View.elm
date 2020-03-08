@@ -9,7 +9,7 @@ import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData, muacIndication)
+import Backend.Measurement.Utils exposing (currentValues, fbfAmmountByBirthDate, mapMeasurementData, muacIndication)
 import Backend.Person.Model exposing (Gender, Person)
 import Backend.Session.Model exposing (EditableSession)
 import EverySet exposing (EverySet)
@@ -41,7 +41,7 @@ viewChild : Language -> NominalDate -> Person -> ChildActivity -> MeasurementDat
 viewChild language currentDate child activity measurements zscores session model =
     case activity of
         ChildFbf ->
-            viewChildFbf language (mapMeasurementData .fbf measurements) model.fbfForm
+            viewChildFbf language currentDate (mapMeasurementData .fbf measurements) child.birthDate model.fbfForm
 
         ChildPicture ->
             viewPhoto language (mapMeasurementData .photo measurements) model.photo
@@ -633,11 +633,16 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
         ]
 
 
-viewChildFbf : Language -> MeasurementData (Maybe ( ChildFbfId, Fbf )) -> FbfForm -> Html MsgChild
-viewChildFbf language measurement form =
+viewChildFbf : Language -> NominalDate -> MeasurementData (Maybe ( ChildFbfId, Fbf )) -> Maybe NominalDate -> FbfForm -> Html MsgChild
+viewChildFbf language currentDate measurement maybeBirthDate form =
     let
         activity =
             ChildActivity ChildFbf
+
+        ammount =
+            maybeBirthDate
+                |> Maybe.map (fbfAmmountByBirthDate currentDate)
+                |> Maybe.withDefault 0
 
         existingId =
             Maybe.map Tuple.first measurement.current
@@ -645,7 +650,14 @@ viewChildFbf language measurement form =
         saveMsg =
             Nothing
     in
-    viewFbfForm language measurement activity SetDistributedFullyForChild SetDistributedAmmountForChild SetDistributoinNoticeForChild form
+    viewFbfForm language
+        measurement
+        activity
+        ammount
+        SetDistributedFullyForChild
+        SetDistributedAmmountForChild
+        SetDistributoinNoticeForChild
+        form
 
 
 
@@ -1152,20 +1164,31 @@ viewMotherFbf language measurement form =
 
         saveMsg =
             Nothing
+
+        fbfAmmountForMother =
+            3
     in
-    viewFbfForm language measurement activity SetDistributedFullyForMother SetDistributedAmmountForMother SetDistributoinNoticeForMother form
+    viewFbfForm language
+        measurement
+        activity
+        fbfAmmountForMother
+        SetDistributedFullyForMother
+        SetDistributedAmmountForMother
+        SetDistributoinNoticeForMother
+        form
 
 
 viewFbfForm :
     Language
     -> MeasurementData (Maybe a)
     -> Activity
+    -> Int
     -> (Bool -> msg)
     -> (String -> msg)
     -> (DistributionNotice -> msg)
     -> {- msg -> -} FbfForm
     -> Html msg
-viewFbfForm language measurement activity setDistributedFullyMsg setDistributedAmmountMsg setDistributoinNoticeMsg {- saveMsg -} form =
+viewFbfForm language measurement activity ammount setDistributedFullyMsg setDistributedAmmountMsg setDistributoinNoticeMsg {- saveMsg -} form =
     let
         saveMsg =
             Nothing
@@ -1213,7 +1236,7 @@ viewFbfForm language measurement activity setDistributedFullyMsg setDistributedA
             [ h3 [ class "ui header" ]
                 [ text <| translate language Trans.FbfDistribution ]
             , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
-            , div [ class "fbf-to-recieve" ] [ text <| translate language (Trans.FbfToRecieve activity 3) ]
+            , div [ class "fbf-to-recieve" ] [ text <| translate language (Trans.FbfToRecieve activity ammount) ]
             , formConstantContent
                 ++ formDynamicalContent
                 |> div [ class "ui form" ]

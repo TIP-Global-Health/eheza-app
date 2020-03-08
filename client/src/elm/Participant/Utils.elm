@@ -6,14 +6,15 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Utils exposing (getMyMother)
+import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model
 import Pages.Activity.Utils exposing (viewChildMeasurements, viewMotherMeasurements)
 import Participant.Model exposing (Participant, ParticipantId(..))
 import RemoteData exposing (RemoteData(..))
 
 
-childParticipant : Participant PersonId Person ChildActivity Measurement.Model.MsgChild
-childParticipant =
+childParticipant : NominalDate -> Participant PersonId Person ChildActivity Measurement.Model.MsgChild
+childParticipant currentDate =
     { getAvatarUrl = .avatarUrl
     , getBirthDate = .birthDate
     , getMotherId = \childId session -> getMyMother childId session.offlineSession |> Maybe.map Tuple.first
@@ -23,8 +24,8 @@ childParticipant =
     , getVillage = .village
     , iconClass = "child"
     , showProgressReportTab = True
-    , summarizeActivitiesForParticipant = summarizeChildParticipant
-    , summarizeParticipantsForActivity = summarizeChildActivity
+    , summarizeActivitiesForParticipant = summarizeChildParticipant currentDate
+    , summarizeParticipantsForActivity = summarizeChildActivity currentDate
     , tagActivity = ChildActivity
     , toChildId = Just
     , toMotherId = always Nothing

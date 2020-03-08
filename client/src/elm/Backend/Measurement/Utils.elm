@@ -1,10 +1,10 @@
-module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, fbfFormToValue, fbfValueToForm, getCurrentAndPrevious, lactationFormToSigns, lactationSignsToForm, mapMeasurementData, muacIndication, splitChildMeasurements, splitMotherMeasurements)
+module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, fbfAmmountByBirthDate, fbfFormToValue, fbfValueToForm, getCurrentAndPrevious, lactationFormToSigns, lactationSignsToForm, mapMeasurementData, muacIndication, splitChildMeasurements, splitMotherMeasurements)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (compare)
+import Gizra.NominalDate exposing (NominalDate, compare, diffCalendarMonths)
 import Restful.Endpoint exposing (EntityUuid)
 
 
@@ -277,3 +277,22 @@ fbfFormToValue form =
         -- We should never get here, as we always expect to have
         -- 'distributedFully' filled in form.
         |> Maybe.withDefault defaultValue
+
+
+fbfAmmountByBirthDate : NominalDate -> NominalDate -> Int
+fbfAmmountByBirthDate currentDate birthDate =
+    let
+        diffMonths =
+            diffCalendarMonths birthDate currentDate
+    in
+    if diffMonths > 5 && diffMonths < 9 then
+        2
+
+    else if diffMonths > 8 && diffMonths < 12 then
+        4
+
+    else if diffMonths > 11 && diffMonths < 24 then
+        5
+
+    else
+        0

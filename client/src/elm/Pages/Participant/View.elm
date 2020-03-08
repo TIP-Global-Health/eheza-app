@@ -94,10 +94,10 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
             br [] []
 
         config =
-            childParticipant
+            childParticipant currentDate
 
         activities =
-            summarizeChildParticipant childId session.offlineSession
+            summarizeChildParticipant currentDate childId session.offlineSession
 
         selectedActivity =
             case model.selectedTab of
@@ -186,13 +186,13 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                             , p [] <|
                                 motherInfo
                                     ++ [ break, dateOfBirth, break, age, break, gender ]
-                            , viewFamilyLinks childParticipant language childId ( sessionId, session )
+                            , viewFamilyLinks (childParticipant currentDate) language childId ( sessionId, session )
                             ]
                         ]
                     ]
                     |> keyed "child-info"
               ]
-            , viewActivityCards childParticipant language activities model.selectedTab selectedActivity
+            , viewActivityCards (childParticipant currentDate) language activities model.selectedTab selectedActivity
             , content
             ]
 
