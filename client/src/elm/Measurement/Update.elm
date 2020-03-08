@@ -175,6 +175,17 @@ updateMother measurements msg model =
             )
                 model.participantConsent
 
+        SetDistributedAmmount ammount ->
+            let
+                fbfForm =
+                    model.fbfForm
+                        |> (\form -> { form | distributedAmmount = String.toFloat ammount })
+            in
+            ( { model | fbfForm = fbfForm }
+            , Cmd.none
+            , Nothing
+            )
+
         SetParticipantSigned formId signed ->
             let
                 updated =

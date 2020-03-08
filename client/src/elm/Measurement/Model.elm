@@ -139,6 +139,7 @@ type MsgMother
     | SelectLactationSign LactationSign Bool
     | ViewParticipantForm (Maybe ParticipantFormId)
     | SetCounselorSigned ParticipantFormId Bool
+    | SetDistributedAmmount String
     | SetParticipantSigned ParticipantFormId Bool
     | SendOutMsgMother OutMsgMother
 

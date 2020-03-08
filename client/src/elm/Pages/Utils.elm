@@ -1,4 +1,4 @@
-module Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, viewBoolInput, viewCustomLabel, viewLabel, viewNameFilter, viewQuestionLabel)
+module Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, viewBoolInput, viewCustomLabel, viewLabel, viewMeasurementInput, viewNameFilter, viewQuestionLabel)
 
 import Backend.Entities exposing (PersonId)
 import Backend.Person.Model exposing (Person)
@@ -86,6 +86,28 @@ viewLabel language translationId =
 viewQuestionLabel : Language -> TranslationId -> Html any
 viewQuestionLabel language translationId =
     viewCustomLabel language translationId "?" "label"
+
+
+viewMeasurementInput : Language -> Maybe Float -> (String -> msg) -> String -> TranslationId -> Html msg
+viewMeasurementInput language maybeCurrentValue setMsg inputClass unitTranslationId =
+    let
+        currentValue =
+            maybeCurrentValue
+                |> Maybe.map Debug.toString
+                |> Maybe.withDefault ""
+
+        inputAttrs =
+            [ type_ "number"
+            , Html.Attributes.min "0"
+            , onInput setMsg
+            , value currentValue
+            ]
+    in
+    div [ class <| "form-input measurement " ++ inputClass ]
+        [ input inputAttrs []
+        , div [ class "unit" ]
+            [ text <| translate language unitTranslationId ]
+        ]
 
 
 viewCustomLabel : Language -> TranslationId -> String -> String -> Html any

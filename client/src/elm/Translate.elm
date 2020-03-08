@@ -212,6 +212,7 @@ type TranslationId
     | DropzoneDefaultMessage
     | EditRelationship
     | EndGroupEncounter
+    | EnterAmmountDistributed
     | EnterPairingCode
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
@@ -220,6 +221,8 @@ type TranslationId
     | FamilyMembers
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
+    | FbfDistribution
+    | FbfToRecieve Activity Int
     | Fetch
     | FatherName
     | FatherNationalId
@@ -239,6 +242,7 @@ type TranslationId
     | HttpError Http.Error
     | IsCurrentlyBreastfeeding
     | KilogramShorthand
+    | KilogramsPerMonth
     | LastChecked
     | LastSuccesfulContactLabel
     | LevelOfEducationLabel
@@ -397,6 +401,7 @@ type TranslationId
     | Version
     | ViewProgressReport
     | Village
+    | WasFbfDistirbuted Activity
     | WelcomeUser String
     | WhatDoYouWantToDo
     | Year
@@ -480,7 +485,7 @@ translationSet trans =
                     }
 
                 MotherActivity MotherFbf ->
-                    { english = ""
+                    { english = "The ammount of CSB++ (FBF) is calculated bellow. If mother did not recieve the specified ammount, please record the ammount distributed, and select the reason why."
                     , kinyarwanda = Nothing
                     }
 
@@ -495,7 +500,7 @@ translationSet trans =
                        }
                 -}
                 ChildActivity ChildFbf ->
-                    { english = ""
+                    { english = "The ammount of CSB++ (FBF) is calculated bellow. If child did not recieve the specified ammount, please record the ammount distributed, and select the reason why."
                     , kinyarwanda = Nothing
                     }
 
@@ -1118,6 +1123,11 @@ translationSet trans =
             , kinyarwanda = Just "Gusoza igikorwa"
             }
 
+        EnterAmmountDistributed ->
+            { english = "Enter ammount distributed"
+            , kinyarwanda = Nothing
+            }
+
         EnterPairingCode ->
             { english = "Enter pairing code"
             , kinyarwanda = Just "Umubare uhuza igikoresho cy'ikoranabuhanga na apulikasiyo"
@@ -1240,6 +1250,23 @@ translationSet trans =
             , kinyarwanda = Just "Icyiciro cy'ubudehe umuryango uherereyemo"
             }
 
+        FbfDistribution ->
+            { english = "FBF Distribution"
+            , kinyarwanda = Nothing
+            }
+
+        FbfToRecieve activity ammount ->
+            case activity of
+                MotherActivity _ ->
+                    { english = "Mother should recieve: " ++ String.fromInt ammount ++ " kgs of CSB++ (FBF)"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity _ ->
+                    { english = "Child should recieve: " ++ String.fromInt ammount ++ " kgs of CSB++ (FBF)"
+                    , kinyarwanda = Nothing
+                    }
+
         FatherName ->
             { english = "Father's Name"
             , kinyarwanda = Nothing
@@ -1356,6 +1383,11 @@ translationSet trans =
         KilogramShorthand ->
             { english = "kg"
             , kinyarwanda = Just "kg"
+            }
+
+        KilogramsPerMonth ->
+            { english = "kgs / months"
+            , kinyarwanda = Nothing
             }
 
         LastChecked ->
@@ -2234,6 +2266,18 @@ translationSet trans =
             { english = "Village"
             , kinyarwanda = Just "Umudugudu"
             }
+
+        WasFbfDistirbuted activity ->
+            case activity of
+                ChildActivity _ ->
+                    { english = "Was this ammount distirbuted to the child"
+                    , kinyarwanda = Nothing
+                    }
+
+                MotherActivity _ ->
+                    { english = "Was this ammount distirbuted to the mother"
+                    , kinyarwanda = Nothing
+                    }
 
         WelcomeUser name ->
             { english = "Welcome " ++ name

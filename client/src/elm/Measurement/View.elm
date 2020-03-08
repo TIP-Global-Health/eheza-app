@@ -23,7 +23,7 @@ import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
-import Pages.Utils exposing (viewBoolInput, viewQuestionLabel)
+import Pages.Utils exposing (viewBoolInput, viewLabel, viewMeasurementInput, viewQuestionLabel)
 import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
@@ -1150,8 +1150,7 @@ viewLactation language measurement form =
                 ]
             , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
             , div [ class "ui form" ] <|
-                [ p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
-                , viewQuestionLabel language Trans.IsCurrentlyBreastfeeding
+                [ viewQuestionLabel language Trans.IsCurrentlyBreastfeeding
                 , viewBoolInput language
                     form.breastfeeding
                     (SelectLactationSign Breastfeeding)
@@ -1191,12 +1190,24 @@ viewMotherFbf language measurement form =
         ]
         [ div [ class "content" ]
             [ h3 [ class "ui header" ]
-                [ text <| translate language (Trans.ActivitiesTitle activity)
-                ]
+                [ text <| translate language Trans.FbfDistribution ]
             , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+            , div [ class "fbf-to-recieve" ] [ text <| translate language (Trans.FbfToRecieve activity 3) ]
             , div [ class "ui form" ] <|
-                p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
-                    :: []
+                [ viewQuestionLabel language <| Trans.WasFbfDistirbuted activity
+                , viewBoolInput language
+                    form.distributedFully
+                    (SelectLactationSign Breastfeeding)
+                    "fbf-distirbution"
+                    Nothing
+                , viewLabel language Trans.EnterAmmountDistributed
+                , viewMeasurementInput
+                    language
+                    form.distributedAmmount
+                    SetDistributedAmmount
+                    "distributed-ammount"
+                    Trans.KilogramsPerMonth
+                ]
             ]
         , div [ class "actions" ] <|
             saveButton
