@@ -605,6 +605,10 @@ h3.ui.header {
   text-align: right;
   height: 50px;
   color: $color-text;
+
+  &.pairing-code {
+    background: $color-light-gray;
+  }
 }
 
 .ui.form input[type=number],

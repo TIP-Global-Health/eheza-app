@@ -297,6 +297,7 @@ viewPairingForm language device model =
                     [ placeholder <| translate language Translate.EnterPairingCode
                     , type_ "text"
                     , name "pairing-code"
+                    , class "pairing-code"
                     , onInput SetCode
                     , value model.code
                     , autofocus True
