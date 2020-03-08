@@ -128,6 +128,9 @@ type MsgChild
     = SelectNutritionSign Bool ChildNutritionSign
     | SelectCounselingTopic Bool CounselingTopicId
     | SendOutMsgChild OutMsgChild
+    | SetDistributedAmmountForChild String
+    | SetDistributedFullyForChild Bool
+    | SetDistributoinNoticeForChild DistributionNotice
     | UpdateHeight String
     | UpdateMuac String
     | UpdateWeight String
@@ -139,7 +142,9 @@ type MsgMother
     | SelectLactationSign LactationSign Bool
     | ViewParticipantForm (Maybe ParticipantFormId)
     | SetCounselorSigned ParticipantFormId Bool
-    | SetDistributedAmmount String
+    | SetDistributedAmmountForMother String
+    | SetDistributedFullyForMother Bool
+    | SetDistributoinNoticeForMother DistributionNotice
     | SetParticipantSigned ParticipantFormId Bool
     | SendOutMsgMother OutMsgMother
 

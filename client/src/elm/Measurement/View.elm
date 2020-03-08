@@ -23,7 +23,7 @@ import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
-import Pages.Utils exposing (viewBoolInput, viewLabel, viewMeasurementInput, viewQuestionLabel)
+import Pages.Utils exposing (viewBoolInput, viewCheckBoxSelectInput, viewLabel, viewMeasurementInput, viewQuestionLabel)
 import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
@@ -644,33 +644,8 @@ viewChildFbf language measurement form =
 
         saveMsg =
             Nothing
-
-        -- if EverySet.isEmpty signs then
-        --     Nothing
-        --
-        -- else
-        --     Just <| SendOutMsgChild <| SaveChildNutritionSigns existingId signs
     in
-    div
-        [ class "ui full segment fbf"
-        , id "childFbfEntryForm"
-        ]
-        [ div [ class "content" ]
-            [ h3 [ class "ui header" ]
-                [ text <| translate language (Trans.ActivitiesTitle activity)
-                ]
-            , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
-            , div [ class "ui form" ] <|
-                p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
-                    :: []
-            ]
-        , div [ class "actions" ] <|
-            saveButton
-                language
-                saveMsg
-                measurement
-                Nothing
-        ]
+    viewFbfForm language measurement activity SetDistributedFullyForChild SetDistributedAmmountForChild SetDistributoinNoticeForChild form
 
 
 
@@ -1177,37 +1152,71 @@ viewMotherFbf language measurement form =
 
         saveMsg =
             Nothing
+    in
+    viewFbfForm language measurement activity SetDistributedFullyForMother SetDistributedAmmountForMother SetDistributoinNoticeForMother form
 
-        -- if EverySet.isEmpty signs then
-        --     Nothing
-        --
-        -- else
-        --     Just <| SendOutMsgChild <| SaveChildNutritionSigns existingId signs
+
+viewFbfForm :
+    Language
+    -> MeasurementData (Maybe a)
+    -> Activity
+    -> (Bool -> msg)
+    -> (String -> msg)
+    -> (DistributionNotice -> msg)
+    -> {- msg -> -} FbfForm
+    -> Html msg
+viewFbfForm language measurement activity setDistributedFullyMsg setDistributedAmmountMsg setDistributoinNoticeMsg {- saveMsg -} form =
+    let
+        saveMsg =
+            Nothing
+
+        formConstantContent =
+            [ viewQuestionLabel language <| Trans.WasFbfDistirbuted activity
+            , viewBoolInput language
+                form.distributedFully
+                setDistributedFullyMsg
+                "fbf-distirbution"
+                Nothing
+            ]
+
+        formDynamicalContent =
+            form.distributedFully
+                |> Maybe.map
+                    (\distributedFully ->
+                        if distributedFully then
+                            []
+
+                        else
+                            [ viewLabel language Trans.EnterAmmountDistributed
+                            , viewMeasurementInput
+                                language
+                                form.distributedAmmount
+                                setDistributedAmmountMsg
+                                "distributed-ammount"
+                                Trans.KilogramsPerMonth
+                            , viewLabel language <| Trans.WhyDifferentFbfAmmount activity
+                            , viewCheckBoxSelectInput language
+                                [ DistributedPartiallyLackOfStock, DistributedPartiallyOther ]
+                                []
+                                form.distributionNotice
+                                setDistributoinNoticeMsg
+                                Trans.DistributionNotice
+                            ]
+                    )
+                |> Maybe.withDefault []
     in
     div
         [ class "ui full segment fbf"
-        , id "motherFbfEntryForm"
+        , id "fbfEntryForm"
         ]
         [ div [ class "content" ]
             [ h3 [ class "ui header" ]
                 [ text <| translate language Trans.FbfDistribution ]
             , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
             , div [ class "fbf-to-recieve" ] [ text <| translate language (Trans.FbfToRecieve activity 3) ]
-            , div [ class "ui form" ] <|
-                [ viewQuestionLabel language <| Trans.WasFbfDistirbuted activity
-                , viewBoolInput language
-                    form.distributedFully
-                    (SelectLactationSign Breastfeeding)
-                    "fbf-distirbution"
-                    Nothing
-                , viewLabel language Trans.EnterAmmountDistributed
-                , viewMeasurementInput
-                    language
-                    form.distributedAmmount
-                    SetDistributedAmmount
-                    "distributed-ammount"
-                    Trans.KilogramsPerMonth
-                ]
+            , formConstantContent
+                ++ formDynamicalContent
+                |> div [ class "ui form" ]
             ]
         , div [ class "actions" ] <|
             saveButton

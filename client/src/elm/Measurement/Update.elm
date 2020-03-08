@@ -95,6 +95,39 @@ updateChild msg model =
             , Just outMsg
             )
 
+        SetDistributedAmmountForChild ammount ->
+            let
+                fbfForm =
+                    model.fbfForm
+                        |> (\form -> { form | distributedAmmount = String.toFloat ammount })
+            in
+            ( { model | fbfForm = fbfForm }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetDistributedFullyForChild isFully ->
+            let
+                fbfForm =
+                    model.fbfForm
+                        |> (\form -> { form | distributedFully = Just isFully })
+            in
+            ( { model | fbfForm = fbfForm }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetDistributoinNoticeForChild notice ->
+            let
+                fbfForm =
+                    model.fbfForm
+                        |> (\form -> { form | distributionNotice = Just notice })
+            in
+            ( { model | fbfForm = fbfForm }
+            , Cmd.none
+            , Nothing
+            )
+
         UpdateWeight val ->
             ( { model | weight = val }
             , Cmd.none
@@ -175,11 +208,33 @@ updateMother measurements msg model =
             )
                 model.participantConsent
 
-        SetDistributedAmmount ammount ->
+        SetDistributedAmmountForMother ammount ->
             let
                 fbfForm =
                     model.fbfForm
                         |> (\form -> { form | distributedAmmount = String.toFloat ammount })
+            in
+            ( { model | fbfForm = fbfForm }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetDistributedFullyForMother isFully ->
+            let
+                fbfForm =
+                    model.fbfForm
+                        |> (\form -> { form | distributedFully = Just isFully })
+            in
+            ( { model | fbfForm = fbfForm }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetDistributoinNoticeForMother notice ->
+            let
+                fbfForm =
+                    model.fbfForm
+                        |> (\form -> { form | distributionNotice = Just notice })
             in
             ( { model | fbfForm = fbfForm }
             , Cmd.none

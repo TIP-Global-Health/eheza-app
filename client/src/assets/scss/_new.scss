@@ -287,12 +287,16 @@ div.page-activity {
       padding-top: 10px;
     }
 
+    .label {
+      margin-bottom: 10px;
+    }
+
     .form-input {
       margin-bottom: 30px;
 
       // Number inputs
       &.measurement {
-        margin-bottom: 10px;
+        height: 50px;
 
         .unit {
           float: left;

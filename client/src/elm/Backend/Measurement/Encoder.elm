@@ -237,6 +237,19 @@ encodeLactationSign sign =
             string "none"
 
 
+distributionNoticeAsString : DistributionNotice -> String
+distributionNoticeAsString notice =
+    case notice of
+        DistributedFully ->
+            "complete"
+
+        DistributedPartiallyLackOfStock ->
+            "lack-of-stock"
+
+        DistributedPartiallyOther ->
+            "other"
+
+
 encodeChildMeasurementList : ChildMeasurementList -> Value
 encodeChildMeasurementList measurements =
     object

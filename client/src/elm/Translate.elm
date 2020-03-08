@@ -26,7 +26,7 @@ import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), DistributionNotice(..), FamilyPlanningSign(..), MuacIndication(..))
 import Backend.Person.Model exposing (EducationLevel(..), Gender(..), HIVStatus(..), MaritalStatus(..), ModeOfDelivery(..), VaginalDelivery(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month)
@@ -207,6 +207,7 @@ type TranslationId
     | Device
     | DeviceNotAuthorized
     | DeviceStatus
+    | DistributionNotice DistributionNotice
     | District
     | DOB
     | DropzoneDefaultMessage
@@ -402,6 +403,7 @@ type TranslationId
     | ViewProgressReport
     | Village
     | WasFbfDistirbuted Activity
+    | WhyDifferentFbfAmmount Activity
     | WelcomeUser String
     | WhatDoYouWantToDo
     | Year
@@ -1097,6 +1099,23 @@ translationSet trans =
             { english = "Device Status"
             , kinyarwanda = Just "Uko igikoresho cy'ikoranabuhanga gihagaze"
             }
+
+        DistributionNotice notice ->
+            case notice of
+                DistributedFully ->
+                    { english = "Complete"
+                    , kinyarwanda = Nothing
+                    }
+
+                DistributedPartiallyLackOfStock ->
+                    { english = "Lack of stock"
+                    , kinyarwanda = Nothing
+                    }
+
+                DistributedPartiallyOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
 
         District ->
             { english = "District"
@@ -2276,6 +2295,18 @@ translationSet trans =
 
                 MotherActivity _ ->
                     { english = "Was this ammount distirbuted to the mother"
+                    , kinyarwanda = Nothing
+                    }
+
+        WhyDifferentFbfAmmount activity ->
+            case activity of
+                ChildActivity _ ->
+                    { english = "Select why child recieverd a different ammount of FBF"
+                    , kinyarwanda = Nothing
+                    }
+
+                MotherActivity _ ->
+                    { english = "Select why mother recieverd a different ammount of FBF"
                     , kinyarwanda = Nothing
                     }
 
