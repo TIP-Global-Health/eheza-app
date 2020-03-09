@@ -139,6 +139,9 @@ delete_profile_contrib
 # Run the build script (drush make + extra's).
 drupal_make
 
+# Composer install
+composer_install
+
 # Symlink extra modules (if any).
 symlink_externals
 
