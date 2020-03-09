@@ -48,7 +48,7 @@ viewContent language currentDate maybeVillageId db =
                 |> Maybe.andThen
                     (\villageId ->
                         -- There is one clinic for each village, so, if we got village ID,
-                        -- we should be able to find the ID of it's clinic.
+                        -- we should be able to find the ID of its clinic.
                         getVillageClinicId villageId db
                             |> Maybe.map
                                 (\clinicId ->

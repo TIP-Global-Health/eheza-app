@@ -32,14 +32,14 @@ function hedley_health_center_node_insert($node) {
     'uid' => $node->uid,
   ]);
 
-  $wrapper = entity_metadata_wrapper('node', $clinic_node);
-  $wrapper->title->set("$village_name CHW group");
-  $wrapper->field_health_center->set($health_center_id);
-  $wrapper->field_village_ref->set($node->nid);
-  $wrapper->field_group_type->set('chw');
-  $wrapper->save();
+  $clinic_wrapper = entity_metadata_wrapper('node', $clinic_node);
+  $clinic_wrapper->title->set("$village_name CHW group");
+  $clinic_wrapper->field_health_center->set($health_center_id);
+  $clinic_wrapper->field_village_ref->set($node->nid);
+  $clinic_wrapper->field_group_type->set('chw');
+  $clinic_wrapper->save();
 
-  $clinic = $wrapper->getIdentifier();
+  $clinic = $clinic_wrapper->getIdentifier();
 
   // Add participants to CHW group, based on mother's village.
   $residents_query = new EntityFieldQuery();
