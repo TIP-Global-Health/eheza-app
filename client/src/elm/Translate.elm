@@ -1306,7 +1306,7 @@ translationSet trans =
             case display of
                 InitialResultsHidden ->
                     { english = "Display all mothers / caregivers"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kugaragaza ababyeyi bose / abarezi"
                     }
 
                 InitialResultsShown ->
