@@ -575,6 +575,10 @@ h3.ui.header {
     margin-bottom: 30px;
     padding: 17px 15px;
   }
+
+  .input-wrapper {
+    border: 2px solid $color-gray-border;
+  }
 }
 
 .ui.input {
@@ -609,8 +613,11 @@ h3.ui.header {
   width: 300px; //263px;
   text-align: right;
   height: 50px;
-  background: #e6e6e6;
   color: $color-text;
+
+  &.pairing-code {
+    background: $color-light-gray;
+  }
 }
 
 .ui.form input[type=number],
@@ -623,7 +630,6 @@ h3.ui.header {
   width: 300px; //263px;
   text-align: right;
   height: 50px;
-  background: #e6e6e6;
   color: $color-text;
 }
 
