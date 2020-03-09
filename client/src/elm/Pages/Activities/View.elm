@@ -14,6 +14,7 @@ import List as List
 import LocalData
 import Pages.Activities.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.Utils exposing (backFromSessionPage)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, viewModal)
 
@@ -112,11 +113,7 @@ view language nurse ( sessionId, session ) model =
                     ( noPendingActivities, translate language Trans.NoActivitiesCompleted )
 
         goBackPage =
-            if isCommunityHealthWorker nurse then
-                UserPage ClinicalPage
-
-            else
-                UserPage <| ClinicsPage (Just session.offlineSession.session.clinicId)
+            backFromSessionPage nurse session.offlineSession
 
         endSessionAction =
             if isCommunityHealthWorker nurse then

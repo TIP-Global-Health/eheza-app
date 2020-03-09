@@ -15,7 +15,7 @@ import Html.Events exposing (onClick)
 import LocalData
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participants.Model exposing (Model, Msg(..), Tab(..))
-import Pages.Utils exposing (filterDependentNoResultsMessage, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
+import Pages.Utils exposing (backFromSessionPage, filterDependentNoResultsMessage, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
 
@@ -150,11 +150,7 @@ view language nurse ( sessionId, session ) model =
                 Nothing
 
         goBackPage =
-            if isCommunityHealthWorker nurse then
-                UserPage ClinicalPage
-
-            else
-                UserPage <| ClinicsPage (Just session.offlineSession.session.clinicId)
+            backFromSessionPage nurse session.offlineSession
 
         endSessionAction =
             if isCommunityHealthWorker nurse then

@@ -1,12 +1,15 @@
-module Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
+module Pages.Utils exposing (backFromSessionPage, filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
 
 import Backend.Entities exposing (PersonId)
+import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Pages.Page exposing (Page(..), UserPage(..))
 import Translate exposing (Language, TranslationId, translate)
 
 
@@ -75,3 +78,12 @@ viewNameFilter language filterInput setFilterMsg =
             ]
             [ text <| translate language Translate.ShowAll ]
         ]
+
+
+backFromSessionPage : Nurse -> OfflineSession -> Page
+backFromSessionPage nurse offlineSession =
+    if isCommunityHealthWorker nurse then
+        UserPage ClinicalPage
+
+    else
+        UserPage <| ClinicsPage (Just offlineSession.session.clinicId)
