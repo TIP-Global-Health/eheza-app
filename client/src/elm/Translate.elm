@@ -1311,7 +1311,7 @@ translationSet trans =
 
                 InitialResultsShown ->
                     { english = "Hide all mothers / caregivers"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Hisha ababyeyi bose / abarezi"
                     }
 
         KilogramShorthand ->
