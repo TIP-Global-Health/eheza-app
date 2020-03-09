@@ -128,7 +128,7 @@ type MsgChild
     = SelectNutritionSign Bool ChildNutritionSign
     | SelectCounselingTopic Bool CounselingTopicId
     | SendOutMsgChild OutMsgChild
-    | SetDistributedAmmountForChild String
+    | SetDistributedAmountForChild String
     | SetDistributedFullyForChild Bool
     | SetDistributoinNoticeForChild DistributionNotice
     | UpdateHeight String
@@ -142,7 +142,7 @@ type MsgMother
     | SelectLactationSign LactationSign Bool
     | ViewParticipantForm (Maybe ParticipantFormId)
     | SetCounselorSigned ParticipantFormId Bool
-    | SetDistributedAmmountForMother String
+    | SetDistributedAmountForMother String
     | SetDistributedFullyForMother Bool
     | SetDistributoinNoticeForMother DistributionNotice
     | SetParticipantSigned ParticipantFormId Bool
@@ -164,13 +164,15 @@ type OutMsgChild
     | SaveCounselingSession (Maybe CounselingSessionId) CounselingTiming (EverySet CounselingTopicId)
     | SaveChildNutritionSigns (Maybe ChildNutritionId) (EverySet ChildNutritionSign)
     | SavePhoto (Maybe PhotoId) PhotoUrl
+    | SaveChildFbf (Maybe ChildFbfId) FbfValue
 
 
 type OutMsgMother
     = SaveAttendance (Maybe AttendanceId) Bool
     | SaveFamilyPlanningSigns (Maybe FamilyPlanningId) (EverySet FamilyPlanningSign)
     | SaveCompletedForm (Maybe ParticipantConsentId) ParticipantFormId Language
-    | SaveLactation (Maybe LactationId) LactationForm
+    | SaveLactation (Maybe LactationId) (EverySet LactationSign)
+    | SaveMotherFbf (Maybe MotherFbfId) FbfValue
 
 
 emptyModelChild : ModelChild

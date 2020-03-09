@@ -213,7 +213,7 @@ type TranslationId
     | DropzoneDefaultMessage
     | EditRelationship
     | EndGroupEncounter
-    | EnterAmmountDistributed
+    | EnterAmountDistributed
     | EnterPairingCode
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
@@ -404,7 +404,7 @@ type TranslationId
     | ViewProgressReport
     | Village
     | WasFbfDistirbuted Activity
-    | WhyDifferentFbfAmmount Activity
+    | WhyDifferentFbfAmount Activity
     | WelcomeUser String
     | WhatDoYouWantToDo
     | Year
@@ -488,7 +488,7 @@ translationSet trans =
                     }
 
                 MotherActivity MotherFbf ->
-                    { english = "The ammount of CSB++ (FBF) is calculated bellow. If mother did not recieve the specified ammount, please record the ammount distributed, and select the reason why."
+                    { english = "The amount of CSB++ (FBF) is calculated bellow. If mother did not recieve the specified amount, please record the amount distributed, and select the reason why."
                     , kinyarwanda = Nothing
                     }
 
@@ -503,7 +503,7 @@ translationSet trans =
                        }
                 -}
                 ChildActivity ChildFbf ->
-                    { english = "The ammount of CSB++ (FBF) is calculated bellow. If child did not recieve the specified ammount, please record the ammount distributed, and select the reason why."
+                    { english = "The amount of CSB++ (FBF) is calculated bellow. If child did not recieve the specified amount, please record the amount distributed, and select the reason why."
                     , kinyarwanda = Nothing
                     }
 
@@ -1143,8 +1143,8 @@ translationSet trans =
             , kinyarwanda = Just "Gusoza igikorwa"
             }
 
-        EnterAmmountDistributed ->
-            { english = "Enter ammount distributed"
+        EnterAmountDistributed ->
+            { english = "Enter amount distributed"
             , kinyarwanda = Nothing
             }
 
@@ -1275,15 +1275,15 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        FbfToRecieve activity ammount ->
+        FbfToRecieve activity amount ->
             case activity of
                 MotherActivity _ ->
-                    { english = "Mother should recieve: " ++ String.fromInt ammount ++ " kgs of CSB++ (FBF)"
+                    { english = "Mother should recieve: " ++ String.fromInt amount ++ " kgs of CSB++ (FBF)"
                     , kinyarwanda = Nothing
                     }
 
                 ChildActivity _ ->
-                    { english = "Child should recieve: " ++ String.fromInt ammount ++ " kgs of CSB++ (FBF)"
+                    { english = "Child should recieve: " ++ String.fromInt amount ++ " kgs of CSB++ (FBF)"
                     , kinyarwanda = Nothing
                     }
 
@@ -2295,24 +2295,24 @@ translationSet trans =
         WasFbfDistirbuted activity ->
             case activity of
                 ChildActivity _ ->
-                    { english = "Was this ammount distirbuted to the child"
+                    { english = "Was this amount distirbuted to the child"
                     , kinyarwanda = Nothing
                     }
 
                 MotherActivity _ ->
-                    { english = "Was this ammount distirbuted to the mother"
+                    { english = "Was this amount distirbuted to the mother"
                     , kinyarwanda = Nothing
                     }
 
-        WhyDifferentFbfAmmount activity ->
+        WhyDifferentFbfAmount activity ->
             case activity of
                 ChildActivity _ ->
-                    { english = "Select why child recieverd a different ammount of FBF"
+                    { english = "Select why child recieverd a different amount of FBF"
                     , kinyarwanda = Nothing
                     }
 
                 MotherActivity _ ->
-                    { english = "Select why mother recieverd a different ammount of FBF"
+                    { english = "Select why mother recieverd a different amount of FBF"
                     , kinyarwanda = Nothing
                     }
 

@@ -95,11 +95,11 @@ updateChild msg model =
             , Just outMsg
             )
 
-        SetDistributedAmmountForChild ammount ->
+        SetDistributedAmountForChild amount ->
             let
                 fbfForm =
                     model.fbfForm
-                        |> (\form -> { form | distributedAmmount = String.toFloat ammount })
+                        |> (\form -> { form | distributedAmount = String.toFloat amount })
             in
             ( { model | fbfForm = fbfForm }
             , Cmd.none
@@ -208,11 +208,11 @@ updateMother measurements msg model =
             )
                 model.participantConsent
 
-        SetDistributedAmmountForMother ammount ->
+        SetDistributedAmountForMother amount ->
             let
                 fbfForm =
                     model.fbfForm
-                        |> (\form -> { form | distributedAmmount = String.toFloat ammount })
+                        |> (\form -> { form | distributedAmount = String.toFloat amount })
             in
             ( { model | fbfForm = fbfForm }
             , Cmd.none

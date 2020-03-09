@@ -1,4 +1,4 @@
-module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, fbfAmmountByBirthDate, fbfFormToValue, fbfValueToForm, getCurrentAndPrevious, lactationFormToSigns, lactationSignsToForm, mapMeasurementData, muacIndication, splitChildMeasurements, splitMotherMeasurements)
+module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, fbfAmountByBirthDate, fbfFormToValue, fbfValueToForm, getCurrentAndPrevious, lactationFormToSigns, lactationSignsToForm, mapMeasurementData, muacIndication, splitChildMeasurements, splitMotherMeasurements)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -244,18 +244,14 @@ fbfValueToForm value =
         distributedFully =
             value.distributionNotice == DistributedFully |> Just
     in
-    FbfForm distributedFully (Just value.distributedAmmount) (Just value.distributionNotice)
+    FbfForm distributedFully (Just value.distributedAmount) (Just value.distributionNotice)
 
 
-fbfFormToValue : FbfForm -> FbfValue
-fbfFormToValue form =
+fbfFormToValue : Int -> FbfForm -> FbfValue
+fbfFormToValue defaultAmount form =
     let
-        ammountForMother =
-            4
-
-        -- Todo: if child, ammount based on child age.
         defaultValue =
-            FbfValue ammountForMother DistributedFully
+            FbfValue (toFloat defaultAmount) DistributedFully
     in
     form.distributedFully
         |> Maybe.map
@@ -265,10 +261,10 @@ fbfFormToValue form =
 
                 else
                     Maybe.map2
-                        (\distributedAmmount distributionNotice ->
-                            FbfValue distributedAmmount distributionNotice
+                        (\distributedAmount distributionNotice ->
+                            FbfValue distributedAmount distributionNotice
                         )
-                        form.distributedAmmount
+                        form.distributedAmount
                         form.distributionNotice
                         -- We should never get here, as we always expect to have
                         -- these fields filled, when distribution is not full
@@ -279,8 +275,8 @@ fbfFormToValue form =
         |> Maybe.withDefault defaultValue
 
 
-fbfAmmountByBirthDate : NominalDate -> NominalDate -> Int
-fbfAmmountByBirthDate currentDate birthDate =
+fbfAmountByBirthDate : NominalDate -> NominalDate -> Int
+fbfAmountByBirthDate currentDate birthDate =
     let
         diffMonths =
             diffCalendarMonths birthDate currentDate

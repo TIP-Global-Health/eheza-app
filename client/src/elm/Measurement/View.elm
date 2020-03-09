@@ -9,7 +9,7 @@ import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValues, fbfAmmountByBirthDate, mapMeasurementData, muacIndication)
+import Backend.Measurement.Utils exposing (currentValues, fbfAmountByBirthDate, fbfFormToValue, lactationFormToSigns, mapMeasurementData, muacIndication)
 import Backend.Person.Model exposing (Gender, Person)
 import Backend.Session.Model exposing (EditableSession)
 import EverySet exposing (EverySet)
@@ -639,24 +639,44 @@ viewChildFbf language currentDate measurement maybeBirthDate form =
         activity =
             ChildActivity ChildFbf
 
-        ammount =
+        amount =
             maybeBirthDate
-                |> Maybe.map (fbfAmmountByBirthDate currentDate)
+                |> Maybe.map (fbfAmountByBirthDate currentDate)
                 |> Maybe.withDefault 0
 
         existingId =
             Maybe.map Tuple.first measurement.current
 
         saveMsg =
-            Nothing
+            form.distributedFully
+                |> Maybe.andThen
+                    (\distributedFully ->
+                        if distributedFully then
+                            { form | distributedAmount = Just (toFloat amount), distributionNotice = Just DistributedFully }
+                                |> fbfFormToValue amount
+                                |> SaveChildFbf existingId
+                                |> SendOutMsgChild
+                                |> Just
+
+                        else
+                            Maybe.map2
+                                (\_ _ ->
+                                    fbfFormToValue amount form
+                                        |> SaveChildFbf existingId
+                                        |> SendOutMsgChild
+                                )
+                                form.distributedAmount
+                                form.distributionNotice
+                    )
     in
     viewFbfForm language
         measurement
         activity
-        ammount
+        amount
         SetDistributedFullyForChild
-        SetDistributedAmmountForChild
+        SetDistributedAmountForChild
         SetDistributoinNoticeForChild
+        saveMsg
         form
 
 
@@ -1123,7 +1143,9 @@ viewLactation language measurement form =
             form.breastfeeding
                 |> Maybe.map
                     (\_ ->
-                        SendOutMsgMother <| SaveLactation existingId form
+                        lactationFormToSigns form
+                            |> SaveLactation existingId
+                            |> SendOutMsgMother
                     )
     in
     div
@@ -1162,19 +1184,39 @@ viewMotherFbf language measurement form =
         existingId =
             Maybe.map Tuple.first measurement.current
 
-        saveMsg =
-            Nothing
-
-        fbfAmmountForMother =
+        fbfAmountForMother =
             3
+
+        saveMsg =
+            form.distributedFully
+                |> Maybe.andThen
+                    (\distributedFully ->
+                        if distributedFully then
+                            { form | distributedAmount = Just fbfAmountForMother, distributionNotice = Just DistributedFully }
+                                |> fbfFormToValue fbfAmountForMother
+                                |> SaveMotherFbf existingId
+                                |> SendOutMsgMother
+                                |> Just
+
+                        else
+                            Maybe.map2
+                                (\_ _ ->
+                                    fbfFormToValue fbfAmountForMother form
+                                        |> SaveMotherFbf existingId
+                                        |> SendOutMsgMother
+                                )
+                                form.distributedAmount
+                                form.distributionNotice
+                    )
     in
     viewFbfForm language
         measurement
         activity
-        fbfAmmountForMother
+        fbfAmountForMother
         SetDistributedFullyForMother
-        SetDistributedAmmountForMother
+        SetDistributedAmountForMother
         SetDistributoinNoticeForMother
+        saveMsg
         form
 
 
@@ -1186,13 +1228,11 @@ viewFbfForm :
     -> (Bool -> msg)
     -> (String -> msg)
     -> (DistributionNotice -> msg)
-    -> {- msg -> -} FbfForm
+    -> Maybe msg
+    -> FbfForm
     -> Html msg
-viewFbfForm language measurement activity ammount setDistributedFullyMsg setDistributedAmmountMsg setDistributoinNoticeMsg {- saveMsg -} form =
+viewFbfForm language measurement activity amount setDistributedFullyMsg setDistributedAmountMsg setDistributoinNoticeMsg saveMsg form =
     let
-        saveMsg =
-            Nothing
-
         formConstantContent =
             [ viewQuestionLabel language <| Trans.WasFbfDistirbuted activity
             , viewBoolInput language
@@ -1210,14 +1250,14 @@ viewFbfForm language measurement activity ammount setDistributedFullyMsg setDist
                             []
 
                         else
-                            [ viewLabel language Trans.EnterAmmountDistributed
+                            [ viewLabel language Trans.EnterAmountDistributed
                             , viewMeasurementInput
                                 language
-                                form.distributedAmmount
-                                setDistributedAmmountMsg
-                                "distributed-ammount"
+                                form.distributedAmount
+                                setDistributedAmountMsg
+                                "distributed-amount"
                                 Trans.KilogramsPerMonth
-                            , viewLabel language <| Trans.WhyDifferentFbfAmmount activity
+                            , viewLabel language <| Trans.WhyDifferentFbfAmount activity
                             , viewCheckBoxSelectInput language
                                 [ DistributedPartiallyLackOfStock, DistributedPartiallyOther ]
                                 []
@@ -1236,7 +1276,7 @@ viewFbfForm language measurement activity ammount setDistributedFullyMsg setDist
             [ h3 [ class "ui header" ]
                 [ text <| translate language Trans.FbfDistribution ]
             , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
-            , div [ class "fbf-to-recieve" ] [ text <| translate language (Trans.FbfToRecieve activity ammount) ]
+            , div [ class "fbf-to-recieve" ] [ text <| translate language (Trans.FbfToRecieve activity amount) ]
             , formConstantContent
                 ++ formDynamicalContent
                 |> div [ class "ui form" ]
