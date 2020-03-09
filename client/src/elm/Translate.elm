@@ -231,6 +231,7 @@ type TranslationId
     | GenderLabel
     | GoHome
     | GroupAssessment
+    | GroupEncounter
     | HaveYouSynced
     | HealthCenter
     | HIVStatus HIVStatus
@@ -1235,6 +1236,11 @@ translationSet trans =
         GroupAssessment ->
             { english = "Group Assessment"
             , kinyarwanda = Just "Gukorera itsinda"
+            }
+
+        GroupEncounter ->
+            { english = "Group Encounter"
+            , kinyarwanda = Nothing
             }
 
         HaveYouSynced ->
