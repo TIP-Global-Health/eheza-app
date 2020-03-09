@@ -14,7 +14,7 @@ import Html.Events exposing (onClick)
 import LocalData
 import Maybe.Extra
 import Measurement.Model
-import Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getMotherForm)
+import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Measurement.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
