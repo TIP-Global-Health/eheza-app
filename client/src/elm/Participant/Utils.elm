@@ -13,8 +13,8 @@ import Participant.Model exposing (Participant, ParticipantId(..))
 import RemoteData exposing (RemoteData(..))
 
 
-childParticipant : NominalDate -> Participant PersonId Person ChildActivity Measurement.Model.MsgChild
-childParticipant currentDate =
+childParticipant : Participant PersonId Person ChildActivity Measurement.Model.MsgChild NominalDate
+childParticipant =
     { getAvatarUrl = .avatarUrl
     , getBirthDate = .birthDate
     , getMotherId = \childId session -> getMyMother childId session.offlineSession |> Maybe.map Tuple.first
@@ -24,8 +24,8 @@ childParticipant currentDate =
     , getVillage = .village
     , iconClass = "child"
     , showProgressReportTab = True
-    , summarizeActivitiesForParticipant = summarizeChildParticipant currentDate
-    , summarizeParticipantsForActivity = summarizeChildActivity currentDate
+    , summarizeActivitiesForParticipant = summarizeChildParticipant
+    , summarizeParticipantsForActivity = summarizeChildActivity
     , tagActivity = ChildActivity
     , toChildId = Just
     , toMotherId = always Nothing
@@ -34,7 +34,7 @@ childParticipant currentDate =
     }
 
 
-motherParticipant : Participant PersonId Person MotherActivity Measurement.Model.MsgMother
+motherParticipant : Participant PersonId Person MotherActivity Measurement.Model.MsgMother NominalDate
 motherParticipant =
     { getAvatarUrl = .avatarUrl
     , getBirthDate = .birthDate

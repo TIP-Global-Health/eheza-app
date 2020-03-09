@@ -307,7 +307,7 @@ viewFloatForm config language currentDate child measurements zscores model =
                     [ div
                         [ class "eleven wide column" ]
                         [ div [ class "ui right labeled input" ]
-                            [ input inputAttrs []
+                            [ div [ class "input-wrapper" ] [ input inputAttrs [] ]
                             , div
                                 [ class "ui basic label" ]
                                 [ text <| translate language config.unit ]

@@ -1208,7 +1208,7 @@ summarizeByParticipant currentDate session checkedIn_ =
 
                 mothers =
                     Dict.map
-                        (\motherId _ -> summarizeMotherParticipant motherId session)
+                        (\motherId _ -> summarizeMotherParticipant currentDate motherId session)
                         checkedIn.mothers
             in
             { children = children
@@ -1242,7 +1242,7 @@ summarizeByActivity currentDate session checkedIn_ =
                         |> List.map
                             (\activity ->
                                 ( activity
-                                , summarizeMotherActivity activity session checkedIn
+                                , summarizeMotherActivity currentDate activity session checkedIn
                                 )
                             )
                         |> Dict.fromList
