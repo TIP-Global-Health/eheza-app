@@ -1,4 +1,4 @@
-module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), attendanceEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, fbfEndpoint, healthCenterEndpoint, heightEndpoint, lactationEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, relationshipEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, weightEndpoint)
+module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), attendanceEndpoint, childFbfEndpoint, childMeasurementListEndpoint, clinicEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, fbfEndpoint, healthCenterEndpoint, heightEndpoint, lactationEndpoint, motherFbfEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, relationshipEndpoint, sessionEndpoint, swEndpoint, syncDataEndpoint, weightEndpoint)
 
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
@@ -162,9 +162,19 @@ lactationEndpoint =
         |> withValueEncoder (object << encodeLactation)
 
 
-fbfEndpoint : ReadWriteEndPoint Error (EntityUuid a) Fbf Fbf ()
-fbfEndpoint =
-    swEndpoint "nodes/fbf" decodeFbf
+childFbfEndpoint : ReadWriteEndPoint Error ChildFbfId Fbf Fbf ()
+childFbfEndpoint =
+    fbfEndpoint "nodes/child_fbf"
+
+
+motherFbfEndpoint : ReadWriteEndPoint Error MotherFbfId Fbf Fbf ()
+motherFbfEndpoint =
+    fbfEndpoint "nodes/mother_fbf"
+
+
+fbfEndpoint : String -> ReadWriteEndPoint Error (EntityUuid a) Fbf Fbf ()
+fbfEndpoint path =
+    swEndpoint path decodeFbf
         |> withValueEncoder (object << encodeFbf)
 
 

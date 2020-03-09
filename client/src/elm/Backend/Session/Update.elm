@@ -223,7 +223,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     , nurse = nurseId
                                     , value = value
                                     }
-                                        |> sw.post fbfEndpoint
+                                        |> sw.post childFbfEndpoint
                                         |> withoutDecoder
                                         |> toCmd (RemoteData.fromResult >> HandleSaveFbf childId)
 
@@ -231,7 +231,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     encodeFbfValue value
                                         |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
                                         |> object
-                                        |> sw.patchAny fbfEndpoint id
+                                        |> sw.patchAny childFbfEndpoint id
                                         |> withoutDecoder
                                         |> toCmd (RemoteData.fromResult >> HandleSaveFbf childId)
                     in
@@ -337,7 +337,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     , nurse = nurseId
                                     , value = value
                                     }
-                                        |> sw.post fbfEndpoint
+                                        |> sw.post motherFbfEndpoint
                                         |> withoutDecoder
                                         |> toCmd (RemoteData.fromResult >> HandleSaveFbf motherId)
 
@@ -345,7 +345,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                                     encodeFbfValue value
                                         |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
                                         |> object
-                                        |> sw.patchAny fbfEndpoint id
+                                        |> sw.patchAny motherFbfEndpoint id
                                         |> withoutDecoder
                                         |> toCmd (RemoteData.fromResult >> HandleSaveFbf motherId)
                     in
