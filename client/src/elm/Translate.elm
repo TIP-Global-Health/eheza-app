@@ -2844,7 +2844,7 @@ translationSet trans =
             }
 
         PartnerHivTestResult ->
-            { english = "What was the partners Hiv Test result"
+            { english = "What was the partners HIV Test result"
             , kinyarwanda = Nothing
             }
 
