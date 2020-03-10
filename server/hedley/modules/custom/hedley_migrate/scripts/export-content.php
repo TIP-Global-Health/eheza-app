@@ -17,8 +17,11 @@ drush_print('Starting export!');
 
 $faker = hedley_faker_create();
 
-// Rukura, Rwankuba, Test.
+// For sample db: Rukura, Rwankuba, Test.
 $health_centers_ids = [7091, 7092, 28589];
+
+// For default installation: Nyange and Muhondo.
+$health_centers_ids = [6, 7];
 
 $catchment_areas = [
   [

@@ -1,23 +1,3 @@
 id,title,field_role,field_health_centers,field_pin_code
-28525,Mutuyimana Yvone,nurse,7094,7159
-28530,Mukasangano Catherine,nurse,7094,9991
-28543,Marlene Mumukunde,nurse|admin,7094,1102
-28566,Mukeshimana Gratien,nurse|admin,7094,4267
-28568,Soline,admin,7094,4084
-28572,Marlene Mumukunde,nurse,7094,3488
-28574,Dushimiyimana John,nurse,7094,6053
-28576,Nzamurambaho Vincent,nurse,7094,3788
-28580,Yvonne Mutuyimana,admin,7094,1904
-28581,Delphine Uwamahoro,admin|nurse,7094,2006
-28585,Amira,admin,7094,4875
-28586,jsymons,admin,7094,3713
-28587,Theo,nurse|admin,7094,6312
-41180,Theophila,admin|nurse,7094,101989
-41181,Hafashimana Valens,admin|nurse,7094,8827
-41189,Mukasangano Catheline,nurse,7094,6350
-41226,JaimeS,admin|nurse,7094,1210
-68310,Nzamurambaho Vincent,nurse,7094,4921
-68311,Nzamurambaho Vincent,nurse,7094,9979
-68312,Nzamurambaho Vincent,nurse,7094,8872
-69393,Kanzayire Angelique,nurse,7094,8658
-79019,Wendy,admin|nurse,7094,5301
+26,Maya,nurse,6|7,1234
+27,Jojo,nurse,6|7,2345
