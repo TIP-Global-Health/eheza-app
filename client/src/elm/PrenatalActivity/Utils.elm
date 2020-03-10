@@ -106,9 +106,13 @@ getActivityIcon activity =
     encodeActivityAsString activity
 
 
-getAllActivities : List PrenatalActivity
-getAllActivities =
-    [ PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, DangerSigns, PrenatalPhoto ]
+getAllActivities : Bool -> List PrenatalActivity
+getAllActivities isFirstEncounter =
+    if isFirstEncounter then
+        [ PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, DangerSigns, PrenatalPhoto ]
+
+    else
+        [ DangerSigns, PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, PrenatalPhoto ]
 
 
 generateHighRiskAlertData : Language -> PrenatalMeasurements -> HighRiskFactor -> Maybe String

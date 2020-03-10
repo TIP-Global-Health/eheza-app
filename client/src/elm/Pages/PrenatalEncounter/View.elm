@@ -233,8 +233,11 @@ viewMeasurements language currentDate lmpDate obstetricHistory =
 viewMainPageContent : Language -> NominalDate -> AssembledData -> Model -> List (Html Msg)
 viewMainPageContent language currentDate data model =
     let
+        isFirstEncounter =
+            List.isEmpty data.previousMeasurementsWithDates
+
         ( completedActivities, pendingActivities ) =
-            getAllActivities
+            getAllActivities isFirstEncounter
                 |> List.filter (expectPrenatalActivity currentDate data)
                 |> List.partition
                     (\activity ->
