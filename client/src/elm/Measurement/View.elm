@@ -1275,7 +1275,7 @@ viewFbfForm language measurement activity amount setDistributedFullyMsg setDistr
         [ div [ class "content" ]
             [ h3 [ class "ui header" ]
                 [ text <| translate language Trans.FbfDistribution ]
-            , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
+            , p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
             , div [ class "fbf-to-recieve" ] [ text <| translate language (Trans.FbfToRecieve activity amount) ]
             , formConstantContent
                 ++ formDynamicalContent

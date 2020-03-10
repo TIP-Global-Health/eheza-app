@@ -488,7 +488,7 @@ translationSet trans =
                     }
 
                 MotherActivity MotherFbf ->
-                    { english = "The amount of CSB++ (FBF) is calculated bellow. If mother did not recieve the specified amount, please record the amount distributed, and select the reason why."
+                    { english = "If a mother is breastfeeding, she should receive FBF every month. If she did not receive the specified amount, please record the amount distributed and select the reason why."
                     , kinyarwanda = Nothing
                     }
 
@@ -503,7 +503,7 @@ translationSet trans =
                        }
                 -}
                 ChildActivity ChildFbf ->
-                    { english = "The amount of CSB++ (FBF) is calculated bellow. If child did not recieve the specified amount, please record the amount distributed, and select the reason why."
+                    { english = "Every child should receive FBF every month. If he/she did not receive the specified amount, please record the amount distributed and select the reason why."
                     , kinyarwanda = Nothing
                     }
 
@@ -545,7 +545,7 @@ translationSet trans =
                     }
 
                 MotherActivity MotherFbf ->
-                    { english = ""
+                    { english = "The amount of CSB++ (FBF) is calculated bellow. If mother did not recieve the specified amount, please record the amount distributed, and select the reason why."
                     , kinyarwanda = Nothing
                     }
 
@@ -560,7 +560,7 @@ translationSet trans =
                        }
                 -}
                 ChildActivity ChildFbf ->
-                    { english = ""
+                    { english = "The amount of CSB++ (FBF) is calculated bellow. If child did not recieve the specified amount, please record the amount distributed, and select the reason why."
                     , kinyarwanda = Nothing
                     }
 
