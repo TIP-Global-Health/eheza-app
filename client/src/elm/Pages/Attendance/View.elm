@@ -111,21 +111,25 @@ view language ( sessionId, session ) model =
 viewToggleDisplay : Language -> Model -> Html Msg
 viewToggleDisplay language model =
     let
-        content =
+        ( label, action ) =
             if String.isEmpty model.filter then
-                [ span [] [ text <| translate language Translate.Or ]
-                , span
-                    [ class "toggle-text"
-                    , onClick ToggleInitialResultsDisplay
-                    ]
-                    [ text <| translate language <| Translate.InitialResultsDisplay model.initialResultsDisplay ]
-                ]
+                ( Translate.InitialResultsDisplay model.initialResultsDisplay
+                , ToggleInitialResultsDisplay
+                )
 
             else
-                []
+                ( Translate.InitialResultsDisplay InitialResultsHidden
+                , Reset
+                )
     in
     div [ class "toggle-initial-display" ]
-        content
+        [ span [] [ text <| translate language Translate.Or ]
+        , span
+            [ class "toggle-text"
+            , onClick action
+            ]
+            [ text <| translate language label ]
+        ]
 
 
 viewMother : EditableSession -> PersonId -> Person -> Html Msg

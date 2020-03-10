@@ -9,6 +9,12 @@ import Pages.Session.Model
 update : Msg -> Model -> ( Model, Cmd Msg, List Pages.Session.Model.Msg )
 update msg model =
     case msg of
+        Reset ->
+            ( { model | filter = "", initialResultsDisplay = InitialResultsShown }
+            , Cmd.none
+            , []
+            )
+
         SetActivePage page ->
             ( { model | filter = "" }
             , Cmd.none

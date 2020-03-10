@@ -23,7 +23,8 @@ type InitialResultsDisplay
 
 
 type Msg
-    = SetActivePage Page
+    = Reset
+    | SetActivePage Page
     | SetCheckedIn (Maybe AttendanceId) PersonId Bool
     | SetFilter String
     | ToggleInitialResultsDisplay
