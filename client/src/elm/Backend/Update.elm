@@ -173,7 +173,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                     (\editable ->
                         let
                             summaryByActivity =
-                                summarizeByActivity editable.offlineSession editable.checkedIn
+                                summarizeByActivity currentDate editable.offlineSession editable.checkedIn
 
                             updatedEditable =
                                 { editable | summaryByActivity = summaryByActivity }
@@ -192,7 +192,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                     (\editable ->
                         let
                             summaryByParticipant =
-                                summarizeByParticipant editable.offlineSession editable.checkedIn
+                                summarizeByParticipant currentDate editable.offlineSession editable.checkedIn
 
                             updatedEditable =
                                 { editable | summaryByParticipant = summaryByParticipant }
@@ -1503,19 +1503,19 @@ makeEditableSession sessionId db =
 for our UI, when we're focused on participants. This only considers children &
 mothers who are checked in to the session.
 -}
-summarizeByParticipant : OfflineSession -> LocalData CheckedIn -> LocalData SummaryByParticipant
-summarizeByParticipant session checkedIn_ =
+summarizeByParticipant : NominalDate -> OfflineSession -> LocalData CheckedIn -> LocalData SummaryByParticipant
+summarizeByParticipant currentDate session checkedIn_ =
     LocalData.map
         (\checkedIn ->
             let
                 children =
                     Dict.map
-                        (\childId _ -> summarizeChildParticipant childId session)
+                        (\childId _ -> summarizeChildParticipant currentDate childId session)
                         checkedIn.children
 
                 mothers =
                     Dict.map
-                        (\motherId _ -> summarizeMotherParticipant motherId session)
+                        (\motherId _ -> summarizeMotherParticipant currentDate motherId session)
                         checkedIn.mothers
             in
             { children = children
@@ -1529,8 +1529,8 @@ summarizeByParticipant session checkedIn_ =
 for our UI, when we're focused on activities. This only considers children &
 mothers who are checked in to the session.
 -}
-summarizeByActivity : OfflineSession -> LocalData CheckedIn -> LocalData SummaryByActivity
-summarizeByActivity session checkedIn_ =
+summarizeByActivity : NominalDate -> OfflineSession -> LocalData CheckedIn -> LocalData SummaryByActivity
+summarizeByActivity currentDate session checkedIn_ =
     LocalData.map
         (\checkedIn ->
             let
@@ -1539,7 +1539,7 @@ summarizeByActivity session checkedIn_ =
                         |> List.map
                             (\activity ->
                                 ( activity
-                                , summarizeChildActivity activity session checkedIn
+                                , summarizeChildActivity currentDate activity session checkedIn
                                 )
                             )
                         |> Dict.fromList
@@ -1549,7 +1549,7 @@ summarizeByActivity session checkedIn_ =
                         |> List.map
                             (\activity ->
                                 ( activity
-                                , summarizeMotherActivity activity session checkedIn
+                                , summarizeMotherActivity currentDate activity session checkedIn
                                 )
                             )
                         |> Dict.fromList

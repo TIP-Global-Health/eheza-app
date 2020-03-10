@@ -189,7 +189,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                         , th
                             [ class "last" ]
                             [ child.birthDate
-                                |> Maybe.map (\birthDate -> renderAgeMonthsDaysAbbrev language birthDate session.offlineSession.session.startDate)
+                                |> Maybe.map (\birthDate -> renderAgeMonthsDaysAbbrev language birthDate dateOfLastAssessment)
                                 |> Maybe.withDefault ""
                                 |> text
                             ]
@@ -234,6 +234,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
         lastSessionWithMeasurement =
             expectedSessions
                 |> Dict.toList
+                |> List.sortWith sessionsSortFunc
                 |> List.reverse
                 |> List.Extra.find hasMeasurement
 
@@ -261,7 +262,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                                         [ ( "center", True )
                                                         , ( "bottom", True )
                                                         , ( "aligned", True )
-                                                        , ( "last", id == sessionId )
+                                                        , ( "last", columnSession.startDate == dateOfLastAssessment )
                                                         , ( "date-header", True )
                                                         ]
                                                     ]
