@@ -323,12 +323,10 @@ type TranslationId
     | GoHome
     | GroupAssessment
     | Gravida
-    | GroupEncounter    
+    | GroupEncounter
     | Hands
-    | HandsCPESign HandsCPESign 
-    | HaveYouSynced    
+    | HandsCPESign HandsCPESign
     | HeadHair
-    | HaveYouSynced
     | HealthCenter
     | Heart
     | HeartMurmur
@@ -354,7 +352,7 @@ type TranslationId
     | IndividualEncounterTypes
     | KilogramShorthand
     | LastChecked
-    | LastSuccesfulContactLabel    
+    | LastSuccesfulContactLabel
     | Legs
     | LegsCPESign LegsCPESign
     | LevelOfEducationLabel
@@ -1962,11 +1960,6 @@ translationSet trans =
             { english = "Head/Hair"
             , kinyarwanda = Nothing
             }
-            
-        HaveYouSynced ->
-            { english = "Have you synced data for the health center you are working with?"
-            , kinyarwanda = Just "Waba wohereje amakuru y' ikigo nderabuzima uri gukorera?"
-            }
 
         HealthCenter ->
             { english = "Health Center"
@@ -2842,7 +2835,7 @@ translationSet trans =
 
         ParticipantDemographicInformation ->
             { english = "Participant Demographic Information"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umwirondoro w'umugenerwabikorwa"
             }
 
         ParticipantInformation ->
@@ -2889,7 +2882,7 @@ translationSet trans =
 
         People ->
             { english = "People"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Abantu"
             }
 
         PersistentStorage authorized ->
@@ -2900,17 +2893,17 @@ translationSet trans =
 
             else
                 { english = "Persistent storage has not been authorized. The browser may delete locally cached data if storage runs low."
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Ibikwa ry'amakuru ntabwo remejwe. Sisiteme mushakisha ukoreramo ishobora kubisiba umwanya ubaye muto."
                 }
 
         Person ->
             { english = "Person"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umuntu"
             }
 
         PersonHasBeenSaved ->
             { english = "Person has been saved"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Amakuru kuri uyu muntu yabitswe"
             }
 
         PlaceholderEnterHeight ->
@@ -2925,7 +2918,7 @@ translationSet trans =
 
         PlaceholderEnterParticipantName ->
             { english = "Enter participant name here"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Andika izina ry'umurwayi hano"
             }
 
         PlaceholderEnterWeight ->
@@ -3095,14 +3088,10 @@ translationSet trans =
             { english = "Profession"
             , kinyarwanda = Nothing
             }
-        ParticipantDemographicInformation ->
-            { english = "Participant Demographic Information"
-            , kinyarwanda = Just "Umwirondoro w'umugenerwabikorwa"
-            }
 
         Programs ->
             { english = "Programs"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Porogaramu"
             }
 
         ProgressPhotos ->
@@ -3119,31 +3108,6 @@ translationSet trans =
             { english = "Progress Timeline"
             , kinyarwanda = Nothing
             }
-        People ->
-            { english = "People"
-            , kinyarwanda = Just "Abantu"
-            }
-
-        PersistentStorage authorized ->
-            if authorized then
-                { english = "Persistent storage has been authorized. The browser will not delete locally cached data without your approval."
-                , kinyarwanda = Nothing
-                }
-
-            else
-                { english = "Persistent storage has not been authorized. The browser may delete locally cached data if storage runs low."
-                , kinyarwanda = Just "Ibikwa ry'amakuru ntabwo remejwe. Sisiteme mushakisha ukoreramo ishobora kubisiba umwanya ubaye muto."
-                }
-
-        Person ->
-            { english = "Person"
-            , kinyarwanda = Just "Umuntu"
-            }
-
-        PersonHasBeenSaved ->
-            { english = "Person has been saved"
-            , kinyarwanda = Just "Amakuru kuri uyu muntu yabitswe"
-            }
 
         ProgressTrends ->
             { english = "Progress Trends"
@@ -3159,11 +3123,6 @@ translationSet trans =
             { english = "Antenatal Participants"
             , kinyarwanda = Nothing
             }
-            
-        PlaceholderEnterParticipantName ->
-            { english = "Enter participant name here"
-            , kinyarwanda = Just "Andika izina ry'umurwayi hano"
-            }
 
         PreTermPregnancy ->
             { english = "Number of Pre-term Pregnancies (Live Birth)"
@@ -3172,7 +3131,7 @@ translationSet trans =
 
         Province ->
             { english = "Province"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Intara"
             }
 
         ReasonForCSection ->
@@ -3189,11 +3148,6 @@ translationSet trans =
             { english = "Has the mother received iron and folic acid supplement"
             , kinyarwanda = Nothing
             }
-            
-        Programs ->
-            { english = "Programs"
-            , kinyarwanda = Just "Porogaramu"
-            }
 
         ReceivedMosquitoNet ->
             { english = "Has the mother received a mosquito net"
@@ -3203,11 +3157,6 @@ translationSet trans =
         RecordPregnancyOutcome ->
             { english = "Record Pregnancy Outcome"
             , kinyarwanda = Nothing
-            }
-            
-        Province ->
-            { english = "Province"
-            , kinyarwanda = Just "Intara"
             }
 
         Register ->
@@ -3269,6 +3218,7 @@ translationSet trans =
             { english = "Renal Disease"
             , kinyarwanda = Nothing
             }
+
         RemainingForDownloadLabel ->
             { english = "Remaining for Download"
             , kinyarwanda = Just "Ibisigaye gukurwa kuri seriveri"
