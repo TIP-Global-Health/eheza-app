@@ -98,7 +98,6 @@ viewMeasurementInput language maybeCurrentValue setMsg inputClass unitTranslatio
 
         inputAttrs =
             [ type_ "number"
-            , Html.Attributes.min "0"
             , onInput setMsg
             , value currentValue
             ]
