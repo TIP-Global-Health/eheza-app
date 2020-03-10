@@ -275,20 +275,20 @@ fbfFormToValue defaultAmount form =
         |> Maybe.withDefault defaultValue
 
 
-fbfAmountByBirthDate : NominalDate -> NominalDate -> Int
+fbfAmountByBirthDate : NominalDate -> NominalDate -> Maybe Int
 fbfAmountByBirthDate currentDate birthDate =
     let
         diffMonths =
             diffCalendarMonths birthDate currentDate
     in
     if diffMonths > 5 && diffMonths < 9 then
-        2
+        Just 2
 
     else if diffMonths > 8 && diffMonths < 12 then
-        4
+        Just 4
 
     else if diffMonths > 11 && diffMonths < 24 then
-        5
+        Just 5
 
     else
-        0
+        Nothing

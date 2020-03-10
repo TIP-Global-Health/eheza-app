@@ -253,7 +253,7 @@ expectChildActivity currentDate offlineSession childId activity =
             if offlineSession.session.clinicType == Fbf then
                 Dict.get childId offlineSession.children
                     |> Maybe.andThen .birthDate
-                    |> Maybe.map (fbfAmountByBirthDate currentDate >> (<) 0)
+                    |> Maybe.map (fbfAmountByBirthDate currentDate >> isJust)
                     |> Maybe.withDefault False
 
             else

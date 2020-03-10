@@ -641,7 +641,7 @@ viewChildFbf language currentDate measurement maybeBirthDate form =
 
         amount =
             maybeBirthDate
-                |> Maybe.map (fbfAmountByBirthDate currentDate)
+                |> Maybe.andThen (fbfAmountByBirthDate currentDate)
                 |> Maybe.withDefault 0
 
         existingId =
