@@ -1356,6 +1356,9 @@ viewMedicalForm language currentDate assembled form =
 
         hivUpdateFunc value form_ =
             { form_ | hiv = Just value }
+
+        mentalHealthHistoryUpdateFunc value form_ =
+            { form_ | mentalHealthHistory = Just value }
     in
     div [ class "form history medical" ]
         [ viewCustomLabel language Translate.MedicalFormHelper ":" "label helper"
@@ -1478,6 +1481,18 @@ viewMedicalForm language currentDate assembled form =
             form.hiv
             (SetMedicalBoolInput hivUpdateFunc)
             "hiv"
+            Nothing
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.MentalHealthHistory ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForBool form.mentalHealthHistory False ]
+            ]
+        , viewBoolInput
+            language
+            form.mentalHealthHistory
+            (SetMedicalBoolInput mentalHealthHistoryUpdateFunc)
+            "mental-health-history"
             Nothing
         ]
 

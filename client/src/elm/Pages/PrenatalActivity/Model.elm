@@ -347,6 +347,7 @@ type alias MedicalHistoryForm =
     , asthma : Maybe Bool
     , bowedLegs : Maybe Bool
     , hiv : Maybe Bool
+    , mentalHealthHistory : Maybe Bool
     }
 
 
@@ -362,6 +363,7 @@ emptyMedicalHistoryForm =
     , asthma = Nothing
     , bowedLegs = Nothing
     , hiv = Nothing
+    , mentalHealthHistory = Nothing
     }
 
 

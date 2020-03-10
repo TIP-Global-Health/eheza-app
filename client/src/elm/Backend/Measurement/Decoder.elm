@@ -600,6 +600,9 @@ decodeMedicalHistorySign =
                     "hiv" ->
                         succeed HIV
 
+                    "mental-health-history" ->
+                        succeed MentalHealthHistory
+
                     "none" ->
                         succeed NoMedicalHistorySigns
 

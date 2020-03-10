@@ -352,6 +352,7 @@ type MedicalHistorySign
     | Asthma
     | BowedLegs
     | HIV
+    | MentalHealthHistory
     | NoMedicalHistorySigns
 
 

@@ -537,6 +537,9 @@ encodeMedicalHistorySign sign =
             HIV ->
                 "hiv"
 
+            MentalHealthHistory ->
+                "mental-health-history"
+
             NoMedicalHistorySigns ->
                 "none"
 

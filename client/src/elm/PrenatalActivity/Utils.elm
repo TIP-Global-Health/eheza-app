@@ -761,6 +761,21 @@ generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
                             Nothing
                     )
 
+        DiagnosisMentalHealthHistory ->
+            measurements.medicalHistory
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value
+                        in
+                        if EverySet.member Backend.Measurement.Model.MentalHealthHistory value then
+                            Just (transAlert diagnosis)
+
+                        else
+                            Nothing
+                    )
+
 
 generateObstetricalDiagnosisAlertData : Language -> NominalDate -> PrenatalMeasurements -> AssembledData -> ObstetricalDiagnosis -> Maybe String
 generateObstetricalDiagnosisAlertData language currentDate firstEncounterMeasurements data diagnosis =
