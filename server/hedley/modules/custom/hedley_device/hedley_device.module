@@ -28,11 +28,11 @@ function hedley_device_node_presave($node) {
 
   $wrapper = entity_metadata_wrapper('node', $node);
 
+  // For nodes that for a UUID field.
   if ($wrapper->__isset('field_uuid')) {
     hedley_device_assign_uuid($node, $wrapper);
+    hedley_device_verify_unique_uuid($node, $wrapper);
   }
-
-  hedley_device_verify_unique_uuid($node, $wrapper);
 
   if ($node->type == 'device') {
     hedley_device_assign_pairing_code($node, $wrapper);
@@ -204,11 +204,6 @@ function hedley_device_assign_uuid($node, $wrapper) {
  * Verify the UUID of the node being saved isn't duplicated.
  */
 function hedley_device_verify_unique_uuid($node, $wrapper) {
-  if (empty($wrapper->field_uuid)) {
-    // Ignore nodes that don't have a UUID field.
-    return;
-  }
-
   $uuid = $wrapper->field_uuid->value();
   // Search for other usages of the current UUID.
   $query = db_select('field_data_field_uuid', 'uuid')
