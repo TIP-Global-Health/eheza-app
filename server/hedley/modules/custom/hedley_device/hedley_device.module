@@ -28,7 +28,7 @@ function hedley_device_node_presave($node) {
 
   $wrapper = entity_metadata_wrapper('node', $node);
 
-  // For nodes that for a UUID field.
+  // For nodes that got a UUID field.
   if ($wrapper->__isset('field_uuid')) {
     hedley_device_assign_uuid($node, $wrapper);
     hedley_device_verify_unique_uuid($node, $wrapper);
