@@ -116,7 +116,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *   The "health center" node ID.
    */
   public function createHealthCenter() {
-    $this->createDevice(rand(1000, 9999));
+    $this->createDevice();
 
     // Create the necessary catchment area.
     $catchment_area_nid = $this->createCatchmentArea();
@@ -135,13 +135,12 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   /**
    * Create a Device with a pairing code.
    *
-   * @param int $pairing_code
-   *   The pairing code for the device.
-   *
    * @return int
    *   The node ID.
    */
-  public function createDevice($pairing_code) {
+  public function createDevice() {
+    $pairing_code = hedley_user_get_unique_pincode();
+
     // Create a new device.
     $node = $this->drupalCreateNode([
       'type' => 'device',
@@ -228,19 +227,33 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *   The mother's node ID.
    * @param int $health_center_id
    *   Optional; The health center's node ID.
+   * @param int $child_bd
+   *   Optional; The child's BD, defaults to 1 year ago.
+   * @param int $created
+   *   Optional; The child's created date, defaults to now.
    *
    * @return int
    *   The child's node ID.
    */
-  public function createChild($mother_id, $health_center_id = NULL) {
+  public function createChild($mother_id, $health_center_id = NULL, $child_bd = NULL, $created = NULL) {
     $node = $this->drupalCreateNode([
       'type' => 'person',
       'title' => $this->randomName(),
     ]);
 
     $wrapper = entity_metadata_wrapper('node', $node);
-    $wrapper->field_birth_date->set(strtotime('2015-06-27'));
     $wrapper->field_gender->set('male');
+
+    if ($child_bd) {
+      $wrapper->field_birth_date->set($child_bd);
+    }
+    else {
+      $wrapper->field_birth_date->set(strtotime('2015-06-27'));
+    }
+
+    if ($created) {
+      $wrapper->created->set($created);
+    }
 
     if ($health_center_id) {
       // Need to add health center because health centers are assigned to nodes
@@ -467,6 +480,72 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_session->set($session_id);
     $wrapper->field_weight->set($weight);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create an MUAC entity.
+   *
+   * @param int $session_id
+   *   The node ID of the session.
+   * @param int $child_id
+   *   The node ID of the child.
+   * @param float $muac
+   *   The MUAC value.
+   * @param int $timestamp
+   *   Optional; The date the measurement was taken, as a unix timestamp,
+   *   defaults to the time of the request.
+   *
+   * @return int
+   *   The node ID of the MUAC.
+   */
+  public function createMuac($session_id, $child_id, $muac, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'muac']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($child_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_session->set($session_id);
+    $wrapper->field_muac->set($muac);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a nutrition entity.
+   *
+   * @param int $session_id
+   *   The node ID of the session.
+   * @param int $child_id
+   *   The node ID of the child.
+   * @param string $nutrition_sign
+   *   The nutrition sign value.
+   * @param int $timestamp
+   *   Optional; The date the measurement was taken, as a unix timestamp,
+   *   defaults to the time of the request.
+   *
+   * @return int
+   *   The node ID of the nutrition.
+   */
+  public function createNutrition($session_id, $child_id, $nutrition_sign, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode([
+      'type' => 'nutrition',
+      // We have to add the nutrition signs here because we can't add it with
+      // the wrapper.
+      'field_nutrition_signs' => [
+        LANGUAGE_NONE => [
+          ['value' => $nutrition_sign],
+        ],
+      ],
+    ]);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($child_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_session->set($session_id);
     $wrapper->save();
 
     return $node->nid;
