@@ -110,15 +110,89 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   }
 
   /**
-   * Create a clinic with a random name.
+   * Create a health center with a random name.
+   *
+   * @return int
+   *   The "health center" node ID.
+   */
+  public function createHealthCenter() {
+    $this->createDevice();
+
+    // Create the necessary catchment area.
+    $catchment_area_nid = $this->createCatchmentArea();
+
+    $node = $this->drupalCreateNode([
+      'type' => 'health_center',
+    ]);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_catchment_area->set($catchment_area_nid);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a Device with a pairing code.
    *
    * @return int
    *   The node ID.
    */
-  public function createClinic() {
-    return $this->drupalCreateNode([
+  public function createDevice() {
+    $pairing_code = hedley_user_get_unique_pincode();
+
+    // Create a new device.
+    $node = $this->drupalCreateNode([
+      'type' => 'device',
+    ]);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_pairing_code->set($pairing_code);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a "Catchment Area" with a random name.
+   *
+   * @return int
+   *   The node ID.
+   */
+  public function createCatchmentArea() {
+    $node = $this->drupalCreateNode([
+      'type' => 'catchment_area',
+    ]);
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a clinic with a random name.
+   *
+   * @param int $health_center_id
+   *   Optional; The health center node ID.
+   * @param string $clinic_type
+   *   Optional; The clinic type, options: pmtct,fbf,sorwathe
+   *
+   * @return int
+   *   The node ID.
+   */
+  public function createClinic($health_center_id = NULL, $clinic_type = 'pmtct') {
+    $node = $this->drupalCreateNode([
       'type' => 'clinic',
     ]);
+
+    if (!$health_center_id) {
+      return $node->nid;
+    }
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_health_center->set($health_center_id);
+    $wrapper->field_group_type->set($clinic_type);
+    $wrapper->save();
+
+    return $node->nid;
   }
 
   /**
@@ -151,19 +225,41 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *
    * @param int $mother_id
    *   The mother's node ID.
+   * @param int $health_center_id
+   *   Optional; The health center's node ID.
+   * @param int $child_bd
+   *   Optional; The child's BD, defaults to 1 year ago.
+   * @param int $created
+   *   Optional; The child's created date, defaults to now.
    *
    * @return int
    *   The child's node ID.
    */
-  public function createChild($mother_id) {
+  public function createChild($mother_id, $health_center_id = NULL, $child_bd = NULL, $created = NULL) {
     $node = $this->drupalCreateNode([
       'type' => 'person',
       'title' => $this->randomName(),
     ]);
 
     $wrapper = entity_metadata_wrapper('node', $node);
-    $wrapper->field_birth_date->set(strtotime('2015-06-27'));
     $wrapper->field_gender->set('male');
+
+    if ($child_bd) {
+      $wrapper->field_birth_date->set($child_bd);
+    }
+    else {
+      $wrapper->field_birth_date->set(strtotime('2015-06-27'));
+    }
+
+    if ($created) {
+      $wrapper->created->set($created);
+    }
+
+    if ($health_center_id) {
+      // Need to add health center because health centers are assigned to nodes
+      // according to referenced person.
+      $wrapper->field_health_center->set($health_center_id);
+    }
     $wrapper->save();
 
     $this->createRelationship($mother_id, $node->nid, HEDLEY_PERSON_RELATED_BY_PARENT_OF);
@@ -186,7 +282,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    * @return int
    *   The relationship's node ID.
    */
-  function createRelationship ($person_id, $related_to, $related_by) {
+  function createRelationship($person_id, $related_to, $related_by) {
     $node = $this->drupalCreateNode([
       'type' => 'relationship',
     ]);
@@ -209,9 +305,6 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    * @param int $timestamp
    *   Optional; The date of the session, as a unix timestamp, defaults to the
    *   time of the request.
-   * @param bool $is_training
-   *   Optional; Whether the session is a training session or not, defaults to
-   *   FALSE.
    *
    * @return int
    *   The node ID of the session.
@@ -224,6 +317,80 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper = entity_metadata_wrapper('node', $node);
     $wrapper->field_clinic->set($clinic_id);
     $wrapper->field_scheduled_date->set([
+      'value' => $date,
+      'value2' => $date,
+    ]);
+
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create an attendance for a session, starting today.
+   *
+   * @param int $health_center_id
+   *   The node ID of the health center.
+   * @param int $session_id
+   *   The node ID of the session.
+   * @param int $nurse_id
+   *   The node ID of the nurse.
+   * @param int $child_id
+   *   The node ID of the child.
+   * @param bool $attended
+   *   Optional; Whether the participant attended the session or not, defaults
+   *   to TRUE (Yes).
+   * @param int $timestamp
+   *   Optional; The date of the session, as a unix timestamp, defaults to the
+   *   time of the request.
+   *
+   * @return int
+   *   The node ID of the attendance.
+   */
+  public function createAttendance($health_center_id, $session_id, $nurse_id, $child_id, $attended = TRUE, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'attendance']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_shards->set([
+      $health_center_id,
+    ]);
+    $wrapper->field_session->set($session_id);
+    $wrapper->field_nurse->set($nurse_id);
+    $wrapper->field_person->set($child_id);
+    $wrapper->field_attended->set($attended);
+    $wrapper->field_date_measured->set($timestamp);
+
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create an "PMTCT Participant".
+   *
+   * @param int $child_id
+   *   The node ID of the child.
+   * @param int $mother_id
+   *   The node ID of the mother.
+   * @param int $clinic_id
+   *   The node ID of the clinic.
+   * @param int $timestamp
+   *   Optional; The date of the session, as a unix timestamp, defaults to the
+   *   time of the request.
+   *
+   * @return int
+   *   The node ID of the "PMTCT Participant".
+   */
+  public function createPMTCT($child_id, $mother_id, $clinic_id, $timestamp = REQUEST_TIME) {
+    $date = date('Y-m-d', $timestamp);
+
+    $node = $this->drupalCreateNode(['type' => 'pmtct_participant']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_adult->set($mother_id);
+    $wrapper->field_person->set($child_id);
+    $wrapper->field_clinic->set($clinic_id);
+    $wrapper->field_expected->set([
       'value' => $date,
       'value2' => $date,
     ]);
@@ -313,6 +480,72 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_date_measured->set($timestamp);
     $wrapper->field_session->set($session_id);
     $wrapper->field_weight->set($weight);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create an MUAC entity.
+   *
+   * @param int $session_id
+   *   The node ID of the session.
+   * @param int $child_id
+   *   The node ID of the child.
+   * @param float $muac
+   *   The MUAC value.
+   * @param int $timestamp
+   *   Optional; The date the measurement was taken, as a unix timestamp,
+   *   defaults to the time of the request.
+   *
+   * @return int
+   *   The node ID of the MUAC.
+   */
+  public function createMuac($session_id, $child_id, $muac, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode(['type' => 'muac']);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($child_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_session->set($session_id);
+    $wrapper->field_muac->set($muac);
+    $wrapper->save();
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a nutrition entity.
+   *
+   * @param int $session_id
+   *   The node ID of the session.
+   * @param int $child_id
+   *   The node ID of the child.
+   * @param string $nutrition_sign
+   *   The nutrition sign value.
+   * @param int $timestamp
+   *   Optional; The date the measurement was taken, as a unix timestamp,
+   *   defaults to the time of the request.
+   *
+   * @return int
+   *   The node ID of the nutrition.
+   */
+  public function createNutrition($session_id, $child_id, $nutrition_sign, $timestamp = REQUEST_TIME) {
+    $node = $this->drupalCreateNode([
+      'type' => 'nutrition',
+      // We have to add the nutrition signs here because we can't add it with
+      // the wrapper.
+      'field_nutrition_signs' => [
+        LANGUAGE_NONE => [
+          ['value' => $nutrition_sign],
+        ],
+      ],
+    ]);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_person->set($child_id);
+    $wrapper->field_date_measured->set($timestamp);
+    $wrapper->field_session->set($session_id);
     $wrapper->save();
 
     return $node->nid;

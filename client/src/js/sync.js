@@ -54,8 +54,18 @@
     // So, we can issue as many of these as we like while offline -- we'll just
     // receive one event here, once we're online again.
     self.addEventListener('sync', function (event) {
-        if (event.tag === syncTag) {
-            var action = syncAllShards().catch(function (attempt) {
+        var data = {};
+        try {
+            data = JSON.parse(event.tag);
+        } catch (e) {
+            data = {
+                msg: event.tag,
+                uuid: null
+            };
+        }
+
+        if (data.msg === syncTag) {
+            var action = syncAllShards(data.uuid).catch(function (attempt) {
                 // Always indicate to the browser's sync mechanism that we
                 // succeeded. Otherwise, it seems that retries are disabled
                 // for a while, which isn't really suitable. And we'll retry
@@ -72,8 +82,8 @@
     // It's triggered via a message rather than the background sync mechanism,
     // so it by-passes the browser's notion of whether we're online or not.
     self.addEventListener('message', function(event) {
-        if (event.data === syncTag) {
-            var action = syncAllShards();
+        if (event.data.tag === syncTag) {
+            var action = syncAllShards(event.data.uuid);
 
             // Consider how to handle errors?
             return event.waitUntil(action);
@@ -143,13 +153,13 @@
     // This kicks off the sync process for all shards. So, resolves if all
     // succeed, and rejects if any reject. (However, each shard will record
     // its own success or failure).
-    function syncAllShards () {
+    function syncAllShards (maybeHealthCenterUuid) {
         return getCredentials().then(function (credentials) {
             return dbSync.open()
             .then(function () {
                 return nodeShardToSync()
                 .then(function (shard) {
-                    return processSingleShard (shard, credentials).catch(function (err) {
+                    return processSingleShard (shard, credentials, maybeHealthCenterUuid).catch(function (err) {
                         // When authentication token is invalid, besides standard 401 response,
                         // we may get 403 from file-upload resource.
                         // Therefore, we'll try to refresh token on 403 respnse as well.
@@ -162,7 +172,7 @@
                                 // If we could, then try again.
                                 // We fetch new credentials, since they got refreshed.
                                 return getCredentials().then(function (credentials) {
-                                    return processSingleShard (shard, credentials);
+                                    return processSingleShard (shard, credentials, maybeHealthCenterUuid);
                                 });
                             });
                         } else {
@@ -174,7 +184,7 @@
                         return getCredentials().then(function (credentials) {
                             return otherShardsToSync().then(function (shards) {
                                 var actions = shards.map(function (shard) {
-                                    return processSingleShard(shard, credentials);
+                                    return processSingleShard(shard, credentials, maybeHealthCenterUuid);
                                 });
 
                                 return Promise.all(actions);
@@ -187,71 +197,105 @@
     }
 
     // Uploads and then Downloads data for single shard.
-    function processSingleShard (shard, credentials) {
+    function processSingleShard (shard, credentials, maybeHealthCenterUuid) {
         // Probably makes sense to upload and then download ...
         // that way, we'll get the server's interpretation of
         // our changes immediately.
-        return uploadSingleShard(shard, credentials).then(function () {
-            return downloadSingleShard(shard, credentials);
+        return uploadSingleShard(shard, credentials, maybeHealthCenterUuid).then(function () {
+            return downloadSingleShard(shard, credentials, maybeHealthCenterUuid);
         });
     }
 
-    function getSyncUrl (shard, credentials) {
+    function getSyncUrl (shard, credentials, maybeHealthCenterUuid) {
         var token = credentials.access_token;
         var backendUrl = credentials.backend_url;
         var dbVersion = dbSync.verno;
 
         var shardUrlPart = shard.uuid === nodesUuid ? '' : '/' + shard.uuid;
-
-        var url = [
+        var urlArray = [
             backendUrl, '/api/v1.0/sync', shardUrlPart,
             '?access_token=', token,
             '&db_version=', dbVersion
-        ].join('');
+          ]
 
-        return url;
+        if (maybeHealthCenterUuid) {
+            var healthCenterUuid = maybeHealthCenterUuid;
+
+            var criteria = {
+                uuid: healthCenterUuid
+            };
+
+            var statsTable = dbSync.statistics;
+            var query = statsTable.where(criteria);
+
+            return query.first().then(function (syncData) {
+                if (syncData) {
+                    return getSyncUrlParams(urlArray, syncData['uuid'], syncData['stats_cache_hash']);
+                }
+                else {
+                    return getSyncUrlParams(urlArray, healthCenterUuid);
+                }
+            }).catch(formatDatabaseError);
+        }
+        else {
+            // Sync without health center ID.
+            return Promise.resolve(getSyncUrlParams(urlArray));
+        }
+    }
+
+    function getSyncUrlParams(urlArray, maybeHealthCenterUuid, maybeStatsCacheHash) {
+        if (maybeHealthCenterUuid) {
+            urlArray.push('&health_center_uuid=', maybeHealthCenterUuid);
+        }
+        if (maybeStatsCacheHash) {
+            // We already have stats synced, however we send their md5 hash to
+            // the server so it would know if we have the most up to date
+            // version. If not, it will send the latest.
+            urlArray.push('&stats_cache_hash=', maybeStatsCacheHash);
+        }
+
+        return urlArray.join('');
     }
 
     function getUploadUrl (credentials) {
         var token = credentials.access_token;
         var backendUrl = credentials.backend_url;
 
-        var url = [
+        return [
             backendUrl,
             '/api/file-upload?access_token=',
             token
         ].join('');
-
-        return url;
     }
 
     // Resolves with metadata, or rejects with an attempt result. In either
     // case, the result has been recorded once this resolves or rejects.
     //
     // The parameter is our shard metadata.
-    function uploadSingleShard (shard, credentials) {
-        var url = getSyncUrl(shard, credentials);
-        var uploadUrl = getUploadUrl(credentials);
+    function uploadSingleShard (shard, credentials, maybeHealthCenterUuid) {
+        return getSyncUrl(shard, credentials, maybeHealthCenterUuid).then(function (syncUrl) {
+            var uploadUrl = getUploadUrl(credentials);
 
-        return recordAttempt(shard.uuid, {
-            tag: Uploading,
-            timestamp: Date.now()
-        }).then(function () {
-            return sendToBackend(shard.uuid, url, uploadUrl).catch(function (err) {
-                return recordAttempt(shard.uuid, err).then(function () {
-                    return Promise.reject(err);
-                });
-            }).then(function (status) {
-                return recordAttempt(shard.uuid, {
-                    tag: Success,
-                    timestamp: Date.now()
-                }).then(function () {
-                    if (status.remaining > 0) {
-                        // Keep going if there are more.
-                        return uploadSingleShard(shard, credentials);
-                    } else {
-                        return Promise.resolve(status);
-                    }
+            return recordAttempt(shard.uuid, {
+                tag: Uploading,
+                timestamp: Date.now()
+            }).then(function () {
+                return sendToBackend(shard.uuid, syncUrl, uploadUrl).catch(function (err) {
+                    return recordAttempt(shard.uuid, err).then(function () {
+                        return Promise.reject(err);
+                    });
+                }).then(function (status) {
+                    return recordAttempt(shard.uuid, {
+                        tag: Success,
+                        timestamp: Date.now()
+                    }).then(function () {
+                        if (status.remaining > 0) {
+                            // Keep going if there are more.
+                            return uploadSingleShard(shard, credentials, maybeHealthCenterUuid);
+                        } else {
+                            return Promise.resolve(status);
+                        }
+                    });
                 });
             });
         });
@@ -261,33 +305,35 @@
     // case, the result has been recorded once this resolves or rejects.
     //
     // The parameter is our shard metadata.
-    function downloadSingleShard (shard, credentials) {
+    function downloadSingleShard (shard, credentials, maybeHealthCenterUuid) {
         return getLastVid(shard.uuid).then(function (baseRevision) {
-            var url = getSyncUrl(shard, credentials) + '&base_revision=' + baseRevision;
+            getSyncUrl(shard, credentials, maybeHealthCenterUuid).then(function (syncUrl) {
+                var url = syncUrl + '&base_revision=' + baseRevision;
 
-            return recordAttempt(shard.uuid, {
-                tag: Loading,
-                revision: baseRevision,
-                timestamp: Date.now()
-            }).then(function () {
-                return fetchFromBackend(shard.uuid, url).catch(function (err) {
-                    return recordAttempt(shard.uuid, err).then(function () {
-                        return Promise.reject(err);
-                    });
-                }).then(function (status) {
-                    return recordAttempt(shard.uuid, {
-                        tag: Success,
-                        timestampe: Date.now()
-                    }).then(function () {
-                        return dbSync.syncMetadata.update(shard.uuid, {
-                            download: status
-                        }).then(sendSyncData).then(function () {
-                            if (status.remaining > 0) {
-                                // Keep going if there are more.
-                                return downloadSingleShard(shard, credentials);
-                            } else {
-                                return Promise.resolve(status);
-                            }
+                return recordAttempt(shard.uuid, {
+                    tag: Loading,
+                    revision: baseRevision,
+                    timestamp: Date.now()
+                }).then(function () {
+                    return fetchFromBackend(shard.uuid, url).catch(function (err) {
+                        return recordAttempt(shard.uuid, err).then(function () {
+                            return Promise.reject(err);
+                        });
+                    }).then(function (status) {
+                        return recordAttempt(shard.uuid, {
+                            tag: Success,
+                            timestampe: Date.now()
+                        }).then(function () {
+                            return dbSync.syncMetadata.update(shard.uuid, {
+                                download: status
+                            }).then(sendSyncData).then(function () {
+                                if (status.remaining > 0) {
+                                    // Keep going if there are more.
+                                    return downloadSingleShard(shard, credentials, maybeHealthCenterUuid);
+                                } else {
+                                    return Promise.resolve(status);
+                                }
+                            });
                         });
                     });
                 });
