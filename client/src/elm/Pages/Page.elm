@@ -1,4 +1,4 @@
-module Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+module Pages.Page exposing (DashboardPage(..), Page(..), SessionPage(..), UserPage(..))
 
 {-| A module that defines a type which controls what the user wishes
 to be shown at the moment.
@@ -116,7 +116,7 @@ the login page instead.
 -}
 type UserPage
     = ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
-    | DashboardPage -- Dashboard with visual summary of the data
+    | DashboardPage DashboardPage -- Dashboard with visual summary of the data
     | SessionPage SessionId SessionPage -- pages that manipulate a group session
     | MyAccountPage -- shows information about the logged-in user
     | PersonPage PersonId -- Shows a particular person.
@@ -130,6 +130,14 @@ type UserPage
       -- then we're in a context in which we're looking to add a family member.
     | PersonsPage (Maybe PersonId)
     | RelationshipPage PersonId PersonId -- create or edit a relationship between these persons.
+
+
+{-| We group together the pages that can only be viewed in the Dashboard
+-}
+type DashboardPage
+    = MainPage
+    | StatsPage
+    | CaseManagementPage
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it

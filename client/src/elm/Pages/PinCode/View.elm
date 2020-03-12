@@ -5,11 +5,11 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse, Role(..))
 import EverySet
-import Gizra.Html exposing (emptyNode, showIf, showMaybe)
+import Gizra.Html exposing (emptyNode, showIf)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput, onSubmit)
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
 import Pages.PinCode.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
@@ -174,20 +174,9 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                             , span [ class "text" ] [ text <| translate language Translate.GroupAssessment ]
                             , span [ class "icon-back" ] []
                             ]
-
-                    dashboardButton =
-                        button
-                            [ class "ui primary button dashboard"
-                            , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage
-                            ]
-                            [ span [ class "icon-group" ] []
-                            , span [ class "text" ] [ text <| translate language Translate.DashboardLabel ]
-                            , span [ class "icon-back" ] []
-                            ]
                 in
                 [ p [] [ text <| translate language Translate.WhatDoYouWantToDo ]
                 , groupAssessmentButton
-                , dashboardButton
                 ]
 
             MainMenu ->
@@ -241,11 +230,34 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                             , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing
                             ]
                             [ text <| translate language Translate.ParticipantDirectory ]
+
+                    dashboardButton =
+                        healthCenterId
+                            |> Maybe.andThen
+                                (\id ->
+                                    RemoteData.toMaybe db.healthCenters
+                                        |> Maybe.andThen (Dict.get id)
+                                )
+                            |> Maybe.map
+                                (\healthCenter ->
+                                    if healthCenter.fbfClinics then
+                                        button
+                                            [ class "ui primary button"
+                                            , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage MainPage
+                                            ]
+                                            [ text <| translate language Translate.DashboardLabel
+                                            ]
+
+                                    else
+                                        emptyNode
+                                )
+                            |> Maybe.withDefault emptyNode
                 in
                 [ loggedInAs
                 , healthCenterName
                 , clinicalButton
                 , registerParticipantButton
+                , dashboardButton
                 , deviceStatusButton
                 , logoutButton
                 ]
@@ -258,6 +270,8 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                         healthCenters
                             |> Dict.filter (\uuid _ -> EverySet.member uuid nurse.healthCenters)
                             |> Dict.toList
+                            -- Reverse now because we are reversing again when adding the "logout" button.
+                            |> List.reverse
 
                     _ ->
                         []
@@ -273,4 +287,5 @@ viewWhenLoggedIn language nurse healthCenterId model db =
             :: (filteredHealthCenters
                     |> List.map selectHealthCenterButton
                     |> List.append [ logoutButton ]
+                    |> List.reverse
                )
