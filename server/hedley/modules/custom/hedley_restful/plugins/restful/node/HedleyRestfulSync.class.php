@@ -278,7 +278,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
               'uuid' => $request['health_center_uuid'],
               'case_management' => hedley_stats_get_case_management($health_center_nid),
               'children_beneficiaries' => hedley_stats_get_children_beneficiaries_stats_by_period($health_center_nid, HEDLEY_STATS_PERIOD_THREE_MONTHS),
-              'completed_program' => [],
+              'completed_program' => hedley_stats_get_completed_program_stats($health_center_nid),
               'completed_program_count' => 0,
               'good_nutrition' => hedley_stats_get_good_nutrition($health_center_nid),
               'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_nid),
