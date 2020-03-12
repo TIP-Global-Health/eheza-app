@@ -223,7 +223,7 @@ type TranslationId
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
     | FbfDistribution
-    | FbfToRecieve Activity Float
+    | FbfToReceive Activity Float
     | Fetch
     | FatherName
     | FatherNationalId
@@ -545,7 +545,7 @@ translationSet trans =
                     }
 
                 MotherActivity MotherFbf ->
-                    { english = "The amount of CSB++ (FBF) is calculated bellow. If mother did not recieve the specified amount, please record the amount distributed, and select the reason why."
+                    { english = "The amount of CSB++ (FBF) is calculated below. If mother did not receive the specified amount, please record the amount distributed, and select the reason why."
                     , kinyarwanda = Nothing
                     }
 
@@ -560,7 +560,7 @@ translationSet trans =
                        }
                 -}
                 ChildActivity ChildFbf ->
-                    { english = "The amount of CSB++ (FBF) is calculated bellow. If child did not recieve the specified amount, please record the amount distributed, and select the reason why."
+                    { english = "The amount of CSB++ (FBF) is calculated below. If child did not receive the specified amount, please record the amount distributed, and select the reason why."
                     , kinyarwanda = Nothing
                     }
 
@@ -1275,15 +1275,15 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        FbfToRecieve activity amount ->
+        FbfToReceive activity amount ->
             case activity of
                 MotherActivity _ ->
-                    { english = "Mother should recieve: " ++ String.fromFloat amount ++ " kgs of CSB++ (FBF)"
+                    { english = "Mother should receive: " ++ String.fromFloat amount ++ " kgs of CSB++ (FBF)"
                     , kinyarwanda = Nothing
                     }
 
                 ChildActivity _ ->
-                    { english = "Child should recieve: " ++ String.fromFloat amount ++ " kgs of CSB++ (FBF)"
+                    { english = "Child should receive: " ++ String.fromFloat amount ++ " kgs of CSB++ (FBF)"
                     , kinyarwanda = Nothing
                     }
 
@@ -2307,12 +2307,12 @@ translationSet trans =
         WhyDifferentFbfAmount activity ->
             case activity of
                 ChildActivity _ ->
-                    { english = "Select why child recieverd a different amount of FBF"
+                    { english = "Select why child receiverd a different amount of FBF"
                     , kinyarwanda = Nothing
                     }
 
                 MotherActivity _ ->
-                    { english = "Select why mother recieverd a different amount of FBF"
+                    { english = "Select why mother receiverd a different amount of FBF"
                     , kinyarwanda = Nothing
                     }
 
