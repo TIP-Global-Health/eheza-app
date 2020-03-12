@@ -223,7 +223,7 @@ type TranslationId
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
     | FbfDistribution
-    | FbfToRecieve Activity Int
+    | FbfToRecieve Activity Float
     | Fetch
     | FatherName
     | FatherNationalId
@@ -1278,12 +1278,12 @@ translationSet trans =
         FbfToRecieve activity amount ->
             case activity of
                 MotherActivity _ ->
-                    { english = "Mother should recieve: " ++ String.fromInt amount ++ " kgs of CSB++ (FBF)"
+                    { english = "Mother should recieve: " ++ String.fromFloat amount ++ " kgs of CSB++ (FBF)"
                     , kinyarwanda = Nothing
                     }
 
                 ChildActivity _ ->
-                    { english = "Child should recieve: " ++ String.fromInt amount ++ " kgs of CSB++ (FBF)"
+                    { english = "Child should recieve: " ++ String.fromFloat amount ++ " kgs of CSB++ (FBF)"
                     , kinyarwanda = Nothing
                     }
 

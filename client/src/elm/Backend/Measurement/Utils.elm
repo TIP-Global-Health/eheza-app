@@ -247,11 +247,11 @@ fbfValueToForm value =
     FbfForm distributedFully (Just value.distributedAmount) (Just value.distributionNotice)
 
 
-fbfFormToValue : Int -> FbfForm -> FbfValue
+fbfFormToValue : Float -> FbfForm -> FbfValue
 fbfFormToValue defaultAmount form =
     let
         defaultValue =
-            FbfValue (toFloat defaultAmount) DistributedFully
+            FbfValue defaultAmount DistributedFully
     in
     form.distributedFully
         |> Maybe.map
@@ -275,20 +275,20 @@ fbfFormToValue defaultAmount form =
         |> Maybe.withDefault defaultValue
 
 
-fbfAmountByBirthDate : NominalDate -> NominalDate -> Maybe Int
+fbfAmountByBirthDate : NominalDate -> NominalDate -> Maybe Float
 fbfAmountByBirthDate currentDate birthDate =
     let
         diffMonths =
             diffCalendarMonths birthDate currentDate
     in
     if diffMonths > 5 && diffMonths < 9 then
-        Just 2
+        Just 3
 
     else if diffMonths > 8 && diffMonths < 12 then
-        Just 4
+        Just 6
 
     else if diffMonths > 11 && diffMonths < 24 then
-        Just 5
+        Just 7.5
 
     else
         Nothing

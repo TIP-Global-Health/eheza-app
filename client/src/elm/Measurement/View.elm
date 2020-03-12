@@ -652,7 +652,7 @@ viewChildFbf language currentDate measurement maybeBirthDate form =
                 |> Maybe.andThen
                     (\distributedFully ->
                         if distributedFully then
-                            { form | distributedAmount = Just (toFloat amount), distributionNotice = Just DistributedFully }
+                            { form | distributedAmount = Just amount, distributionNotice = Just DistributedFully }
                                 |> fbfFormToValue amount
                                 |> SaveChildFbf existingId
                                 |> SendOutMsgChild
@@ -1224,7 +1224,7 @@ viewFbfForm :
     Language
     -> MeasurementData (Maybe a)
     -> Activity
-    -> Int
+    -> Float
     -> (Bool -> msg)
     -> (String -> msg)
     -> (DistributionNotice -> msg)
