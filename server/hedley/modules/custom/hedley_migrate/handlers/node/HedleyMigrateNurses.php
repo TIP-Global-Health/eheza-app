@@ -34,9 +34,15 @@ class HedleyMigrateNurses extends HedleyMigrateBase {
   /**
    * {@inheritdoc}
    */
+  protected $simpleMappings = [
+    'field_pin_code',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
   protected $simpleMultipleMappings = [
     'field_role',
-    'field_pin_code',
   ];
 
   /**
