@@ -9,7 +9,7 @@ import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValues, fbfAmountByBirthDate, fbfFormToValue, lactationFormToSigns, mapMeasurementData, muacIndication)
+import Backend.Measurement.Utils exposing (currentValues, fbfAmountForPerson, fbfFormToValue, lactationFormToSigns, mapMeasurementData, muacIndication)
 import Backend.Person.Model exposing (Gender, Person)
 import Backend.Session.Model exposing (EditableSession)
 import EverySet exposing (EverySet)
@@ -41,7 +41,7 @@ viewChild : Language -> NominalDate -> Person -> ChildActivity -> MeasurementDat
 viewChild language currentDate child activity measurements zscores session model =
     case activity of
         ChildFbf ->
-            viewChildFbf language currentDate (mapMeasurementData .fbf measurements) child.birthDate model.fbfForm
+            viewChildFbf language currentDate child (mapMeasurementData .fbf measurements) model.fbfForm
 
         ChildPicture ->
             viewPhoto language (mapMeasurementData .photo measurements) model.photo
@@ -633,15 +633,14 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
         ]
 
 
-viewChildFbf : Language -> NominalDate -> MeasurementData (Maybe ( ChildFbfId, Fbf )) -> Maybe NominalDate -> FbfForm -> Html MsgChild
-viewChildFbf language currentDate measurement maybeBirthDate form =
+viewChildFbf : Language -> NominalDate -> Person -> MeasurementData (Maybe ( ChildFbfId, Fbf )) -> FbfForm -> Html MsgChild
+viewChildFbf language currentDate child measurement form =
     let
         activity =
             ChildActivity ChildFbf
 
         amount =
-            maybeBirthDate
-                |> Maybe.andThen (fbfAmountByBirthDate currentDate)
+            fbfAmountForPerson currentDate child
                 |> Maybe.withDefault 0
 
         existingId =
@@ -787,8 +786,8 @@ type alias MotherMeasurementData =
     }
 
 
-viewMother : Language -> MotherActivity -> MeasurementData MotherMeasurements -> ModelMother -> Html MsgMother
-viewMother language activity measurements model =
+viewMother : Language -> NominalDate -> Person -> MotherActivity -> MeasurementData MotherMeasurements -> ModelMother -> Html MsgMother
+viewMother language currentDate mother activity measurements model =
     case activity of
         FamilyPlanning ->
             viewFamilyPlanning language (mapMeasurementData .familyPlanning measurements) model.familyPlanningSigns
@@ -797,7 +796,7 @@ viewMother language activity measurements model =
             viewLactation language (mapMeasurementData .lactation measurements) model.lactationForm
 
         MotherFbf ->
-            viewMotherFbf language (mapMeasurementData .fbf measurements) model.fbfForm
+            viewMotherFbf language currentDate mother (mapMeasurementData .fbf measurements) model.fbfForm
 
 
 
@@ -1175,8 +1174,8 @@ viewLactation language measurement form =
         ]
 
 
-viewMotherFbf : Language -> MeasurementData (Maybe ( MotherFbfId, Fbf )) -> FbfForm -> Html MsgMother
-viewMotherFbf language measurement form =
+viewMotherFbf : Language -> NominalDate -> Person -> MeasurementData (Maybe ( MotherFbfId, Fbf )) -> FbfForm -> Html MsgMother
+viewMotherFbf language currentDate mother measurement form =
     let
         activity =
             MotherActivity MotherFbf
@@ -1184,16 +1183,17 @@ viewMotherFbf language measurement form =
         existingId =
             Maybe.map Tuple.first measurement.current
 
-        fbfAmountForMother =
-            3
+        amount =
+            fbfAmountForPerson currentDate mother
+                |> Maybe.withDefault 0
 
         saveMsg =
             form.distributedFully
                 |> Maybe.andThen
                     (\distributedFully ->
                         if distributedFully then
-                            { form | distributedAmount = Just fbfAmountForMother, distributionNotice = Just DistributedFully }
-                                |> fbfFormToValue fbfAmountForMother
+                            { form | distributedAmount = Just amount, distributionNotice = Just DistributedFully }
+                                |> fbfFormToValue amount
                                 |> SaveMotherFbf existingId
                                 |> SendOutMsgMother
                                 |> Just
@@ -1201,7 +1201,7 @@ viewMotherFbf language measurement form =
                         else
                             Maybe.map2
                                 (\_ _ ->
-                                    fbfFormToValue fbfAmountForMother form
+                                    fbfFormToValue amount form
                                         |> SaveMotherFbf existingId
                                         |> SendOutMsgMother
                                 )
@@ -1212,7 +1212,7 @@ viewMotherFbf language measurement form =
     viewFbfForm language
         measurement
         activity
-        fbfAmountForMother
+        amount
         SetDistributedFullyForMother
         SetDistributedAmountForMother
         SetDistributoinNoticeForMother

@@ -33,7 +33,7 @@ import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValue, currentValues, fbfAmountByBirthDate, mapMeasurementData)
+import Backend.Measurement.Utils exposing (currentValue, currentValues, fbfAmountForPerson, mapMeasurementData)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
@@ -252,8 +252,7 @@ expectChildActivity currentDate offlineSession childId activity =
         ChildFbf ->
             if offlineSession.session.clinicType == Fbf then
                 Dict.get childId offlineSession.children
-                    |> Maybe.andThen .birthDate
-                    |> Maybe.map (fbfAmountByBirthDate currentDate >> isJust)
+                    |> Maybe.map (fbfAmountForPerson currentDate >> isJust)
                     |> Maybe.withDefault False
 
             else

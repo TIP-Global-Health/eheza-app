@@ -1,8 +1,10 @@
-module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, fbfAmountByBirthDate, fbfFormToValue, fbfValueToForm, getCurrentAndPrevious, lactationFormToSigns, lactationSignsToForm, mapMeasurementData, muacIndication, splitChildMeasurements, splitMotherMeasurements)
+module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, fbfAmountForPerson, fbfFormToValue, fbfValueToForm, getCurrentAndPrevious, lactationFormToSigns, lactationSignsToForm, mapMeasurementData, muacIndication, splitChildMeasurements, splitMotherMeasurements)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Person.Model exposing (Person, Ubudehe(..))
+import Backend.Person.Utils exposing (isAdult)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, compare, diffCalendarMonths)
 import Restful.Endpoint exposing (EntityUuid)
@@ -275,20 +277,40 @@ fbfFormToValue defaultAmount form =
         |> Maybe.withDefault defaultValue
 
 
-fbfAmountByBirthDate : NominalDate -> NominalDate -> Maybe Float
-fbfAmountByBirthDate currentDate birthDate =
-    let
-        diffMonths =
-            diffCalendarMonths birthDate currentDate
-    in
-    if diffMonths > 5 && diffMonths < 9 then
-        Just 3
+fbfAmountForPerson : NominalDate -> Person -> Maybe Float
+fbfAmountForPerson currentDate person =
+    person.birthDate
+        |> Maybe.andThen
+            (\birthDate ->
+                isAdult currentDate (Just birthDate)
+                    |> Maybe.andThen
+                        (\isAdult ->
+                            if isAdult then
+                                case person.ubudehe of
+                                    Just Ubudehe1 ->
+                                        Just 4.5
 
-    else if diffMonths > 8 && diffMonths < 12 then
-        Just 6
+                                    Just Ubudehe2 ->
+                                        Just 3
 
-    else if diffMonths > 11 && diffMonths < 24 then
-        Just 7.5
+                                    _ ->
+                                        Nothing
 
-    else
-        Nothing
+                            else
+                                let
+                                    diffMonths =
+                                        diffCalendarMonths birthDate currentDate
+                                in
+                                if diffMonths > 5 && diffMonths < 9 then
+                                    Just 3
+
+                                else if diffMonths > 8 && diffMonths < 12 then
+                                    Just 6
+
+                                else if diffMonths > 11 && diffMonths < 24 then
+                                    Just 7.5
+
+                                else
+                                    Nothing
+                        )
+            )

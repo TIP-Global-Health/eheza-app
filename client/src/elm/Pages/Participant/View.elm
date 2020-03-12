@@ -276,7 +276,7 @@ viewFoundMother language currentDate ( motherId, mother ) ( sessionId, session )
                         |> LocalData.unwrap
                             []
                             (\measurements ->
-                                [ Measurement.View.viewMother language activity measurements form
+                                [ Measurement.View.viewMother language currentDate mother activity measurements form
                                     |> Html.map MsgMeasurement
                                     |> keyed "content"
                                 ]
