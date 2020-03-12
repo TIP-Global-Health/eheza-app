@@ -62,11 +62,103 @@
             line-height: 24px;
             border: 0 none;
             color: black;
-            padding: 12px 4px;
+            padding: 4px 4px 24px;
+            vertical-align: top;
 
             &.phone-number {
               justify-content: center;
               text-align-last: center;
+            }
+          }
+        }
+      }
+    }
+
+    &.family-planning {
+      margin-bottom: 40px;
+
+      .header {
+
+        .title {
+          font-size: 30px;
+          line-height: 35px;
+          max-width: 40%;
+          font-weight: normal;
+          font-family: Nunito;
+        }
+      }
+
+      .row {
+        position: relative;
+
+        .content {
+          width: 100%;
+          text-align: center;
+          padding: 0 1rem;
+
+          .in-chart {
+            font-family: Nunito;
+            position: relative;
+            top: 70px;
+            width: 100%;
+
+            .stats {
+              width: 107px;
+              margin: 0 auto;
+
+              .percentage {
+                display: block;
+                font-style: normal;
+                font-weight: bold;
+                font-size: 40px;
+                line-height: 28px;
+              }
+
+              .use-label {
+                font-style: normal;
+                font-size: 20px;
+                line-height: 20px;
+                display: block;
+                margin: 8px auto;
+              }
+
+              .count {
+                font-size: 12px;
+                line-height: 12px;
+                display: block;
+              }
+            }
+          }
+
+          svg.pie-chart {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            top: 35px;
+            left: 55px;
+          }
+
+          .legend {
+            width: 50%;
+            display: flex;
+            justify-content: left;
+            flex-flow: column wrap;
+            align-content: stretch;
+            margin: 140px auto 0;
+            max-height: 285px;
+
+            .legend-item {
+              margin-bottom: 5px;
+              text-align: left;
+
+              span {
+                font-family: Nunito;
+                font-style: normal;
+                font-weight: 600;
+                font-size: 15px;
+                line-height: 22px;
+                margin-left: 9px;
+              }
             }
           }
         }
@@ -164,7 +256,7 @@
             }
 
             span {
-              padding: 2px 22px;
+              padding: 2px 5px;
               text-align: center;
               display: block;
               border-radius: 6px;
@@ -319,7 +411,7 @@
       }
 
       .last-year {
-        right: 10px;
+        right: 5px;
         top: 76px;
         max-width: 65px;
         text-align: center;
@@ -349,7 +441,7 @@
         font-size: 30px;
         line-height: 35px;
         float: left;
-        max-width: 40%;
+        max-width: 38%;
         font-weight: normal;
         font-family: Nunito;
       }
@@ -483,6 +575,10 @@
             text-align: left;
           }
         }
+
+        th {
+          min-width: 55px;
+        }
       }
     }
   }
@@ -502,10 +598,15 @@
         height: 82px;
       }
 
-      span {
+      > span {
         padding: 30px 0 0 26px;
         vertical-align: top;
         display: inline-block;
+
+        .bold {
+          font-weight: bold;
+          padding-right: 6px;
+        }
       }
 
       .arrow {

@@ -61,13 +61,8 @@ init flags url key =
                 Err msg ->
                     English
 
-        fragment =
-            -- @todo: Temporary
-            -- pageToFragment PinCodePage
-            pageToFragment (UserPage <| DashboardPage MainPage)
-
         url_ =
-            { url | fragment = fragment, query = Nothing }
+            { url | query = Nothing }
 
         model =
             emptyModel key url_ flags
