@@ -56,7 +56,7 @@ pageToFragment current =
                                 CaseManagementPage ->
                                     "case-management"
                     in
-                    "dashboard/" ++ url |> Just
+                    Just ("dashboard/" ++ url)
 
                 MyAccountPage ->
                     Just "my-account"
