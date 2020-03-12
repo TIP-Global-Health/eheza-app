@@ -1,4 +1,4 @@
-module Backend.Dashboard.Model exposing (ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Nutrition, Periods, TotalBeneficiaries, emptyModel)
+module Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Nutrition, NutritionStatus(..), NutritionValue, ParticipantStats, Periods, TotalBeneficiaries, emptyModel)
 
 {-| The stats for the dashboard.
 -}
@@ -11,42 +11,59 @@ import ZScore.Model exposing (ZScore)
 
 
 type alias DashboardStats =
-    { childrenBeneficiaries : List ChildrenBeneficiariesStats
+    { caseManagement : List CaseManagement
+    , childrenBeneficiaries : List ChildrenBeneficiariesStats
+    , completedProgram : List ParticipantStats
+    , completedProgramCount : Int
     , familyPlanning : List FamilyPlanningStats
-    , goodNutrition : GoodNutrition
+    , maybeGoodNutrition : Maybe GoodNutrition
     , malnourished : List MalnourishedStats
-    , totalBeneficiaries : Dict Int TotalBeneficiaries
-    , totalEncounters : Periods
+    , missedSessions : List ParticipantStats
+    , missedSessionsCount : Int
+    , maybeTotalBeneficiaries : Maybe (Dict Int TotalBeneficiaries)
+    , maybeTotalBeneficiariesIncidence : Maybe (Dict Int TotalBeneficiaries)
+    , maybeTotalEncounters : Maybe Periods
     }
 
 
 emptyModel : DashboardStats
 emptyModel =
-    { childrenBeneficiaries = []
+    { caseManagement = []
+    , childrenBeneficiaries = []
+    , completedProgram = []
+    , completedProgramCount = 0
     , familyPlanning = []
-    , goodNutrition =
-        { all =
-            { lastYear = 0
-            , thisYear = 0
-            }
-        , good =
-            { lastYear = 0
-            , thisYear = 0
-            }
-        }
+    , maybeGoodNutrition = Nothing
     , malnourished = []
-    , totalEncounters =
-        { lastYear = 0
-        , thisYear = 0
-        }
-    , totalBeneficiaries = Dict.empty
+    , missedSessions = []
+    , missedSessionsCount = 0
+    , maybeTotalEncounters = Nothing
+    , maybeTotalBeneficiaries = Nothing
+    , maybeTotalBeneficiariesIncidence = Nothing
+    }
+
+
+type alias CaseManagement =
+    { name : String
+    , nutrition : CaseNutrition
+    }
+
+
+type alias CaseNutrition =
+    { stunting : Dict Int NutritionValue
+    , underweight : Dict Int NutritionValue
+    , wasting : Dict Int NutritionValue
+    , muac : Dict Int NutritionValue
     }
 
 
 type alias ChildrenBeneficiariesStats =
     { gender : Gender
-    , birthdate : NominalDate
+    , birthDate : NominalDate
     , memberSince : NominalDate
+    , name : String
+    , motherName : String
+    , phoneNumber : Maybe String
     }
 
 
@@ -58,8 +75,19 @@ type alias FamilyPlanningStats =
 
 type alias MalnourishedStats =
     { created : NominalDate
+    , birthDate : NominalDate
     , gender : Gender
     , zscore : ZScore
+    }
+
+
+type alias ParticipantStats =
+    { name : String
+    , gender : Gender
+    , birthDate : NominalDate
+    , motherName : String
+    , phoneNumber : Maybe String
+    , dates : List NominalDate
     }
 
 
@@ -81,9 +109,22 @@ type alias Nutrition =
     }
 
 
+type alias NutritionValue =
+    { class : NutritionStatus
+    , value : String
+    }
+
+
 type alias TotalBeneficiaries =
     { stunting : Nutrition
     , underweight : Nutrition
     , wasting : Nutrition
     , muac : Nutrition
     }
+
+
+type NutritionStatus
+    = Good
+    | Moderate
+    | Neutral
+    | Severe

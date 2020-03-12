@@ -1,4 +1,311 @@
 .dashboard {
+  margin-top: -15px;
+
+  .ui.segment {
+    padding: 1.5rem 2rem;
+
+    &.filters {
+      background-color: $color-light-background;
+      padding: 15px 20px;
+
+      .ui.button {
+        font-size: 22px;
+        line-height: 30px;
+        text-transform: none;
+        font-weight: normal;
+        padding: 0 4px;
+        border-radius: 3px;
+
+        &:link,
+        &:focus,
+        &:active,
+        &:hover {
+          background-color: $color-primary;
+        }
+
+        &.inactive {
+          background-color: transparent;
+          color: $color-background;
+        }
+      }
+    }
+
+    .content {
+
+      .very.basic.table {
+        width: 100%;
+
+        thead {
+
+          th {
+            font-size: 16px;
+            line-height: 24px;
+            font-weight: normal;
+            padding: 2px 4px 2px;
+            border-left: 0 none;
+            border-right: 0 none;
+            border-bottom: 1px solid $color-text;
+            color: $color-text;
+            text-transform: uppercase;
+
+            &.phone-number {
+              width: 26%;
+            }
+          }
+        }
+
+        tbody {
+
+          td {
+            font-weight: normal;
+            font-size: 20px;
+            line-height: 24px;
+            border: 0 none;
+            color: black;
+            padding: 4px 4px 24px;
+            vertical-align: top;
+
+            &.phone-number {
+              justify-content: center;
+              text-align-last: center;
+            }
+          }
+        }
+      }
+    }
+
+    &.family-planning {
+      margin-bottom: 40px;
+
+      .header {
+
+        .title {
+          font-size: 30px;
+          line-height: 35px;
+          max-width: 40%;
+          font-weight: normal;
+          font-family: Nunito;
+        }
+      }
+
+      .row {
+        position: relative;
+
+        .content {
+          width: 100%;
+          text-align: center;
+          padding: 0 1rem;
+
+          .in-chart {
+            font-family: Nunito;
+            position: relative;
+            top: 70px;
+            width: 100%;
+
+            .stats {
+              width: 107px;
+              margin: 0 auto;
+
+              .percentage {
+                display: block;
+                font-style: normal;
+                font-weight: bold;
+                font-size: 40px;
+                line-height: 28px;
+              }
+
+              .use-label {
+                font-style: normal;
+                font-size: 20px;
+                line-height: 20px;
+                display: block;
+                margin: 8px auto;
+              }
+
+              .count {
+                font-size: 12px;
+                line-height: 12px;
+                display: block;
+              }
+            }
+          }
+
+          svg.pie-chart {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            top: 35px;
+            left: 55px;
+          }
+
+          .legend {
+            width: 50%;
+            display: flex;
+            justify-content: left;
+            flex-flow: column wrap;
+            align-content: stretch;
+            margin: 140px auto 0;
+            max-height: 285px;
+
+            .legend-item {
+              margin-bottom: 5px;
+              text-align: left;
+
+              span {
+                font-family: Nunito;
+                font-style: normal;
+                font-weight: 600;
+                font-size: 15px;
+                line-height: 22px;
+                margin-left: 9px;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  &.stats {
+
+    .ui.grid {
+      margin-bottom: 25px;
+    }
+
+    .overlay {
+
+      .ui.modal {
+        margin-left: -365px !important;
+        width: 730px !important;
+        height: 400px;
+        overflow: scroll;
+
+        .header {
+          padding: 0;
+
+          .title {
+            font-size: 30px;
+            line-height: 35px;
+            font-weight: normal;
+            font-family: Nunito;
+            text-transform: none;
+            text-align: left;
+          }
+
+          .overlay-close {
+            position: absolute;
+            top: 4px;
+            right: 15px;
+            cursor: pointer;
+            font-weight: normal;
+            text-transform: none;
+            font-size: 20px;
+          }
+        }
+
+        .content {
+          padding: 1rem 0 2.5rem 0;
+        }
+      }
+    }
+  }
+
+  &.case {
+
+    .ui.segment {
+
+      .header {
+        float: none;
+      }
+
+      .content {
+        overflow-x: scroll;
+        overflow-y: visible;
+        width: 100%;
+
+        .very.basic.table {
+          width: 100%;
+          margin-left: 407px;
+
+          th {
+            font-size: 16px;
+            line-height: 24px;
+            border: 0 none;
+            border-bottom: 1px solid $color-text;
+            color: $color-text;
+            text-transform: uppercase;
+            padding: 0 3px;
+            text-align: center;
+
+            &.name {
+              height: 25px;
+              text-align: left;
+            }
+          }
+
+          td {
+            font-size: 20px;
+            line-height: 24px;
+            border: 0 none;
+            padding: 8px 10px;
+
+            &.name {
+              border-right: 1px solid $color-text;
+              height: 45px;
+              padding: 16px 8px;
+            }
+
+            span {
+              padding: 2px 5px;
+              text-align: center;
+              display: block;
+              border-radius: 6px;
+              color: white;
+              width: 70px;
+            }
+
+            &.neutral {
+
+              span {
+                background-color: $color-text;
+              }
+            }
+
+            &.severe {
+
+              span {
+                background-color: $color-velvet;
+              }
+            }
+
+            &.moderate {
+
+              span {
+                background-color: $color-orange;
+              }
+            }
+
+            &.good {
+
+              span {
+                background-color: $color-green;
+              }
+            }
+          }
+
+          // Create the table's vertical scroll.
+          th.name,
+          td.name {
+            position: absolute;
+            left: 25px;
+            width: 410px;
+            background-color: white;
+            word-break: break-all;
+          }
+        }
+      }
+    }
+  }
 
   .severity {
 
@@ -15,7 +322,7 @@
     }
 
     &.severity-severe {
-      color: $color-red;
+      color: $color-velvet;
     }
   }
 
@@ -48,7 +355,7 @@
     .last-year {
       position: absolute;
       right: 20px;
-      top: 60px;;
+      top: 60px;
       max-width: 80px;
 
       .percentage {
@@ -89,20 +396,54 @@
         }
       }
     }
+
+    &.link {
+      cursor: pointer;
+      background: white url(#{$img-path}icon-card-link.svg) no-repeat 97% 7px;
+    }
+
+    &.stats-card {
+      min-height: 135px;
+      padding: 1.5rem 2.5rem;
+
+      .header {
+        padding: 0 10px;
+      }
+
+      .last-year {
+        right: 5px;
+        top: 76px;
+        max-width: 65px;
+        text-align: center;
+
+        .percentage {
+          font-size: 16px;
+        }
+
+        .percentage-label {
+          font-size: 10px;
+          line-height: 10px;
+        }
+      }
+    }
   }
 
-  .dashboards-monthly-chart {
+  .dashboards-monthly-chart,
+  .fbf-beneficiaries,
+  .case-management {
 
     .header {
       float: left;
       clear: both;
+      width: 100%;
 
       .title {
         font-size: 30px;
         line-height: 35px;
         float: left;
-        max-width: 40%;
+        max-width: 38%;
         font-weight: normal;
+        font-family: Nunito;
       }
 
       .filters {
@@ -112,7 +453,7 @@
         color: $color-background;
         margin-top: 6px;
 
-        .chart-filters {
+        .dashboard-filters {
           padding: 4px 5px;
           cursor: pointer;
 
@@ -205,6 +546,43 @@
     }
   }
 
+  .fbf-beneficiaries {
+
+    .header {
+
+      .filters {
+
+        :first-child {
+          margin-right: 10px;
+        }
+
+        .dashboard-filters {
+          padding: 0 5px;
+        }
+      }
+    }
+
+    .content {
+
+      .table {
+        margin-top: 60px;
+
+        th,
+        td {
+          text-align: center;
+
+          &.label {
+            text-align: left;
+          }
+        }
+
+        th {
+          min-width: 55px;
+        }
+      }
+    }
+  }
+
   .dashboards-links {
 
     > div {
@@ -220,10 +598,15 @@
         height: 82px;
       }
 
-      span {
+      > span {
         padding: 30px 0 0 26px;
         vertical-align: top;
         display: inline-block;
+
+        .bold {
+          font-weight: bold;
+          padding-right: 6px;
+        }
       }
 
       .arrow {
