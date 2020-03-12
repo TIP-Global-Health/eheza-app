@@ -1,5 +1,6 @@
 module Pages.Dashboard.Model exposing
-    ( Card
+    ( BeneficiariesTableLabels(..)
+    , Card
     , CardValueSeverity(..)
     , FamilyPlanningSignsCounter
     , FilterCharts(..)
@@ -29,8 +30,15 @@ import Pages.Page exposing (DashboardPage(..), Page(..))
 type FilterPeriod
     = ThisMonth
     | LastMonth
-    | ThreeMonths
+    | ThreeMonthsAgo
     | OneYear
+
+
+type BeneficiariesTableLabels
+    = New
+    | Completed
+    | Missed
+    | Malnourished
 
 
 filterPeriods : List FilterPeriod
@@ -90,7 +98,8 @@ type alias ParticipantStats =
 type alias Model =
     { period : FilterPeriod
     , beneficiariesGender : FilterGender
-    , currentTotalChartsFilter : FilterCharts
+    , currentBeneficiariesChartsFilter : FilterCharts
+    , currentBeneficiariesIncidenceChartsFilter : FilterCharts
     , currentCaseManagementFilter : FilterCharts
     , latestPage : DashboardPage
     , modalTable : List ParticipantStats
@@ -103,7 +112,8 @@ emptyModel : Model
 emptyModel =
     { period = OneYear
     , beneficiariesGender = Boys
-    , currentTotalChartsFilter = Stunting
+    , currentBeneficiariesChartsFilter = Stunting
+    , currentBeneficiariesIncidenceChartsFilter = Stunting
     , currentCaseManagementFilter = Stunting
     , latestPage = MainPage
     , modalTable = []
@@ -152,7 +162,8 @@ type alias StatsCard =
 
 
 type FilterType
-    = FilterTotalsChart
+    = FilterBeneficiariesChart
+    | FilterBeneficiariesIncidenceChart
     | FilterCaseManagement
 
 
@@ -160,6 +171,6 @@ type Msg
     = ModalToggle Bool (List ParticipantStats) String
     | SetFilterGender FilterGender
     | SetFilterPeriod FilterPeriod
-    | SetFilterTotalsChart FilterCharts
+    | SetFilterBeneficiariesChart FilterCharts FilterType
     | SetFilterCaseManagement FilterCharts
     | SetActivePage Page

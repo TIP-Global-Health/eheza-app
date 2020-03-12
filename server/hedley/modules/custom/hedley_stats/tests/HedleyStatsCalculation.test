@@ -150,7 +150,6 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $moderate_people = 18;
     $severe_people = 12;
     $moderate_count = 0;
-    $severe_count = 0;
 
     foreach ($sessions as $session) {
       if (!isset($session['session_data'])) {
@@ -166,7 +165,6 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
         $measurements_state = HEDLEY_STATS_MODERATE;
         if ($moderate_count >= $moderate_people) {
           $measurements_state = HEDLEY_STATS_SEVERE;
-          $severe_count++;
         }
         else {
           $moderate_count++;
@@ -180,17 +178,49 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
       $month = date('n', $session['date']);
 
-      $total_beneficiaries = hedley_stats_get_total_beneficiaries($this->healthCenterId);
+      $total_beneficiaries = hedley_stats_get_fbf_beneficiaries_graphs_data($this->healthCenterId, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_GRAPH);
 
-      // Assert the amount of total beneficiaries.
-      $this->assertEqual($severe_people, $total_beneficiaries[$month]['stunting'][HEDLEY_STATS_SEVERE]);
-      $this->assertEqual($moderate_people, $total_beneficiaries[$month]['stunting'][HEDLEY_STATS_MODERATE]);
-      $this->assertEqual($severe_people, $total_beneficiaries[$month]['underweight'][HEDLEY_STATS_SEVERE]);
-      $this->assertEqual($moderate_people, $total_beneficiaries[$month]['underweight'][HEDLEY_STATS_MODERATE]);
-      $this->assertEqual($severe_people, $total_beneficiaries[$month]['wasting'][HEDLEY_STATS_SEVERE]);
-      $this->assertEqual($moderate_people, $total_beneficiaries[$month]['wasting'][HEDLEY_STATS_MODERATE]);
-      $this->assertEqual($severe_people, $total_beneficiaries[$month]['muac'][HEDLEY_STATS_SEVERE]);
-      $this->assertEqual($moderate_people, $total_beneficiaries[$month]['muac'][HEDLEY_STATS_MODERATE]);
+      $this->assertTotalBeneficiaries($total_beneficiaries, $severe_people, $moderate_people, $month);
+    }
+  }
+
+  /**
+   * Testing the total beneficiaries incidence (New from the last year) stats.
+   */
+  public function testTotalBeneficiariesIncidence() {
+    // Define needed measurements for the test.
+    $measurements = [
+      HEDLEY_STATS_MODERATE => [
+        'weight' => 8,
+        'height' => 75,
+        'muac' => 12,
+      ],
+    ];
+
+    $attendance = 5;
+    $sessions = $this->createSessionsWithAttendance(0, $attendance);
+    $measurements_state = HEDLEY_STATS_MODERATE;
+    foreach ($sessions as $session) {
+      if (!isset($session['session_data'])) {
+        continue;
+      }
+
+      $session_data = $session['session_data'];
+      $session_nid = $session_data['session_nid'];
+
+      foreach ($session_data['children'] as $child_nid) {
+        // Create measurements.
+        $this->createWeight($session_nid, $child_nid, $measurements[$measurements_state]['weight'], $session['date']);
+        $this->createHeight($session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
+        $this->createMuac($session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);;
+      }
+
+      $month = date('n', $session['date']);
+
+      $total_beneficiaries_incidence = hedley_stats_get_fbf_beneficiaries_graphs_data($this->healthCenterId, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_INCIDENCE_GRAPH);
+      // We should get 0 people because they were all last year even though they
+      // have measurements this year (Not new/incidence).
+      $this->assertTotalBeneficiaries($total_beneficiaries_incidence, 0, 0, $month);
     }
   }
 
@@ -395,7 +425,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       $children = [];
       for ($i = 1; $i <= $session['number_of_attendance']; $i++) {
         $mother_nid = $this->createMother($this->clinicId);
-        $child_nid = $this->createChild($mother_nid, $this->healthCenterId, strtotime('-24 months'));
+        $child_nid = $this->createChild($mother_nid, $this->healthCenterId, strtotime('-23 months'), strtotime('-23 months'));
         $children[] = $child_nid;
 
         // Create this because the health centers are assigned to "attendance"
@@ -413,6 +443,30 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     }
 
     return $sessions;
+  }
+
+  /**
+   * Assert the stats coming back from the "total beneficiaries" function.
+   *
+   * @param array $beneficiaries
+   *   The data from the stats function.
+   * @param int $severe_count
+   *   The expected "severe" count.
+   * @param int $moderate_count
+   *   The expected "moderate" count.
+   * @param int $session_month
+   *   The session month, in order to know where to look in the data.
+   */
+  protected function assertTotalBeneficiaries(array $beneficiaries, $severe_count, $moderate_count, $session_month) {
+    // Make sure number match the number of people added this year.
+    $this->assertEqual($severe_count, $beneficiaries[$session_month]['stunting'][HEDLEY_STATS_SEVERE]);
+    $this->assertEqual($moderate_count, $beneficiaries[$session_month]['stunting'][HEDLEY_STATS_MODERATE]);
+    $this->assertEqual($severe_count, $beneficiaries[$session_month]['underweight'][HEDLEY_STATS_SEVERE]);
+    $this->assertEqual($moderate_count, $beneficiaries[$session_month]['underweight'][HEDLEY_STATS_MODERATE]);
+    $this->assertEqual($severe_count, $beneficiaries[$session_month]['wasting'][HEDLEY_STATS_SEVERE]);
+    $this->assertEqual($moderate_count, $beneficiaries[$session_month]['wasting'][HEDLEY_STATS_MODERATE]);
+    $this->assertEqual($severe_count, $beneficiaries[$session_month]['muac'][HEDLEY_STATS_SEVERE]);
+    $this->assertEqual($moderate_count, $beneficiaries[$session_month]['muac'][HEDLEY_STATS_MODERATE]);
   }
 
 }

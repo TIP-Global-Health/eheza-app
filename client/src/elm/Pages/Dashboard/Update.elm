@@ -32,8 +32,16 @@ update msg subPage model =
             , []
             )
 
-        SetFilterTotalsChart filter ->
-            ( { model | currentTotalChartsFilter = filter }
+        SetFilterBeneficiariesChart filter filterType ->
+            let
+                updatedModel =
+                    if filterType == FilterBeneficiariesChart then
+                        { model | currentBeneficiariesChartsFilter = filter }
+
+                    else
+                        { model | currentBeneficiariesIncidenceChartsFilter = filter }
+            in
+            ( updatedModel
             , Cmd.none
             , []
             )
