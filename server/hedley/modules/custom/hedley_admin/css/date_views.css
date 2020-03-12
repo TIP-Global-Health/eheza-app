@@ -1,0 +1,20 @@
+/**
+ * @file
+ * Custom CSS for the Date Views filter.
+ */
+
+.views-exposed-widget #edit-field-date-measured-value-min:before {
+  content: "Start Date";
+  display: block;
+  font-weight: bold;
+}
+.views-exposed-widget #edit-field-date-measured-value-max:before {
+  content: "End Date";
+  display: block;
+  font-weight: bold;
+}
+
+.views-exposed-widget #edit-field-date-measured-value-min .form-item,
+.views-exposed-widget #edit-field-date-measured-value-max .form-item {
+  display: inline-block;
+}

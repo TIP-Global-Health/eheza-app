@@ -30,7 +30,7 @@ import ZScore.Model
 things here that it needs. But this is faster for the moment.
 
 -}
-type alias Participant id value activity msg =
+type alias Participant id value activity msg date =
     { getAvatarUrl : value -> Maybe String
     , getBirthDate : value -> Maybe NominalDate
     , getMotherId : id -> EditableSession -> Maybe PersonId
@@ -40,8 +40,8 @@ type alias Participant id value activity msg =
     , getVillage : value -> Maybe String
     , iconClass : String
     , showProgressReportTab : Bool
-    , summarizeActivitiesForParticipant : id -> OfflineSession -> CompletedAndPending (List activity)
-    , summarizeParticipantsForActivity : activity -> OfflineSession -> CheckedIn -> CompletedAndPending (Dict id value)
+    , summarizeActivitiesForParticipant : date -> id -> OfflineSession -> CompletedAndPending (List activity)
+    , summarizeParticipantsForActivity : date -> activity -> OfflineSession -> CheckedIn -> CompletedAndPending (Dict id value)
     , tagActivity : activity -> Activity
     , toChildId : id -> Maybe PersonId
     , toMotherId : id -> Maybe PersonId
