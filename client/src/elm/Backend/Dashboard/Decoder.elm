@@ -19,13 +19,13 @@ decodeDashboardStats =
         |> required "completed_program" (list decodeParticipantStats)
         |> required "completed_program_count" decodeInt
         |> required "family_planning" (list decodeFamilyPlanningStats)
-        |> required "good_nutrition" decodeGoodNutrition
+        |> optional "good_nutrition" (nullable decodeGoodNutrition) Nothing
         |> required "malnourished_beneficiaries" (list decodeMalnourishedStats)
         |> required "missed_sessions" (list decodeParticipantStats)
         |> required "missed_sessions_count" decodeInt
-        |> required "total_beneficiaries" decodeTotalBeneficiariesDict
-        |> required "total_beneficiaries_incidence" decodeTotalBeneficiariesDict
-        |> required "total_encounters" decodePeriods
+        |> optional "total_beneficiaries" (nullable decodeTotalBeneficiariesDict) Nothing
+        |> optional "total_beneficiaries_incidence" (nullable decodeTotalBeneficiariesDict) Nothing
+        |> optional "total_encounters" (nullable decodePeriods) Nothing
 
 
 decodeTotalBeneficiariesDict : Decoder (Dict Int TotalBeneficiaries)

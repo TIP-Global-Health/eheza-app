@@ -214,12 +214,14 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
         $this->createHeight($session_nid, $child_nid, $measurements[$measurements_state]['height'], $session['date']);
         $this->createMuac($session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);;
       }
-    }
 
-    $total_beneficiaries_incidence = hedley_stats_get_fbf_beneficiaries_graphs_data($this->healthCenterId, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_INCIDENCE_GRAPH);
-    // We should get 0 people because they were all last year even though they
-    // have measurements this year (Not new/incidence).
-    $this->assertTrue(empty($total_beneficiaries_incidence));
+      $month = date('n', $session['date']);
+
+      $total_beneficiaries_incidence = hedley_stats_get_fbf_beneficiaries_graphs_data($this->healthCenterId, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_INCIDENCE_GRAPH);
+      // We should get 0 people because they were all last year even though they
+      // have measurements this year (Not new/incidence).
+      $this->assertTotalBeneficiaries($total_beneficiaries_incidence, 0, 0, $month);
+    }
   }
 
   /**

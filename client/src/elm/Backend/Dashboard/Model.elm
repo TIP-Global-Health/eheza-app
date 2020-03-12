@@ -16,13 +16,13 @@ type alias DashboardStats =
     , completedProgram : List ParticipantStats
     , completedProgramCount : Int
     , familyPlanning : List FamilyPlanningStats
-    , goodNutrition : GoodNutrition
+    , maybeGoodNutrition : Maybe GoodNutrition
     , malnourished : List MalnourishedStats
     , missedSessions : List ParticipantStats
     , missedSessionsCount : Int
-    , totalBeneficiaries : Dict Int TotalBeneficiaries
-    , totalBeneficiariesIncidence : Dict Int TotalBeneficiaries
-    , totalEncounters : Periods
+    , maybeTotalBeneficiaries : Maybe (Dict Int TotalBeneficiaries)
+    , maybeTotalBeneficiariesIncidence : Maybe (Dict Int TotalBeneficiaries)
+    , maybeTotalEncounters : Maybe Periods
     }
 
 
@@ -33,25 +33,13 @@ emptyModel =
     , completedProgram = []
     , completedProgramCount = 0
     , familyPlanning = []
-    , goodNutrition =
-        { all =
-            { lastYear = 0
-            , thisYear = 0
-            }
-        , good =
-            { lastYear = 0
-            , thisYear = 0
-            }
-        }
+    , maybeGoodNutrition = Nothing
     , malnourished = []
     , missedSessions = []
     , missedSessionsCount = 0
-    , totalEncounters =
-        { lastYear = 0
-        , thisYear = 0
-        }
-    , totalBeneficiaries = Dict.empty
-    , totalBeneficiariesIncidence = Dict.empty
+    , maybeTotalEncounters = Nothing
+    , maybeTotalBeneficiaries = Nothing
+    , maybeTotalBeneficiariesIncidence = Nothing
     }
 
 
@@ -127,16 +115,16 @@ type alias NutritionValue =
     }
 
 
-type NutritionStatus
-    = Good
-    | Moderate
-    | Neutral
-    | Severe
-
-
 type alias TotalBeneficiaries =
     { stunting : Nutrition
     , underweight : Nutrition
     , wasting : Nutrition
     , muac : Nutrition
     }
+
+
+type NutritionStatus
+    = Good
+    | Moderate
+    | Neutral
+    | Severe

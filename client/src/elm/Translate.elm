@@ -35,7 +35,7 @@ import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
 import Http
-import Pages.Dashboard.Model as Dashboard exposing (FilterPeriod(..))
+import Pages.Dashboard.Model as Dashboard exposing (BeneficiariesTableLabels(..), FilterPeriod(..))
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
@@ -138,9 +138,10 @@ type Adherence
 
 type Dashboard
     = BeneficiariesLabel
-    | BeneficiariesTableColumnLabel String
+    | BeneficiariesTableColumnLabel BeneficiariesTableLabels
     | BeneficiariesTableLabel
     | BoysFilterLabel
+    | CaseManagementFirstWordHelper
     | CaseManagementHelper
     | CaseManagementLabel
     | CompletedProgramLabel
@@ -161,6 +162,7 @@ type Dashboard
     | PeriodFilter FilterPeriod
     | Severe
     | SeverelyMalnourished
+    | StatisticsFirstWordHelper
     | StatisticsHelper
     | SyncNotice
     | TotalBeneficiaries
@@ -2568,30 +2570,25 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
-        BeneficiariesTableColumnLabel name ->
-            case name of
-                "new" ->
+        BeneficiariesTableColumnLabel label ->
+            case label of
+                New ->
                     { english = "New beneficiaries to program"
                     , kinyarwanda = Nothing
                     }
 
-                "completed" ->
+                Completed ->
                     { english = "Beneficiaries completed program"
                     , kinyarwanda = Nothing
                     }
 
-                "missed" ->
+                Missed ->
                     { english = "Missed session by beneficiaries"
                     , kinyarwanda = Nothing
                     }
 
-                "malnourished" ->
+                Malnourished ->
                     { english = "Malnourished beneficiaries"
-                    , kinyarwanda = Nothing
-                    }
-
-                _ ->
-                    { english = ""
                     , kinyarwanda = Nothing
                     }
 
@@ -2605,8 +2602,13 @@ translateDashboard trans =
             , kinyarwanda = Just "Umuhungu"
             }
 
+        CaseManagementFirstWordHelper ->
+            { english = "Review"
+            , kinyarwanda = Nothing
+            }
+
         CaseManagementHelper ->
-            { english = "Review list of malnourished children"
+            { english = "list of malnourished children"
             , kinyarwanda = Nothing
             }
 
@@ -2702,7 +2704,7 @@ translateDashboard trans =
                     , kinyarwanda = Nothing
                     }
 
-                ThreeMonths ->
+                Dashboard.ThreeMonthsAgo ->
                     { english = "from last month"
                     , kinyarwanda = Nothing
                     }
@@ -2724,7 +2726,7 @@ translateDashboard trans =
                     , kinyarwanda = Nothing
                     }
 
-                Dashboard.ThreeMonths ->
+                Dashboard.ThreeMonthsAgo ->
                     { english = "Three months"
                     , kinyarwanda = Nothing
                     }
@@ -2739,8 +2741,13 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
+        StatisticsFirstWordHelper ->
+            { english = "See"
+            , kinyarwanda = Nothing
+            }
+
         StatisticsHelper ->
-            { english = "See statistics for this month"
+            { english = "statistics for this month"
             , kinyarwanda = Nothing
             }
 

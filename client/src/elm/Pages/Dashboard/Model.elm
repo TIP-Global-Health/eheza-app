@@ -1,5 +1,6 @@
 module Pages.Dashboard.Model exposing
-    ( Card
+    ( BeneficiariesTableLabels(..)
+    , Card
     , CardValueSeverity(..)
     , FamilyPlanningSignsCounter
     , FilterCharts(..)
@@ -29,8 +30,15 @@ import Pages.Page exposing (DashboardPage(..), Page(..))
 type FilterPeriod
     = ThisMonth
     | LastMonth
-    | ThreeMonths
+    | ThreeMonthsAgo
     | OneYear
+
+
+type BeneficiariesTableLabels
+    = New
+    | Completed
+    | Missed
+    | Malnourished
 
 
 filterPeriods : List FilterPeriod

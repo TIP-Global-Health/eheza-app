@@ -273,28 +273,29 @@
     //
     // The parameter is our shard metadata.
     function uploadSingleShard (shard, credentials, maybeHealthCenterUuid) {
-        var url = getSyncUrl(shard, credentials, maybeHealthCenterUuid);
-        var uploadUrl = getUploadUrl(credentials);
+        return getSyncUrl(shard, credentials, maybeHealthCenterUuid).then(function (syncUrl) {
+            var uploadUrl = getUploadUrl(credentials);
 
-        return recordAttempt(shard.uuid, {
-            tag: Uploading,
-            timestamp: Date.now()
-        }).then(function () {
-            return sendToBackend(shard.uuid, url, uploadUrl).catch(function (err) {
-                return recordAttempt(shard.uuid, err).then(function () {
-                    return Promise.reject(err);
-                });
-            }).then(function (status) {
-                return recordAttempt(shard.uuid, {
-                    tag: Success,
-                    timestamp: Date.now()
-                }).then(function () {
-                    if (status.remaining > 0) {
-                        // Keep going if there are more.
-                        return uploadSingleShard(shard, credentials, maybeHealthCenterUuid);
-                    } else {
-                        return Promise.resolve(status);
-                    }
+            return recordAttempt(shard.uuid, {
+                tag: Uploading,
+                timestamp: Date.now()
+            }).then(function () {
+                return sendToBackend(shard.uuid, syncUrl, uploadUrl).catch(function (err) {
+                    return recordAttempt(shard.uuid, err).then(function () {
+                        return Promise.reject(err);
+                    });
+                }).then(function (status) {
+                    return recordAttempt(shard.uuid, {
+                        tag: Success,
+                        timestamp: Date.now()
+                    }).then(function () {
+                        if (status.remaining > 0) {
+                            // Keep going if there are more.
+                            return uploadSingleShard(shard, credentials, maybeHealthCenterUuid);
+                        } else {
+                            return Promise.resolve(status);
+                        }
+                    });
                 });
             });
         });

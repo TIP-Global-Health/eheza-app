@@ -62,7 +62,8 @@
             line-height: 24px;
             border: 0 none;
             color: black;
-            padding: 12px 4px;
+            padding: 4px 4px 24px;
+            vertical-align: top;
 
             &.phone-number {
               justify-content: center;
@@ -102,7 +103,7 @@
             width: 100%;
 
             .stats {
-              width: 120px;
+              width: 107px;
               margin: 0 auto;
 
               .percentage {
@@ -255,7 +256,7 @@
             }
 
             span {
-              padding: 2px 22px;
+              padding: 2px 5px;
               text-align: center;
               display: block;
               border-radius: 6px;
@@ -410,7 +411,7 @@
       }
 
       .last-year {
-        right: 10px;
+        right: 5px;
         top: 76px;
         max-width: 65px;
         text-align: center;
@@ -574,6 +575,10 @@
             text-align: left;
           }
         }
+
+        th {
+          min-width: 55px;
+        }
       }
     }
   }
@@ -593,10 +598,15 @@
         height: 82px;
       }
 
-      span {
+      > span {
         padding: 30px 0 0 26px;
         vertical-align: top;
         display: inline-block;
+
+        .bold {
+          font-weight: bold;
+          padding-right: 6px;
+        }
       }
 
       .arrow {
