@@ -1,5 +1,6 @@
 module Pages.Dashboard.Model exposing
-    ( Card
+    ( BeneficiariesTableLabels(..)
+    , Card
     , CardValueSeverity(..)
     , FamilyPlanningSignsCounter
     , FilterCharts(..)
@@ -21,6 +22,7 @@ module Pages.Dashboard.Model exposing
 
 import AssocList exposing (Dict)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
+import Backend.Person.Model exposing (Gender)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (DashboardPage(..), Page(..))
 
@@ -28,8 +30,15 @@ import Pages.Page exposing (DashboardPage(..), Page(..))
 type FilterPeriod
     = ThisMonth
     | LastMonth
-    | ThreeMonths
+    | ThreeMonthsAgo
     | OneYear
+
+
+type BeneficiariesTableLabels
+    = New
+    | Completed
+    | Missed
+    | Malnourished
 
 
 filterPeriods : List FilterPeriod
@@ -47,16 +56,14 @@ filterPeriodsForStatsPage =
 {-| We don't use the existing `Gender`, as we want to have an `All` option as-well
 -}
 type FilterGender
-    = All
-    | Female
-    | Male
+    = Boys
+    | Girls
 
 
 filterGenders : List FilterGender
 filterGenders =
-    [ All
-    , Female
-    , Male
+    [ Boys
+    , Girls
     ]
 
 
@@ -80,6 +87,8 @@ filterCharts =
 
 type alias ParticipantStats =
     { name : String
+    , gender : Gender
+    , birthDate : NominalDate
     , motherName : String
     , phoneNumber : Maybe String
     , dates : List NominalDate
@@ -89,7 +98,8 @@ type alias ParticipantStats =
 type alias Model =
     { period : FilterPeriod
     , beneficiariesGender : FilterGender
-    , currentTotalChartsFilter : FilterCharts
+    , currentBeneficiariesChartsFilter : FilterCharts
+    , currentBeneficiariesIncidenceChartsFilter : FilterCharts
     , currentCaseManagementFilter : FilterCharts
     , latestPage : DashboardPage
     , modalTable : List ParticipantStats
@@ -101,8 +111,9 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { period = OneYear
-    , beneficiariesGender = All
-    , currentTotalChartsFilter = Stunting
+    , beneficiariesGender = Boys
+    , currentBeneficiariesChartsFilter = Stunting
+    , currentBeneficiariesIncidenceChartsFilter = Stunting
     , currentCaseManagementFilter = Stunting
     , latestPage = MainPage
     , modalTable = []
@@ -151,7 +162,8 @@ type alias StatsCard =
 
 
 type FilterType
-    = FilterTotalsChart
+    = FilterBeneficiariesChart
+    | FilterBeneficiariesIncidenceChart
     | FilterCaseManagement
 
 
@@ -159,6 +171,6 @@ type Msg
     = ModalToggle Bool (List ParticipantStats) String
     | SetFilterGender FilterGender
     | SetFilterPeriod FilterPeriod
-    | SetFilterTotalsChart FilterCharts
+    | SetFilterBeneficiariesChart FilterCharts FilterType
     | SetFilterCaseManagement FilterCharts
     | SetActivePage Page

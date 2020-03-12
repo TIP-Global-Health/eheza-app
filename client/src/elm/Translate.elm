@@ -35,7 +35,7 @@ import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
 import Http
-import Pages.Dashboard.Model as Dashboard exposing (FilterPeriod(..))
+import Pages.Dashboard.Model as Dashboard exposing (BeneficiariesTableLabels(..), FilterPeriod(..))
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
@@ -137,22 +137,35 @@ type Adherence
 
 
 type Dashboard
-    = CaseManagementHelper
+    = BeneficiariesLabel
+    | BeneficiariesTableColumnLabel BeneficiariesTableLabels
+    | BeneficiariesTableLabel
+    | BoysFilterLabel
+    | CaseManagementFirstWordHelper
+    | CaseManagementHelper
     | CaseManagementLabel
     | CompletedProgramLabel
+    | FamilyPlanningLabel
     | FamilyPlanningOutOfWomen { total : Int, useFamilyPlanning : Int }
+    | GirlsFilterLabel
     | GoodNutritionLabel
+    | IncidenceOf
+    | LoadingDataGeneral
     | MissedSessionsLabel
     | Moderate
     | ModeratelyMalnourished
     | NewBeneficiaries
     | NewCasesLabel
+    | NoDataGeneral
+    | NoDataForPeriod
     | PercentageLabel FilterPeriod
     | PeriodFilter FilterPeriod
     | Severe
     | SeverelyMalnourished
+    | StatisticsFirstWordHelper
     | StatisticsHelper
-    | TotalBeneficiariesWasting
+    | SyncNotice
+    | TotalBeneficiaries
     | TotalMalnourished
     | TotalEncountersLabel
     | UseFamilyPlanning
@@ -2552,8 +2565,50 @@ translateChartPhrase phrase =
 translateDashboard : Dashboard -> TranslationSet String
 translateDashboard trans =
     case trans of
+        BeneficiariesLabel ->
+            { english = "FBF Beneficiaries"
+            , kinyarwanda = Nothing
+            }
+
+        BeneficiariesTableColumnLabel label ->
+            case label of
+                New ->
+                    { english = "New beneficiaries to program"
+                    , kinyarwanda = Nothing
+                    }
+
+                Completed ->
+                    { english = "Beneficiaries completed program"
+                    , kinyarwanda = Nothing
+                    }
+
+                Missed ->
+                    { english = "Missed session by beneficiaries"
+                    , kinyarwanda = Nothing
+                    }
+
+                Malnourished ->
+                    { english = "Malnourished beneficiaries"
+                    , kinyarwanda = Nothing
+                    }
+
+        BeneficiariesTableLabel ->
+            { english = "Grouped by age (Months)"
+            , kinyarwanda = Nothing
+            }
+
+        BoysFilterLabel ->
+            { english = "Boys"
+            , kinyarwanda = Just "Umuhungu"
+            }
+
+        CaseManagementFirstWordHelper ->
+            { english = "Review"
+            , kinyarwanda = Nothing
+            }
+
         CaseManagementHelper ->
-            { english = "Review list of malnourished children"
+            { english = "list of malnourished children"
             , kinyarwanda = Nothing
             }
 
@@ -2567,9 +2622,19 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
+        FamilyPlanningLabel ->
+            { english = "Family Planning"
+            , kinyarwanda = Nothing
+            }
+
         FamilyPlanningOutOfWomen { total, useFamilyPlanning } ->
             { english = String.fromInt useFamilyPlanning ++ " out of " ++ String.fromInt total ++ " women"
             , kinyarwanda = Nothing
+            }
+
+        GirlsFilterLabel ->
+            { english = "Girls"
+            , kinyarwanda = Just "Umukobwa"
             }
 
         GoodNutritionLabel ->
@@ -2577,13 +2642,13 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
-        NewCasesLabel ->
-            { english = "New Cases"
+        IncidenceOf ->
+            { english = "Incidence of"
             , kinyarwanda = Nothing
             }
 
-        NewBeneficiaries ->
-            { english = "New Beneficiaries"
+        LoadingDataGeneral ->
+            { english = "Loading dashboard stats..."
             , kinyarwanda = Nothing
             }
 
@@ -2599,6 +2664,26 @@ translateDashboard trans =
 
         ModeratelyMalnourished ->
             { english = "Moderately Malnourished"
+            , kinyarwanda = Nothing
+            }
+
+        NewCasesLabel ->
+            { english = "New Cases"
+            , kinyarwanda = Nothing
+            }
+
+        NewBeneficiaries ->
+            { english = "New Beneficiaries"
+            , kinyarwanda = Nothing
+            }
+
+        NoDataGeneral ->
+            { english = "No data for this health center."
+            , kinyarwanda = Nothing
+            }
+
+        NoDataForPeriod ->
+            { english = "No data for the selected period."
             , kinyarwanda = Nothing
             }
 
@@ -2619,7 +2704,7 @@ translateDashboard trans =
                     , kinyarwanda = Nothing
                     }
 
-                ThreeMonths ->
+                Dashboard.ThreeMonthsAgo ->
                     { english = "from last month"
                     , kinyarwanda = Nothing
                     }
@@ -2641,7 +2726,7 @@ translateDashboard trans =
                     , kinyarwanda = Nothing
                     }
 
-                Dashboard.ThreeMonths ->
+                Dashboard.ThreeMonthsAgo ->
                     { english = "Three months"
                     , kinyarwanda = Nothing
                     }
@@ -2656,13 +2741,23 @@ translateDashboard trans =
             , kinyarwanda = Nothing
             }
 
-        StatisticsHelper ->
-            { english = "See statistics for this month"
+        StatisticsFirstWordHelper ->
+            { english = "See"
             , kinyarwanda = Nothing
             }
 
-        TotalBeneficiariesWasting ->
-            { english = "Total Beneficiaries Wasting"
+        StatisticsHelper ->
+            { english = "statistics for this month"
+            , kinyarwanda = Nothing
+            }
+
+        SyncNotice ->
+            { english = "If the dashboard statistics doesn't load shortly, please sync data from the backend."
+            , kinyarwanda = Nothing
+            }
+
+        TotalBeneficiaries ->
+            { english = "Total Beneficiaries"
             , kinyarwanda = Nothing
             }
 
@@ -2677,7 +2772,7 @@ translateDashboard trans =
             }
 
         UseFamilyPlanning ->
-            { english = "Use family planning"
+            { english = "use family planning"
             , kinyarwanda = Nothing
             }
 

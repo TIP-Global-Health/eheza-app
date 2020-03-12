@@ -31,7 +31,7 @@ import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
 import TypedSvg.Types exposing (AnchorAlignment(..), Fill(..), Transform(..))
-import Utils.Html exposing (viewModal)
+import Utils.Html exposing (spinner, viewModal)
 
 
 {-| Shows a dashboard page.
@@ -48,7 +48,14 @@ view language page currentDate healthCenterId model db =
         ( pageView, goBackPage ) =
             case page of
                 MainPage ->
-                    ( viewMainPage language currentDate stats model, PinCodePage )
+                    case stats.maybeGoodNutrition of
+                        Nothing ->
+                            -- Add loading only here because it's the only page reachable from an outside link before
+                            -- fetching the stats.
+                            ( spinner, PinCodePage )
+
+                        _ ->
+                            ( viewMainPage language currentDate stats model, PinCodePage )
 
                 StatsPage ->
                     ( viewStatsPage language currentDate stats model healthCenterId db, UserPage <| DashboardPage MainPage )
@@ -81,13 +88,16 @@ viewMainPage language currentDate stats model =
         [ viewPeriodFilter language model filterPeriods
         , div [ class "ui grid" ]
             [ div [ class "eight wide column" ]
-                [ viewGoodNutrition language stats.goodNutrition
+                [ viewGoodNutrition language stats.maybeGoodNutrition
                 ]
             , div [ class "eight wide column" ]
-                [ viewTotalEncounters language stats.totalEncounters
+                [ viewTotalEncounters language stats.maybeTotalEncounters
                 ]
             , div [ class "sixteen wide column" ]
-                [ viewMonthlyChart language model stats.totalBeneficiaries model.currentTotalChartsFilter
+                [ viewMonthlyChart language (Translate.Dashboard Translate.TotalBeneficiaries) FilterBeneficiariesChart stats.maybeTotalBeneficiaries model.currentBeneficiariesChartsFilter
+                ]
+            , div [ class "sixteen wide column" ]
+                [ viewMonthlyChart language (Translate.Dashboard Translate.IncidenceOf) FilterBeneficiariesIncidenceChart stats.maybeTotalBeneficiariesIncidence model.currentBeneficiariesIncidenceChartsFilter
                 ]
             , div [ class "sixteen wide column" ]
                 [ viewDashboardPagesLinks language
@@ -102,14 +112,7 @@ viewStatsPage language currentDate stats model healthCenterId db =
         [ viewPeriodFilter language model filterPeriodsForStatsPage
         , viewAllStatsCards language stats currentDate model healthCenterId db
         , viewBeneficiariesTable language currentDate stats model
-        , div
-            [ class "ui placeholder segment" ]
-            [ div [ class "ui two column stackable center aligned grid" ]
-                [ div [ class "middle aligned row" ]
-                    [ div [ class "column" ] [ viewDonutChart language stats ]
-                    ]
-                ]
-            ]
+        , viewFamilyPlanning language stats
         , viewStatsTableModal language model
         ]
 
@@ -135,7 +138,9 @@ viewCaseManagementPage language currentDate stats model =
                 )
                 []
                 stats.caseManagement
-                |> List.sortBy .name
+                -- List table by person's name but turn it to lowercase for the comparision so it's truly sorted, this
+                -- will not effect the display.
+                |> List.sortWith (\p1 p2 -> compare (String.toLower p1.name) (String.toLower p2.name))
     in
     div [ class "dashboard case" ]
         [ viewPeriodFilter language model filterPeriods
@@ -212,58 +217,68 @@ viewPeriodFilter language model filterPeriodsPerPage =
         (List.map renderButton filterPeriodsPerPage)
 
 
-viewGoodNutrition : Language -> GoodNutrition -> Html Msg
-viewGoodNutrition language nutrition =
-    let
-        percentageThisYear =
-            calculatePercentage nutrition.all.thisYear nutrition.good.thisYear
-                |> round
+viewGoodNutrition : Language -> Maybe GoodNutrition -> Html Msg
+viewGoodNutrition language maybeNutrition =
+    case maybeNutrition of
+        Just nutrition ->
+            let
+                percentageThisYear =
+                    calculatePercentage nutrition.all.thisYear nutrition.good.thisYear
+                        |> round
 
-        percentageLastYear =
-            calculatePercentage nutrition.all.lastYear nutrition.good.lastYear
-                |> round
+                percentageLastYear =
+                    calculatePercentage nutrition.all.lastYear nutrition.good.lastYear
+                        |> round
 
-        percentageDiff =
-            percentageThisYear - percentageLastYear
+                percentageDiff =
+                    percentageThisYear - percentageLastYear
 
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.GoodNutritionLabel
-            , cardClasses = "good-nutrition"
-            , cardAction = Nothing
-            , value = percentageThisYear
-            , valueSeverity = Neutral
-            , valueIsPercentage = True
-            , previousPercentage = percentageDiff
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewCard language statsCard
+                statsCard =
+                    { title = translate language <| Translate.Dashboard Translate.GoodNutritionLabel
+                    , cardClasses = "good-nutrition"
+                    , cardAction = Nothing
+                    , value = percentageThisYear
+                    , valueSeverity = Neutral
+                    , valueIsPercentage = True
+                    , previousPercentage = percentageDiff
+                    , previousPercentageLabel = OneYear
+                    , newCases = Nothing
+                    }
+            in
+            viewCard language statsCard
+
+        Nothing ->
+            emptyNode
 
 
-viewTotalEncounters : Language -> Periods -> Html Msg
-viewTotalEncounters language encounters =
-    let
-        diff =
-            encounters.thisYear - encounters.lastYear
+viewTotalEncounters : Language -> Maybe Periods -> Html Msg
+viewTotalEncounters language maybeEncounters =
+    case maybeEncounters of
+        Just encounters ->
+            let
+                diff =
+                    encounters.thisYear - encounters.lastYear
 
-        percentageDiff =
-            calculatePercentage encounters.thisYear diff
-                |> round
+                percentageDiff =
+                    calculatePercentage encounters.thisYear diff
+                        |> round
 
-        statsCard =
-            { title = translate language <| Translate.Dashboard Translate.TotalEncountersLabel
-            , cardClasses = "total-encounters"
-            , cardAction = Nothing
-            , value = encounters.thisYear
-            , valueSeverity = Neutral
-            , valueIsPercentage = False
-            , previousPercentage = percentageDiff
-            , previousPercentageLabel = OneYear
-            , newCases = Nothing
-            }
-    in
-    viewCard language statsCard
+                statsCard =
+                    { title = translate language <| Translate.Dashboard Translate.TotalEncountersLabel
+                    , cardClasses = "total-encounters"
+                    , cardAction = Nothing
+                    , value = encounters.thisYear
+                    , valueSeverity = Neutral
+                    , valueIsPercentage = False
+                    , previousPercentage = percentageDiff
+                    , previousPercentageLabel = OneYear
+                    , newCases = Nothing
+                    }
+            in
+            viewCard language statsCard
+
+        Nothing ->
+            emptyNode
 
 
 viewAllStatsCards : Language -> DashboardStats -> NominalDate -> Model -> HealthCenterId -> ModelIndexedDb -> Html Msg
@@ -274,7 +289,7 @@ viewAllStatsCards language stats currentDate model healthCenterId db =
                 { model | period = LastMonth }
 
             else
-                { model | period = ThreeMonths }
+                { model | period = ThreeMonthsAgo }
 
         monthBeforeStats =
             Dict.get healthCenterId db.computedDashboard
@@ -283,7 +298,7 @@ viewAllStatsCards language stats currentDate model healthCenterId db =
                 |> filterStatsByPeriod currentDate modelWithLastMonth
     in
     if List.isEmpty stats.malnourished then
-        div [ class "ui segment" ] [ text "No data for the selected period." ]
+        div [ class "ui segment" ] [ translateText language <| Translate.Dashboard Translate.NoDataForPeriod ]
 
     else
         div [ class "ui equal width grid" ]
@@ -402,6 +417,8 @@ viewMiscCards language stats monthBeforeStats =
             List.foldl
                 (\childrenBeneficiaries accum ->
                     { name = childrenBeneficiaries.name
+                    , gender = childrenBeneficiaries.gender
+                    , birthDate = childrenBeneficiaries.birthDate
                     , motherName = childrenBeneficiaries.motherName
                     , phoneNumber = childrenBeneficiaries.phoneNumber
                     , dates = []
@@ -538,7 +555,7 @@ viewCard language statsCard =
         viewPercentageArrow icon =
             img
                 [ class "arrow"
-                , src <| "/assets/images/" ++ icon ++ ".svg"
+                , src <| "assets/images/" ++ icon ++ ".svg"
                 ]
                 []
 
@@ -581,18 +598,26 @@ viewBeneficiariesGenderFilter : Language -> Model -> Html Msg
 viewBeneficiariesGenderFilter language model =
     let
         renderButton gender =
-            -- @todo: Translate
-            button
+            let
+                genderTranslated =
+                    case gender of
+                        Boys ->
+                            translateText language <| Translate.Dashboard Translate.BoysFilterLabel
+
+                        Girls ->
+                            translateText language <| Translate.Dashboard Translate.GirlsFilterLabel
+            in
+            span
                 [ classList
-                    [ ( "primary", model.beneficiariesGender == gender )
-                    , ( "ui button", True )
+                    [ ( "active", model.beneficiariesGender == gender )
+                    , ( "dashboard-filters", True )
                     ]
                 , onClick <| SetFilterGender gender
                 ]
-                [ text <| Debug.toString gender
+                [ genderTranslated
                 ]
     in
-    div []
+    div [ class "filters" ]
         (List.map renderButton filterGenders)
 
 
@@ -609,20 +634,30 @@ viewBeneficiariesTable language currentDate stats model =
                 func
                 statsFilteredByGender
 
-        stats0_2 =
-            filterStatsByAgeDo (\{ months } -> months >= 0 && months <= (2 * 12))
+        stats0_5 =
+            filterStatsByAgeDo (\{ months } -> months >= 0 && months < 6)
 
-        stats3_7 =
-            filterStatsByAgeDo (\{ months } -> months > (2 * 12) && months <= (7 * 12))
+        stats6_8 =
+            filterStatsByAgeDo (\{ months } -> months >= 6 && months <= 8)
 
-        stats8_11 =
-            filterStatsByAgeDo (\{ months } -> months > (7 * 12) && months <= (11 * 12))
+        stats9_11 =
+            filterStatsByAgeDo (\{ months } -> months >= 9 && months <= 11)
 
-        stats12_plus =
-            filterStatsByAgeDo (\{ months } -> months > (11 * 12))
+        stats12_23 =
+            filterStatsByAgeDo (\{ months } -> months >= 12 && months <= 23)
 
         getNewBeneficiariesCount stats_ =
             stats_.childrenBeneficiaries
+                |> List.length
+                |> String.fromInt
+
+        getCompletedProgramBeneficiariesCount stats_ =
+            stats_.completedProgram
+                |> List.length
+                |> String.fromInt
+
+        getMissedSessionBeneficiariesCount stats_ =
+            stats_.missedSessions
                 |> List.length
                 |> String.fromInt
 
@@ -631,32 +666,52 @@ viewBeneficiariesTable language currentDate stats model =
                 |> List.length
                 |> String.fromInt
     in
-    div [ class "ui blue segment" ]
-        [ viewBeneficiariesGenderFilter language model
-        , table [ class "ui celled table" ]
-            [ thead []
-                [ tr []
-                    [ th [] [ text "Grouped by age (Years)" ]
-                    , th [] [ text "0-2" ]
-                    , th [] [ text "3-7" ]
-                    , th [] [ text "8-11" ]
-                    , th [] [ text "12+" ]
+    div [ class "ui blue segment fbf-beneficiaries" ]
+        [ div [ class "header" ]
+            [ h3 [ class "title left floated column" ] [ translateText language <| Translate.Dashboard Translate.BeneficiariesLabel ]
+            , viewBeneficiariesGenderFilter language model
+            ]
+        , div
+            [ class "content" ]
+            [ table [ class "ui very basic collapsing table" ]
+                [ thead []
+                    [ tr []
+                        [ th [ class "label" ] [ translateText language <| Translate.Dashboard Translate.BeneficiariesTableLabel ]
+                        , th [] [ text "0-5" ]
+                        , th [] [ text "6-8" ]
+                        , th [] [ text "9-11" ]
+                        , th [] [ text "12-23" ]
+                        ]
                     ]
-                ]
-            , tbody []
-                [ tr []
-                    [ td [] [ text "New beneficiaries to program" ]
-                    , td [] [ text <| getNewBeneficiariesCount stats0_2 ]
-                    , td [] [ text <| getNewBeneficiariesCount stats3_7 ]
-                    , td [] [ text <| getNewBeneficiariesCount stats8_11 ]
-                    , td [] [ text <| getNewBeneficiariesCount stats12_plus ]
-                    ]
-                , tr []
-                    [ td [] [ text "Malnourished beneficiaries" ]
-                    , td [] [ text <| getTotalMalnourishedCount stats0_2 ]
-                    , td [] [ text <| getTotalMalnourishedCount stats3_7 ]
-                    , td [] [ text <| getTotalMalnourishedCount stats8_11 ]
-                    , td [] [ text <| getTotalMalnourishedCount stats12_plus ]
+                , tbody []
+                    [ tr []
+                        [ td [ class "label" ] [ translateText language <| Translate.Dashboard <| Translate.BeneficiariesTableColumnLabel New ]
+                        , td [] [ text <| getNewBeneficiariesCount stats0_5 ]
+                        , td [] [ text <| getNewBeneficiariesCount stats6_8 ]
+                        , td [] [ text <| getNewBeneficiariesCount stats9_11 ]
+                        , td [] [ text <| getNewBeneficiariesCount stats12_23 ]
+                        ]
+                    , tr []
+                        [ td [ class "label" ] [ translateText language <| Translate.Dashboard <| Translate.BeneficiariesTableColumnLabel Completed ]
+                        , td [] [ text <| getCompletedProgramBeneficiariesCount stats0_5 ]
+                        , td [] [ text <| getCompletedProgramBeneficiariesCount stats6_8 ]
+                        , td [] [ text <| getCompletedProgramBeneficiariesCount stats9_11 ]
+                        , td [] [ text <| getCompletedProgramBeneficiariesCount stats12_23 ]
+                        ]
+                    , tr []
+                        [ td [ class "label" ] [ translateText language <| Translate.Dashboard <| Translate.BeneficiariesTableColumnLabel Missed ]
+                        , td [] [ text <| getMissedSessionBeneficiariesCount stats0_5 ]
+                        , td [] [ text <| getMissedSessionBeneficiariesCount stats6_8 ]
+                        , td [] [ text <| getMissedSessionBeneficiariesCount stats9_11 ]
+                        , td [] [ text <| getMissedSessionBeneficiariesCount stats12_23 ]
+                        ]
+                    , tr []
+                        [ td [ class "label" ] [ translateText language <| Translate.Dashboard <| Translate.BeneficiariesTableColumnLabel Malnourished ]
+                        , td [] [ text <| getTotalMalnourishedCount stats0_5 ]
+                        , td [] [ text <| getTotalMalnourishedCount stats6_8 ]
+                        , td [] [ text <| getTotalMalnourishedCount stats9_11 ]
+                        , td [] [ text <| getTotalMalnourishedCount stats12_23 ]
+                        ]
                     ]
                 ]
             ]
@@ -676,7 +731,9 @@ viewDashboardPagesLinks language =
             [ i [ class "icon" ] []
             , span
                 []
-                [ translateText language <| Translate.Dashboard Translate.StatisticsHelper ]
+                [ span [ class "bold" ] [ translateText language <| Translate.Dashboard Translate.StatisticsFirstWordHelper ]
+                , translateText language <| Translate.Dashboard Translate.StatisticsHelper
+                ]
             , i [ class "arrow" ] []
             ]
         , div
@@ -689,9 +746,312 @@ viewDashboardPagesLinks language =
             [ i [ class "icon" ] []
             , span
                 []
-                [ translateText language <| Translate.Dashboard Translate.CaseManagementHelper ]
+                [ span [ class "bold" ] [ translateText language <| Translate.Dashboard Translate.CaseManagementFirstWordHelper ]
+                , translateText language <| Translate.Dashboard Translate.CaseManagementHelper
+                ]
             , i [ class "arrow" ] []
             ]
+        ]
+
+
+viewFamilyPlanning : Language -> DashboardStats -> Html Msg
+viewFamilyPlanning language stats =
+    div
+        [ class "ui blue segment family-planning" ]
+        [ div [ class "header" ]
+            [ h3 [ class "title" ] [ translateText language <| Translate.Dashboard Translate.FamilyPlanningLabel ]
+            ]
+        , div [ class "ui center aligned grid" ]
+            [ div [ class "middle aligned row" ]
+                [ viewDonutChart language stats ]
+            ]
+        ]
+
+
+viewDonutChart : Language -> DashboardStats -> Html Msg
+viewDonutChart language stats =
+    let
+        dict =
+            getFamilyPlanningSignsCounter stats
+    in
+    if Dict.isEmpty dict then
+        div [] [ text "No family plannings for the selected period." ]
+
+    else
+        let
+            totalCount =
+                dict
+                    |> Dict.values
+                    |> List.foldl (\val accum -> val + accum) 0
+
+            totalNoFamilyPlanning =
+                Dict.get NoFamilyPlanning dict
+                    |> Maybe.withDefault 0
+
+            useFamilyPlanning =
+                totalCount - totalNoFamilyPlanning
+
+            totalPercent =
+                useFamilyPlanning * 100 // totalCount
+        in
+        div [ class "content" ]
+            [ viewChart dict
+            , div [ class "in-chart" ]
+                [ div [ class "stats" ]
+                    [ span [ class "percentage neutral" ] [ text <| String.fromInt totalPercent ++ "%" ]
+                    , text " "
+                    , span [ class "use-label" ] [ translateText language <| Translate.Dashboard Translate.UseFamilyPlanning ]
+                    , div [ class "count" ]
+                        [ translateText language <|
+                            Translate.Dashboard <|
+                                Translate.FamilyPlanningOutOfWomen
+                                    { total = totalCount
+                                    , useFamilyPlanning = useFamilyPlanning
+                                    }
+                        ]
+                    ]
+                ]
+            , viewFamilyPlanningChartLegend language dict
+            ]
+
+
+viewMonthlyChart : Language -> TranslationId -> FilterType -> Maybe (Dict Int TotalBeneficiaries) -> FilterCharts -> Html Msg
+viewMonthlyChart language title filterType maybeData currentFilter =
+    case maybeData of
+        Just data ->
+            let
+                chartList =
+                    data
+                        |> Dict.toList
+                        |> List.sortWith (\t1 t2 -> compare (Tuple.first t1) (Tuple.first t2))
+                        |> Dict.fromList
+
+                chartData =
+                    Dict.foldl
+                        (\key totalBeneficiaries accum ->
+                            let
+                                month =
+                                    numberToMonth key
+                            in
+                            case currentFilter of
+                                Stunting ->
+                                    Dict.insert month totalBeneficiaries.stunting accum
+
+                                Underweight ->
+                                    Dict.insert month totalBeneficiaries.underweight accum
+
+                                Wasting ->
+                                    Dict.insert month totalBeneficiaries.wasting accum
+
+                                MUAC ->
+                                    Dict.insert month totalBeneficiaries.muac accum
+                        )
+                        Dict.empty
+                        chartList
+                        |> Dict.toList
+
+                yScaleMaxList =
+                    let
+                        choose x y =
+                            let
+                                chosenX =
+                                    if x.moderateNutrition > x.severeNutrition then
+                                        x.moderateNutrition
+
+                                    else
+                                        x.severeNutrition
+                            in
+                            if chosenX > y then
+                                chosenX
+
+                            else
+                                y
+                    in
+                    List.map (\( key, value ) -> choose value 0) chartData
+
+                maybeScaleMax =
+                    List.maximum yScaleMaxList
+
+                yScaleMax =
+                    maybeScaleMax
+                        -- Don't allow the y access to be less than 3.
+                        |> Maybe.map
+                            (\max ->
+                                if max < 3 then
+                                    3
+
+                                else
+                                    max
+                            )
+                        |> Maybe.withDefault 1
+
+                -- Add 20% to the top of the graph above the max
+                yScaleMaxEnhanced =
+                    toFloat yScaleMax + (toFloat yScaleMax * 0.2)
+            in
+            div [ class "ui segment blue dashboards-monthly-chart" ]
+                [ div [ class "header" ]
+                    [ h3 [ class "title left floated column" ] [ text <| translate language title ++ " " ++ toString currentFilter ]
+                    , div [ class "filters" ]
+                        (List.map (viewFilters filterType currentFilter) filterCharts)
+                    ]
+                , div [ class "content" ]
+                    [ viewBarsChartLegend language
+                    , viewBarChart chartData yScaleMaxEnhanced
+                    ]
+                ]
+
+        Nothing ->
+            emptyNode
+
+
+viewBarChart : List ( Month, Nutrition ) -> Float -> Html Msg
+viewBarChart data yScaleMax =
+    svg [ viewBox 0 0 barChartWidth barChartHeight ]
+        [ g [ Explicit.class [ "grid gird-y" ] ] <| List.indexedMap yGridLine <| Scale.ticks gridYScale 4
+        , g [ Explicit.class [ "grid gird-x" ] ] <| List.indexedMap xGridLine <| Scale.ticks gridXScale 12
+        , g [ transform [ Translate (padding - 1) (barChartHeight - padding) ] ]
+            [ xAxis data ]
+        , g [ transform [ Translate (padding + 1) padding ] ]
+            [ yAxis yScaleMax ]
+        , g [ transform [ Translate padding padding ], Explicit.class [ "data" ] ] <|
+            List.map (column (xScale data) yScaleMax) data
+        ]
+
+
+viewBarsChartLegend : Language -> Html Msg
+viewBarsChartLegend language =
+    div [ class "legend" ]
+        [ div []
+            [ svg [ Svg.Attributes.width "12", Svg.Attributes.height "12", viewBox 0 0 100 100 ]
+                [ Svg.circle [ cx "50", cy "50", r "50", Explicit.class [ "moderate" ] ] []
+                ]
+            , span [] [ translateText language <| Translate.Dashboard Translate.Moderate ]
+            ]
+        , div []
+            [ svg [ Svg.Attributes.width "12", Svg.Attributes.height "12", viewBox 0 0 100 100 ]
+                [ Svg.circle [ cx "50", cy "50", r "50", Explicit.class [ "severe" ] ] []
+                ]
+            , span [] [ translateText language <| Translate.Dashboard Translate.Severe ]
+            ]
+        ]
+
+
+viewFilters : FilterType -> FilterCharts -> FilterCharts -> Html Msg
+viewFilters filterType currentChartFilter filter =
+    let
+        filterAction =
+            case filterType of
+                FilterBeneficiariesChart ->
+                    SetFilterBeneficiariesChart filter FilterBeneficiariesChart
+
+                FilterBeneficiariesIncidenceChart ->
+                    SetFilterBeneficiariesChart filter FilterBeneficiariesIncidenceChart
+
+                FilterCaseManagement ->
+                    SetFilterCaseManagement filter
+    in
+    span
+        [ classList
+            [ ( "dashboard-filters", True )
+            , ( "active", filter == currentChartFilter )
+            ]
+        , onClick <| filterAction
+        ]
+        [ text <| toString filter ]
+
+
+viewFamilyPlanningChartLegend : Language -> FamilyPlanningSignsCounter -> Html Msg
+viewFamilyPlanningChartLegend language dict =
+    let
+        listSorted =
+            dict
+                |> Dict.toList
+                |> List.sortBy (\( name, val ) -> Debug.toString name)
+    in
+    div [ class "legend" ]
+        (List.map
+            (\( sign, _ ) ->
+                div [ class "legend-item" ]
+                    [ svg [ Svg.Attributes.width "12", Svg.Attributes.height "12", viewBox 0 0 100 100 ]
+                        [ Svg.circle [ cx "50", cy "50", r "40", fill <| Fill <| familyPlanningSignToColor sign ] []
+                        ]
+                    , span [] [ translateText language <| Translate.FamilyPlanningSignLabel sign ]
+                    ]
+            )
+            listSorted
+        )
+
+
+viewChart : FamilyPlanningSignsCounter -> Svg msg
+viewChart dict =
+    let
+        arcs =
+            dict
+                |> Dict.values
+                |> List.map toFloat
+
+        signsList =
+            dict
+                |> Dict.keys
+
+        pieData =
+            arcs
+                |> Shape.pie
+                    { defaultPieConfig
+                        | outerRadius = radius
+                        , padAngle = 0
+                        , cornerRadius = 0
+                    }
+    in
+    svg [ Explicit.class [ "pie-chart" ], viewBox 0 0 pieChartWidth pieChartHeight ]
+        [ annular signsList pieData ]
+
+
+viewStatsTableModal : Language -> Model -> Html Msg
+viewStatsTableModal language model =
+    let
+        participantsStatsDialog =
+            if model.modalState then
+                Just <|
+                    div [ class "ui tiny active modal segment blue" ]
+                        [ div
+                            [ class "header" ]
+                            [ div [ class "title left floated column" ] [ text model.modalTitle ]
+                            , span
+                                [ class "overlay-close right floated column"
+                                , onClick <| ModalToggle False [] ""
+                                ]
+                                [ text "X" ]
+                            ]
+                        , div
+                            [ class "content" ]
+                            [ table [ class "ui very basic collapsing celled table" ]
+                                [ thead []
+                                    [ tr []
+                                        [ th [ class "name" ] [ translateText language <| Translate.Name ]
+                                        , th [ class "mother-name" ] [ translateText language <| Translate.MotherNameLabel ]
+                                        , th [ class "phone-number" ] [ translateText language <| Translate.TelephoneNumber ]
+                                        ]
+                                    ]
+                                , tbody []
+                                    (List.map viewModalTableRow model.modalTable)
+                                ]
+                            ]
+                        ]
+
+            else
+                Nothing
+    in
+    viewModal participantsStatsDialog
+
+
+viewModalTableRow : ParticipantStats -> Html Msg
+viewModalTableRow rowData =
+    tr []
+        [ td [ class "name" ] [ text rowData.name ]
+        , td [ class "mother-name" ] [ text rowData.motherName ]
+        , td [ class "phone-number" ] [ text <| Maybe.withDefault "-" rowData.phoneNumber ]
         ]
 
 
@@ -700,14 +1060,24 @@ filterStatsByAge currentDate func stats =
     let
         childrenBeneficiaries =
             stats.childrenBeneficiaries
-                |> List.filter (\row -> isDiffTruthy row.birthdate currentDate func)
+                |> List.filter (\row -> isDiffTruthy row.birthDate currentDate func)
+
+        completedProgram =
+            stats.completedProgram
+                |> List.filter (\row -> isDiffTruthy row.birthDate currentDate func)
+
+        missedSessions =
+            stats.missedSessions
+                |> List.filter (\row -> isDiffTruthy row.birthDate currentDate func)
 
         malnourished =
             stats.malnourished
-                |> List.filter (\row -> isDiffTruthy row.created currentDate func)
+                |> List.filter (\row -> isDiffTruthy row.birthDate currentDate func)
     in
     { stats
         | childrenBeneficiaries = childrenBeneficiaries
+        , completedProgram = completedProgram
+        , missedSessions = missedSessions
         , malnourished = malnourished
     }
 
@@ -728,7 +1098,7 @@ filterStatsByPeriod currentDate model stats =
                 LastMonth ->
                     ( Date.add Months -2 currentDate, Date.add Months -1 currentDate )
 
-                ThreeMonths ->
+                ThreeMonthsAgo ->
                     ( Date.add Months -3 currentDate, Date.add Months -2 currentDate )
 
         filterPartial =
@@ -783,337 +1153,60 @@ filterStatsByGender : NominalDate -> Model -> DashboardStats -> DashboardStats
 filterStatsByGender currentDate model stats =
     let
         -- Filter by gender
-        filterDo data =
-            if model.beneficiariesGender == All then
-                -- No change
-                data
+        filterByGender statsList =
+            statsList
+                |> List.filter
+                    (\personStats ->
+                        case ( personStats.gender, model.beneficiariesGender ) of
+                            ( Backend.Person.Model.Male, Pages.Dashboard.Model.Boys ) ->
+                                True
 
-            else
-                data
-                    |> List.filter
-                        (\personStats ->
-                            case ( personStats.gender, model.beneficiariesGender ) of
-                                ( Backend.Person.Model.Female, Pages.Dashboard.Model.Female ) ->
-                                    True
+                            ( Backend.Person.Model.Female, Pages.Dashboard.Model.Girls ) ->
+                                True
 
-                                ( Backend.Person.Model.Male, Pages.Dashboard.Model.Male ) ->
-                                    True
-
-                                _ ->
-                                    False
-                        )
+                            _ ->
+                                False
+                    )
     in
     { stats
-        | childrenBeneficiaries = filterDo stats.childrenBeneficiaries
-        , malnourished = filterDo stats.malnourished
+        | childrenBeneficiaries = filterByGender stats.childrenBeneficiaries
+        , completedProgram = filterByGender stats.completedProgram
+        , missedSessions = filterByGender stats.missedSessions
+        , malnourished = filterByGender stats.malnourished
     }
 
 
 getFamilyPlanningSignsCounter : DashboardStats -> FamilyPlanningSignsCounter
 getFamilyPlanningSignsCounter stats =
-    if List.isEmpty stats.familyPlanning then
-        Dict.empty
-
-    else
-        List.foldl
-            (\familyPlanning accum ->
-                let
-                    currentCount sign =
-                        Dict.get sign accum
-                            |> Maybe.withDefault 0
-
-                    incrementCount sign accum_ =
-                        Dict.insert
-                            sign
-                            (currentCount sign + 1)
-                            accum_
-                in
-                if List.isEmpty familyPlanning.signs then
-                    accum
-
-                else if List.member NoFamilyPlanning familyPlanning.signs then
-                    -- In case we have a `NoFamilyPlanning` we don't need to iterate over signs.
-                    incrementCount NoFamilyPlanning accum
-
-                else
-                    -- Iterate over existing signs.
-                    List.foldl
-                        (\sign innerAccum -> incrementCount sign innerAccum)
-                        accum
-                        familyPlanning.signs
-            )
-            Dict.empty
-            stats.familyPlanning
-
-
-viewDonutChart : Language -> DashboardStats -> Html Msg
-viewDonutChart language stats =
-    let
-        dict =
-            getFamilyPlanningSignsCounter stats
-    in
-    if Dict.isEmpty dict then
-        div [] [ text "No family plannings for the selected period." ]
-
-    else
-        let
-            -- Remove the No family planning, as it won't be used for the chart
-            dictWithoutNoFamilyPlanning =
-                dict
-                    |> Dict.filter (\k _ -> not (k == NoFamilyPlanning))
-
-            totalCount =
-                dictWithoutNoFamilyPlanning
-                    |> Dict.values
-                    |> List.foldl (\val accum -> val + accum) 0
-
-            totalNoFamilyPlanning =
-                Dict.get NoFamilyPlanning dict
-                    |> Maybe.withDefault 0
-
-            useFamilyPlanning =
-                totalCount - totalNoFamilyPlanning
-
-            totalPercent =
-                useFamilyPlanning * 100 // totalCount
-        in
-        div []
-            [ viewChart dictWithoutNoFamilyPlanning
-            , div [ class "stats" ]
-                [ span [ class "neutral" ] [ text <| String.fromInt totalPercent ++ "%" ]
-                , text " "
-                , span [] [ translateText language <| Translate.Dashboard Translate.UseFamilyPlanning ]
-                ]
-            , div []
-                [ translateText language <|
-                    Translate.Dashboard <|
-                        Translate.FamilyPlanningOutOfWomen
-                            { total = totalCount
-                            , useFamilyPlanning = useFamilyPlanning
-                            }
-                ]
-            , viewFamilyPlanningChartLegend language dictWithoutNoFamilyPlanning
-            ]
-
-
-viewMonthlyChart : Language -> Model -> Dict Int TotalBeneficiaries -> FilterCharts -> Html Msg
-viewMonthlyChart language model data currentFilter =
-    let
-        chartList =
-            data
-                |> Dict.toList
-                |> List.sortWith (\t1 t2 -> compare (Tuple.first t1) (Tuple.first t2))
-                |> Dict.fromList
-
-        chartData =
-            Dict.foldl
-                (\key totalBeneficiaries accum ->
-                    let
-                        month =
-                            numberToMonth key
-                    in
-                    case currentFilter of
-                        Stunting ->
-                            Dict.insert month totalBeneficiaries.stunting accum
-
-                        Underweight ->
-                            Dict.insert month totalBeneficiaries.underweight accum
-
-                        Wasting ->
-                            Dict.insert month totalBeneficiaries.wasting accum
-
-                        MUAC ->
-                            Dict.insert month totalBeneficiaries.muac accum
-                )
-                Dict.empty
-                chartList
-                |> Dict.toList
-
-        yScaleMaxList =
+    List.foldl
+        (\familyPlanning accum ->
             let
-                choose x y =
-                    let
-                        chosenX =
-                            if x.moderateNutrition > x.severeNutrition then
-                                x.moderateNutrition
+                currentCount sign =
+                    Dict.get sign accum
+                        |> Maybe.withDefault 0
 
-                            else
-                                x.severeNutrition
-                    in
-                    if chosenX > y then
-                        chosenX
-
-                    else
-                        y
+                incrementCount sign accum_ =
+                    Dict.insert
+                        sign
+                        (currentCount sign + 1)
+                        accum_
             in
-            List.map (\( key, value ) -> choose value 0) chartData
+            if List.isEmpty familyPlanning.signs then
+                accum
 
-        yScaleMax =
-            List.maximum yScaleMaxList |> Maybe.withDefault 1
-
-        -- Add 20% to the top of the graph above the max
-        yScaleMaxEnhanced =
-            toFloat yScaleMax + (toFloat yScaleMax * 0.2)
-    in
-    div [ class "ui segment blue dashboards-monthly-chart" ]
-        [ div [ class "header" ]
-            [ h3 [ class "title left floated column" ] [ translateText language <| Translate.Dashboard Translate.TotalBeneficiariesWasting ]
-            , div [ class "filters" ]
-                (List.map (viewFilters FilterTotalsChart currentFilter) filterCharts)
-            ]
-        , div [ class "content" ]
-            [ viewBarsChartLegend language
-            , viewBarChart chartData yScaleMaxEnhanced
-            ]
-        ]
-
-
-viewBarChart : List ( Month, Nutrition ) -> Float -> Html Msg
-viewBarChart data yScaleMax =
-    svg [ viewBox 0 0 barChartWidth barChartHeight ]
-        [ g [ Explicit.class [ "grid gird-y" ] ] <| List.indexedMap yGridLine <| Scale.ticks gridYScale 4
-        , g [ Explicit.class [ "grid gird-x" ] ] <| List.indexedMap xGridLine <| Scale.ticks gridXScale 12
-        , g [ transform [ Translate (padding - 1) (barChartHeight - padding) ] ]
-            [ xAxis data ]
-        , g [ transform [ Translate (padding + 1) padding ] ]
-            [ yAxis yScaleMax ]
-        , g [ transform [ Translate padding padding ], Explicit.class [ "data" ] ] <|
-            List.map (column (xScale data) yScaleMax) data
-        ]
-
-
-viewBarsChartLegend : Language -> Html Msg
-viewBarsChartLegend language =
-    div [ class "legend" ]
-        [ div []
-            [ svg [ Svg.Attributes.width "12", Svg.Attributes.height "12", viewBox 0 0 100 100 ]
-                [ Svg.circle [ cx "50", cy "50", r "50", Explicit.class [ "moderate" ] ] []
-                ]
-            , span [] [ translateText language <| Translate.Dashboard Translate.Moderate ]
-            ]
-        , div []
-            [ svg [ Svg.Attributes.width "12", Svg.Attributes.height "12", viewBox 0 0 100 100 ]
-                [ Svg.circle [ cx "50", cy "50", r "50", Explicit.class [ "severe" ] ] []
-                ]
-            , span [] [ translateText language <| Translate.Dashboard Translate.Severe ]
-            ]
-        ]
-
-
-viewFilters : FilterType -> FilterCharts -> FilterCharts -> Html Msg
-viewFilters filterType currentChartFilter filter =
-    let
-        filterAction =
-            case filterType of
-                FilterTotalsChart ->
-                    SetFilterTotalsChart filter
-
-                FilterCaseManagement ->
-                    SetFilterCaseManagement filter
-    in
-    span
-        [ classList
-            [ ( "chart-filters", True )
-            , ( "active", filter == currentChartFilter )
-            ]
-        , onClick <| filterAction
-        ]
-        [ text <| toString filter ]
-
-
-viewFamilyPlanningChartLegend : Language -> FamilyPlanningSignsCounter -> Html Msg
-viewFamilyPlanningChartLegend language dict =
-    let
-        listSorted =
-            dict
-                |> Dict.toList
-                |> List.sortBy (\( _, val ) -> val)
-                |> List.reverse
-    in
-    div [ class "legend" ]
-        (List.map
-            (\( sign, _ ) ->
-                div []
-                    [ svg [ Svg.Attributes.width "10", Svg.Attributes.height "10", viewBox 0 0 100 100 ]
-                        [ Svg.circle [ cx "50", cy "50", r "40", fill <| Fill <| familyPlanningSignToColor sign ] []
-                        ]
-                    , span [] [ translateText language <| Translate.FamilyPlanningSignLabel sign ]
-                    ]
-            )
-            listSorted
-        )
-
-
-viewChart : FamilyPlanningSignsCounter -> Svg msg
-viewChart dict =
-    let
-        arcs =
-            dict
-                |> Dict.values
-                |> List.map toFloat
-
-        signsList =
-            dict
-                |> Dict.keys
-
-        pieData =
-            arcs
-                |> Shape.pie
-                    { defaultPieConfig
-                        | outerRadius = radius
-                        , padAngle = 0
-                        , cornerRadius = 0
-                    }
-    in
-    svg [ viewBox 0 0 pieChartWidth pieChartHeight ]
-        [ annular signsList pieData ]
-
-
-viewStatsTableModal : Language -> Model -> Html Msg
-viewStatsTableModal language model =
-    let
-        participantsStatsDialog =
-            if model.modalState then
-                Just <|
-                    div [ class "ui tiny active modal segment blue" ]
-                        [ div
-                            [ class "header" ]
-                            [ div [ class "title left floated column" ] [ text model.modalTitle ]
-                            , span
-                                [ class "overlay-close right floated column"
-                                , onClick <| ModalToggle False [] ""
-                                ]
-                                [ text "X" ]
-                            ]
-                        , div
-                            [ class "content" ]
-                            [ table [ class "ui very basic collapsing celled table" ]
-                                [ thead []
-                                    [ tr []
-                                        [ th [ class "name" ] [ translateText language <| Translate.Name ]
-                                        , th [ class "mother-name" ] [ translateText language <| Translate.MotherNameLabel ]
-                                        , th [ class "phone-number" ] [ translateText language <| Translate.TelephoneNumber ]
-                                        ]
-                                    ]
-                                , tbody []
-                                    (List.map viewModalTableRow model.modalTable)
-                                ]
-                            ]
-                        ]
+            else if List.member NoFamilyPlanning familyPlanning.signs then
+                -- In case we have a `NoFamilyPlanning` we don't need to iterate over signs.
+                incrementCount NoFamilyPlanning accum
 
             else
-                Nothing
-    in
-    viewModal participantsStatsDialog
-
-
-viewModalTableRow : ParticipantStats -> Html Msg
-viewModalTableRow rowData =
-    tr []
-        [ td [ class "name" ] [ text rowData.name ]
-        , td [ class "mother-name" ] [ text rowData.motherName ]
-        , td [ class "phone-number" ] [ text <| Maybe.withDefault "-" rowData.phoneNumber ]
-        ]
+                -- Iterate over existing signs.
+                List.foldl
+                    (\sign innerAccum -> incrementCount sign innerAccum)
+                    accum
+                    familyPlanning.signs
+        )
+        Dict.empty
+        stats.familyPlanning
 
 
 annular : List FamilyPlanningSign -> List Arc -> Svg msg
