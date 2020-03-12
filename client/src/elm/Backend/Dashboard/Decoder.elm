@@ -1,12 +1,12 @@
 module Backend.Dashboard.Decoder exposing (decodeDashboardStats)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Nutrition, NutritionStatus(..), NutritionValue, Periods, TotalBeneficiaries)
+import Backend.Dashboard.Model exposing (CaseManagement, CaseNutrition, ChildrenBeneficiariesStats, DashboardStats, FamilyPlanningStats, GoodNutrition, MalnourishedStats, Nutrition, NutritionStatus(..), NutritionValue, ParticipantStats, Periods, TotalBeneficiaries)
 import Backend.Measurement.Decoder exposing (decodeFamilyPlanningSign)
 import Backend.Person.Decoder exposing (decodeGender)
 import Dict as LegacyDict
 import Gizra.Json exposing (decodeInt)
-import Gizra.NominalDate exposing (decodeYYYYMMDD)
+import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 
@@ -16,11 +16,16 @@ decodeDashboardStats =
     succeed DashboardStats
         |> required "case_management" (list decodeCaseManagement)
         |> required "children_beneficiaries" (list decodePeopleStats)
+        |> required "completed_program" (list decodeParticipantStats)
+        |> required "completed_program_count" decodeInt
         |> required "family_planning" (list decodeFamilyPlanningStats)
-        |> required "good_nutrition" decodeGoodNutrition
+        |> optional "good_nutrition" (nullable decodeGoodNutrition) Nothing
         |> required "malnourished_beneficiaries" (list decodeMalnourishedStats)
-        |> required "total_beneficiaries" decodeTotalBeneficiariesDict
-        |> required "total_encounters" decodePeriods
+        |> required "missed_sessions" (list decodeParticipantStats)
+        |> required "missed_sessions_count" decodeInt
+        |> optional "total_beneficiaries" (nullable decodeTotalBeneficiariesDict) Nothing
+        |> optional "total_beneficiaries_incidence" (nullable decodeTotalBeneficiariesDict) Nothing
+        |> optional "total_encounters" (nullable decodePeriods) Nothing
 
 
 decodeTotalBeneficiariesDict : Decoder (Dict Int TotalBeneficiaries)
@@ -119,6 +124,29 @@ decodePeopleStats =
         |> required "field_gender" decodeGender
         |> required "field_birth_date" decodeYYYYMMDD
         |> required "created" decodeYYYYMMDD
+        |> required "name" string
+        |> required "mother_name" string
+        |> optional "phone_number" (nullable string) Nothing
+
+
+decodeParticipantStats : Decoder ParticipantStats
+decodeParticipantStats =
+    succeed ParticipantStats
+        |> required "name" string
+        |> required "gender" decodeGender
+        |> required "birth_date" decodeYYYYMMDD
+        |> required "mother_name" string
+        |> optional "phone_number" (nullable string) Nothing
+        |> required "dates" (list decodeDatesList)
+
+
+decodeDatesList : Decoder NominalDate
+decodeDatesList =
+    string
+        |> andThen
+            (\date ->
+                decodeYYYYMMDD
+            )
 
 
 decodeFamilyPlanningStats : Decoder FamilyPlanningStats
@@ -139,6 +167,7 @@ decodeMalnourishedStats : Decoder MalnourishedStats
 decodeMalnourishedStats =
     succeed MalnourishedStats
         |> required "created" decodeYYYYMMDD
+        |> required "field_birth_date" decodeYYYYMMDD
         |> required "field_gender" decodeGender
         |> required "field_zscore_age" float
 

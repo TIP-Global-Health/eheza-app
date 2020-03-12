@@ -27,7 +27,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import ServiceWorker.View
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
-import Utils.Html exposing (spinner)
+import Utils.Html exposing (viewLoading)
 import Version
 
 
@@ -247,16 +247,3 @@ viewUserPage page model configured =
             Pages.PinCode.View.view model.language model.activePage (RemoteData.map .nurse configured.loggedIn) model.healthCenterId configured.pinCodePage model.indexedDb
                 |> Html.map MsgPagePinCode
                 |> flexPageWrapper model
-
-
-{-| Just show a generic loading indicator, for cases that will resolve soon,
-where we don't need to show any progress.
--}
-viewLoading : Html any
-viewLoading =
-    div
-        [ class "wrap wrap-alt-2" ]
-        [ div
-            [ class "ui segment center aligned" ]
-            [ spinner ]
-        ]

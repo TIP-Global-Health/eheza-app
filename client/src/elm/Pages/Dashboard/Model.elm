@@ -1,5 +1,6 @@
 module Pages.Dashboard.Model exposing
-    ( Card
+    ( BeneficiariesTableLabels(..)
+    , Card
     , CardValueSeverity(..)
     , FamilyPlanningSignsCounter
     , FilterCharts(..)
@@ -13,6 +14,7 @@ module Pages.Dashboard.Model exposing
     , filterCharts
     , filterGenders
     , filterPeriods
+    , filterPeriodsForStatsPage
     )
 
 {-| Filtering by period
@@ -20,33 +22,48 @@ module Pages.Dashboard.Model exposing
 
 import AssocList exposing (Dict)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
-import Pages.Page exposing (DashboardPage, Page)
-import Translate exposing (TranslationId)
+import Backend.Person.Model exposing (Gender)
+import Gizra.NominalDate exposing (NominalDate)
+import Pages.Page exposing (DashboardPage(..), Page(..))
 
 
 type FilterPeriod
-    = OneYear
+    = ThisMonth
+    | LastMonth
+    | ThreeMonthsAgo
+    | OneYear
+
+
+type BeneficiariesTableLabels
+    = New
+    | Completed
+    | Missed
+    | Malnourished
 
 
 filterPeriods : List FilterPeriod
 filterPeriods =
-    [ OneYear
+    [ OneYear ]
+
+
+filterPeriodsForStatsPage : List FilterPeriod
+filterPeriodsForStatsPage =
+    [ ThisMonth
+    , LastMonth
     ]
 
 
 {-| We don't use the existing `Gender`, as we want to have an `All` option as-well
 -}
 type FilterGender
-    = All
-    | Female
-    | Male
+    = Boys
+    | Girls
 
 
 filterGenders : List FilterGender
 filterGenders =
-    [ All
-    , Female
-    , Male
+    [ Boys
+    , Girls
     ]
 
 
@@ -68,20 +85,40 @@ filterCharts =
     ]
 
 
+type alias ParticipantStats =
+    { name : String
+    , gender : Gender
+    , birthDate : NominalDate
+    , motherName : String
+    , phoneNumber : Maybe String
+    , dates : List NominalDate
+    }
+
+
 type alias Model =
     { period : FilterPeriod
     , beneficiariesGender : FilterGender
-    , currentTotalChartsFilter : FilterCharts
+    , currentBeneficiariesChartsFilter : FilterCharts
+    , currentBeneficiariesIncidenceChartsFilter : FilterCharts
     , currentCaseManagementFilter : FilterCharts
+    , latestPage : DashboardPage
+    , modalTable : List ParticipantStats
+    , modalTitle : String
+    , modalState : Bool
     }
 
 
 emptyModel : Model
 emptyModel =
     { period = OneYear
-    , beneficiariesGender = All
-    , currentTotalChartsFilter = Stunting
+    , beneficiariesGender = Boys
+    , currentBeneficiariesChartsFilter = Stunting
+    , currentBeneficiariesIncidenceChartsFilter = Stunting
     , currentCaseManagementFilter = Stunting
+    , latestPage = MainPage
+    , modalTable = []
+    , modalTitle = ""
+    , modalState = False
     }
 
 
@@ -103,7 +140,7 @@ type CardValueSeverity
 {-| A `Card` that will appear in the dashboard.
 -}
 type alias Card =
-    { title : TranslationId
+    { title : String
     , value : Int
     , valueSeverity : CardValueSeverity
     }
@@ -112,25 +149,28 @@ type alias Card =
 {-| A `Stat Card` that will appear in the dashboard and display a certain statistic with difference from last year.
 -}
 type alias StatsCard =
-    { title : TranslationId
+    { title : String
     , cardClasses : String
-    , cardAction : Maybe DashboardPage
+    , cardAction : Maybe Msg
     , value : Int
     , valueSeverity : CardValueSeverity
     , valueIsPercentage : Bool
-    , percentageLastYear : Int
+    , previousPercentage : Int
+    , previousPercentageLabel : FilterPeriod
     , newCases : Maybe Int
     }
 
 
 type FilterType
-    = FilterTotalsChart
+    = FilterBeneficiariesChart
+    | FilterBeneficiariesIncidenceChart
     | FilterCaseManagement
 
 
 type Msg
-    = SetFilterGender FilterGender
+    = ModalToggle Bool (List ParticipantStats) String
+    | SetFilterGender FilterGender
     | SetFilterPeriod FilterPeriod
-    | SetFilterTotalsChart FilterCharts
+    | SetFilterBeneficiariesChart FilterCharts FilterType
     | SetFilterCaseManagement FilterCharts
     | SetActivePage Page
