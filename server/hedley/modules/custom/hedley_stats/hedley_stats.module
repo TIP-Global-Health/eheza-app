@@ -276,7 +276,7 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
 }
 
 /**
- * Return missed sessions by health center.
+ * Return Session attendance related states by health center.
  *
  * The period of this statistic is hardcoded for the last three months.
  *
@@ -385,7 +385,29 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
           $missed_session[$child_id]['dates'][] = hedley_stats_convert_timestamp_to_nominal($period['start']);
         }
 
-        // @TODO: Calculate here children that completed the program.
+        // Check who completed the program, the definition of that is that each
+        // child that had their 2nd birthday (2 years) in the current period, we
+        // count them as someone who completed ("graduated") the program.
+        $child_birthday = (int) $child_wrapper->field_birth_date->value();
+        if ($child_birthday > strtotime('-2 years')) {
+          // Child is still under 2 years, no need to count them.
+          continue;
+        }
+
+        $second_bd = strtotime('+2 years', $child_birthday);
+        if ($second_bd > $period['start'] && $second_bd < $period['end']) {
+          // The second BD happened in the current period.
+          // If this person is not listed in the "completed program" list
+          // already, add their data and unset some unused info.
+          if (!isset($completed_program[$child_id])) {
+            // Set data for one time.
+            $completed_program[$child_id] = $expected_people_by_clinic[$child_id];
+          }
+
+          // We add it to the list of dates to be able to filter it in the
+          // frontend.
+          $completed_program[$child_id]['dates'][] = hedley_stats_convert_timestamp_to_nominal($period['start']);
+        }
       }
     }
   }
@@ -397,48 +419,6 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
   ]);
 
   return [array_values($completed_program), array_values($missed_session)];
-}
-
-/**
- * Return the completed programs by health center.
- *
- * The period of this statistic is hardcoded for the last three months.
- *
- * @param int $health_center_id
- *   The Health center node ID.
- *
- * @return array
- *   Array with the result.
- *
- * @throws \Exception
- */
-function hedley_stats_get_completed_program_stats($health_center_id) {
-  $periods = [
-    HEDLEY_STATS_PERIOD_THREE_MONTHS => [
-      'start' => strtotime("first day of -2 months"),
-      'end' => strtotime("last day of -2 months"),
-    ],
-    HEDLEY_STATS_PERIOD_LAST_MONTH => [
-      'start' => strtotime("first day of previous month"),
-      'end' => strtotime("last day of previous month"),
-    ],
-    HEDLEY_STATS_PERIOD_THIS_MONTH => [
-      'start' => strtotime("first day of this month"),
-      'end' => time(),
-    ],
-  ];
-
-  // Return the cache if exists.
-  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_COMPLETED_PROGRAM, $health_center_id)) {
-    return $cache_data;
-  }
-
-  $completed_program = [];
-
-  // Set the cache.
-  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_COMPLETED_PROGRAM, $health_center_id, NULL, array_values($completed_program));
-
-  return array_values($completed_program);
 }
 
 /**
