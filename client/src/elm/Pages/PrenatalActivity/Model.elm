@@ -64,14 +64,14 @@ type Msg
     | SetOBBoolInput (Bool -> ObstetricFormSecondStep -> ObstetricFormSecondStep) Bool
     | SetPreviousDeliveryPeriod PreviousDeliveryPeriod
     | BackToOBHistoryStep1
-    | SaveOBHistoryStep2 PrenatalEncounterId PersonId (Maybe ( ObstetricHistoryStep2Id, ObstetricHistoryStep2 ))
+    | SaveOBHistoryStep2 PrenatalEncounterId PersonId (Maybe ( ObstetricHistoryStep2Id, ObstetricHistoryStep2 )) (Maybe HistoryTask)
       -- HistoryMsgs, Medical
     | SetMedicalBoolInput (Bool -> MedicalHistoryForm -> MedicalHistoryForm) Bool
-    | SaveMedicalHistory PrenatalEncounterId PersonId (Maybe ( MedicalHistoryId, MedicalHistory ))
+    | SaveMedicalHistory PrenatalEncounterId PersonId (Maybe ( MedicalHistoryId, MedicalHistory )) (Maybe HistoryTask)
       -- HistoryMsgs, Social
     | SetSocialBoolInput (Bool -> SocialHistoryForm -> SocialHistoryForm) Bool
     | SetSocialHivTestingResult String
-    | SaveSocialHistory PrenatalEncounterId PersonId (Maybe ( SocialHistoryId, SocialHistory ))
+    | SaveSocialHistory PrenatalEncounterId PersonId (Maybe ( SocialHistoryId, SocialHistory )) (Maybe HistoryTask)
       -- ExaminationMsgs
     | SetActiveExaminationTask ExaminationTask
       -- ExaminationMsgs, Vitals

@@ -28,6 +28,8 @@ import Pages.PrenatalActivity.Utils
         , corePhysicalExamFormWithDefault
         , dangerSignsFormWithDefault
         , familyPlanningFormWithDefault
+        , historyTasksCompletedFromTotal
+        , isTaskCompleted
         , lastMenstrualPeriodFormWithDefault
         , medicalHistoryFormWithDefault
         , medicationFormWithDefault
@@ -204,8 +206,11 @@ viewPregnancyDatingContent language currentDate assembled data =
 viewHistoryContent : Language -> NominalDate -> AssembledData -> HistoryData -> List (Html Msg)
 viewHistoryContent language currentDate assembled data_ =
     let
+        firstEnconter =
+            isFirstPrenatalEncounter assembled
+
         ( tasks, data ) =
-            if isFirstPrenatalEncounter assembled then
+            if firstEnconter then
                 ( [ Obstetric, Medical, Social ], data_ )
 
             else
@@ -243,7 +248,19 @@ viewHistoryContent language currentDate assembled data_ =
                     ]
                 ]
 
-        ( viewForm, tasksCompleted, totalTasks ) =
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, historyTasksCompletedFromTotal assembled data task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Dict.get data.activeTask tasksCompletedFromTotalDict
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
             case data.activeTask of
                 Obstetric ->
                     case data.obstetricHistoryStep of
@@ -253,24 +270,8 @@ viewHistoryContent language currentDate assembled data_ =
                                     assembled.measurements.obstetricHistory
                                         |> Maybe.map (Tuple.second >> .value)
                                         |> obstetricHistoryFormWithDefault data.obstetricFormFirstStep
-
-                                intInputs =
-                                    [ formStep1_.termPregnancy
-                                    , formStep1_.preTermPregnancy
-                                    , formStep1_.stillbirthsAtTerm
-                                    , formStep1_.stillbirthsPreTerm
-                                    , formStep1_.abortions
-                                    , formStep1_.liveChildren
-                                    ]
                             in
-                            ( viewObstetricFormFirstStep language currentDate assembled formStep1_
-                            , (intInputs
-                                |> List.map taskCompleted
-                                |> List.sum
-                              )
-                                + taskCompleted formStep1_.currentlyPregnant
-                            , 7
-                            )
+                            viewObstetricFormFirstStep language currentDate assembled formStep1_
 
                         ObstetricHistorySecondStep ->
                             let
@@ -278,33 +279,8 @@ viewHistoryContent language currentDate assembled data_ =
                                     assembled.measurements.obstetricHistoryStep2
                                         |> Maybe.map (Tuple.second >> .value)
                                         |> obstetricHistoryStep2FormWithDefault data.obstetricFormSecondStep
-
-                                boolInputs =
-                                    [ formStep2_.cSectionInPreviousDelivery
-                                    , formStep2_.successiveAbortions
-                                    , formStep2_.successivePrematureDeliveries
-                                    , formStep2_.stillbornPreviousDelivery
-                                    , formStep2_.babyDiedOnDayOfBirthPreviousDelivery
-                                    , formStep2_.partialPlacentaPreviousDelivery
-                                    , formStep2_.severeHemorrhagingPreviousDelivery
-                                    , formStep2_.preeclampsiaPreviousPregnancy
-                                    , formStep2_.convulsionsPreviousDelivery
-                                    , formStep2_.convulsionsAndUnconsciousPreviousDelivery
-                                    , formStep2_.gestationalDiabetesPreviousPregnancy
-                                    , formStep2_.incompleteCervixPreviousPregnancy
-                                    , formStep2_.rhNegative
-                                    ]
                             in
-                            ( viewObstetricFormSecondStep language currentDate assembled formStep2_
-                            , (boolInputs
-                                |> List.map taskCompleted
-                                |> List.sum
-                              )
-                                + taskCompleted formStep2_.cSections
-                                + taskCompleted formStep2_.cSectionReason
-                                + taskCompleted formStep2_.previousDeliveryPeriod
-                            , 16
-                            )
+                            viewObstetricFormSecondStep language currentDate assembled formStep2_
 
                 Medical ->
                     let
@@ -312,26 +288,8 @@ viewHistoryContent language currentDate assembled data_ =
                             assembled.measurements.medicalHistory
                                 |> Maybe.map (Tuple.second >> .value)
                                 |> medicalHistoryFormWithDefault data.medicalForm
-
-                        boolInputs =
-                            [ medicalForm.uterineMyoma
-                            , medicalForm.diabetes
-                            , medicalForm.cardiacDisease
-                            , medicalForm.renalDisease
-                            , medicalForm.hypertensionBeforePregnancy
-                            , medicalForm.tuberculosisPast
-                            , medicalForm.tuberculosisPresent
-                            , medicalForm.asthma
-                            , medicalForm.bowedLegs
-                            , medicalForm.hiv
-                            ]
                     in
-                    ( viewMedicalForm language currentDate assembled medicalForm
-                    , boolInputs
-                        |> List.map taskCompleted
-                        |> List.sum
-                    , 10
-                    )
+                    viewMedicalForm language currentDate assembled medicalForm
 
                 Social ->
                     let
@@ -350,13 +308,6 @@ viewHistoryContent language currentDate assembled data_ =
                                     )
                                 |> List.isEmpty
 
-                        partnerReceivedCounselingInput =
-                            if showCounselingQuestion then
-                                [ socialForm.partnerReceivedCounseling ]
-
-                            else
-                                []
-
                         showTestingQuestions =
                             assembled.previousMeasurementsWithDates
                                 |> List.filter
@@ -374,35 +325,40 @@ viewHistoryContent language currentDate assembled data_ =
                                             |> Maybe.withDefault False
                                     )
                                 |> List.isEmpty
-
-                        partnerReceivedTestingInput =
-                            if showTestingQuestions then
-                                [ socialForm.partnerReceivedTesting ]
-
-                            else
-                                []
-
-                        boolInputs =
-                            (socialForm.accompaniedByPartner
-                                :: partnerReceivedCounselingInput
-                            )
-                                ++ partnerReceivedTestingInput
-
-                        listInputs =
-                            if socialForm.partnerReceivedTesting == Just True then
-                                [ socialForm.partnerTestingResult ]
-
-                            else
-                                []
                     in
-                    ( viewSocialForm language currentDate showCounselingQuestion showTestingQuestions socialForm
-                    , (boolInputs |> List.map taskCompleted |> List.sum)
-                        + (listInputs |> List.map taskCompleted |> List.sum)
-                    , List.length boolInputs + List.length listInputs
-                    )
+                    viewSocialForm language currentDate showCounselingQuestion showTestingQuestions socialForm
+
+        getNextTask currentTask =
+            if not firstEnconter then
+                Nothing
+
+            else
+                case currentTask of
+                    Obstetric ->
+                        case data.obstetricHistoryStep of
+                            ObstetricHistoryFirstStep ->
+                                Nothing
+
+                            ObstetricHistorySecondStep ->
+                                [ Medical, Social ]
+                                    |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                                    |> List.head
+
+                    Medical ->
+                        [ Social, Obstetric ]
+                            |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                            |> List.head
+
+                    Social ->
+                        [ Obstetric, Medical ]
+                            |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                            |> List.head
 
         actions =
             let
+                nextTask =
+                    getNextTask data.activeTask
+
                 ( buttons, stepIndicationClass ) =
                     case data.activeTask of
                         Obstetric ->
@@ -429,7 +385,11 @@ viewHistoryContent language currentDate assembled data_ =
                                                 , ( "disabled", tasksCompleted /= totalTasks )
                                                 , ( "active", tasksCompleted == totalTasks )
                                                 ]
-                                            , onClick <| SaveOBHistoryStep2 assembled.id assembled.participant.person assembled.measurements.obstetricHistoryStep2
+                                            , onClick <|
+                                                SaveOBHistoryStep2 assembled.id
+                                                    assembled.participant.person
+                                                    assembled.measurements.obstetricHistoryStep2
+                                                    nextTask
                                             ]
                                             [ text <| translate language Translate.Save ]
                                       ]
@@ -439,7 +399,11 @@ viewHistoryContent language currentDate assembled data_ =
                         Medical ->
                             ( [ button
                                     [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                    , onClick <| SaveMedicalHistory assembled.id assembled.participant.person assembled.measurements.medicalHistory
+                                    , onClick <|
+                                        SaveMedicalHistory assembled.id
+                                            assembled.participant.person
+                                            assembled.measurements.medicalHistory
+                                            nextTask
                                     ]
                                     [ text <| translate language Translate.Save ]
                               ]
@@ -449,7 +413,11 @@ viewHistoryContent language currentDate assembled data_ =
                         Social ->
                             ( [ button
                                     [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                    , onClick <| SaveSocialHistory assembled.id assembled.participant.person assembled.measurements.socialHistory
+                                    , onClick <|
+                                        SaveSocialHistory assembled.id
+                                            assembled.participant.person
+                                            assembled.measurements.socialHistory
+                                            nextTask
                                     ]
                                     [ text <| translate language Translate.Save ]
                               ]

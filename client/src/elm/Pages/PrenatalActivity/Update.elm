@@ -433,13 +433,21 @@ update currentDate msg model =
             , []
             )
 
-        SaveOBHistoryStep2 prenatalEncounterId personId saved ->
+        SaveOBHistoryStep2 prenatalEncounterId personId saved nextTask_ ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
 
                 measurement =
                     Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId ]
+                            , Obstetric
+                            )
 
                 ( appMsgs, updatedData ) =
                     case model.historyData.obstetricHistoryStep of
@@ -453,13 +461,14 @@ update currentDate msg model =
                                 |> unwrap
                                     []
                                     (\value ->
-                                        [ Backend.PrenatalEncounter.Model.SaveObstetricHistoryStep2 personId measurementId value
+                                        (Backend.PrenatalEncounter.Model.SaveObstetricHistoryStep2 personId measurementId value
                                             |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
                                             |> App.Model.MsgIndexedDb
-                                        ]
+                                        )
+                                            :: backToActivitiesMsg
                                     )
                             , model.historyData
-                                |> (\data -> { data | obstetricHistoryStep = ObstetricHistoryFirstStep, activeTask = Medical })
+                                |> (\data -> { data | obstetricHistoryStep = ObstetricHistoryFirstStep, activeTask = nextTask })
                             )
             in
             ( { model | historyData = updatedData }
@@ -482,7 +491,7 @@ update currentDate msg model =
             , []
             )
 
-        SaveMedicalHistory prenatalEncounterId personId saved ->
+        SaveMedicalHistory prenatalEncounterId personId saved nextTask_ ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -490,21 +499,30 @@ update currentDate msg model =
                 measurement =
                     Maybe.map (Tuple.second >> .value) saved
 
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId ]
+                            , Obstetric
+                            )
+
                 appMsgs =
                     model.historyData.medicalForm
                         |> toMedicalHistoryValueWithDefault measurement
                         |> unwrap
                             []
                             (\value ->
-                                [ Backend.PrenatalEncounter.Model.SaveMedicalHistory personId measurementId value
+                                (Backend.PrenatalEncounter.Model.SaveMedicalHistory personId measurementId value
                                     |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
                                     |> App.Model.MsgIndexedDb
-                                ]
+                                )
+                                    :: backToActivitiesMsg
                             )
 
                 updatedData =
                     model.historyData
-                        |> (\data -> { data | activeTask = Social })
+                        |> (\data -> { data | activeTask = nextTask })
             in
             ( { model | historyData = updatedData }
             , Cmd.none
@@ -545,7 +563,7 @@ update currentDate msg model =
             , []
             )
 
-        SaveSocialHistory prenatalEncounterId personId saved ->
+        SaveSocialHistory prenatalEncounterId personId saved nextTask_ ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -561,20 +579,32 @@ update currentDate msg model =
                     else
                         model.historyData.socialForm
 
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId ]
+                            , Obstetric
+                            )
+
                 appMsgs =
                     updatedForm
                         |> toSocialHistoryValueWithDefault measurement
                         |> unwrap
                             []
                             (\value ->
-                                [ Backend.PrenatalEncounter.Model.SaveSocialHistory personId measurementId value
+                                (Backend.PrenatalEncounter.Model.SaveSocialHistory personId measurementId value
                                     |> Backend.Model.MsgPrenatalEncounter prenatalEncounterId
                                     |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage prenatalEncounterId
-                                ]
+                                )
+                                    :: backToActivitiesMsg
                             )
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | activeTask = nextTask })
             in
-            ( model
+            ( { model | historyData = updatedData }
             , Cmd.none
             , appMsgs
             )
