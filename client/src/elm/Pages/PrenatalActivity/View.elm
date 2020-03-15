@@ -21,27 +21,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
-import Pages.PrenatalActivity.Utils
-    exposing
-        ( breastExamFormWithDefault
-        , calculateBmi
-        , corePhysicalExamFormWithDefault
-        , dangerSignsFormWithDefault
-        , familyPlanningFormWithDefault
-        , historyTasksCompletedFromTotal
-        , isTaskCompleted
-        , lastMenstrualPeriodFormWithDefault
-        , medicalHistoryFormWithDefault
-        , medicationFormWithDefault
-        , obstetricHistoryFormWithDefault
-        , obstetricHistoryStep2FormWithDefault
-        , obstetricalExamFormWithDefault
-        , prenatalNutritionFormWithDefault
-        , resourceFormWithDefault
-        , socialHistoryFormWithDefault
-        , toObstetricHistoryValue
-        , vitalsFormWithDefault
-        )
+import Pages.PrenatalActivity.Utils exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
@@ -742,6 +722,18 @@ viewPatientProvisionsContent language currentDate assembled data =
             else
                 [ Medication ]
 
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, patientProvisionsTasksCompletedFromTotal assembled data showDewormingPillQuestion task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Dict.get data.activeTask tasksCompletedFromTotalDict
+                |> Maybe.withDefault ( 0, 0 )
+
         viewTask task =
             let
                 ( iconClass, isCompleted ) =
@@ -771,7 +763,7 @@ viewPatientProvisionsContent language currentDate assembled data =
                     ]
                 ]
 
-        ( viewForm, tasksCompleted, totalTasks ) =
+        viewForm =
             case data.activeTask of
                 Medication ->
                     let
@@ -787,12 +779,7 @@ viewPatientProvisionsContent language currentDate assembled data =
                             else
                                 [ form.receivedIronFolicAcid ]
                     in
-                    ( viewMedicationForm language currentDate assembled showDewormingPillQuestion form
-                    , questions
-                        |> List.map taskCompleted
-                        |> List.sum
-                    , List.length questions
-                    )
+                    viewMedicationForm language currentDate assembled showDewormingPillQuestion form
 
                 Resources ->
                     let
@@ -801,20 +788,42 @@ viewPatientProvisionsContent language currentDate assembled data =
                                 |> Maybe.map (Tuple.second >> .value)
                                 |> resourceFormWithDefault data.resourcesForm
                     in
-                    ( viewResourcesForm language currentDate assembled form
-                    , taskCompleted form.receivedMosquitoNet
-                    , 1
-                    )
+                    viewResourcesForm language currentDate assembled form
+
+        getNextTask currentTask =
+            if not showResourcesTask then
+                Nothing
+
+            else
+                case currentTask of
+                    Medication ->
+                        [ Resources ]
+                            |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                            |> List.head
+
+                    Resources ->
+                        [ Medication ]
+                            |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                            |> List.head
 
         actions =
             let
+                nextTask =
+                    getNextTask data.activeTask
+
                 saveAction =
                     case data.activeTask of
                         Medication ->
-                            SaveMedication assembled.id assembled.participant.person assembled.measurements.medication showResourcesTask
+                            SaveMedication assembled.id
+                                assembled.participant.person
+                                assembled.measurements.medication
+                                nextTask
 
                         Resources ->
-                            SaveResources assembled.id assembled.participant.person assembled.measurements.resource
+                            SaveResources assembled.id
+                                assembled.participant.person
+                                assembled.measurements.resource
+                                nextTask
             in
             div [ class "actions examination" ]
                 [ button
