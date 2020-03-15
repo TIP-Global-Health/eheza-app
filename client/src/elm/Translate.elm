@@ -376,6 +376,7 @@ type TranslationId
     | MedicalDiagnosis
     | MedicalDiagnosisAlert MedicalDiagnosis
     | MedicalFormHelper
+    | MentalHealthHistory
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MMHGUnit
     | MiddleName
@@ -2408,8 +2409,18 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisMentalHealthHistory ->
+                    { english = "History of Mental Health Problems"
+                    , kinyarwanda = Nothing
+                    }
+
         MedicalFormHelper ->
             { english = "Please record if the mother was diagnosed with the following medical issues"
+            , kinyarwanda = Nothing
+            }
+
+        MentalHealthHistory ->
+            { english = "History of Mental Health Problems"
             , kinyarwanda = Nothing
             }
 
@@ -2844,7 +2855,7 @@ translationSet trans =
             }
 
         PartnerHivTestResult ->
-            { english = "What was the partners Hiv Test result"
+            { english = "What was the partners HIV Test result"
             , kinyarwanda = Nothing
             }
 

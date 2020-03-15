@@ -106,9 +106,13 @@ getActivityIcon activity =
     encodeActivityAsString activity
 
 
-getAllActivities : List PrenatalActivity
-getAllActivities =
-    [ PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, DangerSigns, PrenatalPhoto ]
+getAllActivities : Bool -> List PrenatalActivity
+getAllActivities isFirstEncounter =
+    if isFirstEncounter then
+        [ PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, DangerSigns, PrenatalPhoto ]
+
+    else
+        [ DangerSigns, PregnancyDating, History, Examination, FamilyPlanning, PatientProvisions, PrenatalPhoto ]
 
 
 generateHighRiskAlertData : Language -> PrenatalMeasurements -> HighRiskFactor -> Maybe String
@@ -751,6 +755,21 @@ generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
                                 Tuple.second measurement |> .value
                         in
                         if EverySet.member Backend.Measurement.Model.HIV value then
+                            Just (transAlert diagnosis)
+
+                        else
+                            Nothing
+                    )
+
+        DiagnosisMentalHealthHistory ->
+            measurements.medicalHistory
+                |> Maybe.andThen
+                    (\measurement ->
+                        let
+                            value =
+                                Tuple.second measurement |> .value
+                        in
+                        if EverySet.member Backend.Measurement.Model.MentalHealthHistory value then
                             Just (transAlert diagnosis)
 
                         else

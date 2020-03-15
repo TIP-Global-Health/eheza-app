@@ -207,6 +207,7 @@ fromMedicalHistoryValue saved =
     , asthma = Maybe.map (EverySet.member Asthma) saved
     , bowedLegs = Maybe.map (EverySet.member BowedLegs) saved
     , hiv = Maybe.map (EverySet.member HIV) saved
+    , mentalHealthHistory = Maybe.map (EverySet.member MentalHealthHistory) saved
     }
 
 
@@ -226,6 +227,7 @@ medicalHistoryFormWithDefault form saved =
                 , asthma = or form.asthma (EverySet.member Asthma value |> Just)
                 , bowedLegs = or form.bowedLegs (EverySet.member BowedLegs value |> Just)
                 , hiv = or form.hiv (EverySet.member HIV value |> Just)
+                , mentalHealthHistory = or form.mentalHealthHistory (EverySet.member MentalHealthHistory value |> Just)
                 }
             )
 
@@ -247,6 +249,7 @@ toMedicalHistoryValue form =
     , Maybe.map (ifTrue Asthma) form.asthma
     , Maybe.map (ifTrue BowedLegs) form.bowedLegs
     , Maybe.map (ifTrue HIV) form.hiv
+    , Maybe.map (ifTrue MentalHealthHistory) form.mentalHealthHistory
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoMedicalHistorySigns)
