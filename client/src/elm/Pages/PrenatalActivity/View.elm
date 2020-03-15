@@ -25,7 +25,7 @@ import Pages.PrenatalActivity.Utils exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
-import Pages.Utils exposing (taskCompleted, viewBoolInput, viewCustomLabel, viewLabel, viewPhotoThumbFromPhotoUrl, viewQuestionLabel)
+import Pages.Utils exposing (taskCompleted, taskListCompleted, viewBoolInput, viewCustomLabel, viewLabel, viewPhotoThumbFromPhotoUrl, viewQuestionLabel)
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -428,6 +428,21 @@ viewExaminationContent language currentDate assembled data =
         tasks =
             [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricalExam, BreastExam ]
 
+        firstEnconter =
+            isFirstPrenatalEncounter assembled
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, examinationTasksCompletedFromTotal assembled data firstEnconter task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Dict.get data.activeTask tasksCompletedFromTotalDict
+                |> Maybe.withDefault ( 0, 0 )
+
         viewTask task =
             let
                 ( iconClass, isCompleted ) =
@@ -466,7 +481,7 @@ viewExaminationContent language currentDate assembled data =
                     ]
                 ]
 
-        ( viewForm, tasksCompleted, totalTasks ) =
+        viewForm =
             case data.activeTask of
                 Vitals ->
                     let
@@ -475,22 +490,12 @@ viewExaminationContent language currentDate assembled data =
                                 |> Maybe.map (Tuple.second >> .value)
                                 |> vitalsFormWithDefault data.vitalsForm
                     in
-                    ( viewVitalsForm language currentDate assembled form
-                    , taskListCompleted [ form.sysBloodPressure, form.diaBloodPressure ]
-                        + ([ Maybe.map (always ()) form.heartRate
-                           , Maybe.map (always ()) form.respiratoryRate
-                           , Maybe.map (always ()) form.bodyTemperature
-                           ]
-                            |> List.map taskCompleted
-                            |> List.sum
-                          )
-                    , 4
-                    )
+                    viewVitalsForm language currentDate assembled form
 
                 NutritionAssessment ->
                     let
                         hideHeightInput =
-                            isFirstPrenatalEncounter assembled |> not
+                            not firstEnconter
 
                         form_ =
                             assembled.measurements.nutrition
@@ -507,28 +512,8 @@ viewExaminationContent language currentDate assembled data =
 
                             else
                                 form_
-
-                        tasks_ =
-                            if hideHeightInput then
-                                [ form.weight, form.muac ]
-
-                            else
-                                [ form.height, form.weight, form.muac ]
-
-                        tasksForBmi =
-                            if hideHeightInput then
-                                [ form.weight ]
-
-                            else
-                                [ form.height, form.weight ]
                     in
-                    ( viewNutritionAssessmentForm language currentDate assembled form hideHeightInput
-                    , (List.map taskCompleted tasks_ |> List.sum)
-                        -- This is for BMI task, which is considered as completed
-                        -- when both height and weight are set.
-                        + taskListCompleted tasksForBmi
-                    , List.length tasks_ + 1
-                    )
+                    viewNutritionAssessmentForm language currentDate assembled form hideHeightInput
 
                 CorePhysicalExam ->
                     let
@@ -536,28 +521,8 @@ viewExaminationContent language currentDate assembled data =
                             assembled.measurements.corePhysicalExam
                                 |> Maybe.map (Tuple.second >> .value)
                                 |> corePhysicalExamFormWithDefault data.corePhysicalExamForm
-
-                        extremitiesTaskCompleted =
-                            if isJust form.hands && isJust form.legs then
-                                1
-
-                            else
-                                0
                     in
-                    ( viewCorePhysicalExamForm language currentDate assembled form
-                    , extremitiesTaskCompleted
-                        + taskCompleted form.neck
-                        + taskCompleted form.lungs
-                        + taskCompleted form.abdomen
-                        + taskCompleted form.heart
-                        + ([ form.brittleHair
-                           , form.paleConjuctiva
-                           ]
-                            |> List.map taskCompleted
-                            |> List.sum
-                          )
-                    , 7
-                    )
+                    viewCorePhysicalExamForm language currentDate assembled form
 
                 ObstetricalExam ->
                     let
@@ -566,16 +531,7 @@ viewExaminationContent language currentDate assembled data =
                                 |> Maybe.map (Tuple.second >> .value)
                                 |> obstetricalExamFormWithDefault data.obstetricalExamForm
                     in
-                    ( viewObstetricalExamForm language currentDate assembled form
-                    , taskCompleted form.fetalPresentation
-                        + taskCompleted form.fetalMovement
-                        + taskCompleted form.cSectionScar
-                        + ([ Maybe.map (always ()) form.fundalHeight, Maybe.map (always ()) form.fetalHeartRate ]
-                            |> List.map taskCompleted
-                            |> List.sum
-                          )
-                    , 5
-                    )
+                    viewObstetricalExamForm language currentDate assembled form
 
                 BreastExam ->
                     let
@@ -584,17 +540,47 @@ viewExaminationContent language currentDate assembled data =
                                 |> Maybe.map (Tuple.second >> .value)
                                 |> breastExamFormWithDefault data.breastExamForm
                     in
-                    ( viewBreastExamForm language currentDate assembled form
-                    , taskCompleted form.breast + taskCompleted form.selfGuidance
-                    , 2
-                    )
+                    viewBreastExamForm language currentDate assembled form
+
+        getNextTask currentTask =
+            case currentTask of
+                Vitals ->
+                    [ NutritionAssessment, CorePhysicalExam, ObstetricalExam, BreastExam ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
+
+                NutritionAssessment ->
+                    [ CorePhysicalExam, ObstetricalExam, BreastExam, Vitals ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
+
+                CorePhysicalExam ->
+                    [ ObstetricalExam, BreastExam, Vitals, NutritionAssessment ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
+
+                ObstetricalExam ->
+                    [ BreastExam, Vitals, NutritionAssessment, CorePhysicalExam ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
+
+                BreastExam ->
+                    [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricalExam ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
 
         actions =
             let
+                nextTask =
+                    getNextTask data.activeTask
+
                 saveAction =
                     case data.activeTask of
                         Vitals ->
-                            SaveVitals assembled.id assembled.participant.person assembled.measurements.vitals
+                            SaveVitals assembled.id
+                                assembled.participant.person
+                                assembled.measurements.vitals
+                                nextTask
 
                         NutritionAssessment ->
                             let
@@ -611,16 +597,29 @@ viewExaminationContent language currentDate assembled data =
                                     else
                                         Nothing
                             in
-                            SaveNutritionAssessment assembled.id assembled.participant.person assembled.measurements.nutrition maybeHeight
+                            SaveNutritionAssessment assembled.id
+                                assembled.participant.person
+                                assembled.measurements.nutrition
+                                maybeHeight
+                                nextTask
 
                         CorePhysicalExam ->
-                            SaveCorePhysicalExam assembled.id assembled.participant.person assembled.measurements.corePhysicalExam
+                            SaveCorePhysicalExam assembled.id
+                                assembled.participant.person
+                                assembled.measurements.corePhysicalExam
+                                nextTask
 
                         ObstetricalExam ->
-                            SaveObstetricalExam assembled.id assembled.participant.person assembled.measurements.obstetricalExam
+                            SaveObstetricalExam assembled.id
+                                assembled.participant.person
+                                assembled.measurements.obstetricalExam
+                                nextTask
 
                         BreastExam ->
-                            SaveBreastExam assembled.id assembled.participant.person assembled.measurements.breastExam
+                            SaveBreastExam assembled.id
+                                assembled.participant.person
+                                assembled.measurements.breastExam
+                                nextTask
             in
             div [ class "actions examination" ]
                 [ button
@@ -2458,15 +2457,6 @@ viewAlert color =
 
 
 -- Helper functions
-
-
-taskListCompleted : List (Maybe a) -> Int
-taskListCompleted list =
-    if List.all isJust list then
-        1
-
-    else
-        0
 
 
 resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
