@@ -18,7 +18,14 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.Model exposing (..)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import PrenatalActivity.Model exposing (..)
-import PrenatalActivity.Utils exposing (generateHighRiskAlertData, generateHighSeverityAlertData, getActivityIcon, getAllActivities)
+import PrenatalActivity.Utils
+    exposing
+        ( generateHighRiskAlertData
+        , generateHighSeverityAlertData
+        , generateRecurringHighSeverityAlertData
+        , getActivityIcon
+        , getAllActivities
+        )
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
@@ -98,8 +105,12 @@ viewMotherDetails language currentDate data isDialogOpen setAlertsDialogStateMsg
             allHighSeverityAlerts
                 |> List.filterMap (generateHighSeverityAlertData language currentDate data)
 
+        recurringHighSeverityAlertsData =
+            allRecurringHighSeverityAlerts
+                |> List.map (generateRecurringHighSeverityAlertData language currentDate data)
+
         alertSign =
-            if List.isEmpty highRiskAlertsData && List.isEmpty highSeverityAlertsData then
+            if List.isEmpty highRiskAlertsData && List.isEmpty highSeverityAlertsData && List.isEmpty recurringHighSeverityAlertsData then
                 emptyNode
 
             else
@@ -126,12 +137,25 @@ viewMotherDetails language currentDate data isDialogOpen setAlertsDialogStateMsg
                     (ageInYears currentDate mother)
             ]
         , alertSign
-        , viewModal <| alertsDialog language highRiskAlertsData highSeverityAlertsData isDialogOpen setAlertsDialogStateMsg
+        , viewModal <|
+            alertsDialog language
+                highRiskAlertsData
+                highSeverityAlertsData
+                recurringHighSeverityAlertsData
+                isDialogOpen
+                setAlertsDialogStateMsg
         ]
 
 
-alertsDialog : Language -> List String -> List ( String, String ) -> Bool -> (Bool -> msg) -> Maybe (Html msg)
-alertsDialog language highRiskAlertsData highSeverityAlertsData isOpen setAlertsDialogStateMsg =
+alertsDialog :
+    Language
+    -> List String
+    -> List ( String, String )
+    -> List (List ( String, String, String ))
+    -> Bool
+    -> (Bool -> msg)
+    -> Maybe (Html msg)
+alertsDialog language highRiskAlertsData highSeverityAlertsData recurringHighSeverityAlertsData isOpen setAlertsDialogStateMsg =
     if isOpen then
         let
             sectionLabel title =
@@ -144,6 +168,13 @@ alertsDialog language highRiskAlertsData highSeverityAlertsData isOpen setAlerts
                 div [ class "alert" ]
                     [ span [ class "alert-text" ] [ text <| "- " ++ message ++ ":" ]
                     , span [ class "alert-value" ] [ text value ]
+                    ]
+
+            viewAlertWithValueAndDate ( message, value, date ) =
+                div [ class "alert" ]
+                    [ span [ class "alert-text" ] [ text <| "- " ++ message ++ ":" ]
+                    , span [ class "alert-value" ] [ text value ]
+                    , span [ class "alert-date" ] [ text <| "(" ++ date ++ ")" ]
                     ]
 
             viewAlertWithoutValue message =
@@ -163,6 +194,17 @@ alertsDialog language highRiskAlertsData highSeverityAlertsData isOpen setAlerts
             highSeverityAlerts =
                 highSeverityAlertsData
                     |> List.map viewHighSeverityAlert
+
+            viewRecurringHighSeverityAlert alertsList =
+                List.map viewAlertWithValueAndDate alertsList
+
+            recurringHighSeverityAlerts =
+                recurringHighSeverityAlertsData
+                    |> List.map viewRecurringHighSeverityAlert
+                    |> List.concat
+
+            highSeverityAlertsEmpty =
+                List.isEmpty highSeverityAlerts && List.isEmpty recurringHighSeverityAlerts
         in
         Just <|
             div [ class "ui active modal alerts-dialog" ]
@@ -176,9 +218,10 @@ alertsDialog language highRiskAlertsData highSeverityAlertsData isOpen setAlerts
                     , div [ class "high-severity-alerts" ]
                         [ sectionLabel Translate.HighSeverityAlerts
                         , highSeverityAlerts
+                            ++ recurringHighSeverityAlerts
                             |> div [ class "section-items" ]
                         ]
-                        |> showIf (List.isEmpty highSeverityAlerts |> not)
+                        |> showIf (not highSeverityAlertsEmpty)
                     ]
                 , div
                     [ class "actions" ]

@@ -6,6 +6,7 @@ module PrenatalActivity.Utils exposing
     , generateHighSeverityAlertData
     , generateMedicalDiagnosisAlertData
     , generateObstetricalDiagnosisAlertData
+    , generateRecurringHighSeverityAlertData
     , generateRiskFactorAlertData
     , getActivityIcon
     , getAllActivities
@@ -24,7 +25,7 @@ expected (and not completed).
 
 import Backend.Measurement.Model exposing (HeightInCm(..), MuacInCm(..), PrenatalMeasurements, PreviousDeliverySign(..), WeightInKg(..))
 import EverySet
-import Gizra.NominalDate exposing (NominalDate, diffDays)
+import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
 import Maybe.Extra exposing (isJust)
 import Pages.PrenatalActivity.Utils exposing (calculateBmi)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
@@ -190,44 +191,6 @@ generateHighSeverityAlertData language currentDate data alert =
                             Nothing
                     )
 
-        BloodPressure ->
-            let
-                resolveAlert measurements =
-                    measurements.vitals
-                        |> Maybe.andThen
-                            (\measurement ->
-                                let
-                                    sys =
-                                        Tuple.second measurement |> .value |> .sys
-
-                                    dia =
-                                        Tuple.second measurement |> .value |> .dia
-                                in
-                                if sys > 180 || dia > 100 then
-                                    Just
-                                        ( trans Translate.High ++ " " ++ transAlert alert
-                                        , Debug.toString sys ++ "/" ++ Debug.toString dia ++ trans Translate.MMHGUnit
-                                        )
-
-                                else
-                                    Nothing
-                            )
-
-                elevatedMoreThanOnceAlert =
-                    let
-                        numberOfOccasions =
-                            data.previousMeasurementsWithDates
-                                |> List.filterMap (Tuple.second >> resolveAlert)
-                                |> List.length
-                    in
-                    if numberOfOccasions > 1 then
-                        Just ( trans Translate.BloodPressureElevatedOcassions, Debug.toString numberOfOccasions )
-
-                    else
-                        Nothing
-            in
-            Maybe.Extra.orLazy (resolveAlert data.measurements) (\() -> elevatedMoreThanOnceAlert)
-
         FetalHeartRate ->
             let
                 resolveAlert ( date, measurements ) =
@@ -351,6 +314,46 @@ generateHighSeverityAlertData language currentDate data alert =
                         else
                             Nothing
                     )
+
+
+generateRecurringHighSeverityAlertData : Language -> NominalDate -> AssembledData -> RecurringHighSeverityAlert -> List ( String, String, String )
+generateRecurringHighSeverityAlertData language currentDate data alert =
+    let
+        trans =
+            translate language
+
+        transAlert alert_ =
+            trans (Translate.RecurringHighSeverityAlert alert_)
+    in
+    case alert of
+        BloodPressure ->
+            let
+                resolveAlert ( date, measurements ) =
+                    measurements.vitals
+                        |> Maybe.andThen
+                            (\measurement ->
+                                let
+                                    sys =
+                                        Tuple.second measurement |> .value |> .sys
+
+                                    dia =
+                                        Tuple.second measurement |> .value |> .dia
+                                in
+                                if sys > 180 || dia > 100 then
+                                    Just
+                                        ( trans Translate.High ++ " " ++ transAlert alert
+                                        , Debug.toString sys ++ "/" ++ Debug.toString dia ++ trans Translate.MMHGUnit
+                                        , formatMMDDYYYY date
+                                        )
+
+                                else
+                                    Nothing
+                            )
+            in
+            (( currentDate, data.measurements )
+                :: data.previousMeasurementsWithDates
+            )
+                |> List.filterMap resolveAlert
 
 
 generateRiskFactorAlertData : Language -> NominalDate -> PrenatalMeasurements -> RiskFactor -> Maybe String

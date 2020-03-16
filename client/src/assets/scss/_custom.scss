@@ -1069,6 +1069,11 @@ input::placeholder {
             color: $color-red-alert;
             margin-left: 10px;
           }
+
+          .alert-date {
+            color: $color-green-alert;
+            margin-left: 10px;
+          }
         }
       }
 

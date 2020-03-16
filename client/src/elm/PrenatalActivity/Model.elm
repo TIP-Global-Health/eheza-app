@@ -5,11 +5,13 @@ module PrenatalActivity.Model exposing
     , ObstetricalDiagnosis(..)
     , PregnancyTrimester(..)
     , PrenatalActivity(..)
+    , RecurringHighSeverityAlert(..)
     , RiskFactor(..)
     , allHighRiskFactors
     , allHighSeverityAlerts
     , allMedicalDiagnosis
     , allObstetricalDiagnosis
+    , allRecurringHighSeverityAlerts
     , allRiskFactors
     , allTrimesters
     )
@@ -55,11 +57,14 @@ type HighRiskFactor
 
 type HighSeverityAlert
     = BodyTemperature
-    | BloodPressure
     | FetalHeartRate
     | FetalMovement
     | HeartRate
     | RespiratoryRate
+
+
+type RecurringHighSeverityAlert
+    = BloodPressure
 
 
 type ObstetricalDiagnosis
@@ -103,7 +108,12 @@ allHighRiskFactors =
 
 allHighSeverityAlerts : List HighSeverityAlert
 allHighSeverityAlerts =
-    [ BodyTemperature, BloodPressure, HeartRate, RespiratoryRate, FetalMovement, FetalHeartRate ]
+    [ BodyTemperature, HeartRate, RespiratoryRate, FetalMovement, FetalHeartRate ]
+
+
+allRecurringHighSeverityAlerts : List RecurringHighSeverityAlert
+allRecurringHighSeverityAlerts =
+    [ BloodPressure ]
 
 
 allRiskFactors : List RiskFactor
