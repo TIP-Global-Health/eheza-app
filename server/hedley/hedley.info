@@ -33,6 +33,7 @@ dependencies[] = message
 dependencies[] = module_filter
 dependencies[] = restful
 dependencies[] = restful_token_auth
+dependencies[] = smtp
 dependencies[] = strongarm
 dependencies[] = title
 dependencies[] = token

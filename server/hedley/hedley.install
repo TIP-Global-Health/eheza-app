@@ -545,3 +545,23 @@ function hedley_update_7022() {
   $ledger_viewer_role->name = 'E-ledger viewer';
   user_role_save($ledger_viewer_role);
 }
+
+/**
+ * Enable smtp, and set it up.
+ */
+function hedley_update_7023() {
+  module_enable(['smtp']);
+
+  // SMTP settings.
+  variable_set('smtp_host', 'smtp.mandrillapp.com');
+  variable_set('smtp_on', TRUE);
+  // The password is also determining which mandrill api is used. Using the
+  // real one on live pantheon, and the general test api otherwise.
+  // See https://mandrillapp.com/settings.
+  $live = defined('PANTHEON_ENVIRONMENT') && PANTHEON_ENVIRONMENT == 'live';
+  $password = $live ? '5qhZ-oVcpBNL8X4elsJJnA' : 'wBiah7jHNHabzHybnidsMg';
+  variable_set('smtp_password', $password);
+  variable_set('smtp_port', '587');
+  variable_set('smtp_username', 'brice@gizra.com');
+  variable_set('smtp_from', 'system@***REMOVED***');
+}
