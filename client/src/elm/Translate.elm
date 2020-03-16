@@ -57,6 +57,7 @@ import PrenatalActivity.Model
         , ObstetricalDiagnosis(..)
         , PregnancyTrimester(..)
         , PrenatalActivity(..)
+        , RecurringHighSeverityAlert(..)
         , RiskFactor(..)
         )
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -489,6 +490,7 @@ type TranslationId
     | ReceivedIronFolicAcid
     | ReceivedMosquitoNet
     | RecordPregnancyOutcome
+    | RecurringHighSeverityAlert RecurringHighSeverityAlert
     | Register
     | RegisterHelper
     | RegisterNewParticipant
@@ -2033,11 +2035,6 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                PrenatalActivity.Model.BloodPressure ->
-                    { english = "Blood Pressure"
-                    , kinyarwanda = Nothing
-                    }
-
                 PrenatalActivity.Model.FetalHeartRate ->
                     { english = "No fetal heart rate noted"
                     , kinyarwanda = Nothing
@@ -3169,6 +3166,13 @@ translationSet trans =
             { english = "Record Pregnancy Outcome"
             , kinyarwanda = Nothing
             }
+
+        RecurringHighSeverityAlert alert ->
+            case alert of
+                PrenatalActivity.Model.BloodPressure ->
+                    { english = "Blood Pressure"
+                    , kinyarwanda = Nothing
+                    }
 
         Register ->
             { english = "Register"
