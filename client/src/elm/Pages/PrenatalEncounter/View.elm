@@ -108,6 +108,7 @@ viewMotherDetails language currentDate data isDialogOpen setAlertsDialogStateMsg
         recurringHighSeverityAlertsData =
             allRecurringHighSeverityAlerts
                 |> List.map (generateRecurringHighSeverityAlertData language currentDate data)
+                |> List.filter (List.isEmpty >> not)
 
         alertSign =
             if List.isEmpty highRiskAlertsData && List.isEmpty highSeverityAlertsData && List.isEmpty recurringHighSeverityAlertsData then
