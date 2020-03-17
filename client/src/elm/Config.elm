@@ -62,10 +62,10 @@ ehezaGlobal =
     }
 
 
-elm19Pantheon : Model
-elm19Pantheon =
-    { backendUrl = "https://elm19-ihangane.pantheonsite.io"
-    , name = "elm19Pantheon"
+***REMOVED*** : Model
+***REMOVED*** =
+    { backendUrl = "https://***REMOVED***"
+    , name = "***REMOVED***"
     , pusherKey = PusherAppKey "" UsEast1
     , debug = False
     , rollbarToken = Rollbar.token "***REMOVED***"
