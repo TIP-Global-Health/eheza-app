@@ -457,13 +457,7 @@ update msg model =
                             )
 
                 extraMsgs =
-                    SetHealthCenter maybeHealthCenterId
-                        :: (if isJust maybeHealthCenterId then
-                                [ SetActivePage <| UserPage ClinicalPage ]
-
-                            else
-                                []
-                           )
+                    [ SetHealthCenter maybeHealthCenterId ]
             in
             ( { model | villageId = maybeVillageId }
             , maybeVillageId
