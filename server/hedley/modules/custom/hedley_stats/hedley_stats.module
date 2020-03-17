@@ -75,6 +75,7 @@ function hedley_stats_node_presave($node) {
     // Clear cache that doesn't have periods.
     hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_GOOD_NUTRITION, $health_center->nid);
     hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_TOTAL_ENCOUNTERS, $health_center->nid);
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center->nid);
 
     foreach ($periods as $period) {
       if ($node->type == 'family_planning') {
@@ -84,7 +85,6 @@ function hedley_stats_node_presave($node) {
         // Clear cache for all the periods.
         hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON, $health_center->nid, $period);
         hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_MEASUREMENTS_BY_PERSON_INCIDENCE, $health_center->nid, $period);
-        hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center->nid, $period);
         hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES, $health_center->nid, $period);
         hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_MALNOURISHED_BENEFICIARIES, $health_center->nid, $period);
         hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_GRAPH, $health_center->nid, $period);
@@ -121,6 +121,13 @@ function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_
   // Get gender and age.
   hedley_stats_join_field_to_query($query, 'node', 'field_gender');
   hedley_stats_join_field_to_query($query, 'node', 'field_birth_date');
+
+  // Get the group type.
+  hedley_stats_join_field_to_query($query, 'node', 'field_session');
+  hedley_stats_join_field_to_query($query, 'node', 'field_clinic', TRUE, "field_session.field_session_target_id");
+  hedley_stats_join_field_to_query($query, 'node', 'field_group_type', TRUE, "field_clinic.field_clinic_target_id");
+  // Only FBF groups.
+  $query->condition('field_group_type.field_group_type_value', 'fbf');
 
   // Currently our way of knowing who is kid, is checking they are under
   // 13.
@@ -193,6 +200,13 @@ function hedley_stats_get_family_planning_stats_by_period($health_center_id, $pe
   // Join `Signs` field (e.g. Pill, Condoms, etc').
   hedley_stats_join_field_to_query($query, 'node', 'field_family_planning_signs');
 
+  // Get the group type.
+  hedley_stats_join_field_to_query($query, 'node', 'field_session');
+  hedley_stats_join_field_to_query($query, 'node', 'field_clinic', TRUE, "field_session.field_session_target_id");
+  hedley_stats_join_field_to_query($query, 'node', 'field_group_type', TRUE, "field_clinic.field_clinic_target_id");
+  // Only FBF groups.
+  $query->condition('field_group_type.field_group_type_value', 'fbf');
+
   $query->groupBy('node.nid');
   $query->addExpression('GROUP_CONCAT(field_family_planning_signs.field_family_planning_signs_value)', 'signs');
 
@@ -252,6 +266,13 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
   hedley_stats_join_field_to_query($query, 'node', 'field_gender', TRUE, "field_person.field_person_target_id");
   hedley_stats_join_field_to_query($query, 'node', 'field_birth_date', TRUE, "field_person.field_person_target_id");
 
+  // Get the group type.
+  hedley_stats_join_field_to_query($query, 'node', 'field_session');
+  hedley_stats_join_field_to_query($query, 'node', 'field_clinic', TRUE, "field_session.field_session_target_id");
+  hedley_stats_join_field_to_query($query, 'node', 'field_group_type', TRUE, "field_clinic.field_clinic_target_id");
+  // Only FBF groups.
+  $query->condition('field_group_type.field_group_type_value', 'fbf');
+
   $result = $query
     ->execute()
     ->fetchAllAssoc('nid');
@@ -276,23 +297,36 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
 }
 
 /**
- * Return Session attendance related states by health center and period.
+ * Return Session attendance related states by health center.
+ *
+ * The period of this statistic is hardcoded for the last three months.
  *
  * @param int $health_center_id
  *   The Health center node ID.
- * @param string $period
- *   The period to calculate. Be default it is for one year, as on the client
- *   side we could filter out items, if requested to show smaller periods of
- *   time.
  *
  * @return array
  *   Array with the result.
  *
  * @throws \Exception
  */
-function hedley_stats_get_session_attendance_stats_by_period($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
+function hedley_stats_get_session_attendance_stats_by_health_center($health_center_id) {
+  $periods = [
+    HEDLEY_STATS_PERIOD_THREE_MONTHS => [
+      'start' => strtotime("first day of -2 months"),
+      'end' => strtotime("last day of -2 months"),
+    ],
+    HEDLEY_STATS_PERIOD_LAST_MONTH => [
+      'start' => strtotime("first day of previous month"),
+      'end' => strtotime("last day of previous month"),
+    ],
+    HEDLEY_STATS_PERIOD_THIS_MONTH => [
+      'start' => strtotime("first day of this month"),
+      'end' => time(),
+    ],
+  ];
+
   // Return the cache if exists.
-  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center_id, $period)) {
+  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center_id)) {
     return $cache_data;
   }
 
@@ -313,93 +347,94 @@ function hedley_stats_get_session_attendance_stats_by_period($health_center_id, 
   // Loop through the clinics and get sessions for each clinic and from there
   // get expected people for each clinic.
   foreach ($clinic_ids as $clinic_id) {
-    // Get sessions for this clinic (Group Encounters).
-    $session_ids = hedley_stats_get_clinic_sessions_by_period($clinic_id, $period, 1000);
-
-    if (empty($session_ids)) {
-      // No sessions found.
-      continue;
-    }
-
     // Get PMTCT participants by clinic and session dates
     // (all expected people).
-    $pmtct_by_clinic = hedley_stats_get_pmtct_participants_by_clinic($clinic_id, 1000);
+    $pmtct_by_clinic = hedley_stats_get_pmtct_participants_by_clinic($clinic_id, 5000);
 
     if (empty($pmtct_by_clinic)) {
       // No participants were found.
       continue;
     }
 
-    foreach ($session_ids as $session_id) {
-      // Sessions (Group encounter) for current health center which happened in
-      // the given period.
-      $session_wrapper = entity_metadata_wrapper('node', $session_id);
-      // Date of the session converted to a format the frontend can read.
-      $session_dates = $session_wrapper->field_scheduled_date->value();
-      $date = hedley_stats_convert_timestamp_to_nominal(strtotime($session_dates['value']));
+    $expected_people_by_clinic = [];
+    foreach ($pmtct_by_clinic as $pmtct_id) {
+      $pmtct_wrapper = entity_metadata_wrapper('node', $pmtct_id);
 
-      $expected_people_by_clinic = [];
-      foreach ($pmtct_by_clinic as $pmtct_id) {
-        $pmtct_wrapper = entity_metadata_wrapper('node', $pmtct_id);
+      $child_id = $pmtct_wrapper->field_person->getIdentifier();
+      $child_wrapper = $pmtct_wrapper->field_person;
+      $mother_wrapper = $pmtct_wrapper->field_adult;
 
-        // Check if participant is supposed to be in this session.
-        $expected_date = $pmtct_wrapper->field_expected->value();
-        if (!empty($expected_date) && $expected_date['value'] <= $session_dates['value'] && (is_null($expected_date['value2']) || $expected_date['value2'] >= $session_dates['value2'])) {
-          $child_id = $pmtct_wrapper->field_person->getIdentifier();
-          $child_wrapper = $pmtct_wrapper->field_person;
-          $mother_wrapper = $pmtct_wrapper->field_adult;
+      if (empty($child_wrapper) || empty($mother_wrapper)) {
+        continue;
+      }
 
-          if (empty($child_wrapper) || empty($mother_wrapper)) {
+      $expected_people_by_clinic[$child_id] = [
+        'name' => $child_wrapper->label(),
+        'gender' => $child_wrapper->field_gender->value(),
+        'birth_date' => hedley_stats_convert_timestamp_to_nominal($child_wrapper->field_birth_date->value()),
+        'mother_name' => $mother_wrapper->label(),
+        'phone_number' => $mother_wrapper->field_phone_number->value(),
+        'dates' => [],
+      ];
+
+      foreach ($periods as $period_name => $period) {
+        if ($period_name == HEDLEY_STATS_PERIOD_THIS_MONTH) {
+          // We need to check if there was any sessions at all this month
+          // because it can be the beginning of the month and we don't find any
+          // measurements because there wasn't any sessions.
+          $session = hedley_stats_get_clinic_sessions_by_period($clinic_id, HEDLEY_STATS_PERIOD_THIS_MONTH, 1);
+
+          if (empty($session)) {
             continue;
           }
+        }
 
-          $expected_people_by_clinic[$child_id] = [
-            'name' => $child_wrapper->label(),
-            'gender' => $child_wrapper->field_gender->value(),
-            'birth_date' => hedley_stats_convert_timestamp_to_nominal($child_wrapper->field_birth_date->value()),
-            'mother_name' => $mother_wrapper->label(),
-            'phone_number' => $mother_wrapper->field_phone_number->value(),
-            'dates' => [],
-          ];
+        // Check if the person (patient) has any measurements.
+        $measurements = hedley_activity_get_measurements_by_period($child_id, $measurements_types, $period, 1);
 
-          // Check if the person (patient) has any measurements.
-          $measurements = hedley_activity_get_measurements_by_session($session_id, $child_id, $measurements_types);
-
-          if (empty($measurements)) {
-            // If this person is not listed in the "missed sessions" list
-            // already, add their data and unset some unused info.
-            if (!isset($missed_session[$child_id])) {
-              // Set data for one time.
-              $missed_session[$child_id] = $expected_people_by_clinic[$child_id];
-            }
-
-            // This person missed the session because they don't have an
-            // attendance entity nor any measurements found for that session on
-            // this date so we add it to the list of dates to be able to filter
-            // it in the frontend.
-            $missed_session[$child_id]['dates'][] = $date;
+        if (empty($measurements)) {
+          // If this person is not listed in the "missed sessions" list
+          // already, add their data and unset some unused info.
+          if (!isset($missed_session[$child_id])) {
+            // Set data for one time.
+            $missed_session[$child_id] = $expected_people_by_clinic[$child_id];
           }
-          else {
-            // This person either has an attendance and should definitely have
-            // also measurements so if count of the measurements is 5
-            // (photo, height, weight, muac, nutrition), then we assume the
-            // person has completed the program.
-            if (count($measurements) == 5) {
-              if (!isset($completed_program[$child_id])) {
-                // Set data for one time.
-                $completed_program[$child_id] = $expected_people_by_clinic[$child_id];
-              }
 
-              $completed_program[$child_id]['dates'][] = $date;
-            }
+          // This person missed the session because they don't have any
+          // measurements found for that session on this date so we add it to
+          // the list of dates to be able to filter it in the frontend.
+          $missed_session[$child_id]['dates'][] = hedley_stats_convert_timestamp_to_nominal($period['start']);
+        }
+
+        // Check who completed the program, the definition of that is that each
+        // child that had their 2nd birthday (2 years) in the current period, we
+        // count them as someone who completed ("graduated") the program.
+        $child_birthday = $child_wrapper->field_birth_date->value();
+        if ($child_birthday > strtotime('-2 years')) {
+          // Child is still under 2 years, no need to count them.
+          continue;
+        }
+
+        $second_bd = strtotime('+2 years', $child_birthday);
+        if ($second_bd > $period['start'] && $second_bd < $period['end']) {
+          // The second BD happened in the current period.
+          // If this person is not listed in the "completed program" list
+          // already, add their data and unset some unused info.
+          if (!isset($completed_program[$child_id])) {
+            // Set data for one time.
+            $completed_program[$child_id] = $expected_people_by_clinic[$child_id];
           }
+
+          // We add it to the list of dates to be able to filter it in the
+          // frontend.
+          $completed_program[$child_id]['dates'][] = hedley_stats_convert_timestamp_to_nominal($period['start']);
         }
       }
     }
   }
 
   // Set the cache.
-  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center_id, $period, [
+  hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center_id, NULL, [
     array_values($completed_program),
     array_values($missed_session),
   ]);

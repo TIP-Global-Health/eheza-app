@@ -127,6 +127,10 @@ dbSync.version(6).stores({
 
 dbSync.version(7).stores({
     statistics: '&uuid',
+}).upgrade(function (tx) {
+    return tx.nodes.where({
+        type: 'health_center'
+    }).delete();
 });
 
 function gatherWords (text) {

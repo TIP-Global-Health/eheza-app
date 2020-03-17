@@ -289,27 +289,32 @@ function hedley_activity_weight_for_session($session_id, $child_id) {
 }
 
 /**
- * Get a measurement by the session ID and the measurement type.
+ * Get a measurement by the measurement types and period.
  *
- * @param int $session_id
- *   The session node ID.
  * @param int $person_id
  *   The person node ID.
  * @param array $measurement_bundles
  *   The measurement node bundle.
+ * @param array $period
+ *   The period of the measurement, contains a start and an end.
+ * @param int $range
+ *   Optional; The query's range.
  *
  * @return array
  *   Node IDs if they exist or empty array if no nodes exist.
  */
-function hedley_activity_get_measurements_by_session($session_id, $person_id, array $measurement_bundles) {
+function hedley_activity_get_measurements_by_period($person_id, array $measurement_bundles, array $period, $range = 100) {
   $query = new EntityFieldQuery();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', $measurement_bundles, 'IN')
-    ->fieldCondition('field_session', 'target_id', $session_id)
     ->fieldCondition('field_person', 'target_id', $person_id)
+    ->fieldCondition('field_date_measured', 'value', [
+      date('Y-m-d 00:00:00', $period['start']),
+      date('Y-m-d 00:00:00', $period['end']),
+    ], 'BETWEEN')
     ->propertyCondition('status', NODE_PUBLISHED)
-    ->range(0, 100)
+    ->range(0, $range)
     ->execute();
 
   return !empty($result['node']) ? array_keys($result['node']) : [];
