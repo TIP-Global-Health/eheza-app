@@ -388,7 +388,7 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
         // Check who completed the program, the definition of that is that each
         // child that had their 2nd birthday (2 years) in the current period, we
         // count them as someone who completed ("graduated") the program.
-        $child_birthday = (int) $child_wrapper->field_birth_date->value();
+        $child_birthday = $child_wrapper->field_birth_date->value();
         if ($child_birthday > strtotime('-2 years')) {
           // Child is still under 2 years, no need to count them.
           continue;
