@@ -24,6 +24,18 @@ function hedley_admin_views_plugins() {
 }
 
 /**
+ * Implements preprocess_views_view().
+ *
+ * Fixes the styling of the date filter form in views.
+ */
+function hedley_admin_preprocess_views_view(&$vars) {
+  // The CSS is very specific that it won't effect anything else and therefore
+  // no need to limit it to one view. (Also, this way we don't need to edit
+  // anything when adding a date filter to any view).
+  drupal_add_css(drupal_get_path('module', 'hedley_admin') . '/css/date_views.css');
+}
+
+/**
  * Implements hook_theme_registry_alter().
  */
 function hedley_admin_theme_registry_alter(&$theme_registry) {
