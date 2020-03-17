@@ -4,6 +4,7 @@ module Pages.Utils exposing
     , matchMotherAndHerChildren
     , normalizeFilter
     , taskCompleted
+    , taskListCompleted
     , viewBoolInput
     , viewCustomLabel
     , viewLabel
@@ -158,6 +159,15 @@ viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
 taskCompleted : Maybe a -> Int
 taskCompleted maybe =
     if isJust maybe then
+        1
+
+    else
+        0
+
+
+taskListCompleted : List (Maybe a) -> Int
+taskListCompleted list =
+    if List.all isJust list then
         1
 
     else

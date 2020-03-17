@@ -21,29 +21,11 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalActivity.Model exposing (..)
-import Pages.PrenatalActivity.Utils
-    exposing
-        ( breastExamFormWithDefault
-        , calculateBmi
-        , corePhysicalExamFormWithDefault
-        , dangerSignsFormWithDefault
-        , familyPlanningFormWithDefault
-        , lastMenstrualPeriodFormWithDefault
-        , medicalHistoryFormWithDefault
-        , medicationFormWithDefault
-        , obstetricHistoryFormWithDefault
-        , obstetricHistoryStep2FormWithDefault
-        , obstetricalExamFormWithDefault
-        , prenatalNutritionFormWithDefault
-        , resourceFormWithDefault
-        , socialHistoryFormWithDefault
-        , toObstetricHistoryValue
-        , vitalsFormWithDefault
-        )
+import Pages.PrenatalActivity.Utils exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
-import Pages.Utils exposing (taskCompleted, viewBoolInput, viewCustomLabel, viewLabel, viewPhotoThumbFromPhotoUrl, viewQuestionLabel)
+import Pages.Utils exposing (taskCompleted, taskListCompleted, viewBoolInput, viewCustomLabel, viewLabel, viewPhotoThumbFromPhotoUrl, viewQuestionLabel)
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -204,8 +186,11 @@ viewPregnancyDatingContent language currentDate assembled data =
 viewHistoryContent : Language -> NominalDate -> AssembledData -> HistoryData -> List (Html Msg)
 viewHistoryContent language currentDate assembled data_ =
     let
+        firstEnconter =
+            isFirstPrenatalEncounter assembled
+
         ( tasks, data ) =
-            if isFirstPrenatalEncounter assembled then
+            if firstEnconter then
                 ( [ Obstetric, Medical, Social ], data_ )
 
             else
@@ -243,7 +228,19 @@ viewHistoryContent language currentDate assembled data_ =
                     ]
                 ]
 
-        ( viewForm, tasksCompleted, totalTasks ) =
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, historyTasksCompletedFromTotal assembled data task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Dict.get data.activeTask tasksCompletedFromTotalDict
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
             case data.activeTask of
                 Obstetric ->
                     case data.obstetricHistoryStep of
@@ -253,24 +250,8 @@ viewHistoryContent language currentDate assembled data_ =
                                     assembled.measurements.obstetricHistory
                                         |> Maybe.map (Tuple.second >> .value)
                                         |> obstetricHistoryFormWithDefault data.obstetricFormFirstStep
-
-                                intInputs =
-                                    [ formStep1_.termPregnancy
-                                    , formStep1_.preTermPregnancy
-                                    , formStep1_.stillbirthsAtTerm
-                                    , formStep1_.stillbirthsPreTerm
-                                    , formStep1_.abortions
-                                    , formStep1_.liveChildren
-                                    ]
                             in
-                            ( viewObstetricFormFirstStep language currentDate assembled formStep1_
-                            , (intInputs
-                                |> List.map taskCompleted
-                                |> List.sum
-                              )
-                                + taskCompleted formStep1_.currentlyPregnant
-                            , 7
-                            )
+                            viewObstetricFormFirstStep language currentDate assembled formStep1_
 
                         ObstetricHistorySecondStep ->
                             let
@@ -278,33 +259,8 @@ viewHistoryContent language currentDate assembled data_ =
                                     assembled.measurements.obstetricHistoryStep2
                                         |> Maybe.map (Tuple.second >> .value)
                                         |> obstetricHistoryStep2FormWithDefault data.obstetricFormSecondStep
-
-                                boolInputs =
-                                    [ formStep2_.cSectionInPreviousDelivery
-                                    , formStep2_.successiveAbortions
-                                    , formStep2_.successivePrematureDeliveries
-                                    , formStep2_.stillbornPreviousDelivery
-                                    , formStep2_.babyDiedOnDayOfBirthPreviousDelivery
-                                    , formStep2_.partialPlacentaPreviousDelivery
-                                    , formStep2_.severeHemorrhagingPreviousDelivery
-                                    , formStep2_.preeclampsiaPreviousPregnancy
-                                    , formStep2_.convulsionsPreviousDelivery
-                                    , formStep2_.convulsionsAndUnconsciousPreviousDelivery
-                                    , formStep2_.gestationalDiabetesPreviousPregnancy
-                                    , formStep2_.incompleteCervixPreviousPregnancy
-                                    , formStep2_.rhNegative
-                                    ]
                             in
-                            ( viewObstetricFormSecondStep language currentDate assembled formStep2_
-                            , (boolInputs
-                                |> List.map taskCompleted
-                                |> List.sum
-                              )
-                                + taskCompleted formStep2_.cSections
-                                + taskCompleted formStep2_.cSectionReason
-                                + taskCompleted formStep2_.previousDeliveryPeriod
-                            , 16
-                            )
+                            viewObstetricFormSecondStep language currentDate assembled formStep2_
 
                 Medical ->
                     let
@@ -312,26 +268,8 @@ viewHistoryContent language currentDate assembled data_ =
                             assembled.measurements.medicalHistory
                                 |> Maybe.map (Tuple.second >> .value)
                                 |> medicalHistoryFormWithDefault data.medicalForm
-
-                        boolInputs =
-                            [ medicalForm.uterineMyoma
-                            , medicalForm.diabetes
-                            , medicalForm.cardiacDisease
-                            , medicalForm.renalDisease
-                            , medicalForm.hypertensionBeforePregnancy
-                            , medicalForm.tuberculosisPast
-                            , medicalForm.tuberculosisPresent
-                            , medicalForm.asthma
-                            , medicalForm.bowedLegs
-                            , medicalForm.hiv
-                            ]
                     in
-                    ( viewMedicalForm language currentDate assembled medicalForm
-                    , boolInputs
-                        |> List.map taskCompleted
-                        |> List.sum
-                    , 10
-                    )
+                    viewMedicalForm language currentDate assembled medicalForm
 
                 Social ->
                     let
@@ -350,13 +288,6 @@ viewHistoryContent language currentDate assembled data_ =
                                     )
                                 |> List.isEmpty
 
-                        partnerReceivedCounselingInput =
-                            if showCounselingQuestion then
-                                [ socialForm.partnerReceivedCounseling ]
-
-                            else
-                                []
-
                         showTestingQuestions =
                             assembled.previousMeasurementsWithDates
                                 |> List.filter
@@ -374,35 +305,40 @@ viewHistoryContent language currentDate assembled data_ =
                                             |> Maybe.withDefault False
                                     )
                                 |> List.isEmpty
-
-                        partnerReceivedTestingInput =
-                            if showTestingQuestions then
-                                [ socialForm.partnerReceivedTesting ]
-
-                            else
-                                []
-
-                        boolInputs =
-                            (socialForm.accompaniedByPartner
-                                :: partnerReceivedCounselingInput
-                            )
-                                ++ partnerReceivedTestingInput
-
-                        listInputs =
-                            if socialForm.partnerReceivedTesting == Just True then
-                                [ socialForm.partnerTestingResult ]
-
-                            else
-                                []
                     in
-                    ( viewSocialForm language currentDate showCounselingQuestion showTestingQuestions socialForm
-                    , (boolInputs |> List.map taskCompleted |> List.sum)
-                        + (listInputs |> List.map taskCompleted |> List.sum)
-                    , List.length boolInputs + List.length listInputs
-                    )
+                    viewSocialForm language currentDate showCounselingQuestion showTestingQuestions socialForm
+
+        getNextTask currentTask =
+            if not firstEnconter then
+                Nothing
+
+            else
+                case currentTask of
+                    Obstetric ->
+                        case data.obstetricHistoryStep of
+                            ObstetricHistoryFirstStep ->
+                                Nothing
+
+                            ObstetricHistorySecondStep ->
+                                [ Medical, Social ]
+                                    |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                                    |> List.head
+
+                    Medical ->
+                        [ Social, Obstetric ]
+                            |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                            |> List.head
+
+                    Social ->
+                        [ Obstetric, Medical ]
+                            |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                            |> List.head
 
         actions =
             let
+                nextTask =
+                    getNextTask data.activeTask
+
                 ( buttons, stepIndicationClass ) =
                     case data.activeTask of
                         Obstetric ->
@@ -429,7 +365,11 @@ viewHistoryContent language currentDate assembled data_ =
                                                 , ( "disabled", tasksCompleted /= totalTasks )
                                                 , ( "active", tasksCompleted == totalTasks )
                                                 ]
-                                            , onClick <| SaveOBHistoryStep2 assembled.id assembled.participant.person assembled.measurements.obstetricHistoryStep2
+                                            , onClick <|
+                                                SaveOBHistoryStep2 assembled.id
+                                                    assembled.participant.person
+                                                    assembled.measurements.obstetricHistoryStep2
+                                                    nextTask
                                             ]
                                             [ text <| translate language Translate.Save ]
                                       ]
@@ -439,7 +379,11 @@ viewHistoryContent language currentDate assembled data_ =
                         Medical ->
                             ( [ button
                                     [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                    , onClick <| SaveMedicalHistory assembled.id assembled.participant.person assembled.measurements.medicalHistory
+                                    , onClick <|
+                                        SaveMedicalHistory assembled.id
+                                            assembled.participant.person
+                                            assembled.measurements.medicalHistory
+                                            nextTask
                                     ]
                                     [ text <| translate language Translate.Save ]
                               ]
@@ -449,7 +393,11 @@ viewHistoryContent language currentDate assembled data_ =
                         Social ->
                             ( [ button
                                     [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                    , onClick <| SaveSocialHistory assembled.id assembled.participant.person assembled.measurements.socialHistory
+                                    , onClick <|
+                                        SaveSocialHistory assembled.id
+                                            assembled.participant.person
+                                            assembled.measurements.socialHistory
+                                            nextTask
                                     ]
                                     [ text <| translate language Translate.Save ]
                               ]
@@ -479,6 +427,21 @@ viewExaminationContent language currentDate assembled data =
     let
         tasks =
             [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricalExam, BreastExam ]
+
+        firstEnconter =
+            isFirstPrenatalEncounter assembled
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, examinationTasksCompletedFromTotal assembled data firstEnconter task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Dict.get data.activeTask tasksCompletedFromTotalDict
+                |> Maybe.withDefault ( 0, 0 )
 
         viewTask task =
             let
@@ -518,7 +481,7 @@ viewExaminationContent language currentDate assembled data =
                     ]
                 ]
 
-        ( viewForm, tasksCompleted, totalTasks ) =
+        viewForm =
             case data.activeTask of
                 Vitals ->
                     let
@@ -527,22 +490,12 @@ viewExaminationContent language currentDate assembled data =
                                 |> Maybe.map (Tuple.second >> .value)
                                 |> vitalsFormWithDefault data.vitalsForm
                     in
-                    ( viewVitalsForm language currentDate assembled form
-                    , taskListCompleted [ form.sysBloodPressure, form.diaBloodPressure ]
-                        + ([ Maybe.map (always ()) form.heartRate
-                           , Maybe.map (always ()) form.respiratoryRate
-                           , Maybe.map (always ()) form.bodyTemperature
-                           ]
-                            |> List.map taskCompleted
-                            |> List.sum
-                          )
-                    , 4
-                    )
+                    viewVitalsForm language currentDate assembled form
 
                 NutritionAssessment ->
                     let
                         hideHeightInput =
-                            isFirstPrenatalEncounter assembled |> not
+                            not firstEnconter
 
                         form_ =
                             assembled.measurements.nutrition
@@ -559,28 +512,8 @@ viewExaminationContent language currentDate assembled data =
 
                             else
                                 form_
-
-                        tasks_ =
-                            if hideHeightInput then
-                                [ form.weight, form.muac ]
-
-                            else
-                                [ form.height, form.weight, form.muac ]
-
-                        tasksForBmi =
-                            if hideHeightInput then
-                                [ form.weight ]
-
-                            else
-                                [ form.height, form.weight ]
                     in
-                    ( viewNutritionAssessmentForm language currentDate assembled form hideHeightInput
-                    , (List.map taskCompleted tasks_ |> List.sum)
-                        -- This is for BMI task, which is considered as completed
-                        -- when both height and weight are set.
-                        + taskListCompleted tasksForBmi
-                    , List.length tasks_ + 1
-                    )
+                    viewNutritionAssessmentForm language currentDate assembled form hideHeightInput
 
                 CorePhysicalExam ->
                     let
@@ -588,28 +521,8 @@ viewExaminationContent language currentDate assembled data =
                             assembled.measurements.corePhysicalExam
                                 |> Maybe.map (Tuple.second >> .value)
                                 |> corePhysicalExamFormWithDefault data.corePhysicalExamForm
-
-                        extremitiesTaskCompleted =
-                            if isJust form.hands && isJust form.legs then
-                                1
-
-                            else
-                                0
                     in
-                    ( viewCorePhysicalExamForm language currentDate assembled form
-                    , extremitiesTaskCompleted
-                        + taskCompleted form.neck
-                        + taskCompleted form.lungs
-                        + taskCompleted form.abdomen
-                        + taskCompleted form.heart
-                        + ([ form.brittleHair
-                           , form.paleConjuctiva
-                           ]
-                            |> List.map taskCompleted
-                            |> List.sum
-                          )
-                    , 7
-                    )
+                    viewCorePhysicalExamForm language currentDate assembled form
 
                 ObstetricalExam ->
                     let
@@ -618,16 +531,7 @@ viewExaminationContent language currentDate assembled data =
                                 |> Maybe.map (Tuple.second >> .value)
                                 |> obstetricalExamFormWithDefault data.obstetricalExamForm
                     in
-                    ( viewObstetricalExamForm language currentDate assembled form
-                    , taskCompleted form.fetalPresentation
-                        + taskCompleted form.fetalMovement
-                        + taskCompleted form.cSectionScar
-                        + ([ Maybe.map (always ()) form.fundalHeight, Maybe.map (always ()) form.fetalHeartRate ]
-                            |> List.map taskCompleted
-                            |> List.sum
-                          )
-                    , 5
-                    )
+                    viewObstetricalExamForm language currentDate assembled form
 
                 BreastExam ->
                     let
@@ -636,17 +540,47 @@ viewExaminationContent language currentDate assembled data =
                                 |> Maybe.map (Tuple.second >> .value)
                                 |> breastExamFormWithDefault data.breastExamForm
                     in
-                    ( viewBreastExamForm language currentDate assembled form
-                    , taskCompleted form.breast + taskCompleted form.selfGuidance
-                    , 2
-                    )
+                    viewBreastExamForm language currentDate assembled form
+
+        getNextTask currentTask =
+            case currentTask of
+                Vitals ->
+                    [ NutritionAssessment, CorePhysicalExam, ObstetricalExam, BreastExam ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
+
+                NutritionAssessment ->
+                    [ CorePhysicalExam, ObstetricalExam, BreastExam, Vitals ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
+
+                CorePhysicalExam ->
+                    [ ObstetricalExam, BreastExam, Vitals, NutritionAssessment ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
+
+                ObstetricalExam ->
+                    [ BreastExam, Vitals, NutritionAssessment, CorePhysicalExam ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
+
+                BreastExam ->
+                    [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricalExam ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
 
         actions =
             let
+                nextTask =
+                    getNextTask data.activeTask
+
                 saveAction =
                     case data.activeTask of
                         Vitals ->
-                            SaveVitals assembled.id assembled.participant.person assembled.measurements.vitals
+                            SaveVitals assembled.id
+                                assembled.participant.person
+                                assembled.measurements.vitals
+                                nextTask
 
                         NutritionAssessment ->
                             let
@@ -663,16 +597,29 @@ viewExaminationContent language currentDate assembled data =
                                     else
                                         Nothing
                             in
-                            SaveNutritionAssessment assembled.id assembled.participant.person assembled.measurements.nutrition maybeHeight
+                            SaveNutritionAssessment assembled.id
+                                assembled.participant.person
+                                assembled.measurements.nutrition
+                                maybeHeight
+                                nextTask
 
                         CorePhysicalExam ->
-                            SaveCorePhysicalExam assembled.id assembled.participant.person assembled.measurements.corePhysicalExam
+                            SaveCorePhysicalExam assembled.id
+                                assembled.participant.person
+                                assembled.measurements.corePhysicalExam
+                                nextTask
 
                         ObstetricalExam ->
-                            SaveObstetricalExam assembled.id assembled.participant.person assembled.measurements.obstetricalExam
+                            SaveObstetricalExam assembled.id
+                                assembled.participant.person
+                                assembled.measurements.obstetricalExam
+                                nextTask
 
                         BreastExam ->
-                            SaveBreastExam assembled.id assembled.participant.person assembled.measurements.breastExam
+                            SaveBreastExam assembled.id
+                                assembled.participant.person
+                                assembled.measurements.breastExam
+                                nextTask
             in
             div [ class "actions examination" ]
                 [ button
@@ -774,6 +721,18 @@ viewPatientProvisionsContent language currentDate assembled data =
             else
                 [ Medication ]
 
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, patientProvisionsTasksCompletedFromTotal assembled data showDewormingPillQuestion task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Dict.get data.activeTask tasksCompletedFromTotalDict
+                |> Maybe.withDefault ( 0, 0 )
+
         viewTask task =
             let
                 ( iconClass, isCompleted ) =
@@ -803,7 +762,7 @@ viewPatientProvisionsContent language currentDate assembled data =
                     ]
                 ]
 
-        ( viewForm, tasksCompleted, totalTasks ) =
+        viewForm =
             case data.activeTask of
                 Medication ->
                     let
@@ -819,12 +778,7 @@ viewPatientProvisionsContent language currentDate assembled data =
                             else
                                 [ form.receivedIronFolicAcid ]
                     in
-                    ( viewMedicationForm language currentDate assembled showDewormingPillQuestion form
-                    , questions
-                        |> List.map taskCompleted
-                        |> List.sum
-                    , List.length questions
-                    )
+                    viewMedicationForm language currentDate assembled showDewormingPillQuestion form
 
                 Resources ->
                     let
@@ -833,20 +787,42 @@ viewPatientProvisionsContent language currentDate assembled data =
                                 |> Maybe.map (Tuple.second >> .value)
                                 |> resourceFormWithDefault data.resourcesForm
                     in
-                    ( viewResourcesForm language currentDate assembled form
-                    , taskCompleted form.receivedMosquitoNet
-                    , 1
-                    )
+                    viewResourcesForm language currentDate assembled form
+
+        getNextTask currentTask =
+            if not showResourcesTask then
+                Nothing
+
+            else
+                case currentTask of
+                    Medication ->
+                        [ Resources ]
+                            |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                            |> List.head
+
+                    Resources ->
+                        [ Medication ]
+                            |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                            |> List.head
 
         actions =
             let
+                nextTask =
+                    getNextTask data.activeTask
+
                 saveAction =
                     case data.activeTask of
                         Medication ->
-                            SaveMedication assembled.id assembled.participant.person assembled.measurements.medication showResourcesTask
+                            SaveMedication assembled.id
+                                assembled.participant.person
+                                assembled.measurements.medication
+                                nextTask
 
                         Resources ->
-                            SaveResources assembled.id assembled.participant.person assembled.measurements.resource
+                            SaveResources assembled.id
+                                assembled.participant.person
+                                assembled.measurements.resource
+                                nextTask
             in
             div [ class "actions examination" ]
                 [ button
@@ -2481,15 +2457,6 @@ viewAlert color =
 
 
 -- Helper functions
-
-
-taskListCompleted : List (Maybe a) -> Int
-taskListCompleted list =
-    if List.all isJust list then
-        1
-
-    else
-        0
 
 
 resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b

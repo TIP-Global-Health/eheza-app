@@ -1,10 +1,14 @@
-module Pages.PrenatalActivity.Utils exposing (breastExamFormWithDefault, calculateBmi, corePhysicalExamFormWithDefault, dangerSignsFormWithDefault, familyPlanningFormWithDefault, fromBreastExamValue, fromCorePhysicalExamValue, fromDangerSignsValue, fromFamilyPlanningValue, fromLastMenstrualPeriodValue, fromMedicalHistoryValue, fromMedicationValue, fromObstetricHistoryValue, fromObstetricalExamValue, fromPrenatalNutritionValue, fromResourceValue, fromSocialHistoryValue, fromVitalsValue, ifEmpty, ifTrue, lastMenstrualPeriodFormWithDefault, medicalHistoryFormWithDefault, medicationFormWithDefault, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, prenatalNutritionFormWithDefault, resourceFormWithDefault, socialHistoryFormWithDefault, toBreastExamValue, toBreastExamValueWithDefault, toCorePhysicalExamValue, toCorePhysicalExamValueWithDefault, toDangerSignsValue, toDangerSignsValueWithDefault, toEverySet, toFamilyPlanningValue, toFamilyPlanningValueWithDefault, toLastMenstrualPeriodValue, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValue, toMedicalHistoryValueWithDefault, toMedicationValue, toMedicationValueWithDefault, toObstetricHistoryStep2Value, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValue, toObstetricalExamValueWithDefault, toPrenatalNutritionValue, toPrenatalNutritionValueWithDefault, toResourceValue, toResourceValueWithDefault, toSocialHistoryValue, toSocialHistoryValueWithDefault, toVitalsValue, toVitalsValueWithDefault, vitalsFormWithDefault)
+module Pages.PrenatalActivity.Utils exposing (breastExamFormWithDefault, calculateBmi, corePhysicalExamFormWithDefault, dangerSignsFormWithDefault, examinationTasksCompletedFromTotal, familyPlanningFormWithDefault, fromBreastExamValue, fromCorePhysicalExamValue, fromDangerSignsValue, fromFamilyPlanningValue, fromLastMenstrualPeriodValue, fromMedicalHistoryValue, fromMedicationValue, fromObstetricHistoryValue, fromObstetricalExamValue, fromPrenatalNutritionValue, fromResourceValue, fromSocialHistoryValue, fromVitalsValue, historyTasksCompletedFromTotal, ifEmpty, ifNullableTrue, ifTrue, isTaskCompleted, lastMenstrualPeriodFormWithDefault, medicalHistoryFormWithDefault, medicationFormWithDefault, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, patientProvisionsTasksCompletedFromTotal, prenatalNutritionFormWithDefault, resourceFormWithDefault, socialHistoryFormWithDefault, toBreastExamValue, toBreastExamValueWithDefault, toCorePhysicalExamValue, toCorePhysicalExamValueWithDefault, toDangerSignsValue, toDangerSignsValueWithDefault, toEverySet, toFamilyPlanningValue, toFamilyPlanningValueWithDefault, toLastMenstrualPeriodValue, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValue, toMedicalHistoryValueWithDefault, toMedicationValue, toMedicationValueWithDefault, toObstetricHistoryStep2Value, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValue, toObstetricalExamValueWithDefault, toPrenatalNutritionValue, toPrenatalNutritionValueWithDefault, toResourceValue, toResourceValueWithDefault, toSocialHistoryValue, toSocialHistoryValueWithDefault, toVitalsValue, toVitalsValueWithDefault, vitalsFormWithDefault)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime)
-import Maybe.Extra exposing (andMap, isNothing, or, unwrap)
+import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Pages.PrenatalActivity.Model exposing (..)
+import Pages.PrenatalEncounter.Model exposing (AssembledData)
+import Pages.PrenatalEncounter.Utils exposing (getMotherHeightMeasurement)
+import Pages.Utils exposing (taskCompleted, taskListCompleted)
 
 
 {-| This is a convenience for cases where the form values ought to be redefined
@@ -678,3 +682,321 @@ toVitalsValue form =
 calculateBmi : Maybe Float -> Maybe Float -> Maybe Float
 calculateBmi maybeHeight maybeWeight =
     Maybe.map2 (\height weight -> weight / ((height / 100) ^ 2)) maybeHeight maybeWeight
+
+
+historyTasksCompletedFromTotal : AssembledData -> HistoryData -> HistoryTask -> ( Int, Int )
+historyTasksCompletedFromTotal assembled data task =
+    case task of
+        Obstetric ->
+            case data.obstetricHistoryStep of
+                ObstetricHistoryFirstStep ->
+                    let
+                        formStep1_ =
+                            assembled.measurements.obstetricHistory
+                                |> Maybe.map (Tuple.second >> .value)
+                                |> obstetricHistoryFormWithDefault data.obstetricFormFirstStep
+
+                        intInputs =
+                            [ formStep1_.termPregnancy
+                            , formStep1_.preTermPregnancy
+                            , formStep1_.stillbirthsAtTerm
+                            , formStep1_.stillbirthsPreTerm
+                            , formStep1_.abortions
+                            , formStep1_.liveChildren
+                            ]
+                    in
+                    ( (intInputs
+                        |> List.map taskCompleted
+                        |> List.sum
+                      )
+                        + taskCompleted formStep1_.currentlyPregnant
+                    , List.length intInputs + 1
+                    )
+
+                ObstetricHistorySecondStep ->
+                    let
+                        formStep2_ =
+                            assembled.measurements.obstetricHistoryStep2
+                                |> Maybe.map (Tuple.second >> .value)
+                                |> obstetricHistoryStep2FormWithDefault data.obstetricFormSecondStep
+
+                        boolInputs =
+                            [ formStep2_.cSectionInPreviousDelivery
+                            , formStep2_.successiveAbortions
+                            , formStep2_.successivePrematureDeliveries
+                            , formStep2_.stillbornPreviousDelivery
+                            , formStep2_.babyDiedOnDayOfBirthPreviousDelivery
+                            , formStep2_.partialPlacentaPreviousDelivery
+                            , formStep2_.severeHemorrhagingPreviousDelivery
+                            , formStep2_.preeclampsiaPreviousPregnancy
+                            , formStep2_.convulsionsPreviousDelivery
+                            , formStep2_.convulsionsAndUnconsciousPreviousDelivery
+                            , formStep2_.gestationalDiabetesPreviousPregnancy
+                            , formStep2_.incompleteCervixPreviousPregnancy
+                            , formStep2_.rhNegative
+                            ]
+                    in
+                    ( (boolInputs
+                        |> List.map taskCompleted
+                        |> List.sum
+                      )
+                        + taskCompleted formStep2_.cSections
+                        + taskCompleted formStep2_.cSectionReason
+                        + taskCompleted formStep2_.previousDeliveryPeriod
+                    , List.length boolInputs + 3
+                    )
+
+        Medical ->
+            let
+                medicalForm =
+                    assembled.measurements.medicalHistory
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> medicalHistoryFormWithDefault data.medicalForm
+
+                boolInputs =
+                    [ medicalForm.uterineMyoma
+                    , medicalForm.diabetes
+                    , medicalForm.cardiacDisease
+                    , medicalForm.renalDisease
+                    , medicalForm.hypertensionBeforePregnancy
+                    , medicalForm.tuberculosisPast
+                    , medicalForm.tuberculosisPresent
+                    , medicalForm.asthma
+                    , medicalForm.bowedLegs
+                    , medicalForm.hiv
+                    ]
+            in
+            ( boolInputs
+                |> List.map taskCompleted
+                |> List.sum
+            , List.length boolInputs
+            )
+
+        Social ->
+            let
+                socialForm =
+                    assembled.measurements.socialHistory
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> socialHistoryFormWithDefault data.socialForm
+
+                showCounselingQuestion =
+                    assembled.previousMeasurementsWithDates
+                        |> List.filter
+                            (\( _, measurements ) ->
+                                measurements.socialHistory
+                                    |> Maybe.map (Tuple.second >> .value >> .socialHistory >> EverySet.member PartnerHivCounseling)
+                                    |> Maybe.withDefault False
+                            )
+                        |> List.isEmpty
+
+                partnerReceivedCounselingInput =
+                    if showCounselingQuestion then
+                        [ socialForm.partnerReceivedCounseling ]
+
+                    else
+                        []
+
+                showTestingQuestions =
+                    assembled.previousMeasurementsWithDates
+                        |> List.filter
+                            (\( _, measurements ) ->
+                                measurements.socialHistory
+                                    |> Maybe.map
+                                        (\socialHistory ->
+                                            let
+                                                value =
+                                                    Tuple.second socialHistory |> .value
+                                            in
+                                            (value.hivTestingResult == ResultHivPositive)
+                                                || (value.hivTestingResult == ResultHivNegative)
+                                        )
+                                    |> Maybe.withDefault False
+                            )
+                        |> List.isEmpty
+
+                partnerReceivedTestingInput =
+                    if showTestingQuestions then
+                        [ socialForm.partnerReceivedTesting ]
+
+                    else
+                        []
+
+                boolInputs =
+                    (socialForm.accompaniedByPartner
+                        :: partnerReceivedCounselingInput
+                    )
+                        ++ partnerReceivedTestingInput
+
+                listInputs =
+                    if socialForm.partnerReceivedTesting == Just True then
+                        [ socialForm.partnerTestingResult ]
+
+                    else
+                        []
+            in
+            ( (boolInputs |> List.map taskCompleted |> List.sum)
+                + (listInputs |> List.map taskCompleted |> List.sum)
+            , List.length boolInputs + List.length listInputs
+            )
+
+
+examinationTasksCompletedFromTotal : AssembledData -> ExaminationData -> Bool -> ExaminationTask -> ( Int, Int )
+examinationTasksCompletedFromTotal assembled data isFirstEncounter task =
+    case task of
+        Vitals ->
+            let
+                form =
+                    assembled.measurements.vitals
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> vitalsFormWithDefault data.vitalsForm
+            in
+            ( taskListCompleted [ form.sysBloodPressure, form.diaBloodPressure ]
+                + ([ Maybe.map (always ()) form.heartRate
+                   , Maybe.map (always ()) form.respiratoryRate
+                   , Maybe.map (always ()) form.bodyTemperature
+                   ]
+                    |> List.map taskCompleted
+                    |> List.sum
+                  )
+            , 4
+            )
+
+        NutritionAssessment ->
+            let
+                hideHeightInput =
+                    not isFirstEncounter
+
+                form_ =
+                    assembled.measurements.nutrition
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
+
+                form =
+                    if hideHeightInput then
+                        assembled.previousMeasurementsWithDates
+                            |> List.head
+                            |> Maybe.andThen (Tuple.second >> getMotherHeightMeasurement)
+                            |> Maybe.map (\(HeightInCm height) -> { form_ | height = Just height })
+                            |> Maybe.withDefault form_
+
+                    else
+                        form_
+
+                tasks_ =
+                    if hideHeightInput then
+                        [ form.weight, form.muac ]
+
+                    else
+                        [ form.height, form.weight, form.muac ]
+
+                tasksForBmi =
+                    if hideHeightInput then
+                        [ form.weight ]
+
+                    else
+                        [ form.height, form.weight ]
+            in
+            ( (List.map taskCompleted tasks_ |> List.sum)
+                -- This is for BMI task, which is considered as completed
+                -- when both height and weight are set.
+                + taskListCompleted tasksForBmi
+            , List.length tasks_ + 1
+            )
+
+        CorePhysicalExam ->
+            let
+                form =
+                    assembled.measurements.corePhysicalExam
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> corePhysicalExamFormWithDefault data.corePhysicalExamForm
+
+                extremitiesTaskCompleted =
+                    if isJust form.hands && isJust form.legs then
+                        1
+
+                    else
+                        0
+            in
+            ( extremitiesTaskCompleted
+                + taskCompleted form.neck
+                + taskCompleted form.lungs
+                + taskCompleted form.abdomen
+                + taskCompleted form.heart
+                + ([ form.brittleHair
+                   , form.paleConjuctiva
+                   ]
+                    |> List.map taskCompleted
+                    |> List.sum
+                  )
+            , 7
+            )
+
+        ObstetricalExam ->
+            let
+                form =
+                    assembled.measurements.obstetricalExam
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> obstetricalExamFormWithDefault data.obstetricalExamForm
+            in
+            ( taskCompleted form.fetalPresentation
+                + taskCompleted form.fetalMovement
+                + taskCompleted form.cSectionScar
+                + ([ Maybe.map (always ()) form.fundalHeight, Maybe.map (always ()) form.fetalHeartRate ]
+                    |> List.map taskCompleted
+                    |> List.sum
+                  )
+            , 5
+            )
+
+        BreastExam ->
+            let
+                form =
+                    assembled.measurements.breastExam
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> breastExamFormWithDefault data.breastExamForm
+            in
+            ( taskCompleted form.breast + taskCompleted form.selfGuidance
+            , 2
+            )
+
+
+patientProvisionsTasksCompletedFromTotal : AssembledData -> PatientProvisionsData -> Bool -> PatientProvisionsTask -> ( Int, Int )
+patientProvisionsTasksCompletedFromTotal assembled data showDewormingPillQuestion task =
+    case task of
+        Medication ->
+            let
+                form =
+                    assembled.measurements.medication
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> medicationFormWithDefault data.medicationForm
+
+                questions =
+                    if showDewormingPillQuestion then
+                        [ form.receivedIronFolicAcid, form.receivedDewormingPill ]
+
+                    else
+                        [ form.receivedIronFolicAcid ]
+            in
+            ( questions
+                |> List.map taskCompleted
+                |> List.sum
+            , List.length questions
+            )
+
+        Resources ->
+            let
+                form =
+                    assembled.measurements.resource
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> resourceFormWithDefault data.resourcesForm
+            in
+            ( taskCompleted form.receivedMosquitoNet
+            , 1
+            )
+
+
+isTaskCompleted : Dict t ( Int, Int ) -> t -> Bool
+isTaskCompleted dict task =
+    Dict.get task dict
+        |> Maybe.map (\( completed, total ) -> completed == total)
+        |> Maybe.withDefault False
