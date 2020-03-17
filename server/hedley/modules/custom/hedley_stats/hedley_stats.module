@@ -122,6 +122,13 @@ function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_
   hedley_stats_join_field_to_query($query, 'node', 'field_gender');
   hedley_stats_join_field_to_query($query, 'node', 'field_birth_date');
 
+  // Get the group type.
+  hedley_stats_join_field_to_query($query, 'node', 'field_session');
+  hedley_stats_join_field_to_query($query, 'node', 'field_clinic', TRUE, "field_session.field_session_target_id");
+  hedley_stats_join_field_to_query($query, 'node', 'field_group_type', TRUE, "field_clinic.field_clinic_target_id");
+  // Only FBF groups.
+  $query->condition('field_group_type.field_group_type_value', 'fbf');
+
   // Currently our way of knowing who is kid, is checking they are under
   // 13.
   $birthdate_start = date('Y-m-d H:i:s', strtotime("13 years ago"));
@@ -193,6 +200,13 @@ function hedley_stats_get_family_planning_stats_by_period($health_center_id, $pe
   // Join `Signs` field (e.g. Pill, Condoms, etc').
   hedley_stats_join_field_to_query($query, 'node', 'field_family_planning_signs');
 
+  // Get the group type.
+  hedley_stats_join_field_to_query($query, 'node', 'field_session');
+  hedley_stats_join_field_to_query($query, 'node', 'field_clinic', TRUE, "field_session.field_session_target_id");
+  hedley_stats_join_field_to_query($query, 'node', 'field_group_type', TRUE, "field_clinic.field_clinic_target_id");
+  // Only FBF groups.
+  $query->condition('field_group_type.field_group_type_value', 'fbf');
+
   $query->groupBy('node.nid');
   $query->addExpression('GROUP_CONCAT(field_family_planning_signs.field_family_planning_signs_value)', 'signs');
 
@@ -251,6 +265,13 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
   hedley_stats_join_field_to_query($query, 'node', 'field_person');
   hedley_stats_join_field_to_query($query, 'node', 'field_gender', TRUE, "field_person.field_person_target_id");
   hedley_stats_join_field_to_query($query, 'node', 'field_birth_date', TRUE, "field_person.field_person_target_id");
+
+  // Get the group type.
+  hedley_stats_join_field_to_query($query, 'node', 'field_session');
+  hedley_stats_join_field_to_query($query, 'node', 'field_clinic', TRUE, "field_session.field_session_target_id");
+  hedley_stats_join_field_to_query($query, 'node', 'field_group_type', TRUE, "field_clinic.field_clinic_target_id");
+  // Only FBF groups.
+  $query->condition('field_group_type.field_group_type_value', 'fbf');
 
   $result = $query
     ->execute()
