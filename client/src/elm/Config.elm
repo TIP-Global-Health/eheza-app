@@ -92,7 +92,7 @@ configs =
         , ( "***REMOVED***", livePantheon )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ehezaGlobal )
-        , ( "elm19-ihangane.pantheonsite.io", elm19Pantheon )
+        , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         ]
         |> Dict.union localConfigs
