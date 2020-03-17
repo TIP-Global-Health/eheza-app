@@ -167,7 +167,7 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateVillages' => [
         'class_name' => 'HedleyMigrateVillages',
         'group_name' => 'villages',
-      ],      
+      ],
       'HedleyMigrateMissingHeights' => [
         'class_name' => 'HedleyMigrateMissingHeights',
         'group_name' => 'missing',
