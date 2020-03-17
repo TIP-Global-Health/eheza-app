@@ -216,7 +216,7 @@ viewUserPage page model configured =
                         |> flexPageWrapper model
 
                 PersonsPage relation ->
-                    Pages.People.View.view model.language currentDate relation loggedInModel.personsPage model.indexedDb
+                    Pages.People.View.view model.language currentDate (Tuple.second loggedInModel.nurse) model.villageId relation loggedInModel.personsPage model.indexedDb
                         |> Html.map (MsgLoggedIn << MsgPagePersons)
                         |> flexPageWrapper model
 

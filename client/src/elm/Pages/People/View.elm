@@ -3,8 +3,11 @@ module Pages.People.View exposing (view)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isAuthorithedNurse, isCommunityHealthWorker)
 import Backend.Person.Model exposing (ExpectedAge(..), Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
+import Backend.Village.Utils exposing (getVillageById)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -30,8 +33,8 @@ import Utils.WebData exposing (viewWebData)
     family member for that person, either child, parent, etc.
 
 -}
-view : Language -> NominalDate -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
-view language currentDate relation model db =
+view : Language -> NominalDate -> Nurse -> Maybe VillageId -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
+view language currentDate nurse maybeVillageId relation model db =
     let
         title =
             case relation of
@@ -52,7 +55,7 @@ view language currentDate relation model db =
             [ class "search-wrapper" ]
             [ div
                 [ class "ui full segment" ]
-                [ viewSearchForm language currentDate relation model db ]
+                [ viewSearchForm language currentDate nurse maybeVillageId relation model db ]
             ]
         ]
 
@@ -74,8 +77,8 @@ viewHeader title =
         ]
 
 
-viewSearchForm : Language -> NominalDate -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
-viewSearchForm language currentDate relation model db =
+viewSearchForm : Language -> NominalDate -> Nurse -> Maybe VillageId -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
+viewSearchForm language currentDate nurse maybeVillageId relation model db =
     let
         searchForm =
             Html.form []
@@ -133,7 +136,7 @@ viewSearchForm language currentDate relation model db =
                     personTypeCondition filteredPerson =
                         case isPersonAnAdult currentDate filteredPerson of
                             Just True ->
-                                -- We'll show adults unless we're expecting children
+                                -- We'll show adults unless we're expecting children.
                                 expectedAge /= ExpectChild
 
                             Just False ->
@@ -162,14 +165,35 @@ viewSearchForm language currentDate relation model db =
                                                         relationship.relatedTo /= filteredPersonId
                                                     )
                                         )
+
+                    -- For CHW nurse, we present people only from the village that was selected.
+                    chwCondition filteredPerson =
+                        if isCommunityHealthWorker nurse then
+                            maybeVillageId
+                                |> Maybe.andThen (getVillageById db)
+                                |> Maybe.map
+                                    (\village ->
+                                        (Just village.province == filteredPerson.province)
+                                            && (Just village.district == filteredPerson.district)
+                                            && (Just village.sector == filteredPerson.sector)
+                                            && (Just village.cell == filteredPerson.cell)
+                                            && (Just village.village == filteredPerson.village)
+                                    )
+                                |> Maybe.withDefault False
+
+                        else
+                            True
                 in
                 Dict.get searchValue db.personSearches
                     |> Maybe.withDefault NotAsked
                     |> RemoteData.map
                         (Dict.filter
-                            (\k v ->
-                                -- Applying 3 conditionms explained above
-                                not (relation == Just k) && personTypeCondition v && personRelationCondition k
+                            (\filteredPersonId filteredPerson ->
+                                -- Applying conditions explained above.
+                                not (relation == Just filteredPersonId)
+                                    && personTypeCondition filteredPerson
+                                    && personRelationCondition filteredPersonId
+                                    && chwCondition filteredPerson
                             )
                         )
                     |> Just
