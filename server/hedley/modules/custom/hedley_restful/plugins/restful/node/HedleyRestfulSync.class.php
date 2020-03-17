@@ -222,13 +222,12 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     if (!empty($request['health_center_uuid'])) {
       // If we have HC then check the cache hash ID.
       if ($health_center_nid = hedley_restful_resolve_nid_for_uuid($request['health_center_uuid'])) {
-        $health_center_cache_id = 'sync_stats_' . $health_center_nid;
-        $cache = cache_get($health_center_cache_id);
+        $cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_nid);
 
         $calculate_stats = FALSE;
         // Check if we need to calculate the statistics for this HC.
-        if (!empty($cache) && !empty($request['stats_cache_hash'])) {
-          if ($cache->data != $request['stats_cache_hash']) {
+        if (!empty($cache_data) && !empty($request['stats_cache_hash'])) {
+          if ($cache_data != $request['stats_cache_hash']) {
             // Cache hash from the frontend doesn't match the one we have in the
             // backend, this means that stats has been changed because it's only
             // reset when a measurement has changed.
@@ -282,8 +281,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
               'completed_program' => $completed_program,
               'completed_program_count' => 0,
               'good_nutrition' => hedley_stats_get_good_nutrition($health_center_nid),
-              'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_nid),
-              'malnourished_beneficiaries' => hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_center_nid),
+              'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_nid, HEDLEY_STATS_PERIOD_THREE_MONTHS),
+              'malnourished_beneficiaries' => hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_center_nid, HEDLEY_STATS_PERIOD_THREE_MONTHS),
               'missed_sessions' => $missed_sessions,
               'missed_sessions_count' => 0,
               'total_beneficiaries' => hedley_stats_get_fbf_beneficiaries_graphs_data($health_center_nid, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_GRAPH),
@@ -295,7 +294,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
 
             // Store in cache only the hash, inner statistics has their own
             // cache.
-            cache_set($health_center_cache_id, $stats['stats_cache_hash'], 'cache', CACHE_TEMPORARY);
+            hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_nid, NULL, $stats['stats_cache_hash']);
           }
 
           $output[] = $stats;
