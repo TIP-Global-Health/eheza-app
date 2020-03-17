@@ -7,6 +7,7 @@ import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Update
 import Browser
 import Browser.Navigation as Nav
@@ -161,9 +162,17 @@ update msg model =
         currentDate =
             fromLocalDateTime model.currentTime
 
-        nurseId =
+        loggedInData =
             getLoggedInData model
+
+        nurseId =
+            loggedInData
                 |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
+
+        isChw =
+            loggedInData
+                |> Maybe.map (Tuple.second >> .nurse >> Tuple.second >> isCommunityHealthWorker)
+                |> Maybe.withDefault False
     in
     case msg of
         MsgIndexedDb subMsg ->
@@ -203,7 +212,7 @@ update msg model =
                         MsgPageCreatePerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Person.Update.update currentDate subMsg model.indexedDb data.createPersonPage
+                                    Pages.Person.Update.update currentDate model.villageId isChw subMsg model.indexedDb data.createPersonPage
                             in
                             ( { data | createPersonPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageCreatePerson) subCmd
@@ -213,7 +222,7 @@ update msg model =
                         MsgPageEditPerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Person.Update.update currentDate subMsg model.indexedDb data.editPersonPage
+                                    Pages.Person.Update.update currentDate model.villageId isChw subMsg model.indexedDb data.editPersonPage
                             in
                             ( { data | editPersonPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageEditPerson) subCmd
@@ -520,10 +529,10 @@ update msg model =
                 model
 
         -- Note that this also resets any data which depends on being logged in.
-        SetLoggedIn nurse ->
+        SetLoggedIn nurse_ ->
             updateConfigured
                 (\configured ->
-                    ( { configured | loggedIn = RemoteData.map emptyLoggedInModel nurse }
+                    ( { configured | loggedIn = RemoteData.map emptyLoggedInModel nurse_ }
                     , Cmd.none
                     , []
                     )

@@ -18,6 +18,7 @@ import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), ParticipantDi
 import Backend.Person.Utils exposing (expectedAgeByPerson, isAdult, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
+import Backend.Village.Utils exposing (getVillageById)
 import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import Form exposing (Form)
@@ -386,8 +387,8 @@ viewPhotoThumb url =
         ]
 
 
-viewCreateEditForm : Language -> NominalDate -> ParticipantDirectoryOperation -> Model -> ModelIndexedDb -> Html Msg
-viewCreateEditForm language currentDate operation model db =
+viewCreateEditForm : Language -> NominalDate -> Maybe VillageId -> Bool -> ParticipantDirectoryOperation -> Model -> ModelIndexedDb -> Html Msg
+viewCreateEditForm language currentDate maybeVillageId isChw operation model db =
     let
         formBeforeDefaults =
             model.form
@@ -408,8 +409,12 @@ viewCreateEditForm language currentDate operation model db =
                 |> Maybe.andThen (\id -> Dict.get id db.people)
                 |> Maybe.andThen RemoteData.toMaybe
 
+        maybeVillage =
+            maybeVillageId
+                |> Maybe.andThen (getVillageById db)
+
         personForm =
-            applyDefaultValues maybeRelatedPerson operation currentDate formBeforeDefaults
+            applyDefaultValues currentDate maybeVillage isChw maybeRelatedPerson operation formBeforeDefaults
 
         request =
             db.postPerson
