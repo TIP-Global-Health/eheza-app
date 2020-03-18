@@ -62,11 +62,8 @@ init flags url key =
                 Err msg ->
                     English
 
-        fragment =
-            pageToFragment PinCodePage
-
         url_ =
-            { url | fragment = fragment, query = Nothing }
+            { url | query = Nothing }
 
         model =
             emptyModel key url_ flags
