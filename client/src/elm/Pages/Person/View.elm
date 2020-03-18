@@ -911,6 +911,19 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation model db 
             , viewVillage
             ]
 
+        addressSection =
+            if isChw then
+                []
+
+            else
+                [ h3
+                    [ class "ui header" ]
+                    [ text <| translate language Translate.AddressInformation ++ ":" ]
+                , addressFields
+                    |> fieldset [ class "registration-form address-info" ]
+                    |> Html.map (MsgForm operation)
+                ]
+
         contactInformationSection =
             if expectedAge /= ExpectChild then
                 [ h3
@@ -928,41 +941,45 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation model db 
             Form.getFieldAsString Backend.Person.Form.healthCenter personForm
 
         healthCenterSection =
-            let
-                inputClass =
-                    "select-input"
-                        ++ (if isEditOperation && isFormFieldSet healthCenter then
-                                " disabled"
+            if isChw then
+                []
 
-                            else
-                                ""
-                           )
+            else
+                let
+                    inputClass =
+                        "select-input"
+                            ++ (if isEditOperation && isFormFieldSet healthCenter then
+                                    " disabled"
 
-                options =
-                    emptyOption
-                        :: (db.healthCenters
-                                |> RemoteData.map
-                                    (\dict ->
-                                        dict
-                                            |> Dict.toList
-                                            |> List.map
-                                                (\( id, healthCenter_ ) ->
-                                                    ( fromEntityUuid id
-                                                    , healthCenter_.name
+                                else
+                                    ""
+                               )
+
+                    options =
+                        emptyOption
+                            :: (db.healthCenters
+                                    |> RemoteData.map
+                                        (\dict ->
+                                            dict
+                                                |> Dict.toList
+                                                |> List.map
+                                                    (\( id, healthCenter_ ) ->
+                                                        ( fromEntityUuid id
+                                                        , healthCenter_.name
+                                                        )
                                                     )
-                                                )
-                                            |> List.sortBy (\( id, name ) -> name)
-                                    )
-                                |> RemoteData.withDefault []
-                           )
-            in
-            [ h3
-                [ class "ui header" ]
-                [ text <| translate language Translate.RegistratingHealthCenter ++ ":" ]
-            , [ viewSelectInput language Translate.HealthCenter options Backend.Person.Form.healthCenter "ten" inputClass True personForm ]
-                |> fieldset [ class "registration-form health-center" ]
-                |> Html.map (MsgForm operation)
-            ]
+                                                |> List.sortBy (\( id, name ) -> name)
+                                        )
+                                    |> RemoteData.withDefault []
+                               )
+                in
+                [ h3
+                    [ class "ui header" ]
+                    [ text <| translate language Translate.RegistratingHealthCenter ++ ":" ]
+                , [ viewSelectInput language Translate.HealthCenter options Backend.Person.Form.healthCenter "ten" inputClass True personForm ]
+                    |> fieldset [ class "registration-form health-center" ]
+                    |> Html.map (MsgForm operation)
+                ]
 
         submitButton =
             button
@@ -988,13 +1005,8 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation model db 
             , familyInformationFields
                 |> fieldset [ class "registration-form family-info" ]
                 |> Html.map (MsgForm operation)
-            , h3
-                [ class "ui header" ]
-                [ text <| translate language Translate.AddressInformation ++ ":" ]
-            , addressFields
-                |> fieldset [ class "registration-form address-info" ]
-                |> Html.map (MsgForm operation)
             ]
+                ++ addressSection
                 ++ contactInformationSection
                 ++ healthCenterSection
                 ++ [ p [] []
