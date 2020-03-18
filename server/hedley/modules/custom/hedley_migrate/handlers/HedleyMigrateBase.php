@@ -179,6 +179,58 @@ abstract class HedleyMigrateBase extends Migration {
   }
 
   /**
+   * Convert a date string to a timestamp.
+   *
+   * @param string $date
+   *   A string containing a date.
+   *
+   * @return array
+   *   A timestamp.
+   *
+   * @throws \Exception
+   */
+  public function date2Process($date) {
+    // The source material uses several date formats.
+    $trimmed = trim($date);
+
+    if (empty($trimmed)) {
+      return $trimmed;
+    }
+
+    $values = explode('|', $trimmed);
+    $count = count($values);
+
+    if ($count == 0 || $count > 2) {
+      throw new Exception("$trimmed is not a valid value.");
+    }
+
+    if (!preg_match('/^\\d\\d\\d\\d-\\d\\d-\\d\\d$/', $values[0])) {
+      throw new Exception("$values[0] was not a recognized date format.");
+    }
+
+    $timezone = new DateTimeZone("UTC");
+    $value1 = DateTime::createFromFormat('!Y-m-d', $values[0], $timezone)->getTimestamp();
+
+    if ($count == 1) {
+      return [
+        'value' => $value1,
+        'value2' => NULL,
+      ];
+    }
+
+    if (!preg_match('/^\\d\\d\\d\\d-\\d\\d-\\d\\d$/', $values[1])) {
+      throw new Exception("$values[1] was not a recognized date format.");
+    }
+
+    $value2 = DateTime::createFromFormat('!Y-m-d', $values[1], $timezone)->getTimestamp();
+
+    return [
+      'value' => $value1,
+      'arguments' => ['to' => $value2],
+    ];
+  }
+
+  /**
    * Add date fields.
    *
    * @param array $field_names
