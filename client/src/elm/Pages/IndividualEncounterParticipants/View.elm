@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (ExpectedAge(..), Person, RegistrationInitiator(..))
-import Backend.Person.Utils exposing (ageInYears, isPersonAFertileWoman)
+import Backend.Person.Utils exposing (ageInYears, isPersonAFertileWoman, isPersonAnAdult)
 import Backend.SyncData.Model
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -139,14 +139,19 @@ viewSearchForm language currentDate selectedHealthCenterId encounterType model d
                 |> Maybe.withDefault ""
 
         participantsFilter id person =
-            case encounterType of
-                AntenatalEncounter ->
-                    isPersonAFertileWoman currentDate person
-                        -- Show only mothers that belong to selected health center
-                        && (person.healthCenterId == Just selectedHealthCenterId)
+            -- Show only participants that belong to selected health center
+            (person.healthCenterId == Just selectedHealthCenterId)
+                && (case encounterType of
+                        AntenatalEncounter ->
+                            isPersonAFertileWoman currentDate person
 
-                _ ->
-                    True
+                        NutritionEncounter ->
+                            isPersonAnAdult currentDate person
+                                |> Maybe.withDefault False
+
+                        _ ->
+                            False
+                   )
 
         results =
             if String.isEmpty searchValue then
