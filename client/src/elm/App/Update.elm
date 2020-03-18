@@ -529,10 +529,10 @@ update msg model =
                 model
 
         -- Note that this also resets any data which depends on being logged in.
-        SetLoggedIn nurse_ ->
+        SetLoggedIn nurse ->
             updateConfigured
                 (\configured ->
-                    ( { configured | loggedIn = RemoteData.map emptyLoggedInModel nurse_ }
+                    ( { configured | loggedIn = RemoteData.map emptyLoggedInModel nurse }
                     , Cmd.none
                     , []
                     )
