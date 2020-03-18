@@ -85,6 +85,7 @@ viewSearchForm language currentDate relation model db =
                         [ input
                             [ placeholder <| translate language Translate.PlaceholderEnterParticipantName
                             , type_ "text"
+                            , class "search-input"
                             , onInput SetInput
                             , value model.input
                             , autofocus True

@@ -264,7 +264,7 @@ function import_demo_content {
 
   # Make sure we have random content for all the existing content-types and
   # random taxonomy terms for all the existing vocabularies.
-  generate_demo_content
+  # generate_demo_content
 
   cd "$ROOT"
   echo
