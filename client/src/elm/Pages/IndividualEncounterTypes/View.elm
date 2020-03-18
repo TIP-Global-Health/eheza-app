@@ -44,15 +44,16 @@ viewHeader language =
 viewContent : Language -> NominalDate -> ModelIndexedDb -> List (Html App.Model.Msg)
 viewContent language currentDate db =
     let
-        antenatalButton =
+        encounterButton encounterType =
             button
                 [ class "ui primary button encounter-type"
-                , onClick <| SetActivePage <| UserPage <| IndividualEncounterParticipantsPage AntenatalEncounter
+                , onClick <| SetActivePage <| UserPage <| IndividualEncounterParticipantsPage encounterType
                 ]
-                [ span [ class "text" ] [ text <| translate language <| Translate.IndividualEncounterType AntenatalEncounter ]
+                [ span [ class "text" ] [ text <| translate language <| Translate.IndividualEncounterType encounterType ]
                 , span [ class "icon-back" ] []
                 ]
     in
     [ p [] [ text <| translate language Translate.SelectEncounterType ++ ":" ]
-    , antenatalButton
+    , encounterButton AntenatalEncounter
+    , encounterButton NutritionEncounter
     ]
