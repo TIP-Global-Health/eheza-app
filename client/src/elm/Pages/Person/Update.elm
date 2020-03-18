@@ -45,9 +45,13 @@ update currentDate maybeVillageId isChw msg db model =
                 appMsgs =
                     case subMsg of
                         Form.Submit ->
+                            let
+                                formWithDefaults =
+                                    applyDefaultValues currentDate maybeVillage isChw related operation model.form
+                            in
                             case operation of
                                 CreatePerson _ ->
-                                    model.form
+                                    formWithDefaults
                                         |> Form.getOutput
                                         |> Maybe.map
                                             (\person ->
@@ -69,7 +73,7 @@ update currentDate maybeVillageId isChw msg db model =
                                     relation
                                         |> Maybe.map
                                             (\personId ->
-                                                applyDefaultValues currentDate maybeVillage isChw related operation model.form
+                                                formWithDefaults
                                                     |> Form.getOutput
                                                     |> Maybe.map
                                                         (\person ->
