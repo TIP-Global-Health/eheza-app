@@ -45,8 +45,8 @@ import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
 
 
-view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
-view language currentDate id db =
+view : Language -> NominalDate -> Bool -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
+view language currentDate isChw id db =
     let
         person =
             Dict.get id db.people
@@ -62,7 +62,7 @@ view language currentDate id db =
         [ viewHeader language headerName
         , div
             [ class "ui full segment blue" ]
-            [ viewWebData language (viewParticipantDetailsForm language currentDate db id) identity person
+            [ viewWebData language (viewParticipantDetailsForm language currentDate isChw db id) identity person
             ]
         ]
 
@@ -94,8 +94,8 @@ type alias OtherPerson =
     }
 
 
-viewParticipantDetailsForm : Language -> NominalDate -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
-viewParticipantDetailsForm language currentDate db id person =
+viewParticipantDetailsForm : Language -> NominalDate -> Bool -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
+viewParticipantDetailsForm language currentDate isChw db id person =
     let
         -- We re-organize our data about relatoinships and group participations
         -- so that we have one record per `OtherPerson`.
@@ -161,7 +161,7 @@ viewParticipantDetailsForm language currentDate db id person =
                         Dict.get otherPersonId db.people
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.append db.clinics
-                            |> viewWebData language (viewOtherPerson language currentDate id ( otherPersonId, otherPerson )) identity
+                            |> viewWebData language (viewOtherPerson language currentDate isChw id ( otherPersonId, otherPerson )) identity
                     )
                 |> Dict.values
                 |> div [ class "ui unstackable items participants-list" ]
@@ -288,8 +288,8 @@ viewPerson language currentDate id person =
         ]
 
 
-viewOtherPerson : Language -> NominalDate -> PersonId -> ( PersonId, OtherPerson ) -> ( Dict ClinicId Clinic, Person ) -> Html App.Model.Msg
-viewOtherPerson language currentDate relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
+viewOtherPerson : Language -> NominalDate -> Bool -> PersonId -> ( PersonId, OtherPerson ) -> ( Dict ClinicId Clinic, Person ) -> Html App.Model.Msg
+viewOtherPerson language currentDate isChw relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
     let
         typeForThumbnail =
             case isPersonAnAdult currentDate person of
@@ -322,24 +322,32 @@ viewOtherPerson language currentDate relationMainId ( otherPersonId, otherPerson
                 |> String.join ", "
 
         groups =
-            p
-                []
-                [ label [] [ text <| translate language Translate.Groups ++ ": " ]
-                , span [] [ text groupNames ]
-                ]
+            if isChw then
+                emptyNode
+
+            else
+                p
+                    []
+                    [ label [] [ text <| translate language Translate.Groups ++ ": " ]
+                    , span [] [ text groupNames ]
+                    ]
 
         action =
-            div
-                [ class "action" ]
-                [ div
-                    [ class "action-icon-wrapper" ]
-                    [ span
-                        [ class "action-icon forward"
-                        , onClick <| App.Model.SetActivePage <| UserPage <| RelationshipPage relationMainId otherPersonId
+            if isChw then
+                emptyNode
+
+            else
+                div
+                    [ class "action" ]
+                    [ div
+                        [ class "action-icon-wrapper" ]
+                        [ span
+                            [ class "action-icon forward"
+                            , onClick <| App.Model.SetActivePage <| UserPage <| RelationshipPage relationMainId otherPersonId
+                            ]
+                            []
                         ]
-                        []
                     ]
-                ]
 
         content =
             div [ class "content" ]

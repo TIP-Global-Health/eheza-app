@@ -229,7 +229,7 @@ viewUserPage page model configured =
                         |> flexPageWrapper model
 
                 PersonPage id ->
-                    Pages.Person.View.view model.language currentDate id model.indexedDb
+                    Pages.Person.View.view model.language currentDate isChw id model.indexedDb
                         |> flexPageWrapper model
 
                 PersonsPage relation ->
