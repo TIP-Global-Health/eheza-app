@@ -40,7 +40,7 @@ update id1 id2 msg model =
               ]
             )
 
-        Save maybeRelatedBy ->
+        Save maybeRelatedBy assignToGroup ->
             let
                 extraMsg =
                     case maybeRelatedBy of
@@ -49,7 +49,7 @@ update id1 id2 msg model =
                                 { relatedBy = relatedBy
                                 , relatedTo = id2
                                 }
-                                model.assignToGroup
+                                assignToGroup
                                 |> App.Model.MsgIndexedDb
                             ]
 

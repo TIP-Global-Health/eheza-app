@@ -3,8 +3,6 @@ module Pages.People.View exposing (view)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Nurse.Model exposing (Nurse)
-import Backend.Nurse.Utils exposing (isAuthorithedNurse, isCommunityHealthWorker)
 import Backend.Person.Model exposing (ExpectedAge(..), Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.Village.Utils exposing (getVillageById)
@@ -33,8 +31,8 @@ import Utils.WebData exposing (viewWebData)
     family member for that person, either child, parent, etc.
 
 -}
-view : Language -> NominalDate -> Nurse -> Maybe VillageId -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
-view language currentDate nurse maybeVillageId relation model db =
+view : Language -> NominalDate -> Maybe VillageId -> Bool -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
+view language currentDate maybeVillageId isChw relation model db =
     let
         title =
             case relation of
@@ -55,7 +53,7 @@ view language currentDate nurse maybeVillageId relation model db =
             [ class "search-wrapper" ]
             [ div
                 [ class "ui full segment" ]
-                [ viewSearchForm language currentDate nurse maybeVillageId relation model db ]
+                [ viewSearchForm language currentDate maybeVillageId isChw relation model db ]
             ]
         ]
 
@@ -77,8 +75,8 @@ viewHeader title =
         ]
 
 
-viewSearchForm : Language -> NominalDate -> Nurse -> Maybe VillageId -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
-viewSearchForm language currentDate nurse maybeVillageId relation model db =
+viewSearchForm : Language -> NominalDate -> Maybe VillageId -> Bool -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
+viewSearchForm language currentDate maybeVillageId isChw relation model db =
     let
         searchForm =
             Html.form []
@@ -168,7 +166,7 @@ viewSearchForm language currentDate nurse maybeVillageId relation model db =
 
                     -- For CHW nurse, we present people only from the village that was selected.
                     chwCondition filteredPerson =
-                        if isCommunityHealthWorker nurse then
+                        if isChw then
                             maybeVillageId
                                 |> Maybe.andThen (getVillageById db)
                                 |> Maybe.map
