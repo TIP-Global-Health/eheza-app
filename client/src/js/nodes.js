@@ -41,6 +41,9 @@
                     else if (type === 'prenatal-measurements') {
                         return event.respondWith(viewMeasurements('prenatal_encounter', uuid));
                     }
+                    else if (type === 'nutrition-measurements') {
+                        return event.respondWith(viewMeasurements('nutrition_encounter', uuid));
+                    }
                     else {
                         return event.respondWith(view(type, uuid));
                     }
@@ -101,6 +104,7 @@
         muac: 'shards',
         nurse: 'nodes',
         nutrition: 'shards',
+        nutrition_encounter: 'nodes',
         obstetric_history: 'shards',
         obstetric_history_step2: 'shards',
         obstetrical_exam: 'shards',
@@ -430,6 +434,9 @@
                     if (key === 'prenatal_encounter') {
                       target = node.prenatal_encounter;
                     }
+                    else if (key === 'nutrition_encounter') {
+                      target = node.nutrition_encounter;
+                    }
 
                     data[target] = data[target] || {};
                     if (data[target][node.type]) {
@@ -549,11 +556,11 @@
                     }
                 }
 
-                if (type === 'prenatal_encounter') {
-                  var prenatalSessionId = params.get('individual_participant');
-                  if (prenatalSessionId) {
+                if (type === 'prenatal_encounter' || type === 'nutrition_encounter') {
+                  var individualSessionId = params.get('individual_participant');
+                  if (individualSessionId) {
                     modifyQuery = modifyQuery.then(function () {
-                        criteria.individual_participant = prenatalSessionId;
+                        criteria.individual_participant = individualSessionId;
                         query = table.where(criteria);
 
                         countQuery = query.clone();
