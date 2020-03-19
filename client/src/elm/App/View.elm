@@ -20,6 +20,7 @@ import Pages.Device.View
 import Pages.IndividualEncounterParticipants.View
 import Pages.IndividualEncounterTypes.View
 import Pages.MyAccount.View
+import Pages.NutritionParticipant.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.People.View
@@ -246,6 +247,10 @@ viewUserPage page model configured =
                         Pages.PrenatalParticipant.View.view model.language currentDate id model.indexedDb
                             |> flexPageWrapper model
 
+                    NutritionParticipantPage id ->
+                        Pages.NutritionParticipant.View.view model.language currentDate id model.indexedDb
+                            |> flexPageWrapper model
+
                     IndividualEncounterParticipantsPage encounterType ->
                         Pages.IndividualEncounterParticipants.View.view model.language currentDate healthCenterId encounterType loggedInModel.individualEncounterParticipantsPage model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPageIndividualEncounterParticipants)
@@ -312,6 +317,18 @@ viewUserPage page model configured =
                         Pages.PregnancyOutcome.View.view model.language currentDate id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePregnancyOutcome id)
                             |> flexPageWrapper model
+
+                    NutritionEncounterPage id ->
+                        -- Todo
+                        div [] []
+                -- let
+                --     page_ =
+                --         Dict.get id loggedInModel.prenatalEncounterPages
+                --             |> Maybe.withDefault Pages.PrenatalEncounter.Model.emptyModel
+                -- in
+                -- Pages.PrenatalEncounter.View.view model.language currentDate id model.indexedDb page_
+                --     |> Html.map (MsgLoggedIn << MsgPagePrenatalEncounter id)
+                --     |> flexPageWrapper model
 
             else
                 Pages.PinCode.View.view model.language model.activePage (Success loggedInModel.nurse) model.healthCenterId configured.pinCodePage model.indexedDb

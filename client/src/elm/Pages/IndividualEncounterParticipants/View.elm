@@ -229,6 +229,9 @@ viewParticipant language currentDate encounterType db id person =
                 AntenatalEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage id ]
 
+                NutritionEncounter ->
+                    [ onClick <| SetActivePage <| UserPage <| NutritionParticipantPage id ]
+
                 _ ->
                     []
 

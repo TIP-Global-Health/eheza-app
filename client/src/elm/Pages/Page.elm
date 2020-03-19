@@ -143,6 +143,8 @@ type UserPage
     | PrenatalActivityPage PrenatalEncounterId PrenatalActivity -- record prenatal activity
     | IndividualEncounterTypesPage -- this is where we select the type of encounter we're interested in.
     | PregnancyOutcomePage IndividualEncounterParticipantId -- this is where pregnancy outcome is recorded.
+    | NutritionParticipantPage PersonId
+    | NutritionEncounterPage NutritionEncounterId -- nutrition activities index
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it

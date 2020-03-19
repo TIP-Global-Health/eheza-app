@@ -44,7 +44,7 @@ viewHeader language id =
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text <| translate language Translate.PrenatalEncounter ]
+            [ text <| translate language <| Translate.IndividualEncounterLabel AntenatalEncounter ]
         , a
             [ class "link-back"
             , onClick <| App.Model.SetActivePage <| UserPage <| IndividualEncounterParticipantsPage AntenatalEncounter

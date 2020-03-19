@@ -349,6 +349,7 @@ type TranslationId
     | HypertensionBeforePregnancy
     | IncompleteCervixPreviousPregnancy
     | IndividualEncounter
+    | IndividualEncounterLabel IndividualEncounterType
     | IndividualEncounterType IndividualEncounterType
     | IndividualEncounterTypes
     | KilogramShorthand
@@ -464,7 +465,6 @@ type TranslationId
     | PreeclampsiaPreviousPregnancy
     | PregnancyTrimester PregnancyTrimester
     | PrenatalActivitiesTitle PrenatalActivity
-    | PrenatalEncounter
     | PrenatalPhotoHelper
     | PreTerm
     | PregnancyConcludedLabel
@@ -2142,6 +2142,23 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        IndividualEncounterLabel type_ ->
+            case type_ of
+                AntenatalEncounter ->
+                    { english = "Antenatal Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                InmmunizationEncounter ->
+                    { english = "Inmmunization Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounter ->
+                    { english = "Nutrition Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
         IndividualEncounterType type_ ->
             case type_ of
                 AntenatalEncounter ->
@@ -3002,11 +3019,6 @@ translationSet trans =
                     { english = "Photo"
                     , kinyarwanda = Nothing
                     }
-
-        PrenatalEncounter ->
-            { english = "Antenatal Encounter"
-            , kinyarwanda = Nothing
-            }
 
         PrenatalPhotoHelper ->
             { english = "Take a picture of the mother's belly. Then you and the mother will see how the belly has grown!"
@@ -4115,6 +4127,16 @@ translateActivePage page =
 
                 PregnancyOutcomePage _ ->
                     { english = "Pregnancy Outcome"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionParticipantPage _ ->
+                    { english = "Nutrition Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounterPage _ ->
+                    { english = "Nutrition Encounter"
                     , kinyarwanda = Nothing
                     }
 
