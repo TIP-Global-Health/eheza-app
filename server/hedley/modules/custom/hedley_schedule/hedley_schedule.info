@@ -58,6 +58,7 @@ features[field_instance][] = node-individual_participant-field_person
 features[field_instance][] = node-individual_participant-field_uuid
 features[field_instance][] = node-nutrition_encounter-field_individual_participant
 features[field_instance][] = node-nutrition_encounter-field_scheduled_date
+features[field_instance][] = node-nutrition_encounter-field_uuid
 features[field_instance][] = node-pmtct_participant-field_adult
 features[field_instance][] = node-pmtct_participant-field_adult_activities
 features[field_instance][] = node-pmtct_participant-field_clinic
