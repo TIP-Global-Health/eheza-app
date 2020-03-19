@@ -343,6 +343,19 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , []
             )
 
+        FetchNutritionEncountersForParticipant id ->
+            ( { model | nutritionEncountersByParticipant = Dict.insert id Loading model.nutritionEncountersByParticipant }
+            , sw.select nutritionEncounterEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedNutritionEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedNutritionEncountersForParticipant id data ->
+            ( { model | nutritionEncountersByParticipant = Dict.insert id data model.nutritionEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
         FetchPrenatalMeasurements id ->
             ( { model | prenatalMeasurements = Dict.insert id Loading model.prenatalMeasurements }
             , sw.get prenatalMeasurementsEndpoint id
@@ -352,6 +365,19 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
 
         HandleFetchedPrenatalMeasurements id data ->
             ( { model | prenatalMeasurements = Dict.insert id data model.prenatalMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchNutritionMeasurements id ->
+            ( { model | nutritionMeasurements = Dict.insert id Loading model.nutritionMeasurements }
+            , sw.get nutritionMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedNutritionMeasurements id)
+            , []
+            )
+
+        HandleFetchedNutritionMeasurements id data ->
+            ( { model | nutritionMeasurements = Dict.insert id data model.nutritionMeasurements }
             , Cmd.none
             , []
             )
@@ -527,6 +553,21 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                 , []
                 )
 
+        HandleFetchPeople webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | people = Dict.union dictUpdated model.people }
+                    , Cmd.none
+                    , []
+                    )
+
         FetchPerson id ->
             ( { model | people = Dict.insert id Loading model.people }
             , sw.get personEndpoint id
@@ -553,6 +594,19 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , []
             )
 
+        FetchNutritionEncounter id ->
+            ( { model | nutritionEncounters = Dict.insert id Loading model.nutritionEncounters }
+            , sw.get nutritionEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedNutritionEncounter id)
+            , []
+            )
+
+        HandleFetchedNutritionEncounter id data ->
+            ( { model | nutritionEncounters = Dict.insert id data model.nutritionEncounters }
+            , Cmd.none
+            , []
+            )
+
         FetchIndividualEncounterParticipant id ->
             ( { model | individualParticipants = Dict.insert id Loading model.individualParticipants }
             , sw.get individualEncounterParticipantEndpoint id
@@ -565,21 +619,6 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , Cmd.none
             , []
             )
-
-        HandleFetchPeople webData ->
-            case RemoteData.toMaybe webData of
-                Nothing ->
-                    noChange
-
-                Just dict ->
-                    let
-                        dictUpdated =
-                            Dict.map (\_ v -> RemoteData.Success v) dict
-                    in
-                    ( { model | people = Dict.union dictUpdated model.people }
-                    , Cmd.none
-                    , []
-                    )
 
         FetchSession sessionId ->
             ( { model | sessions = Dict.insert sessionId Loading model.sessions }
@@ -1061,6 +1100,29 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                 )
                 data
                 |> RemoteData.withDefault []
+            )
+
+        PostNutritionEncounter nutritionEncounter ->
+            ( { model | postNutritionEncounter = Dict.insert nutritionEncounter.participant Loading model.postNutritionEncounter }
+            , sw.post nutritionEncounterEndpoint nutritionEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedNutritionEncounter nutritionEncounter.participant)
+            , []
+            )
+
+        HandlePostedNutritionEncounter participantId data ->
+            ( { model | postNutritionEncounter = Dict.insert participantId data model.postNutritionEncounter }
+            , Cmd.none
+            , []
+              -- Todo:
+              -- , RemoteData.map
+              --     (\( prenatalEncounterId, _ ) ->
+              --         [ App.Model.SetActivePage <|
+              --             UserPage <|
+              --                 Pages.Page.PrenatalEncounterPage prenatalEncounterId
+              --         ]
+              --     )
+              --     data
+              --     |> RemoteData.withDefault []
             )
 
 
