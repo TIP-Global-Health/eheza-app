@@ -2,13 +2,13 @@
 
 /**
  * @file
- * Contains HedleyRestfulPrenatalActivityBase.
+ * Contains HedleyRestfulNutritionActivityBase.
  */
 
 /**
- * Class HedleyRestfulPrenatalActivityBase.
+ * Class HedleyRestfulNutritionActivityBase.
  */
-abstract class HedleyRestfulPrenatalActivityBase extends HedleyRestfulIndividualActivityBase {
+abstract class HedleyRestfulNutritionActivityBase extends HedleyRestfulIndividualActivityBase {
 
   /**
    * {@inheritdoc}
@@ -16,8 +16,8 @@ abstract class HedleyRestfulPrenatalActivityBase extends HedleyRestfulIndividual
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
-    $public_fields['prenatal_encounter'] = [
-      'property' => 'field_prenatal_encounter',
+    $public_fields['nutrition_encounter'] = [
+      'property' => 'field_nutrition_encounter',
       'sub_property' => 'field_uuid',
     ];
 
@@ -30,9 +30,9 @@ abstract class HedleyRestfulPrenatalActivityBase extends HedleyRestfulIndividual
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     $query = parent::alterQueryForViewWithDbSelect($query);
 
-    hedley_restful_join_field_to_query($query, 'node', 'field_prenatal_encounter', FALSE);
+    hedley_restful_join_field_to_query($query, 'node', 'field_nutrition_encounter', FALSE);
     // Get the UUID of the Prenatal encounter.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_prenatal_encounter.field_prenatal_encounter_target_id", 'uuid_prenatal_encounter');
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_nutrition_encounter.field_nutrition_encounter_target_id", 'uuid_nutrition_encounter');
 
     return $query;
   }
@@ -44,8 +44,8 @@ abstract class HedleyRestfulPrenatalActivityBase extends HedleyRestfulIndividual
     $items = parent::postExecuteQueryForViewWithDbSelect($items);
 
     foreach ($items as &$item) {
-      $item->prenatal_encounter = $item->uuid_prenatal_encounter;
-      unset($item->uuid_prenatal_encounter);
+      $item->nutrition_encounter = $item->uuid_nutrition_encounter;
+      unset($item->uuid_nutrition_encounter);
     }
 
     return $items;
