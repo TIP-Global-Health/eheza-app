@@ -1,16 +1,16 @@
-module Backend.PrenatalEncounter.Encoder exposing (encodePrenatalEncounter)
+module Backend.NutritionEncounter.Encoder exposing (encodeNutritionEncounter)
 
-import Backend.PrenatalEncounter.Model exposing (..)
+import Backend.NutritionEncounter.Model exposing (..)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
 
 
-{-| Encodes a `PrenatalEncounter`.
+{-| Encodes a `NutritionEncounter`.
 -}
-encodePrenatalEncounter : PrenatalEncounter -> List ( String, Value )
-encodePrenatalEncounter session =
+encodeNutritionEncounter : NutritionEncounter -> List ( String, Value )
+encodeNutritionEncounter session =
     [ ( "scheduled_date"
       , object
             [ ( "value", encodeYYYYMMDD session.startDate )
