@@ -125,6 +125,7 @@ viewSearchForm language currentDate selectedHealthCenterId encounterType model d
                         [ input
                             [ placeholder <| translate language Translate.PlaceholderEnterParticipantName
                             , type_ "text"
+                            , class "search-input"
                             , onInput SetInput
                             , value model.input
                             , autofocus True
@@ -147,6 +148,7 @@ viewSearchForm language currentDate selectedHealthCenterId encounterType model d
 
                         NutritionEncounter ->
                             isPersonAnAdult currentDate person
+                                |> Maybe.map not
                                 |> Maybe.withDefault False
 
                         _ ->
