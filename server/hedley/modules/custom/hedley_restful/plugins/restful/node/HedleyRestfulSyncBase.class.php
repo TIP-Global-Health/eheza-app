@@ -144,4 +144,14 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
     return $items;
   }
 
+  /**
+   * Show the scheduled_date with date only.
+   */
+  protected function renderDate($date) {
+    return [
+      'value' => $date['value'] ? hedley_restful_timestamp_only_date($date['value']) : NULL,
+      'value2' => $date['value2'] ? hedley_restful_timestamp_only_date($date['value2']) : NULL,
+    ];
+  }
+
 }

@@ -25,6 +25,7 @@ const HEDLEY_RESTFUL_ALL_DEVICES = [
   'pmtct_participant' => 'pmtct-participants',
   'individual_participant' => 'individual-participants',
   'prenatal_encounter' => 'prenatal-encounters',
+  'nutrition_encounter' => 'nutrition-encounters',
   'relationship' => 'relationships',
   'session' => 'sessions',
 ];
