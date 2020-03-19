@@ -128,6 +128,11 @@ encodeNutritionValue nutritions =
     ]
 
 
+encodeNutritionNutrition : NutritionNutrition -> List ( String, Value )
+encodeNutritionNutrition =
+    encodeNutritionMeasurement encodeNutritionValue
+
+
 encodeParticipantConsentValue : ParticipantConsentValue -> List ( String, Value )
 encodeParticipantConsentValue consent =
     [ ( "language", encodeLanguage consent.language )
@@ -182,6 +187,11 @@ encodeFamilyPlanning =
 encodeGroupMeasurement : (value -> List ( String, Value )) -> GroupMeasurement value -> List ( String, Value )
 encodeGroupMeasurement =
     encodeMeasurement "session"
+
+
+encodeNutritionMeasurement : (value -> List ( String, Value )) -> NutritionMeasurement value -> List ( String, Value )
+encodeNutritionMeasurement =
+    encodeMeasurement "nutrition_encounter"
 
 
 encodePrenatalMeasurement : (value -> List ( String, Value )) -> PrenatalMeasurement value -> List ( String, Value )

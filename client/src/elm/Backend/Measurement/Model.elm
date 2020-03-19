@@ -43,6 +43,9 @@ module Backend.Measurement.Model exposing
     , MuacInCm(..)
     , MuacIndication(..)
     , NeckCPESign(..)
+    , NutritionMeasurement
+    , NutritionMeasurements
+    , NutritionNutrition
     , ObstetricHistory
     , ObstetricHistorySign(..)
     , ObstetricHistoryStep2
@@ -117,6 +120,10 @@ type alias Measurement encounter value =
 
 type alias GroupMeasurement value =
     Measurement SessionId value
+
+
+type alias NutritionMeasurement value =
+    Measurement NutritionEncounterId value
 
 
 type alias PrenatalMeasurement value =
@@ -225,6 +232,14 @@ type alias ChildNutrition =
 
 type alias CounselingSession =
     GroupMeasurement ( CounselingTiming, EverySet CounselingTopicId )
+
+
+
+-- NUTRITION MEASUREMENTS
+
+
+type alias NutritionNutrition =
+    NutritionMeasurement (EverySet ChildNutritionSign)
 
 
 
@@ -611,6 +626,14 @@ type alias PrenatalMeasurements =
     , socialHistory : Maybe ( SocialHistoryId, SocialHistory )
     , vitals : Maybe ( VitalsId, Vitals )
     , prenatalPhoto : Maybe ( PrenatalPhotoId, PrenatalPhoto )
+    }
+
+
+{-| A set of Nutrition measurements that correspond to the same Nutrition
+encounter.
+-}
+type alias NutritionMeasurements =
+    { nutrition : Maybe ( NutritionNutritionId, NutritionNutrition )
     }
 
 

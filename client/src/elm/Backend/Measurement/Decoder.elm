@@ -13,6 +13,8 @@ module Backend.Measurement.Decoder exposing
     , decodeMotherMeasurementList
     , decodeMuac
     , decodeNutrition
+    , decodeNutritionMeasurement
+    , decodeNutritionMeasurements
     , decodeObstetricHistory
     , decodeObstetricHistoryStep2
     , decodeObstetricalExam
@@ -45,6 +47,11 @@ import Utils.Json exposing (decodeEverySet)
 decodeGroupMeasurement : Decoder value -> Decoder (Measurement SessionId value)
 decodeGroupMeasurement =
     decodeMeasurement "session"
+
+
+decodeNutritionMeasurement : Decoder value -> Decoder (Measurement NutritionEncounterId value)
+decodeNutritionMeasurement =
+    decodeMeasurement "nutrition_encounter"
 
 
 decodePrenatalMeasurement : Decoder value -> Decoder (Measurement PrenatalEncounterId value)
@@ -91,10 +98,6 @@ decodeChildMeasurementList =
 
 decodePrenatalMeasurements : Decoder PrenatalMeasurements
 decodePrenatalMeasurements =
-    let
-        decodeHead =
-            map List.head << list << decodeWithEntityUuid
-    in
     succeed PrenatalMeasurements
         |> optional "breast_exam" (decodeHead decodeBreastExam) Nothing
         |> optional "core_physical_exam" (decodeHead decodeCorePhysicalExam) Nothing
@@ -111,6 +114,17 @@ decodePrenatalMeasurements =
         |> optional "social_history" (decodeHead decodeSocialHistory) Nothing
         |> optional "vitals" (decodeHead decodeVitals) Nothing
         |> optional "prenatal_photo" (decodeHead decodePrenatalPhoto) Nothing
+
+
+decodeNutritionMeasurements : Decoder NutritionMeasurements
+decodeNutritionMeasurements =
+    succeed NutritionMeasurements
+        |> optional "nutrition_nutrition" (decodeHead decodeNutritionNutrition) Nothing
+
+
+decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
+decodeHead =
+    map List.head << list << decodeWithEntityUuid
 
 
 decodePhoto : Decoder Photo
@@ -937,3 +951,10 @@ decodeObstetricHistoryStep2 =
         |> required "previous_delivery_period" (decodeEverySet decodePreviousDeliveryPeriod)
         |> required "obstetric_history" (decodeEverySet decodeObstetricHistorySign)
         |> decodePrenatalMeasurement
+
+
+decodeNutritionNutrition : Decoder NutritionNutrition
+decodeNutritionNutrition =
+    decodeEverySet decodeChildNutritionSign
+        |> field "nutrition_signs"
+        |> decodeNutritionMeasurement

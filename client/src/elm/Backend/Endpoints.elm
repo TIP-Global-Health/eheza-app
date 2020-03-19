@@ -228,6 +228,11 @@ prenatalMeasurementsEndpoint =
     swEndpoint "nodes/prenatal-measurements" decodePrenatalMeasurements
 
 
+nutritionMeasurementsEndpoint : ReadOnlyEndPoint Error NutritionEncounterId NutritionMeasurements ()
+nutritionMeasurementsEndpoint =
+    swEndpoint "nodes/prenatal-measurements" decodeNutritionMeasurements
+
+
 {-| Type-safe params ... how nice!
 -}
 type SessionParams
