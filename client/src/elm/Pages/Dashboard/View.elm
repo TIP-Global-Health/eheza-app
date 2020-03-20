@@ -1092,19 +1092,25 @@ filterStatsByPeriod currentDate model stats =
                     ( Date.floor Date.Month currentDate, currentDate )
 
                 LastMonth ->
-                    -- From the beginning of 2 months ago to the end of last month.
+                    -- From the beginning of last month to the end of last month.
                     ( Date.add Months -1 currentDate
                         |> Date.floor Date.Month
                     , Date.add Months -1 currentDate
                         |> Date.ceiling Date.Month
+                        -- We have to remove a day because the "ceiling" function for some reason is going up to the
+                        -- first day of the next month.
+                        |> Date.add Days -1
                     )
 
                 ThreeMonthsAgo ->
-                    -- From the beginning of 3 months ago to the end of last month.
+                    -- From the beginning of 3 months ago to the end of 3 months ago.
                     ( Date.add Months -2 currentDate
                         |> Date.floor Date.Month
                     , Date.add Months -2 currentDate
                         |> Date.ceiling Date.Month
+                        -- We have to remove a day because the "ceiling" function for some reason is going up to the
+                        -- first day of the next month.
+                        |> Date.add Days -1
                     )
 
         filterPartial =
