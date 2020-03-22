@@ -420,19 +420,21 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                     )
                 |> div [ class "ui five report cards" ]
 
-        ( heightForAge, weightForAge, weightForHeight ) =
+        zScoreViewCharts =
             case child.gender of
                 Male ->
-                    ( ZScore.View.viewHeightForAgeBoys
-                    , ZScore.View.viewWeightForAgeBoys
-                    , ZScore.View.viewWeightForHeightBoys
-                    )
+                    { heightForAge = ZScore.View.viewHeightForAgeBoys
+                    , heightForAge5To19 = ZScore.View.viewHeightForAgeBoys5To19
+                    , weightForAge = ZScore.View.viewWeightForAgeBoys
+                    , weightForHeight = ZScore.View.viewWeightForHeightBoys
+                    }
 
                 Female ->
-                    ( ZScore.View.viewHeightForAgeGirls
-                    , ZScore.View.viewWeightForAgeGirls
-                    , ZScore.View.viewWeightForHeightGirls
-                    )
+                    { heightForAge = ZScore.View.viewHeightForAgeGirls
+                    , heightForAge5To19 = ZScore.View.viewHeightForAgeBoys5To19
+                    , weightForAge = ZScore.View.viewWeightForAgeGirls
+                    , weightForHeight = ZScore.View.viewWeightForHeightGirls
+                    }
 
         current =
             getChildMeasurementData childId session
@@ -498,9 +500,10 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
             div
                 [ class "image-report" ]
                 [ ZScore.View.viewMarkers
-                , heightForAge language zscores heightForAgeData
-                , weightForAge language zscores weightForAgeData
-                , weightForHeight language zscores weightForHeightData
+                , zScoreViewCharts.heightForAge language zscores heightForAgeData
+                , zScoreViewCharts.heightForAge5To19 language zscores heightForAgeData
+                , zScoreViewCharts.weightForAge language zscores weightForAgeData
+                , zScoreViewCharts.weightForHeight language zscores weightForHeightData
                 ]
     in
     div [ class "page-report" ]

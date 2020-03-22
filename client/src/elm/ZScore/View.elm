@@ -1,4 +1,4 @@
-module ZScore.View exposing (Bounds, LabelConfig, PlotConfig, ageLines, frame, heightForAgeBoysLabels, heightForAgeConfig, heightForAgeGirlsLabels, heightLines, labels, plotChildData, plotData, plotReferenceData, referenceLinesHeight, referenceLinesWeight, referenceLinesWeightForHeight, viewHeightForAgeBoys, viewHeightForAgeGirls, viewMarkers, viewWeightForAgeBoys, viewWeightForAgeGirls, viewWeightForHeightBoys, viewWeightForHeightGirls, weightForAgeBoysLabels, weightForAgeConfig, weightForAgeGirlsLabels, weightForHeightBoysLabels, weightForHeightConfig, weightForHeightGirlsLabels, zScoreLabelsHeightForAgeBoys, zScoreLabelsHeightForAgeGirls, zScoreLabelsWeightForAgeBoys, zScoreLabelsWeightForAgeGirls, zScoreLabelsWeightForHeightBoys, zScoreLabelsWeightForHeightGirls)
+module ZScore.View exposing (Bounds, LabelConfig, PlotConfig, ageLines, frame, heightForAgeBoysLabels, heightForAgeConfig, heightForAgeGirlsLabels, heightLines, labels, plotChildData, plotData, plotReferenceData, referenceLinesHeight, referenceLinesWeight, referenceLinesWeightForHeight, viewHeightForAgeBoys, viewHeightForAgeBoys5To19, viewHeightForAgeGirls, viewMarkers, viewWeightForAgeBoys, viewWeightForAgeGirls, viewWeightForHeightBoys, viewWeightForHeightGirls, weightForAgeBoysLabels, weightForAgeConfig, weightForAgeGirlsLabels, weightForHeightBoysLabels, weightForHeightConfig, weightForHeightGirlsLabels, zScoreLabelsHeightForAgeBoys, zScoreLabelsHeightForAgeGirls, zScoreLabelsWeightForAgeBoys, zScoreLabelsWeightForAgeGirls, zScoreLabelsWeightForHeightBoys, zScoreLabelsWeightForHeightGirls)
 
 {-| Ultimately, the idea is that we've got information in the `Model` that we
 can use to draw the elements below more programmatically ... that is, we don't
@@ -78,6 +78,27 @@ viewHeightForAgeBoys language model data =
         ]
 
 
+viewHeightForAgeBoys5To19 : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeightForAgeBoys5To19 language model data =
+    svg
+        [ class "z-score boys"
+        , x "0px"
+        , y "0px"
+        , viewBox "0 0 841.9 595.3"
+        ]
+        [ frame language
+        , labels language heightForAgeBoysLabels5To19
+        , referenceLinesHeight
+        , age5To19Lines language
+        , zScoreLabelsHeightForAgeBoys
+        , model.lengthHeightForAge
+            |> RemoteData.map (.male >> .byDay >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData heightForAgeConfig5To19
+        , plotChildData heightForAgeConfig5To19 data
+        ]
+
+
 {-| Things we need to know to plot stuff.
 
   - drawSD1 controls whether we draw a line for SD1 and SD1neg
@@ -109,6 +130,16 @@ heightForAgeConfig =
     { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
     , toFloatY = \(Centimetres cm) -> cm
     , input = { minY = 42, maxY = 99, minX = 0, maxX = 365 * 2 }
+    , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
+    , drawSD1 = False
+    }
+
+
+heightForAgeConfig5To19 : PlotConfig Days Centimetres
+heightForAgeConfig5To19 =
+    { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
+    , toFloatY = \(Centimetres cm) -> cm
+    , input = { minY = 90, maxY = 200, minX = 365 * 2, maxX = 365 * 19 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
     , drawSD1 = False
     }
@@ -569,6 +600,94 @@ ageLines language =
         ]
 
 
+age5To19Lines : Language -> Svg any
+age5To19Lines language =
+    g []
+        [ line [ class "year-line", x1 "136", y1 "506.5", x2 "136", y2 "119.5" ] []
+        , line [ class "month-line", x1 "161.2", y1 "506.5", x2 "161.2", y2 "119.5" ] []
+        , line [ class "month-line", x1 "186.4", y1 "506.5", x2 "186.4", y2 "119.5" ] []
+        , line [ class "month-line", x1 "211.6", y1 "506.5", x2 "211.6", y2 "119.5" ] []
+        , line [ class "year-line", x1 "236.8", y1 "506.5", x2 "236.8", y2 "119.5" ] []
+        , line [ class "month-line", x1 "261.9", y1 "506.5", x2 "261.9", y2 "119.5" ] []
+        , line [ class "month-line", x1 "287.1", y1 "506.5", x2 "287.1", y2 "119.5" ] []
+        , line [ class "month-line", x1 "312.3", y1 "506.5", x2 "312.3", y2 "119.5" ] []
+        , line [ class "year-line", x1 "337.5", y1 "506.5", x2 "337.5", y2 "119.5" ] []
+        , line [ class "month-line", x1 "362.7", y1 "506.5", x2 "362.7", y2 "119.5" ] []
+        , line [ class "month-line", x1 "387.9", y1 "506.5", x2 "387.9", y2 "119.5" ] []
+        , line [ class "month-line", x1 "413.1", y1 "513.6", x2 "413.1", y2 "119.5" ] []
+        , line [ class "year-line", x1 "438.3", y1 "506.5", x2 "438.3", y2 "119.5" ] []
+        , line [ class "month-line", x1 "463.5", y1 "506.5", x2 "463.5", y2 "119.5" ] []
+        , line [ class "month-line", x1 "488.6", y1 "506.5", x2 "488.6", y2 "119.5" ] []
+        , line [ class "month-line", x1 "513.8", y1 "506.5", x2 "513.8", y2 "119.5" ] []
+        , line [ class "year-line", x1 "539", y1 "506.5", x2 "539", y2 "119.5" ] []
+        , line [ class "month-line", x1 "564.2", y1 "506.5", x2 "564.2", y2 "119.5" ] []
+        , line [ class "month-line", x1 "589.4", y1 "506.5", x2 "589.4", y2 "119.5" ] []
+        , line [ class "month-line", x1 "614.6", y1 "506.5", x2 "614.6", y2 "119.5" ] []
+        , line [ class "year-line", x1 "639.8", y1 "506.5", x2 "639.8", y2 "119.5" ] []
+        , line [ class "month-line", x1 "665", y1 "506.5", x2 "665", y2 "119.5" ] []
+        , line [ class "month-line", x1 "690.2", y1 "506.5", x2 "690.2", y2 "119.5" ] []
+        , line [ class "month-line", x1 "715.4", y1 "506.6", x2 "715.4", y2 "119.5" ] []
+        , line [ class "year-line", x1 "740.6", y1 "513.6", x2 "740.4", y2 "119.5" ] []
+        , text_
+            [ transform "matrix(1 0 0 1 399.4178 525.8762)"
+            , class "z-score-white z-score-semibold st20"
+            ]
+            [ text <| translate language (Translate.ChartPhrase (Translate.YearsPlural 10)) ]
+        , text_
+            [ transform "matrix(1 0 0 1 100.3324 525.8762)"
+            , class "z-score-white z-score-semibold st20"
+            ]
+            [ text <| translate language (Translate.ChartPhrase (Translate.YearsPlural 5)) ]
+        , text_
+            [ transform "matrix(1 0 0 1 699.7343 525.9767)"
+            , class "z-score-white z-score-semibold st20"
+            ]
+            [ text <| translate language (Translate.ChartPhrase (Translate.YearsPlural 19)) ]
+        , text_ [ transform "matrix(1 0 0 1 184.3441 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 259.9105 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
+        , text_ [ transform "matrix(1 0 0 1 335.4769 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
+        , text_ [ transform "matrix(1 0 0 1 486.6093 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 562.1757 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
+        , text_ [ transform "matrix(1 0 0 1 637.7421 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
+        , text_ [ transform "matrix(1 0 0 1 184.3441 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 259.9105 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
+        , text_ [ transform "matrix(1 0 0 1 335.4769 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
+        , text_ [ transform "matrix(1 0 0 1 486.6093 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 562.1757 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
+        , text_ [ transform "matrix(1 0 0 1 637.7421 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
+        , text_ [ transform "matrix(1 0 0 1 184.3441 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 259.9105 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
+        , text_ [ transform "matrix(1 0 0 1 335.4769 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
+        , text_ [ transform "matrix(1 0 0 1 486.6093 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 562.1757 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
+        , text_ [ transform "matrix(1 0 0 1 637.7421 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
+        , text_ [ transform "matrix(1 0 0 1 184.3441 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 259.9105 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
+        , text_ [ transform "matrix(1 0 0 1 335.4769 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
+        , text_ [ transform "matrix(1 0 0 1 486.6093 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 562.1757 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
+        , text_ [ transform "matrix(1 0 0 1 637.7421 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
+        , text_ [ transform "matrix(1 0 0 1 184.3441 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 259.9105 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
+        , text_ [ transform "matrix(1 0 0 1 335.4769 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
+        , text_ [ transform "matrix(1 0 0 1 486.6093 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 562.1757 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
+        , text_ [ transform "matrix(1 0 0 1 637.7421 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
+        , text_ [ transform "matrix(1 0 0 1 184.3441 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 259.9105 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
+        , text_ [ transform "matrix(1 0 0 1 335.4769 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
+        , text_ [ transform "matrix(1 0 0 1 486.6093 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 562.1757 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
+        , text_ [ transform "matrix(1 0 0 1 637.7421 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
+        , text_ [ transform "matrix(1 0 0 1 184.3441 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 259.9105 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
+        , text_ [ transform "matrix(1 0 0 1 335.4769 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
+        , text_ [ transform "matrix(1 0 0 1 486.6093 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 562.1757 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
+        , text_ [ transform "matrix(1 0 0 1 637.7421 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
+        ]
+
+
 heightLines : Svg any
 heightLines =
     g []
@@ -950,6 +1069,16 @@ heightForAgeBoysLabels =
     , xAxis1 = Just Translate.Months
     , xAxis2 = Translate.AgeCompletedMonthsYears
     , yAxis = Translate.LengthCm
+    }
+
+
+heightForAgeBoysLabels5To19 : LabelConfig
+heightForAgeBoysLabels5To19 =
+    { title = Translate.HeightForAgeBoys
+    , subtitle = Translate.TwoToNineteenYears
+    , xAxis1 = Just Translate.Months
+    , xAxis2 = Translate.AgeCompletedMonthsYears
+    , yAxis = Translate.HeightCm
     }
 
 
