@@ -185,21 +185,17 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) selectedAuthori
                     ]
                     [ text <| translate language Translate.Clinical ]
 
-            registerParticipantButton =
-                if isCommunityHealthWorker nurse then
-                    emptyNode
-
-                else
-                    button
-                        [ class "ui primary button"
-                        , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing
-                        ]
-                        [ text <| translate language Translate.ParticipantDirectory ]
+            participantDirectoryButton =
+                button
+                    [ class "ui primary button"
+                    , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing
+                    ]
+                    [ text <| translate language Translate.ParticipantDirectory ]
         in
         [ loggedInAs
         , viewLocationName nurse ( healthCenterId, villageId ) db
         , clinicalButton
-        , registerParticipantButton
+        , participantDirectoryButton
         , deviceStatusButton
         , logoutButton
         ]

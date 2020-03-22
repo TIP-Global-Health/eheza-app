@@ -7,6 +7,7 @@ import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Update
 import Browser
 import Browser.Navigation as Nav
@@ -158,9 +159,17 @@ update msg model =
         currentDate =
             fromLocalDateTime model.currentTime
 
-        nurseId =
+        loggedInData =
             getLoggedInData model
+
+        nurseId =
+            loggedInData
                 |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
+
+        isChw =
+            loggedInData
+                |> Maybe.map (Tuple.second >> .nurse >> Tuple.second >> isCommunityHealthWorker)
+                |> Maybe.withDefault False
     in
     case msg of
         MsgIndexedDb subMsg ->
@@ -200,7 +209,7 @@ update msg model =
                         MsgPageCreatePerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Person.Update.update currentDate subMsg model.indexedDb data.createPersonPage
+                                    Pages.Person.Update.update currentDate model.villageId isChw subMsg model.indexedDb data.createPersonPage
                             in
                             ( { data | createPersonPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageCreatePerson) subCmd
@@ -210,7 +219,7 @@ update msg model =
                         MsgPageEditPerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Person.Update.update currentDate subMsg model.indexedDb data.editPersonPage
+                                    Pages.Person.Update.update currentDate model.villageId isChw subMsg model.indexedDb data.editPersonPage
                             in
                             ( { data | editPersonPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageEditPerson) subCmd
@@ -454,13 +463,7 @@ update msg model =
                             )
 
                 extraMsgs =
-                    SetHealthCenter maybeHealthCenterId
-                        :: (if isJust maybeHealthCenterId then
-                                [ SetActivePage <| UserPage ClinicalPage ]
-
-                            else
-                                []
-                           )
+                    [ SetHealthCenter maybeHealthCenterId ]
             in
             ( { model | villageId = maybeVillageId }
             , maybeVillageId

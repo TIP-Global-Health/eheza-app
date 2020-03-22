@@ -3,6 +3,7 @@ module App.View exposing (view)
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (ParticipantDirectoryOperation(..))
 import Browser
 import Config.View
@@ -181,12 +182,16 @@ viewConfiguredModel model configured =
 
 viewUserPage : UserPage -> Model -> ConfiguredModel -> Html Msg
 viewUserPage page model configured =
-    let
-        currentDate =
-            fromLocalDateTime model.currentTime
-    in
     case getLoggedInData model of
         Just ( healthCenterId, loggedInModel ) ->
+            let
+                currentDate =
+                    fromLocalDateTime model.currentTime
+
+                isChw =
+                    Tuple.second loggedInModel.nurse
+                        |> isCommunityHealthWorker
+            in
             case page of
                 MyAccountPage ->
                     Pages.MyAccount.View.view model.language loggedInModel.nurse
@@ -202,21 +207,33 @@ viewUserPage page model configured =
                         |> flexPageWrapper model
 
                 CreatePersonPage relation ->
-                    Pages.Person.View.viewCreateEditForm model.language currentDate (CreatePerson relation) loggedInModel.createPersonPage model.indexedDb
+                    Pages.Person.View.viewCreateEditForm model.language
+                        currentDate
+                        model.villageId
+                        isChw
+                        (CreatePerson relation)
+                        loggedInModel.createPersonPage
+                        model.indexedDb
                         |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
                         |> flexPageWrapper model
 
                 EditPersonPage id ->
-                    Pages.Person.View.viewCreateEditForm model.language currentDate (EditPerson id) loggedInModel.editPersonPage model.indexedDb
+                    Pages.Person.View.viewCreateEditForm model.language
+                        currentDate
+                        model.villageId
+                        isChw
+                        (EditPerson id)
+                        loggedInModel.editPersonPage
+                        model.indexedDb
                         |> Html.map (MsgLoggedIn << MsgPageEditPerson)
                         |> flexPageWrapper model
 
                 PersonPage id ->
-                    Pages.Person.View.view model.language currentDate id model.indexedDb
+                    Pages.Person.View.view model.language currentDate isChw id model.indexedDb
                         |> flexPageWrapper model
 
                 PersonsPage relation ->
-                    Pages.People.View.view model.language currentDate relation loggedInModel.personsPage model.indexedDb
+                    Pages.People.View.view model.language currentDate model.villageId isChw relation loggedInModel.personsPage model.indexedDb
                         |> Html.map (MsgLoggedIn << MsgPagePersons)
                         |> flexPageWrapper model
 
@@ -226,7 +243,7 @@ viewUserPage page model configured =
                             Dict.get ( id1, id2 ) loggedInModel.relationshipPages
                                 |> Maybe.withDefault Pages.Relationship.Model.emptyModel
                     in
-                    Pages.Relationship.View.view model.language currentDate id1 id2 model.indexedDb page_
+                    Pages.Relationship.View.view model.language currentDate model.villageId isChw id1 id2 model.indexedDb page_
                         |> Html.map (MsgLoggedIn << MsgPageRelationship id1 id2)
                         |> flexPageWrapper model
 

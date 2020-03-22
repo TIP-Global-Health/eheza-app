@@ -18,6 +18,7 @@ import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), ParticipantDi
 import Backend.Person.Utils exposing (expectedAgeByPerson, isAdult, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
+import Backend.Village.Utils exposing (getVillageById)
 import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import Form exposing (Form)
@@ -44,8 +45,8 @@ import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
 
 
-view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
-view language currentDate id db =
+view : Language -> NominalDate -> Bool -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
+view language currentDate isChw id db =
     let
         person =
             Dict.get id db.people
@@ -61,7 +62,7 @@ view language currentDate id db =
         [ viewHeader language headerName
         , div
             [ class "ui full segment blue" ]
-            [ viewWebData language (viewParticipantDetailsForm language currentDate db id) identity person
+            [ viewWebData language (viewParticipantDetailsForm language currentDate isChw db id) identity person
             ]
         ]
 
@@ -93,8 +94,8 @@ type alias OtherPerson =
     }
 
 
-viewParticipantDetailsForm : Language -> NominalDate -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
-viewParticipantDetailsForm language currentDate db id person =
+viewParticipantDetailsForm : Language -> NominalDate -> Bool -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
+viewParticipantDetailsForm language currentDate isChw db id person =
     let
         -- We re-organize our data about relatoinships and group participations
         -- so that we have one record per `OtherPerson`.
@@ -160,7 +161,7 @@ viewParticipantDetailsForm language currentDate db id person =
                         Dict.get otherPersonId db.people
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.append db.clinics
-                            |> viewWebData language (viewOtherPerson language currentDate id ( otherPersonId, otherPerson )) identity
+                            |> viewWebData language (viewOtherPerson language currentDate isChw id ( otherPersonId, otherPerson )) identity
                     )
                 |> Dict.values
                 |> div [ class "ui unstackable items participants-list" ]
@@ -287,8 +288,8 @@ viewPerson language currentDate id person =
         ]
 
 
-viewOtherPerson : Language -> NominalDate -> PersonId -> ( PersonId, OtherPerson ) -> ( Dict ClinicId Clinic, Person ) -> Html App.Model.Msg
-viewOtherPerson language currentDate relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
+viewOtherPerson : Language -> NominalDate -> Bool -> PersonId -> ( PersonId, OtherPerson ) -> ( Dict ClinicId Clinic, Person ) -> Html App.Model.Msg
+viewOtherPerson language currentDate isChw relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
     let
         typeForThumbnail =
             case isPersonAnAdult currentDate person of
@@ -321,24 +322,32 @@ viewOtherPerson language currentDate relationMainId ( otherPersonId, otherPerson
                 |> String.join ", "
 
         groups =
-            p
-                []
-                [ label [] [ text <| translate language Translate.Groups ++ ": " ]
-                , span [] [ text groupNames ]
-                ]
+            if isChw then
+                emptyNode
+
+            else
+                p
+                    []
+                    [ label [] [ text <| translate language Translate.Groups ++ ": " ]
+                    , span [] [ text groupNames ]
+                    ]
 
         action =
-            div
-                [ class "action" ]
-                [ div
-                    [ class "action-icon-wrapper" ]
-                    [ span
-                        [ class "action-icon forward"
-                        , onClick <| App.Model.SetActivePage <| UserPage <| RelationshipPage relationMainId otherPersonId
+            if isChw then
+                emptyNode
+
+            else
+                div
+                    [ class "action" ]
+                    [ div
+                        [ class "action-icon-wrapper" ]
+                        [ span
+                            [ class "action-icon forward"
+                            , onClick <| App.Model.SetActivePage <| UserPage <| RelationshipPage relationMainId otherPersonId
+                            ]
+                            []
                         ]
-                        []
                     ]
-                ]
 
         content =
             div [ class "content" ]
@@ -386,8 +395,8 @@ viewPhotoThumb url =
         ]
 
 
-viewCreateEditForm : Language -> NominalDate -> ParticipantDirectoryOperation -> Model -> ModelIndexedDb -> Html Msg
-viewCreateEditForm language currentDate operation model db =
+viewCreateEditForm : Language -> NominalDate -> Maybe VillageId -> Bool -> ParticipantDirectoryOperation -> Model -> ModelIndexedDb -> Html Msg
+viewCreateEditForm language currentDate maybeVillageId isChw operation model db =
     let
         formBeforeDefaults =
             model.form
@@ -408,8 +417,12 @@ viewCreateEditForm language currentDate operation model db =
                 |> Maybe.andThen (\id -> Dict.get id db.people)
                 |> Maybe.andThen RemoteData.toMaybe
 
+        maybeVillage =
+            maybeVillageId
+                |> Maybe.andThen (getVillageById db)
+
         personForm =
-            applyDefaultValues maybeRelatedPerson operation currentDate formBeforeDefaults
+            applyDefaultValues currentDate maybeVillage isChw maybeRelatedPerson operation formBeforeDefaults
 
         request =
             db.postPerson
@@ -906,6 +919,19 @@ viewCreateEditForm language currentDate operation model db =
             , viewVillage
             ]
 
+        addressSection =
+            if isChw then
+                []
+
+            else
+                [ h3
+                    [ class "ui header" ]
+                    [ text <| translate language Translate.AddressInformation ++ ":" ]
+                , addressFields
+                    |> fieldset [ class "registration-form address-info" ]
+                    |> Html.map (MsgForm operation)
+                ]
+
         contactInformationSection =
             if expectedAge /= ExpectChild then
                 [ h3
@@ -923,41 +949,45 @@ viewCreateEditForm language currentDate operation model db =
             Form.getFieldAsString Backend.Person.Form.healthCenter personForm
 
         healthCenterSection =
-            let
-                inputClass =
-                    "select-input"
-                        ++ (if isEditOperation && isFormFieldSet healthCenter then
-                                " disabled"
+            if isChw then
+                []
 
-                            else
-                                ""
-                           )
+            else
+                let
+                    inputClass =
+                        "select-input"
+                            ++ (if isEditOperation && isFormFieldSet healthCenter then
+                                    " disabled"
 
-                options =
-                    emptyOption
-                        :: (db.healthCenters
-                                |> RemoteData.map
-                                    (\dict ->
-                                        dict
-                                            |> Dict.toList
-                                            |> List.map
-                                                (\( id, healthCenter_ ) ->
-                                                    ( fromEntityUuid id
-                                                    , healthCenter_.name
+                                else
+                                    ""
+                               )
+
+                    options =
+                        emptyOption
+                            :: (db.healthCenters
+                                    |> RemoteData.map
+                                        (\dict ->
+                                            dict
+                                                |> Dict.toList
+                                                |> List.map
+                                                    (\( id, healthCenter_ ) ->
+                                                        ( fromEntityUuid id
+                                                        , healthCenter_.name
+                                                        )
                                                     )
-                                                )
-                                            |> List.sortBy (\( id, name ) -> name)
-                                    )
-                                |> RemoteData.withDefault []
-                           )
-            in
-            [ h3
-                [ class "ui header" ]
-                [ text <| translate language Translate.RegistratingHealthCenter ++ ":" ]
-            , [ viewSelectInput language Translate.HealthCenter options Backend.Person.Form.healthCenter "ten" inputClass True personForm ]
-                |> fieldset [ class "registration-form health-center" ]
-                |> Html.map (MsgForm operation)
-            ]
+                                                |> List.sortBy (\( id, name ) -> name)
+                                        )
+                                    |> RemoteData.withDefault []
+                               )
+                in
+                [ h3
+                    [ class "ui header" ]
+                    [ text <| translate language Translate.RegistratingHealthCenter ++ ":" ]
+                , [ viewSelectInput language Translate.HealthCenter options Backend.Person.Form.healthCenter "ten" inputClass True personForm ]
+                    |> fieldset [ class "registration-form health-center" ]
+                    |> Html.map (MsgForm operation)
+                ]
 
         submitButton =
             button
@@ -983,13 +1013,8 @@ viewCreateEditForm language currentDate operation model db =
             , familyInformationFields
                 |> fieldset [ class "registration-form family-info" ]
                 |> Html.map (MsgForm operation)
-            , h3
-                [ class "ui header" ]
-                [ text <| translate language Translate.AddressInformation ++ ":" ]
-            , addressFields
-                |> fieldset [ class "registration-form address-info" ]
-                |> Html.map (MsgForm operation)
             ]
+                ++ addressSection
                 ++ contactInformationSection
                 ++ healthCenterSection
                 ++ [ p [] []
