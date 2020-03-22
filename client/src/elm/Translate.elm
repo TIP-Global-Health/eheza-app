@@ -311,7 +311,6 @@ type TranslationId
     | FatherName
     | FatherNationalId
     | FilterByName
-    | FirstAntenatalVisit
     | FirstName
     | FiveVisits
     | ForIllustrativePurposesOnly
@@ -349,7 +348,10 @@ type TranslationId
     | HypertensionBeforePregnancy
     | IncompleteCervixPreviousPregnancy
     | IndividualEncounter
+    | IndividualEncounterFirstVisit IndividualEncounterType
     | IndividualEncounterLabel IndividualEncounterType
+    | IndividualEncounterSelectVisit IndividualEncounterType
+    | IndividualEncounterSubsequentVisit IndividualEncounterType
     | IndividualEncounterType IndividualEncounterType
     | IndividualEncounterTypes
     | KilogramShorthand
@@ -528,7 +530,6 @@ type TranslationId
     | SearchHelperFamilyMember
     | SecondName
     | Sector
-    | SelectAntenatalVisit
     | SelectDangerSigns
     | SelectEncounterType
     | SelectGroup
@@ -559,7 +560,6 @@ type TranslationId
     | SevereHemorrhagingPreviousDelivery
     | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
     | StillbornPreviousDelivery
-    | SubsequentAntenatalVisit
     | SuccessiveAbortions
     | SuccessivePrematureDeliveries
     | GroupEncounterClosed
@@ -1870,11 +1870,6 @@ translationSet trans =
             , kinyarwanda = Just "Hitamo izina ryuwo ushaka"
             }
 
-        FirstAntenatalVisit ->
-            { english = "First Antenatal Visit"
-            , kinyarwanda = Nothing
-            }
-
         FirstName ->
             { english = "First Name"
             , kinyarwanda = Just "Izina ry'idini"
@@ -2142,6 +2137,23 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        IndividualEncounterFirstVisit type_ ->
+            case type_ of
+                AntenatalEncounter ->
+                    { english = "First Antenatal Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                InmmunizationEncounter ->
+                    { english = "First Inmmunization Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounter ->
+                    { english = "First Nutrition Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
         IndividualEncounterLabel type_ ->
             case type_ of
                 AntenatalEncounter ->
@@ -2156,6 +2168,40 @@ translationSet trans =
 
                 NutritionEncounter ->
                     { english = "Nutrition Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+        IndividualEncounterSelectVisit type_ ->
+            case type_ of
+                AntenatalEncounter ->
+                    { english = "Select Antenatal Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                InmmunizationEncounter ->
+                    { english = "Select Inmmunization Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounter ->
+                    { english = "Select Nutrition Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+        IndividualEncounterSubsequentVisit type_ ->
+            case type_ of
+                AntenatalEncounter ->
+                    { english = "Subsequent Antenatal Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                InmmunizationEncounter ->
+                    { english = "Subsequent Inmmunization Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounter ->
+                    { english = "Subsequent Nutrition Encounter"
                     , kinyarwanda = Nothing
                     }
 
@@ -3459,11 +3505,6 @@ translationSet trans =
             , kinyarwanda = Just "Umurenge"
             }
 
-        SelectAntenatalVisit ->
-            { english = "Select an Antenatal Visit"
-            , kinyarwanda = Nothing
-            }
-
         SelectDangerSigns ->
             { english = "Please select one or more of the danger signs the patient is experiencing"
             , kinyarwanda = Nothing
@@ -3628,11 +3669,6 @@ translationSet trans =
 
         StillbornPreviousDelivery ->
             { english = "Stillborn in previous delivery"
-            , kinyarwanda = Nothing
-            }
-
-        SubsequentAntenatalVisit ->
-            { english = "Subsequent Antenatal Visit"
             , kinyarwanda = Nothing
             }
 

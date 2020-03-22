@@ -197,7 +197,7 @@ viewPrenatalActions language currentDate id db prenatalSessions =
             isJust maybeSessionId && not firstEncounterInProcess
     in
     div []
-        [ p [ class "label-antenatal-visit" ] [ text <| translate language Translate.SelectAntenatalVisit ]
+        [ p [ class "label-antenatal-visit" ] [ text <| translate language <| Translate.IndividualEncounterSelectVisit AntenatalEncounter ]
         , button
             (classList
                 [ ( "ui primary button", True )
@@ -205,7 +205,7 @@ viewPrenatalActions language currentDate id db prenatalSessions =
                 ]
                 :: firstVisitAction
             )
-            [ span [ class "text" ] [ text <| translate language Translate.FirstAntenatalVisit ]
+            [ span [ class "text" ] [ text <| translate language <| Translate.IndividualEncounterFirstVisit AntenatalEncounter ]
             , span [ class "icon-back" ] []
             ]
         , button
@@ -215,7 +215,7 @@ viewPrenatalActions language currentDate id db prenatalSessions =
                 ]
                 :: subsequentVisitAction
             )
-            [ span [ class "text" ] [ text <| translate language Translate.SubsequentAntenatalVisit ]
+            [ span [ class "text" ] [ text <| translate language <| Translate.IndividualEncounterSubsequentVisit AntenatalEncounter ]
             , span [ class "icon-back" ] []
             ]
         , div [ class "separator" ] []

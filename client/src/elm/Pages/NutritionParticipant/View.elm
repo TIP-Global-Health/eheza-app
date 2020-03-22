@@ -5,6 +5,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Html exposing (..)
@@ -42,10 +43,17 @@ viewHeader language id =
         [ class "ui basic segment head" ]
         [ h1
             [ class "ui header" ]
-            [ text <| translate language <| Translate.IndividualEncounterLabel NutritionEncounter ]
+            [ text <|
+                translate language <|
+                    Translate.IndividualEncounterLabel
+                        Backend.IndividualEncounterParticipant.Model.NutritionEncounter
+            ]
         , a
             [ class "link-back"
-            , onClick <| App.Model.SetActivePage <| UserPage <| IndividualEncounterParticipantsPage NutritionEncounter
+            , onClick <|
+                App.Model.SetActivePage <|
+                    UserPage <|
+                        IndividualEncounterParticipantsPage Backend.IndividualEncounterParticipant.Model.NutritionEncounter
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -54,5 +62,173 @@ viewHeader language id =
 
 
 viewNutritionActions : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
-viewNutritionActions language currentDate id db prenatalSessions =
-    div [] [ text "Nutrition Participant page" ]
+viewNutritionActions language currentDate id db nutritionSessions =
+    let
+        -- Person nutrition session.
+        maybeSessionId =
+            nutritionSessions
+                |> Dict.toList
+                |> List.head
+                |> Maybe.map Tuple.first
+
+        -- Resolve active prenatal encounter for person. There should not be more than one.
+        -- We count the number of completed encounters, so that we know if to
+        -- allow 'Pregnancy Outcome' action.
+        -- We also want to know if there's an encounter that was completed today,
+        -- (started and ended on the same day), as we do not want to allow creating new encounter
+        -- at same day previous one has ended.
+        ( maybeActiveEncounterId, totalCompletedEncounts, encounterWasCompletedToday ) =
+            maybeSessionId
+                |> Maybe.map
+                    (\sessionId ->
+                        Dict.get sessionId db.nutritionEncountersByParticipant
+                            |> Maybe.withDefault NotAsked
+                            |> RemoteData.map
+                                (\dict ->
+                                    let
+                                        activeEncounters =
+                                            Dict.toList dict
+                                                |> List.filter (\( _, encounter ) -> isNothing encounter.endDate)
+                                    in
+                                    ( activeEncounters
+                                        |> List.head
+                                        |> Maybe.map Tuple.first
+                                    , Dict.size dict - List.length activeEncounters
+                                    , Dict.toList dict
+                                        |> List.filter
+                                            (\( _, encounter ) ->
+                                                encounter.startDate == currentDate && encounter.endDate == Just currentDate
+                                            )
+                                        |> List.isEmpty
+                                        |> not
+                                    )
+                                )
+                            |> RemoteData.withDefault ( Nothing, 0, False )
+                    )
+                |> Maybe.withDefault ( Nothing, 0, False )
+
+        -- Wither first nutrition encounter for person is in process.
+        -- This is True when there's only one encounter, and it's active.
+        firstEncounterInProcess =
+            maybeSessionId
+                |> Maybe.map
+                    (\sessionId ->
+                        Dict.get sessionId db.nutritionEncountersByParticipant
+                            |> Maybe.withDefault NotAsked
+                            |> RemoteData.map
+                                (Dict.values
+                                    >> (\encounters ->
+                                            let
+                                                activeEncounters =
+                                                    encounters
+                                                        |> List.filter (.endDate >> isNothing)
+                                            in
+                                            List.length encounters == 1 && List.length activeEncounters == 1
+                                       )
+                                )
+                            |> RemoteData.withDefault False
+                    )
+                |> Maybe.withDefault False
+
+        firstVisitAction =
+            -- If first encounter is in process, navigate to it.
+            if firstEncounterInProcess then
+                maybeActiveEncounterId
+                    |> Maybe.map navigateToEncounterAction
+                    |> Maybe.withDefault []
+
+            else
+                maybeSessionId
+                    |> Maybe.map
+                        -- If nutrition session exists, create new encounter for it.
+                        (\sessionId ->
+                            [ Backend.NutritionEncounter.Model.NutritionEncounter sessionId currentDate Nothing
+                                |> Backend.Model.PostNutritionEncounter
+                                |> App.Model.MsgIndexedDb
+                                |> onClick
+                            ]
+                        )
+                    -- If nutrition session does not exist, create it.
+                    |> Maybe.withDefault
+                        [ IndividualEncounterParticipant id
+                            Backend.IndividualEncounterParticipant.Model.NutritionEncounter
+                            currentDate
+                            Nothing
+                            Nothing
+                            |> Backend.Model.PostIndividualSession
+                            |> App.Model.MsgIndexedDb
+                            |> onClick
+                        ]
+
+        subsequentVisitAction =
+            maybeActiveEncounterId
+                |> unwrap
+                    -- When there's no encounter, we'll create new one.
+                    (maybeSessionId
+                        |> Maybe.map
+                            (\sessionId ->
+                                [ Backend.NutritionEncounter.Model.NutritionEncounter sessionId currentDate Nothing
+                                    |> Backend.Model.PostNutritionEncounter
+                                    |> App.Model.MsgIndexedDb
+                                    |> onClick
+                                ]
+                            )
+                        |> Maybe.withDefault []
+                    )
+                    -- When there's an encounrer, we'll view it.
+                    navigateToEncounterAction
+
+        navigateToEncounterAction id_ =
+            [ Pages.Page.NutritionEncounterPage id_
+                |> UserPage
+                |> App.Model.SetActivePage
+                |> onClick
+            ]
+
+        firstVisitButtonDisabled =
+            isJust maybeSessionId && not firstEncounterInProcess
+
+        _ =
+            Debug.log "maybeActiveEncounterId" maybeActiveEncounterId
+
+        _ =
+            Debug.log "encounterWasCompletedToday" encounterWasCompletedToday
+    in
+    div []
+        [ p [ class "label-antenatal-visit" ]
+            [ text <|
+                translate language <|
+                    Translate.IndividualEncounterSelectVisit
+                        Backend.IndividualEncounterParticipant.Model.NutritionEncounter
+            ]
+        , button
+            (classList
+                [ ( "ui primary button", True )
+                , ( "disabled", firstVisitButtonDisabled )
+                ]
+                :: firstVisitAction
+            )
+            [ span [ class "text" ]
+                [ text <|
+                    translate language <|
+                        Translate.IndividualEncounterFirstVisit
+                            Backend.IndividualEncounterParticipant.Model.NutritionEncounter
+                ]
+            , span [ class "icon-back" ] []
+            ]
+        , button
+            (classList
+                [ ( "ui primary button", True )
+                , ( "disabled", not firstVisitButtonDisabled || encounterWasCompletedToday )
+                ]
+                :: subsequentVisitAction
+            )
+            [ span [ class "text" ]
+                [ text <|
+                    translate language <|
+                        Translate.IndividualEncounterSubsequentVisit
+                            Backend.IndividualEncounterParticipant.Model.NutritionEncounter
+                ]
+            , span [ class "icon-back" ] []
+            ]
+        ]
