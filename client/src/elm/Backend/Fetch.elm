@@ -161,6 +161,21 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchNutritionEncounter id ->
+            Dict.get id model.nutritionEncounters
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchNutritionEncountersForParticipant id ->
+            Dict.get id model.nutritionEncountersByParticipant
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchNutritionMeasurements id ->
+            Dict.get id model.nutritionMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchIndividualEncounterParticipant id ->
             Dict.get id model.individualParticipants
                 |> Maybe.withDefault NotAsked
@@ -246,6 +261,15 @@ forget msg model =
 
         FetchPrenatalMeasurements id ->
             { model | prenatalMeasurements = Dict.remove id model.prenatalMeasurements }
+
+        FetchNutritionEncounter id ->
+            { model | nutritionEncounters = Dict.remove id model.nutritionEncounters }
+
+        FetchNutritionEncountersForParticipant id ->
+            { model | nutritionEncountersByParticipant = Dict.remove id model.nutritionEncountersByParticipant }
+
+        FetchNutritionMeasurements id ->
+            { model | nutritionMeasurements = Dict.remove id model.nutritionMeasurements }
 
         FetchIndividualEncounterParticipant id ->
             { model | individualParticipants = Dict.remove id model.individualParticipants }

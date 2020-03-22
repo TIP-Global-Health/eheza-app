@@ -10,7 +10,7 @@ fetch : NutritionEncounterId -> ModelIndexedDb -> List MsgIndexedDb
 fetch id db =
     let
         participantId =
-            Dict.get id db.prenatalEncounters
+            Dict.get id db.nutritionEncounters
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
                 |> Maybe.map .participant
@@ -26,7 +26,7 @@ fetch id db =
             participantId
                 |> Maybe.map
                     (\participantId_ ->
-                        Dict.get participantId_ db.prenatalEncountersByParticipant
+                        Dict.get participantId_ db.nutritionEncountersByParticipant
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.map Dict.keys
                             |> RemoteData.withDefault []

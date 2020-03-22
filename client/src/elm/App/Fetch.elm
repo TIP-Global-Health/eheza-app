@@ -12,6 +12,7 @@ import Pages.DemographicsReport.Fetch
 import Pages.Device.Fetch
 import Pages.IndividualEncounterParticipants.Fetch
 import Pages.IndividualEncounterTypes.Fetch
+import Pages.NutritionEncounter.Fetch
 import Pages.NutritionParticipant.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.People.Fetch
@@ -152,8 +153,8 @@ fetch model =
                 |> List.map MsgIndexedDb
 
         UserPage (NutritionEncounterPage id) ->
-            -- Todo
-            []
+            Pages.NutritionEncounter.Fetch.fetch id model.indexedDb
+                |> List.map MsgIndexedDb
 
 
 
