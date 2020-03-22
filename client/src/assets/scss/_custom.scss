@@ -606,6 +606,7 @@ h3.ui.header {
   height: 50px;
   color: $color-text;
 
+  &.search-input,
   &.pairing-code {
     background: $color-lighter-grey;
   }
