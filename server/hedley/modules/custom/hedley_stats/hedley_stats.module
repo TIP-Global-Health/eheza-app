@@ -378,6 +378,12 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
       ];
 
       foreach ($periods as $period_name => $period) {
+        // Going to add one week to the start period and send it to the frontend
+        // just to avoid any TZ differences between backend and frontend. Also
+        // because it doesn't matter because the frontend looks for date between
+        // the beginning of the month and the end of it, so this way we
+        // guarantee that the stat will appear where it should.
+        $frontend_date = strtotime('+1 week', $period['start']);
         if ($period_name == HEDLEY_STATS_PERIOD_THIS_MONTH) {
           // We need to check if there was any sessions at all this month
           // because it can be the beginning of the month and we don't find any
@@ -403,7 +409,7 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
           // This person missed the session because they don't have any
           // measurements found for that session on this date so we add it to
           // the list of dates to be able to filter it in the frontend.
-          $missed_session[$child_id]['dates'][] = hedley_stats_convert_timestamp_to_nominal($period['start']);
+          $missed_session[$child_id]['dates'][] = hedley_stats_convert_timestamp_to_nominal($frontend_date);
         }
 
         // Check who completed the program, the definition of that is that each
@@ -427,7 +433,7 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
 
           // We add it to the list of dates to be able to filter it in the
           // frontend.
-          $completed_program[$child_id]['dates'][] = hedley_stats_convert_timestamp_to_nominal($period['start']);
+          $completed_program[$child_id]['dates'][] = hedley_stats_convert_timestamp_to_nominal($frontend_date);
         }
       }
     }

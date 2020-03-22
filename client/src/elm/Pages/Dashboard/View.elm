@@ -7,7 +7,7 @@ import Backend.Measurement.Model exposing (FamilyPlanningSign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model
 import Color exposing (Color)
-import Date exposing (Unit(..), isBetween, numberToMonth)
+import Date exposing (Month, Unit(..), isBetween, numberToMonth)
 import Debug exposing (toString)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, isDiffTruthy)
@@ -25,7 +25,6 @@ import Scale exposing (BandConfig, BandScale, ContinuousScale)
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
 import Svg.Attributes exposing (cx, cy, r)
-import Time exposing (Month(..))
 import Translate exposing (Language, TranslationId, translate, translateText)
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
@@ -297,14 +296,10 @@ viewAllStatsCards language stats currentDate model healthCenterId db =
                 -- Filter by period.
                 |> filterStatsByPeriod currentDate modelWithLastMonth
     in
-    if List.isEmpty stats.malnourished then
-        div [ class "ui segment" ] [ translateText language <| Translate.Dashboard Translate.NoDataForPeriod ]
-
-    else
-        div [ class "ui equal width grid" ]
-            [ viewMalnourishedCards language stats monthBeforeStats
-            , viewMiscCards language stats monthBeforeStats
-            ]
+    div [ class "ui equal width grid" ]
+        [ viewMalnourishedCards language stats monthBeforeStats
+        , viewMiscCards language stats monthBeforeStats
+        ]
 
 
 viewMalnourishedCards : Language -> DashboardStats -> DashboardStats -> Html Msg
@@ -775,7 +770,7 @@ viewDonutChart language stats =
             getFamilyPlanningSignsCounter stats
     in
     if Dict.isEmpty dict then
-        div [] [ text "No family plannings for the selected period." ]
+        div [] [ translateText language <| Translate.Dashboard Translate.NoDataForPeriod ]
 
     else
         let
@@ -1093,13 +1088,30 @@ filterStatsByPeriod currentDate model stats =
                     ( Date.add Years -1 currentDate, currentDate )
 
                 ThisMonth ->
-                    ( Date.add Months -1 currentDate, currentDate )
+                    -- From beginning of the month to this day.
+                    ( Date.floor Date.Month currentDate, currentDate )
 
                 LastMonth ->
-                    ( Date.add Months -2 currentDate, Date.add Months -1 currentDate )
+                    -- From the beginning of last month to the end of last month.
+                    ( Date.add Months -1 currentDate
+                        |> Date.floor Date.Month
+                    , Date.add Months -1 currentDate
+                        |> Date.ceiling Date.Month
+                        -- We have to remove a day because the "ceiling" function for some reason is going up to the
+                        -- first day of the next month.
+                        |> Date.add Days -1
+                    )
 
                 ThreeMonthsAgo ->
-                    ( Date.add Months -3 currentDate, Date.add Months -2 currentDate )
+                    -- From the beginning of 3 months ago to the end of 3 months ago.
+                    ( Date.add Months -2 currentDate
+                        |> Date.floor Date.Month
+                    , Date.add Months -2 currentDate
+                        |> Date.ceiling Date.Month
+                        -- We have to remove a day because the "ceiling" function for some reason is going up to the
+                        -- first day of the next month.
+                        |> Date.add Days -1
+                    )
 
         filterPartial =
             isBetween startDate endDate
