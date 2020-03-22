@@ -13,6 +13,7 @@ import Json.Encode exposing (Value)
 import Pages.Clinics.Model
 import Pages.Device.Model
 import Pages.IndividualEncounterParticipants.Model
+import Pages.NutritionEncounter.Model
 import Pages.Page exposing (Page(..))
 import Pages.People.Model
 import Pages.Person.Model
@@ -159,6 +160,7 @@ type alias LoggedInModel =
     , prenatalActivityPages : Dict ( PrenatalEncounterId, PrenatalActivity ) Pages.PrenatalActivity.Model.Model
     , pregnancyOutcomePages : Dict IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Model
     , sessionPages : Dict SessionId Pages.Session.Model.Model
+    , nutritionEncounterPages : Dict NutritionEncounterId Pages.NutritionEncounter.Model.Model
     }
 
 
@@ -175,6 +177,7 @@ emptyLoggedInModel nurse =
     , prenatalActivityPages = Dict.empty
     , pregnancyOutcomePages = Dict.empty
     , sessionPages = Dict.empty
+    , nutritionEncounterPages = Dict.empty
     }
 
 
@@ -224,6 +227,7 @@ type MsgLoggedIn
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
     | MsgPagePrenatalEncounter PrenatalEncounterId Pages.PrenatalEncounter.Model.Msg
+    | MsgPageNutritionEncounter NutritionEncounterId Pages.NutritionEncounter.Model.Msg
     | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.PrenatalActivity.Model.Msg
     | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Msg
 

@@ -105,6 +105,7 @@
         nurse: 'nodes',
         nutrition: 'shards',
         nutrition_encounter: 'nodes',
+        nutrition_nutrition: 'shards',
         obstetric_history: 'shards',
         obstetric_history_step2: 'shards',
         obstetrical_exam: 'shards',

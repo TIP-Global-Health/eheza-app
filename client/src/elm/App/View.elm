@@ -20,6 +20,8 @@ import Pages.Device.View
 import Pages.IndividualEncounterParticipants.View
 import Pages.IndividualEncounterTypes.View
 import Pages.MyAccount.View
+import Pages.NutritionEncounter.Model
+import Pages.NutritionEncounter.View
 import Pages.NutritionParticipant.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
@@ -319,16 +321,14 @@ viewUserPage page model configured =
                             |> flexPageWrapper model
 
                     NutritionEncounterPage id ->
-                        -- Todo
-                        div [] []
-                -- let
-                --     page_ =
-                --         Dict.get id loggedInModel.prenatalEncounterPages
-                --             |> Maybe.withDefault Pages.PrenatalEncounter.Model.emptyModel
-                -- in
-                -- Pages.PrenatalEncounter.View.view model.language currentDate id model.indexedDb page_
-                --     |> Html.map (MsgLoggedIn << MsgPagePrenatalEncounter id)
-                --     |> flexPageWrapper model
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.nutritionEncounterPages
+                                    |> Maybe.withDefault Pages.NutritionEncounter.Model.emptyModel
+                        in
+                        Pages.NutritionEncounter.View.view model.language currentDate id model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageNutritionEncounter id)
+                            |> flexPageWrapper model
 
             else
                 Pages.PinCode.View.view model.language model.activePage (Success loggedInModel.nurse) model.healthCenterId configured.pinCodePage model.indexedDb

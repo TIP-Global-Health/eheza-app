@@ -12,6 +12,8 @@ import Backend.IndividualEncounterParticipant.Update
 import Backend.Measurement.Model exposing (HistoricalMeasurements, Measurements)
 import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMeasurements)
 import Backend.Model exposing (..)
+import Backend.NutritionEncounter.Model
+import Backend.NutritionEncounter.Update
 import Backend.Person.Model exposing (RegistrationInitiator(..))
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.PrenatalEncounter.Model
@@ -22,7 +24,7 @@ import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getMyMother)
-import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements, mapPrenatalMeasurements)
+import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements)
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -786,7 +788,26 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , []
             )
 
-        MsgPrenatalSession participantId subMsg ->
+        MsgNutritionEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.nutritionEncounters
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.nutritionEncounterRequests
+                        |> Maybe.withDefault Backend.NutritionEncounter.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.NutritionEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
+            in
+            ( { model | nutritionEncounterRequests = Dict.insert encounterId subModel model.nutritionEncounterRequests }
+            , Cmd.map (MsgNutritionEncounter encounterId) subCmd
+            , []
+            )
+
+        MsgIndividualSession participantId subMsg ->
             let
                 participant =
                     Dict.get participantId model.individualParticipants
@@ -794,14 +815,14 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                         |> RemoteData.toMaybe
 
                 requests =
-                    Dict.get participantId model.prenatalSessionRequests
+                    Dict.get participantId model.individualSessionRequests
                         |> Maybe.withDefault Backend.IndividualEncounterParticipant.Model.emptyModel
 
                 ( subModel, subCmd ) =
                     Backend.IndividualEncounterParticipant.Update.update participantId participant currentDate subMsg requests
             in
-            ( { model | prenatalSessionRequests = Dict.insert participantId subModel model.prenatalSessionRequests }
-            , Cmd.map (MsgPrenatalSession participantId) subCmd
+            ( { model | individualSessionRequests = Dict.insert participantId subModel model.individualSessionRequests }
+            , Cmd.map (MsgIndividualSession participantId) subCmd
             , []
             )
 
@@ -1112,17 +1133,15 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
         HandlePostedNutritionEncounter participantId data ->
             ( { model | postNutritionEncounter = Dict.insert participantId data model.postNutritionEncounter }
             , Cmd.none
-            , []
-              -- Todo:
-              -- , RemoteData.map
-              --     (\( prenatalEncounterId, _ ) ->
-              --         [ App.Model.SetActivePage <|
-              --             UserPage <|
-              --                 Pages.Page.PrenatalEncounterPage prenatalEncounterId
-              --         ]
-              --     )
-              --     data
-              --     |> RemoteData.withDefault []
+            , RemoteData.map
+                (\( nutritionEncounterId, _ ) ->
+                    [ App.Model.SetActivePage <|
+                        UserPage <|
+                            Pages.Page.NutritionEncounterPage nutritionEncounterId
+                    ]
+                )
+                data
+                |> RemoteData.withDefault []
             )
 
 
@@ -1264,6 +1283,29 @@ handleRevision revision (( model, recalc ) as noChange) =
         NurseRevision uuid data ->
             -- Nothing to do in ModelIndexedDb yet. App.Update does do something with this one.
             noChange
+
+        NutritionEncounterRevision uuid data ->
+            let
+                nutritionEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.nutritionEncounters
+
+                nutritionEncountersByParticipant =
+                    Dict.remove data.participant model.nutritionEncountersByParticipant
+            in
+            ( { model
+                | nutritionEncounters = nutritionEncounters
+                , nutritionEncountersByParticipant = nutritionEncountersByParticipant
+              }
+            , recalc
+            )
+
+        NutritionNutritionRevision uuid data ->
+            ( mapNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | nutrition = Just ( uuid, data ) })
+                model
+            , recalc
+            )
 
         ObstetricalExamRevision uuid data ->
             ( mapPrenatalMeasurements

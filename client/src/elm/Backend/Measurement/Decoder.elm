@@ -15,6 +15,7 @@ module Backend.Measurement.Decoder exposing
     , decodeNutrition
     , decodeNutritionMeasurement
     , decodeNutritionMeasurements
+    , decodeNutritionNutrition
     , decodeObstetricHistory
     , decodeObstetricHistoryStep2
     , decodeObstetricalExam

@@ -77,7 +77,8 @@ type alias ModelIndexedDb =
     -- Tracks requests in progress to update sessions, prenatal sessions or prenatal encounters.
     , sessionRequests : Dict SessionId Backend.Session.Model.Model
     , prenatalEncounterRequests : Dict PrenatalEncounterId Backend.PrenatalEncounter.Model.Model
-    , prenatalSessionRequests : Dict IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Model
+    , nutritionEncounterRequests : Dict NutritionEncounterId Backend.NutritionEncounter.Model.Model
+    , individualSessionRequests : Dict IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
@@ -151,7 +152,8 @@ emptyModelIndexedDb =
     , postSession = NotAsked
     , prenatalEncounters = Dict.empty
     , prenatalEncounterRequests = Dict.empty
-    , prenatalSessionRequests = Dict.empty
+    , nutritionEncounterRequests = Dict.empty
+    , individualSessionRequests = Dict.empty
     , individualParticipants = Dict.empty
     , individualParticipantsByPerson = Dict.empty
     , prenatalEncountersByParticipant = Dict.empty
@@ -254,10 +256,11 @@ type MsgIndexedDb
     | DeleteSyncData HealthCenterId
     | HandleSavedSyncData HealthCenterId (WebData ())
     | HandleDeletedSyncData HealthCenterId (WebData ())
-      -- Handling edits to session data or prenatal encounter data
+      -- Handling edits to session data or encounter data
     | MsgSession SessionId Backend.Session.Model.Msg
     | MsgPrenatalEncounter PrenatalEncounterId Backend.PrenatalEncounter.Model.Msg
-    | MsgPrenatalSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
+    | MsgNutritionEncounter NutritionEncounterId Backend.NutritionEncounter.Model.Msg
+    | MsgIndividualSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
 
 
 {-| Wrapper for all the revisions we can receive.
@@ -281,6 +284,8 @@ type Revision
     | MedicationRevision MedicationId Medication
     | MuacRevision MuacId Muac
     | NurseRevision NurseId Nurse
+    | NutritionEncounterRevision NutritionEncounterId NutritionEncounter
+    | NutritionNutritionRevision NutritionNutritionId NutritionNutrition
     | ObstetricalExamRevision ObstetricalExamId ObstetricalExam
     | ObstetricHistoryRevision ObstetricHistoryId ObstetricHistory
     | ObstetricHistoryStep2Revision ObstetricHistoryStep2Id ObstetricHistoryStep2

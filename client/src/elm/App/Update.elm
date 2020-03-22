@@ -23,6 +23,8 @@ import Pages.Clinics.Update
 import Pages.Device.Model
 import Pages.Device.Update
 import Pages.IndividualEncounterParticipants.Update
+import Pages.NutritionEncounter.Model
+import Pages.NutritionEncounter.Update
 import Pages.Page exposing (..)
 import Pages.People.Update
 import Pages.Person.Update
@@ -290,6 +292,19 @@ update msg model =
                             in
                             ( { data | prenatalEncounterPages = Dict.insert id subModel data.prenatalEncounterPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalEncounter id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageNutritionEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.nutritionEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.NutritionEncounter.Model.emptyModel
+                                        |> Pages.NutritionEncounter.Update.update subMsg
+                            in
+                            ( { data | nutritionEncounterPages = Dict.insert id subModel data.nutritionEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageNutritionEncounter id) subCmd
                             , extraMsgs
                             )
 

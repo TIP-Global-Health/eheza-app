@@ -32,5 +32,6 @@ emptyModel =
 
 type Msg
     = CloseNutritionEncounter
+    | HandleClosedNutritionEncounter (WebData ())
     | SaveNutrition PersonId (Maybe NutritionNutritionId) (EverySet ChildNutritionSign)
     | HandleSavedNutrition (WebData ())

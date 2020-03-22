@@ -23,6 +23,7 @@ module Backend.Measurement.Encoder exposing
     , encodeMuac
     , encodeMuacValue
     , encodeNutrition
+    , encodeNutritionNutrition
     , encodeNutritionSignAsString
     , encodeNutritionValue
     , encodeObstetricHistory

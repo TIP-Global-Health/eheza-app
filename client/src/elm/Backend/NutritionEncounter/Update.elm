@@ -55,7 +55,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                             , healthCenter = healthCenterId
                             , value = value
                             }
-                                |> sw.post nutritionEncounterEndpoint
+                                |> sw.post nutritionNutritionEndpoint
                                 |> withoutDecoder
                                 |> toCmd (RemoteData.fromResult >> HandleSavedNutrition)
 
@@ -66,7 +66,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                                     , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
                                     ]
                                 |> object
-                                |> sw.patchAny nutritionEncounterEndpoint id
+                                |> sw.patchAny nutritionNutritionEndpoint id
                                 |> withoutDecoder
                                 |> toCmd (RemoteData.fromResult >> HandleSavedNutrition)
             in
