@@ -335,11 +335,12 @@ div.page-person {
 //Common for Prenatal Encounter and Prenatal Activity pages
 div.page-prenatal-activity,
 div.page-prenatal-encounter,
+div.page-nutrition-encounter,
 div.page-pregnancy-outcome {
-    padding: 0 35px 35px 35px;
-    height: 100%;
     display: flex;
     flex-direction: column;
+    height: 100%;
+    padding: 0 35px 35px 35px;
 
     .item .content {
       padding-top: 1em !important;

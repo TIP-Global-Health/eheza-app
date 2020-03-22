@@ -41,6 +41,7 @@ import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Http
+import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
     exposing
@@ -428,6 +429,7 @@ type TranslationId
     | NumberOfLiveChildren
     | NumberOfStillbirthsAtTerm
     | NumberOfStillbirthsPreTerm
+    | NutritionActivityTitle NutritionActivity
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
     | OK
@@ -2756,6 +2758,13 @@ translationSet trans =
             { english = "Number of Stillbirths pre Term"
             , kinyarwanda = Nothing
             }
+
+        NutritionActivityTitle activity ->
+            case activity of
+                NutritionNutrition ->
+                    { english = "Nutrition"
+                    , kinyarwanda = Nothing
+                    }
 
         ObstetricalDiagnosis ->
             { english = "Obstetrical Diagnosis"
