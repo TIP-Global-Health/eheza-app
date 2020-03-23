@@ -32,6 +32,7 @@ import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Http
+import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Page exposing (..)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Restful.Login exposing (LoginError(..), LoginMethod(..))
@@ -175,6 +176,7 @@ type TranslationId
     | ChildNutritionSignReport ChildNutritionSign
     | ChildOf
     | Children
+    | Clear
     | ClickTheCheckMark
     | ClinicType ClinicType
     | Clinical
@@ -242,6 +244,7 @@ type TranslationId
     | HIVStatusLabel
     | HouseholdSize
     | HttpError Http.Error
+    | InitialResultsDisplay InitialResultsDisplay
     | IsCurrentlyBreastfeeding
     | KilogramShorthand
     | KilogramsPerMonth
@@ -296,6 +299,7 @@ type TranslationId
     | OK
     | Old
     | OnceYouEndYourGroupEncounter
+    | Or
     | Page
     | Page404
     | PageNotFoundMsg
@@ -926,6 +930,11 @@ translationSet trans =
             , kinyarwanda = Just "Umwana wa"
             }
 
+        Clear ->
+            { english = "Clear"
+            , kinyarwanda = Nothing
+            }
+
         ClickTheCheckMark ->
             { english = "Click the check mark if the mother / caregiver is in attendance. The check mark will appear green when a mother / caregiver has been signed in."
             , kinyarwanda = Just "Kanda (kuri) ku kazu niba umubyeyi ahari. Ku kazu harahita hahindura ibara habe icyaytsi niba wemeje ko umubyeyi ahari"
@@ -1400,6 +1409,18 @@ translationSet trans =
         HttpError error ->
             translateHttpError error
 
+        InitialResultsDisplay display ->
+            case display of
+                InitialResultsHidden ->
+                    { english = "Display all mothers / caregivers"
+                    , kinyarwanda = Just "Kugaragaza ababyeyi bose / abarezi"
+                    }
+
+                InitialResultsShown ->
+                    { english = "Hide all mothers / caregivers"
+                    , kinyarwanda = Just "Hisha ababyeyi bose / abarezi"
+                    }
+
         IsCurrentlyBreastfeeding ->
             { english = "Is the mother currently breastfeeding her infant"
             , kinyarwanda = Nothing
@@ -1743,6 +1764,11 @@ translationSet trans =
         OnceYouEndYourGroupEncounter ->
             { english = "Once you end your Group Encounter, you will no longer be able to edit or add data."
             , kinyarwanda = Just "Igihe ushoze igikorwa, ntabwo ushobora guhindura cg wongeremo andi makuru."
+            }
+
+        Or ->
+            { english = "or"
+            , kinyarwanda = Nothing
             }
 
         Page ->
