@@ -26,7 +26,7 @@ import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MuacIndication(..))
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), DistributionNotice(..), FamilyPlanningSign(..), MuacIndication(..))
 import Backend.Person.Model exposing (EducationLevel(..), Gender(..), HIVStatus(..), MaritalStatus(..), ModeOfDelivery(..), VaginalDelivery(..))
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month)
@@ -207,11 +207,13 @@ type TranslationId
     | Device
     | DeviceNotAuthorized
     | DeviceStatus
+    | DistributionNotice DistributionNotice
     | District
     | DOB
     | DropzoneDefaultMessage
     | EditRelationship
     | EndGroupEncounter
+    | EnterAmountDistributed
     | EnterPairingCode
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
@@ -220,6 +222,8 @@ type TranslationId
     | FamilyMembers
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
+    | FbfDistribution
+    | FbfToReceive Activity Float
     | Fetch
     | FatherName
     | FatherNationalId
@@ -240,6 +244,7 @@ type TranslationId
     | HttpError Http.Error
     | IsCurrentlyBreastfeeding
     | KilogramShorthand
+    | KilogramsPerMonth
     | LastChecked
     | LastSuccesfulContactLabel
     | LevelOfEducationLabel
@@ -398,6 +403,8 @@ type TranslationId
     | Version
     | ViewProgressReport
     | Village
+    | WasFbfDistirbuted Activity
+    | WhyDifferentFbfAmount Activity
     | WelcomeUser String
     | WhatDoYouWantToDo
     | Year
@@ -480,6 +487,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                MotherActivity MotherFbf ->
+                    { english = "If a mother is breastfeeding, she should receive FBF every month. If she did not receive the specified amount, please record the amount distributed and select the reason why."
+                    , kinyarwanda = Nothing
+                    }
+
                 {- MotherActivity ParticipantConsent ->
                        { english = "Please review the following forms with the participant."
                        , kinyarwanda = Nothing
@@ -490,6 +502,11 @@ translationSet trans =
                        , kinyarwanda = Just "Kurikiza iyi lisiti mu gihe utanga ubujyanama, witondere kureba ko buri gikorwa cyakozwe."
                        }
                 -}
+                ChildActivity ChildFbf ->
+                    { english = "Every child should receive FBF every month. If he/she did not receive the specified amount, please record the amount distributed and select the reason why."
+                    , kinyarwanda = Nothing
+                    }
+
                 ChildActivity Height ->
                     { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight."
                     , kinyarwanda = Just "Saba Umubyeyi guhagarara inyuma y’umwana we agaramye, afata umutwe ku gice cy’amatwi. Sunikira akabaho ku buryo gakora mu bworo by’ibirenge byombi."
@@ -527,6 +544,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                MotherActivity MotherFbf ->
+                    { english = "The amount of CSB++ (FBF) is calculated below. If mother did not receive the specified amount, please record the amount distributed, and select the reason why."
+                    , kinyarwanda = Nothing
+                    }
+
                 {- MotherActivity ParticipantConsent ->
                        { english = "Forms:"
                        , kinyarwanda = Nothing
@@ -537,6 +559,11 @@ translationSet trans =
                        , kinyarwanda = Just "Kurikiza iyi lisiti mu gihe utanga ubujyanama, witondere kureba ko buri gikorwa cyakozwe."
                        }
                 -}
+                ChildActivity ChildFbf ->
+                    { english = "The amount of CSB++ (FBF) is calculated below. If child did not receive the specified amount, please record the amount distributed, and select the reason why."
+                    , kinyarwanda = Nothing
+                    }
+
                 ChildActivity Height ->
                     { english = "Height:"
                     , kinyarwanda = Just "Uburere:"
@@ -574,6 +601,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                MotherActivity MotherFbf ->
+                    { english = "FBF Mother"
+                    , kinyarwanda = Nothing
+                    }
+
                 {- MotherActivity ParticipantConsent ->
                        { english = "Forms"
                        , kinyarwanda = Nothing
@@ -584,6 +616,11 @@ translationSet trans =
                        , kinyarwanda = Just "Ubujyanama"
                        }
                 -}
+                ChildActivity ChildFbf ->
+                    { english = "FBF Child"
+                    , kinyarwanda = Nothing
+                    }
+
                 ChildActivity Height ->
                     { english = "Height"
                     , kinyarwanda = Just "Uburebure"
@@ -621,6 +658,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                MotherActivity MotherFbf ->
+                    { english = "FBF"
+                    , kinyarwanda = Nothing
+                    }
+
                 {- MotherActivity ParticipantConsent ->
                        { english = "Forms"
                        , kinyarwanda = Nothing
@@ -631,6 +673,11 @@ translationSet trans =
                        , kinyarwanda = Nothing
                        }
                 -}
+                ChildActivity ChildFbf ->
+                    { english = "FBF"
+                    , kinyarwanda = Nothing
+                    }
+
                 ChildActivity Height ->
                     { english = "Height"
                     , kinyarwanda = Just "Uburebure"
@@ -1054,6 +1101,23 @@ translationSet trans =
             , kinyarwanda = Just "Uko igikoresho cy'ikoranabuhanga gihagaze"
             }
 
+        DistributionNotice notice ->
+            case notice of
+                DistributedFully ->
+                    { english = "Complete"
+                    , kinyarwanda = Nothing
+                    }
+
+                DistributedPartiallyLackOfStock ->
+                    { english = "Lack of stock"
+                    , kinyarwanda = Nothing
+                    }
+
+                DistributedPartiallyOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
         District ->
             { english = "District"
             , kinyarwanda = Just "Akarere"
@@ -1077,6 +1141,11 @@ translationSet trans =
         EndGroupEncounter ->
             { english = "End Group Encounter"
             , kinyarwanda = Just "Gusoza igikorwa"
+            }
+
+        EnterAmountDistributed ->
+            { english = "Enter amount distributed"
+            , kinyarwanda = Nothing
             }
 
         EnterPairingCode ->
@@ -1201,6 +1270,23 @@ translationSet trans =
             , kinyarwanda = Just "Icyiciro cy'ubudehe umuryango uherereyemo"
             }
 
+        FbfDistribution ->
+            { english = "FBF Distribution"
+            , kinyarwanda = Nothing
+            }
+
+        FbfToReceive activity amount ->
+            case activity of
+                MotherActivity _ ->
+                    { english = "Mother should receive: " ++ String.fromFloat amount ++ " kgs of CSB++ (FBF)"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity _ ->
+                    { english = "Child should receive: " ++ String.fromFloat amount ++ " kgs of CSB++ (FBF)"
+                    , kinyarwanda = Nothing
+                    }
+
         FatherName ->
             { english = "Father's Name"
             , kinyarwanda = Nothing
@@ -1322,6 +1408,11 @@ translationSet trans =
         KilogramShorthand ->
             { english = "kg"
             , kinyarwanda = Just "kg"
+            }
+
+        KilogramsPerMonth ->
+            { english = "kgs / months"
+            , kinyarwanda = Nothing
             }
 
         LastChecked ->
@@ -2200,6 +2291,30 @@ translationSet trans =
             { english = "Village"
             , kinyarwanda = Just "Umudugudu"
             }
+
+        WasFbfDistirbuted activity ->
+            case activity of
+                ChildActivity _ ->
+                    { english = "Was this amount distirbuted to the child"
+                    , kinyarwanda = Nothing
+                    }
+
+                MotherActivity _ ->
+                    { english = "Was this amount distirbuted to the mother"
+                    , kinyarwanda = Nothing
+                    }
+
+        WhyDifferentFbfAmount activity ->
+            case activity of
+                ChildActivity _ ->
+                    { english = "Select why child receiverd a different amount of FBF"
+                    , kinyarwanda = Nothing
+                    }
+
+                MotherActivity _ ->
+                    { english = "Select why mother receiverd a different amount of FBF"
+                    , kinyarwanda = Nothing
+                    }
 
         WelcomeUser name ->
             { english = "Welcome " ++ name

@@ -1,4 +1,4 @@
-module Backend.Measurement.Encoder exposing (encodeAttendance, encodeAttendanceValue, encodeChildMeasurementList, encodeCounselingSession, encodeCounselingSessionValue, encodeEntity, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeHeight, encodeHeightValue, encodeLactation, encodeLactationValue, encodeMeasurement, encodeMotherMeasurementList, encodeMuac, encodeMuacValue, encodeNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodeWeight, encodeWeightValue)
+module Backend.Measurement.Encoder exposing (encodeAttendance, encodeAttendanceValue, encodeChildMeasurementList, encodeCounselingSession, encodeCounselingSessionValue, encodeDistributionNotice, encodeDistributionNoticeAsString, encodeEntity, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeFbf, encodeFbfValue, encodeHeight, encodeHeightValue, encodeLactation, encodeLactationSign, encodeLactationValue, encodeMeasurement, encodeMotherMeasurementList, encodeMuac, encodeMuacValue, encodeNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodeWeight, encodeWeightValue)
 
 import AssocList as Dict
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
@@ -292,6 +292,36 @@ encodeMotherMeasurementList measurements =
                 |> list (encodeEntity encodeParticipantConsent)
           )
         ]
+
+
+encodeFbf : Fbf -> List ( String, Value )
+encodeFbf =
+    encodeMeasurement encodeFbfValue
+
+
+encodeFbfValue : FbfValue -> List ( String, Value )
+encodeFbfValue value =
+    [ ( "distributed_amount", float value.distributedAmount )
+    , ( "distribution_notice", encodeDistributionNotice value.distributionNotice )
+    ]
+
+
+encodeDistributionNotice : DistributionNotice -> Value
+encodeDistributionNotice =
+    encodeDistributionNoticeAsString >> string
+
+
+encodeDistributionNoticeAsString : DistributionNotice -> String
+encodeDistributionNoticeAsString notice =
+    case notice of
+        DistributedFully ->
+            "complete"
+
+        DistributedPartiallyLackOfStock ->
+            "lack-of-stock"
+
+        DistributedPartiallyOther ->
+            "other"
 
 
 encodeEntity : (b -> List ( String, Value )) -> ( EntityUuid a, b ) -> Value

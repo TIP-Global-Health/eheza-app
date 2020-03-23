@@ -5,7 +5,6 @@ import AssocList as Dict
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (..)
-import Backend.Measurement.Utils exposing (lactationFormToSigns)
 import Backend.Session.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
 import Json.Encode exposing (object)
@@ -213,6 +212,33 @@ update nurseId sessionId maybeSession currentDate msg model =
                     , cmd
                     )
 
+                SaveChildFbf maybeId value ->
+                    let
+                        cmd =
+                            case maybeId of
+                                Nothing ->
+                                    { participantId = childId
+                                    , dateMeasured = currentDate
+                                    , sessionId = Just sessionId
+                                    , nurse = nurseId
+                                    , value = value
+                                    }
+                                        |> sw.post childFbfEndpoint
+                                        |> withoutDecoder
+                                        |> toCmd (RemoteData.fromResult >> HandleSaveFbf childId)
+
+                                Just id ->
+                                    encodeFbfValue value
+                                        |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                        |> object
+                                        |> sw.patchAny childFbfEndpoint id
+                                        |> withoutDecoder
+                                        |> toCmd (RemoteData.fromResult >> HandleSaveFbf childId)
+                    in
+                    ( { model | saveFbfRequest = Dict.insert childId Loading model.saveLactationRequest }
+                    , cmd
+                    )
+
         -- We're handling responses in order to pick up error conditions.
         -- However, we'll let the general "handleRevision" mechanism handle
         -- integrating the data into our model ... we need that anyway, so
@@ -273,11 +299,8 @@ update nurseId sessionId maybeSession currentDate msg model =
                     , cmd
                     )
 
-                SaveLactation maybeId form ->
+                SaveLactation maybeId signs ->
                     let
-                        signs =
-                            lactationFormToSigns form
-
                         cmd =
                             case maybeId of
                                 Nothing ->
@@ -300,6 +323,33 @@ update nurseId sessionId maybeSession currentDate msg model =
                                         |> toCmd (RemoteData.fromResult >> HandleSaveLactation motherId)
                     in
                     ( { model | saveLactationRequest = Dict.insert motherId Loading model.saveLactationRequest }
+                    , cmd
+                    )
+
+                SaveMotherFbf maybeId value ->
+                    let
+                        cmd =
+                            case maybeId of
+                                Nothing ->
+                                    { participantId = motherId
+                                    , dateMeasured = currentDate
+                                    , sessionId = Just sessionId
+                                    , nurse = nurseId
+                                    , value = value
+                                    }
+                                        |> sw.post motherFbfEndpoint
+                                        |> withoutDecoder
+                                        |> toCmd (RemoteData.fromResult >> HandleSaveFbf motherId)
+
+                                Just id ->
+                                    encodeFbfValue value
+                                        |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                        |> object
+                                        |> sw.patchAny motherFbfEndpoint id
+                                        |> withoutDecoder
+                                        |> toCmd (RemoteData.fromResult >> HandleSaveFbf motherId)
+                    in
+                    ( { model | saveFbfRequest = Dict.insert motherId Loading model.saveLactationRequest }
                     , cmd
                     )
 
@@ -358,6 +408,11 @@ update nurseId sessionId maybeSession currentDate msg model =
 
         HandleSaveLactation motherId data ->
             ( { model | saveLactationRequest = Dict.insert motherId data model.saveLactationRequest }
+            , Cmd.none
+            )
+
+        HandleSaveFbf personId data ->
+            ( { model | saveFbfRequest = Dict.insert personId data model.saveFbfRequest }
             , Cmd.none
             )
 

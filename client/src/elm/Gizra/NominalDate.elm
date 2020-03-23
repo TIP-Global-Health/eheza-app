@@ -5,7 +5,7 @@ module Gizra.NominalDate exposing
     , fromLocalDateTime
     , diffDays, diffCalendarMonthsAndDays
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
-    , compare, diffMonths
+    , compare, diffCalendarMonths
     )
 
 {-| Some utilities for dealing with "pure" dates that have no time or
@@ -172,9 +172,9 @@ diffDays low high =
     Date.diff Date.Days low high
 
 
-diffMonths : NominalDate -> NominalDate -> Int
-diffMonths low high =
-    Date.diff Date.Months low high
+diffCalendarMonths : NominalDate -> NominalDate -> Int
+diffCalendarMonths low high =
+    diffCalendarMonthsAndDays low high |> .months
 
 
 {-| Difference between two dates, in terms of months and days. This is based on

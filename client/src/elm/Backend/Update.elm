@@ -915,6 +915,14 @@ handleRevision revision ( model, recalc ) =
             , recalc
             )
 
+        ChildFbfRevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | fbfs = Dict.insert uuid data measurements.fbfs })
+                model
+            , True
+            )
+
         ChildNutritionRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
@@ -980,6 +988,14 @@ handleRevision revision ( model, recalc ) =
             ( mapChildMeasurements
                 data.participantId
                 (\measurements -> { measurements | heights = Dict.insert uuid data measurements.heights })
+                model
+            , True
+            )
+
+        MotherFbfRevision uuid data ->
+            ( mapMotherMeasurements
+                data.participantId
+                (\measurements -> { measurements | fbfs = Dict.insert uuid data measurements.fbfs })
                 model
             , True
             )
@@ -1228,7 +1244,7 @@ summarizeByActivity currentDate session checkedIn_ =
         (\checkedIn ->
             let
                 children =
-                    getAllChildActivities
+                    getAllChildActivities session
                         |> List.map
                             (\activity ->
                                 ( activity

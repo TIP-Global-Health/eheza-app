@@ -1,4 +1,4 @@
-module Backend.Entities exposing (AttendanceId, AttendanceUuidType(..), CatchmentAreaId, CatchmentAreaUuidType(..), ChildNutritionId, ChildNutritionUuidType(..), ClinicId, ClinicUuidType(..), CounselingScheduleId, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicUuidType(..), FamilyPlanningId, FamilyPlanningUuidType(..), HealthCenterId, HealthCenterUuidType(..), HeightId, HeightUuidType(..), LactationId, MuacId, MuacUuidType(..), NurseId, NurseUuidType(..), ParticipantConsentId, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormUuidType(..), PersonId, PersonUuidType(..), PhotoId, PhotoUuidType(..), PmtctParticipantId, PmtctParticipantUuidType(..), RelationshipId, RelationshipUuidType(..), SessionId, SessionUuidType(..), WeightId, WeightUuidType(..))
+module Backend.Entities exposing (AttendanceId, AttendanceUuidType(..), CatchmentAreaId, CatchmentAreaUuidType(..), ChildFbfId, ChildFbfUuidType(..), ChildNutritionId, ChildNutritionUuidType(..), ClinicId, ClinicUuidType(..), CounselingScheduleId, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicUuidType(..), FamilyPlanningId, FamilyPlanningUuidType(..), HealthCenterId, HealthCenterUuidType(..), HeightId, HeightUuidType(..), LactationId, LactationUuidType(..), MotherFbfId, MotherFbfUuidType(..), MuacId, MuacUuidType(..), NurseId, NurseUuidType(..), ParticipantConsentId, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormUuidType(..), PersonId, PersonUuidType(..), PhotoId, PhotoUuidType(..), PmtctParticipantId, PmtctParticipantUuidType(..), RelationshipId, RelationshipUuidType(..), SessionId, SessionUuidType(..), WeightId, WeightUuidType(..))
 
 {-|
 
@@ -95,6 +95,14 @@ type CatchmentAreaUuidType
     = CatchmentAreaUuidType
 
 
+type alias ChildFbfId =
+    EntityUuid ChildFbfUuidType
+
+
+type ChildFbfUuidType
+    = ChildFbfUuidType
+
+
 type alias ChildNutritionId =
     EntityUuid ChildNutritionUuidType
 
@@ -173,6 +181,14 @@ type alias LactationId =
 
 type LactationUuidType
     = LactationUuidType
+
+
+type alias MotherFbfId =
+    EntityUuid MotherFbfUuidType
+
+
+type MotherFbfUuidType
+    = MotherFbfUuidType
 
 
 type alias MuacId =

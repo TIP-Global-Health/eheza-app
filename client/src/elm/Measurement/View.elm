@@ -9,7 +9,7 @@ import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (encodeFamilyPlanningSignAsString, encodeNutritionSignAsString)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData, muacIndication)
+import Backend.Measurement.Utils exposing (currentValues, fbfAmountForPerson, fbfFormToValue, lactationFormToSigns, mapMeasurementData, muacIndication)
 import Backend.Person.Model exposing (Gender, Person)
 import Backend.Session.Model exposing (EditableSession)
 import EverySet exposing (EverySet)
@@ -23,7 +23,7 @@ import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
-import Pages.Utils exposing (viewBoolInput, viewQuestionLabel)
+import Pages.Utils exposing (viewBoolInput, viewCheckBoxSelectInput, viewLabel, viewMeasurementInput, viewQuestionLabel)
 import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
@@ -40,6 +40,9 @@ child when we enter something.
 viewChild : Language -> NominalDate -> Person -> ChildActivity -> MeasurementData ChildMeasurements -> ZScore.Model.Model -> EditableSession -> ModelChild -> Html MsgChild
 viewChild language currentDate child activity measurements zscores session model =
     case activity of
+        ChildFbf ->
+            viewChildFbf language currentDate child (mapMeasurementData .fbf measurements) model.fbfForm
+
         ChildPicture ->
             viewPhoto language (mapMeasurementData .photo measurements) model.photo
 
@@ -630,6 +633,52 @@ viewNutritionSignsSelectorItem language nutritionSigns sign =
         ]
 
 
+viewChildFbf : Language -> NominalDate -> Person -> MeasurementData (Maybe ( ChildFbfId, Fbf )) -> FbfForm -> Html MsgChild
+viewChildFbf language currentDate child measurement form =
+    let
+        activity =
+            ChildActivity ChildFbf
+
+        amount =
+            fbfAmountForPerson currentDate child
+                |> Maybe.withDefault 0
+
+        existingId =
+            Maybe.map Tuple.first measurement.current
+
+        saveMsg =
+            form.distributedFully
+                |> Maybe.andThen
+                    (\distributedFully ->
+                        if distributedFully then
+                            { form | distributedAmount = Just amount, distributionNotice = Just DistributedFully }
+                                |> fbfFormToValue amount
+                                |> SaveChildFbf existingId
+                                |> SendOutMsgChild
+                                |> Just
+
+                        else
+                            Maybe.map2
+                                (\_ _ ->
+                                    fbfFormToValue amount form
+                                        |> SaveChildFbf existingId
+                                        |> SendOutMsgChild
+                                )
+                                form.distributedAmount
+                                form.distributionNotice
+                    )
+    in
+    viewFbfForm language
+        measurement
+        activity
+        amount
+        SetDistributedFullyForChild
+        SetDistributedAmountForChild
+        SetDistributoinNoticeForChild
+        saveMsg
+        form
+
+
 
 {-
    viewCounselingSession : Language -> MeasurementData (Maybe ( CounselingSessionId, CounselingSession )) -> EditableSession -> Maybe ( CounselingTiming, EverySet CounselingTopicId ) -> Html MsgChild
@@ -737,14 +786,17 @@ type alias MotherMeasurementData =
     }
 
 
-viewMother : Language -> MotherActivity -> MeasurementData MotherMeasurements -> ModelMother -> Html MsgMother
-viewMother language activity measurements model =
+viewMother : Language -> NominalDate -> Person -> MotherActivity -> MeasurementData MotherMeasurements -> ModelMother -> Html MsgMother
+viewMother language currentDate mother activity measurements model =
     case activity of
         FamilyPlanning ->
             viewFamilyPlanning language (mapMeasurementData .familyPlanning measurements) model.familyPlanningSigns
 
         Lactation ->
             viewLactation language (mapMeasurementData .lactation measurements) model.lactationForm
+
+        MotherFbf ->
+            viewMotherFbf language currentDate mother (mapMeasurementData .fbf measurements) model.fbfForm
 
 
 
@@ -1090,7 +1142,9 @@ viewLactation language measurement form =
             form.breastfeeding
                 |> Maybe.map
                     (\_ ->
-                        SendOutMsgMother <| SaveLactation existingId form
+                        lactationFormToSigns form
+                            |> SaveLactation existingId
+                            |> SendOutMsgMother
                     )
     in
     div
@@ -1104,8 +1158,7 @@ viewLactation language measurement form =
                 ]
             , p [] [ text <| translate language (Trans.ActivitiesHelp activity) ]
             , div [ class "ui form" ] <|
-                [ p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
-                , viewQuestionLabel language Trans.IsCurrentlyBreastfeeding
+                [ viewQuestionLabel language Trans.IsCurrentlyBreastfeeding
                 , viewBoolInput language
                     form.breastfeeding
                     (SelectLactationSign Breastfeeding)
@@ -1115,6 +1168,122 @@ viewLactation language measurement form =
             ]
         , div [ class "actions" ] <|
             saveButton language
+                saveMsg
+                measurement
+                Nothing
+        ]
+
+
+viewMotherFbf : Language -> NominalDate -> Person -> MeasurementData (Maybe ( MotherFbfId, Fbf )) -> FbfForm -> Html MsgMother
+viewMotherFbf language currentDate mother measurement form =
+    let
+        activity =
+            MotherActivity MotherFbf
+
+        existingId =
+            Maybe.map Tuple.first measurement.current
+
+        amount =
+            fbfAmountForPerson currentDate mother
+                |> Maybe.withDefault 0
+
+        saveMsg =
+            form.distributedFully
+                |> Maybe.andThen
+                    (\distributedFully ->
+                        if distributedFully then
+                            { form | distributedAmount = Just amount, distributionNotice = Just DistributedFully }
+                                |> fbfFormToValue amount
+                                |> SaveMotherFbf existingId
+                                |> SendOutMsgMother
+                                |> Just
+
+                        else
+                            Maybe.map2
+                                (\_ _ ->
+                                    fbfFormToValue amount form
+                                        |> SaveMotherFbf existingId
+                                        |> SendOutMsgMother
+                                )
+                                form.distributedAmount
+                                form.distributionNotice
+                    )
+    in
+    viewFbfForm language
+        measurement
+        activity
+        amount
+        SetDistributedFullyForMother
+        SetDistributedAmountForMother
+        SetDistributoinNoticeForMother
+        saveMsg
+        form
+
+
+viewFbfForm :
+    Language
+    -> MeasurementData (Maybe a)
+    -> Activity
+    -> Float
+    -> (Bool -> msg)
+    -> (String -> msg)
+    -> (DistributionNotice -> msg)
+    -> Maybe msg
+    -> FbfForm
+    -> Html msg
+viewFbfForm language measurement activity amount setDistributedFullyMsg setDistributedAmountMsg setDistributoinNoticeMsg saveMsg form =
+    let
+        formConstantContent =
+            [ viewQuestionLabel language <| Trans.WasFbfDistirbuted activity
+            , viewBoolInput language
+                form.distributedFully
+                setDistributedFullyMsg
+                "fbf-distirbution"
+                Nothing
+            ]
+
+        formDynamicalContent =
+            form.distributedFully
+                |> Maybe.map
+                    (\distributedFully ->
+                        if distributedFully then
+                            []
+
+                        else
+                            [ viewLabel language Trans.EnterAmountDistributed
+                            , viewMeasurementInput
+                                language
+                                form.distributedAmount
+                                setDistributedAmountMsg
+                                "distributed-amount"
+                                Trans.KilogramsPerMonth
+                            , viewLabel language <| Trans.WhyDifferentFbfAmount activity
+                            , viewCheckBoxSelectInput language
+                                [ DistributedPartiallyLackOfStock, DistributedPartiallyOther ]
+                                []
+                                form.distributionNotice
+                                setDistributoinNoticeMsg
+                                Trans.DistributionNotice
+                            ]
+                    )
+                |> Maybe.withDefault []
+    in
+    div
+        [ class "ui full segment fbf"
+        , id "fbfEntryForm"
+        ]
+        [ div [ class "content" ]
+            [ h3 [ class "ui header" ]
+                [ text <| translate language Trans.FbfDistribution ]
+            , p [] [ text <| translate language (Trans.ActivitiesLabel activity) ]
+            , div [ class "fbf-to-receive" ] [ text <| translate language (Trans.FbfToReceive activity amount) ]
+            , formConstantContent
+                ++ formDynamicalContent
+                |> div [ class "ui form" ]
+            ]
+        , div [ class "actions" ] <|
+            saveButton
+                language
                 saveMsg
                 measurement
                 Nothing

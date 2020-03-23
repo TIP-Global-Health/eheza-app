@@ -5,6 +5,7 @@ module Backend.Measurement.Decoder exposing
     , decodeCounselingSession
     , decodeFamilyPlanning
     , decodeFamilyPlanningSign
+    , decodeFbf
     , decodeHeight
     , decodeHistoricalMeasurements
     , decodeLactation
@@ -15,7 +16,6 @@ module Backend.Measurement.Decoder exposing
     , decodeParticipantConsent
     , decodeParticipantConsentValue
     , decodePhoto
-    , decodeSavedMeasurement
     , decodeWeight
     , decodeWithEntityUuid
     , toDict
@@ -41,60 +41,6 @@ decodeMeasurement valueDecoder =
         |> required "person" decodeEntityUuid
         |> required "session" (nullable decodeEntityUuid)
         |> custom valueDecoder
-
-
-{-| Decodes a measurement that has an ID ... that is, a saved measurement.
-
-Tye `type` field controls which decoder we apply.
-
--}
-decodeSavedMeasurement : Decoder SavedMeasurement
-decodeSavedMeasurement =
-    field "type" string
-        |> andThen
-            (\s ->
-                case s of
-                    "attendance" ->
-                        decodeWithEntityUuid decodeAttendance
-                            |> map (\( a, b ) -> SavedAttendance a b)
-
-                    "family_planning" ->
-                        decodeWithEntityUuid decodeFamilyPlanning
-                            |> map (\( a, b ) -> SavedFamilyPlanning a b)
-
-                    "participant_consent" ->
-                        decodeWithEntityUuid decodeParticipantConsent
-                            |> map (\( a, b ) -> SavedParticipantConsent a b)
-
-                    "height" ->
-                        decodeWithEntityUuid decodeHeight
-                            |> map (\( a, b ) -> SavedHeight a b)
-
-                    "muac" ->
-                        decodeWithEntityUuid decodeMuac
-                            |> map (\( a, b ) -> SavedMuac a b)
-
-                    "nutrition" ->
-                        decodeWithEntityUuid decodeNutrition
-                            |> map (\( a, b ) -> SavedChildNutrition a b)
-
-                    "photo" ->
-                        decodeWithEntityUuid decodePhoto
-                            |> map (\( a, b ) -> SavedPhoto a b)
-
-                    "weight" ->
-                        decodeWithEntityUuid decodeWeight
-                            |> map (\( a, b ) -> SavedWeight a b)
-
-                    "counseling_session" ->
-                        decodeWithEntityUuid decodeCounselingSession
-                            |> map (\( a, b ) -> SavedCounselingSession a b)
-
-                    _ ->
-                        fail <|
-                            s
-                                ++ " is not a recognized measurement type"
-            )
 
 
 {-| Decodes `HistoricalMeasurements` as sent by `/api/offline_sessions/`
@@ -137,6 +83,7 @@ decodeMotherMeasurementList =
         |> optional "family_planning" (map Dict.fromList <| list (decodeWithEntityUuid decodeFamilyPlanning)) Dict.empty
         |> optional "participant_consent" (map Dict.fromList <| list (decodeWithEntityUuid decodeParticipantConsent)) Dict.empty
         |> optional "lactation" (map Dict.fromList <| list (decodeWithEntityUuid decodeLactation)) Dict.empty
+        |> optional "mother_fbf" (map Dict.fromList <| list (decodeWithEntityUuid decodeFbf)) Dict.empty
 
 
 decodeChildMeasurementList : Decoder ChildMeasurementList
@@ -148,6 +95,7 @@ decodeChildMeasurementList =
         |> optional "photo" (map Dict.fromList <| list (decodeWithEntityUuid decodePhoto)) Dict.empty
         |> optional "weight" (map Dict.fromList <| list (decodeWithEntityUuid decodeWeight)) Dict.empty
         |> optional "counseling_session" (map Dict.fromList <| list (decodeWithEntityUuid decodeCounselingSession)) Dict.empty
+        |> optional "child_fbf" (map Dict.fromList <| list (decodeWithEntityUuid decodeFbf)) Dict.empty
 
 
 decodePhoto : Decoder Photo
@@ -190,6 +138,11 @@ decodeLactation =
     decodeEverySet decodeLactationSign
         |> field "lactation_signs"
         |> decodeMeasurement
+
+
+decodeFbf : Decoder Fbf
+decodeFbf =
+    decodeMeasurement decodeFbfValue
 
 
 decodeAttendance : Decoder Attendance
@@ -342,4 +295,33 @@ decodeLactationSign =
                         fail <|
                             sign
                                 ++ " is not a recognized LactationSign"
+            )
+
+
+decodeFbfValue : Decoder FbfValue
+decodeFbfValue =
+    succeed FbfValue
+        |> required "distributed_amount" float
+        |> required "distribution_notice" decodeDistributionNotice
+
+
+decodeDistributionNotice : Decoder DistributionNotice
+decodeDistributionNotice =
+    string
+        |> andThen
+            (\notice ->
+                case notice of
+                    "complete" ->
+                        succeed DistributedFully
+
+                    "lack-of-stock" ->
+                        succeed DistributedPartiallyLackOfStock
+
+                    "other" ->
+                        succeed DistributedPartiallyOther
+
+                    _ ->
+                        fail <|
+                            notice
+                                ++ " is not a recognized DistributionNotice"
             )

@@ -33,14 +33,14 @@ import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
+import Backend.Measurement.Utils exposing (currentValue, currentValues, fbfAmountForPerson, mapMeasurementData)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (..)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
 import EverySet
-import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths)
+import Gizra.NominalDate exposing (NominalDate, diffCalendarMonths, diffDays)
 import LocalData
 import Maybe.Extra exposing (isJust, isNothing)
 
@@ -53,6 +53,9 @@ encodeActivityAsString activity =
     case activity of
         ChildActivity childActivity ->
             case childActivity of
+                ChildFbf ->
+                    "child_fbf"
+
                 ChildPicture ->
                     "picture"
 
@@ -78,6 +81,9 @@ encodeActivityAsString activity =
                 Lactation ->
                     "lactation"
 
+                MotherFbf ->
+                    "mother_fbf"
+
 
 
 -- ParticipantConsent ->
@@ -89,6 +95,9 @@ encodeActivityAsString activity =
 decodeActivityFromString : String -> Maybe Activity
 decodeActivityFromString s =
     case s of
+        "child_fbf" ->
+            Just <| ChildActivity ChildFbf
+
         "picture" ->
             Just <| ChildActivity ChildPicture
 
@@ -112,6 +121,9 @@ decodeActivityFromString s =
         "lactation" ->
             Just <| MotherActivity Lactation
 
+        "mother_fbf" ->
+            Just <| MotherActivity MotherFbf
+
         -- "participants_consent" ->
         --    Just <| MotherActivity ParticipantConsent
         _ ->
@@ -133,6 +145,9 @@ getActivityIcon activity =
     case activity of
         ChildActivity childActivity ->
             case childActivity of
+                ChildFbf ->
+                    "fbf"
+
                 ChildPicture ->
                     "photo"
 
@@ -158,6 +173,9 @@ getActivityIcon activity =
                 Lactation ->
                     "lactation"
 
+                MotherFbf ->
+                    "fbf"
+
 
 
 -- ParticipantConsent ->
@@ -167,14 +185,25 @@ getActivityIcon activity =
 getAllActivities : OfflineSession -> List Activity
 getAllActivities offlineSession =
     List.concat
-        [ List.map ChildActivity getAllChildActivities
+        [ List.map ChildActivity (getAllChildActivities offlineSession)
         , List.map MotherActivity (getAllMotherActivities offlineSession)
         ]
 
 
-getAllChildActivities : List ChildActivity
-getAllChildActivities =
-    [ {- Counseling, -} Height, Muac, NutritionSigns, Weight, ChildPicture ]
+getAllChildActivities : OfflineSession -> List ChildActivity
+getAllChildActivities offlineSession =
+    let
+        forAllGroupTypes =
+            [ {- Counseling, -} Height, Muac, NutritionSigns, Weight, ChildPicture ]
+
+        forFbf =
+            if offlineSession.session.clinicType == Fbf then
+                [ ChildFbf ]
+
+            else
+                []
+    in
+    forAllGroupTypes ++ forFbf
 
 
 getAllMotherActivities : OfflineSession -> List MotherActivity
@@ -183,12 +212,12 @@ getAllMotherActivities offlineSession =
         forAllGroupTypes =
             [ FamilyPlanning
 
-            -- , ParticipantConsent
+            {- , ParticipantConsent -}
             ]
 
         forFbf =
             if offlineSession.session.clinicType == Fbf then
-                [ Lactation ]
+                [ Lactation, MotherFbf ]
 
             else
                 []
@@ -201,14 +230,14 @@ Note that we don't consider whether the child is checked in here -- just
 whether we would expect to perform this action if checked in.
 -}
 expectChildActivity : NominalDate -> OfflineSession -> PersonId -> ChildActivity -> Bool
-expectChildActivity currentDate session childId activity =
+expectChildActivity currentDate offlineSession childId activity =
     case activity of
         Muac ->
-            Dict.get childId session.children
+            Dict.get childId offlineSession.children
                 |> Maybe.andThen .birthDate
                 |> Maybe.map
                     (\birthDate ->
-                        if diffMonths birthDate currentDate < 6 then
+                        if diffCalendarMonths birthDate currentDate < 6 then
                             False
 
                         else
@@ -220,6 +249,15 @@ expectChildActivity currentDate session childId activity =
            Maybe.Extra.isJust <|
                expectCounselingActivity session childId
         -}
+        ChildFbf ->
+            if offlineSession.session.clinicType == Fbf then
+                Dict.get childId offlineSession.children
+                    |> Maybe.map (fbfAmountForPerson currentDate >> isJust)
+                    |> Maybe.withDefault False
+
+            else
+                False
+
         _ ->
             -- In all other cases, we expect each ativity each time.
             True
@@ -456,6 +494,26 @@ expectMotherActivity offlineSession motherId activity =
 
                             CaregiverActivities ->
                                 False
+
+                    -- Show at FBF groups, for mothers that are breastfeeding.
+                    MotherFbf ->
+                        case participant.adultActivities of
+                            MotherActivities ->
+                                if offlineSession.session.clinicType == Fbf then
+                                    getMotherMeasurementData2 motherId offlineSession
+                                        |> LocalData.map
+                                            (.current
+                                                >> .lactation
+                                                >> Maybe.map (Tuple.second >> .value >> EverySet.member Breastfeeding)
+                                                >> Maybe.withDefault False
+                                            )
+                                        |> LocalData.withDefault False
+
+                                else
+                                    False
+
+                            CaregiverActivities ->
+                                False
              {- ParticipantConsent ->
                 expectParticipantConsent offlineSession motherId
                     |> Dict.isEmpty
@@ -552,7 +610,7 @@ activities may not be expected for this child).
 -}
 summarizeChildParticipant : NominalDate -> PersonId -> OfflineSession -> CompletedAndPending (List ChildActivity)
 summarizeChildParticipant currentDate id session =
-    getAllChildActivities
+    getAllChildActivities session
         |> List.filter (expectChildActivity currentDate session id)
         |> List.partition (\activity -> childHasCompletedActivity id activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
@@ -611,6 +669,9 @@ getActivityCountForMother session id mother summary =
 hasCompletedChildActivity : ChildActivity -> MeasurementData ChildMeasurements -> Bool
 hasCompletedChildActivity activityType measurements =
     case activityType of
+        ChildFbf ->
+            isCompleted (Maybe.map Tuple.second measurements.current.fbf)
+
         ChildPicture ->
             isCompleted (Maybe.map Tuple.second measurements.current.photo)
 
@@ -644,6 +705,9 @@ hasCompletedMotherActivity session motherId activityType measurements =
 
         Lactation ->
             isCompleted (Maybe.map Tuple.second measurements.current.lactation)
+
+        MotherFbf ->
+            isCompleted (Maybe.map Tuple.second measurements.current.fbf)
 
 
 
@@ -684,9 +748,9 @@ hasAnyCompletedMotherActivity session motherId measurements =
         |> List.any (\activity -> hasCompletedMotherActivity session motherId activity measurements)
 
 
-hasAnyCompletedChildActivity : MeasurementData ChildMeasurements -> Bool
-hasAnyCompletedChildActivity measurements =
-    getAllChildActivities
+hasAnyCompletedChildActivity : OfflineSession -> MeasurementData ChildMeasurements -> Bool
+hasAnyCompletedChildActivity session measurements =
+    getAllChildActivities session
         |> List.any (\a -> hasCompletedChildActivity a measurements)
 
 
@@ -751,5 +815,5 @@ motherHasAnyCompletedActivity motherId session =
 childHasAnyCompletedActivity : PersonId -> OfflineSession -> Bool
 childHasAnyCompletedActivity childId session =
     getChildMeasurementData2 childId session
-        |> LocalData.map hasAnyCompletedChildActivity
+        |> LocalData.map (hasAnyCompletedChildActivity session)
         |> LocalData.withDefault False

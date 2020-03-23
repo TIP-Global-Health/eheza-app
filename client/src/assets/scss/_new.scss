@@ -276,8 +276,43 @@ div.page-activity {
 
   .ui.full.segment .content {
 
+    .fbf-to-receive {
+      border-bottom: 2px solid;
+      border-top: 2px solid;
+      font-size: 1.8rem;
+      font-weight: 500;
+      margin-bottom: 30px;
+      margin-top: 30px;
+      padding-bottom: 10px;
+      padding-top: 10px;
+    }
+
+    .label {
+      margin-bottom: 10px;
+    }
+
     .form-input {
       margin-bottom: 30px;
+
+      // Number inputs
+      &.measurement {
+        height: 50px;
+
+        .unit {
+          float: left;
+          font-weight: normal;
+          margin-left: 20px;
+          margin-top: 10px;
+          width: 35%;
+        }
+
+        input {
+          background-color: $color-white;
+          border: 2px solid $color-gray-border;
+          float: left;
+          width: 60%;
+        }
+      }
 
       // Bool inputs
       &.yes-no {

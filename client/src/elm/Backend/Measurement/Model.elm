@@ -1,4 +1,4 @@
-module Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, ChildMeasurements, ChildNutrition, ChildNutritionSign(..), CounselingSession, FamilyPlanning, FamilyPlanningSign(..), Height, HeightInCm(..), HistoricalMeasurements, Lactation, LactationForm, LactationSign(..), Measurement, MeasurementData, Measurements, MotherMeasurementList, MotherMeasurements, Muac, MuacInCm(..), MuacIndication(..), ParticipantConsent, ParticipantConsentValue, Photo, PhotoUrl(..), SavedMeasurement(..), Weight, WeightInKg(..), emptyChildMeasurementList, emptyChildMeasurements, emptyHistoricalMeasurements, emptyMeasurements, emptyMotherMeasurementList, emptyMotherMeasurements)
+module Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, ChildMeasurements, ChildNutrition, ChildNutritionSign(..), CounselingSession, DistributionNotice(..), FamilyPlanning, FamilyPlanningSign(..), Fbf, FbfForm, FbfValue, Height, HeightInCm(..), HistoricalMeasurements, Lactation, LactationForm, LactationSign(..), Measurement, MeasurementData, Measurements, MotherMeasurementList, MotherMeasurements, Muac, MuacInCm(..), MuacIndication(..), ParticipantConsent, ParticipantConsentValue, Photo, PhotoUrl(..), SavedMeasurement(..), Weight, WeightInKg(..), emptyChildMeasurementList, emptyChildMeasurements, emptyHistoricalMeasurements, emptyMeasurements, emptyMotherMeasurementList, emptyMotherMeasurements)
 
 {-| This module represents various measurements to be stored on the backend,
 and cached in local storage.
@@ -119,6 +119,29 @@ type alias LactationForm =
     }
 
 
+type DistributionNotice
+    = DistributedFully
+    | DistributedPartiallyLackOfStock
+    | DistributedPartiallyOther
+
+
+type alias Fbf =
+    Measurement FbfValue
+
+
+type alias FbfValue =
+    { distributedAmount : Float
+    , distributionNotice : DistributionNotice
+    }
+
+
+type alias FbfForm =
+    { distributedFully : Maybe Bool
+    , distributedAmount : Maybe Float
+    , distributionNotice : Maybe DistributionNotice
+    }
+
+
 type alias ParticipantConsent =
     Measurement ParticipantConsentValue
 
@@ -179,6 +202,7 @@ type alias MotherMeasurementList =
     , familyPlannings : Dict FamilyPlanningId FamilyPlanning
     , consents : Dict ParticipantConsentId ParticipantConsent
     , lactations : Dict LactationId Lactation
+    , fbfs : Dict MotherFbfId Fbf
     }
 
 
@@ -188,6 +212,7 @@ emptyMotherMeasurementList =
     , familyPlannings = Dict.empty
     , consents = Dict.empty
     , lactations = Dict.empty
+    , fbfs = Dict.empty
     }
 
 
@@ -206,6 +231,7 @@ type alias ChildMeasurementList =
     , photos : Dict PhotoId Photo
     , weights : Dict WeightId Weight
     , counselingSessions : Dict CounselingSessionId CounselingSession
+    , fbfs : Dict ChildFbfId Fbf
     }
 
 
@@ -217,6 +243,7 @@ emptyChildMeasurementList =
     , photos = Dict.empty
     , weights = Dict.empty
     , counselingSessions = Dict.empty
+    , fbfs = Dict.empty
     }
 
 
@@ -254,6 +281,7 @@ type alias ChildMeasurements =
     , photo : Maybe ( PhotoId, Photo )
     , weight : Maybe ( WeightId, Weight )
     , counselingSession : Maybe ( CounselingSessionId, CounselingSession )
+    , fbf : Maybe ( ChildFbfId, Fbf )
     }
 
 
@@ -265,6 +293,7 @@ emptyChildMeasurements =
     , photo = Nothing
     , weight = Nothing
     , counselingSession = Nothing
+    , fbf = Nothing
     }
 
 
@@ -279,6 +308,7 @@ type alias MotherMeasurements =
     , familyPlanning : Maybe ( FamilyPlanningId, FamilyPlanning )
     , consent : Dict ParticipantConsentId ParticipantConsent
     , lactation : Maybe ( LactationId, Lactation )
+    , fbf : Maybe ( MotherFbfId, Fbf )
     }
 
 
@@ -288,6 +318,7 @@ emptyMotherMeasurements =
     , familyPlanning = Nothing
     , consent = Dict.empty
     , lactation = Nothing
+    , fbf = Nothing
     }
 
 

@@ -22,7 +22,7 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
-import Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, ChildNutrition, CounselingSession, FamilyPlanning, Height, Lactation, MotherMeasurementList, Muac, ParticipantConsent, Photo, Weight)
+import Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, ChildNutrition, CounselingSession, FamilyPlanning, Fbf, Height, Lactation, MotherMeasurementList, Muac, ParticipantConsent, Photo, Weight)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
@@ -209,6 +209,7 @@ type MsgIndexedDb
 type Revision
     = AttendanceRevision AttendanceId Attendance
     | CatchmentAreaRevision CatchmentAreaId CatchmentArea
+    | ChildFbfRevision ChildFbfId Fbf
     | ChildNutritionRevision ChildNutritionId ChildNutrition
     | ClinicRevision ClinicId Clinic
     | CounselingScheduleRevision CounselingScheduleId CounselingSchedule
@@ -218,6 +219,7 @@ type Revision
     | LactationRevision LactationId Lactation
     | HealthCenterRevision HealthCenterId HealthCenter
     | HeightRevision HeightId Height
+    | MotherFbfRevision MotherFbfId Fbf
     | MuacRevision MuacId Muac
     | NurseRevision NurseId Nurse
     | ParticipantConsentRevision ParticipantConsentId ParticipantConsent

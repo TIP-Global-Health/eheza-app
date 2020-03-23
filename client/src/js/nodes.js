@@ -84,6 +84,7 @@
     var tableForType = {
         attendance: 'shards',
         catchment_area: 'nodes',
+        child_fbf: 'shards',
         clinic: 'nodes',
         counseling_schedule: 'nodes',
         counseling_session: 'shards',
@@ -92,6 +93,7 @@
         lactation: 'shards',
         health_center: 'nodes',
         height: 'shards',
+        mother_fbf: 'shards',
         muac: 'shards',
         nurse: 'nodes',
         nutrition: 'shards',
