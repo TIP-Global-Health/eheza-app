@@ -6,6 +6,8 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString, encoudeIndividualEncounterTypeAsString)
 import Backend.Person.Model exposing (RegistrationInitiator(..))
 import Backend.Person.Utils exposing (decodeRegistrationInitiatorFromString)
+import NutritionActivity.Model exposing (NutritionActivity(..))
+import NutritionActivity.Utils
 import Pages.Page exposing (..)
 import PrenatalActivity.Model exposing (PrenatalActivity)
 import PrenatalActivity.Utils
@@ -166,6 +168,9 @@ pageToFragment current =
                 NutritionEncounterPage id ->
                     Just <| "nutrition-encounter/" ++ fromEntityUuid id
 
+                NutritionActivityPage id activity ->
+                    Just <| "nutrition-activity/" ++ fromEntityUuid id ++ "/" ++ NutritionActivity.Utils.encodeActivityAsString activity
+
 
 parser : Parser (Page -> c) c
 parser =
@@ -195,6 +200,7 @@ parser =
         , map (\encounterType -> UserPage <| IndividualEncounterParticipantsPage encounterType) (s "individual-participants" </> parseIndividualEncounterType)
         , map (\id -> UserPage <| PregnancyOutcomePage id) (s "pregnancy-outcome" </> parseUuid)
         , map (\id -> UserPage <| NutritionEncounterPage id) (s "nutrition-encounter" </> parseUuid)
+        , map (\id activity -> UserPage <| NutritionActivityPage id activity) (s "nutrition-activity" </> parseUuid </> parseNutritionActivity)
 
         -- `top` represents the page without any segements ... i.e. the
         -- root page.
@@ -228,6 +234,11 @@ parseActivity =
 parsePrenatalActivity : Parser (PrenatalActivity -> c) c
 parsePrenatalActivity =
     custom "PrenatalActivity" PrenatalActivity.Utils.decodeActivityFromString
+
+
+parseNutritionActivity : Parser (NutritionActivity -> c) c
+parseNutritionActivity =
+    custom "NutritionActivity" NutritionActivity.Utils.decodeActivityFromString
 
 
 parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c

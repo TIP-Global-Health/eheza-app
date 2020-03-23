@@ -1,4 +1,4 @@
-module NutritionActivity.Utils exposing (getActivityIcon, getAllActivities)
+module NutritionActivity.Utils exposing (decodeActivityFromString, encodeActivityAsString, getActivityIcon, getAllActivities)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.

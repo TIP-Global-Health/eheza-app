@@ -20,6 +20,8 @@ import Pages.Device.View
 import Pages.IndividualEncounterParticipants.View
 import Pages.IndividualEncounterTypes.View
 import Pages.MyAccount.View
+import Pages.NutritionActivity.Model
+import Pages.NutritionActivity.View
 import Pages.NutritionEncounter.Model
 import Pages.NutritionEncounter.View
 import Pages.NutritionParticipant.View
@@ -328,6 +330,16 @@ viewUserPage page model configured =
                         in
                         Pages.NutritionEncounter.View.view model.language currentDate id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNutritionEncounter id)
+                            |> flexPageWrapper model
+
+                    NutritionActivityPage id activity ->
+                        let
+                            page_ =
+                                Dict.get ( id, activity ) loggedInModel.nutritionActivityPages
+                                    |> Maybe.withDefault Pages.NutritionActivity.Model.emptyModel
+                        in
+                        Pages.NutritionActivity.View.view model.language currentDate id activity model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageNutritionActivity id activity)
                             |> flexPageWrapper model
 
             else

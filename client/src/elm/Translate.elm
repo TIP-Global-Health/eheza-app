@@ -429,6 +429,7 @@ type TranslationId
     | NumberOfLiveChildren
     | NumberOfStillbirthsAtTerm
     | NumberOfStillbirthsPreTerm
+    | NutritionActivityHelper NutritionActivity
     | NutritionActivityTitle NutritionActivity
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
@@ -532,6 +533,7 @@ type TranslationId
     | SearchHelperFamilyMember
     | SecondName
     | Sector
+    | SelectAllSigns
     | SelectDangerSigns
     | SelectEncounterType
     | SelectGroup
@@ -767,7 +769,7 @@ translationSet trans =
 
                 ChildActivity Activity.Model.NutritionSigns ->
                     { english = "Explain to the mother how to check the malnutrition signs for their own child."
-                    , kinyarwanda = Just "Sobanurira umubyeyi gupima ibimenyetso by'imirire mibi ku giti cye"
+                    , kinyarwanda = Just "Sobanurira umubyeyi gupima ibimenyetso by'imirire mibi ku giti cye."
                     }
 
                 ChildActivity Activity.Model.ChildPicture ->
@@ -2759,6 +2761,13 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        NutritionActivityHelper activity ->
+            case activity of
+                NutritionNutrition ->
+                    { english = "Explain to the mother how to check the malnutrition signs for their own child."
+                    , kinyarwanda = Just "Sobanurira umubyeyi gupima ibimenyetso by'imirire mibi ku giti cye."
+                    }
+
         NutritionActivityTitle activity ->
             case activity of
                 NutritionNutrition ->
@@ -3514,6 +3523,11 @@ translationSet trans =
             , kinyarwanda = Just "Umurenge"
             }
 
+        SelectAllSigns ->
+            { english = "Select all signs that are present"
+            , kinyarwanda = Just "Hitamo ibimenyetso by'imirire byose bishoboka umwana afite"
+            }
+
         SelectDangerSigns ->
             { english = "Please select one or more of the danger signs the patient is experiencing"
             , kinyarwanda = Nothing
@@ -4182,6 +4196,11 @@ translateActivePage page =
 
                 NutritionEncounterPage _ ->
                     { english = "Nutrition Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionActivityPage _ _ ->
+                    { english = "Nutrition Activity"
                     , kinyarwanda = Nothing
                     }
 

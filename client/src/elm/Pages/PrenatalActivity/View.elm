@@ -25,7 +25,19 @@ import Pages.PrenatalActivity.Utils exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
-import Pages.Utils exposing (taskCompleted, taskListCompleted, viewBoolInput, viewCustomLabel, viewLabel, viewPhotoThumbFromPhotoUrl, viewQuestionLabel)
+import Pages.Utils
+    exposing
+        ( taskCompleted
+        , taskListCompleted
+        , viewBoolInput
+        , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxSelectInput
+        , viewCustomLabel
+        , viewLabel
+        , viewMeasurementInput
+        , viewPhotoThumbFromPhotoUrl
+        , viewQuestionLabel
+        )
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Round
@@ -2208,134 +2220,6 @@ viewResourcesForm language currentDate assembled form =
 
 
 
--- Inputs
-
-
-viewNumberInput :
-    Language
-    -> Maybe a
-    -> (String -> Msg)
-    -> String
-    -> TranslationId
-    -> Maybe ( List (List (a -> Bool)), List (List (a -> Bool)) )
-    -> Html Msg
-viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId maybeAlertConditions =
-    let
-        currentValue =
-            maybeCurrentValue
-                |> unwrap
-                    ""
-                    Debug.toString
-
-        ( labelWidth, inputWidth, alert ) =
-            maybeAlertConditions
-                |> Maybe.map
-                    (\( red, yellow ) ->
-                        ( "eight"
-                        , "four"
-                        , div [ class "four wide column" ]
-                            [ viewConditionalAlert maybeCurrentValue red yellow ]
-                        )
-                    )
-                |> Maybe.withDefault ( "ten", "six", emptyNode )
-    in
-    div [ class <| "form-input number " ++ inputClass ]
-        [ div [ class "ui grid" ]
-            [ div [ class <| labelWidth ++ " wide column" ]
-                [ viewLabel language labelTranslationId ]
-            , div [ class <| inputWidth ++ " wide column" ]
-                [ input
-                    [ type_ "number"
-                    , Html.Attributes.min "0"
-                    , Html.Attributes.max "99"
-                    , onInput setMsg
-                    , value currentValue
-                    ]
-                    []
-                ]
-            , alert
-            ]
-        ]
-
-
-viewCheckBoxSelectInput : Language -> List a -> List a -> Maybe a -> (a -> Msg) -> (a -> TranslationId) -> Html Msg
-viewCheckBoxSelectInput language leftOptions rightOptions currentValue setMsg translateFunc =
-    let
-        checkedOptions =
-            currentValue |> Maybe.map List.singleton |> Maybe.withDefault []
-    in
-    viewCheckBoxMultipleSelectInput language leftOptions rightOptions checkedOptions Nothing setMsg translateFunc
-
-
-viewCheckBoxMultipleSelectInput : Language -> List a -> List a -> List a -> Maybe a -> (a -> Msg) -> (a -> TranslationId) -> Html Msg
-viewCheckBoxMultipleSelectInput language leftOptions rightOptions checkedOptions noneOption setMsg translateFunc =
-    let
-        noneSection =
-            noneOption
-                |> unwrap
-                    []
-                    (\option ->
-                        [ div [ class "ui divider" ] []
-                        , viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc option
-                        ]
-                    )
-    in
-    div [ class "checkbox-select-input" ] <|
-        div [ class "ui grid" ]
-            [ leftOptions
-                |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc)
-                |> div [ class "eight wide column" ]
-            , rightOptions
-                |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc)
-                |> div [ class "eight wide column" ]
-            ]
-            :: noneSection
-
-
-viewCheckBoxSelectInputItem : Language -> List a -> (a -> Msg) -> (a -> TranslationId) -> a -> Html Msg
-viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc option =
-    let
-        isChecked =
-            List.member option checkedOptions
-    in
-    div
-        [ class "ui checkbox activity"
-        , onClick <| setMsg option
-        ]
-        [ input
-            [ type_ "checkbox"
-            , checked isChecked
-            , classList [ ( "checked", isChecked ) ]
-            ]
-            []
-        , label []
-            [ text <| translate language (translateFunc option) ]
-        ]
-
-
-viewMeasurementInput : Language -> Maybe Float -> (String -> Msg) -> String -> TranslationId -> Html Msg
-viewMeasurementInput language maybeCurrentValue setMsg inputClass unitTranslationId =
-    let
-        currentValue =
-            maybeCurrentValue
-                |> Maybe.map Debug.toString
-                |> Maybe.withDefault ""
-
-        inputAttrs =
-            [ type_ "number"
-            , Html.Attributes.min "0"
-            , onInput setMsg
-            , value currentValue
-            ]
-    in
-    div [ class <| "form-input measurement " ++ inputClass ]
-        [ input inputAttrs []
-        , div [ class "unit" ]
-            [ text <| translate language unitTranslationId ]
-        ]
-
-
-
 -- Components
 
 
@@ -2390,6 +2274,53 @@ viewRedAlertForBool actual normal =
     viewRedAlertForSelect
         (actual |> Maybe.map List.singleton |> Maybe.withDefault [])
         [ normal ]
+
+
+viewNumberInput :
+    Language
+    -> Maybe a
+    -> (String -> msg)
+    -> String
+    -> TranslationId
+    -> Maybe ( List (List (a -> Bool)), List (List (a -> Bool)) )
+    -> Html msg
+viewNumberInput language maybeCurrentValue setMsg inputClass labelTranslationId maybeAlertConditions =
+    let
+        currentValue =
+            maybeCurrentValue
+                |> unwrap
+                    ""
+                    Debug.toString
+
+        ( labelWidth, inputWidth, alert ) =
+            maybeAlertConditions
+                |> Maybe.map
+                    (\( red, yellow ) ->
+                        ( "eight"
+                        , "four"
+                        , div [ class "four wide column" ]
+                            [ viewConditionalAlert maybeCurrentValue red yellow ]
+                        )
+                    )
+                |> Maybe.withDefault ( "ten", "six", emptyNode )
+    in
+    div [ class <| "form-input number " ++ inputClass ]
+        [ div [ class "ui grid" ]
+            [ div [ class <| labelWidth ++ " wide column" ]
+                [ viewLabel language labelTranslationId ]
+            , div [ class <| inputWidth ++ " wide column" ]
+                [ input
+                    [ type_ "number"
+                    , Html.Attributes.min "0"
+                    , Html.Attributes.max "99"
+                    , onInput setMsg
+                    , value currentValue
+                    ]
+                    []
+                ]
+            , alert
+            ]
+        ]
 
 
 {-| The idea here is that we get lists for red alert conditions, and yellow

@@ -1,4 +1,4 @@
-module Pages.NutritionEncounter.View exposing (view)
+module Pages.NutritionEncounter.View exposing (view, viewChildDetails)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -152,8 +152,7 @@ viewMainPageContent language currentDate id measurements model =
             div [ class "card" ]
                 [ div
                     [ class "image"
-
-                    -- , onClick <| SetActivePage <| UserPage <| PrenatalActivityPage data.id activity
+                    , onClick <| SetActivePage <| UserPage <| NutritionActivityPage id activity
                     ]
                     [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
                 , div [ class "content" ]

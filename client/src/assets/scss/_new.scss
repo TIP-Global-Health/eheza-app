@@ -334,6 +334,7 @@ div.page-person {
 
 //Common for Prenatal Encounter and Prenatal Activity pages
 div.page-prenatal-activity,
+div.page-nutrition-activity,
 div.page-prenatal-encounter,
 div.page-nutrition-encounter,
 div.page-pregnancy-outcome {
@@ -380,6 +381,40 @@ div.page-pregnancy-outcome {
 
 }
 
+div.page-nutrition-activity,
+div.page-prenatal-activity {
+
+    .ui.task.segment {
+
+      .column.core-physical-exam {
+        width: 25%;
+
+        a {
+          width: 131px;
+        }
+      }
+    }
+
+    .tasks-count {
+      background: $color-primary;
+      padding: 5px 15px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .ui.full.segment {
+
+      .label {
+        font-weight: bold;
+        margin-bottom: 20px;
+
+        &.helper {
+          margin-bottom: 40px;
+        }
+      }
+    }
+}
+
 // Prenatal Encounter page
 div.page-prenatal-encounter {
 
@@ -421,34 +456,7 @@ div.page-prenatal-encounter {
 // Prenatal Activity page
 div.page-prenatal-activity {
 
-    .ui.task.segment {
-
-      .column.core-physical-exam {
-        width: 25%;
-
-        a {
-          width: 131px;
-        }
-      }
-    }
-
-    .tasks-count {
-      background: $color-primary;
-      padding: 5px 15px;
-      font-size: 18px;
-      font-weight: bold;
-    }
-
     .ui.full.segment {
-
-      .label {
-        font-weight: bold;
-        margin-bottom: 20px;
-
-        &.helper {
-          margin-bottom: 40px;
-        }
-      }
 
       .form-input {
         margin-bottom: 30px;

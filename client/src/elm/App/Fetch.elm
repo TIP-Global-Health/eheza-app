@@ -12,6 +12,7 @@ import Pages.DemographicsReport.Fetch
 import Pages.Device.Fetch
 import Pages.IndividualEncounterParticipants.Fetch
 import Pages.IndividualEncounterTypes.Fetch
+import Pages.NutritionActivity.Fetch
 import Pages.NutritionEncounter.Fetch
 import Pages.NutritionParticipant.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
@@ -154,6 +155,10 @@ fetch model =
 
         UserPage (NutritionEncounterPage id) ->
             Pages.NutritionEncounter.Fetch.fetch id model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (NutritionActivityPage nutritionEncounterId _) ->
+            Pages.NutritionActivity.Fetch.fetch nutritionEncounterId model.indexedDb
                 |> List.map MsgIndexedDb
 
 
