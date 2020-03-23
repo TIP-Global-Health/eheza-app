@@ -28,8 +28,10 @@ function hedley_device_node_presave($node) {
 
   $wrapper = entity_metadata_wrapper('node', $node);
 
+  // For nodes that got a UUID field.
   if ($wrapper->__isset('field_uuid')) {
     hedley_device_assign_uuid($node, $wrapper);
+    hedley_device_verify_unique_uuid($node, $wrapper);
   }
 
   if ($node->type == 'device') {
@@ -195,6 +197,42 @@ function hedley_device_assign_uuid($node, $wrapper) {
     if (!empty($original_uuid) && $uuid != $original_uuid) {
       throw new Exception('You cannot modify a UUID once it is assigned.');
     }
+  }
+}
+
+/**
+ * Verify the UUID of the node being saved isn't duplicated.
+ */
+function hedley_device_verify_unique_uuid($node, $wrapper) {
+  $uuid = $wrapper->field_uuid->value();
+  // Search for other usages of the current UUID.
+  $query = db_select('field_data_field_uuid', 'uuid')
+    ->fields('uuid', ['entity_type', 'entity_id']);
+  // Ignore the row of the current entity (At least one of entity ID or type has
+  // to be different than the entity being checked for counting duplicates).
+  $ignore_current_entity = db_or()
+    ->condition('entity_id', $wrapper->getIdentifier(), '!=')
+    ->condition('entity_type', 'node', '!=');
+  $duplicate = $query
+    ->condition('field_uuid_value', $uuid)
+    ->condition($ignore_current_entity)
+    // No need to find more than one duplicate.
+    ->range(0, 1)
+    ->execute()
+    ->fetchObject();
+
+  // Throw an exception if duplicate UUID was found.
+  if ($duplicate) {
+    $entity_id = $wrapper->getIdentifier();
+
+    $params = [
+      '@uuid' => $uuid,
+      '@duplicate_type' => $duplicate->entity_type,
+      '@duplicate_id' => $duplicate->entity_id,
+      '@type' => $wrapper->type(),
+      '@id' => !empty($entity_id) ? '#' . $entity_id : '(unsaved)',
+    ];
+    throw new \Exception(format_string('UUID @uuid is already used on @duplicate_type #@duplicate_id, so node @type @id cannot be saved.', $params));
   }
 }
 
