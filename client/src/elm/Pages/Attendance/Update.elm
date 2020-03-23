@@ -9,6 +9,12 @@ import Pages.Session.Model
 update : Msg -> Model -> ( Model, Cmd Msg, List Pages.Session.Model.Msg )
 update msg model =
     case msg of
+        Reset ->
+            ( { model | filter = "", initialResultsDisplay = InitialResultsShown }
+            , Cmd.none
+            , []
+            )
+
         SetActivePage page ->
             ( { model | filter = "" }
             , Cmd.none
@@ -26,6 +32,20 @@ update msg model =
 
         SetFilter filter ->
             ( { model | filter = filter }
+            , Cmd.none
+            , []
+            )
+
+        ToggleInitialResultsDisplay ->
+            let
+                display =
+                    if model.initialResultsDisplay == InitialResultsHidden then
+                        InitialResultsShown
+
+                    else
+                        InitialResultsHidden
+            in
+            ( { model | initialResultsDisplay = display }
             , Cmd.none
             , []
             )
