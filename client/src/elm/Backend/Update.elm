@@ -1074,25 +1074,34 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , []
             )
 
-        PostIndividualSession prenatalSession ->
-            ( { model | postIndividualSession = Dict.insert prenatalSession.person Loading model.postIndividualSession }
-            , sw.post individualEncounterParticipantEndpoint prenatalSession
-                |> toCmd (RemoteData.fromResult >> HandlePostedIndividualSession prenatalSession.person)
+        PostIndividualSession session ->
+            ( { model | postIndividualSession = Dict.insert session.person Loading model.postIndividualSession }
+            , sw.post individualEncounterParticipantEndpoint session
+                |> toCmd (RemoteData.fromResult >> HandlePostedIndividualSession session.person session.encounterType)
             , []
             )
 
-        HandlePostedIndividualSession personId data ->
+        HandlePostedIndividualSession personId encounterType data ->
             let
-                -- We automatically create new encounter for newly created prenatal session.
-                -- We'll probably need to change this once we allow to end prenatal session,
-                -- but for now, this is sufficient.
+                -- We automatically create new encounter for newly created  session.
                 appMsgs =
                     RemoteData.map
                         (\( sessionId, _ ) ->
-                            [ Backend.PrenatalEncounter.Model.PrenatalEncounter sessionId currentDate Nothing
-                                |> Backend.Model.PostPrenatalEncounter
-                                |> App.Model.MsgIndexedDb
-                            ]
+                            case encounterType of
+                                AntenatalEncounter ->
+                                    [ Backend.PrenatalEncounter.Model.PrenatalEncounter sessionId currentDate Nothing
+                                        |> Backend.Model.PostPrenatalEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
+                                NutritionEncounter ->
+                                    [ Backend.NutritionEncounter.Model.NutritionEncounter sessionId currentDate Nothing
+                                        |> Backend.Model.PostNutritionEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
+                                InmmunizationEncounter ->
+                                    []
                         )
                         data
                         |> RemoteData.withDefault []
