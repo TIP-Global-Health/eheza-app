@@ -49,6 +49,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'medication' => 'medications',
   'muac' => 'muacs',
   'nutrition' => 'nutritions',
+  'nutrition_nutrition' => 'nutrition-nutritions',
   'obstetrical_exam' => 'obstetrical-exams',
   'obstetric_history' => 'obstetric-histories',
   'obstetric_history_step2' => 'obstetric-histories-step2',

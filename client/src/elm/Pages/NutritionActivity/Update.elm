@@ -8,6 +8,7 @@ import Backend.NutritionEncounter.Model
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.NutritionActivity.Model exposing (..)
+import Pages.NutritionActivity.Utils exposing (toNutritionValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Result exposing (Result)
 
@@ -78,20 +79,17 @@ update currentDate msg model =
                     Maybe.map (Tuple.second >> .value) saved
 
                 appMsgs =
-                    []
-
-                -- Todo:
-                -- model.nutritionData.form
-                --     |> toFamilyPlanningValueWithDefault measurement
-                --     |> unwrap
-                --         []
-                --         (\value ->
-                --             [ Backend.NutritionEncounter.Model.SaveFamilyPlanning personId measurementId value
-                --                 |> Backend.Model.MsgNutritionEncounter nutritionEncounterId
-                --                 |> App.Model.MsgIndexedDb
-                --             , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage nutritionEncounterId
-                --             ]
-                --         )
+                    model.nutritionData.form
+                        |> toNutritionValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.NutritionEncounter.Model.SaveNutrition personId measurementId value
+                                    |> Backend.Model.MsgNutritionEncounter nutritionEncounterId
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage nutritionEncounterId
+                                ]
+                            )
             in
             ( model
             , Cmd.none
