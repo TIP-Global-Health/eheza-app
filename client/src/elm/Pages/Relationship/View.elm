@@ -1,7 +1,7 @@
 module Pages.Relationship.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Clinic.Model exposing (Clinic)
+import Backend.Clinic.Model exposing (Clinic, ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
@@ -238,6 +238,8 @@ viewFetchedContent language currentDate maybeVillageGroupId isChw id1 id2 model 
                                         (\clinicId clinic ->
                                             -- Clinic is not already selected.
                                             (not <| List.member clinicId currentGroupsIds)
+                                                -- It's not a CHW clinic.
+                                                && (clinic.clinicType /= Chw)
                                                 && -- If both persons are assigned to a health
                                                    -- center, show the clinic if it is
                                                    -- assigned to one or the other.  If one of
