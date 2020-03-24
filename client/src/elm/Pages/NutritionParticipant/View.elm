@@ -187,12 +187,6 @@ viewNutritionActions language currentDate id db nutritionSessions =
 
         firstVisitButtonDisabled =
             isJust maybeSessionId && not firstEncounterInProcess
-
-        _ =
-            Debug.log "maybeActiveEncounterId" maybeActiveEncounterId
-
-        _ =
-            Debug.log "encounterWasCompletedToday" encounterWasCompletedToday
     in
     div []
         [ p [ class "label-antenatal-visit" ]

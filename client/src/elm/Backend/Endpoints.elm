@@ -230,7 +230,7 @@ prenatalMeasurementsEndpoint =
 
 nutritionMeasurementsEndpoint : ReadOnlyEndPoint Error NutritionEncounterId NutritionMeasurements ()
 nutritionMeasurementsEndpoint =
-    swEndpoint "nodes/prenatal-measurements" decodeNutritionMeasurements
+    swEndpoint "nodes/nutrition-measurements" decodeNutritionMeasurements
 
 
 {-| Type-safe params ... how nice!
