@@ -41,6 +41,7 @@ import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Http
+import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
     exposing
@@ -227,6 +228,7 @@ type TranslationId
     | Children
     | ChildrenNames
     | ChildrenNationalId
+    | Clear
     | ClickTheCheckMark
     | ClinicType ClinicType
     | Clinical
@@ -351,6 +353,7 @@ type TranslationId
     | IndividualEncounter
     | IndividualEncounterType IndividualEncounterType
     | IndividualEncounterTypes
+    | InitialResultsDisplay InitialResultsDisplay
     | KilogramShorthand
     | LastChecked
     | LastSuccesfulContactLabel
@@ -431,6 +434,7 @@ type TranslationId
     | Old
     | OneVisit
     | OnceYouEndYourGroupEncounter
+    | Or
     | Page
     | Page404
     | PageNotFoundMsg
@@ -1232,6 +1236,11 @@ translationSet trans =
         ChildOf ->
             { english = "Child of"
             , kinyarwanda = Just "Umwana wa"
+            }
+
+        Clear ->
+            { english = "Clear"
+            , kinyarwanda = Nothing
             }
 
         ClickTheCheckMark ->
@@ -2164,6 +2173,18 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        InitialResultsDisplay display ->
+            case display of
+                InitialResultsHidden ->
+                    { english = "Display all mothers / caregivers"
+                    , kinyarwanda = Just "Kugaragaza ababyeyi bose / abarezi"
+                    }
+
+                InitialResultsShown ->
+                    { english = "Hide all mothers / caregivers"
+                    , kinyarwanda = Just "Hisha ababyeyi bose / abarezi"
+                    }
+
         KilogramShorthand ->
             { english = "kg"
             , kinyarwanda = Just "kg"
@@ -2779,6 +2800,11 @@ translationSet trans =
         OnceYouEndYourGroupEncounter ->
             { english = "Once you end your Group Encounter, you will no longer be able to edit or add data."
             , kinyarwanda = Just "Igihe ushoze igikorwa, ntabwo ushobora guhindura cg wongeremo andi makuru."
+            }
+
+        Or ->
+            { english = "or"
+            , kinyarwanda = Nothing
             }
 
         Page ->
