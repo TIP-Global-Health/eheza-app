@@ -29,6 +29,7 @@ expected (and not completed).
 
 import Activity.Model exposing (..)
 import AssocList as Dict exposing (Dict)
+import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -74,10 +75,8 @@ encodeActivityAsString activity =
                 FamilyPlanning ->
                     "family_planning"
 
-
-
--- ParticipantConsent ->
--- "participants_consent"
+                ParticipantConsent ->
+                    "participants_consent"
 
 
 {-| The inverse of encodeActivityTypeAsString
@@ -105,8 +104,9 @@ decodeActivityFromString s =
         "family_planning" ->
             Just <| MotherActivity FamilyPlanning
 
-        -- "participants_consent" ->
-        --    Just <| MotherActivity ParticipantConsent
+        "participants_consent" ->
+            Just <| MotherActivity ParticipantConsent
+
         _ ->
             Nothing
 
@@ -148,10 +148,8 @@ getActivityIcon activity =
                 FamilyPlanning ->
                     "planning"
 
-
-
--- ParticipantConsent ->
---    "forms"
+                ParticipantConsent ->
+                    "forms"
 
 
 getAllActivities : List Activity
@@ -170,8 +168,7 @@ getAllChildActivities =
 getAllMotherActivities : List MotherActivity
 getAllMotherActivities =
     [ FamilyPlanning
-
-    -- , ParticipantConsent
+    , ParticipantConsent
     ]
 
 
@@ -427,21 +424,26 @@ expectMotherActivity session motherId activity =
 
                             CaregiverActivities ->
                                 False
-             {- ParticipantConsent ->
-                expectParticipantConsent session motherId
-                    |> Dict.isEmpty
-                    |> not
-             -}
+
+                    ParticipantConsent ->
+                        case session.session.clinicType of
+                            Pmtct ->
+                                expectParticipantConsent session motherId
+                                    |> Dict.isEmpty
+                                    |> not
+
+                            _ ->
+                                False
             )
 
 
 {-| Which participant forms would we expect this mother to consent to in this session?
 -}
-expectParticipantConsent : EditableSession -> PersonId -> Dict ParticipantFormId ParticipantForm
+expectParticipantConsent : OfflineSession -> PersonId -> Dict ParticipantFormId ParticipantForm
 expectParticipantConsent session motherId =
     let
         previouslyConsented =
-            getMotherHistoricalMeasurements motherId session.offlineSession
+            getMotherHistoricalMeasurements motherId session
                 |> LocalData.map
                     (.consents
                         >> Dict.map (\_ consent -> consent.value.formId)
@@ -449,9 +451,23 @@ expectParticipantConsent session motherId =
                         >> EverySet.fromList
                     )
                 |> LocalData.withDefault EverySet.empty
+
+        consentedAtCurrentSession =
+            getMotherMeasurementData2 motherId session
+                |> LocalData.map
+                    (.current
+                        >> .consent
+                        >> Dict.map (\_ consent -> consent.value.formId)
+                        >> Dict.values
+                        >> EverySet.fromList
+                    )
+                |> LocalData.withDefault EverySet.empty
+
+        consentedAtPreviousSessions =
+            EverySet.diff previouslyConsented consentedAtCurrentSession
     in
-    session.offlineSession.allParticipantForms
-        |> Dict.filter (\id _ -> not (EverySet.member id previouslyConsented))
+    session.allParticipantForms
+        |> Dict.filter (\id _ -> not (EverySet.member id consentedAtPreviousSessions))
 
 
 {-| For a particular child activity, figure out which children have completed
@@ -613,22 +629,24 @@ hasCompletedMotherActivity session motherId activityType measurements =
         FamilyPlanning ->
             isCompleted (Maybe.map Tuple.second measurements.current.familyPlanning)
 
+        ParticipantConsent ->
+            -- We only consider this activity completed if all expected
+            -- consents have been saved.
+            let
+                current =
+                    mapMeasurementData .consent measurements
+                        |> currentValues
+                        |> List.map (Tuple.second >> .value >> .formId)
+                        |> EverySet.fromList
 
-
-{-
-   ParticipantConsent ->
-       -- We only consider this activity completed if all expected
-       -- consents have been saved.
-       let
-           current =
-               mapMeasurementData .consent measurements
-                   |> currentValues
-                   |> List.map (Tuple.second >> .value >> .formId)
-                   |> EverySet.fromList
-       in
-       expectParticipantConsent session motherId
-           |> Dict.all (\id _ -> EverySet.member id current)
--}
+                expected =
+                    expectParticipantConsent session motherId
+            in
+            (Dict.isEmpty expected |> not)
+                && (expected
+                        |> Dict.toList
+                        |> List.all (\( id, _ ) -> EverySet.member id current)
+                   )
 
 
 motherHasCompletedActivity : PersonId -> MotherActivity -> OfflineSession -> Bool
@@ -649,7 +667,10 @@ isCompleted =
 hasAnyCompletedMotherActivity : OfflineSession -> PersonId -> MeasurementData MotherMeasurements -> Bool
 hasAnyCompletedMotherActivity session motherId measurements =
     getAllMotherActivities
-        |> List.any (\activity -> hasCompletedMotherActivity session motherId activity measurements)
+        |> List.any
+            (\activity ->
+                hasCompletedMotherActivity session motherId activity measurements
+            )
 
 
 hasAnyCompletedChildActivity : MeasurementData ChildMeasurements -> Bool

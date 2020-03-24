@@ -26,9 +26,13 @@ view language nurse ( sessionId, session ) model =
             session.summaryByActivity
                 |> LocalData.withDefault emptySummaryByActivity
 
-        ( pendingActivities, noPendingActivities ) =
+        pendingActivities =
             getAllActivities
-                |> List.partition (\activity -> (getParticipantCountForActivity summary activity).pending > 0)
+                |> List.filter (\activity -> (getParticipantCountForActivity summary activity).pending > 0)
+
+        noPendingActivities =
+            getAllActivities
+                |> List.filter (\activity -> (getParticipantCountForActivity summary activity).completed > 0)
 
         pendingTabTitle =
             translate language <| Trans.ActivitiesToComplete <| List.length pendingActivities

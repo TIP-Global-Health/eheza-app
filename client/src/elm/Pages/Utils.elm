@@ -76,7 +76,7 @@ viewNameFilter language filterInput setFilterMsg =
                 ]
             , onClick <| setFilterMsg ""
             ]
-            [ text <| translate language Translate.ShowAll ]
+            [ text <| translate language Translate.Clear ]
         ]
 
 

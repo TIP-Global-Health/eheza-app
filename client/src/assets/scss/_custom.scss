@@ -1489,6 +1489,17 @@ input::placeholder {
 }
 
 .page-attendance {
+
+  .toggle-initial-display {
+    line-height: 50px;
+
+    .toggle-text {
+      color: $color-primary;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+  }
+
   .ui.middle.aligned.divided.list .item .content .description {
     font-size: 1.3rem;
     padding-left: 1rem;
