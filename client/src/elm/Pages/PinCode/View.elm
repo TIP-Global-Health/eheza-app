@@ -171,7 +171,7 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                             , onClick <| SendOutMsg <| SetActivePage <| UserPage <| ClinicsPage Nothing
                             ]
                             [ span [ class "icon-group" ] []
-                            , span [ class "text" ] [ text <| translate language Translate.GroupAssessment ]
+                            , span [ class "text" ] [ text <| translate language Translate.GroupEncounter ]
                             , span [ class "icon-back" ] []
                             ]
                 in
@@ -229,7 +229,7 @@ viewWhenLoggedIn language nurse healthCenterId model db =
                             [ class "ui primary button"
                             , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing
                             ]
-                            [ text <| translate language Translate.RegisterAParticipant ]
+                            [ text <| translate language Translate.ParticipantDirectory ]
                 in
                 [ loggedInAs
                 , healthCenterName

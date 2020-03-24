@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulAttendances.
  */
-class HedleyRestfulAttendances extends HedleyRestfulMotherActivityBase {
+class HedleyRestfulAttendances extends HedleyRestfulActivityBase {
 
   /**
    * {@inheritdoc}
@@ -21,6 +21,28 @@ class HedleyRestfulAttendances extends HedleyRestfulMotherActivityBase {
     ];
 
     return $public_fields;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
+    $query = parent::alterQueryForViewWithDbSelect($query);
+
+    hedley_restful_join_field_to_query($query, 'node', 'field_attended', FALSE);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    $items = parent::postExecuteQueryForViewWithDbSelect($items);
+
+    foreach ($items as &$item) {
+      $item->attended = (bool) $item->attended;
+    }
+
+    return $items;
   }
 
 }

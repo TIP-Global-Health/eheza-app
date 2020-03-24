@@ -40,7 +40,7 @@ import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (..)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
 import EverySet
-import Gizra.NominalDate exposing (diffDays)
+import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths)
 import LocalData
 import Maybe.Extra exposing (isJust, isNothing)
 
@@ -176,9 +176,22 @@ getAllMotherActivities =
 Note that we don't consider whether the child is checked in here -- just
 whether we would expect to perform this action if checked in.
 -}
-expectChildActivity : OfflineSession -> PersonId -> ChildActivity -> Bool
-expectChildActivity session childId activity =
+expectChildActivity : NominalDate -> OfflineSession -> PersonId -> ChildActivity -> Bool
+expectChildActivity currentDate session childId activity =
     case activity of
+        Muac ->
+            Dict.get childId session.children
+                |> Maybe.andThen .birthDate
+                |> Maybe.map
+                    (\birthDate ->
+                        if diffMonths birthDate currentDate < 6 then
+                            False
+
+                        else
+                            True
+                    )
+                |> Maybe.withDefault False
+
         {- Counseling ->
            Maybe.Extra.isJust <|
                expectCounselingActivity session childId
@@ -462,10 +475,10 @@ the activity and have the activity pending. (This may not add up to all the
 children, because we only consider a child "pending" if they are checked in and
 the activity is expected.
 -}
-summarizeChildActivity : ChildActivity -> OfflineSession -> CheckedIn -> CompletedAndPending (Dict PersonId Person)
-summarizeChildActivity activity session checkedIn =
+summarizeChildActivity : NominalDate -> ChildActivity -> OfflineSession -> CheckedIn -> CompletedAndPending (Dict PersonId Person)
+summarizeChildActivity currentDate activity session checkedIn =
     checkedIn.children
-        |> Dict.filter (\childId _ -> expectChildActivity session childId activity)
+        |> Dict.filter (\childId _ -> expectChildActivity currentDate session childId activity)
         |> Dict.partition (\childId _ -> childHasCompletedActivity childId activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
@@ -475,8 +488,8 @@ the activity and have the activity pending. (This may not add up to all the
 mothers, because we only consider a mother "pending" if they are checked in and
 the activity is expected.
 -}
-summarizeMotherActivity : MotherActivity -> OfflineSession -> CheckedIn -> CompletedAndPending (Dict PersonId Person)
-summarizeMotherActivity activity session checkedIn =
+summarizeMotherActivity : NominalDate -> MotherActivity -> OfflineSession -> CheckedIn -> CompletedAndPending (Dict PersonId Person)
+summarizeMotherActivity currentDate activity session checkedIn =
     -- For participant consent, we only consider the activity to be completed once
     -- all expected consents have been saved.
     checkedIn.mothers
@@ -524,10 +537,10 @@ getParticipantCountForActivity summary activity =
 and which are pending. (This may not add up to all the activities, because some
 activities may not be expected for this child).
 -}
-summarizeChildParticipant : PersonId -> OfflineSession -> CompletedAndPending (List ChildActivity)
-summarizeChildParticipant id session =
+summarizeChildParticipant : NominalDate -> PersonId -> OfflineSession -> CompletedAndPending (List ChildActivity)
+summarizeChildParticipant currentDate id session =
     getAllChildActivities
-        |> List.filter (expectChildActivity session id)
+        |> List.filter (expectChildActivity currentDate session id)
         |> List.partition (\activity -> childHasCompletedActivity id activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
@@ -536,8 +549,8 @@ summarizeChildParticipant id session =
 and which are pending. (This may not add up to all the activities, because some
 activities may not be expected for this mother).
 -}
-summarizeMotherParticipant : PersonId -> OfflineSession -> CompletedAndPending (List MotherActivity)
-summarizeMotherParticipant id session =
+summarizeMotherParticipant : NominalDate -> PersonId -> OfflineSession -> CompletedAndPending (List MotherActivity)
+summarizeMotherParticipant currentDate id session =
     getAllMotherActivities
         |> List.filter (expectMotherActivity session id)
         |> List.partition (\activity -> motherHasCompletedActivity id activity session)

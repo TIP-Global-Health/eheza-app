@@ -6,13 +6,14 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Utils exposing (getMyMother)
+import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model
 import Pages.Activity.Utils exposing (viewChildMeasurements, viewMotherMeasurements)
 import Participant.Model exposing (Participant, ParticipantId(..))
 import RemoteData exposing (RemoteData(..))
 
 
-childParticipant : Participant PersonId Person ChildActivity Measurement.Model.MsgChild
+childParticipant : Participant PersonId Person ChildActivity Measurement.Model.MsgChild NominalDate
 childParticipant =
     { getAvatarUrl = .avatarUrl
     , getBirthDate = .birthDate
@@ -33,7 +34,7 @@ childParticipant =
     }
 
 
-motherParticipant : Participant PersonId Person MotherActivity Measurement.Model.MsgMother
+motherParticipant : Participant PersonId Person MotherActivity Measurement.Model.MsgMother NominalDate
 motherParticipant =
     { getAvatarUrl = .avatarUrl
     , getBirthDate = .birthDate

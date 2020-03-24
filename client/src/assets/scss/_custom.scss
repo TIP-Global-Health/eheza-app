@@ -566,6 +566,10 @@ h3.ui.header {
     margin-bottom: 30px;
     padding: 17px 15px;
   }
+
+  .input-wrapper {
+    border: 2px solid $color-gray-border;
+  }
 }
 
 .ui.input {
@@ -600,8 +604,12 @@ h3.ui.header {
   width: 300px; //263px;
   text-align: right;
   height: 50px;
-  background: #e6e6e6;
   color: $color-text;
+
+  &.search-input,
+  &.pairing-code {
+    background: $color-light-gray;
+  }
 }
 
 .ui.form input[type=number],
@@ -614,7 +622,6 @@ h3.ui.header {
   width: 300px; //263px;
   text-align: right;
   height: 50px;
-  background: #e6e6e6;
   color: $color-text;
 }
 
@@ -741,6 +748,10 @@ h3.ui.header {
               width: 40px;
               margin-left: 2px;
               margin-top: 2px;
+
+              &.edit {
+                background: url(#{$img-path}icon-edit.svg) no-repeat center;
+              }
 
               &.forward {
                 background: url(#{$img-path}icon-forward.svg) no-repeat center;
@@ -1478,6 +1489,17 @@ input::placeholder {
 }
 
 .page-attendance {
+
+  .toggle-initial-display {
+    line-height: 50px;
+
+    .toggle-text {
+      color: $color-primary;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+  }
+
   .ui.middle.aligned.divided.list .item .content .description {
     font-size: 1.3rem;
     padding-left: 1rem;

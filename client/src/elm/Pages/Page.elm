@@ -123,6 +123,8 @@ type UserPage
       -- we're in a flow in which we should offer to create a relationship between the new
       -- person and the specified person.
     | CreatePersonPage (Maybe PersonId)
+      -- Shows a form for editing existing person.
+    | EditPersonPage PersonId
       -- Shows list of people using search string. If the PersonId is provided,
       -- then we're in a context in which we're looking to add a family member.
     | PersonsPage (Maybe PersonId)

@@ -8,6 +8,34 @@
 include_once 'hedley_admin.features.inc';
 
 /**
+ * Implements hook_views_plugins().
+ */
+function hedley_admin_views_plugins() {
+  return array(
+    'access' => array(
+      'health_center' => array(
+        'title' => t('Health-center-based Access'),
+        'help' => t('If the child is associated with the same health center as the user, it grants access'),
+        'handler' => 'hedley_admin_health_center_access_plugin',
+        'path' => drupal_get_path('module', 'hedley_admin'),
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements preprocess_views_view().
+ *
+ * Fixes the styling of the date filter form in views.
+ */
+function hedley_admin_preprocess_views_view(&$vars) {
+  // The CSS is very specific that it won't effect anything else and therefore
+  // no need to limit it to one view. (Also, this way we don't need to edit
+  // anything when adding a date filter to any view).
+  drupal_add_css(drupal_get_path('module', 'hedley_admin') . '/css/date_views.css');
+}
+
+/**
  * Implements hook_theme_registry_alter().
  */
 function hedley_admin_theme_registry_alter(&$theme_registry) {
@@ -126,4 +154,125 @@ function hedley_admin_node_delete($node) {
   }
 
   throw new Exception('Content deletion is forbidden!');
+}
+
+/**
+ * Implements hook_views_pre_view().
+ *
+ * We would like to propagate the node argument (child)
+ * for all the measurements (weight, height, muac), but
+ * an URL like ledger/5/5/5 would be ugly.
+ * So we propagate the first argument into the other
+ * contextual filters by code.
+ */
+function hedley_admin_views_pre_view(&$view) {
+  if ($view->name != 'ledger') {
+    return;
+  }
+  if (empty($view->args[0])) {
+    return;
+  }
+  $view->args[1] = $view->args[0];
+  $view->args[2] = $view->args[0];
+  $view->args[3] = $view->args[0];
+}
+
+/**
+ * Implements hook_views_post_execute().
+ *
+ * Handle special Caregiver field.
+ */
+function hedley_admin_views_post_execute(&$view) {
+  if ($view->name !== 'ledger') {
+    return;
+  }
+  foreach ($view->result as $result) {
+    // We have a Caregiver field in the output, where we'd like to simply
+    // tell if the given person, displayed in another field, is a mother
+    // or a caregiver. So we transform the output of the view to show
+    // this boolean outcome.
+    if ($result->field_field_related_by[0]['rendered']['#markup'] !== 'Caregiver for') {
+      $result->field_field_related_by[0]['rendered']['#markup'] = '';
+    }
+    else {
+      $result->field_field_related_by[0]['rendered']['#markup'] = t('X');
+    }
+  }
+
+  // Due to the manipulation at hedley_admin_views_pre_view(), we would
+  // end up with a very strange breadcrumb, sanitizing it here.
+  $breadcrumb = [];
+  $breadcrumb[] = l(t('Home'), NULL);
+  $breadcrumb[] = l(t('Children'), 'admin/content/children');
+  $breadcrumb[] = l(t('Ledger'), 'admin/ledger/' . $view->args[0]);
+  drupal_set_breadcrumb($breadcrumb);
+}
+
+/**
+ * Implements hook_query_TAG_alter().
+ *
+ * Adds the proper grouping to the ledger.
+ */
+function hedley_admin_query_views_ledger_alter(QueryAlterableInterface $query) {
+  // Modifying the query here, notice the reference handling.
+  // @see https://api.drupal.org/api/drupal/includes!database!select.inc/function/SelectQueryInterface%3A%3AgetGroupBy/7.
+  $fields =& $query->getGroupBy();
+  $fields['node.nid'] = 'node.nid';
+}
+
+/**
+ * Health-center-based access check.
+ */
+function hedley_admin_health_center_access($account = FALSE) {
+  global $user;
+
+  if (user_is_anonymous()) {
+    return FALSE;
+  }
+
+  $account = !empty($account) ? $account : $user;
+  if ($account->uid == 1) {
+    return TRUE;
+  }
+
+  if (in_array('administrator', $account->roles)) {
+    return TRUE;
+  }
+
+  if (!in_array('E-ledger viewer', $account->roles) && !in_array('nurse', $account->roles)) {
+    return FALSE;
+  }
+
+  // There's no trivial and nice way to pass a view argument.
+  // Here views_get_current_view() doesn't return anything.
+  // Expected path:
+  // /admin/ledger/[nid].
+  $nid = arg(2);
+  if (empty($nid)) {
+    return FALSE;
+  }
+
+  $child = node_load($nid);
+  if (empty($child)) {
+    return FALSE;
+  }
+
+  try {
+    $child_wrapper = entity_metadata_wrapper('node', $child);
+    $account_wrapper = entity_metadata_wrapper('user', $account);
+    $child_center_nid = $child_wrapper->field_health_center->getIdentifier();
+
+    if (empty($child_center_nid)) {
+      return FALSE;
+    }
+
+    $hc_ids = $account_wrapper->field_health_centers->value(['identifier' => TRUE]);
+
+    return in_array($child_center_nid, $hc_ids);
+  }
+  catch (Exception $e) {
+    // Might be impartial data, anyways, simply disallow the access.
+    watchdog('hedley_admin', $e->getMessage());
+    return FALSE;
+  }
 }

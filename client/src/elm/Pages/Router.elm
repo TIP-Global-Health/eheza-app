@@ -55,6 +55,9 @@ pageToFragment current =
                     in
                     Just ("person/new" ++ relation)
 
+                EditPersonPage id ->
+                    Just ("person/" ++ fromEntityUuid id ++ "/edit")
+
                 PersonPage id ->
                     Just ("person/" ++ fromEntityUuid id)
 
@@ -123,6 +126,7 @@ parser =
         , map (\id -> UserPage <| PersonsPage (Just id)) (s "relations" </> parseUuid)
         , map (\id -> UserPage <| CreatePersonPage (Just id)) (s "person" </> s "new" </> parseUuid)
         , map (UserPage <| CreatePersonPage Nothing) (s "person" </> s "new")
+        , map (\id -> UserPage <| EditPersonPage id) (s "person" </> parseUuid </> s "edit")
         , map (\id -> UserPage <| PersonPage id) (s "person" </> parseUuid)
         , map (\id1 id2 -> UserPage <| RelationshipPage id1 id2) (s "relationship" </> parseUuid </> parseUuid)
 

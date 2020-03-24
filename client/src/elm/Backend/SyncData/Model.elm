@@ -1,6 +1,6 @@
 module Backend.SyncData.Model exposing (DownloadStatus, SyncAttempt(..), SyncData, SyncError(..), UploadStatus, emptySyncData)
 
-import Date exposing (Date)
+import Time
 
 
 type alias SyncData =
@@ -20,7 +20,7 @@ emptySyncData =
 
 type alias DownloadStatus =
     -- The last time we successfully contacted the backend
-    { lastSuccessfulContact : Date
+    { lastSuccessfulContact : Time.Posix
 
     -- The timestamp of the last revision on the backend
     , lastTimestamp : Int
@@ -42,9 +42,9 @@ type alias UploadStatus =
 
 type SyncAttempt
     = NotAsked
-    | Downloading Date Int -- in progress, from base revision
-    | Uploading Date
-    | Failure Date SyncError
+    | Downloading Time.Posix Int -- in progress, from base revision
+    | Uploading Time.Posix
+    | Failure Time.Posix SyncError
     | Success
 
 

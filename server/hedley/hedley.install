@@ -1,5 +1,9 @@
 <?php
-// $Id: standard.install,v 1.28 2010/10/21 04:22:34 webchick Exp $
+
+/**
+ * @file
+ * Installation logic for Hedley.
+ */
 
 /**
  * Implements hook_install().
@@ -29,11 +33,11 @@ function hedley_install() {
   variable_set('date_default_timezone', 'Asia/Jerusalem');
   variable_set('date_first_day', 1);
 
-  // Setup private files
+  // Setup private files.
   variable_set('file_private_path', 'sites/default/files/private');
 
   // Perform several of the updates that aren't handled in
-  // `hedley_standard_install`, and are needed on a fresh install
+  // `hedley_standard_install`, and are needed on a fresh install.
   hedley_update_7002();
   hedley_update_7003();
   hedley_update_7004();
@@ -187,7 +191,8 @@ function hedley_standard_install() {
   }
   $query->execute();
 
-  // Enable user picture support and set the default to a square thumbnail option.
+  // Enable user picture support and set the default to a square
+  // thumbnail option.
   variable_set('user_pictures', '1');
   variable_set('user_picture_dimensions', '1024x1024');
   variable_set('user_picture_file_size', '800');
@@ -215,7 +220,12 @@ function hedley_standard_install() {
   // Set this as the administrator role.
   variable_set('user_admin_role', $admin_role->rid);
 
-  // Creating a Nurse role and add the
+  // Creating a E-ledger viewer role and add the permissions.
+  $ledger_viewer_role = new stdClass();
+  $ledger_viewer_role->name = 'E-ledger viewer';
+  user_role_save($ledger_viewer_role);
+
+  // Creating a Nurse role and add the permissions.
   $nurse_role = new stdClass();
   $nurse_role->name = 'nurse';
   user_role_save($nurse_role);
@@ -351,8 +361,7 @@ function hedley_update_7004() {
 }
 
 /**
- * Installs the Date Views module for measurement filters and VBO export for
- * CSV download.
+ * Enable the Date Views for measurement filter and VBO export for CSV download.
  */
 function hedley_update_7005() {
   $modules = ['date_views', 'vbo_export'];
@@ -526,4 +535,13 @@ function hedley_update_7020() {
  */
 function hedley_update_7021() {
   variable_set('file_private_path', 'sites/default/files/private');
+}
+
+/**
+ * E-ledger viewer role.
+ */
+function hedley_update_7022() {
+  $ledger_viewer_role = new stdClass();
+  $ledger_viewer_role->name = 'E-ledger viewer';
+  user_role_save($ledger_viewer_role);
 }

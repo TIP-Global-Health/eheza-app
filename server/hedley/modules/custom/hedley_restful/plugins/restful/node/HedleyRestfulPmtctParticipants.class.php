@@ -65,4 +65,54 @@ class HedleyRestfulPmtctParticipants extends HedleyRestfulSyncBase {
     ];
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
+    $field_names = [
+      'field_adult_activities',
+      'field_person',
+      'field_adult',
+      'field_clinic',
+    ];
+
+    foreach ($field_names as $field_name) {
+      hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
+    }
+
+    hedley_restful_join_field_to_query($query, 'node', 'field_expected', FALSE, NULL, NULL, TRUE);
+
+    // Get the UUIDs of the Person, Adult and Clinic.
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_person.field_person_target_id", 'uuid_person');
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_adult.field_adult_target_id", 'uuid_adult');
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_clinic.field_clinic_target_id", 'uuid_clinic');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function postExecuteQueryForViewWithDbSelect(array $items = []) {
+    $items = parent::postExecuteQueryForViewWithDbSelect($items);
+
+    foreach ($items as &$item) {
+      $item->person = $item->uuid_person;
+      unset($item->uuid_person);
+      $item->adult = $item->uuid_adult;
+      unset($item->uuid_adult);
+      $item->clinic = $item->uuid_clinic;
+      unset($item->uuid_clinic);
+
+      $value1 = $item->expected;
+      $value2 = $item->field_expected_field_expected_value2;
+      $item->expected = [
+        'value' => $value1 ? hedley_restful_timestamp_only_date($value1) : NULL,
+        'value2' => $value2 ? hedley_restful_timestamp_only_date($value2) : NULL,
+
+      ];
+      unset($item->field_expected_field_expected_value2);
+    }
+
+    return $items;
+  }
+
 }

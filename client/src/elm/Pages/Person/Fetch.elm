@@ -1,4 +1,4 @@
-module Pages.Person.Fetch exposing (fetch, fetchForCreateForm)
+module Pages.Person.Fetch exposing (fetch, fetchForCreateOrEdit)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -10,12 +10,6 @@ import RemoteData exposing (RemoteData(..))
 fetch : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetch id db =
     let
-        familyMembers =
-            Dict.get id db.relationshipsByPerson
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.map (Dict.values >> List.map (.relatedTo >> FetchPerson))
-                |> RemoteData.withDefault []
-
         addParticipants participant accum =
             -- We add them both, and then as a final step remove the id itself,
             -- since we'll fetch that anyway.
@@ -37,7 +31,7 @@ fetch id db =
                     )
                 |> RemoteData.withDefault []
     in
-    familyMembers
+    fetchFamilyMembers id db
         ++ participantMembers
         ++ [ FetchPerson id
            , FetchRelationshipsForPerson id
@@ -46,9 +40,19 @@ fetch id db =
            ]
 
 
-fetchForCreateForm : Maybe PersonId -> List MsgIndexedDb
-fetchForCreateForm related =
+fetchForCreateOrEdit : Maybe PersonId -> ModelIndexedDb -> List MsgIndexedDb
+fetchForCreateOrEdit related db =
     FetchHealthCenters
-        :: List.filterMap identity
-            [ Maybe.map FetchPerson related
-            ]
+        :: (related
+                |> Maybe.map
+                    (\id -> FetchPerson id :: fetchFamilyMembers id db)
+                |> Maybe.withDefault []
+           )
+
+
+fetchFamilyMembers : PersonId -> ModelIndexedDb -> List MsgIndexedDb
+fetchFamilyMembers id db =
+    Dict.get id db.relationshipsByPerson
+        |> Maybe.withDefault NotAsked
+        |> RemoteData.map (Dict.values >> List.map (.relatedTo >> FetchPerson))
+        |> RemoteData.withDefault []

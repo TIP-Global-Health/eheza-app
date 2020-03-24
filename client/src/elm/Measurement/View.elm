@@ -305,7 +305,7 @@ viewFloatForm config language currentDate child measurements zscores model =
                     [ div
                         [ class "eleven wide column" ]
                         [ div [ class "ui right labeled input" ]
-                            [ input inputAttrs []
+                            [ div [ class "input-wrapper" ] [ input inputAttrs [] ]
                             , div
                                 [ class "ui basic label" ]
                                 [ text <| translate language config.unit ]
@@ -1024,10 +1024,10 @@ viewFamilyPlanningSelector : Language -> EverySet FamilyPlanningSign -> List (Ht
 viewFamilyPlanningSelector language familyPlanningSigns =
     let
         familyPlanningSignFirst =
-            [ Pill, Condoms, IUD ]
+            [ AutoObservation, Condoms, CycleBeads, CycleCounting, Hysterectomy, Implants, Injectables ]
 
         familyPlanningSignSecond =
-            [ Implant, Injection, Necklace ]
+            [ IUD, LactationAmenorrhea, OralContraceptives, Spermicide, TubalLigatures, Vasectomy ]
     in
     [ div [ class "ui grid" ]
         [ familyPlanningSignFirst

@@ -97,7 +97,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
             childParticipant
 
         activities =
-            summarizeChildParticipant childId session.offlineSession
+            summarizeChildParticipant currentDate childId session.offlineSession
 
         selectedActivity =
             case model.selectedTab of
@@ -197,14 +197,14 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
             ]
 
 
-viewMother : Language -> PersonId -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model MotherActivity -> Html (Msg MotherActivity Measurement.Model.MsgMother)
-viewMother language motherId ( sessionId, session ) pages model =
+viewMother : Language -> NominalDate -> PersonId -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model MotherActivity -> Html (Msg MotherActivity Measurement.Model.MsgMother)
+viewMother language currentDate motherId ( sessionId, session ) pages model =
     -- It's nice to just pass in the motherId. If the session is consistent, we
     -- should always be able to get the mother.  But it would be hard to
     -- convince the compiler of that, so we put in a pro-forma error message.
     case getMother motherId session.offlineSession of
         Just mother ->
-            viewFoundMother language ( motherId, mother ) ( sessionId, session ) pages model
+            viewFoundMother language currentDate ( motherId, mother ) ( sessionId, session ) pages model
 
         Nothing ->
             -- TODO: Make this error a little nicer, and translatable ... it
@@ -217,8 +217,8 @@ viewMother language motherId ( sessionId, session ) pages model =
                 ]
 
 
-viewFoundMother : Language -> ( PersonId, Person ) -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model MotherActivity -> Html (Msg MotherActivity Measurement.Model.MsgMother)
-viewFoundMother language ( motherId, mother ) ( sessionId, session ) pages model =
+viewFoundMother : Language -> NominalDate -> ( PersonId, Person ) -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model MotherActivity -> Html (Msg MotherActivity Measurement.Model.MsgMother)
+viewFoundMother language currentDate ( motherId, mother ) ( sessionId, session ) pages model =
     let
         break =
             br [] []
@@ -232,7 +232,7 @@ viewFoundMother language ( motherId, mother ) ( sessionId, session ) pages model
                 |> List.intersperse break
 
         activities =
-            summarizeMotherParticipant motherId session.offlineSession
+            summarizeMotherParticipant currentDate motherId session.offlineSession
 
         selectedActivity =
             case model.selectedTab of
@@ -330,7 +330,7 @@ viewFoundMother language ( motherId, mother ) ( sessionId, session ) pages model
             ]
 
 
-viewActivityCards : Participant id value activity msg -> Language -> CompletedAndPending (List activity) -> Tab -> Maybe activity -> List ( String, Html (Msg activity any) )
+viewActivityCards : Participant id value activity msg NominalDate -> Language -> CompletedAndPending (List activity) -> Tab -> Maybe activity -> List ( String, Html (Msg activity any) )
 viewActivityCards config language activities selectedTab selectedActivity =
     let
         pendingActivitiesView =
@@ -389,7 +389,7 @@ viewActivityCards config language activities selectedTab selectedActivity =
     ]
 
 
-viewActivityListItem : Participant id value activity msg -> Language -> Maybe activity -> activity -> Html (Msg activity any)
+viewActivityListItem : Participant id value activity msg NominalDate -> Language -> Maybe activity -> activity -> Html (Msg activity any)
 viewActivityListItem config language selectedActivity activityItem =
     div [ class "column" ]
         [ a
@@ -426,7 +426,7 @@ viewHeader language id =
 {-| Given a mother or a child, this figures out who the whole family is, and shows links allowing
 you to switch between any family member.
 -}
-viewFamilyLinks : Participant id value activity msg -> Language -> id -> ( SessionId, EditableSession ) -> Html (Msg activity any)
+viewFamilyLinks : Participant id value activity msg NominalDate -> Language -> id -> ( SessionId, EditableSession ) -> Html (Msg activity any)
 viewFamilyLinks config language participantId ( sessionId, session ) =
     let
         -- Whether we've looking at a child or a mother, we figure out who the

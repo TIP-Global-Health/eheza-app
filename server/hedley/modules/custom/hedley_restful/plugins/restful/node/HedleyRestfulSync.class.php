@@ -13,6 +13,14 @@ use Ramsey\Uuid\Uuid;
 class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInterface {
 
   /**
+   * Nodes synced to all devices.
+   *
+   * The content types and their restful handler for nodes that
+   * we sync to all devices.
+   */
+  const HEDLEY_RESTFUL_DB_QUERY_RANGE = 500;
+
+  /**
    * Overrides \RestfulBase::controllersInfo().
    */
   public static function controllersInfo() {
@@ -21,6 +29,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
         \RestfulInterface::GET => 'getForAllDevices',
         \RestfulInterface::POST => 'handleChanges',
       ],
+      // The UUID of the Health center.
       '^.*$' => [
         \RestfulInterface::GET => 'getForHealthCenter',
         \RestfulInterface::POST => 'handleChanges',
@@ -128,7 +137,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    */
   public function getForAllDevices() {
     $request = $this->getRequest();
-    $handlersForTypes = $this->entitiesForAllDevices();
+    $handlers_by_types = $this->entitiesForAllDevices();
 
     // Note that 0 is fine, so we can't use `empty`.
     if (!isset($request['base_revision'])) {
@@ -152,83 +161,60 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     }
 
     // Start building up a query, which we'll use in a couple of ways.
-    $query = db_select('node_revision', 'nr');
-    $query->join('node', 'n', 'n.nid = nr.nid');
+    $query = db_select('node', 'node');
 
     $query
-      ->fields('nr', ['nid', 'vid', 'timestamp'])
-      ->fields('n', ['type'])
-      ->condition('n.type', array_keys($handlersForTypes), 'IN');
+      ->fields('node', ['nid', 'vid', 'created', 'changed', 'type'])
+      ->condition('node.type', array_keys($handlers_by_types), 'IN');
 
     // Get the timestamp of the last revision. We'll also get a count of
-    // remaining revisions, but the timestamp of the last revision will also
+    // remaining nodes, but the timestamp of the last revision will also
     // help us display how far out-of-date the client is.
     $last_revision_query = clone $query;
 
     $last_revision = $last_revision_query
-      ->orderBy('nr.vid', 'DESC')
+      ->orderBy('node.vid', 'DESC')
       ->range(0, 1)
       ->execute()
       ->fetchObject();
 
-    $last_timestamp = $last_revision ? $last_revision->timestamp : 0;
+    $last_timestamp = $last_revision ? $last_revision->changed : 0;
 
     // Restrict to revisions the client doesn't already have.
-    $query->condition('nr.vid', $base, '>');
+    $query->condition('node.vid', $base, '>');
 
-    // Get the total number of revisions that are greater than the base
-    // revision. This will help the client show progress. Note that this
-    // includes the revisions in the batch we will return (but not earlier
-    // revisions).
+    // Get the total number of nodes that are greater than the base
+    // revision. This will help the client show progress.
     $count = $query->countQuery()->execute()->fetchField();
 
     // Then, get one batch worth of results.
     $batch = $query
-      ->orderBy('nr.vid', 'ASC')
-      ->range(0, $this->getRange())
+      ->orderBy('node.vid', 'ASC')
+      ->range(0, self::HEDLEY_RESTFUL_DB_QUERY_RANGE)
       ->execute()
       ->fetchAll();
 
-    // As an optimization, if the same node ID occurs multiple times in this
-    // batch, just send the last one. In principle, it would be nice to enable
-    // this optimization across multiple batches as well. That is, it would be
-    // nice to avoid sending a node now if it will be sent again in a later
-    // batch. However, the difficulty is that we can't be sure that the client
-    // will actually get to the later batch before being offline again. We
-    // could immediately send the later revision, but then we'd be sending
-    // changes out-of-order, which might have strange implications.  (For
-    // instance, a field might reference an entity the client doesn't have
-    // yet).  So, at least for the moment, it's better to do this optimization
-    // within a single batch only. (Items can be out-of-order within the batch,
-    // but that should be manageable, since we can at least be sure that the
-    // client will get the whole batch or nothing).
-    $optimized = [];
-    foreach ($batch as $item) {
-      $optimized[$item->nid] = $item;
-    }
-    $optimized = array_values($optimized);
-
-    // Adjust the count if we've removed any items with our optimization.
-    $count = $count - count($batch) + count($optimized);
-
-    // Now, we wish to get a restful representation of each revision in this
-    // batch. We need to represent the specific revision, rather than the
-    // current revision, for the reasons noted above. (We can't be sure that
-    // the client will get all batches before going offline, and if we send
-    // revisions out-of-order then we might reference entities the client
-    // doesn't have yet).
     $account = $this->getAccount();
 
+    $batch_by_node_type = [];
+
+    foreach ($batch as $item) {
+      $batch_by_node_type[$item->type][] = $item;
+    }
+
     $output = [];
-    foreach ($optimized as $item) {
-      $handler_name = $handlersForTypes[$item->type];
+    foreach ($batch_by_node_type as $node_type => $items) {
+      $handler_name = $handlers_by_types[$node_type];
       $sub_handler = restful_get_restful_handler($handler_name);
       $sub_handler->setAccount($account);
-      $rendered = $sub_handler->viewNodeRevision($item->nid, $item->vid);
 
-      // Also add in the timestamp.
-      $rendered['timestamp'] = $item->timestamp;
-      $output[] = $rendered;
+      $node_ids = [];
+      foreach ($items as $item) {
+        $node_ids[] = $item->nid;
+      }
+
+      $rendered_items = $sub_handler->viewWithDbSelect($node_ids);
+      $output = array_merge($output, $rendered_items);
     }
 
     return [
@@ -254,7 +240,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    */
   public function getForHealthCenter($uuid) {
     $request = $this->getRequest();
-    $handlersForTypes = $this->entitiesForHealthCenters();
+    $handlers_by_types = $this->entitiesForHealthCenters();
 
     // Note that 0 is fine, so we can't use `empty`.
     if (!isset($request['base_revision'])) {
@@ -277,29 +263,18 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       throw new RestfulBadRequestException('Must update your client before syncing further.');
     }
 
-    // Start building up a query, which we'll use in a couple of ways.
-    $query = db_select('node_revision', 'nr');
-    $query->join('node', 'n', 'n.nid = nr.nid');
+    $query = db_select('node', 'node');
 
-    // Join the table that tracks which shards the node should be sent to.
-    $query->join(
-      'field_revision_field_shards',
-      's',
-      's.entity_id = nr.nid AND s.revision_id = nr.vid'
-    );
+    // Filter by Health center.
+    hedley_restful_join_field_to_query($query, 'node', 'field_shards');
 
     // And the table which will give us the UUID of the shard.
-    $query->join(
-      'field_data_field_uuid',
-      'u',
-      'u.entity_id = s.field_shards_target_id'
-    );
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_shards.field_shards_target_id");
 
     $query
-      ->fields('nr', ['nid', 'vid', 'timestamp'])
-      ->fields('n', ['type'])
-      ->condition('u.field_uuid_value', $uuid)
-      ->condition('n.type', array_keys($handlersForTypes), 'IN');
+      ->fields('node', ['type', 'nid', 'vid', 'created', 'changed'])
+      ->condition('field_uuid.field_uuid_value', $uuid)
+      ->condition('node.type', array_keys($handlers_by_types), 'IN');
 
     // Get the timestamp of the last revision. We'll also get a count of
     // remaining revisions, but the timestamp of the last revision will also
@@ -307,50 +282,32 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $last_revision_query = clone $query;
 
     $last_revision = $last_revision_query
-      ->orderBy('nr.vid', 'DESC')
+      ->orderBy('node.vid', 'DESC')
       ->range(0, 1)
       ->execute()
       ->fetchObject();
 
-    $last_timestamp = $last_revision ? $last_revision->timestamp : 0;
+    $last_timestamp = $last_revision ? $last_revision->changed : 0;
 
     // Restrict to revisions the client doesn't already have.
-    $query->condition('nr.vid', $base, '>');
+    $query->condition('node.vid', $base, '>');
 
     // First, get the total number of revisions that are greater than the base
     // revision. This will help the client show progress. Note that this
     // includes the revisions in the batch we will return (but not earlier
     // revisions).
-    $count = $query->countQuery()->execute()->fetchField();
+    $count_query = clone $query;
+    $count = $count_query
+      ->countQuery()
+      ->execute()
+      ->fetchField();
 
     // Then, get one batch worth of results.
     $batch = $query
-      ->orderBy('nr.vid', 'ASC')
-      ->range(0, $this->getRange())
+      ->orderBy('node.vid', 'ASC')
+      ->range(0, self::HEDLEY_RESTFUL_DB_QUERY_RANGE)
       ->execute()
       ->fetchAll();
-
-    // As an optimization, if the same node ID occurs multiple times in this
-    // batch, just send the last one. In principle, it would be nice to enable
-    // this optimization across multiple batches as well. That is, it would be
-    // nice to avoid sending a node now if it will be sent again in a later
-    // batch. However, the difficulty is that we can't be sure that the client
-    // will actually get to the later batch before being offline again. We
-    // could immediately send the later revision, but then we'd be sending
-    // changes out-of-order, which might have strange implications.  (For
-    // instance, a field might reference an entity the client doesn't have
-    // yet).  So, at least for the moment, it's better to do this optimization
-    // within a single batch only. (Items can be out-of-order within the batch,
-    // but that should be manageable, since we can at least be sure that the
-    // client will get the whole batch or nothing).
-    $optimized = [];
-    foreach ($batch as $item) {
-      $optimized[$item->nid] = $item;
-    }
-    $optimized = array_values($optimized);
-
-    // Adjust the count if we've removed any items with our optimization.
-    $count = $count - count($batch) + count($optimized);
 
     // Now, we wish to get a restful representation of each revision in this
     // batch. We need to represent the specific revision, rather than the
@@ -360,16 +317,25 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     // doesn't have yet).
     $account = $this->getAccount();
 
+    $batch_by_node_type = [];
+
+    foreach ($batch as $item) {
+      $batch_by_node_type[$item->type][] = $item;
+    }
+
     $output = [];
-    foreach ($optimized as $item) {
-      $handler_name = $handlersForTypes[$item->type];
+    foreach ($batch_by_node_type as $node_type => $items) {
+      $handler_name = $handlers_by_types[$node_type];
       $sub_handler = restful_get_restful_handler($handler_name);
       $sub_handler->setAccount($account);
-      $rendered = $sub_handler->viewNodeRevision($item->nid, $item->vid);
 
-      // Also add in the timestamp.
-      $rendered['timestamp'] = $item->timestamp;
-      $output[] = $rendered;
+      $node_ids = [];
+      foreach ($items as $item) {
+        $node_ids[] = $item->nid;
+      }
+
+      $rendered_items = $sub_handler->viewWithDbSelect($node_ids);
+      $output = array_merge($output, $rendered_items);
     }
 
     return [
@@ -457,7 +423,13 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
             break;
 
           case 'POST':
-            $sub_handler->post('', $data);
+            $nid = hedley_restful_resolve_nid_for_uuid($item['uuid']);
+            // Check if node with provided UUID already exists.
+            // If it does, we don't do anything, as this is duplicate request.
+            // Otherwise, we can proceed with content creation.
+            if ($nid === FALSE) {
+              $sub_handler->post('', $data);
+            }
             break;
         }
       }

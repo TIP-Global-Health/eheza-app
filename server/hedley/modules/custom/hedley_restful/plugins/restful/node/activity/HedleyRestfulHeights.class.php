@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulHeights.
  */
-class HedleyRestfulHeights extends HedleyRestfulChildActivityBase {
+class HedleyRestfulHeights extends HedleyRestfulActivityBase {
 
   /**
    * {@inheritdoc}
@@ -25,6 +25,16 @@ class HedleyRestfulHeights extends HedleyRestfulChildActivityBase {
     ];
 
     return $public_fields;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
+    $query = parent::alterQueryForViewWithDbSelect($query);
+
+    hedley_restful_join_field_to_query($query, 'node', 'field_height', FALSE);
+    hedley_restful_join_field_to_query($query, 'node', 'field_zscore_age', FALSE);
   }
 
 }

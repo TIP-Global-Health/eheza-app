@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulMuacs.
  */
-class HedleyRestfulMuacs extends HedleyRestfulChildActivityBase {
+class HedleyRestfulMuacs extends HedleyRestfulActivityBase {
 
   /**
    * {@inheritdoc}
@@ -21,6 +21,15 @@ class HedleyRestfulMuacs extends HedleyRestfulChildActivityBase {
     ];
 
     return $public_fields;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
+    $query = parent::alterQueryForViewWithDbSelect($query);
+
+    hedley_restful_join_field_to_query($query, 'node', 'field_muac', FALSE);
   }
 
 }
