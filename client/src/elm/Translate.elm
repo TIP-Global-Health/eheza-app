@@ -496,15 +496,15 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                {- MotherActivity ParticipantConsent ->
-                       { english = "Please review the following forms with the participant."
-                       , kinyarwanda = Nothing
-                       }
+                MotherActivity ParticipantConsent ->
+                    { english = "Please review the following forms with the participant."
+                    , kinyarwanda = Nothing
+                    }
 
-                   ChildActivity Counseling ->
-                       { english = "Please refer to this list during counseling sessions and ensure that each task has been completed."
-                       , kinyarwanda = Just "Kurikiza iyi lisiti mu gihe utanga ubujyanama, witondere kureba ko buri gikorwa cyakozwe."
-                       }
+                {- ChildActivity Counseling ->
+                   { english = "Please refer to this list during counseling sessions and ensure that each task has been completed."
+                   , kinyarwanda = Just "Kurikiza iyi lisiti mu gihe utanga ubujyanama, witondere kureba ko buri gikorwa cyakozwe."
+                   }
                 -}
                 ChildActivity ChildFbf ->
                     { english = "Every child should receive FBF every month. If he/she did not receive the specified amount, please record the amount distributed and select the reason why."
@@ -553,15 +553,15 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                {- MotherActivity ParticipantConsent ->
-                       { english = "Forms:"
-                       , kinyarwanda = Nothing
-                       }
+                MotherActivity ParticipantConsent ->
+                    { english = "Forms:"
+                    , kinyarwanda = Nothing
+                    }
 
-                   ChildActivity Counseling ->
-                       { english = "Please refer to this list during counseling sessions and ensure that each task has been completed."
-                       , kinyarwanda = Just "Kurikiza iyi lisiti mu gihe utanga ubujyanama, witondere kureba ko buri gikorwa cyakozwe."
-                       }
+                {- ChildActivity Counseling ->
+                   { english = "Please refer to this list during counseling sessions and ensure that each task has been completed."
+                   , kinyarwanda = Just "Kurikiza iyi lisiti mu gihe utanga ubujyanama, witondere kureba ko buri gikorwa cyakozwe."
+                   }
                 -}
                 ChildActivity ChildFbf ->
                     { english = "The amount of CSB++ (FBF) is calculated below. If child did not receive the specified amount, please record the amount distributed, and select the reason why."
@@ -610,15 +610,15 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                {- MotherActivity ParticipantConsent ->
-                       { english = "Forms"
-                       , kinyarwanda = Nothing
-                       }
+                MotherActivity ParticipantConsent ->
+                    { english = "Forms"
+                    , kinyarwanda = Nothing
+                    }
 
-                   ChildActivity Counseling ->
-                       { english = "Counseling"
-                       , kinyarwanda = Just "Ubujyanama"
-                       }
+                {- ChildActivity Counseling ->
+                   { english = "Counseling"
+                   , kinyarwanda = Just "Ubujyanama"
+                   }
                 -}
                 ChildActivity ChildFbf ->
                     { english = "FBF Child"
@@ -667,15 +667,15 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                {- MotherActivity ParticipantConsent ->
-                       { english = "Forms"
-                       , kinyarwanda = Nothing
-                       }
+                MotherActivity ParticipantConsent ->
+                    { english = "Forms"
+                    , kinyarwanda = Nothing
+                    }
 
-                   ChildActivity Counseling ->
-                       { english = "Counseling"
-                       , kinyarwanda = Nothing
-                       }
+                {- ChildActivity Counseling ->
+                   { english = "Counseling"
+                   , kinyarwanda = Nothing
+                   }
                 -}
                 ChildActivity ChildFbf ->
                     { english = "FBF"
