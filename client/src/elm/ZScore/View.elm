@@ -65,7 +65,7 @@ viewHeightForAgeBoys language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language
+        [ frame language "z-score-grey"
         , labels language heightForAgeBoysLabels
         , referenceLinesHeight
         , ageLines language
@@ -86,7 +86,7 @@ viewHeightForAgeBoys5To19 language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language
+        [ frame language "z-score-blue"
         , labels language heightForAgeBoysLabels5To19
         , referenceLinesHeight5To19
         , age5To19Lines language
@@ -107,6 +107,8 @@ viewHeightForAgeBoys5To19 language model data =
 
   - output represents the bounds of the output values, in terms of pixels
 
+  - paintLevels controls whether we add colors between the lines or not.
+
 -}
 type alias PlotConfig xAxis yAxis =
     { toFloatX : xAxis -> Float
@@ -114,6 +116,7 @@ type alias PlotConfig xAxis yAxis =
     , input : Bounds
     , output : Bounds
     , drawSD1 : Bool
+    , paintLevels : Bool
     }
 
 
@@ -132,6 +135,7 @@ heightForAgeConfig =
     , input = { minY = 42, maxY = 99, minX = 0, maxX = 365 * 2 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
     , drawSD1 = False
+    , paintLevels = True
     }
 
 
@@ -140,8 +144,9 @@ heightForAgeConfig5To19 =
     { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
     , toFloatY = \(Centimetres cm) -> cm
     , input = { minY = 90, maxY = 200, minX = 365 * 2, maxX = 365 * 19 }
-    , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
+    , output = { minX = 110.9, maxX = 3400, minY = 119.9, maxY = 506.7 }
     , drawSD1 = False
+    , paintLevels = False
     }
 
 
@@ -152,6 +157,7 @@ weightForAgeConfig =
     , input = { minY = 1.4, maxY = 17.8, minX = 0, maxX = 365 * 2 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
     , drawSD1 = False
+    , paintLevels = True
     }
 
 
@@ -162,6 +168,7 @@ weightForHeightConfig =
     , input = { minY = 1.0, maxY = 25.0, minX = 45, maxX = 110 }
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
     , drawSD1 = True
+    , paintLevels = True
     }
 
 
@@ -234,64 +241,79 @@ plotReferenceData config zscoreList =
 
         -- Points for a polygon from neg3 to the bottom of the chart
         fillBelowNegativeThree =
-            [ { x = config.input.maxX
-              , y = config.input.minY
-              }
-            , { x = config.input.minX
-              , y = config.input.minY
-              }
-            ]
-                |> List.append neg3points
-                |> plotData config
-                |> String.join " "
-                |> points
-                |> (\pointList ->
-                        polygon
-                            [ class "below-neg-three"
-                            , pointList
-                            ]
-                            []
-                   )
+            if config.paintLevels then
+                [ { x = config.input.maxX
+                  , y = config.input.minY
+                  }
+                , { x = config.input.minX
+                  , y = config.input.minY
+                  }
+                ]
+                    |> List.append neg3points
+                    |> plotData config
+                    |> String.join " "
+                    |> points
+                    |> (\pointList ->
+                            polygon
+                                [ class "below-neg-three"
+                                , pointList
+                                ]
+                                []
+                       )
+                    |> Just
+
+            else
+                Nothing
 
         -- Points for a polygon from neg2 to the top of the chart
         fillAboveNegativeTwo =
-            [ { x = config.input.maxX
-              , y = config.input.maxY
-              }
-            , { x = config.input.minX
-              , y = config.input.maxY
-              }
-            ]
-                |> List.append neg2points
-                |> plotData config
-                |> String.join " "
-                |> points
-                |> (\pointList ->
-                        polygon
-                            [ class "above-neg-two"
-                            , pointList
-                            ]
-                            []
-                   )
+            if config.paintLevels then
+                [ { x = config.input.maxX
+                  , y = config.input.maxY
+                  }
+                , { x = config.input.minX
+                  , y = config.input.maxY
+                  }
+                ]
+                    |> List.append neg2points
+                    |> plotData config
+                    |> String.join " "
+                    |> points
+                    |> (\pointList ->
+                            polygon
+                                [ class "above-neg-two"
+                                , pointList
+                                ]
+                                []
+                       )
+                    |> Just
+
+            else
+                Nothing
 
         -- Points for a polygon from neg2 to neg3
         fillBetweenNegTwoAndNegThree =
-            neg2points
-                |> List.append (List.reverse neg3points)
-                |> plotData config
-                |> String.join " "
-                |> points
-                |> (\pointList ->
-                        polygon
-                            [ class "neg-two-to-neg-three"
-                            , pointList
-                            ]
-                            []
-                   )
+            if config.paintLevels then
+                neg2points
+                    |> List.append (List.reverse neg3points)
+                    |> plotData config
+                    |> String.join " "
+                    |> points
+                    |> (\pointList ->
+                            polygon
+                                [ class "neg-two-to-neg-three"
+                                , pointList
+                                ]
+                                []
+                       )
+                    |> Just
+
+            else
+                Nothing
     in
-    [ Just fillBelowNegativeThree
-    , Just fillAboveNegativeTwo
-    , Just fillBetweenNegTwoAndNegThree
+    [ fillBelowNegativeThree
+    , fillAboveNegativeTwo
+    , fillBetweenNegTwoAndNegThree
     , Just <| makeLine neg3points "three-line-new"
     , Just <| makeLine neg2points "two-line-new"
     , if config.drawSD1 then
@@ -343,7 +365,7 @@ viewWeightForAgeBoys language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language
+        [ frame language "z-score-grey"
         , labels language weightForAgeBoysLabels
         , referenceLinesWeight
         , ageLines language
@@ -364,7 +386,7 @@ viewWeightForHeightBoys language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language
+        [ frame language "z-score-grey"
         , labels language weightForHeightBoysLabels
         , referenceLinesWeightForHeight
         , heightLines
@@ -385,7 +407,7 @@ viewWeightForHeightGirls language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language
+        [ frame language "z-score-grey"
         , labels language weightForHeightGirlsLabels
         , referenceLinesWeightForHeight
         , heightLines
@@ -406,7 +428,7 @@ viewHeightForAgeGirls language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language
+        [ frame language "z-score-grey"
         , labels language heightForAgeGirlsLabels
         , referenceLinesHeight
         , ageLines language
@@ -427,7 +449,7 @@ viewWeightForAgeGirls language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language
+        [ frame language "z-score-grey"
         , labels language weightForAgeGirlsLabels
         , referenceLinesWeight
         , ageLines language
@@ -617,51 +639,63 @@ ageLines language =
 age5To19Lines : Language -> Svg any
 age5To19Lines language =
     g []
-        [ line [ class "year-line", x1 "136", y1 "506.5", x2 "136", y2 "119.5" ] []
-        , line [ class "month-line", x1 "148.7", y1 "506.5", x2 "148.7", y2 "119.5" ] []
-        , line [ class "month-line", x1 "161.4", y1 "506.5", x2 "161.4", y2 "119.5" ] []
-        , line [ class "month-line", x1 "174.1", y1 "506.5", x2 "174.1", y2 "119.5" ] []
-        , line [ class "year-line", x1 "186.8", y1 "506.5", x2 "186.8", y2 "119.5" ] []
-        , line [ class "month-line", x1 "199.5", y1 "506.5", x2 "199.5", y2 "119.5" ] []
-        , line [ class "month-line", x1 "212.2", y1 "506.5", x2 "212.2", y2 "119.5" ] []
-        , line [ class "month-line", x1 "224.9", y1 "506.5", x2 "224.9", y2 "119.5" ] []
-        , line [ class "year-line", x1 "237.6", y1 "506.5", x2 "237.6", y2 "119.5" ] []
-        , line [ class "month-line", x1 "250.3", y1 "506.5", x2 "250.3", y2 "119.5" ] []
-        , line [ class "month-line", x1 "263", y1 "506.5", x2 "263", y2 "119.5" ] []
-        , line [ class "month-line", x1 "275.7", y1 "513.6", x2 "275.7", y2 "119.5" ] []
-        , line [ class "year-line", x1 "288.4", y1 "506.5", x2 "288.4", y2 "119.5" ] []
-        , line [ class "month-line", x1 "301.1", y1 "506.5", x2 "301.1", y2 "119.5" ] []
-        , line [ class "month-line", x1 "313.8", y1 "506.5", x2 "313.8", y2 "119.5" ] []
-        , line [ class "month-line", x1 "326.5", y1 "506.5", x2 "326.5", y2 "119.5" ] []
-        , line [ class "year-line", x1 "339.2", y1 "506.5", x2 "339.2", y2 "119.5" ] []
-        , line [ class "month-line", x1 "351.9", y1 "506.5", x2 "351.9", y2 "119.5" ] []
-        , line [ class "month-line", x1 "364.6", y1 "506.5", x2 "364.6", y2 "119.5" ] []
-        , line [ class "month-line", x1 "377.3", y1 "506.5", x2 "377.3", y2 "119.5" ] []
-        , line [ class "year-line", x1 "390", y1 "506.5", x2 "390", y2 "119.5" ] []
-        , line [ class "month-line", x1 "402.7", y1 "506.5", x2 "402.7", y2 "119.5" ] []
-        , line [ class "month-line", x1 "415.4", y1 "506.5", x2 "415.4", y2 "119.5" ] []
-        , line [ class "month-line", x1 "428.1", y1 "506.6", x2 "428.1", y2 "119.5" ] []
-        , line [ class "year-line", x1 "440.8", y1 "506.6", x2 "440.8", y2 "119.5" ] []
-        , line [ class "month-line", x1 "453.5", y1 "506.5", x2 "453.5", y2 "119.5" ] []
-        , line [ class "month-line", x1 "466.2", y1 "506.5", x2 "466.2", y2 "119.5" ] []
-        , line [ class "month-line", x1 "478.9", y1 "506.6", x2 "478.9", y2 "119.5" ] []
-        , line [ class "year-line", x1 "491.6", y1 "506.6", x2 "491.6", y2 "119.5" ] []
-        , line [ class "month-line", x1 "504.3", y1 "506.5", x2 "504.3", y2 "119.5" ] []
-        , line [ class "month-line", x1 "517", y1 "506.5", x2 "517", y2 "119.5" ] []
-        , line [ class "month-line", x1 "529.7", y1 "506.6", x2 "529.7", y2 "119.5" ] []
-        , line [ class "year-line", x1 "542", y1 "506.6", x2 "542", y2 "119.5" ] []
-        , line [ class "month-line", x1 "555.1", y1 "506.5", x2 "555.1", y2 "119.5" ] []
-        , line [ class "month-line", x1 "567.8", y1 "506.5", x2 "567.8", y2 "119.5" ] []
-        , line [ class "month-line", x1 "580.5", y1 "506.6", x2 "580.5", y2 "119.5" ] []
-        , line [ class "year-line", x1 "593.2", y1 "506.6", x2 "593.2", y2 "119.5" ] []
-        , line [ class "month-line", x1 "605.9", y1 "506.5", x2 "605.9", y2 "119.5" ] []
-        , line [ class "month-line", x1 "618.6", y1 "506.5", x2 "618.6", y2 "119.5" ] []
-        , line [ class "month-line", x1 "631.3", y1 "506.6", x2 "631.3", y2 "119.5" ] []
-        , line [ class "year-line", x1 "644", y1 "506.6", x2 "644", y2 "119.5" ] []
-        , line [ class "month-line", x1 "656.7", y1 "506.5", x2 "656.7", y2 "119.5" ] []
-        , line [ class "month-line", x1 "669.4", y1 "506.5", x2 "669.4", y2 "119.5" ] []
-        , line [ class "month-line", x1 "682.1", y1 "506.6", x2 "682.1", y2 "119.5" ] []
-        , line [ class "year-line", x1 "694.8", y1 "506.6", x2 "694.8", y2 "119.5" ] []
+        [ line [ class "year-line", x1 "111", y1 "506.5", x2 "111", y2 "119.5" ] []
+        , line [ class "month-line", x1 "121.8", y1 "506.5", x2 "121.8", y2 "119.5" ] []
+        , line [ class "month-line", x1 "132.6", y1 "506.5", x2 "132.6", y2 "119.5" ] []
+        , line [ class "month-line", x1 "143.4", y1 "506.5", x2 "143.4", y2 "119.5" ] []
+        , line [ class "year-line", x1 "154.2", y1 "506.5", x2 "154.2", y2 "119.5" ] []
+        , line [ class "month-line", x1 "165", y1 "506.5", x2 "165", y2 "119.5" ] []
+        , line [ class "month-line", x1 "175.8", y1 "506.5", x2 "175.8", y2 "119.5" ] []
+        , line [ class "month-line", x1 "186.6", y1 "506.5", x2 "186.6", y2 "119.5" ] []
+        , line [ class "year-line", x1 "197.4", y1 "506.5", x2 "197.4", y2 "119.5" ] []
+        , line [ class "month-line", x1 "208.2", y1 "506.5", x2 "208.2", y2 "119.5" ] []
+        , line [ class "month-line", x1 "219", y1 "506.5", x2 "219", y2 "119.5" ] []
+        , line [ class "month-line", x1 "229.8", y1 "513.6", x2 "229.8", y2 "119.5" ] []
+        , line [ class "year-line", x1 "240.6", y1 "506.5", x2 "240.6", y2 "119.5" ] []
+        , line [ class "month-line", x1 "251.4", y1 "506.5", x2 "251.4", y2 "119.5" ] []
+        , line [ class "month-line", x1 "262.2", y1 "506.5", x2 "262.2", y2 "119.5" ] []
+        , line [ class "month-line", x1 "273", y1 "506.5", x2 "273", y2 "119.5" ] []
+        , line [ class "year-line", x1 "283.8", y1 "506.5", x2 "283.8", y2 "119.5" ] []
+        , line [ class "month-line", x1 "294.6", y1 "506.5", x2 "294.6", y2 "119.5" ] []
+        , line [ class "month-line", x1 "305.4", y1 "506.5", x2 "305.4", y2 "119.5" ] []
+        , line [ class "month-line", x1 "316.2", y1 "506.5", x2 "316.2", y2 "119.5" ] []
+        , line [ class "year-line", x1 "327", y1 "506.5", x2 "327", y2 "119.5" ] []
+        , line [ class "month-line", x1 "337.8", y1 "506.5", x2 "337.8", y2 "119.5" ] []
+        , line [ class "month-line", x1 "348.6", y1 "506.5", x2 "348.6", y2 "119.5" ] []
+        , line [ class "month-line", x1 "359.4", y1 "506.6", x2 "359.4", y2 "119.5" ] []
+        , line [ class "year-line", x1 "370.2", y1 "506.6", x2 "370.2", y2 "119.5" ] []
+        , line [ class "month-line", x1 "381", y1 "506.5", x2 "381", y2 "119.5" ] []
+        , line [ class "month-line", x1 "391.8", y1 "506.5", x2 "391.8", y2 "119.5" ] []
+        , line [ class "month-line", x1 "402.6", y1 "506.6", x2 "402.6", y2 "119.5" ] []
+        , line [ class "year-line", x1 "413.4", y1 "506.6", x2 "413.4", y2 "119.5" ] []
+        , line [ class "month-line", x1 "424.2", y1 "506.5", x2 "424.2", y2 "119.5" ] []
+        , line [ class "month-line", x1 "435", y1 "506.5", x2 "435", y2 "119.5" ] []
+        , line [ class "month-line", x1 "445.8", y1 "506.6", x2 "445.8", y2 "119.5" ] []
+        , line [ class "year-line", x1 "456.6", y1 "506.6", x2 "456.6", y2 "119.5" ] []
+        , line [ class "month-line", x1 "467.4", y1 "506.5", x2 "467.4", y2 "119.5" ] []
+        , line [ class "month-line", x1 "478.2", y1 "506.5", x2 "478.2", y2 "119.5" ] []
+        , line [ class "month-line", x1 "489", y1 "506.6", x2 "489", y2 "119.5" ] []
+        , line [ class "year-line", x1 "499.8", y1 "506.6", x2 "499.8", y2 "119.5" ] []
+        , line [ class "month-line", x1 "510.6", y1 "506.5", x2 "510.6", y2 "119.5" ] []
+        , line [ class "month-line", x1 "521.4", y1 "506.5", x2 "521.4", y2 "119.5" ] []
+        , line [ class "month-line", x1 "532.2", y1 "506.6", x2 "532.2", y2 "119.5" ] []
+        , line [ class "year-line", x1 "543", y1 "506.6", x2 "543", y2 "119.5" ] []
+        , line [ class "month-line", x1 "553.8", y1 "506.5", x2 "553.8", y2 "119.5" ] []
+        , line [ class "month-line", x1 "564.6", y1 "506.5", x2 "564.6", y2 "119.5" ] []
+        , line [ class "month-line", x1 "575.4", y1 "506.6", x2 "575.4", y2 "119.5" ] []
+        , line [ class "year-line", x1 "586.2", y1 "506.6", x2 "586.2", y2 "119.5" ] []
+        , line [ class "month-line", x1 "597", y1 "506.5", x2 "597", y2 "119.5" ] []
+        , line [ class "month-line", x1 "607.8", y1 "506.5", x2 "607.8", y2 "119.5" ] []
+        , line [ class "month-line", x1 "618.6", y1 "506.6", x2 "618.6", y2 "119.5" ] []
+        , line [ class "year-line", x1 "629.4", y1 "506.6", x2 "629.4", y2 "119.5" ] []
+        , line [ class "month-line", x1 "640.2", y1 "506.5", x2 "640.2", y2 "119.5" ] []
+        , line [ class "month-line", x1 "651", y1 "506.5", x2 "651", y2 "119.5" ] []
+        , line [ class "month-line", x1 "661.8", y1 "506.6", x2 "661.8", y2 "119.5" ] []
+        , line [ class "year-line", x1 "672.6", y1 "506.6", x2 "672.6", y2 "119.5" ] []
+        , line [ class "month-line", x1 "683.4", y1 "506.5", x2 "683.4", y2 "119.5" ] []
+        , line [ class "month-line", x1 "694.2", y1 "506.5", x2 "694.2", y2 "119.5" ] []
+        , line [ class "month-line", x1 "705", y1 "506.6", x2 "705", y2 "119.5" ] []
+        , line [ class "year-line", x1 "715.4", y1 "506.6", x2 "715.4", y2 "119.5" ] []
         , text_
             [ transform "matrix(1 0 0 1 399.4178 525.8762)"
             , class "z-score-white z-score-semibold st20"
@@ -1301,8 +1335,8 @@ labels language config =
         ]
 
 
-frame : Language -> Svg any
-frame language =
+frame : Language -> String -> Svg any
+frame language color =
     g
         []
         [ a
@@ -1318,7 +1352,7 @@ frame language =
                 ]
             ]
         , rect
-            [ class "z-score-grey"
+            [ class color
             , height "447.9"
             , width "728.5"
             , x "56.7"
