@@ -947,12 +947,6 @@ viewPrenatalPhotoContent language currentDate assembled data =
                         ]
                     ]
                     |> keyed "dropzone"
-
-                -- This runs the function from our `app.js` at the precise moment this gets
-                -- written to the DOM. Isn't that convenient?
-                -- Todo: implement
-                -- , script "bindDropZone()"
-                --     |> keyed "script"
                 ]
             ]
         , keyed "button" <|
