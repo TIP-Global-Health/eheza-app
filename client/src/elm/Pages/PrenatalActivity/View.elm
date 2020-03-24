@@ -187,7 +187,7 @@ viewPregnancyDatingContent language currentDate assembled data =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SavePregnancyDating assembled.id assembled.encounter.participant assembled.participant.person assembled.measurements.lastMenstrualPeriod
+                , onClick <| SavePregnancyDating assembled.encounter.participant assembled.participant.person assembled.measurements.lastMenstrualPeriod
                 ]
                 [ text <| translate language Translate.Save ]
             ]
@@ -358,7 +358,7 @@ viewHistoryContent language currentDate assembled data_ =
                                 ObstetricHistoryFirstStep ->
                                     ( [ button
                                             [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                            , onClick <| SaveOBHistoryStep1 assembled.id assembled.participant.person assembled.measurements.obstetricHistory
+                                            , onClick <| SaveOBHistoryStep1 assembled.participant.person assembled.measurements.obstetricHistory
                                             ]
                                             [ text <| translate language Translate.SaveAndNext ]
                                       ]
@@ -378,7 +378,7 @@ viewHistoryContent language currentDate assembled data_ =
                                                 , ( "active", tasksCompleted == totalTasks )
                                                 ]
                                             , onClick <|
-                                                SaveOBHistoryStep2 assembled.id
+                                                SaveOBHistoryStep2
                                                     assembled.participant.person
                                                     assembled.measurements.obstetricHistoryStep2
                                                     nextTask
@@ -392,7 +392,7 @@ viewHistoryContent language currentDate assembled data_ =
                             ( [ button
                                     [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
                                     , onClick <|
-                                        SaveMedicalHistory assembled.id
+                                        SaveMedicalHistory
                                             assembled.participant.person
                                             assembled.measurements.medicalHistory
                                             nextTask
@@ -406,7 +406,7 @@ viewHistoryContent language currentDate assembled data_ =
                             ( [ button
                                     [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
                                     , onClick <|
-                                        SaveSocialHistory assembled.id
+                                        SaveSocialHistory
                                             assembled.participant.person
                                             assembled.measurements.socialHistory
                                             nextTask
@@ -589,7 +589,7 @@ viewExaminationContent language currentDate assembled data =
                 saveAction =
                     case data.activeTask of
                         Vitals ->
-                            SaveVitals assembled.id
+                            SaveVitals
                                 assembled.participant.person
                                 assembled.measurements.vitals
                                 nextTask
@@ -609,26 +609,26 @@ viewExaminationContent language currentDate assembled data =
                                     else
                                         Nothing
                             in
-                            SaveNutritionAssessment assembled.id
+                            SaveNutritionAssessment
                                 assembled.participant.person
                                 assembled.measurements.nutrition
                                 maybeHeight
                                 nextTask
 
                         CorePhysicalExam ->
-                            SaveCorePhysicalExam assembled.id
+                            SaveCorePhysicalExam
                                 assembled.participant.person
                                 assembled.measurements.corePhysicalExam
                                 nextTask
 
                         ObstetricalExam ->
-                            SaveObstetricalExam assembled.id
+                            SaveObstetricalExam
                                 assembled.participant.person
                                 assembled.measurements.obstetricalExam
                                 nextTask
 
                         BreastExam ->
-                            SaveBreastExam assembled.id
+                            SaveBreastExam
                                 assembled.participant.person
                                 assembled.measurements.breastExam
                                 nextTask
@@ -687,7 +687,7 @@ viewFamilyPlanningContent language currentDate assembled data =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveFamilyPlanning assembled.id assembled.participant.person assembled.measurements.familyPlanning
+                , onClick <| SaveFamilyPlanning assembled.participant.person assembled.measurements.familyPlanning
                 ]
                 [ text <| translate language Translate.Save ]
             ]
@@ -825,13 +825,13 @@ viewPatientProvisionsContent language currentDate assembled data =
                 saveAction =
                     case data.activeTask of
                         Medication ->
-                            SaveMedication assembled.id
+                            SaveMedication
                                 assembled.participant.person
                                 assembled.measurements.medication
                                 nextTask
 
                         Resources ->
-                            SaveResources assembled.id
+                            SaveResources
                                 assembled.participant.person
                                 assembled.measurements.resource
                                 nextTask
@@ -889,7 +889,7 @@ viewDangerSignsContent language currentDate assembled data =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveDangerSigns assembled.id assembled.participant.person assembled.measurements.dangerSigns
+                , onClick <| SaveDangerSigns assembled.participant.person assembled.measurements.dangerSigns
                 ]
                 [ text <| translate language Translate.Save ]
             ]
@@ -910,7 +910,7 @@ viewPrenatalPhotoContent language currentDate assembled data =
             case data.url of
                 Just url ->
                     ( Just url
-                    , [ onClick <| SavePrenatalPhoto assembled.id assembled.participant.person photoId url ]
+                    , [ onClick <| SavePrenatalPhoto assembled.participant.person photoId url ]
                     , False
                     )
 
