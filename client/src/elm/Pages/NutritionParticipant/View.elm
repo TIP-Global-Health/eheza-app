@@ -77,7 +77,7 @@ viewNutritionActions language currentDate id db nutritionSessions =
         -- We also want to know if there's an encounter that was completed today,
         -- (started and ended on the same day), as we do not want to allow creating new encounter
         -- at same day previous one has ended.
-        ( maybeActiveEncounterId, totalCompletedEncounts, encounterWasCompletedToday ) =
+        ( maybeActiveEncounterId, encounterWasCompletedToday ) =
             maybeSessionId
                 |> Maybe.map
                     (\sessionId ->
@@ -85,15 +85,10 @@ viewNutritionActions language currentDate id db nutritionSessions =
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.map
                                 (\dict ->
-                                    let
-                                        activeEncounters =
-                                            Dict.toList dict
-                                                |> List.filter (\( _, encounter ) -> isNothing encounter.endDate)
-                                    in
-                                    ( activeEncounters
+                                    ( Dict.toList dict
+                                        |> List.filter (\( _, encounter ) -> isNothing encounter.endDate)
                                         |> List.head
                                         |> Maybe.map Tuple.first
-                                    , Dict.size dict - List.length activeEncounters
                                     , Dict.toList dict
                                         |> List.filter
                                             (\( _, encounter ) ->
@@ -103,9 +98,9 @@ viewNutritionActions language currentDate id db nutritionSessions =
                                         |> not
                                     )
                                 )
-                            |> RemoteData.withDefault ( Nothing, 0, False )
+                            |> RemoteData.withDefault ( Nothing, False )
                     )
-                |> Maybe.withDefault ( Nothing, 0, False )
+                |> Maybe.withDefault ( Nothing, False )
 
         -- Wither first nutrition encounter for person is in process.
         -- This is True when there's only one encounter, and it's active.
