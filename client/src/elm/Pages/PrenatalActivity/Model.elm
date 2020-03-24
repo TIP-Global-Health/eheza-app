@@ -51,36 +51,36 @@ type Msg
     | SetLmpDate Date
     | SetLmpDateConfident Bool
     | SetLmpRange String
-    | SavePregnancyDating PrenatalEncounterId IndividualEncounterParticipantId PersonId (Maybe ( LastMenstrualPeriodId, LastMenstrualPeriod ))
+    | SavePregnancyDating IndividualEncounterParticipantId PersonId (Maybe ( LastMenstrualPeriodId, LastMenstrualPeriod ))
       -- HistoryMsgs
     | SetActiveHistoryTask HistoryTask
       -- HistoryMsgs, OB, Step 1
     | SetCurrentlyPregnant Bool
     | SetOBIntInput (Maybe Int -> ObstetricFormFirstStep -> ObstetricFormFirstStep) String
-    | SaveOBHistoryStep1 PrenatalEncounterId PersonId (Maybe ( ObstetricHistoryId, ObstetricHistory ))
+    | SaveOBHistoryStep1 PersonId (Maybe ( ObstetricHistoryId, ObstetricHistory ))
       -- HistoryMsgs, OB, Step 2
     | SetCSectionReason CSectionReason
     | SetNumberOfCSections String
     | SetOBBoolInput (Bool -> ObstetricFormSecondStep -> ObstetricFormSecondStep) Bool
     | SetPreviousDeliveryPeriod PreviousDeliveryPeriod
     | BackToOBHistoryStep1
-    | SaveOBHistoryStep2 PrenatalEncounterId PersonId (Maybe ( ObstetricHistoryStep2Id, ObstetricHistoryStep2 )) (Maybe HistoryTask)
+    | SaveOBHistoryStep2 PersonId (Maybe ( ObstetricHistoryStep2Id, ObstetricHistoryStep2 )) (Maybe HistoryTask)
       -- HistoryMsgs, Medical
     | SetMedicalBoolInput (Bool -> MedicalHistoryForm -> MedicalHistoryForm) Bool
-    | SaveMedicalHistory PrenatalEncounterId PersonId (Maybe ( MedicalHistoryId, MedicalHistory )) (Maybe HistoryTask)
+    | SaveMedicalHistory PersonId (Maybe ( MedicalHistoryId, MedicalHistory )) (Maybe HistoryTask)
       -- HistoryMsgs, Social
     | SetSocialBoolInput (Bool -> SocialHistoryForm -> SocialHistoryForm) Bool
     | SetSocialHivTestingResult String
-    | SaveSocialHistory PrenatalEncounterId PersonId (Maybe ( SocialHistoryId, SocialHistory )) (Maybe HistoryTask)
+    | SaveSocialHistory PersonId (Maybe ( SocialHistoryId, SocialHistory )) (Maybe HistoryTask)
       -- ExaminationMsgs
     | SetActiveExaminationTask ExaminationTask
       -- ExaminationMsgs, Vitals
     | SetVitalsIntMeasurement (Maybe Int -> VitalsForm -> VitalsForm) String
     | SetVitalsFloatMeasurement (Maybe Float -> VitalsForm -> VitalsForm) String
-    | SaveVitals PrenatalEncounterId PersonId (Maybe ( VitalsId, Vitals )) (Maybe ExaminationTask)
+    | SaveVitals PersonId (Maybe ( VitalsId, Vitals )) (Maybe ExaminationTask)
       -- ExaminationMsgs, Nutrition Assessment
     | SetNutritionAssessmentMeasurement (Maybe Float -> NutritionAssessmentForm -> NutritionAssessmentForm) String
-    | SaveNutritionAssessment PrenatalEncounterId PersonId (Maybe ( PrenatalNutritionId, PrenatalNutrition )) (Maybe Float) (Maybe ExaminationTask)
+    | SaveNutritionAssessment PersonId (Maybe ( PrenatalNutritionId, PrenatalNutrition )) (Maybe Float) (Maybe ExaminationTask)
       -- ExaminationMsgs, Core Physical Exam
     | SetCorePhysicalExamBoolInput (Bool -> CorePhysicalExamForm -> CorePhysicalExamForm) Bool
     | SetCorePhysicalExamHeart HeartCPESign
@@ -89,34 +89,34 @@ type Msg
     | SetCorePhysicalExamAbdomen AbdomenCPESign
     | SetCorePhysicalExamHands HandsCPESign
     | SetCorePhysicalExamLegs LegsCPESign
-    | SaveCorePhysicalExam PrenatalEncounterId PersonId (Maybe ( CorePhysicalExamId, CorePhysicalExam )) (Maybe ExaminationTask)
+    | SaveCorePhysicalExam PersonId (Maybe ( CorePhysicalExamId, CorePhysicalExam )) (Maybe ExaminationTask)
       -- ExaminationMsgs, Obstetrical Exam
     | SetObstetricalExamBoolInput (Bool -> ObstetricalExamForm -> ObstetricalExamForm) Bool
     | SetObstetricalExamIntMeasurement (Maybe Int -> ObstetricalExamForm -> ObstetricalExamForm) String
     | SetObstetricalExamFloatMeasurement (Maybe Float -> ObstetricalExamForm -> ObstetricalExamForm) String
     | SetObstetricalExamFetalPresentation FetalPresentation
     | SetObstetricalExamCSectionScar CSectionScar
-    | SaveObstetricalExam PrenatalEncounterId PersonId (Maybe ( ObstetricalExamId, ObstetricalExam )) (Maybe ExaminationTask)
+    | SaveObstetricalExam PersonId (Maybe ( ObstetricalExamId, ObstetricalExam )) (Maybe ExaminationTask)
       -- ExaminationMsgs, Breast Exam
     | SetBreastExamBoolInput (Bool -> BreastExamForm -> BreastExamForm) Bool
     | SetBreastExamBreast BreastExamSign
-    | SaveBreastExam PrenatalEncounterId PersonId (Maybe ( BreastExamId, BreastExam )) (Maybe ExaminationTask)
+    | SaveBreastExam PersonId (Maybe ( BreastExamId, BreastExam )) (Maybe ExaminationTask)
       -- FamilyPlanningMsgs
     | SetFamilyPlanningSign FamilyPlanningSign
-    | SaveFamilyPlanning PrenatalEncounterId PersonId (Maybe ( PrenatalFamilyPlanningId, PrenatalFamilyPlanning ))
+    | SaveFamilyPlanning PersonId (Maybe ( PrenatalFamilyPlanningId, PrenatalFamilyPlanning ))
       -- PatientProvisionsMsgs
     | SetActivePatientProvisionsTask PatientProvisionsTask
       -- PatientProvisionsMsgs, Medication
     | SetMedicationBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
-    | SaveMedication PrenatalEncounterId PersonId (Maybe ( MedicationId, Medication )) (Maybe PatientProvisionsTask)
+    | SaveMedication PersonId (Maybe ( MedicationId, Medication )) (Maybe PatientProvisionsTask)
       -- PatientProvisionsMsgs, Resources
     | SetResourcesBoolInput (Bool -> ResourcesForm -> ResourcesForm) Bool
-    | SaveResources PrenatalEncounterId PersonId (Maybe ( ResourceId, Resource )) (Maybe PatientProvisionsTask)
+    | SaveResources PersonId (Maybe ( ResourceId, Resource )) (Maybe PatientProvisionsTask)
       -- DangerSignsMsgs
     | SetDangerSign DangerSign
-    | SaveDangerSigns PrenatalEncounterId PersonId (Maybe ( DangerSignsId, DangerSigns ))
+    | SaveDangerSigns PersonId (Maybe ( DangerSignsId, DangerSigns ))
       -- PrenatalPhotoMsgs
-    | SavePrenatalPhoto PrenatalEncounterId PersonId (Maybe PrenatalPhotoId) PhotoUrl
+    | SavePrenatalPhoto PersonId (Maybe PrenatalPhotoId) PhotoUrl
 
 
 type alias Model =
