@@ -1,20 +1,23 @@
 module Pages.NutritionActivity.Update exposing (update)
 
 import App.Model
+import AssocList as Dict
+import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (ChildNutritionSign(..))
-import Backend.Model
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.NutritionActivity.Model exposing (..)
-import Pages.NutritionActivity.Utils exposing (toNutritionValueWithDefault)
+import Pages.NutritionActivity.Utils exposing (nutritionFormWithDefault, toNutritionValueWithDefault)
 import Pages.Page exposing (Page(..), UserPage(..))
+import RemoteData exposing (RemoteData(..))
 import Result exposing (Result)
 
 
-update : NominalDate -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate msg model =
+update : NominalDate -> NutritionEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate id db msg model =
     case msg of
         SetActivePage page ->
             ( model
@@ -25,7 +28,11 @@ update currentDate msg model =
         SetNutritionSign sign ->
             let
                 form =
-                    model.nutritionData.form
+                    Dict.get id db.nutritionMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map (.nutrition >> Maybe.map (Tuple.second >> .value) >> nutritionFormWithDefault model.nutritionData.form)
+                        |> Maybe.withDefault model.nutritionData.form
 
                 updatedForm =
                     case form.signs of
@@ -70,7 +77,7 @@ update currentDate msg model =
             , []
             )
 
-        SaveNutrition nutritionEncounterId personId saved ->
+        SaveNutrition personId saved ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -85,9 +92,9 @@ update currentDate msg model =
                             []
                             (\value ->
                                 [ Backend.NutritionEncounter.Model.SaveNutrition personId measurementId value
-                                    |> Backend.Model.MsgNutritionEncounter nutritionEncounterId
+                                    |> Backend.Model.MsgNutritionEncounter id
                                     |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage nutritionEncounterId
+                                , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id
                                 ]
                             )
             in

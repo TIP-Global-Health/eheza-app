@@ -135,7 +135,7 @@ viewNutritionContent language currentDate id ( personId, measurements ) data =
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveNutrition id personId measurements.nutrition
+                , onClick <| SaveNutrition personId measurements.nutrition
                 ]
                 [ text <| translate language Translate.Save ]
             ]

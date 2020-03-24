@@ -329,7 +329,7 @@ update msg model =
                                     data.nutritionActivityPages
                                         |> Dict.get ( id, activity )
                                         |> Maybe.withDefault Pages.NutritionActivity.Model.emptyModel
-                                        |> Pages.NutritionActivity.Update.update currentDate subMsg
+                                        |> Pages.NutritionActivity.Update.update currentDate id model.indexedDb subMsg
                             in
                             ( { data | nutritionActivityPages = Dict.insert ( id, activity ) subModel data.nutritionActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPageNutritionActivity id activity) subCmd

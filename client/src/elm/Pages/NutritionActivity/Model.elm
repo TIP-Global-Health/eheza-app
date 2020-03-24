@@ -14,7 +14,7 @@ import Pages.Page exposing (Page)
 type Msg
     = SetActivePage Page
     | SetNutritionSign ChildNutritionSign
-    | SaveNutrition NutritionEncounterId PersonId (Maybe ( NutritionNutritionId, NutritionNutrition ))
+    | SaveNutrition PersonId (Maybe ( NutritionNutritionId, NutritionNutrition ))
 
 
 type alias Model =
