@@ -404,6 +404,7 @@ function hedley_activity_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -662,6 +663,62 @@ function hedley_activity_field_default_field_instances() {
       ),
       'type' => 'text_textfield',
       'weight' => 7,
+    ),
+  );
+
+  // Exported field_instance: 'node-child_fbf-field_date_measured'.
+  $field_instances['node-child_fbf-field_date_measured'] = array(
+    'bundle' => 'child_fbf',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_date_measured',
+    'label' => 'Date Measured',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'now',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 10,
     ),
   );
 
@@ -1621,6 +1678,7 @@ function hedley_activity_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -1892,6 +1950,7 @@ function hedley_activity_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -2288,6 +2347,7 @@ function hedley_activity_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -2997,6 +3057,7 @@ function hedley_activity_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -3053,6 +3114,7 @@ function hedley_activity_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -3325,6 +3387,7 @@ function hedley_activity_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -3633,6 +3696,7 @@ function hedley_activity_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -4340,6 +4404,7 @@ function hedley_activity_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -4700,6 +4765,7 @@ function hedley_activity_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -5091,6 +5157,7 @@ function hedley_activity_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -5679,6 +5746,7 @@ function hedley_activity_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -6102,6 +6170,7 @@ function hedley_activity_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -6583,6 +6652,7 @@ function hedley_activity_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -6905,6 +6975,7 @@ function hedley_activity_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -7215,6 +7286,7 @@ function hedley_activity_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -7625,6 +7697,7 @@ function hedley_activity_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -7946,6 +8019,7 @@ function hedley_activity_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -8258,6 +8332,7 @@ function hedley_activity_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -8649,6 +8724,7 @@ function hedley_activity_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -9657,6 +9733,8 @@ function hedley_activity_field_default_field_instances() {
   t('Danger Signs');
   t('Date Measured');
   t('Dia');
+  t('Distributed amount');
+  t('Distribution notice');
   t('Eyes');
   t('Family Planning');
   t('Fetal Heart Rate');
@@ -9671,6 +9749,7 @@ function hedley_activity_field_default_field_instances() {
   t('Heart Murmur');
   t('Heart rate');
   t('Height');
+  t('Lactation signs');
   t('Last Menstrual Period');
   t('Leave blank -- it will be entered automatically.');
   t('Leave blank -- it will be filled in automatically.');

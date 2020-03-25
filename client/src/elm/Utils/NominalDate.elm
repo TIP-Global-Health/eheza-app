@@ -45,7 +45,7 @@ diffDays low high =
 
 diffMonths : NominalDate -> NominalDate -> Months
 diffMonths low high =
-    Gizra.NominalDate.diffMonths low high
+    Gizra.NominalDate.diffCalendarMonths low high
         |> Months
 
 

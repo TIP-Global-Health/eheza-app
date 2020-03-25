@@ -133,12 +133,12 @@ decodeLactation : Decoder Lactation
 decodeLactation =
     decodeEverySet decodeLactationSign
         |> field "lactation_signs"
-        |> decodeMeasurement
+        |> decodeGroupMeasurement
 
 
 decodeFbf : Decoder Fbf
 decodeFbf =
-    decodeMeasurement decodeFbfValue
+    decodeGroupMeasurement decodeFbfValue
 
 
 decodeAttendance : Decoder Attendance

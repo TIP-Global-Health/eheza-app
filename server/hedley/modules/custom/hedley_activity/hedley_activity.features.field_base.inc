@@ -325,7 +325,11 @@ function hedley_activity_field_default_field_bases() {
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_date_measured',
-    'indexes' => array(),
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
     'locked' => 0,
     'module' => 'date',
     'settings' => array(
@@ -362,6 +366,49 @@ function hedley_activity_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'number_float',
+  );
+
+  // Exported field_base: 'field_distributed_amount'.
+  $field_bases['field_distributed_amount'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_distributed_amount',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
+  );
+
+  // Exported field_base: 'field_distribution_notice'.
+  $field_bases['field_distribution_notice'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_distribution_notice',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'complete' => 'Complete',
+        'lack-of-stock' => 'Lack of stock',
+        'other' => 'Other',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_eyes'.
@@ -645,6 +692,31 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'number_float',
   );
 
+  // Exported field_base: 'field_lactation_signs'.
+  $field_bases['field_lactation_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_lactation_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'breastfeeding' => 'Breastfeeding',
+        'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_last_menstrual_period'.
   $field_bases['field_last_menstrual_period'] = array(
     'active' => 1,
@@ -652,7 +724,11 @@ function hedley_activity_field_default_field_bases() {
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_last_menstrual_period',
-    'indexes' => array(),
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
     'locked' => 0,
     'module' => 'date',
     'settings' => array(
@@ -880,49 +956,6 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
-  // Exported field_base: 'field_distributed_amount'.
-  $field_bases['field_distributed_amount'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_distributed_amount',
-    'indexes' => array(),
-    'locked' => 0,
-    'module' => 'number',
-    'settings' => array(
-      'decimal_separator' => '.',
-    ),
-    'translatable' => 0,
-    'type' => 'number_float',
-  );
-
-  // Exported field_base: 'field_distribution_notice'.
-  $field_bases['field_distribution_notice'] = array(
-    'active' => 1,
-    'cardinality' => 1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_distribution_notice',
-    'indexes' => array(
-      'value' => array(
-        0 => 'value',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'list',
-    'settings' => array(
-      'allowed_values' => array(
-        'complete' => 'Complete',
-        'lack-of-stock' => 'Lack of stock',
-        'other' => 'Other',
-      ),
-      'allowed_values_function' => '',
-    ),
-    'translatable' => 0,
-    'type' => 'list_text',
-  );
-
   // Exported field_base: 'field_nutrition_signs'.
   $field_bases['field_nutrition_signs'] = array(
     'active' => 1,
@@ -975,31 +1008,6 @@ function hedley_activity_field_default_field_bases() {
         'gestational-diabetes-previous-pregnancy' => 'Gestational Diabetes Previous Pregnancy',
         'incomplete-cervix-previous-pregnancy' => 'Incomplete Cervix Previous Pregnancy',
         'rh-negative' => 'RH Negative',
-        'none' => 'None of these',
-      ),
-      'allowed_values_function' => '',
-    ),
-    'translatable' => 0,
-    'type' => 'list_text',
-  );
-  
-  // Exported field_base: 'field_lactation_signs'.
-  $field_bases['field_lactation_signs'] = array(
-    'active' => 1,
-    'cardinality' => -1,
-    'deleted' => 0,
-    'entity_types' => array(),
-    'field_name' => 'field_lactation_signs',
-    'indexes' => array(
-      'value' => array(
-        0 => 'value',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'list',
-    'settings' => array(
-      'allowed_values' => array(
-        'breastfeeding' => 'Breastfeeding',
         'none' => 'None of these',
       ),
       'allowed_values_function' => '',

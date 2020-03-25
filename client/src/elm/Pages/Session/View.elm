@@ -77,6 +77,9 @@ viewFoundSession language currentDate zscores nurse ( sessionId, session ) page 
                 |> Maybe.andThen (Dict.get session.clinicId)
                 |> Maybe.map .healthCenterId
 
+        _ =
+            Debug.log "" editableSession
+
         authorized =
             healthCenterId
                 |> Maybe.map (\id -> assignedToHealthCenter id nurse)

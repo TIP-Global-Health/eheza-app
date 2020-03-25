@@ -225,8 +225,9 @@ update nurseId sessionId maybeSession currentDate msg model =
                                 Nothing ->
                                     { participantId = childId
                                     , dateMeasured = currentDate
-                                    , sessionId = Just sessionId
+                                    , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value = value
                                     }
                                         |> sw.post childFbfEndpoint
@@ -314,8 +315,9 @@ update nurseId sessionId maybeSession currentDate msg model =
                                 Nothing ->
                                     { participantId = motherId
                                     , dateMeasured = currentDate
-                                    , sessionId = Just sessionId
+                                    , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value = signs
                                     }
                                         |> sw.post lactationEndpoint
@@ -341,8 +343,9 @@ update nurseId sessionId maybeSession currentDate msg model =
                                 Nothing ->
                                     { participantId = motherId
                                     , dateMeasured = currentDate
-                                    , sessionId = Just sessionId
+                                    , encounterId = Just sessionId
                                     , nurse = nurseId
+                                    , healthCenter = Nothing
                                     , value = value
                                     }
                                         |> sw.post motherFbfEndpoint

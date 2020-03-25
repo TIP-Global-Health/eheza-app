@@ -144,7 +144,7 @@ encodeLactationValue signs =
 
 encodeLactation : Lactation -> List ( String, Value )
 encodeLactation =
-    encodeMeasurement encodeLactationValue
+    encodeGroupMeasurement encodeLactationValue
 
 
 encodePrenatalMeasurement : (value -> List ( String, Value )) -> PrenatalMeasurement value -> List ( String, Value )
@@ -548,7 +548,7 @@ encodeMedication =
 
 encodeFbf : Fbf -> List ( String, Value )
 encodeFbf =
-    encodeMeasurement encodeFbfValue
+    encodeGroupMeasurement encodeFbfValue
 
 
 encodeFbfValue : FbfValue -> List ( String, Value )

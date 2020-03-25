@@ -121,7 +121,7 @@ type LactationSign
 
 
 type alias Lactation =
-    Measurement (EverySet LactationSign)
+    GroupMeasurement (EverySet LactationSign)
 
 
 type alias LactationForm =
@@ -136,7 +136,7 @@ type DistributionNotice
 
 
 type alias Fbf =
-    Measurement FbfValue
+    GroupMeasurement FbfValue
 
 
 type alias FbfValue =

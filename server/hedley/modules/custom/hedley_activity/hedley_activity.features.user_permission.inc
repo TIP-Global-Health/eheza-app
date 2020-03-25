@@ -85,9 +85,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'create last_menstrual_period content'.
-  $permissions['create last_menstrual_period content'] = array(
-    'name' => 'create last_menstrual_period content',
+  // Exported permission: 'create lactation content'.
+  $permissions['create lactation content'] = array(
+    'name' => 'create lactation content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -95,9 +95,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'create lactation content'.
-  $permissions['create lactation content'] = array(
-    'name' => 'create lactation content',
+  // Exported permission: 'create last_menstrual_period content'.
+  $permissions['create last_menstrual_period content'] = array(
+    'name' => 'create last_menstrual_period content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
@@ -200,9 +200,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'create prenatal_photo content'.
-  $permissions['create prenatal_photo content'] = array(
-    'name' => 'create prenatal_photo content',
+  // Exported permission: 'create prenatal_family_planning content'.
+  $permissions['create prenatal_family_planning content'] = array(
+    'name' => 'create prenatal_family_planning content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
@@ -211,9 +211,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'create prenatal_family_planning content'.
-  $permissions['create prenatal_family_planning content'] = array(
-    'name' => 'create prenatal_family_planning content',
+  // Exported permission: 'create prenatal_nutrition content'.
+  $permissions['create prenatal_nutrition content'] = array(
+    'name' => 'create prenatal_nutrition content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -221,9 +221,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'create prenatal_nutrition content'.
-  $permissions['create prenatal_nutrition content'] = array(
-    'name' => 'create prenatal_nutrition content',
+  // Exported permission: 'create prenatal_photo content'.
+  $permissions['create prenatal_photo content'] = array(
+    'name' => 'create prenatal_photo content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -335,18 +335,18 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'delete any last_menstrual_period content'.
-  $permissions['delete any last_menstrual_period content'] = array(
-    'name' => 'delete any last_menstrual_period content',
+  // Exported permission: 'delete any lactation content'.
+  $permissions['delete any lactation content'] = array(
+    'name' => 'delete any lactation content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
     'module' => 'node',
   );
 
-  // Exported permission: 'delete any lactation content'.
-  $permissions['delete any lactation content'] = array(
-    'name' => 'delete any lactation content',
+  // Exported permission: 'delete any last_menstrual_period content'.
+  $permissions['delete any last_menstrual_period content'] = array(
+    'name' => 'delete any last_menstrual_period content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -434,15 +434,6 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'delete any prenatal_photo content'.
-  $permissions['delete any prenatal_photo content'] = array(
-    'name' => 'delete any prenatal_photo content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'delete any prenatal_family_planning content'.
   $permissions['delete any prenatal_family_planning content'] = array(
     'name' => 'delete any prenatal_family_planning content',
@@ -455,6 +446,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete any prenatal_nutrition content'.
   $permissions['delete any prenatal_nutrition content'] = array(
     'name' => 'delete any prenatal_nutrition content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any prenatal_photo content'.
+  $permissions['delete any prenatal_photo content'] = array(
+    'name' => 'delete any prenatal_photo content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -560,18 +560,18 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'delete own last_menstrual_period content'.
-  $permissions['delete own last_menstrual_period content'] = array(
-    'name' => 'delete own last_menstrual_period content',
+  // Exported permission: 'delete own lactation content'.
+  $permissions['delete own lactation content'] = array(
+    'name' => 'delete own lactation content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
     'module' => 'node',
   );
 
-  // Exported permission: 'delete own lactation content'.
-  $permissions['delete own lactation content'] = array(
-    'name' => 'delete own lactation content',
+  // Exported permission: 'delete own last_menstrual_period content'.
+  $permissions['delete own last_menstrual_period content'] = array(
+    'name' => 'delete own last_menstrual_period content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -659,15 +659,6 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'delete own prenatal_photo content'.
-  $permissions['delete own prenatal_photo content'] = array(
-    'name' => 'delete own prenatal_photo content',
-    'roles' => array(
-      'administrator' => 'administrator',
-    ),
-    'module' => 'node',
-  );
-
   // Exported permission: 'delete own prenatal_family_planning content'.
   $permissions['delete own prenatal_family_planning content'] = array(
     'name' => 'delete own prenatal_family_planning content',
@@ -680,6 +671,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own prenatal_nutrition content'.
   $permissions['delete own prenatal_nutrition content'] = array(
     'name' => 'delete own prenatal_nutrition content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own prenatal_photo content'.
+  $permissions['delete own prenatal_photo content'] = array(
+    'name' => 'delete own prenatal_photo content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -796,9 +796,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit any last_menstrual_period content'.
-  $permissions['edit any last_menstrual_period content'] = array(
-    'name' => 'edit any last_menstrual_period content',
+  // Exported permission: 'edit any lactation content'.
+  $permissions['edit any lactation content'] = array(
+    'name' => 'edit any lactation content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -806,9 +806,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit any lactation content'.
-  $permissions['edit any lactation content'] = array(
-    'name' => 'edit any lactation content',
+  // Exported permission: 'edit any last_menstrual_period content'.
+  $permissions['edit any last_menstrual_period content'] = array(
+    'name' => 'edit any last_menstrual_period content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
@@ -911,9 +911,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit any prenatal_photo content'.
-  $permissions['edit any prenatal_photo content'] = array(
-    'name' => 'edit any prenatal_photo content',
+  // Exported permission: 'edit any prenatal_family_planning content'.
+  $permissions['edit any prenatal_family_planning content'] = array(
+    'name' => 'edit any prenatal_family_planning content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
@@ -922,9 +922,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit any prenatal_family_planning content'.
-  $permissions['edit any prenatal_family_planning content'] = array(
-    'name' => 'edit any prenatal_family_planning content',
+  // Exported permission: 'edit any prenatal_nutrition content'.
+  $permissions['edit any prenatal_nutrition content'] = array(
+    'name' => 'edit any prenatal_nutrition content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -932,9 +932,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit any prenatal_nutrition content'.
-  $permissions['edit any prenatal_nutrition content'] = array(
-    'name' => 'edit any prenatal_nutrition content',
+  // Exported permission: 'edit any prenatal_photo content'.
+  $permissions['edit any prenatal_photo content'] = array(
+    'name' => 'edit any prenatal_photo content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -1057,9 +1057,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit own last_menstrual_period content'.
-  $permissions['edit own last_menstrual_period content'] = array(
-    'name' => 'edit own last_menstrual_period content',
+  // Exported permission: 'edit own lactation content'.
+  $permissions['edit own lactation content'] = array(
+    'name' => 'edit own lactation content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -1067,9 +1067,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit own lactation content'.
-  $permissions['edit own lactation content'] = array(
-    'name' => 'edit own lactation content',
+  // Exported permission: 'edit own last_menstrual_period content'.
+  $permissions['edit own last_menstrual_period content'] = array(
+    'name' => 'edit own last_menstrual_period content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
@@ -1172,9 +1172,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit own prenatal_photo content'.
-  $permissions['edit own prenatal_photo content'] = array(
-    'name' => 'edit own prenatal_photo content',
+  // Exported permission: 'edit own prenatal_family_planning content'.
+  $permissions['edit own prenatal_family_planning content'] = array(
+    'name' => 'edit own prenatal_family_planning content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
@@ -1183,9 +1183,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit own prenatal_family_planning content'.
-  $permissions['edit own prenatal_family_planning content'] = array(
-    'name' => 'edit own prenatal_family_planning content',
+  // Exported permission: 'edit own prenatal_nutrition content'.
+  $permissions['edit own prenatal_nutrition content'] = array(
+    'name' => 'edit own prenatal_nutrition content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -1193,9 +1193,9 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: 'edit own prenatal_nutrition content'.
-  $permissions['edit own prenatal_nutrition content'] = array(
-    'name' => 'edit own prenatal_nutrition content',
+  // Exported permission: 'edit own prenatal_photo content'.
+  $permissions['edit own prenatal_photo content'] = array(
+    'name' => 'edit own prenatal_photo content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

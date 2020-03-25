@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulChildFBFs.
  */
-class HedleyRestfulChildFBFs extends HedleyRestfulActivityBase {
+class HedleyRestfulChildFBFs extends HedleyRestfulGroupActivityBase {
 
   /**
    * {@inheritdoc}
