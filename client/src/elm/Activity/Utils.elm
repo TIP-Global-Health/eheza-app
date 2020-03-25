@@ -168,7 +168,8 @@ getAllChildActivities =
 getAllMotherActivities : List MotherActivity
 getAllMotherActivities =
     [ FamilyPlanning
-    , ParticipantConsent
+
+    -- , ParticipantConsent
     ]
 
 
