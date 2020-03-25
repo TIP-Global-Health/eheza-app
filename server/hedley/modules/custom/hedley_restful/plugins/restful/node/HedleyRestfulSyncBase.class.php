@@ -127,8 +127,10 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
           continue;
         }
 
-        $item->{$public_name} = $item->{$field_info['property']};
-        unset($item->{$field_info['property']});
+        if (property_exists($item, $field_info['property'])) {
+          $item->{$public_name} = $item->{$field_info['property']};
+          unset($item->{$field_info['property']});
+        }
       }
 
       $item->id = $item->nid;
