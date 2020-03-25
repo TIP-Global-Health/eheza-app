@@ -33,6 +33,30 @@ svg.z-score {
     fill: #FFFFFF;
   }
 
+  .chart-outer-frame {
+    fill: #fffff0;
+  }
+
+  .chart-label {
+    font-size: 20px;
+    text-transform: uppercase;
+  }
+
+  .red-area {
+    fill: #FCF1F5;
+    stroke: #FCF1F5;
+  }
+
+  .yellow-area {
+    fill: #f6f9c8;
+    stroke: #f6f9c8;
+  }
+
+  .green-area {
+    fill: #DFF9DF;
+    stroke: #DFF9DF;
+  }
+
   .neg-two-to-neg-three {
     opacity: 0.5;
     fill: #F9E100;
@@ -52,6 +76,12 @@ svg.z-score {
     fill: none;
     stroke: #77787B;
     stroke-width: 0.8;
+  }
+
+  .refference-line {
+    fill: none;
+    stroke: #77787B;
+    stroke-width: 0.2;
   }
 
   .st12 {

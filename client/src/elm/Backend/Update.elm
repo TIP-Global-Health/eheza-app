@@ -7,17 +7,22 @@ import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Update
 import Backend.Measurement.Model exposing (HistoricalMeasurements, Measurements)
 import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMeasurements)
 import Backend.Model exposing (..)
+import Backend.Person.Model exposing (RegistrationInitiator(..))
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
+import Backend.PrenatalEncounter.Model
+import Backend.PrenatalEncounter.Update
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
 import Backend.Relationship.Model exposing (RelatedBy(..))
 import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getMyMother)
-import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements)
+import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements, mapPrenatalMeasurements)
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -32,8 +37,8 @@ import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoin
 import Task
 
 
-updateIndexedDb : NominalDate -> Maybe NurseId -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
-updateIndexedDb currentDate nurseId msg model =
+updateIndexedDb : NominalDate -> Maybe NurseId -> Maybe HealthCenterId -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
+updateIndexedDb currentDate nurseId healthCenterId msg model =
     let
         sw =
             applyBackendUrl "/sw"
@@ -117,7 +122,7 @@ updateIndexedDb currentDate nurseId msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate nurseId) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate nurseId healthCenterId) extraMsgs
 
         FetchEditableSessionCheckedIn id ->
             Dict.get id model.editableSessions
@@ -312,6 +317,45 @@ updateIndexedDb currentDate nurseId msg model =
             , []
             )
 
+        FetchIndividualEncounterParticipantsForPerson id ->
+            ( { model | individualParticipantsByPerson = Dict.insert id Loading model.individualParticipantsByPerson }
+            , sw.select individualEncounterParticipantEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedIndividualEncounterParticipantsForPerson id)
+            , []
+            )
+
+        HandleFetchedIndividualEncounterParticipantsForPerson id data ->
+            ( { model | individualParticipantsByPerson = Dict.insert id data model.individualParticipantsByPerson }
+            , Cmd.none
+            , []
+            )
+
+        FetchPrenatalEncountersForParticipant id ->
+            ( { model | prenatalEncountersByParticipant = Dict.insert id Loading model.prenatalEncountersByParticipant }
+            , sw.select prenatalEncounterEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPrenatalEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedPrenatalEncountersForParticipant id data ->
+            ( { model | prenatalEncountersByParticipant = Dict.insert id data model.prenatalEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
+        FetchPrenatalMeasurements id ->
+            ( { model | prenatalMeasurements = Dict.insert id Loading model.prenatalMeasurements }
+            , sw.get prenatalMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedPrenatalMeasurements id)
+            , []
+            )
+
+        HandleFetchedPrenatalMeasurements id data ->
+            ( { model | prenatalMeasurements = Dict.insert id data model.prenatalMeasurements }
+            , Cmd.none
+            , []
+            )
+
         FetchParticipantsForPerson personId ->
             let
                 query1 =
@@ -496,6 +540,32 @@ updateIndexedDb currentDate nurseId msg model =
             , []
             )
 
+        FetchPrenatalEncounter id ->
+            ( { model | prenatalEncounters = Dict.insert id Loading model.prenatalEncounters }
+            , sw.get prenatalEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedPrenatalEncounter id)
+            , []
+            )
+
+        HandleFetchedPrenatalEncounter id data ->
+            ( { model | prenatalEncounters = Dict.insert id data model.prenatalEncounters }
+            , Cmd.none
+            , []
+            )
+
+        FetchIndividualEncounterParticipant id ->
+            ( { model | individualParticipants = Dict.insert id Loading model.individualParticipants }
+            , sw.get individualEncounterParticipantEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedIndividualEncounterParticipant id)
+            , []
+            )
+
+        HandleFetchedIndividualEncounterParticipant id data ->
+            ( { model | individualParticipants = Dict.insert id data model.individualParticipants }
+            , Cmd.none
+            , []
+            )
+
         HandleFetchPeople webData ->
             case RemoteData.toMaybe webData of
                 Nothing ->
@@ -565,7 +635,7 @@ updateIndexedDb currentDate nurseId msg model =
                                 model
 
                         withRecalc =
-                            data.sessionId
+                            data.encounterId
                                 |> Maybe.map
                                     (\sessionId ->
                                         Dict.get sessionId newModel.editableSessions
@@ -655,6 +725,44 @@ updateIndexedDb currentDate nurseId msg model =
         HandleDeletedSyncData uuid data ->
             ( { model | deleteSyncDataRequests = Dict.insert uuid data model.deleteSyncDataRequests }
             , Cmd.none
+            , []
+            )
+
+        MsgPrenatalEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.prenatalEncounters
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.prenatalEncounterRequests
+                        |> Maybe.withDefault Backend.PrenatalEncounter.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.PrenatalEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
+            in
+            ( { model | prenatalEncounterRequests = Dict.insert encounterId subModel model.prenatalEncounterRequests }
+            , Cmd.map (MsgPrenatalEncounter encounterId) subCmd
+            , []
+            )
+
+        MsgPrenatalSession participantId subMsg ->
+            let
+                participant =
+                    Dict.get participantId model.individualParticipants
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+
+                requests =
+                    Dict.get participantId model.prenatalSessionRequests
+                        |> Maybe.withDefault Backend.IndividualEncounterParticipant.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.IndividualEncounterParticipant.Update.update participantId participant currentDate subMsg requests
+            in
+            ( { model | prenatalSessionRequests = Dict.insert participantId subModel model.prenatalSessionRequests }
+            , Cmd.map (MsgPrenatalSession participantId) subCmd
             , []
             )
 
@@ -792,7 +900,7 @@ updateIndexedDb currentDate nurseId msg model =
             , relationshipCmd
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate nurseId) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate nurseId healthCenterId) extraMsgs
 
         HandlePostedRelationship personId data ->
             let
@@ -812,14 +920,14 @@ updateIndexedDb currentDate nurseId msg model =
             , appMsgs
             )
 
-        PostPerson relation person ->
+        PostPerson relation initiator person ->
             ( { model | postPerson = Loading }
             , sw.post personEndpoint person
-                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedPerson relation)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedPerson relation initiator)
             , []
             )
 
-        HandlePostedPerson relation data ->
+        HandlePostedPerson relation initiator data ->
             let
                 appMsgs =
                     -- If we succeed, we reset the form, and go to the page
@@ -829,12 +937,24 @@ updateIndexedDb currentDate nurseId msg model =
                             (\personId ->
                                 let
                                     nextPage =
-                                        case relation of
-                                            Just id ->
-                                                RelationshipPage id personId
+                                        case initiator of
+                                            ParticipantDirectoryOrigin ->
+                                                case relation of
+                                                    Just id ->
+                                                        RelationshipPage id personId
 
-                                            Nothing ->
-                                                PersonPage personId
+                                                    Nothing ->
+                                                        PersonPage personId
+
+                                            IndividualEncounterOrigin encounterType ->
+                                                case encounterType of
+                                                    AntenatalEncounter ->
+                                                        PrenatalParticipantPage personId
+
+                                                    _ ->
+                                                        -- This will change as we add support for
+                                                        -- new encounter types.
+                                                        IndividualEncounterTypesPage
                                 in
                                 [ Pages.Person.Model.ResetCreateForm
                                     |> App.Model.MsgPageCreatePerson
@@ -894,13 +1014,62 @@ updateIndexedDb currentDate nurseId msg model =
             , []
             )
 
+        PostIndividualSession prenatalSession ->
+            ( { model | postIndividualSession = Dict.insert prenatalSession.person Loading model.postIndividualSession }
+            , sw.post individualEncounterParticipantEndpoint prenatalSession
+                |> toCmd (RemoteData.fromResult >> HandlePostedIndividualSession prenatalSession.person)
+            , []
+            )
+
+        HandlePostedIndividualSession personId data ->
+            let
+                -- We automatically create new encounter for newly created prenatal session.
+                -- We'll probably need to change this once we allow to end prenatal session,
+                -- but for now, this is sufficient.
+                appMsgs =
+                    RemoteData.map
+                        (\( sessionId, _ ) ->
+                            [ Backend.PrenatalEncounter.Model.PrenatalEncounter sessionId currentDate Nothing
+                                |> Backend.Model.PostPrenatalEncounter
+                                |> App.Model.MsgIndexedDb
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postIndividualSession = Dict.insert personId data model.postIndividualSession }
+            , Cmd.none
+            , appMsgs
+            )
+
+        PostPrenatalEncounter prenatalEncounter ->
+            ( { model | postPrenatalEncounter = Dict.insert prenatalEncounter.participant Loading model.postPrenatalEncounter }
+            , sw.post prenatalEncounterEndpoint prenatalEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedPrenatalEncounter prenatalEncounter.participant)
+            , []
+            )
+
+        HandlePostedPrenatalEncounter participantId data ->
+            ( { model | postPrenatalEncounter = Dict.insert participantId data model.postPrenatalEncounter }
+            , Cmd.none
+            , RemoteData.map
+                (\( prenatalEncounterId, _ ) ->
+                    [ App.Model.SetActivePage <|
+                        UserPage <|
+                            Pages.Page.PrenatalEncounterPage prenatalEncounterId
+                    ]
+                )
+                data
+                |> RemoteData.withDefault []
+            )
+
 
 {-| The extra return value indicates whether we need to recalculate our
 successful EditableSessions. Ideally, we would handle this in a more
 nuanced way.
 -}
 handleRevision : Revision -> ( ModelIndexedDb, Bool ) -> ( ModelIndexedDb, Bool )
-handleRevision revision ( model, recalc ) =
+handleRevision revision (( model, recalc ) as noChange) =
     case revision of
         AttendanceRevision uuid data ->
             ( mapMotherMeasurements
@@ -910,10 +1079,16 @@ handleRevision revision ( model, recalc ) =
             , True
             )
 
-        CatchmentAreaRevision uuid data ->
-            ( model
+        BreastExamRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | breastExam = Just ( uuid, data ) })
+                model
             , recalc
             )
+
+        CatchmentAreaRevision uuid data ->
+            noChange
 
         ChildFbfRevision uuid data ->
             ( mapChildMeasurements
@@ -940,6 +1115,14 @@ handleRevision revision ( model, recalc ) =
             , recalc
             )
 
+        CorePhysicalExamRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | corePhysicalExam = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         CounselingScheduleRevision uuid data ->
             -- Just invalidate our value ... if someone wants it, we'll refetch it.
             ( { model | everyCounselingSchedule = NotAsked }
@@ -957,6 +1140,14 @@ handleRevision revision ( model, recalc ) =
         CounselingTopicRevision uuid data ->
             ( { model | everyCounselingSchedule = NotAsked }
             , True
+            )
+
+        DangerSignsRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | dangerSigns = Just ( uuid, data ) })
+                model
+            , recalc
             )
 
         FamilyPlanningRevision uuid data ->
@@ -992,6 +1183,30 @@ handleRevision revision ( model, recalc ) =
             , True
             )
 
+        LastMenstrualPeriodRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | lastMenstrualPeriod = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        MedicalHistoryRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | medicalHistory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        MedicationRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | medication = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         MotherFbfRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId
@@ -1010,7 +1225,29 @@ handleRevision revision ( model, recalc ) =
 
         NurseRevision uuid data ->
             -- Nothing to do in ModelIndexedDb yet. App.Update does do something with this one.
-            ( model
+            noChange
+
+        ObstetricalExamRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | obstetricalExam = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ObstetricHistoryRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | obstetricHistory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ObstetricHistoryStep2Revision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | obstetricHistoryStep2 = Just ( uuid, data ) })
+                model
             , recalc
             )
 
@@ -1063,9 +1300,71 @@ handleRevision revision ( model, recalc ) =
             , True
             )
 
+        IndividualEncounterParticipantRevision uuid data ->
+            let
+                individualParticipants =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.individualParticipants
+
+                individualParticipantsByPerson =
+                    Dict.remove data.person model.individualParticipantsByPerson
+            in
+            ( { model
+                | individualParticipants = individualParticipants
+                , individualParticipantsByPerson = individualParticipantsByPerson
+              }
+            , recalc
+            )
+
+        PrenatalEncounterRevision uuid data ->
+            let
+                prenatalEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.prenatalEncounters
+
+                prenatalEncountersByParticipant =
+                    Dict.remove data.participant model.prenatalEncountersByParticipant
+            in
+            ( { model
+                | prenatalEncounters = prenatalEncounters
+                , prenatalEncountersByParticipant = prenatalEncountersByParticipant
+              }
+            , recalc
+            )
+
+        PrenatalFamilyPlanningRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | familyPlanning = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalNutritionRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | nutrition = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalPhotoRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | prenatalPhoto = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         RelationshipRevision uuid data ->
             ( { model | relationshipsByPerson = Dict.empty }
             , True
+            )
+
+        ResourceRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | resource = Just ( uuid, data ) })
+                model
+            , recalc
             )
 
         SessionRevision uuid data ->
@@ -1085,6 +1384,22 @@ handleRevision revision ( model, recalc ) =
                 , sessions = Dict.insert uuid (Success data) model.sessions
               }
             , True
+            )
+
+        SocialHistoryRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | socialHistory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        VitalsRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | vitals = Just ( uuid, data ) })
+                model
+            , recalc
             )
 
         WeightRevision uuid data ->

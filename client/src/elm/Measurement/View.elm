@@ -14,7 +14,7 @@ import Backend.Person.Model exposing (Gender, Person)
 import Backend.Session.Model exposing (EditableSession)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes as Attr exposing (..)
 import Html.Events exposing (on, onClick, onInput)
@@ -24,7 +24,7 @@ import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
-import Pages.Utils exposing (viewBoolInput, viewCheckBoxSelectInput, viewLabel, viewMeasurementInput, viewQuestionLabel)
+import Pages.Utils exposing (viewBoolInput, viewCheckBoxSelectInput, viewLabel, viewMeasurementInput, viewPhotoThumbFromPhotoUrl, viewQuestionLabel)
 import RemoteData exposing (RemoteData(..), WebData, isFailure, isLoading)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Round
@@ -368,19 +368,6 @@ viewMuacIndication language muac =
         ]
 
 
-{-| Show a photo thumbnail.
--}
-viewPhotoThumb : PhotoUrl -> Html any
-viewPhotoThumb (PhotoUrl url) =
-    div []
-        [ img
-            [ src url
-            , class "ui small image rotate-90"
-            ]
-            []
-        ]
-
-
 viewPreviousMeasurement : FloatFormConfig id value -> Language -> value -> Html any
 viewPreviousMeasurement config language previousValue =
     [ previousValue
@@ -465,7 +452,7 @@ viewPhoto language measurement photo =
                 |> keyed "help"
             , keyedDivKeyed "grid"
                 [ class "ui grid" ]
-                [ Maybe.map viewPhotoThumb displayPhoto
+                [ Maybe.map viewPhotoThumbFromPhotoUrl displayPhoto
                     |> showMaybe
                     |> List.singleton
                     |> div [ class "eight wide column" ]
@@ -601,7 +588,7 @@ viewNutritionSignsSelector language nutritionSigns =
             |> div [ class "eight wide column" ]
         ]
     , div [ class "ui divider" ] []
-    , viewNutritionSignsSelectorItem language nutritionSigns None
+    , viewNutritionSignsSelectorItem language nutritionSigns NormalChildNutrition
     ]
 
 

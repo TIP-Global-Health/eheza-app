@@ -1,6 +1,7 @@
-module Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, viewBoolInput, viewCheckBoxSelectInput, viewCustomLabel, viewLabel, viewMeasurementInput, viewNameFilter, viewQuestionLabel)
+module Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, taskCompleted, taskListCompleted, viewBoolInput, viewCheckBoxMultipleSelectInput, viewCheckBoxSelectInput, viewCheckBoxSelectInputItem, viewCustomLabel, viewLabel, viewMeasurementInput, viewNameFilter, viewPhotoThumb, viewPhotoThumbFromPhotoUrl, viewQuestionLabel)
 
 import Backend.Entities exposing (PersonId)
+import Backend.Measurement.Model exposing (PhotoUrl(..))
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
@@ -215,3 +216,39 @@ viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
                 ]
             ]
         ]
+
+
+taskCompleted : Maybe a -> Int
+taskCompleted maybe =
+    if isJust maybe then
+        1
+
+    else
+        0
+
+
+taskListCompleted : List (Maybe a) -> Int
+taskListCompleted list =
+    if List.all isJust list then
+        1
+
+    else
+        0
+
+
+{-| Show a photo thumbnail.
+-}
+viewPhotoThumb : String -> Html any
+viewPhotoThumb url =
+    div []
+        [ img
+            [ src url
+            , class "ui small image rotate-90"
+            ]
+            []
+        ]
+
+
+viewPhotoThumbFromPhotoUrl : PhotoUrl -> Html any
+viewPhotoThumbFromPhotoUrl (PhotoUrl url) =
+    viewPhotoThumb url

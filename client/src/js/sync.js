@@ -41,6 +41,35 @@
     var dataTimeout = 30000; // 30 seconds
     var imageTimeout = 120000; // 2 minutes
 
+    var integerFields = [
+        'abortions',
+        'c_sections',
+        'fetal_heart_rate',
+        'heart_rate',
+        'household_size',
+        'id',
+        'live_children',
+        'number_of_children',
+        'preterm_pregnancy',
+        'respiratory_rate',
+        'status',
+        'stillbirths_at_term',
+        'stillbirths_preterm',
+        'term_pregnancy',
+        'timestamp',
+        'vid'
+    ];
+
+    var floatFields = [
+        'body_temperature',
+        'dia',
+        'fundal_height',
+        'height',
+        'muac',
+        'sys',
+        'weight'
+    ];
+
     // Listen for background sync requests. We can get here in one of several
     // ways:
     //
@@ -596,22 +625,6 @@
             }
         });
     }
-
-    var integerFields = [
-        'household_size',
-        'id',
-        'number_of_children',
-        'status',
-        'timestamp',
-        'vid'
-    ];
-
-    var floatFields = [
-        'distributed_amount',
-        'height',
-        'muac',
-        'weight'
-    ];
 
     function formatNode (table, node, shardUuid) {
         if (shardUuid !== nodesUuid) {

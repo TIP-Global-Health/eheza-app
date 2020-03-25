@@ -208,7 +208,8 @@ getAllMotherActivities offlineSession =
     let
         forAllGroupTypes =
             [ FamilyPlanning
-            , ParticipantConsent
+
+            --, ParticipantConsent
             ]
 
         forFbf =

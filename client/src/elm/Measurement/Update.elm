@@ -49,7 +49,7 @@ updateChild msg model =
                 nutritionSignsUpdated =
                     if selected then
                         case sign of
-                            None ->
+                            NormalChildNutrition ->
                                 -- If the user checks `None`, then we want that
                                 -- to be the only sign.
                                 EverySet.singleton sign
@@ -59,7 +59,7 @@ updateChild msg model =
                                 -- make sure that `None` is unchecekd
                                 model.nutritionSigns
                                     |> EverySet.insert sign
-                                    |> EverySet.remove None
+                                    |> EverySet.remove NormalChildNutrition
 
                     else
                         -- We're allowing `NoFamilyPanning` itself to be
