@@ -8,7 +8,7 @@
 /**
  * Class HedleyRestfulAttendances.
  */
-class HedleyRestfulAttendances extends HedleyRestfulActivityBase {
+class HedleyRestfulAttendances extends HedleyRestfulGroupActivityBase {
 
   /**
    * {@inheritdoc}

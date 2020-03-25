@@ -22,14 +22,17 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, EveryCounselingSchedule)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
-import Backend.Measurement.Model exposing (Attendance, ChildMeasurementList, ChildNutrition, CounselingSession, FamilyPlanning, Height, MotherMeasurementList, Muac, ParticipantConsent, Photo, Weight)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
+import Backend.Measurement.Model exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
-import Backend.Person.Model exposing (Person)
+import Backend.Person.Model exposing (Person, RegistrationInitiator)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
+import Http
 import RemoteData exposing (RemoteData(..), WebData)
 
 
@@ -70,8 +73,10 @@ type alias ModelIndexedDb =
     -- organized data here, and recalculate it when necessary.
     , editableSessions : Dict SessionId (WebData EditableSession)
 
-    -- Tracks requests in progress to update sessions
+    -- Tracks requests in progress to update sessions, prenatal sessions or prenatal encounters.
     , sessionRequests : Dict SessionId Backend.Session.Model.Model
+    , prenatalEncounterRequests : Dict PrenatalEncounterId Backend.PrenatalEncounter.Model.Model
+    , prenatalSessionRequests : Dict IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
     -- at a particular session.
@@ -87,8 +92,15 @@ type alias ModelIndexedDb =
     -- searching for.
     , personSearches : Dict String (WebData (Dict PersonId Person))
 
-    -- A simple cache of people.
+    -- A simple cache of several things.
     , people : Dict PersonId (WebData Person)
+    , prenatalEncounters : Dict PrenatalEncounterId (WebData PrenatalEncounter)
+    , individualParticipants : Dict IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
+
+    -- Cache things organized in certain ways.
+    , individualParticipantsByPerson : Dict PersonId (WebData (Dict IndividualEncounterParticipantId IndividualEncounterParticipant))
+    , prenatalEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict PrenatalEncounterId PrenatalEncounter))
+    , prenatalMeasurements : Dict PrenatalEncounterId (WebData PrenatalMeasurements)
 
     -- From the point of view of the specified person, all of their relationships.
     , relationshipsByPerson : Dict PersonId (WebData (Dict RelationshipId MyRelationship))
@@ -102,6 +114,8 @@ type alias ModelIndexedDb =
     , postPmtctParticipant : Dict PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
     , postRelationship : Dict PersonId (WebData MyRelationship)
     , postSession : WebData SessionId
+    , postIndividualSession : Dict PersonId (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
+    , postPrenatalEncounter : Dict IndividualEncounterParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))
     }
 
 
@@ -122,8 +136,17 @@ emptyModelIndexedDb =
     , personSearches = Dict.empty
     , postPerson = NotAsked
     , postPmtctParticipant = Dict.empty
+    , postIndividualSession = Dict.empty
+    , postPrenatalEncounter = Dict.empty
     , postRelationship = Dict.empty
     , postSession = NotAsked
+    , prenatalEncounters = Dict.empty
+    , prenatalEncounterRequests = Dict.empty
+    , prenatalSessionRequests = Dict.empty
+    , individualParticipants = Dict.empty
+    , individualParticipantsByPerson = Dict.empty
+    , prenatalEncountersByParticipant = Dict.empty
+    , prenatalMeasurements = Dict.empty
     , relationshipsByPerson = Dict.empty
     , saveSyncDataRequests = Dict.empty
     , sessionRequests = Dict.empty
@@ -156,6 +179,11 @@ type MsgIndexedDb
     | FetchPeopleByName String
     | FetchPeople (List PersonId)
     | FetchPerson PersonId
+    | FetchPrenatalEncounter PrenatalEncounterId
+    | FetchIndividualEncounterParticipantsForPerson PersonId
+    | FetchPrenatalEncountersForParticipant IndividualEncounterParticipantId
+    | FetchPrenatalMeasurements PrenatalEncounterId
+    | FetchIndividualEncounterParticipant IndividualEncounterParticipantId
     | FetchRelationshipsForPerson PersonId
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
@@ -175,22 +203,31 @@ type MsgIndexedDb
     | HandleFetchedPeopleByName String (WebData (Dict PersonId Person))
     | HandleFetchedPerson PersonId (WebData Person)
     | HandleFetchPeople (WebData (Dict PersonId Person))
+    | HandleFetchedPrenatalEncounter PrenatalEncounterId (WebData PrenatalEncounter)
+    | HandleFetchedIndividualEncounterParticipantsForPerson PersonId (WebData (Dict IndividualEncounterParticipantId IndividualEncounterParticipant))
+    | HandleFetchedPrenatalEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict PrenatalEncounterId PrenatalEncounter))
+    | HandleFetchedPrenatalMeasurements PrenatalEncounterId (WebData PrenatalMeasurements)
+    | HandleFetchedIndividualEncounterParticipant IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
     | HandleFetchedRelationshipsForPerson PersonId (WebData (Dict RelationshipId MyRelationship))
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (Dict SessionId Session))
     | HandleFetchedSyncData (WebData (Dict HealthCenterId SyncData))
       -- Messages which mutate data
-    | PostPerson (Maybe PersonId) Person -- The first person is a person we ought to offer setting a relationship to.
+    | PostPerson (Maybe PersonId) RegistrationInitiator Person -- The first person is a person we ought to offer setting a relationship to.
     | PatchPerson PersonId Person
     | PostRelationship PersonId MyRelationship (Maybe ClinicId)
     | PostPmtctParticipant PmtctParticipant
     | PostSession Session
+    | PostIndividualSession IndividualEncounterParticipant
+    | PostPrenatalEncounter PrenatalEncounter
       -- Messages which handle responses to mutating data
-    | HandlePostedPerson (Maybe PersonId) (WebData PersonId)
+    | HandlePostedPerson (Maybe PersonId) RegistrationInitiator (WebData PersonId)
     | HandlePatchedPerson PersonId (WebData Person)
     | HandlePostedRelationship PersonId (WebData MyRelationship)
     | HandlePostedPmtctParticipant PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
     | HandlePostedSession (WebData SessionId)
+    | HandlePostedIndividualSession PersonId (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
+    | HandlePostedPrenatalEncounter IndividualEncounterParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))
       -- Process some revisions we've received from the backend. In some cases,
       -- we can update our in-memory structures appropriately. In other cases, we
       -- can set them to `NotAsked` and let the "fetch" mechanism re-fetch them.
@@ -200,30 +237,49 @@ type MsgIndexedDb
     | DeleteSyncData HealthCenterId
     | HandleSavedSyncData HealthCenterId (WebData ())
     | HandleDeletedSyncData HealthCenterId (WebData ())
-      -- Handling edits to session data
+      -- Handling edits to session data or prenatal encounter data
     | MsgSession SessionId Backend.Session.Model.Msg
+    | MsgPrenatalEncounter PrenatalEncounterId Backend.PrenatalEncounter.Model.Msg
+    | MsgPrenatalSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
 
 
 {-| Wrapper for all the revisions we can receive.
 -}
 type Revision
     = AttendanceRevision AttendanceId Attendance
+    | BreastExamRevision BreastExamId BreastExam
     | CatchmentAreaRevision CatchmentAreaId CatchmentArea
     | ChildNutritionRevision ChildNutritionId ChildNutrition
     | ClinicRevision ClinicId Clinic
+    | CorePhysicalExamRevision CorePhysicalExamId CorePhysicalExam
     | CounselingScheduleRevision CounselingScheduleId CounselingSchedule
     | CounselingSessionRevision CounselingSessionId CounselingSession
     | CounselingTopicRevision CounselingTopicId CounselingTopic
+    | DangerSignsRevision DangerSignsId DangerSigns
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
     | HealthCenterRevision HealthCenterId HealthCenter
     | HeightRevision HeightId Height
+    | LastMenstrualPeriodRevision LastMenstrualPeriodId LastMenstrualPeriod
+    | MedicalHistoryRevision MedicalHistoryId MedicalHistory
+    | MedicationRevision MedicationId Medication
     | MuacRevision MuacId Muac
     | NurseRevision NurseId Nurse
+    | ObstetricalExamRevision ObstetricalExamId ObstetricalExam
+    | ObstetricHistoryRevision ObstetricHistoryId ObstetricHistory
+    | ObstetricHistoryStep2Revision ObstetricHistoryStep2Id ObstetricHistoryStep2
     | ParticipantConsentRevision ParticipantConsentId ParticipantConsent
     | ParticipantFormRevision ParticipantFormId ParticipantForm
     | PersonRevision PersonId Person
     | PhotoRevision PhotoId Photo
     | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
+    | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
+    | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
+    | IndividualEncounterParticipantRevision IndividualEncounterParticipantId IndividualEncounterParticipant
+    | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
+    | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto
     | RelationshipRevision RelationshipId Relationship
+    | ResourceRevision ResourceId Resource
     | SessionRevision SessionId Session
+    | SocialHistoryRevision SocialHistoryId SocialHistory
+    | VitalsRevision VitalsId Vitals
     | WeightRevision WeightId Weight

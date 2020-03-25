@@ -1,12 +1,14 @@
 module Backend.Person.Model exposing
     ( EducationLevel(..)
     , ExpectedAge(..)
+    , ExpectedGender(..)
     , Gender(..)
     , HIVStatus(..)
     , MaritalStatus(..)
     , ModeOfDelivery(..)
     , ParticipantDirectoryOperation(..)
     , Person
+    , RegistrationInitiator(..)
     , Ubudehe(..)
     , VaginalDelivery(..)
     , allEducationLevels
@@ -17,6 +19,7 @@ module Backend.Person.Model exposing
     )
 
 import Backend.Entities exposing (HealthCenterId, PersonId)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Gizra.NominalDate exposing (NominalDate)
 
 
@@ -144,6 +147,11 @@ allMaritalStatuses =
     ]
 
 
+type RegistrationInitiator
+    = ParticipantDirectoryOrigin
+    | IndividualEncounterOrigin IndividualEncounterType
+
+
 type ParticipantDirectoryOperation
     = CreatePerson (Maybe PersonId)
     | EditPerson PersonId
@@ -161,3 +169,9 @@ type ExpectedAge
     = ExpectAdult
     | ExpectChild
     | ExpectAdultOrChild
+
+
+type ExpectedGender
+    = ExpectMale
+    | ExpectFemale
+    | ExpectMaleOrFemale
