@@ -14,6 +14,7 @@ far it doesn't seem to be a performance problem, so no premature optimization!
 
 -}
 
+import Debug exposing (toString)
 import Html exposing (Html)
 import RemoteData
 import Round
@@ -68,7 +69,7 @@ viewHeightForAgeBoys language model data =
         [ frame language "z-score-grey"
         , labels language heightForAgeBoysLabels
         , referenceLinesHeight
-        , ageLines language
+        , ageLines heightForAgeConfig
         , zScoreLabelsHeightForAgeBoys
         , model.lengthHeightForAge
             |> RemoteData.map (.male >> .byDay >> AllDict.toList)
@@ -89,7 +90,7 @@ viewHeightForAgeBoys5To19 language model data =
         [ frame language "z-score-blue"
         , labels language heightForAgeBoysLabels5To19
         , referenceLinesHeight5To19
-        , age5To19Lines language
+        , ageLines heightForAgeConfig5To19
         , zScoreLabelsHeightForAgeBoys5To19
         , model.lengthHeightForAge
             |> RemoteData.map (.male >> .byDay >> AllDict.toList)
@@ -117,6 +118,7 @@ type alias PlotConfig xAxis yAxis =
     , output : Bounds
     , drawSD1 : Bool
     , paintLevels : Bool
+    , xAxis : XAxisConfig
     }
 
 
@@ -128,6 +130,16 @@ type alias Bounds =
     }
 
 
+type alias XAxisConfig =
+    { width : Int
+    , minYear : Int
+    , maxYear : Int
+    , monthsList : List Int
+    , minLength : Int
+    , maxLength : Int
+    }
+
+
 heightForAgeConfig : PlotConfig Days Centimetres
 heightForAgeConfig =
     { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
@@ -136,6 +148,14 @@ heightForAgeConfig =
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
     , drawSD1 = False
     , paintLevels = True
+    , xAxis =
+        { width = 908
+        , minYear = 0
+        , maxYear = 2
+        , monthsList = List.range 1 11
+        , minLength = 0
+        , maxLength = 0
+        }
     }
 
 
@@ -144,9 +164,17 @@ heightForAgeConfig5To19 =
     { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
     , toFloatY = \(Centimetres cm) -> cm
     , input = { minY = 90, maxY = 200, minX = 365 * 2, maxX = 365 * 19 }
-    , output = { minX = 110.9, maxX = 3400, minY = 119.9, maxY = 506.7 }
+    , output = { minX = 111, maxX = 758, minY = 119.9, maxY = 506.7 }
     , drawSD1 = False
     , paintLevels = False
+    , xAxis =
+        { width = 647
+        , minYear = 5
+        , maxYear = 19
+        , monthsList = [ 3, 6, 9 ]
+        , minLength = 0
+        , maxLength = 0
+        }
     }
 
 
@@ -158,6 +186,14 @@ weightForAgeConfig =
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
     , drawSD1 = False
     , paintLevels = True
+    , xAxis =
+        { width = 908
+        , minYear = 0
+        , maxYear = 2
+        , monthsList = List.range 1 11
+        , minLength = 0
+        , maxLength = 0
+        }
     }
 
 
@@ -169,6 +205,14 @@ weightForHeightConfig =
     , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
     , drawSD1 = True
     , paintLevels = True
+    , xAxis =
+        { width = 908
+        , minYear = 0
+        , maxYear = 0
+        , monthsList = []
+        , minLength = 45
+        , maxLength = 110
+        }
     }
 
 
@@ -368,7 +412,7 @@ viewWeightForAgeBoys language model data =
         [ frame language "z-score-grey"
         , labels language weightForAgeBoysLabels
         , referenceLinesWeight
-        , ageLines language
+        , ageLines weightForAgeConfig
         , zScoreLabelsWeightForAgeBoys
         , model.weightForAge
             |> RemoteData.map (.male >> .byDay >> AllDict.toList)
@@ -431,7 +475,7 @@ viewHeightForAgeGirls language model data =
         [ frame language "z-score-grey"
         , labels language heightForAgeGirlsLabels
         , referenceLinesHeight
-        , ageLines language
+        , ageLines heightForAgeConfig
         , zScoreLabelsHeightForAgeGirls
         , model.lengthHeightForAge
             |> RemoteData.map (.female >> .byDay >> AllDict.toList)
@@ -452,7 +496,7 @@ viewWeightForAgeGirls language model data =
         [ frame language "z-score-grey"
         , labels language weightForAgeGirlsLabels
         , referenceLinesWeight
-        , ageLines language
+        , ageLines weightForAgeConfig
         , zScoreLabelsWeightForAgeGirls
         , model.weightForAge
             |> RemoteData.map (.female >> .byDay >> AllDict.toList)
@@ -569,191 +613,90 @@ zScoreLabelsWeightForAgeGirls =
         ]
 
 
-ageLines : Language -> Svg any
-ageLines language =
-    g []
-        [ line [ class "month-line", x1 "136", y1 "506.5", x2 "136", y2 "119.5" ] []
-        , line [ class "month-line", x1 "161.2", y1 "506.5", x2 "161.2", y2 "119.5" ] []
-        , line [ class "month-line", x1 "186.4", y1 "506.5", x2 "186.4", y2 "119.5" ] []
-        , line [ class "month-line", x1 "211.6", y1 "506.5", x2 "211.6", y2 "119.5" ] []
-        , line [ class "month-line", x1 "236.8", y1 "506.5", x2 "236.8", y2 "119.5" ] []
-        , line [ class "month-line", x1 "261.9", y1 "506.5", x2 "261.9", y2 "119.5" ] []
-        , line [ class "month-line", x1 "287.1", y1 "506.5", x2 "287.1", y2 "119.5" ] []
-        , line [ class "month-line", x1 "312.3", y1 "506.5", x2 "312.3", y2 "119.5" ] []
-        , line [ class "month-line", x1 "337.5", y1 "506.5", x2 "337.5", y2 "119.5" ] []
-        , line [ class "month-line", x1 "362.7", y1 "506.5", x2 "362.7", y2 "119.5" ] []
-        , line [ class "month-line", x1 "387.9", y1 "506.5", x2 "387.9", y2 "119.5" ] []
-        , line [ class "year-line", x1 "413.1", y1 "513.6", x2 "413.1", y2 "119.5" ] []
-        , line [ class "month-line", x1 "438.3", y1 "506.5", x2 "438.3", y2 "119.5" ] []
-        , line [ class "month-line", x1 "463.5", y1 "506.5", x2 "463.5", y2 "119.5" ] []
-        , line [ class "month-line", x1 "488.6", y1 "506.5", x2 "488.6", y2 "119.5" ] []
-        , line [ class "month-line", x1 "513.8", y1 "506.5", x2 "513.8", y2 "119.5" ] []
-        , line [ class "month-line", x1 "539", y1 "506.5", x2 "539", y2 "119.5" ] []
-        , line [ class "month-line", x1 "564.2", y1 "506.5", x2 "564.2", y2 "119.5" ] []
-        , line [ class "month-line", x1 "589.4", y1 "506.5", x2 "589.4", y2 "119.5" ] []
-        , line [ class "month-line", x1 "614.6", y1 "506.5", x2 "614.6", y2 "119.5" ] []
-        , line [ class "month-line", x1 "639.8", y1 "506.5", x2 "639.8", y2 "119.5" ] []
-        , line [ class "month-line", x1 "665", y1 "506.5", x2 "665", y2 "119.5" ] []
-        , line [ class "month-line", x1 "690.2", y1 "506.5", x2 "690.2", y2 "119.5" ] []
-        , line [ class "year-line", x1 "715.4", y1 "513.6", x2 "715.4", y2 "119.5" ] []
-        , text_
-            [ transform "matrix(1 0 0 1 399.4178 525.8762)"
-            , class "z-score-white z-score-semibold st20"
-            ]
-            [ text <| translate language (Translate.ChartPhrase Translate.OneYear) ]
-        , text_
-            [ transform "matrix(1 0 0 1 100.3324 525.8762)"
-            , class "z-score-white z-score-semibold st20"
-            ]
-            [ text <| translate language (Translate.ChartPhrase Translate.Birth) ]
-        , text_
-            [ transform "matrix(1 0 0 1 699.7343 525.9767)"
-            , class "z-score-white z-score-semibold st20"
-            ]
-            [ text <| translate language (Translate.ChartPhrase (Translate.YearsPlural 2)) ]
-        , text_ [ transform "matrix(1 0 0 1 133.9667 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "1" ]
-        , text_ [ transform "matrix(1 0 0 1 159.1552 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 184.3441 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 209.5331 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "4" ]
-        , text_ [ transform "matrix(1 0 0 1 234.7216 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "5" ]
-        , text_ [ transform "matrix(1 0 0 1 259.9105 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 285.0995 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "7" ]
-        , text_ [ transform "matrix(1 0 0 1 310.288 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "8" ]
-        , text_ [ transform "matrix(1 0 0 1 335.4769 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
-        , text_ [ transform "matrix(1 0 0 1 358.5858 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "10" ]
-        , text_ [ transform "matrix(1 0 0 1 383.7743 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "11" ]
-        , text_ [ transform "matrix(1 0 0 1 436.2323 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "1" ]
-        , text_ [ transform "matrix(1 0 0 1 461.4208 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 486.6093 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 511.7987 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "4" ]
-        , text_ [ transform "matrix(1 0 0 1 536.9872 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "5" ]
-        , text_ [ transform "matrix(1 0 0 1 562.1757 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 587.3651 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "7" ]
-        , text_ [ transform "matrix(1 0 0 1 612.5536 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "8" ]
-        , text_ [ transform "matrix(1 0 0 1 637.7421 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
-        , text_ [ transform "matrix(1 0 0 1 660.8514 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "10" ]
-        , text_ [ transform "matrix(1 0 0 1 686.0399 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "11" ]
-        ]
+ageLines : PlotConfig x y -> Svg any
+ageLines config =
+    let
+        yearsList =
+            List.range config.xAxis.minYear config.xAxis.maxYear
 
+        yearsCount =
+            List.length yearsList
 
-age5To19Lines : Language -> Svg any
-age5To19Lines language =
+        spaceBetweenYears =
+            config.xAxis.width // yearsCount
+
+        spaceBetweenMonths =
+            -- We add one here because we want to give space before the next year.
+            spaceBetweenYears // (List.length config.xAxis.monthsList + 1)
+
+        -- Here we can define the lines as we want.
+        lines =
+            List.indexedMap
+                (\i year ->
+                    let
+                        yearMargin =
+                            if i == 0 then
+                                config.output.minX
+
+                            else
+                                config.output.minX + toFloat (spaceBetweenYears * i)
+
+                        yearTextPosition =
+                            if year < 10 then
+                                (yearMargin - 2)
+                                    |> toString
+
+                            else
+                                (yearMargin - 5)
+                                    |> toString
+
+                        yearLinePosition =
+                            toString yearMargin
+
+                        monthLinesAndText =
+                            List.indexedMap
+                                (\monthIndex month ->
+                                    let
+                                        monthMargin =
+                                            yearMargin + toFloat (spaceBetweenMonths * (monthIndex + 1))
+
+                                        monthTextPosition =
+                                            if month < 10 then
+                                                (monthMargin - 2)
+                                                    |> toString
+
+                                            else
+                                                (monthMargin - 5)
+                                                    |> toString
+
+                                        monthLinePosition =
+                                            toString monthMargin
+                                    in
+                                    if year < config.xAxis.maxYear then
+                                        [ line [ class "month-line", x1 monthLinePosition, y1 "506.5", x2 monthLinePosition, y2 "119.5" ] []
+                                        , text_ [ transform <| "matrix(1 0 0 1 " ++ monthTextPosition ++ " 516.5436)", class "z-score-white z-score-semibold st16" ] [ text <| toString month ]
+                                        ]
+
+                                    else
+                                        []
+                                )
+                                config.xAxis.monthsList
+                                |> List.concat
+                    in
+                    [ line [ class "year-line", x1 yearLinePosition, y1 "514.5", x2 yearLinePosition, y2 "119.5" ] []
+                    , text_
+                        [ transform <| "matrix(1 0 0 1 " ++ yearTextPosition ++ " 525.9767)"
+                        , class "z-score-white z-score-semibold st20"
+                        ]
+                        [ text <| toString year ]
+                    ]
+                        |> List.append monthLinesAndText
+                )
+                yearsList
+                |> List.concat
+    in
     g []
-        [ line [ class "year-line", x1 "111", y1 "506.5", x2 "111", y2 "119.5" ] []
-        , line [ class "month-line", x1 "121.8", y1 "506.5", x2 "121.8", y2 "119.5" ] []
-        , line [ class "month-line", x1 "132.6", y1 "506.5", x2 "132.6", y2 "119.5" ] []
-        , line [ class "month-line", x1 "143.4", y1 "506.5", x2 "143.4", y2 "119.5" ] []
-        , line [ class "year-line", x1 "154.2", y1 "506.5", x2 "154.2", y2 "119.5" ] []
-        , line [ class "month-line", x1 "165", y1 "506.5", x2 "165", y2 "119.5" ] []
-        , line [ class "month-line", x1 "175.8", y1 "506.5", x2 "175.8", y2 "119.5" ] []
-        , line [ class "month-line", x1 "186.6", y1 "506.5", x2 "186.6", y2 "119.5" ] []
-        , line [ class "year-line", x1 "197.4", y1 "506.5", x2 "197.4", y2 "119.5" ] []
-        , line [ class "month-line", x1 "208.2", y1 "506.5", x2 "208.2", y2 "119.5" ] []
-        , line [ class "month-line", x1 "219", y1 "506.5", x2 "219", y2 "119.5" ] []
-        , line [ class "month-line", x1 "229.8", y1 "513.6", x2 "229.8", y2 "119.5" ] []
-        , line [ class "year-line", x1 "240.6", y1 "506.5", x2 "240.6", y2 "119.5" ] []
-        , line [ class "month-line", x1 "251.4", y1 "506.5", x2 "251.4", y2 "119.5" ] []
-        , line [ class "month-line", x1 "262.2", y1 "506.5", x2 "262.2", y2 "119.5" ] []
-        , line [ class "month-line", x1 "273", y1 "506.5", x2 "273", y2 "119.5" ] []
-        , line [ class "year-line", x1 "283.8", y1 "506.5", x2 "283.8", y2 "119.5" ] []
-        , line [ class "month-line", x1 "294.6", y1 "506.5", x2 "294.6", y2 "119.5" ] []
-        , line [ class "month-line", x1 "305.4", y1 "506.5", x2 "305.4", y2 "119.5" ] []
-        , line [ class "month-line", x1 "316.2", y1 "506.5", x2 "316.2", y2 "119.5" ] []
-        , line [ class "year-line", x1 "327", y1 "506.5", x2 "327", y2 "119.5" ] []
-        , line [ class "month-line", x1 "337.8", y1 "506.5", x2 "337.8", y2 "119.5" ] []
-        , line [ class "month-line", x1 "348.6", y1 "506.5", x2 "348.6", y2 "119.5" ] []
-        , line [ class "month-line", x1 "359.4", y1 "506.6", x2 "359.4", y2 "119.5" ] []
-        , line [ class "year-line", x1 "370.2", y1 "506.6", x2 "370.2", y2 "119.5" ] []
-        , line [ class "month-line", x1 "381", y1 "506.5", x2 "381", y2 "119.5" ] []
-        , line [ class "month-line", x1 "391.8", y1 "506.5", x2 "391.8", y2 "119.5" ] []
-        , line [ class "month-line", x1 "402.6", y1 "506.6", x2 "402.6", y2 "119.5" ] []
-        , line [ class "year-line", x1 "413.4", y1 "506.6", x2 "413.4", y2 "119.5" ] []
-        , line [ class "month-line", x1 "424.2", y1 "506.5", x2 "424.2", y2 "119.5" ] []
-        , line [ class "month-line", x1 "435", y1 "506.5", x2 "435", y2 "119.5" ] []
-        , line [ class "month-line", x1 "445.8", y1 "506.6", x2 "445.8", y2 "119.5" ] []
-        , line [ class "year-line", x1 "456.6", y1 "506.6", x2 "456.6", y2 "119.5" ] []
-        , line [ class "month-line", x1 "467.4", y1 "506.5", x2 "467.4", y2 "119.5" ] []
-        , line [ class "month-line", x1 "478.2", y1 "506.5", x2 "478.2", y2 "119.5" ] []
-        , line [ class "month-line", x1 "489", y1 "506.6", x2 "489", y2 "119.5" ] []
-        , line [ class "year-line", x1 "499.8", y1 "506.6", x2 "499.8", y2 "119.5" ] []
-        , line [ class "month-line", x1 "510.6", y1 "506.5", x2 "510.6", y2 "119.5" ] []
-        , line [ class "month-line", x1 "521.4", y1 "506.5", x2 "521.4", y2 "119.5" ] []
-        , line [ class "month-line", x1 "532.2", y1 "506.6", x2 "532.2", y2 "119.5" ] []
-        , line [ class "year-line", x1 "543", y1 "506.6", x2 "543", y2 "119.5" ] []
-        , line [ class "month-line", x1 "553.8", y1 "506.5", x2 "553.8", y2 "119.5" ] []
-        , line [ class "month-line", x1 "564.6", y1 "506.5", x2 "564.6", y2 "119.5" ] []
-        , line [ class "month-line", x1 "575.4", y1 "506.6", x2 "575.4", y2 "119.5" ] []
-        , line [ class "year-line", x1 "586.2", y1 "506.6", x2 "586.2", y2 "119.5" ] []
-        , line [ class "month-line", x1 "597", y1 "506.5", x2 "597", y2 "119.5" ] []
-        , line [ class "month-line", x1 "607.8", y1 "506.5", x2 "607.8", y2 "119.5" ] []
-        , line [ class "month-line", x1 "618.6", y1 "506.6", x2 "618.6", y2 "119.5" ] []
-        , line [ class "year-line", x1 "629.4", y1 "506.6", x2 "629.4", y2 "119.5" ] []
-        , line [ class "month-line", x1 "640.2", y1 "506.5", x2 "640.2", y2 "119.5" ] []
-        , line [ class "month-line", x1 "651", y1 "506.5", x2 "651", y2 "119.5" ] []
-        , line [ class "month-line", x1 "661.8", y1 "506.6", x2 "661.8", y2 "119.5" ] []
-        , line [ class "year-line", x1 "672.6", y1 "506.6", x2 "672.6", y2 "119.5" ] []
-        , line [ class "month-line", x1 "683.4", y1 "506.5", x2 "683.4", y2 "119.5" ] []
-        , line [ class "month-line", x1 "694.2", y1 "506.5", x2 "694.2", y2 "119.5" ] []
-        , line [ class "month-line", x1 "705", y1 "506.6", x2 "705", y2 "119.5" ] []
-        , line [ class "year-line", x1 "715.4", y1 "506.6", x2 "715.4", y2 "119.5" ] []
-        , text_
-            [ transform "matrix(1 0 0 1 399.4178 525.8762)"
-            , class "z-score-white z-score-semibold st20"
-            ]
-            [ text <| translate language (Translate.ChartPhrase (Translate.YearsPlural 10)) ]
-        , text_
-            [ transform "matrix(1 0 0 1 100.3324 525.8762)"
-            , class "z-score-white z-score-semibold st20"
-            ]
-            [ text <| translate language (Translate.ChartPhrase (Translate.YearsPlural 5)) ]
-        , text_
-            [ transform "matrix(1 0 0 1 699.7343 525.9767)"
-            , class "z-score-white z-score-semibold st20"
-            ]
-            [ text <| translate language (Translate.ChartPhrase (Translate.YearsPlural 19)) ]
-        , text_ [ transform "matrix(1 0 0 1 184.3441 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 259.9105 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 335.4769 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
-        , text_ [ transform "matrix(1 0 0 1 486.6093 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 562.1757 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 637.7421 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
-        , text_ [ transform "matrix(1 0 0 1 184.3441 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 259.9105 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 335.4769 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
-        , text_ [ transform "matrix(1 0 0 1 486.6093 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 562.1757 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 637.7421 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
-        , text_ [ transform "matrix(1 0 0 1 184.3441 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 259.9105 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 335.4769 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
-        , text_ [ transform "matrix(1 0 0 1 486.6093 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 562.1757 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 637.7421 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
-        , text_ [ transform "matrix(1 0 0 1 184.3441 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 259.9105 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 335.4769 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
-        , text_ [ transform "matrix(1 0 0 1 486.6093 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 562.1757 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 637.7421 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
-        , text_ [ transform "matrix(1 0 0 1 184.3441 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 259.9105 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 335.4769 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
-        , text_ [ transform "matrix(1 0 0 1 486.6093 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 562.1757 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 637.7421 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
-        , text_ [ transform "matrix(1 0 0 1 184.3441 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 259.9105 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 335.4769 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
-        , text_ [ transform "matrix(1 0 0 1 486.6093 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 562.1757 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 637.7421 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
-        , text_ [ transform "matrix(1 0 0 1 184.3441 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 259.9105 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 335.4769 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
-        , text_ [ transform "matrix(1 0 0 1 486.6093 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 562.1757 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 637.7421 516.5436)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
-        ]
+        lines
 
 
 heightLines : Svg any
