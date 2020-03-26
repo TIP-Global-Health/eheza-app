@@ -25,7 +25,7 @@ expected (and not completed).
 
 import Backend.Measurement.Model exposing (HeightInCm(..), MuacInCm(..), PrenatalMeasurements, PreviousDeliverySign(..), WeightInKg(..))
 import EverySet
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Maybe.Extra exposing (isJust)
 import Pages.PrenatalActivity.Utils exposing (calculateBmi)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
@@ -343,7 +343,7 @@ generateRecurringHighSeverityAlertData language currentDate data alert =
                                     Just
                                         ( trans Translate.High ++ " " ++ transAlert alert
                                         , Debug.toString sys ++ "/" ++ Debug.toString dia ++ trans Translate.MMHGUnit
-                                        , formatMMDDYYYY date
+                                        , formatDDMMYYYY date
                                         )
 
                                 else
