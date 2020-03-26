@@ -6,6 +6,7 @@ import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Village.Utils exposing (getVillageClinicId)
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -15,13 +16,13 @@ import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 
 
-view : Language -> NominalDate -> Maybe VillageId -> ModelIndexedDb -> Html App.Model.Msg
-view language currentDate maybeVillageId db =
+view : Language -> NominalDate -> Maybe VillageId -> Bool -> ModelIndexedDb -> Html App.Model.Msg
+view language currentDate maybeVillageId isChw db =
     div
         [ class "ui basic segment page-clinical" ]
     <|
         viewHeader language
-            :: viewContent language currentDate maybeVillageId db
+            :: viewContent language currentDate maybeVillageId isChw db
 
 
 viewHeader : Language -> Html Msg
@@ -40,8 +41,8 @@ viewHeader language =
         ]
 
 
-viewContent : Language -> NominalDate -> Maybe VillageId -> ModelIndexedDb -> List (Html App.Model.Msg)
-viewContent language currentDate maybeVillageId db =
+viewContent : Language -> NominalDate -> Maybe VillageId -> Bool -> ModelIndexedDb -> List (Html App.Model.Msg)
+viewContent language currentDate maybeVillageId isChw db =
     let
         groupAssessmentButtonAction =
             maybeVillageId
@@ -98,14 +99,19 @@ viewContent language currentDate maybeVillageId db =
                 ]
 
         individualEncounterButton =
-            button
-                [ class "ui primary button individual-assessment"
-                , onClick <| SetActivePage <| UserPage IndividualEncounterTypesPage
-                ]
-                [ span [ class "icon" ] []
-                , span [ class "text" ] [ text <| translate language Translate.IndividualEncounter ]
-                , span [ class "icon-back" ] []
-                ]
+            if isChw then
+                -- Hide individual encounters option, until we develop it's CHW flow.
+                emptyNode
+
+            else
+                button
+                    [ class "ui primary button individual-assessment"
+                    , onClick <| SetActivePage <| UserPage IndividualEncounterTypesPage
+                    ]
+                    [ span [ class "icon" ] []
+                    , span [ class "text" ] [ text <| translate language Translate.IndividualEncounter ]
+                    , span [ class "icon-back" ] []
+                    ]
     in
     [ p [] [ text <| translate language Translate.WhatDoYouWantToDo ]
     , individualEncounterButton
