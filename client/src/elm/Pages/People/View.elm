@@ -3,7 +3,7 @@ module Pages.People.View exposing (view)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (ExpectedAge(..), Person)
+import Backend.Person.Model exposing (ExpectedAge(..), Person, RegistrationInitiator(..))
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.Village.Utils exposing (getVillageById)
 import Gizra.Html exposing (emptyNode, showMaybe)
@@ -249,7 +249,7 @@ viewSearchForm language currentDate maybeVillageId isChw relation model db =
                 [ class "register-actions" ]
                 [ button
                     [ class "ui primary button fluid"
-                    , onClick <| SetActivePage <| UserPage <| CreatePersonPage relation
+                    , onClick <| SetActivePage <| UserPage <| CreatePersonPage relation ParticipantDirectoryOrigin
                     ]
                     [ text <| translate language Translate.RegisterNewParticipant ]
                 ]

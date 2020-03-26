@@ -34,17 +34,18 @@
             var uuid = matches[2]; // May be null
 
             if (event.request.method === 'GET') {
-                var isMeasurementType = type === 'child-measurements' || type === 'mother-measurements';
                 if (uuid) {
-                    if (isMeasurementType) {
-                        return event.respondWith(viewMeasurements(url, type, uuid));
+                    if (type === 'child-measurements' || type === 'mother-measurements') {
+                        return event.respondWith(viewMeasurements('person', uuid));
+                    }
+                    else if (type === 'prenatal-measurements') {
+                        return event.respondWith(viewMeasurements('prenatal_encounter', uuid));
                     }
                     else {
-                        return event.respondWith(view(url, type, uuid));
+                        return event.respondWith(view(type, uuid));
                     }
-
                 } else {
-                    return event.respondWith(index(url, type));
+                      return event.respondWith(index(url, type));
                 }
             }
 
@@ -83,26 +84,43 @@
 
     var tableForType = {
         attendance: 'shards',
+        breast_exam: 'shards',
         catchment_area: 'nodes',
         clinic: 'nodes',
         counseling_schedule: 'nodes',
         counseling_session: 'shards',
         counseling_topic: 'nodes',
+        core_physical_exam: 'shards',
+        danger_signs: 'shards',
         family_planning: 'shards',
         health_center: 'nodes',
         height: 'shards',
+        last_menstrual_period: 'shards',
+        medical_history: 'shards',
+        medication: 'shards',
         muac: 'shards',
         nurse: 'nodes',
         nutrition: 'shards',
+        obstetric_history: 'shards',
+        obstetric_history_step2: 'shards',
+        obstetrical_exam: 'shards',
         participant_consent: 'shards',
         participant_form: 'nodes',
         person: 'nodes',
         photo: 'shards',
+        prenatal_photo: 'shards',
         pmtct_participant: 'nodes',
+        prenatal_family_planning: 'shards',
+        prenatal_nutrition: 'shards',
+        individual_participant: 'nodes',
+        prenatal_encounter: 'nodes',
         relationship: 'nodes',
+        resource: 'shards',
         session: 'nodes',
+        social_history: 'shards',
         syncmetadata: 'syncMetadata',
         village: 'nodes',
+        vitals: 'shards',
         weight: 'shards'
     };
 
@@ -346,57 +364,54 @@
         }).catch(sendErrorResponses);
     }
 
-    function view (url, type, uuid) {
+    function view (type, uuid) {
         return dbSync.open().catch(databaseError).then(function () {
             return getTableForType(type).then(function (table) {
-                // UUID may be multiple list of UUIDs, so we split by it.
-                var uuids = uuid.split(',');
+              var uuids = uuid.split(',');
 
-                // The key to query by.
-                var key = 'uuid';
+              // The key to query by.
+              var key = 'uuid';
 
-                return table.where(key).anyOf(uuids).toArray().catch(databaseError).then(function (nodes) {
-                    // We could also check that the type is the expected type.
-                    if (nodes) {
+              return table.where(key).anyOf(uuids).toArray().catch(databaseError).then(function (nodes) {
+                  // We could also check that the type is the expected type.
+                  if (nodes) {
 
-                        var body = JSON.stringify({
-                            data: nodes
-                        });
+                      var body = JSON.stringify({
+                          data: nodes
+                      });
 
-                        var response = new Response(body, {
-                            status: 200,
-                            statusText: 'OK',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
+                      var response = new Response(body, {
+                          status: 200,
+                          statusText: 'OK',
+                          headers: {
+                              'Content-Type': 'application/json'
+                          }
+                      });
 
-                        return Promise.resolve(response);
-                    } else {
-                        response = new Response('', {
-                            status: 404,
-                            statusText: 'Not found'
-                        });
+                      return Promise.resolve(response);
+                  } else {
+                      response = new Response('', {
+                          status: 404,
+                          statusText: 'Not found'
+                      });
 
-                        return Promise.reject(response);
-                    }
-                });
-            });
+                      return Promise.reject(response);
+                  }
+              });
+          });
         }).catch(sendErrorResponses);
     }
 
     // This is a kind of special-case for now, at least. We're wanting to get
-    // back all of a particular child's or mother's measurements.
+    // back all of measuremnts for whom the key is equal to the value.
     //
     // Ultimately, it would be better to make this more generic here and do the
     // processing on the client side, but this mirrors the pre-existing
     // division of labour between client and server, so it's easier for now.
-    function viewMeasurements (url, type, uuid) {
+    function viewMeasurements (key, uuid) {
         // UUID may be multiple list of UUIDs, so we split by it.
         var uuids = uuid.split(',');
 
-        // The key to query by.
-        var key = 'person';
         var query = dbSync.shards.where(key).anyOf(uuids);
 
         // Build an empty list of measurements, so we return some value, even
@@ -411,14 +426,18 @@
         return query.toArray().catch(databaseError).then(function (nodes) {
             // We could also check that the type is the expected type.
             if (nodes) {
-
                 nodes.forEach(function (node) {
-                    data[node.person] = data[node.person] || {};
-                    if (data[node.person][node.type]) {
-                        data[node.person][node.type].push(node);
+                    var target = node.person;
+                    if (key === 'prenatal_encounter') {
+                      target = node.prenatal_encounter;
+                    }
+
+                    data[target] = data[target] || {};
+                    if (data[target][node.type]) {
+                        data[target][node.type].push(node);
                     } else {
-                        data[node.person] = data[node.person] || {};
-                        data[node.person][node.type] = [node];
+                        data[target] = data[target] || {};
+                        data[target][node.type] = [node];
                     }
                 });
 
@@ -531,6 +550,20 @@
                     }
                 }
 
+                if (type === 'prenatal_encounter') {
+                  var prenatalSessionId = params.get('individual_participant');
+                  if (prenatalSessionId) {
+                    modifyQuery = modifyQuery.then(function () {
+                        criteria.individual_participant = prenatalSessionId;
+                        query = table.where(criteria);
+
+                        countQuery = query.clone();
+
+                        return Promise.resolve();
+                    });
+                  }
+                }
+
                 // For session endpoint, check child param and only return
                 // those sessions which the child was expected at.
                 if (type === 'session') {
@@ -598,6 +631,10 @@
     // shard a node should be assigned to. For now, it seems simplest to do it
     // here, but we can revisit that.
     function determineShard (node) {
+        if (node.health_center) {
+            return Promise.resolve(node.health_center);
+        }
+
         if (node.session) {
             return dbSync.nodes.get(node.session).then (function (session) {
                 return dbSync.nodes.get(session.clinic).then(function (clinic) {

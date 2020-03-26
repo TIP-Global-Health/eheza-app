@@ -99,7 +99,9 @@ viewContent language currentDate maybeVillageId db =
 
         individualEncounterButton =
             button
-                [ class "ui primary button individual-assessment" ]
+                [ class "ui primary button individual-assessment"
+                , onClick <| SetActivePage <| UserPage IndividualEncounterTypesPage
+                ]
                 [ span [ class "icon" ] []
                 , span [ class "text" ] [ text <| translate language Translate.IndividualEncounter ]
                 , span [ class "icon-back" ] []

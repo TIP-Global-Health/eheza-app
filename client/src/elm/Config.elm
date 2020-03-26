@@ -62,6 +62,31 @@ ehezaGlobal =
     }
 
 
+***REMOVED*** : Model
+***REMOVED*** =
+    { backendUrl = "https://***REMOVED***"
+    , name = "***REMOVED***"
+
+    -- We're not actually using Pusher at the moment, so just filling in a
+    -- blank key for now.
+    , pusherKey = PusherAppKey "" UsEast1
+    , debug = False
+    , rollbarToken = Rollbar.token "***REMOVED***"
+    , sandbox = True
+    }
+
+
+prenatalPantheon : Model
+prenatalPantheon =
+    { backendUrl = "https://prenatal-ihangane.pantheonsite.io"
+    , name = "prenatalPantheon"
+    , pusherKey = PusherAppKey "" UsEast1
+    , debug = False
+    , rollbarToken = Rollbar.token "***REMOVED***"
+    , sandbox = False
+    }
+
+
 elm19Pantheon : Model
 elm19Pantheon =
     { backendUrl = "https://elm19-ihangane.pantheonsite.io"
@@ -101,8 +126,10 @@ configs =
         [ ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", livePantheon )
-        , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ehezaGlobal )
+        , ( "***REMOVED***", ***REMOVED*** )
+        , ( "prenatal-ihangane.pantheonsite.io", prenatalPantheon )
+        , ( "***REMOVED***", ***REMOVED*** )
         , ( "elm19-ihangane.pantheonsite.io", elm19Pantheon )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )

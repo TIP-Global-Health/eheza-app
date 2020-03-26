@@ -1,15 +1,4 @@
-module Utils.NominalDate exposing
-    ( Days(..)
-    , Months(..)
-    , diffDays
-    , endField
-    , renderAgeMonthsDays
-    , renderAgeMonthsDaysAbbrev
-    , renderAgeMonthsDaysHtml
-    , renderDate
-    , setNominalDateRange
-    , startField
-    )
+module Utils.NominalDate exposing (Days(..), Months(..), compareDates, diffDays, diffMonths, endField, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate, setNominalDateRange, startField)
 
 {-| An extra utility for elm-community/elm-time ... should integrate with
 Gizra.NominalDate.
@@ -19,7 +8,7 @@ import Date
 import Form.Field exposing (Field)
 import Form.Init exposing (setGroup, setString)
 import Form.Validate as Validate exposing (Validation, field)
-import Gizra.NominalDate exposing (NominalDate, NominalDateRange, diffCalendarMonthsAndDays, formatYYYYMMDD, fromLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, NominalDateRange, diffCalendarMonthsAndDays, formatYYYYMMDD)
 import Html exposing (Html)
 import Translate exposing (Language, translate)
 
@@ -52,6 +41,12 @@ diffDays low high =
     -- }
     Gizra.NominalDate.diffDays low high
         |> Days
+
+
+diffMonths : NominalDate -> NominalDate -> Months
+diffMonths low high =
+    Gizra.NominalDate.diffMonths low high
+        |> Months
 
 
 {-| Shows the difference between the first date (the birthdate)
@@ -231,3 +226,19 @@ setNominalDateRange fieldName range =
         [ setString startField (formatYYYYMMDD range.start)
         , setString endField (formatYYYYMMDD range.end)
         ]
+
+
+compareDates : NominalDate -> NominalDate -> Order
+compareDates date1 date2 =
+    let
+        diff =
+            Gizra.NominalDate.diffDays date1 date2
+    in
+    if diff < 0 then
+        GT
+
+    else if diff == 0 then
+        EQ
+
+    else
+        LT

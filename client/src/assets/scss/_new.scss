@@ -40,6 +40,10 @@ div.page-content {
     overflow-y: auto;
     display: flex;
     flex-direction: column;
+
+    .ui.message.warning >.header {
+      margin-bottom: 20px;
+    }
 }
 
 div.language-switcher {
@@ -52,13 +56,13 @@ div.language-switcher {
     .version {
         margin-right: 16px;
         height: 24px;
-        color: white;
+        color: $color-white;
         font-size: .6em;
         cursor: pointer;
     }
 
     .sync-icon {
-        color: white;
+        color: $color-white;
         cursor: pointer;
     }
 
@@ -75,7 +79,7 @@ div.language-switcher {
             position: relative;
             display: flex;
             height: 27px;
-            color: white;
+            color: $color-white;
             font-size: .8em;
             cursor: pointer;
 
@@ -85,9 +89,9 @@ div.language-switcher {
 
             a {
                 display: block;
-                width: 27 px;
-                height: 27 px;
-                background: #fff;
+                width: 27px;
+                height: 27px;
+                background: $color-white;
                 border-radius: 50%;
                 position: relative;
                 margin-left: 10px;
@@ -151,7 +155,7 @@ div.page-pincode {
 
     button.ui.logout.button {
       background: $color-light-background;
-      border: 2px solid white;
+      border: 2px solid $color-white;
       position: absolute;
       bottom: 0;
       width: 89%;
@@ -253,19 +257,19 @@ div.page-people {
 
         > div.ui.segment {
             height: 100%;
-        }
-    }
 
-    div.search {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-        overflow-y: hidden;
+            div.search {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                overflow-y: hidden;
 
-        div.search-middle {
-            height: 100%;
-            flex: 1 1 auto;
-            overflow-y: auto;
+                div.search-middle {
+                    height: 100%;
+                    flex: 1 1 auto;
+                    overflow-y: auto;
+                }
+            }
         }
     }
 }
@@ -326,4 +330,1011 @@ div.page-person {
       margin-top: 20px;
     }
   }
+}
+
+//Common for Prenatal Encounter and Prenatal Activity pages
+div.page-prenatal-activity,
+div.page-prenatal-encounter,
+div.page-pregnancy-outcome {
+    padding: 0 35px 35px 35px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .item .content {
+      padding-top: 1em !important;
+
+      .label {
+        font-weight: bold;
+        padding-right: 10px;
+      }
+    }
+
+    .item.measurements {
+      display: grid;
+      grid-gap: 1em;
+      grid-template-columns: 25% 30% 20% 20%;
+
+      .label {
+        font-weight: bold;
+      }
+
+      .ui:not(:last-child) {
+        border-right: 1px solid aquamarine;
+      }
+    }
+
+    .form.history.obstetric.second .ui.grid{
+      min-height: 70px;
+    }
+
+    .ui.full.segment {
+      color: $color-text;
+      margin-bottom: 20px;
+
+      .full.content {
+        min-height: 235px;
+      }
+    }
+
+}
+
+// Prenatal Encounter page
+div.page-prenatal-encounter {
+
+    .ui.full.segment {
+
+      .full.content {
+
+        .card .content p {
+          white-space: unset;
+        }
+      }
+
+      .reports-wrapper {
+
+        .report-wrapper {
+          display: grid;
+          grid-column-gap: 35px;
+          grid-template-columns: 222px auto;
+
+          .report-text {
+            margin-top: 55px;
+
+            .report-label {
+              font-size: 28px;
+            }
+
+            .report-link {
+              color: $color-light-blue;
+              font-size: 22px;
+              line-height: 40px;
+              text-decoration: underline;
+            }
+          }
+        }
+      }
+    }
+}
+
+// Prenatal Activity page
+div.page-prenatal-activity {
+
+    .ui.task.segment {
+
+      .column.core-physical-exam {
+        width: 25%;
+
+        a {
+          width: 131px;
+        }
+      }
+    }
+
+    .tasks-count {
+      background: $color-primary;
+      padding: 5px 15px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .ui.full.segment {
+
+      .label {
+        font-weight: bold;
+        margin-bottom: 20px;
+
+        &.helper {
+          margin-bottom: 40px;
+        }
+      }
+
+      .form-input {
+        margin-bottom: 30px;
+
+        // Pregnanacy Dating Inputs
+        &.range {
+          background: $color-white;
+          border: 2px solid $color-light-gray;
+          padding: 5px;
+          width: 50%;
+        }
+
+        &.date {
+          height: 2em;
+          width: 50%;
+
+          .dropdown,
+          .dropdown-open {
+            width: 100%;
+          }
+
+          .dropdown--button-container {
+            background: $color-white;
+            border: 2px solid $color-light-gray;
+
+            input {
+              border: 0;
+              padding: 5px;
+            }
+          }
+        }
+
+        &.hiv-test-result {
+          background: $color-white;
+          border: 2px solid $color-light-gray;
+          margin-top: 15px;
+          padding: 5px;
+          width: 73%;
+        }
+
+        // Number inputs
+        &.number {
+          margin-bottom: 10px;
+
+          input {
+            border: 2px solid $color-gray-border;
+            background-color: $color-white;
+            width: 100%;
+            text-align: -webkit-center;
+            font-weight: bold;
+          }
+
+          &.c-sections {
+            margin-bottom: 40px;
+          }
+        }
+
+        // Number inputs
+        &.measurement {
+          margin-bottom: 10px;
+
+          .unit {
+            float: left;
+            font-weight: normal;
+            margin-left: 20px;
+            margin-top: 10px;
+            width: 35%;
+          }
+
+          input {
+            background-color: $color-white;
+            border: 2px solid $color-gray-border;
+            float: left;
+            width: 60%;
+          }
+
+          &.disabled input{
+            pointer-events: none;
+          }
+        }
+
+        // Bool inputs
+        &.yes-no {
+          padding-bottom: 15px;
+          margin-left: 25px;
+
+          label {
+            font-size: 25px;
+            margin-left: 10px;
+          }
+
+          label:before {
+            content: " ";
+            display: inline-block;
+            position: relative;
+            top: 5px;
+            margin-right: 10px;
+            width: 26px;
+            height: 26px;
+            border-radius: 13px;
+            border: 2px solid $color-gray-border;
+            background-color: transparent;
+          }
+
+          input[type=radio] {
+            display: none;
+          }
+
+          input[type=radio]:checked + label:after {
+            content: " ";
+            border-radius: 7px;
+            width: 14px;
+            height: 14px;
+            position: absolute;
+            top: 25px;
+            left: 30px;
+            display: block;
+            background: $color-text;
+          }
+        }
+      }
+
+      .checkbox-select-input {
+
+        .ui.checkbox.activity {
+          margin-bottom: 10px;
+
+          label {
+            font-size: 24px;
+
+            &:before {
+              height: 24px;
+              width: 24px;
+            }
+          }
+        }
+      }
+
+      .separator {
+        color: $color-light-gray;
+        margin: 30px 0;
+        width: 100%;
+        border: 1px solid;
+
+        &.double {
+          margin: 60px 0;
+        }
+      }
+
+      .results {
+        display: inline-block;
+        width: 100%;
+
+        .edd-result,
+        .ega-result {
+          width: 45%;
+
+          .value {
+            font-size: 25px;
+          }
+        }
+
+        .edd-result {
+          float: left;
+        }
+
+        .ega-result {
+          float: right;
+        }
+
+        .gravida-result,
+        .para-result {
+          font-size: 28px;
+
+          span {
+            margin-right: 10px;
+          }
+        }
+
+        .gravida-result {
+          width: 65%;
+          float: left;
+          text-align: center;
+        }
+      }
+
+      .actions {
+
+        &.history.obstetric.second button {
+          width: 50%;
+          float: left;
+          margin: 0;
+
+          &.active {
+            border-left: 1px solid $color-white;
+          }
+        }
+      }
+
+      .form.history {
+
+        .ui.grid+.grid {
+          margin-top: 0;
+        }
+
+        .ui.grid {
+
+          .label {
+            margin-bottom: 0;
+          }
+
+          .label.c-section-previous-delivery {
+            margin-top: 20px;
+          }
+        }
+
+        .label.successive-abortions {
+          margin-top: 30px
+        }
+
+        &.medical,
+        &.social {
+
+          .alert img {
+            margin-top: -10px;
+          }
+        }
+      }
+
+      .form.examination {
+
+        .ui.grid+.grid {
+          margin-top: 0;
+        }
+
+        .label {
+          font-size: 30px;
+
+          &.self-guidance {
+            font-size: 25px;
+          }
+        }
+
+        .ui.grid.systolic img {
+          margin-top: -10px;
+        }
+
+        .title.dia {
+          margin-top: 20px;
+        }
+
+        .title.hands,
+        .title.legs {
+          margin-left: 25px;
+          font-weight: bold;
+          margin-bottom: 10px;
+        }
+
+        .title.legs {
+          margin-top: 15px;
+        }
+
+        .previous-value {
+          display: inline-block;
+          font-size: 18px;
+          width: 100%;
+        }
+      }
+
+      .form.patient-provisions {
+        min-height: 335px;
+      }
+    }
+}
+
+// Pregnancy Outcome page
+div.page-pregnancy-outcome {
+
+    .tasks-count {
+      background: $color-primary;
+      font-size: 18px;
+      font-weight: bold;
+      padding: 5px 15px;
+    }
+
+    .ui.full.segment {
+
+      .label {
+        font-weight: bold;
+        margin-bottom: 20px;
+
+        &.helper {
+          margin-bottom: 40px;
+        }
+      }
+
+      .form-input {
+        margin-bottom: 30px;
+
+        &.date {
+          height: 2em;
+          width: 50%;
+
+          .dropdown,
+          .dropdown-open {
+            width: 100%;
+          }
+
+          .dropdown--button-container {
+            background: $color-white;
+            border: 2px solid $color-light-gray;
+
+            input {
+              border: 0;
+              padding: 5px;
+            }
+          }
+        }
+
+        &.pregnancy-outcome {
+          background: $color-white;
+          border: 2px solid $color-light-gray;
+          padding: 5px;
+          width: 73%;
+        }
+
+        // Bool inputs
+        &.yes-no {
+          padding-bottom: 15px;
+          margin-left: 25px;
+
+          label {
+            font-size: 25px;
+            margin-left: 10px;
+          }
+
+          label:before {
+            content: " ";
+            display: inline-block;
+            position: relative;
+            top: 5px;
+            margin-right: 10px;
+            width: 26px;
+            height: 26px;
+            border-radius: 13px;
+            border: 2px solid $color-gray-border;
+            background-color: transparent;
+          }
+
+          input[type=radio] {
+            display: none;
+          }
+
+          input[type=radio]:checked + label:after {
+            content: " ";
+            border-radius: 7px;
+            width: 14px;
+            height: 14px;
+            position: absolute;
+            top: 25px;
+            left: 30px;
+            display: block;
+            background: $color-text;
+          }
+        }
+      }
+
+    }
+}
+
+div.page-clinical-progress-report,
+div.page-demographics-report {
+    background: $color-light-gray;
+    padding: 0 20px 35px 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    .ui.basic.segment.head {
+      padding: 25px;
+
+      .ui.header {
+        color: $color-text;
+      }
+
+      .icon-back {
+        background: url(#{$img-path}icon-back-dark.svg);
+        background-size: 34px 27px;
+        position: absolute;
+      }
+    }
+
+    .ui.unstackable.items {
+      overflow-y: auto;
+
+      .pane-heading {
+        font-size: 16px;
+        font-weight: 700;
+        padding: 5px 15px;
+        text-transform: uppercase;
+
+        &.gray {
+          background: $color-dark-background;
+        }
+
+        &.red {
+          background: $color-red-alert;
+        }
+
+        &.blue {
+          background: $color-primary;
+        }
+      }
+
+      .pane-content {
+        background: $color-white;
+        color: $color-text;
+        font-size: 18px;
+        padding: 20px 0 20px 40px;
+      }
+    }
+}
+
+div.page-clinical-progress-report {
+
+    .header-pane {
+      background: $color-white;
+      margin-bottom: 20px;
+      padding: 40px 20px;
+
+      .mother-details {
+        display: grid;
+        grid-column-gap: 30px;
+        grid-template-columns: 120px 40% 40%;
+
+        .content {
+          color: $color-text;
+
+          .mother-name, .edd {
+            margin-top: 20px;
+            margin-bottom: 10px;
+          }
+        }
+
+        .label {
+          font-weight: bold;
+        }
+
+        .value {
+          margin-left: 10px;
+        }
+      }
+
+      .gravida-para {
+        color: $color-text;
+        display: grid;
+        grid-template-columns: 25% auto;
+        line-height: 40px;
+        margin-left: 150px;
+
+        .label {
+          font-weight: bold;
+          text-transform: uppercase;
+        }
+
+        .gravida {
+          border-left: 1px solid $color-light-gray;
+          border-right: 1px solid $color-light-gray;
+          text-align: center;
+        }
+
+        .para {
+
+          > .label {
+            margin-left: 30px;
+          }
+
+          .para-breakdown {
+            display: grid;
+            grid-template-columns: 20% 25% 25% 30%;
+            line-height: 28px;
+            text-align: center;
+
+            .label.small {
+              font-size: 13px;
+              font-weight: 600;
+            }
+
+            .term, .pre-term, .abortions {
+              border-right: 1px solid $color-light-gray;
+            }
+          }
+        }
+      }
+    }
+
+    .risk-factors, .medical-diagnosis, .obstetric-diagnosis {
+      background: $color-white;
+      margin-bottom: 20px;
+
+     .pane-content p {
+       line-height: 32px;
+       margin-bottom: 5px;
+      }
+    }
+
+    .risk-factors > .pane-heading {
+
+      img {
+        height: 24px;
+        width: 24px;
+        vertical-align: middle;
+      }
+
+      span {
+        vertical-align: middle;
+        margin-left: 10px;
+      }
+    }
+
+    .patient-progress {
+
+      .caption {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        margin-top: 20px;
+        text-transform: uppercase;
+
+        &.trends {
+          margin-bottom: 0;
+          margin-top: 100px;
+        }
+
+        &.photos {
+          margin-top: 70px;
+        }
+      }
+
+      .timeline-section {
+
+        .indicators {
+          font-size: 16px;
+          line-height: 20px;
+          margin-bottom: 30px;
+          margin-left: 20px;
+
+          .heart-rate-label, .movements-label {
+
+            span {
+              margin-right: 25px;
+            }
+          }
+        }
+
+        .timeline {
+
+          display: grid;
+          grid-column-gap: 20px;
+          grid-template-columns: 25% 25% 35%;
+
+          .trimester-timeline {
+
+            > p, > span {
+              float: left;
+            }
+
+            p.blue {
+              border-top: 10px solid $color-primary;
+            }
+
+            p.gray {
+              border-top: 10px solid $color-light-gray;
+            }
+
+            span {
+              margin-top: -7px;
+            }
+
+            .due-date-info {
+              float: right;
+              margin-top: -15px;
+              width: 40px;
+
+              .due-date-icon {
+
+                img {
+                  height: 40px;
+                  width: 40px;
+                }
+              }
+
+              .due-date-label {
+                font-size: 14px;
+                line-height: 20px;
+                width: 100px;
+              }
+
+            }
+
+          }
+        }
+
+      }
+
+      .visits-section {
+        display: grid;
+        grid-column-gap: 20px;
+        grid-template-columns: 25% 25% 40%;
+
+        .trimester-visits {
+          border-left: 1px solid $color-light-gray;
+          font-size: 16px;
+          padding-left: 10px;
+          padding-top: 30px;
+
+          .label-trimester {
+            font-weight: bold;
+          }
+
+          .details {
+            display: grid;
+            grid-template-columns: 50% 50%;
+
+            .visits {
+              text-align: right;
+
+              img {
+                height: 20px;
+                margin-right: 5px;
+                width: 20px;
+              }
+            }
+          }
+        }
+
+      }
+
+      .photos-section {
+        display: grid;
+        grid-gap: 28px;
+        grid-template-columns: 150px 150px 150px 150px;
+
+        .progress-photo {
+
+          img {
+            height: 150px;
+          }
+
+          .ega {
+            background-color: $color-gray;
+            color: $color-white;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+          }
+        }
+
+      }
+
+      .trends-section {
+
+        .chart-heading {
+          margin-left: 25px;
+
+          img {
+            vertical-align: middle;
+            width: 20px;
+          }
+
+          span {
+            font-size: 16px;
+            font-weight: 600;
+            margin-left: 10px;
+            text-transform: uppercase;
+            vertical-align: middle;
+          }
+        }
+
+        table {
+          color: $color-darker-gray;
+          margin-bottom: -20px;
+
+          th, td {
+            font-size: 16px;
+            line-height: 24px;
+            padding: 5px;
+            text-align: center;
+            width: 97px;
+
+            &.uppercase {
+              text-transform: uppercase;
+            }
+          }
+
+          th {
+            background-color: $color-light-gray;
+          }
+
+        }
+
+        .illustrative-purposes {
+          color: $color-darker-gray;
+          margin-bottom: 50px;
+          margin-top: -90px;
+          font-size: 12px;
+          margin-left: 60px;
+
+          &:before {
+            content: '*';
+            margin-left: -15px;
+            padding-right: 5px;
+          }
+        }
+      }
+
+    }
+}
+
+div.page-demographics-report {
+
+  .patient-information, .family-information, .address-information {
+    margin-bottom: 20px;
+  }
+
+  .family-information .children-table {
+    margin-bottom: 40px;
+    margin-top: 20px;
+
+    .thead {
+      border-bottom: 2px solid $color-light-gray;
+      width: 95%;
+
+      .label {
+        width: 50%;
+
+        &.first {
+          float: left;
+        }
+      }
+    }
+
+    .row {
+      border-bottom: 1px solid $color-light-gray;
+      height: 24px;
+      width: 95%;
+
+      &:last-child {
+        border-bottom: 0;
+      }
+
+      .value {
+        width: 50%;
+
+        &.first {
+          float: left;
+        }
+      }
+    }
+  }
+
+  .pane-content  {
+
+    .ui.image {
+      margin-bottom: 15px;
+    }
+
+    p {
+      line-height: 26px;
+      margin-bottom: 5px;
+
+      .label {
+        font-weight: bold;
+        width: 40%;
+      }
+
+      .value {
+        float: right;
+        width: 60%;
+      }
+    }
+  }
+}
+
+div.page-encounter-types {
+
+    p {
+      font-size: 25px;
+      font-weight: bold;
+      margin-bottom: 30px;
+      margin-top: 40px;
+      text-align: center;
+    }
+
+    button.ui.primary.button {
+      height: 60px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 0;
+      width: 100%;
+
+      .text {
+        float: left;
+        line-height: 60px;
+        margin-left: 40px;
+        text-align: left;
+        width: 80%;
+      }
+
+      .icon-back {
+        float: left;
+        margin-top: 17px;
+        transform: rotate(180deg);
+      }
+    }
+}
+
+div.page-prenatal-participants {
+
+  div.search-wrapper {
+      flex: 1 1 auto;
+      height: 100%;
+      overflow-y: hidden;
+
+      > div.ui.segment {
+          height: 100%;
+
+          div.search {
+              display: flex;
+              flex-direction: column;
+              height: 100%;
+              overflow-y: hidden;
+
+              div.search-middle {
+                  height: 100%;
+                  flex: 1 1 auto;
+                  overflow-y: auto;
+              }
+          }
+      }
+  }
+}
+
+div.page-prenatal-participant {
+    padding-bottom: 35px;
+
+    p {
+      font-size: 25px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .label-antenatal-visit {
+      margin-bottom: 30px;
+      margin-top: 40px;
+    }
+
+    .label-pregnancy-concluded {
+      margin-bottom: 30px;
+    }
+
+    .separator {
+      border: 1px solid;
+      margin-bottom: 40px;
+      margin-top: 105px;
+    }
+
+    button.ui.primary.button {
+      height: 60px;
+      margin-bottom: 20px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 0;
+      width: 100%;
+
+      .text {
+        float: left;
+        line-height: 60px;
+        margin-left: 40px;
+        text-align: left;
+        width: 80%;
+      }
+
+      .icon-back {
+        float: left;
+        margin-top: 17px;
+        transform: rotate(180deg);
+      }
+    }
 }

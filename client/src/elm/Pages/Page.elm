@@ -42,6 +42,9 @@ choices about what to show the user, rather than the details).
 
 import Activity.Model exposing (Activity(..))
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
+import Backend.Person.Model exposing (RegistrationInitiator)
+import PrenatalActivity.Model exposing (PrenatalActivity(..))
 
 
 {-| What does the user want to see?
@@ -117,19 +120,29 @@ the login page instead.
 type UserPage
     = ClinicalPage -- shows a list of clinical options, allows you to choose one
     | ClinicsPage (Maybe ClinicId) -- shows a list of clinics, allows you to choose one
+    | ClinicalProgressReportPage PrenatalEncounterId
+    | DemographicsReportPage PrenatalEncounterId
     | SessionPage SessionId SessionPage -- pages that manipulate a group session
     | MyAccountPage -- shows information about the logged-in user
     | PersonPage PersonId -- Shows a particular person.
       -- Shows a form for creating a new person. If the person ID is provided, it means that
       -- we're in a flow in which we should offer to create a relationship between the new
       -- person and the specified person.
-    | CreatePersonPage (Maybe PersonId)
+      -- RegistrationInitiator indicates what was the origin of registration request,
+      -- so that it would be clear where to proceed after registration is completed / canceled.
+    | CreatePersonPage (Maybe PersonId) RegistrationInitiator
       -- Shows a form for editing existing person.
     | EditPersonPage PersonId
       -- Shows list of people using search string. If the PersonId is provided,
       -- then we're in a context in which we're looking to add a family member.
     | PersonsPage (Maybe PersonId)
+    | PrenatalParticipantPage PersonId
+    | IndividualEncounterParticipantsPage IndividualEncounterType
     | RelationshipPage PersonId PersonId -- create or edit a relationship between these persons.
+    | PrenatalEncounterPage PrenatalEncounterId -- prenatal activities index
+    | PrenatalActivityPage PrenatalEncounterId PrenatalActivity -- record prenatal activity
+    | IndividualEncounterTypesPage -- this is where we select the type of encounter we're interested in.
+    | PregnancyOutcomePage IndividualEncounterParticipantId -- this is where pregnancy outcome is recorded.
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it

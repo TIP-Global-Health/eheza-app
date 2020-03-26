@@ -125,6 +125,12 @@ function hedley_migrate_migrate_api() {
       'HedleyMigratePmtctParticipants' => [
         'class_name' => 'HedleyMigratePmtctParticipants',
       ],
+      'HedleyMigratePrenatalEncounters' => [
+        'class_name' => 'HedleyMigratePrenatalEncounters',
+      ],
+      'HedleyMigrateIndividualParticipants' => [
+        'class_name' => 'HedleyMigrateIndividualParticipants',
+      ],
       'HedleyMigrateRelationships' => [
         'class_name' => 'HedleyMigrateRelationships',
       ],
@@ -612,7 +618,7 @@ function _hedley_migrate_preprocess_weight($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
 
   // Adjust children's weight to realistic figures.
-  $wrapper->field_weight->set(rand(1, 60));
+  $wrapper->field_weight->set(rand(1, 25));
 }
 
 /**
@@ -625,7 +631,7 @@ function _hedley_migrate_preprocess_height($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
 
   // Adjust children's height to realistic figures.
-  $wrapper->field_height->set(rand(30, 160));
+  $wrapper->field_height->set(rand(30, 100));
 }
 
 /**
