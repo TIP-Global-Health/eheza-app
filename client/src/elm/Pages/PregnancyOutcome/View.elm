@@ -75,7 +75,7 @@ viewHeader language data =
 viewContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
 viewContent language currentDate model data =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate data model.showAlertsDialog SetAlertsDialogState
+        viewMotherAndMeasurements language currentDate data Nothing
             ++ viewPregnancyOutcome language currentDate data model
 
 
