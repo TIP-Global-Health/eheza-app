@@ -545,3 +545,11 @@ function hedley_update_7022() {
   $ledger_viewer_role->name = 'E-ledger viewer';
   user_role_save($ledger_viewer_role);
 }
+
+/**
+ * Enable hedley_chw module.
+ */
+function hedley_update_7023() {
+  $modules = ['hedley_chw'];
+  module_enable($modules);
+}
