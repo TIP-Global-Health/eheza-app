@@ -28,11 +28,6 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
       'sub_property' => 'field_uuid',
     ];
 
-    $public_fields['session'] = [
-      'property' => 'field_session',
-      'sub_property' => 'field_uuid',
-    ];
-
     $public_fields['person'] = [
       'property' => 'field_person',
       'sub_property' => 'field_uuid',
@@ -60,7 +55,6 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
     $field_names = [
       'field_date_measured',
       'field_nurse',
-      'field_session',
       'field_person',
     ];
 
@@ -70,9 +64,6 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
 
     // Get the UUID of the Nurse.
     hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_nurse.field_nurse_target_id", 'uuid_nurse');
-
-    // Get the UUID of the Session.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_session.field_session_target_id", 'uuid_session');
 
     // Get the UUID of the Person.
     hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_person.field_person_target_id", 'uuid_person');
@@ -91,8 +82,6 @@ abstract class HedleyRestfulActivityBase extends HedleyRestfulSyncBase {
       $item->date_measured = !empty($date[0]) ? $date[0] : NULL;
       $item->nurse = $item->uuid_nurse;
       unset($item->uuid_nurse);
-      $item->session = $item->uuid_session;
-      unset($item->uuid_session);
       $item->person = $item->uuid_person;
       unset($item->uuid_person);
 

@@ -3,7 +3,7 @@ module Pages.People.View exposing (view)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (ExpectedAge(..), Person)
+import Backend.Person.Model exposing (ExpectedAge(..), Person, RegistrationInitiator(..))
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -85,6 +85,7 @@ viewSearchForm language currentDate relation model db =
                         [ input
                             [ placeholder <| translate language Translate.PlaceholderEnterParticipantName
                             , type_ "text"
+                            , class "search-input"
                             , onInput SetInput
                             , value model.input
                             , autofocus True
@@ -226,7 +227,7 @@ viewSearchForm language currentDate relation model db =
                 [ class "register-actions" ]
                 [ button
                     [ class "ui primary button fluid"
-                    , onClick <| SetActivePage <| UserPage <| CreatePersonPage relation
+                    , onClick <| SetActivePage <| UserPage <| CreatePersonPage relation ParticipantDirectoryOrigin
                     ]
                     [ text <| translate language Translate.RegisterNewParticipant ]
                 ]

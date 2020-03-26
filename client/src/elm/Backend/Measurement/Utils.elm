@@ -1,4 +1,4 @@
-module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, getCurrentAndPrevious, mapMeasurementData, muacIndication, splitChildMeasurements, splitMotherMeasurements)
+module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, getCurrentAndPrevious, mapMeasurementData, muacIndication, socialHistoryHivTestingResultFromString, splitChildMeasurements, splitMotherMeasurements)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -157,13 +157,13 @@ splitChildMeasurements sessionId =
 
 {-| Picks out current and previous values from a list of measurements.
 -}
-getCurrentAndPrevious : SessionId -> Dict (EntityUuid id) (Measurement b) -> { current : Dict (EntityUuid id) (Measurement b), previous : Maybe ( EntityUuid id, Measurement b ) }
+getCurrentAndPrevious : SessionId -> Dict (EntityUuid id) (GroupMeasurement b) -> { current : Dict (EntityUuid id) (GroupMeasurement b), previous : Maybe ( EntityUuid id, GroupMeasurement b ) }
 getCurrentAndPrevious sessionId =
     let
         -- This is designed to iterate through each list only once, to get both
         -- the current and previous value
         go id value acc =
-            if value.sessionId == Just sessionId then
+            if value.encounterId == Just sessionId then
                 let
                     current_ =
                         Dict.toList acc.current
@@ -190,3 +190,22 @@ getCurrentAndPrevious sessionId =
         { current = Dict.empty
         , previous = Nothing
         }
+
+
+socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult
+socialHistoryHivTestingResultFromString result =
+    case result of
+        "positive" ->
+            Just ResultHivPositive
+
+        "negative" ->
+            Just ResultHivNegative
+
+        "indeterminate" ->
+            Just ResultHivIndeterminate
+
+        "none" ->
+            Just NoHivTesting
+
+        _ ->
+            Nothing

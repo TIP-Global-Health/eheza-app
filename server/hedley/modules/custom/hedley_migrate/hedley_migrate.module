@@ -122,6 +122,12 @@ function hedley_migrate_migrate_api() {
       'HedleyMigratePmtctParticipants' => [
         'class_name' => 'HedleyMigratePmtctParticipants',
       ],
+      'HedleyMigratePrenatalEncounters' => [
+        'class_name' => 'HedleyMigratePrenatalEncounters',
+      ],
+      'HedleyMigrateIndividualParticipants' => [
+        'class_name' => 'HedleyMigrateIndividualParticipants',
+      ],
       'HedleyMigrateRelationships' => [
         'class_name' => 'HedleyMigrateRelationships',
       ],
@@ -139,6 +145,27 @@ function hedley_migrate_migrate_api() {
       ],
       'HedleyMigrateNurses' => [
         'class_name' => 'HedleyMigrateNurses',
+      ],
+      'HedleyMigrateAttendances' => [
+        'class_name' => 'HedleyMigrateAttendances',
+      ],
+      'HedleyMigrateFamilyPlannings' => [
+        'class_name' => 'HedleyMigrateFamilyPlannings',
+      ],
+      'HedleyMigrateHeights' => [
+        'class_name' => 'HedleyMigrateHeights',
+      ],
+      'HedleyMigrateMuacs' => [
+        'class_name' => 'HedleyMigrateMuacs',
+      ],
+      'HedleyMigrateNutritions' => [
+        'class_name' => 'HedleyMigrateNutritions',
+      ],
+      'HedleyMigratePhotos' => [
+        'class_name' => 'HedleyMigratePhotos',
+      ],
+      'HedleyMigrateWeights' => [
+        'class_name' => 'HedleyMigrateWeights',
       ],
       'HedleyMigrateMissingHeights' => [
         'class_name' => 'HedleyMigrateMissingHeights',
@@ -257,7 +284,7 @@ function hedley_migrate_generate_geo_terms_vocabulary() {
 
   // Load input file.
   $migrate_dir = variable_get('hedley_migrate_directory', FALSE) ? variable_get('hedley_migrate_directory') : drupal_get_path('module', 'hedley_migrate');
-  $source_file = $migrate_dir . '/csv/villages.csv';
+  $source_file = $migrate_dir . '/csv/geo_fields.csv';
 
   $column_mapping = ['province', 'district', 'sector', 'cell', 'village'];
 
@@ -584,7 +611,7 @@ function _hedley_migrate_preprocess_weight($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
 
   // Adjust children's weight to realistic figures.
-  $wrapper->field_weight->set(rand(1, 60));
+  $wrapper->field_weight->set(rand(1, 25));
 }
 
 /**
@@ -597,7 +624,7 @@ function _hedley_migrate_preprocess_height($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
 
   // Adjust children's height to realistic figures.
-  $wrapper->field_height->set(rand(30, 160));
+  $wrapper->field_height->set(rand(30, 100));
 }
 
 /**
@@ -620,4 +647,64 @@ function _hedley_migrate_preprocess_muac($node) {
  */
 function hedley_migrate_query_random_alter($query) {
   $query->orderRandom();
+}
+
+/**
+ * Resolves the IDs of nodes which value at '$field' is within '$values'.
+ *
+ * @param string $type
+ *   Node type.
+ * @param string $field
+ *   Name of the field.
+ * @param array $values
+ *   List of values.
+ *
+ * @return array
+ *   Nodes IDS, or empty array, if none found.
+ */
+function hedley_migrate_resolve_for_export($type, $field, array $values) {
+  if (!$values) {
+    return [];
+  }
+
+  $query = new EntityFieldQuery();
+
+  $result = $query->entityCondition('entity_type', 'node')
+    ->propertyCondition('type', $type)
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition($field, 'target_id', $values, 'IN')
+    ->execute();
+
+  return empty($result['node']) ? [] : array_keys($result['node']);
+}
+
+/**
+ * Generates DateTime field for export.
+ *
+ * Supports start and end dates.
+ *
+ * @param array $date
+ *   Input date.
+ * @param bool $force_end_date
+ *   Whether to force setting end date. If True, sets current date.
+ *
+ * @return string
+ *   Start date as 'yyyy-mm-dd'.
+ *   Optional End date (same format), piped by '|' separator.
+ */
+function hedley_migrate_export_date_field(array $date, $force_end_date = FALSE) {
+  $time1 = strtotime($date['value']);
+
+  if (empty($date['value2'])) {
+
+    if (!$force_end_date) {
+      return date('Y-m-d', $time1);
+    }
+
+    $date['value2'] = date('Y-m-d');
+  }
+
+  $time2 = strtotime($date['value2']);
+
+  return date('Y-m-d', $time1) . '|' . date('Y-m-d', $time2);
 }
