@@ -6,7 +6,6 @@ dependencies[] = ctools
 dependencies[] = entityreference
 dependencies[] = features
 dependencies[] = hedley_device
-dependencies[] = hedley_person
 dependencies[] = list
 dependencies[] = node
 dependencies[] = options
