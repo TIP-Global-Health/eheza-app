@@ -463,7 +463,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
             values
                 |> List.filterMap
                     (\value ->
-                        case value.sessionId of
+                        case value.encounterId of
                             Just id ->
                                 Just ( id, value )
 
@@ -601,7 +601,7 @@ chartWeightForHeight heights weight =
     -- Eventually, we shouild take age into account to distingiush height
     -- and length.
     heights
-        |> List.Extra.find (\height -> height.sessionId == weight.sessionId)
+        |> List.Extra.find (\height -> height.encounterId == weight.encounterId)
         |> Maybe.map
             (\height ->
                 ( case height.value of

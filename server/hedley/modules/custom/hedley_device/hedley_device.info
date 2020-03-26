@@ -8,6 +8,7 @@ dependencies[] = features
 dependencies[] = node
 dependencies[] = strongarm
 dependencies[] = text
+dependencies[] = hedley_restful
 features[ctools][] = strongarm:strongarm:1
 features[features_api][] = api:2
 features[field_base][] = field_pairing_code

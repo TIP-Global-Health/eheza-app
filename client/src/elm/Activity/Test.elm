@@ -3,6 +3,7 @@ module Activity.Test exposing (all)
 import Activity.Model exposing (..)
 import Activity.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
+import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (..)
 import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model exposing (..)
@@ -160,10 +161,11 @@ runTestCase testCase =
 makeCounselingSession : NominalDate -> CounselingTiming -> CounselingSession
 makeCounselingSession when timing =
     { participantId = childId
-    , sessionId = Nothing -- not needed
+    , encounterId = Nothing -- not needed
     , dateMeasured = when
     , value = ( timing, EverySet.empty )
     , nurse = Nothing
+    , healthCenter = Nothing
     }
 
 
@@ -223,6 +225,7 @@ session start =
     { startDate = start
     , endDate = Nothing
     , clinicId = toEntityUuid "1" -- not relevant
+    , clinicType = Pmtct
     }
 
 
