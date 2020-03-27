@@ -1,4 +1,4 @@
-module ZScore.View exposing (Bounds, LabelConfig, PlotConfig, frame, heightForAgeBoysLabels, heightForAgeConfig, heightForAgeGirlsLabels, labels, plotChildData, plotData, plotReferenceData, referenceLinesHeight, referenceLinesWeight, referenceLinesWeightForHeight, viewHeightForAgeBoys, viewHeightForAgeBoys5To19, viewHeightForAgeGirls, viewHeightForAgeGirls5To19, viewMarkers, viewWeightForAgeBoys, viewWeightForAgeGirls, viewWeightForHeightBoys, viewWeightForHeightGirls, weightForAgeBoysLabels, weightForAgeConfig, weightForAgeGirlsLabels, weightForHeightBoysLabels, weightForHeightConfig, weightForHeightGirlsLabels, zScoreLabelsHeightForAgeBoys, zScoreLabelsHeightForAgeGirls, zScoreLabelsWeightForAgeBoys, zScoreLabelsWeightForAgeGirls, zScoreLabelsWeightForHeightBoys, zScoreLabelsWeightForHeightGirls)
+module ZScore.View exposing (Bounds, LabelConfig, PlotConfig, frame, heightForAgeBoysLabels, heightForAgeConfig, heightForAgeGirlsLabels, labels, plotChildData, plotData, plotReferenceData, viewHeightForAgeBoys, viewHeightForAgeBoys5To19, viewHeightForAgeGirls, viewHeightForAgeGirls5To19, viewMarkers, viewWeightForAgeBoys, viewWeightForAgeGirls, viewWeightForHeightBoys, viewWeightForHeightGirls, weightForAgeBoysLabels, weightForAgeConfig, weightForAgeGirlsLabels, weightForHeightBoysLabels, weightForHeightConfig, weightForHeightGirlsLabels, zScoreLabelsHeightForAgeBoys, zScoreLabelsHeightForAgeGirls, zScoreLabelsWeightForAgeBoys, zScoreLabelsWeightForAgeGirls, zScoreLabelsWeightForHeightBoys, zScoreLabelsWeightForHeightGirls)
 
 {-| Ultimately, the idea is that we've got information in the `Model` that we
 can use to draw the elements below more programmatically ... that is, we don't
@@ -68,7 +68,7 @@ viewHeightForAgeBoys language model data =
         ]
         [ frame language "z-score-grey"
         , labels language heightForAgeBoysLabels
-        , referenceLinesHeight
+        , yAxisLinesAndText heightForAgeConfig
         , xAxisLinesAndText heightForAgeConfig
         , zScoreLabelsHeightForAgeBoys
         , model.lengthHeightForAge
@@ -89,7 +89,7 @@ viewHeightForAgeBoys5To19 language model data =
         ]
         [ frame language "z-score-blue"
         , labels language heightForAgeBoysLabels5To19
-        , referenceLinesHeight5To19
+        , yAxisLinesAndText heightForAgeConfig5To19
         , xAxisLinesAndText heightForAgeConfig5To19
         , zScoreLabelsHeightForAgeBoys5To19
         , model.lengthHeightForAge
@@ -109,8 +109,8 @@ viewHeightForAgeGirls5To19 language model data =
         , viewBox "0 0 841.9 595.3"
         ]
         [ frame language "z-score-blue"
-        , labels language heightForAgeBoysLabels5To19
-        , referenceLinesHeight5To19
+        , labels language heightForAgeGirlsLabels5To19
+        , yAxisLinesAndText heightForAgeConfig5To19
         , xAxisLinesAndText heightForAgeConfig5To19
         , zScoreLabelsHeightForAgeBoys5To19
         , model.lengthHeightForAge
@@ -140,6 +140,7 @@ type alias PlotConfig xAxis yAxis =
     , drawSD1 : Bool
     , paintLevels : Bool
     , xAxis : XAxisConfig
+    , yAxisIntervals : Int
     }
 
 
@@ -184,6 +185,7 @@ heightForAgeConfig =
         , maxLength = 0
         , xAxisType = Age
         }
+    , yAxisIntervals = 5
     }
 
 
@@ -204,6 +206,7 @@ heightForAgeConfig5To19 =
         , maxLength = 0
         , xAxisType = Age
         }
+    , yAxisIntervals = 10
     }
 
 
@@ -224,6 +227,7 @@ weightForAgeConfig =
         , maxLength = 0
         , xAxisType = Age
         }
+    , yAxisIntervals = 1
     }
 
 
@@ -244,6 +248,7 @@ weightForHeightConfig =
         , maxLength = 110
         , xAxisType = Height
         }
+    , yAxisIntervals = 2
     }
 
 
@@ -442,7 +447,7 @@ viewWeightForAgeBoys language model data =
         ]
         [ frame language "z-score-grey"
         , labels language weightForAgeBoysLabels
-        , referenceLinesWeight
+        , yAxisLinesAndText weightForAgeConfig
         , xAxisLinesAndText weightForAgeConfig
         , zScoreLabelsWeightForAgeBoys
         , model.weightForAge
@@ -463,7 +468,7 @@ viewWeightForHeightBoys language model data =
         ]
         [ frame language "z-score-grey"
         , labels language weightForHeightBoysLabels
-        , referenceLinesWeightForHeight
+        , yAxisLinesAndText weightForHeightConfig
         , xAxisLinesAndText weightForHeightConfig
         , zScoreLabelsWeightForHeightBoys
         , model.weightForLength
@@ -484,7 +489,7 @@ viewWeightForHeightGirls language model data =
         ]
         [ frame language "z-score-grey"
         , labels language weightForHeightGirlsLabels
-        , referenceLinesWeightForHeight
+        , yAxisLinesAndText weightForHeightConfig
         , xAxisLinesAndText weightForHeightConfig
         , zScoreLabelsWeightForHeightGirls
         , model.weightForLength
@@ -505,7 +510,7 @@ viewHeightForAgeGirls language model data =
         ]
         [ frame language "z-score-grey"
         , labels language heightForAgeGirlsLabels
-        , referenceLinesHeight
+        , yAxisLinesAndText heightForAgeConfig
         , xAxisLinesAndText heightForAgeConfig
         , zScoreLabelsHeightForAgeGirls
         , model.lengthHeightForAge
@@ -526,7 +531,7 @@ viewWeightForAgeGirls language model data =
         ]
         [ frame language "z-score-grey"
         , labels language weightForAgeGirlsLabels
-        , referenceLinesWeight
+        , yAxisLinesAndText weightForAgeConfig
         , xAxisLinesAndText weightForAgeConfig
         , zScoreLabelsWeightForAgeGirls
         , model.weightForAge
@@ -654,7 +659,7 @@ xAxisLinesAndText config =
 
                 Height ->
                     ( List.range config.xAxis.minLength config.xAxis.maxLength
-                        -- We want the list to contain only
+                        -- We want the list to contain only the successive numbers of 5.
                         |> List.filter
                             (\length ->
                                 if remainderBy 5 length == 0 then
@@ -761,368 +766,73 @@ xAxisLinesAndText config =
         lines
 
 
-referenceLinesHeight : Svg any
-referenceLinesHeight =
+yAxisLinesAndText : PlotConfig x y -> Svg any
+yAxisLinesAndText config =
+    let
+        yAxisList =
+            List.range (round config.input.minY) (round config.input.maxY)
+                -- We only display the successive numbers of the intervals defined in the config.
+                |> List.filter
+                    (\yInput ->
+                        if remainderBy config.yAxisIntervals yInput == 0 then
+                            True
+
+                        else
+                            False
+                    )
+
+        height =
+            config.output.maxY - config.output.minY
+
+        listCount =
+            List.length yAxisList
+
+        spaceBetweenLines =
+            height / toFloat listCount
+
+        halfSpaceBetweenLines =
+            spaceBetweenLines / 2
+
+        -- Here we can define the lines as we want.
+        lines =
+            List.indexedMap
+                (\i lineText ->
+                    let
+                        index =
+                            toFloat i
+
+                        linesMargin =
+                            if index == 0 then
+                                config.output.maxY
+
+                            else
+                                config.output.maxY - (spaceBetweenLines * index)
+
+                        -- Between the main y-axis lines, we add a bit fainter lines to give the chart a more square
+                        -- grid shape.
+                        halfMargin =
+                            linesMargin
+                                - halfSpaceBetweenLines
+                                |> toString
+
+                        lineTextPosition =
+                            (linesMargin + 2)
+                                |> toString
+
+                        linePosition =
+                            toString linesMargin
+                    in
+                    [ line [ class "st18", x1 "110.8", y1 linePosition, x2 "737.6", y2 linePosition ] []
+                    , line [ class "st19", x1 "110.8", y1 halfMargin, x2 "715.4", y2 halfMargin ] []
+                    , text_ [ transform <| "matrix(1 0 0 1 95.4252 " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| toString lineText ]
+                    , text_ [ transform <| "matrix(1 0 0 1 745.0155 " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| toString lineText ]
+                    ]
+                )
+                yAxisList
+                |> List.concat
+    in
     g []
-        [ line [ class "st18", x1 "110.8", y1 "486.3", x2 "737.6", y2 "486.3" ] []
-        , line [ class "st18", x1 "110.8", y1 "452.4", x2 "737.6", y2 "452.4" ] []
-        , line [ class "st18", x1 "110.8", y1 "418.5", x2 "737.6", y2 "418.5" ] []
-        , line [ class "st18", x1 "110.8", y1 "384.5", x2 "737.6", y2 "384.5" ] []
-        , line [ class "st18", x1 "110.8", y1 "350.6", x2 "737.6", y2 "350.6" ] []
-        , line [ class "st18", x1 "110.8", y1 "316.7", x2 "737.6", y2 "316.7" ] []
-        , line [ class "st18", x1 "110.8", y1 "282.8", x2 "737.6", y2 "282.8" ] []
-        , line [ class "st18", x1 "110.8", y1 "248.8", x2 "737.6", y2 "248.8" ] []
-        , line [ class "st18", x1 "110.8", y1 "214.9", x2 "737.6", y2 "214.9" ] []
-        , line [ class "st18", x1 "110.8", y1 "181", x2 "737.6", y2 "181" ] []
-        , line [ class "st18", x1 "110.8", y1 "147.1", x2 "737.6", y2 "147.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "499.9", x2 "715.4", y2 "499.9" ] []
-        , line [ class "st19", x1 "110.8", y1 "493.1", x2 "715.4", y2 "493.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "479.5", x2 "715.4", y2 "479.5" ] []
-        , line [ class "st19", x1 "110.8", y1 "472.8", x2 "715.4", y2 "472.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "466", x2 "715.4", y2 "466" ] []
-        , line [ class "st19", x1 "110.8", y1 "459.2", x2 "715.4", y2 "459.2" ] []
-        , line [ class "st19", x1 "110.8", y1 "445.6", x2 "715.4", y2 "445.6" ] []
-        , line [ class "st19", x1 "110.8", y1 "438.8", x2 "715.4", y2 "438.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "432", x2 "715.4", y2 "432" ] []
-        , line [ class "st19", x1 "110.8", y1 "425.3", x2 "715.4", y2 "425.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "411.7", x2 "715.4", y2 "411.7" ] []
-        , line [ class "st19", x1 "110.8", y1 "404.9", x2 "715.4", y2 "404.9" ] []
-        , line [ class "st19", x1 "110.8", y1 "398.1", x2 "715.4", y2 "398.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "391.3", x2 "715.4", y2 "391.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "377.8", x2 "715.4", y2 "377.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "371", x2 "715.4", y2 "371" ] []
-        , line [ class "st19", x1 "110.8", y1 "364.2", x2 "715.4", y2 "364.2" ] []
-        , line [ class "st19", x1 "110.8", y1 "357.4", x2 "715.4", y2 "357.4" ] []
-        , line [ class "st19", x1 "110.8", y1 "343.8", x2 "715.4", y2 "343.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "337.1", x2 "715.4", y2 "337.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "330.3", x2 "715.4", y2 "330.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "323.5", x2 "715.4", y2 "323.5" ] []
-        , line [ class "st19", x1 "110.8", y1 "309.9", x2 "715.4", y2 "309.9" ] []
-        , line [ class "st19", x1 "110.8", y1 "303.1", x2 "715.4", y2 "303.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "296.3", x2 "715.4", y2 "296.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "289.6", x2 "715.4", y2 "289.6" ] []
-        , line [ class "st19", x1 "110.8", y1 "276", x2 "715.4", y2 "276" ] []
-        , line [ class "st19", x1 "110.8", y1 "269.2", x2 "715.4", y2 "269.2" ] []
-        , line [ class "st19", x1 "110.8", y1 "262.4", x2 "715.4", y2 "262.4" ] []
-        , line [ class "st19", x1 "110.8", y1 "255.6", x2 "715.4", y2 "255.6" ] []
-        , line [ class "st19", x1 "110.8", y1 "242.1", x2 "715.4", y2 "242.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "235.3", x2 "715.4", y2 "235.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "228.5", x2 "715.4", y2 "228.5" ] []
-        , line [ class "st19", x1 "110.8", y1 "221.7", x2 "715.4", y2 "221.7" ] []
-        , line [ class "st19", x1 "110.8", y1 "208.1", x2 "715.4", y2 "208.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "201.4", x2 "715.4", y2 "201.4" ] []
-        , line [ class "st19", x1 "110.8", y1 "194.6", x2 "715.4", y2 "194.6" ] []
-        , line [ class "st19", x1 "110.8", y1 "187.8", x2 "715.4", y2 "187.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "174.2", x2 "715.4", y2 "174.2" ] []
-        , line [ class "st19", x1 "110.8", y1 "167.4", x2 "715.4", y2 "167.4" ] []
-        , line [ class "st19", x1 "110.8", y1 "160.6", x2 "715.4", y2 "160.6" ] []
-        , line [ class "st19", x1 "110.8", y1 "153.9", x2 "715.4", y2 "153.9" ] []
-        , line [ class "st19", x1 "110.8", y1 "140.3", x2 "715.4", y2 "140.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "133.5", x2 "715.4", y2 "133.5" ] []
-        , line [ class "st19", x1 "110.8", y1 "126.7", x2 "715.4", y2 "126.7" ] []
-        , text_ [ transform "matrix(1 0 0 1 95.4252 488.8879)", class "z-score-white z-score-semibold st16" ] [ text "45" ]
-        , text_ [ transform "matrix(1 0 0 1 95.4252 454.9621)", class "z-score-white z-score-semibold st16" ] [ text "50" ]
-        , text_ [ transform "matrix(1 0 0 1 95.4252 421.0353)", class "z-score-white z-score-semibold st16" ] [ text "55" ]
-        , text_ [ transform "matrix(1 0 0 1 95.4252 387.1096)", class "z-score-white z-score-semibold st16" ] [ text "60" ]
-        , text_ [ transform "matrix(1 0 0 1 95.4252 353.1828)", class "z-score-white z-score-semibold st16" ] [ text "65" ]
-        , text_ [ transform "matrix(1 0 0 1 95.4252 319.257)", class "z-score-white z-score-semibold st16" ] [ text "70" ]
-        , text_ [ transform "matrix(1 0 0 1 95.4252 285.3303)", class "z-score-white z-score-semibold st16" ] [ text "75" ]
-        , text_ [ transform "matrix(1 0 0 1 95.4252 251.404)", class "z-score-white z-score-semibold st16" ] [ text "80" ]
-        , text_ [ transform "matrix(1 0 0 1 95.4252 217.4777)", class "z-score-white z-score-semibold st16" ] [ text "85" ]
-        , text_ [ transform "matrix(1 0 0 1 95.4252 183.5515)", class "z-score-white z-score-semibold st16" ] [ text "90" ]
-        , text_ [ transform "matrix(1 0 0 1 95.4252 149.6296)", class "z-score-white z-score-semibold st16" ] [ text "95" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 488.8879)", class "z-score-white z-score-semibold st16" ] [ text "45" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 454.9621)", class "z-score-white z-score-semibold st16" ] [ text "50" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 421.0353)", class "z-score-white z-score-semibold st16" ] [ text "55" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 387.1096)", class "z-score-white z-score-semibold st16" ] [ text "60" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 353.1828)", class "z-score-white z-score-semibold st16" ] [ text "65" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 319.257)", class "z-score-white z-score-semibold st16" ] [ text "70" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 285.3307)", class "z-score-white z-score-semibold st16" ] [ text "75" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 251.4045)", class "z-score-white z-score-semibold st16" ] [ text "80" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 217.4777)", class "z-score-white z-score-semibold st16" ] [ text "85" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 183.5515)", class "z-score-white z-score-semibold st16" ] [ text "90" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 149.6296)", class "z-score-white z-score-semibold st16" ] [ text "95" ]
-        ]
-
-
-referenceLinesHeight5To19 : Svg any
-referenceLinesHeight5To19 =
-    g []
-        [ line [ class "st19", x1 "110.8", y1 "486.3", x2 "737.6", y2 "486.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "452.4", x2 "737.6", y2 "452.4" ] []
-        , line [ class "st19", x1 "110.8", y1 "418.5", x2 "737.6", y2 "418.5" ] []
-        , line [ class "st19", x1 "110.8", y1 "384.5", x2 "737.6", y2 "384.5" ] []
-        , line [ class "st19", x1 "110.8", y1 "350.6", x2 "737.6", y2 "350.6" ] []
-        , line [ class "st19", x1 "110.8", y1 "316.7", x2 "737.6", y2 "316.7" ] []
-        , line [ class "st19", x1 "110.8", y1 "282.8", x2 "737.6", y2 "282.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "248.8", x2 "737.6", y2 "248.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "214.9", x2 "737.6", y2 "214.9" ] []
-        , line [ class "st19", x1 "110.8", y1 "181", x2 "737.6", y2 "181" ] []
-        , line [ class "st19", x1 "110.8", y1 "147.1", x2 "737.6", y2 "147.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "499.9", x2 "715.4", y2 "499.9" ] []
-        , line [ class "st19", x1 "110.8", y1 "493.1", x2 "715.4", y2 "493.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "479.5", x2 "715.4", y2 "479.5" ] []
-        , line [ class "st19", x1 "110.8", y1 "472.8", x2 "715.4", y2 "472.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "466", x2 "715.4", y2 "466" ] []
-        , line [ class "st19", x1 "110.8", y1 "459.2", x2 "715.4", y2 "459.2" ] []
-        , line [ class "st19", x1 "110.8", y1 "445.6", x2 "715.4", y2 "445.6" ] []
-        , line [ class "st19", x1 "110.8", y1 "438.8", x2 "715.4", y2 "438.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "432", x2 "715.4", y2 "432" ] []
-        , line [ class "st19", x1 "110.8", y1 "425.3", x2 "715.4", y2 "425.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "411.7", x2 "715.4", y2 "411.7" ] []
-        , line [ class "st19", x1 "110.8", y1 "404.9", x2 "715.4", y2 "404.9" ] []
-        , line [ class "st19", x1 "110.8", y1 "398.1", x2 "715.4", y2 "398.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "391.3", x2 "715.4", y2 "391.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "377.8", x2 "715.4", y2 "377.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "371", x2 "715.4", y2 "371" ] []
-        , line [ class "st19", x1 "110.8", y1 "364.2", x2 "715.4", y2 "364.2" ] []
-        , line [ class "st19", x1 "110.8", y1 "357.4", x2 "715.4", y2 "357.4" ] []
-        , line [ class "st19", x1 "110.8", y1 "343.8", x2 "715.4", y2 "343.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "337.1", x2 "715.4", y2 "337.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "330.3", x2 "715.4", y2 "330.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "323.5", x2 "715.4", y2 "323.5" ] []
-        , line [ class "st19", x1 "110.8", y1 "309.9", x2 "715.4", y2 "309.9" ] []
-        , line [ class "st19", x1 "110.8", y1 "303.1", x2 "715.4", y2 "303.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "296.3", x2 "715.4", y2 "296.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "289.6", x2 "715.4", y2 "289.6" ] []
-        , line [ class "st19", x1 "110.8", y1 "276", x2 "715.4", y2 "276" ] []
-        , line [ class "st19", x1 "110.8", y1 "269.2", x2 "715.4", y2 "269.2" ] []
-        , line [ class "st19", x1 "110.8", y1 "262.4", x2 "715.4", y2 "262.4" ] []
-        , line [ class "st19", x1 "110.8", y1 "255.6", x2 "715.4", y2 "255.6" ] []
-        , line [ class "st19", x1 "110.8", y1 "242.1", x2 "715.4", y2 "242.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "235.3", x2 "715.4", y2 "235.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "228.5", x2 "715.4", y2 "228.5" ] []
-        , line [ class "st19", x1 "110.8", y1 "221.7", x2 "715.4", y2 "221.7" ] []
-        , line [ class "st19", x1 "110.8", y1 "208.1", x2 "715.4", y2 "208.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "201.4", x2 "715.4", y2 "201.4" ] []
-        , line [ class "st19", x1 "110.8", y1 "194.6", x2 "715.4", y2 "194.6" ] []
-        , line [ class "st19", x1 "110.8", y1 "187.8", x2 "715.4", y2 "187.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "174.2", x2 "715.4", y2 "174.2" ] []
-        , line [ class "st19", x1 "110.8", y1 "167.4", x2 "715.4", y2 "167.4" ] []
-        , line [ class "st19", x1 "110.8", y1 "160.6", x2 "715.4", y2 "160.6" ] []
-        , line [ class "st19", x1 "110.8", y1 "153.9", x2 "715.4", y2 "153.9" ] []
-        , line [ class "st19", x1 "110.8", y1 "140.3", x2 "715.4", y2 "140.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "133.5", x2 "715.4", y2 "133.5" ] []
-        , line [ class "st19", x1 "110.8", y1 "126.7", x2 "715.4", y2 "126.7" ] []
-        , text_ [ transform "matrix(1 0 0 1 95.4252 488.8879)", class "z-score-white z-score-semibold st16" ] [ text "45" ]
-        , text_ [ transform "matrix(1 0 0 1 95.4252 454.9621)", class "z-score-white z-score-semibold st16" ] [ text "50" ]
-        , text_ [ transform "matrix(1 0 0 1 95.4252 421.0353)", class "z-score-white z-score-semibold st16" ] [ text "55" ]
-        , text_ [ transform "matrix(1 0 0 1 95.4252 387.1096)", class "z-score-white z-score-semibold st16" ] [ text "60" ]
-        , text_ [ transform "matrix(1 0 0 1 95.4252 353.1828)", class "z-score-white z-score-semibold st16" ] [ text "65" ]
-        , text_ [ transform "matrix(1 0 0 1 95.4252 319.257)", class "z-score-white z-score-semibold st16" ] [ text "70" ]
-        , text_ [ transform "matrix(1 0 0 1 95.4252 285.3303)", class "z-score-white z-score-semibold st16" ] [ text "75" ]
-        , text_ [ transform "matrix(1 0 0 1 95.4252 251.404)", class "z-score-white z-score-semibold st16" ] [ text "80" ]
-        , text_ [ transform "matrix(1 0 0 1 95.4252 217.4777)", class "z-score-white z-score-semibold st16" ] [ text "85" ]
-        , text_ [ transform "matrix(1 0 0 1 95.4252 183.5515)", class "z-score-white z-score-semibold st16" ] [ text "90" ]
-        , text_ [ transform "matrix(1 0 0 1 95.4252 149.6296)", class "z-score-white z-score-semibold st16" ] [ text "95" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 488.8879)", class "z-score-white z-score-semibold st16" ] [ text "45" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 454.9621)", class "z-score-white z-score-semibold st16" ] [ text "50" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 421.0353)", class "z-score-white z-score-semibold st16" ] [ text "55" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 387.1096)", class "z-score-white z-score-semibold st16" ] [ text "60" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 353.1828)", class "z-score-white z-score-semibold st16" ] [ text "65" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 319.257)", class "z-score-white z-score-semibold st16" ] [ text "70" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 285.3307)", class "z-score-white z-score-semibold st16" ] [ text "75" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 251.4045)", class "z-score-white z-score-semibold st16" ] [ text "80" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 217.4777)", class "z-score-white z-score-semibold st16" ] [ text "85" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 183.5515)", class "z-score-white z-score-semibold st16" ] [ text "90" ]
-        , text_ [ transform "matrix(1 0 0 1 745.0155 149.6296)", class "z-score-white z-score-semibold st16" ] [ text "95" ]
-        ]
-
-
-referenceLinesWeight : Svg any
-referenceLinesWeight =
-    g []
-        [ line [ class "st18", x1 "110.8", y1 "492.5", x2 "737.6", y2 "492.5" ] []
-        , line [ class "st18", x1 "110.8", y1 "469", x2 "737.6", y2 "469" ] []
-        , line [ class "st18", x1 "110.8", y1 "445.4", x2 "737.6", y2 "445.4" ] []
-        , line [ class "st18", x1 "110.8", y1 "421.8", x2 "737.6", y2 "421.8" ] []
-        , line [ class "st18", x1 "110.8", y1 "398.2", x2 "737.6", y2 "398.2" ] []
-        , line [ class "st18", x1 "110.8", y1 "374.6", x2 "737.6", y2 "374.6" ] []
-        , line [ class "st18", x1 "110.8", y1 "351", x2 "737.6", y2 "351" ] []
-        , line [ class "st18", x1 "110.8", y1 "327.4", x2 "737.6", y2 "327.4" ] []
-        , line [ class "st18", x1 "110.8", y1 "303.9", x2 "737.6", y2 "303.9" ] []
-        , line [ class "st18", x1 "110.8", y1 "280.3", x2 "737.6", y2 "280.3" ] []
-        , line [ class "st18", x1 "110.8", y1 "256.7", x2 "737.6", y2 "256.7" ] []
-        , line [ class "st18", x1 "110.8", y1 "233.1", x2 "737.6", y2 "233.1" ] []
-        , line [ class "st18", x1 "110.8", y1 "209.5", x2 "737.6", y2 "209.5" ] []
-        , line [ class "st18", x1 "110.8", y1 "185.9", x2 "737.6", y2 "185.9" ] []
-        , line [ class "st18", x1 "110.8", y1 "162.4", x2 "737.6", y2 "162.4" ] []
-        , line [ class "st18", x1 "110.8", y1 "138.8", x2 "737.6", y2 "138.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "502", x2 "715.4", y2 "502" ] []
-        , line [ class "st19", x1 "110.8", y1 "497.3", x2 "715.4", y2 "497.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "487.8", x2 "715.4", y2 "487.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "483.1", x2 "715.4", y2 "483.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "478.4", x2 "715.4", y2 "478.4" ] []
-        , line [ class "st19", x1 "110.8", y1 "473.7", x2 "715.4", y2 "473.7" ] []
-        , line [ class "st19", x1 "110.8", y1 "464.2", x2 "715.4", y2 "464.2" ] []
-        , line [ class "st19", x1 "110.8", y1 "459.5", x2 "715.4", y2 "459.5" ] []
-        , line [ class "st19", x1 "110.8", y1 "454.8", x2 "715.4", y2 "454.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "450.1", x2 "715.4", y2 "450.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "440.6", x2 "715.4", y2 "440.6" ] []
-        , line [ class "st19", x1 "110.8", y1 "435.9", x2 "715.4", y2 "435.9" ] []
-        , line [ class "st19", x1 "110.8", y1 "431.2", x2 "715.4", y2 "431.2" ] []
-        , line [ class "st19", x1 "110.8", y1 "426.5", x2 "715.4", y2 "426.5" ] []
-        , line [ class "st19", x1 "110.8", y1 "417.1", x2 "715.4", y2 "417.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "412.3", x2 "715.4", y2 "412.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "407.6", x2 "715.4", y2 "407.6" ] []
-        , line [ class "st19", x1 "110.8", y1 "402.9", x2 "715.4", y2 "402.9" ] []
-        , line [ class "st19", x1 "110.8", y1 "393.5", x2 "715.4", y2 "393.5" ] []
-        , line [ class "st19", x1 "110.8", y1 "388.8", x2 "715.4", y2 "388.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "384", x2 "715.4", y2 "384" ] []
-        , line [ class "st19", x1 "110.8", y1 "379.3", x2 "715.4", y2 "379.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "369.9", x2 "715.4", y2 "369.9" ] []
-        , line [ class "st19", x1 "110.8", y1 "365.2", x2 "715.4", y2 "365.2" ] []
-        , line [ class "st19", x1 "110.8", y1 "360.5", x2 "715.4", y2 "360.5" ] []
-        , line [ class "st19", x1 "110.8", y1 "355.7", x2 "715.4", y2 "355.7" ] []
-        , line [ class "st19", x1 "110.8", y1 "346.3", x2 "715.4", y2 "346.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "341.6", x2 "715.4", y2 "341.6" ] []
-        , line [ class "st19", x1 "110.8", y1 "336.9", x2 "715.4", y2 "336.9" ] []
-        , line [ class "st19", x1 "110.8", y1 "332.2", x2 "715.4", y2 "332.2" ] []
-        , line [ class "st19", x1 "110.8", y1 "322.7", x2 "715.4", y2 "322.7" ] []
-        , line [ class "st19", x1 "110.8", y1 "318", x2 "715.4", y2 "318" ] []
-        , line [ class "st19", x1 "110.8", y1 "313.3", x2 "715.4", y2 "313.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "308.6", x2 "715.4", y2 "308.6" ] []
-        , line [ class "st19", x1 "110.8", y1 "299.1", x2 "715.4", y2 "299.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "294.4", x2 "715.4", y2 "294.4" ] []
-        , line [ class "st19", x1 "110.8", y1 "289.7", x2 "715.4", y2 "289.7" ] []
-        , line [ class "st19", x1 "110.8", y1 "285", x2 "715.4", y2 "285" ] []
-        , line [ class "st19", x1 "110.8", y1 "275.6", x2 "715.4", y2 "275.6" ] []
-        , line [ class "st19", x1 "110.8", y1 "270.8", x2 "715.4", y2 "270.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "266.1", x2 "715.4", y2 "266.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "261.4", x2 "715.4", y2 "261.4" ] []
-        , line [ class "st19", x1 "110.8", y1 "252", x2 "715.4", y2 "252" ] []
-        , line [ class "st19", x1 "110.8", y1 "247.3", x2 "715.4", y2 "247.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "242.5", x2 "715.4", y2 "242.5" ] []
-        , line [ class "st19", x1 "110.8", y1 "237.8", x2 "715.4", y2 "237.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "228.4", x2 "715.4", y2 "228.4" ] []
-        , line [ class "st19", x1 "110.8", y1 "223.7", x2 "715.4", y2 "223.7" ] []
-        , line [ class "st19", x1 "110.8", y1 "219", x2 "715.4", y2 "219" ] []
-        , line [ class "st19", x1 "110.8", y1 "214.2", x2 "715.4", y2 "214.2" ] []
-        , line [ class "st19", x1 "110.8", y1 "204.8", x2 "715.4", y2 "204.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "200.1", x2 "715.4", y2 "200.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "195.4", x2 "715.4", y2 "195.4" ] []
-        , line [ class "st19", x1 "110.8", y1 "190.7", x2 "715.4", y2 "190.7" ] []
-        , line [ class "st19", x1 "110.8", y1 "181.2", x2 "715.4", y2 "181.2" ] []
-        , line [ class "st19", x1 "110.8", y1 "176.5", x2 "715.4", y2 "176.5" ] []
-        , line [ class "st19", x1 "110.8", y1 "171.8", x2 "715.4", y2 "171.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "167.1", x2 "715.4", y2 "167.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "157.6", x2 "715.4", y2 "157.6" ] []
-        , line [ class "st19", x1 "110.8", y1 "152.9", x2 "715.4", y2 "152.9" ] []
-        , line [ class "st19", x1 "110.8", y1 "148.2", x2 "715.4", y2 "148.2" ] []
-        , line [ class "st19", x1 "110.8", y1 "143.5", x2 "715.4", y2 "143.5" ] []
-        , line [ class "st19", x1 "110.8", y1 "134.1", x2 "715.4", y2 "134.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "129.3", x2 "715.4", y2 "129.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "124.6", x2 "715.4", y2 "124.6" ] []
-        , text_ [ transform "matrix(1 0 0 1 97.3838 495.0705)", class "z-score-white z-score-semibold st16" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 97.3838 471.4875)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 97.3838 447.9045)", class "z-score-white z-score-semibold st16" ] [ text "4" ]
-        , text_ [ transform "matrix(1 0 0 1 97.3838 424.3215)", class "z-score-white z-score-semibold st16" ] [ text "5" ]
-        , text_ [ transform "matrix(1 0 0 1 97.3838 400.7385)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 97.3838 377.1555)", class "z-score-white z-score-semibold st16" ] [ text "7" ]
-        , text_ [ transform "matrix(1 0 0 1 97.3838 353.5724)", class "z-score-white z-score-semibold st16" ] [ text "8" ]
-        , text_ [ transform "matrix(1 0 0 1 97.3838 329.9904)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
-        , text_ [ transform "matrix(1 0 0 1 95.3042 306.4064)", class "z-score-white z-score-semibold st16" ] [ text "10" ]
-        , text_ [ transform "matrix(1 0 0 1 95.3042 282.8239)", class "z-score-white z-score-semibold st16" ] [ text "11" ]
-        , text_ [ transform "matrix(1 0 0 1 95.3042 259.2409)", class "z-score-white z-score-semibold st16" ] [ text "12" ]
-        , text_ [ transform "matrix(1 0 0 1 95.3042 235.6584)", class "z-score-white z-score-semibold st16" ] [ text "13" ]
-        , text_ [ transform "matrix(1 0 0 1 95.3042 212.0754)", class "z-score-white z-score-semibold st16" ] [ text "14" ]
-        , text_ [ transform "matrix(1 0 0 1 95.3042 188.4924)", class "z-score-white z-score-semibold st16" ] [ text "15" ]
-        , text_ [ transform "matrix(1 0 0 1 95.3042 164.9103)", class "z-score-white z-score-semibold st16" ] [ text "16" ]
-        , text_ [ transform "matrix(1 0 0 1 95.3042 141.3303)", class "z-score-white z-score-semibold st16" ] [ text "17" ]
-        , text_ [ transform "matrix(1 0 0 1 746.6816 495.0705)", class "z-score-white z-score-semibold st16" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 746.6816 471.4875)", class "z-score-white z-score-semibold st16" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 746.6816 447.9045)", class "z-score-white z-score-semibold st16" ] [ text "4" ]
-        , text_ [ transform "matrix(1 0 0 1 746.6816 424.3215)", class "z-score-white z-score-semibold st16" ] [ text "5" ]
-        , text_ [ transform "matrix(1 0 0 1 746.6816 400.7385)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 746.6816 377.1555)", class "z-score-white z-score-semibold st16" ] [ text "7" ]
-        , text_ [ transform "matrix(1 0 0 1 746.6816 353.5724)", class "z-score-white z-score-semibold st16" ] [ text "8" ]
-        , text_ [ transform "matrix(1 0 0 1 746.6816 329.9904)", class "z-score-white z-score-semibold st16" ] [ text "9" ]
-        , text_ [ transform "matrix(1 0 0 1 744.6016 306.4064)", class "z-score-white z-score-semibold st16" ] [ text "10" ]
-        , text_ [ transform "matrix(1 0 0 1 744.6016 282.8239)", class "z-score-white z-score-semibold st16" ] [ text "11" ]
-        , text_ [ transform "matrix(1 0 0 1 744.6016 259.2409)", class "z-score-white z-score-semibold st16" ] [ text "12" ]
-        , text_ [ transform "matrix(1 0 0 1 744.6016 235.6584)", class "z-score-white z-score-semibold st16" ] [ text "13" ]
-        , text_ [ transform "matrix(1 0 0 1 744.6016 212.0754)", class "z-score-white z-score-semibold st16" ] [ text "14" ]
-        , text_ [ transform "matrix(1 0 0 1 744.6016 188.4924)", class "z-score-white z-score-semibold st16" ] [ text "15" ]
-        , text_ [ transform "matrix(1 0 0 1 744.6016 164.9103)", class "z-score-white z-score-semibold st16" ] [ text "16" ]
-        , text_ [ transform "matrix(1 0 0 1 744.6016 141.3303)", class "z-score-white z-score-semibold st16" ] [ text "17" ]
-        ]
-
-
-referenceLinesWeightForHeight : Svg any
-referenceLinesWeightForHeight =
-    g []
-        [ line [ class "st19", x1 "110.8", y1 "498.6", x2 "715.4", y2 "498.6" ] []
-        , line [ class "st19", x1 "110.8", y1 "482.5", x2 "715.4", y2 "482.5" ] []
-        , line [ class "st18", x1 "110.8", y1 "474.5", x2 "715.4", y2 "474.5" ] []
-        , line [ class "st19", x1 "110.8", y1 "466.4", x2 "715.4", y2 "466.4" ] []
-        , line [ class "st19", x1 "110.8", y1 "450.3", x2 "715.4", y2 "450.3" ] []
-        , line [ class "st18", x1 "110.8", y1 "442.2", x2 "715.4", y2 "442.2" ] []
-        , line [ class "st19", x1 "110.8", y1 "434.2", x2 "715.4", y2 "434.2" ] []
-        , line [ class "st19", x1 "110.8", y1 "418.1", x2 "715.4", y2 "418.1" ] []
-        , line [ class "st18", x1 "110.8", y1 "410", x2 "715.4", y2 "410" ] []
-        , line [ class "st19", x1 "110.8", y1 "401.9", x2 "715.4", y2 "401.9" ] []
-        , line [ class "st19", x1 "110.8", y1 "385.8", x2 "715.4", y2 "385.8" ] []
-        , line [ class "st18", x1 "110.8", y1 "377.8", x2 "715.4", y2 "377.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "369.7", x2 "715.4", y2 "369.7" ] []
-        , line [ class "st19", x1 "110.8", y1 "353.6", x2 "715.4", y2 "353.6" ] []
-        , line [ class "st18", x1 "110.8", y1 "345.5", x2 "715.4", y2 "345.5" ] []
-        , line [ class "st19", x1 "110.8", y1 "337.5", x2 "715.4", y2 "337.5" ] []
-        , line [ class "st19", x1 "110.8", y1 "321.4", x2 "715.4", y2 "321.4" ] []
-        , line [ class "st18", x1 "110.8", y1 "313.3", x2 "715.4", y2 "313.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "305.2", x2 "715.4", y2 "305.2" ] []
-        , line [ class "st19", x1 "110.8", y1 "289.1", x2 "715.4", y2 "289.1" ] []
-        , line [ class "st18", x1 "110.8", y1 "281.1", x2 "715.4", y2 "281.1" ] []
-        , line [ class "st19", x1 "110.8", y1 "273", x2 "715.4", y2 "273" ] []
-        , line [ class "st19", x1 "110.8", y1 "256.9", x2 "715.4", y2 "256.9" ] []
-        , line [ class "st18", x1 "110.8", y1 "248.8", x2 "715.4", y2 "248.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "240.8", x2 "715.4", y2 "240.8" ] []
-        , line [ class "st19", x1 "110.8", y1 "224.7", x2 "715.4", y2 "224.7" ] []
-        , line [ class "st18", x1 "110.8", y1 "216.6", x2 "715.4", y2 "216.6" ] []
-        , line [ class "st19", x1 "110.8", y1 "208.6", x2 "715.4", y2 "208.6" ] []
-        , line [ class "st19", x1 "110.8", y1 "192.4", x2 "715.4", y2 "192.4" ] []
-        , line [ class "st18", x1 "110.8", y1 "184.4", x2 "715.4", y2 "184.4" ] []
-        , line [ class "st19", x1 "110.8", y1 "176.3", x2 "715.4", y2 "176.3" ] []
-        , line [ class "st19", x1 "110.8", y1 "160.2", x2 "715.4", y2 "160.2" ] []
-        , line [ class "st18", x1 "110.8", y1 "152.2", x2 "715.4", y2 "152.2" ] []
-        , line [ class "st19", x1 "110.8", y1 "144.1", x2 "715.4", y2 "144.1" ] []
-        , line [ class "st18", x1 "110.8", y1 "490.6", x2 "737.6", y2 "490.6" ] []
-        , line [ class "st18", x1 "110.8", y1 "458.3", x2 "737.6", y2 "458.3" ] []
-        , line [ class "st18", x1 "110.8", y1 "426.1", x2 "737.6", y2 "426.1" ] []
-        , line [ class "st18", x1 "110.8", y1 "393.9", x2 "737.6", y2 "393.9" ] []
-        , line [ class "st18", x1 "110.8", y1 "361.7", x2 "737.6", y2 "361.7" ] []
-        , line [ class "st18", x1 "110.8", y1 "329.4", x2 "737.6", y2 "329.4" ] []
-        , line [ class "st18", x1 "110.8", y1 "297.2", x2 "737.6", y2 "297.2" ] []
-        , line [ class "st18", x1 "110.8", y1 "265", x2 "737.6", y2 "265" ] []
-        , line [ class "st18", x1 "110.8", y1 "232.7", x2 "737.6", y2 "232.7" ] []
-        , line [ class "st18", x1 "110.8", y1 "200.5", x2 "737.6", y2 "200.5" ] []
-        , line [ class "st18", x1 "110.8", y1 "168.3", x2 "737.6", y2 "168.3" ] []
-        , line [ class "st18", x1 "110.8", y1 "136", x2 "737.6", y2 "136" ] []
-        , line [ class "st19", x1 "110.8", y1 "128", x2 "715.4", y2 "128" ] []
-        , text_ [ transform "matrix(1 0 0 1 98.0068 493.0851)", class "z-score-white z-score-semibold st16" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 98.0068 460.8557)", class "z-score-white z-score-semibold st16" ] [ text "4" ]
-        , text_ [ transform "matrix(1 0 0 1 98.0068 428.6252)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 98.0068 396.3947)", class "z-score-white z-score-semibold st16" ] [ text "8" ]
-        , text_ [ transform "matrix(1 0 0 1 95.9273 364.1642)", class "z-score-white z-score-semibold st16" ] [ text "10" ]
-        , text_ [ transform "matrix(1 0 0 1 95.9273 331.9348)", class "z-score-white z-score-semibold st16" ] [ text "12" ]
-        , text_ [ transform "matrix(1 0 0 1 95.9273 299.7043)", class "z-score-white z-score-semibold st16" ] [ text "14" ]
-        , text_ [ transform "matrix(1 0 0 1 95.9273 267.4748)", class "z-score-white z-score-semibold st16" ] [ text "16" ]
-        , text_ [ transform "matrix(1 0 0 1 95.9273 235.2448)", class "z-score-white z-score-semibold st16" ] [ text "18" ]
-        , text_ [ transform "matrix(1 0 0 1 95.9273 203.0143)", class "z-score-white z-score-semibold st16" ] [ text "20" ]
-        , text_ [ transform "matrix(1 0 0 1 95.9273 170.7853)", class "z-score-white z-score-semibold st16" ] [ text "22" ]
-        , text_ [ transform "matrix(1 0 0 1 95.9273 138.5568)", class "z-score-white z-score-semibold st16" ] [ text "24" ]
-        , text_ [ transform "matrix(1 0 0 1 746.7832 493.0851)", class "z-score-white z-score-semibold st16" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 746.7832 460.8557)", class "z-score-white z-score-semibold st16" ] [ text "4" ]
-        , text_ [ transform "matrix(1 0 0 1 746.7832 428.6252)", class "z-score-white z-score-semibold st16" ] [ text "6" ]
-        , text_ [ transform "matrix(1 0 0 1 746.7832 396.3947)", class "z-score-white z-score-semibold st16" ] [ text "8" ]
-        , text_ [ transform "matrix(1 0 0 1 744.7031 364.1642)", class "z-score-white z-score-semibold st16" ] [ text "10" ]
-        , text_ [ transform "matrix(1 0 0 1 744.7031 331.9348)", class "z-score-white z-score-semibold st16" ] [ text "12" ]
-        , text_ [ transform "matrix(1 0 0 1 744.7031 299.7043)", class "z-score-white z-score-semibold st16" ] [ text "14" ]
-        , text_ [ transform "matrix(1 0 0 1 744.7031 267.4748)", class "z-score-white z-score-semibold st16" ] [ text "16" ]
-        , text_ [ transform "matrix(1 0 0 1 744.7031 235.2448)", class "z-score-white z-score-semibold st16" ] [ text "18" ]
-        , text_ [ transform "matrix(1 0 0 1 744.7031 203.0143)", class "z-score-white z-score-semibold st16" ] [ text "20" ]
-        , text_ [ transform "matrix(1 0 0 1 744.7031 170.7853)", class "z-score-white z-score-semibold st16" ] [ text "22" ]
-        , text_ [ transform "matrix(1 0 0 1 744.7031 138.5568)", class "z-score-white z-score-semibold st16" ] [ text "24" ]
-        ]
+        lines
 
 
 type alias LabelConfig =
@@ -1147,6 +857,16 @@ heightForAgeBoysLabels =
 heightForAgeBoysLabels5To19 : LabelConfig
 heightForAgeBoysLabels5To19 =
     { title = Translate.HeightForAgeBoys
+    , subtitle = Translate.TwoToNineteenYears
+    , xAxis1 = Just Translate.Months
+    , xAxis2 = Translate.AgeCompletedMonthsYears
+    , yAxis = Translate.HeightCm
+    }
+
+
+heightForAgeGirlsLabels5To19 : LabelConfig
+heightForAgeGirlsLabels5To19 =
+    { title = Translate.HeightForAgeGirls
     , subtitle = Translate.TwoToNineteenYears
     , xAxis1 = Just Translate.Months
     , xAxis2 = Translate.AgeCompletedMonthsYears

@@ -117,6 +117,7 @@ type ChartPhrase
     | BirthToTwoYears
     | HeightCm
     | HeightForAgeBoys
+    | HeightForAgeGirls
     | LengthCm
     | LengthForAgeBoys
     | LengthForAgeGirls
@@ -4227,6 +4228,11 @@ translateChartPhrase phrase =
         HeightForAgeBoys ->
             { english = "Height-for-age BOYS"
             , kinyarwanda = Just "Uburere ku myaka/ umuhungu"
+            }
+
+        HeightForAgeGirls ->
+            { english = "Height-for-age GIRLS"
+            , kinyarwanda = Just "Uburere ku myaka/ umukobwa"
             }
 
         LengthCm ->
