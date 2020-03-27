@@ -431,7 +431,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
 
                 Female ->
                     { heightForAge = ZScore.View.viewHeightForAgeGirls
-                    , heightForAge5To19 = ZScore.View.viewHeightForAgeBoys5To19
+                    , heightForAge5To19 = ZScore.View.viewHeightForAgeGirls5To19
                     , weightForAge = ZScore.View.viewWeightForAgeGirls
                     , weightForHeight = ZScore.View.viewWeightForHeightGirls
                     }

@@ -1,4 +1,4 @@
-module ZScore.View exposing (Bounds, LabelConfig, PlotConfig, ageLines, frame, heightForAgeBoysLabels, heightForAgeConfig, heightForAgeGirlsLabels, heightLines, labels, plotChildData, plotData, plotReferenceData, referenceLinesHeight, referenceLinesWeight, referenceLinesWeightForHeight, viewHeightForAgeBoys, viewHeightForAgeBoys5To19, viewHeightForAgeGirls, viewMarkers, viewWeightForAgeBoys, viewWeightForAgeGirls, viewWeightForHeightBoys, viewWeightForHeightGirls, weightForAgeBoysLabels, weightForAgeConfig, weightForAgeGirlsLabels, weightForHeightBoysLabels, weightForHeightConfig, weightForHeightGirlsLabels, zScoreLabelsHeightForAgeBoys, zScoreLabelsHeightForAgeGirls, zScoreLabelsWeightForAgeBoys, zScoreLabelsWeightForAgeGirls, zScoreLabelsWeightForHeightBoys, zScoreLabelsWeightForHeightGirls)
+module ZScore.View exposing (Bounds, LabelConfig, PlotConfig, frame, heightForAgeBoysLabels, heightForAgeConfig, heightForAgeGirlsLabels, labels, plotChildData, plotData, plotReferenceData, referenceLinesHeight, referenceLinesWeight, referenceLinesWeightForHeight, viewHeightForAgeBoys, viewHeightForAgeBoys5To19, viewHeightForAgeGirls, viewHeightForAgeGirls5To19, viewMarkers, viewWeightForAgeBoys, viewWeightForAgeGirls, viewWeightForHeightBoys, viewWeightForHeightGirls, weightForAgeBoysLabels, weightForAgeConfig, weightForAgeGirlsLabels, weightForHeightBoysLabels, weightForHeightConfig, weightForHeightGirlsLabels, zScoreLabelsHeightForAgeBoys, zScoreLabelsHeightForAgeGirls, zScoreLabelsWeightForAgeBoys, zScoreLabelsWeightForAgeGirls, zScoreLabelsWeightForHeightBoys, zScoreLabelsWeightForHeightGirls)
 
 {-| Ultimately, the idea is that we've got information in the `Model` that we
 can use to draw the elements below more programmatically ... that is, we don't
@@ -69,7 +69,7 @@ viewHeightForAgeBoys language model data =
         [ frame language "z-score-grey"
         , labels language heightForAgeBoysLabels
         , referenceLinesHeight
-        , ageLines heightForAgeConfig
+        , xAxisLinesAndText heightForAgeConfig
         , zScoreLabelsHeightForAgeBoys
         , model.lengthHeightForAge
             |> RemoteData.map (.male >> .byDay >> AllDict.toList)
@@ -90,10 +90,31 @@ viewHeightForAgeBoys5To19 language model data =
         [ frame language "z-score-blue"
         , labels language heightForAgeBoysLabels5To19
         , referenceLinesHeight5To19
-        , ageLines heightForAgeConfig5To19
+        , xAxisLinesAndText heightForAgeConfig5To19
         , zScoreLabelsHeightForAgeBoys5To19
         , model.lengthHeightForAge
             |> RemoteData.map (.male >> .byDay >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData heightForAgeConfig5To19
+        , plotChildData heightForAgeConfig5To19 data
+        ]
+
+
+viewHeightForAgeGirls5To19 : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeightForAgeGirls5To19 language model data =
+    svg
+        [ class "z-score girls"
+        , x "0px"
+        , y "0px"
+        , viewBox "0 0 841.9 595.3"
+        ]
+        [ frame language "z-score-blue"
+        , labels language heightForAgeBoysLabels5To19
+        , referenceLinesHeight5To19
+        , xAxisLinesAndText heightForAgeConfig5To19
+        , zScoreLabelsHeightForAgeBoys5To19
+        , model.lengthHeightForAge
+            |> RemoteData.map (.female >> .byDay >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData heightForAgeConfig5To19
         , plotChildData heightForAgeConfig5To19 data
@@ -131,13 +152,19 @@ type alias Bounds =
 
 
 type alias XAxisConfig =
-    { width : Int
+    { width : Float
     , minYear : Int
     , maxYear : Int
     , monthsList : List Int
     , minLength : Int
     , maxLength : Int
+    , xAxisType : XAxisTypes
     }
+
+
+type XAxisTypes
+    = Age
+    | Height
 
 
 heightForAgeConfig : PlotConfig Days Centimetres
@@ -155,6 +182,7 @@ heightForAgeConfig =
         , monthsList = List.range 1 11
         , minLength = 0
         , maxLength = 0
+        , xAxisType = Age
         }
     }
 
@@ -174,6 +202,7 @@ heightForAgeConfig5To19 =
         , monthsList = [ 3, 6, 9 ]
         , minLength = 0
         , maxLength = 0
+        , xAxisType = Age
         }
     }
 
@@ -193,6 +222,7 @@ weightForAgeConfig =
         , monthsList = List.range 1 11
         , minLength = 0
         , maxLength = 0
+        , xAxisType = Age
         }
     }
 
@@ -206,12 +236,13 @@ weightForHeightConfig =
     , drawSD1 = True
     , paintLevels = True
     , xAxis =
-        { width = 908
+        { width = 650
         , minYear = 0
         , maxYear = 0
         , monthsList = []
         , minLength = 45
         , maxLength = 110
+        , xAxisType = Height
         }
     }
 
@@ -412,7 +443,7 @@ viewWeightForAgeBoys language model data =
         [ frame language "z-score-grey"
         , labels language weightForAgeBoysLabels
         , referenceLinesWeight
-        , ageLines weightForAgeConfig
+        , xAxisLinesAndText weightForAgeConfig
         , zScoreLabelsWeightForAgeBoys
         , model.weightForAge
             |> RemoteData.map (.male >> .byDay >> AllDict.toList)
@@ -433,7 +464,7 @@ viewWeightForHeightBoys language model data =
         [ frame language "z-score-grey"
         , labels language weightForHeightBoysLabels
         , referenceLinesWeightForHeight
-        , heightLines
+        , xAxisLinesAndText weightForHeightConfig
         , zScoreLabelsWeightForHeightBoys
         , model.weightForLength
             |> RemoteData.map (.male >> AllDict.toList)
@@ -454,7 +485,7 @@ viewWeightForHeightGirls language model data =
         [ frame language "z-score-grey"
         , labels language weightForHeightGirlsLabels
         , referenceLinesWeightForHeight
-        , heightLines
+        , xAxisLinesAndText weightForHeightConfig
         , zScoreLabelsWeightForHeightGirls
         , model.weightForLength
             |> RemoteData.map (.female >> AllDict.toList)
@@ -475,7 +506,7 @@ viewHeightForAgeGirls language model data =
         [ frame language "z-score-grey"
         , labels language heightForAgeGirlsLabels
         , referenceLinesHeight
-        , ageLines heightForAgeConfig
+        , xAxisLinesAndText heightForAgeConfig
         , zScoreLabelsHeightForAgeGirls
         , model.lengthHeightForAge
             |> RemoteData.map (.female >> .byDay >> AllDict.toList)
@@ -496,7 +527,7 @@ viewWeightForAgeGirls language model data =
         [ frame language "z-score-grey"
         , labels language weightForAgeGirlsLabels
         , referenceLinesWeight
-        , ageLines weightForAgeConfig
+        , xAxisLinesAndText weightForAgeConfig
         , zScoreLabelsWeightForAgeGirls
         , model.weightForAge
             |> RemoteData.map (.female >> .byDay >> AllDict.toList)
@@ -613,175 +644,121 @@ zScoreLabelsWeightForAgeGirls =
         ]
 
 
-ageLines : PlotConfig x y -> Svg any
-ageLines config =
+xAxisLinesAndText : PlotConfig x y -> Svg any
+xAxisLinesAndText config =
     let
-        yearsList =
-            List.range config.xAxis.minYear config.xAxis.maxYear
+        ( xAxisList, innerLines ) =
+            case config.xAxis.xAxisType of
+                Age ->
+                    ( List.range config.xAxis.minYear config.xAxis.maxYear, True )
 
-        yearsCount =
-            List.length yearsList
+                Height ->
+                    ( List.range config.xAxis.minLength config.xAxis.maxLength
+                        -- We want the list to contain only
+                        |> List.filter
+                            (\length ->
+                                if remainderBy 5 length == 0 then
+                                    True
 
-        spaceBetweenYears =
-            config.xAxis.width // yearsCount
+                                else
+                                    False
+                            )
+                    , False
+                    )
 
-        spaceBetweenMonths =
-            -- We add one here because we want to give space before the next year.
-            spaceBetweenYears // (List.length config.xAxis.monthsList + 1)
+        listCount =
+            List.length xAxisList
+
+        spaceBetweenLines =
+            config.xAxis.width / toFloat listCount
+
+        maybeSpaceBetweenInnerLines =
+            if innerLines then
+                -- We add one here because we want to give space before the next year.
+                Just <| spaceBetweenLines / toFloat (List.length config.xAxis.monthsList + 1)
+
+            else
+                Nothing
 
         -- Here we can define the lines as we want.
         lines =
             List.indexedMap
                 (\i year ->
                     let
-                        yearMargin =
-                            if i == 0 then
+                        index =
+                            toFloat i
+
+                        linesMargin =
+                            if index == 0 then
                                 config.output.minX
 
                             else
-                                config.output.minX + toFloat (spaceBetweenYears * i)
+                                config.output.minX + (spaceBetweenLines * index)
 
-                        yearTextPosition =
+                        lineTextPosition =
                             if year < 10 then
-                                (yearMargin - 2)
+                                (linesMargin - 2)
                                     |> toString
 
                             else
-                                (yearMargin - 5)
+                                (linesMargin - 5)
                                     |> toString
 
-                        yearLinePosition =
-                            toString yearMargin
+                        linePosition =
+                            toString linesMargin
 
-                        monthLinesAndText =
-                            List.indexedMap
-                                (\monthIndex month ->
-                                    let
-                                        monthMargin =
-                                            yearMargin + toFloat (spaceBetweenMonths * (monthIndex + 1))
+                        innerLinesAndText =
+                            case maybeSpaceBetweenInnerLines of
+                                Just spaceBetweenInnerLines ->
+                                    List.indexedMap
+                                        (\ii month ->
+                                            let
+                                                innerIndex =
+                                                    toFloat ii
 
-                                        monthTextPosition =
-                                            if month < 10 then
-                                                (monthMargin - 2)
-                                                    |> toString
+                                                innerMargin =
+                                                    linesMargin + (spaceBetweenInnerLines * (innerIndex + 1))
+
+                                                innerTextPosition =
+                                                    if month < 10 then
+                                                        (innerMargin - 2)
+                                                            |> toString
+
+                                                    else
+                                                        (innerMargin - 5)
+                                                            |> toString
+
+                                                innerLinePosition =
+                                                    toString innerMargin
+                                            in
+                                            if year < config.xAxis.maxYear then
+                                                [ line [ class "month-line", x1 innerLinePosition, y1 "506.5", x2 innerLinePosition, y2 "119.5" ] []
+                                                , text_ [ transform <| "matrix(1 0 0 1 " ++ innerTextPosition ++ " 516.5436)", class "z-score-white z-score-semibold st16" ] [ text <| toString month ]
+                                                ]
 
                                             else
-                                                (monthMargin - 5)
-                                                    |> toString
+                                                []
+                                        )
+                                        config.xAxis.monthsList
+                                        |> List.concat
 
-                                        monthLinePosition =
-                                            toString monthMargin
-                                    in
-                                    if year < config.xAxis.maxYear then
-                                        [ line [ class "month-line", x1 monthLinePosition, y1 "506.5", x2 monthLinePosition, y2 "119.5" ] []
-                                        , text_ [ transform <| "matrix(1 0 0 1 " ++ monthTextPosition ++ " 516.5436)", class "z-score-white z-score-semibold st16" ] [ text <| toString month ]
-                                        ]
-
-                                    else
-                                        []
-                                )
-                                config.xAxis.monthsList
-                                |> List.concat
+                                Nothing ->
+                                    []
                     in
-                    [ line [ class "year-line", x1 yearLinePosition, y1 "514.5", x2 yearLinePosition, y2 "119.5" ] []
+                    [ line [ class "year-line", x1 linePosition, y1 "514.5", x2 linePosition, y2 "119.5" ] []
                     , text_
-                        [ transform <| "matrix(1 0 0 1 " ++ yearTextPosition ++ " 525.9767)"
+                        [ transform <| "matrix(1 0 0 1 " ++ lineTextPosition ++ " 525.9767)"
                         , class "z-score-white z-score-semibold st20"
                         ]
                         [ text <| toString year ]
                     ]
-                        |> List.append monthLinesAndText
+                        |> List.append innerLinesAndText
                 )
-                yearsList
+                xAxisList
                 |> List.concat
     in
     g []
         lines
-
-
-heightLines : Svg any
-heightLines =
-    g []
-        [ line [ class "st18", x1 "157.3", y1 "506.6", x2 "157.3", y2 "119.9" ] []
-        , line [ class "st18", x1 "203.9", y1 "506.6", x2 "203.9", y2 "119.9" ] []
-        , line [ class "st18", x1 "250.4", y1 "506.6", x2 "250.4", y2 "119.9" ] []
-        , line [ class "st18", x1 "296.9", y1 "506.6", x2 "296.9", y2 "119.9" ] []
-        , line [ class "st18", x1 "343.4", y1 "506.6", x2 "343.4", y2 "119.9" ] []
-        , line [ class "st18", x1 "389.9", y1 "506.6", x2 "389.9", y2 "119.9" ] []
-        , line [ class "st18", x1 "436.4", y1 "506.6", x2 "436.4", y2 "119.9" ] []
-        , line [ class "st18", x1 "482.9", y1 "506.6", x2 "482.9", y2 "119.9" ] []
-        , line [ class "st18", x1 "529.4", y1 "506.6", x2 "529.4", y2 "119.9" ] []
-        , line [ class "st18", x1 "575.9", y1 "506.6", x2 "575.9", y2 "119.9" ] []
-        , line [ class "st18", x1 "622.4", y1 "506.6", x2 "622.4", y2 "119.9" ] []
-        , line [ class "st18", x1 "668.9", y1 "506.6", x2 "668.9", y2 "119.9" ] []
-        , line [ class "st19", x1 "120.2", y1 "506.6", x2 "120.2", y2 "119.9" ] []
-        , line [ class "st19", x1 "129.5", y1 "506.6", x2 "129.5", y2 "119.9" ] []
-        , line [ class "st19", x1 "138.8", y1 "506.6", x2 "138.8", y2 "119.9" ] []
-        , line [ class "st19", x1 "148.1", y1 "506.6", x2 "148.1", y2 "119.9" ] []
-        , line [ class "st19", x1 "166.7", y1 "506.6", x2 "166.7", y2 "119.9" ] []
-        , line [ class "st19", x1 "176", y1 "506.6", x2 "176", y2 "119.9" ] []
-        , line [ class "st19", x1 "185.3", y1 "506.6", x2 "185.3", y2 "119.9" ] []
-        , line [ class "st19", x1 "194.6", y1 "506.6", x2 "194.6", y2 "119.9" ] []
-        , line [ class "st19", x1 "213.2", y1 "506.6", x2 "213.2", y2 "119.9" ] []
-        , line [ class "st19", x1 "222.5", y1 "506.6", x2 "222.5", y2 "119.9" ] []
-        , line [ class "st19", x1 "231.8", y1 "506.6", x2 "231.8", y2 "119.9" ] []
-        , line [ class "st19", x1 "241.1", y1 "506.6", x2 "241.1", y2 "119.9" ] []
-        , line [ class "st19", x1 "259.7", y1 "506.6", x2 "259.7", y2 "119.9" ] []
-        , line [ class "st19", x1 "269", y1 "506.6", x2 "269", y2 "119.9" ] []
-        , line [ class "st19", x1 "278.3", y1 "506.6", x2 "278.3", y2 "119.9" ] []
-        , line [ class "st19", x1 "287.6", y1 "506.6", x2 "287.6", y2 "119.9" ] []
-        , line [ class "st19", x1 "306.2", y1 "506.6", x2 "306.2", y2 "119.9" ] []
-        , line [ class "st19", x1 "315.5", y1 "506.6", x2 "315.5", y2 "119.9" ] []
-        , line [ class "st19", x1 "324.8", y1 "506.6", x2 "324.8", y2 "119.9" ] []
-        , line [ class "st19", x1 "334.1", y1 "506.6", x2 "334.1", y2 "119.9" ] []
-        , line [ class "st19", x1 "352.7", y1 "506.6", x2 "352.7", y2 "119.9" ] []
-        , line [ class "st19", x1 "362", y1 "506.6", x2 "362", y2 "119.9" ] []
-        , line [ class "st19", x1 "371.3", y1 "506.6", x2 "371.3", y2 "119.9" ] []
-        , line [ class "st19", x1 "380.6", y1 "506.6", x2 "380.6", y2 "119.9" ] []
-        , line [ class "st19", x1 "399.2", y1 "506.6", x2 "399.2", y2 "119.9" ] []
-        , line [ class "st19", x1 "408.5", y1 "506.6", x2 "408.5", y2 "119.9" ] []
-        , line [ class "st19", x1 "417.8", y1 "506.6", x2 "417.8", y2 "119.9" ] []
-        , line [ class "st19", x1 "427.1", y1 "506.6", x2 "427.1", y2 "119.9" ] []
-        , line [ class "st19", x1 "445.7", y1 "506.6", x2 "445.7", y2 "119.9" ] []
-        , line [ class "st19", x1 "455", y1 "506.6", x2 "455", y2 "119.9" ] []
-        , line [ class "st19", x1 "464.3", y1 "506.6", x2 "464.3", y2 "119.9" ] []
-        , line [ class "st19", x1 "473.6", y1 "506.6", x2 "473.6", y2 "119.9" ] []
-        , line [ class "st19", x1 "492.2", y1 "506.6", x2 "492.2", y2 "119.9" ] []
-        , line [ class "st19", x1 "501.5", y1 "506.6", x2 "501.5", y2 "119.9" ] []
-        , line [ class "st19", x1 "510.8", y1 "506.6", x2 "510.8", y2 "119.9" ] []
-        , line [ class "st19", x1 "520.1", y1 "506.6", x2 "520.1", y2 "119.9" ] []
-        , line [ class "st19", x1 "538.7", y1 "506.6", x2 "538.7", y2 "119.9" ] []
-        , line [ class "st19", x1 "548", y1 "506.6", x2 "548", y2 "119.9" ] []
-        , line [ class "st19", x1 "557.3", y1 "506.6", x2 "557.3", y2 "119.9" ] []
-        , line [ class "st19", x1 "566.6", y1 "506.6", x2 "566.6", y2 "119.9" ] []
-        , line [ class "st19", x1 "585.2", y1 "506.6", x2 "585.2", y2 "119.9" ] []
-        , line [ class "st19", x1 "594.5", y1 "506.6", x2 "594.5", y2 "119.9" ] []
-        , line [ class "st19", x1 "603.8", y1 "506.6", x2 "603.8", y2 "119.9" ] []
-        , line [ class "st19", x1 "613.1", y1 "506.6", x2 "613.1", y2 "119.9" ] []
-        , line [ class "st19", x1 "631.7", y1 "506.6", x2 "631.7", y2 "119.9" ] []
-        , line [ class "st19", x1 "641", y1 "506.6", x2 "641", y2 "119.9" ] []
-        , line [ class "st19", x1 "650.3", y1 "506.6", x2 "650.3", y2 "119.9" ] []
-        , line [ class "st19", x1 "659.6", y1 "506.6", x2 "659.6", y2 "119.9" ] []
-        , line [ class "st19", x1 "678.2", y1 "506.6", x2 "678.2", y2 "119.9" ] []
-        , line [ class "st19", x1 "687.5", y1 "506.6", x2 "687.5", y2 "119.9" ] []
-        , line [ class "st19", x1 "696.8", y1 "506.6", x2 "696.8", y2 "119.9" ] []
-        , line [ class "st19", x1 "706.1", y1 "506.6", x2 "706.1", y2 "119.9" ] []
-        , line [ class "year-line", x1 "715.4", y1 "506.6", x2 "715.4", y2 "119.9" ] []
-        , text_ [ transform "matrix(1 0 0 1 106.77 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "45" ]
-        , text_ [ transform "matrix(1 0 0 1 153.2725 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "50" ]
-        , text_ [ transform "matrix(1 0 0 1 199.7749 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "55" ]
-        , text_ [ transform "matrix(1 0 0 1 246.2773 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "60" ]
-        , text_ [ transform "matrix(1 0 0 1 292.7798 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "65" ]
-        , text_ [ transform "matrix(1 0 0 1 339.2822 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "70" ]
-        , text_ [ transform "matrix(1 0 0 1 385.7847 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "75" ]
-        , text_ [ transform "matrix(1 0 0 1 432.2871 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "80" ]
-        , text_ [ transform "matrix(1 0 0 1 478.7891 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "85" ]
-        , text_ [ transform "matrix(1 0 0 1 525.292 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "90" ]
-        , text_ [ transform "matrix(1 0 0 1 571.7939 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "95" ]
-        , text_ [ transform "matrix(1 0 0 1 616.2168 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "100" ]
-        , text_ [ transform "matrix(1 0 0 1 662.7197 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "105" ]
-        , text_ [ transform "matrix(1 0 0 1 709.0928 518.1096)", class "z-score-white z-score-semibold st16" ] [ text "110" ]
-        ]
 
 
 referenceLinesHeight : Svg any
