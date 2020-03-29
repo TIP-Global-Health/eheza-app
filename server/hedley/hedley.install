@@ -547,8 +547,17 @@ function hedley_update_7022() {
 }
 
 /**
- * Enable the Hedley Stats module.
+ * Enable hedley_view_export.
  */
 function hedley_update_7023() {
+  module_enable(['advancedqueue', 'hedley_view_export']);
+
+  user_role_grant_permissions(variable_get('user_admin_role'), ['hedley export views']);
+}
+
+/**
+ * Enable the Hedley Stats module.
+ */
+function hedley_update_7024() {
   module_enable(['hedley_stats']);
 }
