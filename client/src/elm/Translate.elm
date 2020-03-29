@@ -44,8 +44,8 @@ import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
 import Http
-import Pages.Dashboard.Model as Dashboard exposing (BeneficiariesTableLabels(..), FilterPeriod(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
+import Pages.Dashboard.Model as Dashboard exposing (BeneficiariesTableLabels(..), FilterPeriod(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
     exposing
@@ -308,7 +308,6 @@ type TranslationId
     | DashboardLabel
     | CurrentlyPregnant
     | DangerSign DangerSign
-    | Dashboard
     | DateOfLastAssessment
     | DatePregnancyConcluded
     | Day
@@ -316,7 +315,6 @@ type TranslationId
     | DateOfBirth
     | Days
     | Delete
-    | DeleteTrainingGroupEncounters
     | DeliveryLocation
     | DeliveryOutcome
     | DemographicInformation
@@ -565,7 +563,6 @@ type TranslationId
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
     | ResolveMonth Month Bool
-    | ResolveMonth Month
     | RespiratoryRate
     | Retry
     | RhNegative
@@ -1321,6 +1318,7 @@ translationSet trans =
 
         Dashboard dashboard ->
             translateDashboard dashboard
+
         ClinicalProgressReport ->
             { english = "Clinical Progress Report"
             , kinyarwanda = Nothing
@@ -1549,7 +1547,6 @@ translationSet trans =
                     { english = "None of these"
                     , kinyarwanda = Nothing
                     }
-
 
         DateOfLastAssessment ->
             { english = "Date of last Assessment"
@@ -4085,6 +4082,8 @@ translateActivePage page =
                 MyAccountPage ->
                     { english = "My Account"
                     , kinyarwanda = Just "Compte"
+                    }
+
                 ClinicalProgressReportPage _ ->
                     { english = "Clinical Progress Report"
                     , kinyarwanda = Nothing
@@ -4103,11 +4102,6 @@ translateActivePage page =
                 EditPersonPage _ ->
                     { english = "Edit Person"
                     , kinyarwanda = Nothing
-                    }
-
-                MyAccountPage ->
-                    { english = "My Account"
-                    , kinyarwanda = Just "Compte"
                     }
 
                 PersonPage id ->

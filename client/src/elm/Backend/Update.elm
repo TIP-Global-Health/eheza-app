@@ -38,7 +38,7 @@ import Task
 
 
 updateIndexedDb : NominalDate -> Maybe NurseId -> Maybe HealthCenterId -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
-updateIndexedDb currentDate nurseId healthCenterId msg model =
+updateIndexedDb currentDate nurseId maybeHealthCenterId msg model =
     let
         sw =
             applyBackendUrl "/sw"
@@ -153,7 +153,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate nurseId healthCenterId) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate nurseId maybeHealthCenterId) extraMsgs
 
         FetchEditableSessionCheckedIn id ->
             Dict.get id model.editableSessions
@@ -771,7 +771,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                         |> Maybe.withDefault Backend.PrenatalEncounter.Model.emptyModel
 
                 ( subModel, subCmd ) =
-                    Backend.PrenatalEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
+                    Backend.PrenatalEncounter.Update.update nurseId maybeHealthCenterId encounterId encounter currentDate subMsg requests
             in
             ( { model | prenatalEncounterRequests = Dict.insert encounterId subModel model.prenatalEncounterRequests }
             , Cmd.map (MsgPrenatalEncounter encounterId) subCmd
@@ -931,7 +931,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , relationshipCmd
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate nurseId healthCenterId) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate nurseId maybeHealthCenterId) extraMsgs
 
         HandlePostedRelationship personId data ->
             let

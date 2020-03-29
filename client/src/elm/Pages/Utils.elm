@@ -3,6 +3,7 @@ module Pages.Utils exposing
     , filterDependentNoResultsMessage
     , matchFilter
     , matchMotherAndHerChildren
+    , monthList
     , normalizeFilter
     , taskCompleted
     , taskListCompleted

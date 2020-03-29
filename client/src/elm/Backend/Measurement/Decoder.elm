@@ -6,6 +6,7 @@ module Backend.Measurement.Decoder exposing
     , decodeCounselingSession
     , decodeDangerSigns
     , decodeFamilyPlanning
+    , decodeFamilyPlanningSign
     , decodeHeight
     , decodeLastMenstrualPeriod
     , decodeMedicalHistory

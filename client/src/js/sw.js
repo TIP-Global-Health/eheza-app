@@ -126,6 +126,15 @@ dbSync.version(6).stores({
 });
 
 dbSync.version(7).stores({
+    nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter',
+}).upgrade(function (tx) {
+    return tx.nodes.where({
+        type: 'session'
+    }).delete();
+});
+
+dbSync.version(8).stores({
     statistics: '&uuid',
 }).upgrade(function (tx) {
     return tx.nodes.where({
