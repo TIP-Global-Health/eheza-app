@@ -424,7 +424,6 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function() {
       'config.js',
       'lifecycle.js',
       'nodes.js',
-      'statistics.js',
       'photos.js',
       'rollbar.js',
       'sync.js'
