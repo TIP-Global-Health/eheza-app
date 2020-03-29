@@ -1,5 +1,6 @@
 module Backend.Session.Encoder exposing (encodeSession)
 
+import Backend.Clinic.Encoder exposing (encodeClinicType)
 import Backend.Session.Model exposing (..)
 import Gizra.NominalDate exposing (encodeDrupalRange, encodeYYYYMMDD)
 import Json.Encode exposing (..)
@@ -18,4 +19,5 @@ encodeSession session =
             ]
       )
     , ( "clinic", encodeEntityUuid session.clinicId )
+    , ( "clinic_type", encodeClinicType session.clinicType )
     ]

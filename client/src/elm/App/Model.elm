@@ -13,12 +13,18 @@ import Json.Encode exposing (Value)
 import Pages.Clinics.Model
 import Pages.Dashboard.Model
 import Pages.Device.Model
+import Pages.IndividualEncounterParticipants.Model
 import Pages.Page exposing (DashboardPage(..), Page(..))
 import Pages.People.Model
 import Pages.Person.Model
 import Pages.PinCode.Model
+import Pages.PregnancyOutcome.Model
+import Pages.PrenatalActivity.Model
+import Pages.PrenatalEncounter.Model
+import Pages.PrenatalParticipant.Model
 import Pages.Relationship.Model
 import Pages.Session.Model
+import PrenatalActivity.Model exposing (PrenatalActivity)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
 import Rollbar
@@ -144,12 +150,16 @@ type alias LoggedInModel =
     , editPersonPage : Pages.Person.Model.Model
     , relationshipPages : Dict ( PersonId, PersonId ) Pages.Relationship.Model.Model
     , personsPage : Pages.People.Model.Model
+    , individualEncounterParticipantsPage : Pages.IndividualEncounterParticipants.Model.Model
     , clinicsPage : Pages.Clinics.Model.Model
 
     -- The nurse who has logged in.
     , nurse : ( NurseId, Nurse )
 
     -- A set of pages for every "open" editable session.
+    , prenatalEncounterPages : Dict PrenatalEncounterId Pages.PrenatalEncounter.Model.Model
+    , prenatalActivityPages : Dict ( PrenatalEncounterId, PrenatalActivity ) Pages.PrenatalActivity.Model.Model
+    , pregnancyOutcomePages : Dict IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Model
     , sessionPages : Dict SessionId Pages.Session.Model.Model
     }
 
@@ -160,9 +170,13 @@ emptyLoggedInModel nurse =
     , dashboardPage = Pages.Dashboard.Model.emptyModel
     , editPersonPage = Pages.Person.Model.emptyEditModel
     , personsPage = Pages.People.Model.emptyModel
+    , individualEncounterParticipantsPage = Pages.IndividualEncounterParticipants.Model.emptyModel
     , clinicsPage = Pages.Clinics.Model.emptyModel
     , relationshipPages = Dict.empty
     , nurse = nurse
+    , prenatalEncounterPages = Dict.empty
+    , prenatalActivityPages = Dict.empty
+    , pregnancyOutcomePages = Dict.empty
     , sessionPages = Dict.empty
     }
 
@@ -188,6 +202,7 @@ type Msg
     | SendRollbar Rollbar.Level String (Dict String Value)
     | HandleRollbar (Result Http.Error Uuid)
       -- Manage our own model
+    | ScrollToElement String
     | SetActivePage Page
     | SetLanguage Language
     | SetPersistentStorage Bool
@@ -208,8 +223,13 @@ type MsgLoggedIn
     | MsgPageDashboard DashboardPage Pages.Dashboard.Model.Msg
     | MsgPageEditPerson Pages.Person.Model.Msg
     | MsgPagePersons Pages.People.Model.Msg
+    | MsgPagePrenatalParticipant PersonId Pages.PrenatalParticipant.Model.Msg
+    | MsgPageIndividualEncounterParticipants Pages.IndividualEncounterParticipants.Model.Msg
     | MsgPageRelationship PersonId PersonId Pages.Relationship.Model.Msg
     | MsgPageSession SessionId Pages.Session.Model.Msg
+    | MsgPagePrenatalEncounter PrenatalEncounterId Pages.PrenatalEncounter.Model.Msg
+    | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.PrenatalActivity.Model.Msg
+    | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Msg
 
 
 type alias Flags =

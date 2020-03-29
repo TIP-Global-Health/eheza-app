@@ -150,6 +150,31 @@ shouldFetch model msg =
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
+        FetchPrenatalEncounter id ->
+            Dict.get id model.prenatalEncounters
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchPrenatalEncountersForParticipant id ->
+            Dict.get id model.prenatalEncountersByParticipant
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchPrenatalMeasurements id ->
+            Dict.get id model.prenatalMeasurements
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchIndividualEncounterParticipant id ->
+            Dict.get id model.individualParticipants
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchIndividualEncounterParticipantsForPerson id ->
+            Dict.get id model.individualParticipantsByPerson
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
         FetchRelationshipsForPerson id ->
             Dict.get id model.relationshipsByPerson
                 |> Maybe.withDefault NotAsked
@@ -211,8 +236,23 @@ forget msg model =
         FetchPerson id ->
             { model | people = Dict.remove id model.people }
 
+        FetchIndividualEncounterParticipantsForPerson id ->
+            { model | individualParticipantsByPerson = Dict.remove id model.individualParticipantsByPerson }
+
         FetchParticipantsForPerson id ->
             { model | participantsByPerson = Dict.remove id model.participantsByPerson }
+
+        FetchPrenatalEncounter id ->
+            { model | prenatalEncounters = Dict.remove id model.prenatalEncounters }
+
+        FetchPrenatalEncountersForParticipant id ->
+            { model | prenatalEncountersByParticipant = Dict.remove id model.prenatalEncountersByParticipant }
+
+        FetchPrenatalMeasurements id ->
+            { model | prenatalMeasurements = Dict.remove id model.prenatalMeasurements }
+
+        FetchIndividualEncounterParticipant id ->
+            { model | individualParticipants = Dict.remove id model.individualParticipants }
 
         FetchRelationshipsForPerson id ->
             { model | relationshipsByPerson = Dict.remove id model.relationshipsByPerson }

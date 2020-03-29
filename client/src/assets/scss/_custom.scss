@@ -145,7 +145,6 @@ a {
 .ui.tabular.menu .item {
   font-size: 0.85em;
   background: #fff;
-  border: 0;
   padding: 0.6em 0.6em 0.6em 1.2em;
   width: 225px;
   height: 48px;
@@ -178,8 +177,7 @@ a {
 .ui.tabular.menu .active.item {
   background: #FFF;
   color: rgba(0,0,0,.95);
-  border-top-width: 1px;
-  border-color: #D4D4D5;
+  border-color: $color-primary;
   font-weight: 700;
   margin-bottom: -1px;
   box-shadow: none;
@@ -350,6 +348,7 @@ h3.ui.header {
   background-image: url(#{$img-path}icon-photo-active.svg);
   background-size: 76px 54px;
 }
+
 .icon-task-weight {
   background-image: url(#{$img-path}icon-weight-active.svg);
   background-size: 68px 88px;
@@ -381,6 +380,31 @@ h3.ui.header {
 .icon-task-planning {
   background-image: url(#{$img-path}icon-planning-active.svg);
   background-size: 88px 80px;
+}
+
+.icon-task-danger-signs {
+  background-image: url(#{$img-path}icon-task-danger-signs.svg);
+  background-size: 122px 122px;
+}
+
+.icon-task-examination {
+  background-image: url(#{$img-path}icon-task-examination.svg);
+  background-size: 122px 122px;
+}
+
+.icon-task-history {
+  background-image: url(#{$img-path}icon-task-history.svg);
+  background-size: 122px 122px;
+}
+
+.icon-task-patient-provisions {
+  background-image: url(#{$img-path}icon-task-patient-provisions.svg);
+  background-size: 122px 122px;
+}
+
+.icon-task-pregnancy-dating {
+  background-image: url(#{$img-path}icon-pregnancy-dating.svg);
+  background-size: 122px 122px;
 }
 
 // Tasks horizontal scroll
@@ -1004,6 +1028,66 @@ input::placeholder {
   margin-left: -213px !important; //temp
   box-shadow: 0 0 8px rgba(0,0,0,0.2);
 
+  &.alerts-dialog {
+    border-top: 7px solid $color-red-alert;
+    width: 700px !important;
+    margin-left: -350px !important;
+
+    > .content {
+      display: inline-block;
+      max-height: 600px;
+      min-height: 200px;
+      overflow-y: auto;
+
+      .section-label-wrapper {
+        height: 48px;
+
+        img {
+          float: left;
+          width: 48px;
+        }
+
+        .section-label {
+          color: $color-dark-gray;
+          float: left;
+          line-height: 48px;
+          margin-left: 30px;
+          text-align: left;
+          width: 430px;
+        }
+      }
+
+      .section-items {
+        color: $color-gray;
+        font-size: 20px;
+        padding-left: 6rem;
+        text-align: left;
+
+        .alert {
+          margin-bottom: 5px;
+
+          .alert-value {
+            color: $color-red-alert;
+            margin-left: 10px;
+          }
+
+          .alert-date {
+            color: $color-green-alert;
+            margin-left: 10px;
+          }
+        }
+      }
+
+      .high-risk-alerts {
+        margin-bottom: 20px;
+      }
+    }
+
+    > .actions > .button {
+      margin-left: 0;
+    }
+  }
+
   > .icon:first-child+*,
   >:first-child:not(.icon) {
     border-top-left-radius: 0;
@@ -1311,6 +1395,164 @@ input::placeholder {
   }
 }
 
+.icon-history-task,
+.icon-examination-task,
+.icon-patient-provisions-task {
+  display: block;
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 10px auto;
+
+  &:after {
+    content: " ";
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-position: center center;
+    background-repeat: no-repeat;
+    border: 3px solid #fff;
+  }
+}
+
+.icon-obstetric {
+  .active &:after {
+    background-image: url(#{$img-path}icon-obstetrichistory-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-obstetrichistory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-obstetrichistory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-medical {
+  .active &:after {
+    background-image: url(#{$img-path}icon-medicalhistory-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-medicalhistory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-medicalhistory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-social {
+  .active &:after {
+    background-image: url(#{$img-path}icon-socialhistory-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-socialhistory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-socialhistory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-vitals {
+  .active &:after {
+    background-image: url(#{$img-path}icon-vitals-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-vitals-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-vitals-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-nutrition-assessment {
+  .active &:after {
+    background-image: url(#{$img-path}icon-nutritionassessment-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-nutritionassessment-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-nutritionassessment-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-core-physical-exam {
+  .active &:after {
+    background-image: url(#{$img-path}icon-corephysicalexam-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-corephysicalexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-corephysicalexam-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-obstetrical-exam {
+  .active &:after {
+    background-image: url(#{$img-path}icon-obstetricalexam-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-obstetricalexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-obstetricalexam-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-breast-exam {
+  .active &:after {
+    background-image: url(#{$img-path}icon-breastexam-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-breastexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-breastexam-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-medication {
+  .active &:after {
+    background-image: url(#{$img-path}icon-medication-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-medication-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-medication-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-resources {
+  .active &:after {
+    background-image: url(#{$img-path}icon-resources-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-resources-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-resources-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
 
 // Lists
 
@@ -1489,6 +1731,17 @@ input::placeholder {
 }
 
 .page-attendance {
+
+  .toggle-initial-display {
+    line-height: 50px;
+
+    .toggle-text {
+      color: $color-primary;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+  }
+
   .ui.middle.aligned.divided.list .item .content .description {
     font-size: 1.3rem;
     padding-left: 1rem;

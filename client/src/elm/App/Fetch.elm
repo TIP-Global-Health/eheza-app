@@ -5,13 +5,22 @@ import App.Utils exposing (getLoggedInData)
 import Backend.Fetch
 import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
+import Pages.Clinical.Fetch
+import Pages.ClinicalProgressReport.Fetch
 import Pages.Clinics.Fetch
 import Pages.Dashboard.Fetch
+import Pages.DemographicsReport.Fetch
 import Pages.Device.Fetch
+import Pages.IndividualEncounterParticipants.Fetch
+import Pages.IndividualEncounterTypes.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.People.Fetch
 import Pages.Person.Fetch
 import Pages.PinCode.Fetch
+import Pages.PregnancyOutcome.Fetch
+import Pages.PrenatalActivity.Fetch
+import Pages.PrenatalEncounter.Fetch
+import Pages.PrenatalParticipant.Fetch
 import Pages.Relationship.Fetch
 import Pages.Session.Fetch
 import Time
@@ -45,6 +54,19 @@ fetch model =
         PinCodePage ->
             List.map MsgIndexedDb Pages.PinCode.Fetch.fetch
 
+        PageNotFound _ ->
+            []
+
+        ServiceWorkerPage ->
+            []
+
+        UserPage MyAccountPage ->
+            []
+
+        UserPage ClinicalPage ->
+            Pages.Clinical.Fetch.fetch
+                |> List.map MsgIndexedDb
+
         UserPage (ClinicsPage clinicId) ->
             Pages.Clinics.Fetch.fetch clinicId
                 |> List.map MsgIndexedDb
@@ -58,12 +80,20 @@ fetch model =
                     )
                 |> Maybe.withDefault []
 
-        UserPage (CreatePersonPage relatedId) ->
+        UserPage (ClinicalProgressReportPage prenatalEncounterId) ->
+            Pages.ClinicalProgressReport.Fetch.fetch prenatalEncounterId model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (CreatePersonPage relatedId _) ->
             Pages.Person.Fetch.fetchForCreateOrEdit relatedId model.indexedDb
                 |> List.map MsgIndexedDb
 
         UserPage (EditPersonPage relatedId) ->
             Pages.Person.Fetch.fetchForCreateOrEdit (Just relatedId) model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (DemographicsReportPage prenatalEncounterId) ->
+            Pages.DemographicsReport.Fetch.fetch prenatalEncounterId model.indexedDb
                 |> List.map MsgIndexedDb
 
         UserPage (PersonPage id) ->
@@ -79,6 +109,24 @@ fetch model =
                     )
                 |> Maybe.withDefault []
 
+        UserPage (PrenatalParticipantPage personId) ->
+            getLoggedInData model
+                |> Maybe.map
+                    (\( _, loggedIn ) ->
+                        Pages.PrenatalParticipant.Fetch.fetch personId model.indexedDb
+                            |> List.map MsgIndexedDb
+                    )
+                |> Maybe.withDefault []
+
+        UserPage (IndividualEncounterParticipantsPage encounterType) ->
+            getLoggedInData model
+                |> Maybe.map
+                    (\( _, loggedIn ) ->
+                        Pages.IndividualEncounterParticipants.Fetch.fetch encounterType loggedIn.individualEncounterParticipantsPage
+                            |> List.map MsgIndexedDb
+                    )
+                |> Maybe.withDefault []
+
         UserPage (RelationshipPage id1 id2) ->
             Pages.Relationship.Fetch.fetch id1 id2 model.indexedDb
                 |> List.map MsgIndexedDb
@@ -87,8 +135,21 @@ fetch model =
             Pages.Session.Fetch.fetch sessionId sessionPage model.indexedDb
                 |> List.map MsgIndexedDb
 
-        _ ->
-            []
+        UserPage (PrenatalEncounterPage id) ->
+            Pages.PrenatalEncounter.Fetch.fetch id model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (PrenatalActivityPage prenatalEncounterId _) ->
+            Pages.PrenatalActivity.Fetch.fetch prenatalEncounterId model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage IndividualEncounterTypesPage ->
+            Pages.IndividualEncounterTypes.Fetch.fetch
+                |> List.map MsgIndexedDb
+
+        UserPage (PregnancyOutcomePage id) ->
+            Pages.PregnancyOutcome.Fetch.fetch id model.indexedDb
+                |> List.map MsgIndexedDb
 
 
 {-| Given a `Msg`, do we need to fetch the data it would fetch? We only answer

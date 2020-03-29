@@ -87,7 +87,6 @@ rsync -avzr --delete-after "$MAKE_DIR"/www/sites/all/ "$PANTHEON_DIR"/sites/all/
 
 echo -e "${GREEN}Re-building the app and copy to {$PANTHEON_DIR}/app.${NORMAL}"
 cd $MAKE_DIR/../client
-#elm-package install -y
 bower install
 gulp publish
 rm -rf $PANTHEON_DIR/app

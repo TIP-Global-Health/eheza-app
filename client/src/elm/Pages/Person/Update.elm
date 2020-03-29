@@ -9,7 +9,7 @@ import Backend.Person.Model exposing (ExpectedAge(..), ParticipantDirectoryOpera
 import Date
 import Form
 import Form.Field
-import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD, fromLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
 import Maybe.Extra exposing (isJust)
 import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -18,7 +18,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 update : NominalDate -> Msg -> ModelIndexedDb -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate msg db model =
     case msg of
-        MsgForm operation subMsg ->
+        MsgForm operation initiator subMsg ->
             let
                 relation =
                     case operation of
@@ -46,7 +46,7 @@ update currentDate msg db model =
                                         |> Maybe.map
                                             (\person ->
                                                 [ person
-                                                    |> Backend.Model.PostPerson relation
+                                                    |> Backend.Model.PostPerson relation initiator
                                                     |> App.Model.MsgIndexedDb
                                                 ]
                                             )
@@ -55,7 +55,7 @@ update currentDate msg db model =
                                         -- `NotAsked` (to reset network errors
                                         -- etc.)
                                         |> Maybe.withDefault
-                                            [ Backend.Model.HandlePostedPerson relation NotAsked
+                                            [ Backend.Model.HandlePostedPerson relation initiator NotAsked
                                                 |> App.Model.MsgIndexedDb
                                             ]
 
@@ -90,12 +90,12 @@ update currentDate msg db model =
             , appMsgs
             )
 
-        DropZoneComplete operation result ->
+        DropZoneComplete operation initiator result ->
             let
                 subMsg =
                     Form.Input Backend.Person.Form.photo Form.Text (Form.Field.String result.url)
             in
-            update currentDate (MsgForm operation subMsg) db model
+            update currentDate (MsgForm operation initiator subMsg) db model
 
         ResetCreateForm ->
             ( Pages.Person.Model.emptyCreateModel
@@ -121,13 +121,13 @@ update currentDate msg db model =
             , []
             )
 
-        DateSelected operation date ->
+        DateSelected operation initiator date ->
             let
                 dateAsString =
                     Date.format "yyyy-MM-dd" date
 
                 setFieldMsg =
-                    Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm operation
+                    Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm operation initiator
             in
             update currentDate setFieldMsg db model
 
