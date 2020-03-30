@@ -154,7 +154,7 @@ function hedley_stats_calculate_stats_worker($queue_item, $end_time = FALSE) {
   }
 
   $params = [
-    '@id' => $health_center_nid,
+    '@nid' => $health_center_nid,
   ];
   return [
     'status' => ADVANCEDQUEUE_STATUS_SUCCESS,
