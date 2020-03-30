@@ -1240,7 +1240,7 @@ translationSet trans =
 
         Clear ->
             { english = "Clear"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gukuraho"
             }
 
         ClickTheCheckMark ->
@@ -2148,7 +2148,7 @@ translationSet trans =
 
         IndividualEncounter ->
             { english = "Individual Encounter"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gukorera umuntu umwe"
             }
 
         IndividualEncounterType type_ ->
@@ -3555,12 +3555,12 @@ translationSet trans =
 
         ServiceWorkerInstalled ->
             { english = "A new version of the app has been downloaded."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gufungura verisio nshyashya."
             }
 
         ServiceWorkerSkipWaiting ->
             { english = "Activate new version of the app"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gufungura verisio nshyashya"
             }
 
         ServiceWorkerRestarting ->
