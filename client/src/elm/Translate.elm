@@ -4260,6 +4260,11 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
+                AcuteIllnessParticipantPage _ ->
+                    { english = "Acute Illness Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
 
 translateAdherence : Adherence -> TranslationSet String
 translateAdherence adherence =

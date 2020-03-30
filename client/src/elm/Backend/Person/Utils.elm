@@ -88,6 +88,9 @@ decodeRegistrationInitiatorFromString s =
         "directory" ->
             Just ParticipantDirectoryOrigin
 
+        "acute-illness" ->
+            IndividualEncounterOrigin AcuteIllnessEncounter |> Just
+
         "antenatal" ->
             IndividualEncounterOrigin AntenatalEncounter |> Just
 

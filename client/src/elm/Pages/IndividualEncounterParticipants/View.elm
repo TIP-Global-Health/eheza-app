@@ -230,8 +230,7 @@ viewParticipant language currentDate encounterType db id person =
         action =
             case encounterType of
                 AcuteIllnessEncounter ->
-                    -- Todo
-                    []
+                    [ onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage id ]
 
                 AntenatalEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage id ]

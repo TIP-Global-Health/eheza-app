@@ -1009,8 +1009,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                                             IndividualEncounterOrigin encounterType ->
                                                 case encounterType of
                                                     AcuteIllnessEncounter ->
-                                                        -- Todo:
-                                                        IndividualEncounterTypesPage
+                                                        AcuteIllnessParticipantPage personId
 
                                                     AntenatalEncounter ->
                                                         PrenatalParticipantPage personId

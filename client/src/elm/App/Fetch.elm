@@ -5,6 +5,7 @@ import App.Utils exposing (getLoggedInData)
 import Backend.Fetch
 import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
+import Pages.AcuteIllnessParticipant.Fetch
 import Pages.Clinical.Fetch
 import Pages.ClinicalProgressReport.Fetch
 import Pages.Clinics.Fetch
@@ -116,6 +117,15 @@ fetch model =
                 |> Maybe.map
                     (\( _, loggedIn ) ->
                         Pages.NutritionParticipant.Fetch.fetch personId model.indexedDb
+                            |> List.map MsgIndexedDb
+                    )
+                |> Maybe.withDefault []
+
+        UserPage (AcuteIllnessParticipantPage personId) ->
+            getLoggedInData model
+                |> Maybe.map
+                    (\( _, loggedIn ) ->
+                        Pages.AcuteIllnessParticipant.Fetch.fetch personId model.indexedDb
                             |> List.map MsgIndexedDb
                     )
                 |> Maybe.withDefault []

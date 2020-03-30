@@ -12,6 +12,7 @@ import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
+import Pages.AcuteIllnessParticipant.View
 import Pages.Clinical.View
 import Pages.ClinicalProgressReport.View
 import Pages.Clinics.View
@@ -253,6 +254,10 @@ viewUserPage page model configured =
 
                     NutritionParticipantPage id ->
                         Pages.NutritionParticipant.View.view model.language currentDate id model.indexedDb
+                            |> flexPageWrapper model
+
+                    AcuteIllnessParticipantPage id ->
+                        Pages.AcuteIllnessParticipant.View.view model.language currentDate id model.indexedDb
                             |> flexPageWrapper model
 
                     IndividualEncounterParticipantsPage encounterType ->
