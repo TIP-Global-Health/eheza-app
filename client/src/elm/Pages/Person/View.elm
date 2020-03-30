@@ -488,8 +488,12 @@ viewCreateEditForm language currentDate operation initiator model db =
                 IndividualEncounterOrigin encounterType ->
                     case encounterType of
                         AcuteIllnessEncounter ->
+                            let
+                                expectedAge =
+                                    expectedAgeByForm currentDate personForm operation
+                            in
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage AcuteIllnessEncounter)
-                            , expectedAge = ExpectAdultOrChild
+                            , expectedAge = expectedAge
                             , expectedGender = ExpectMaleOrFemale
                             , birthDateSelectorFrom = Date.add Years -90 today
                             , birthDateSelectorTo = today
