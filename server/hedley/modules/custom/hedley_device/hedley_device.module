@@ -50,8 +50,12 @@ function hedley_device_node_insert($node) {
   if ($node->type == 'pmtct_participant') {
     $wrapper = entity_metadata_wrapper('node', $node);
 
-    hedley_recalculate_shards_for_person($wrapper->field_person->getIdentifier());
-    hedley_recalculate_shards_for_person($wrapper->field_adult->getIdentifier());
+    if (!empty($wrapper->field_person->value())) {
+      hedley_recalculate_shards_for_person($wrapper->field_person->getIdentifier());
+    }
+    if (!empty($wrapper->field_adult->value())) {
+      hedley_recalculate_shards_for_person($wrapper->field_adult->getIdentifier());
+    }
   }
 }
 
