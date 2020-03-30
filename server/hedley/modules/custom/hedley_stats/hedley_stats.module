@@ -5,6 +5,10 @@
  * Code for the Hedley Statistics module.
  */
 
+// Advanced queue items.
+define('HEDLEY_STATS_CALCULATE_STATS', 'hedley_stats_calculate_stats');
+
+// Periods.
 define('HEDLEY_STATS_PERIOD_THIS_MONTH', 'this_month');
 define('HEDLEY_STATS_PERIOD_LAST_MONTH', 'last_month');
 define('HEDLEY_STATS_PERIOD_THREE_MONTHS', 'three_months');
@@ -92,6 +96,11 @@ function hedley_stats_node_presave($node) {
         hedley_stats_handle_cache(HEDLEY_STATS_CACHE_CLEAR, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $health_center->nid, $period);
       }
     }
+
+    // Now we add an AQ item to re-calculate all the stats offline.
+    hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $health_center->nid, [
+      'health_center_nid' => $health_center->nid,
+    ]);
   }
 }
 
@@ -99,18 +108,16 @@ function hedley_stats_node_presave($node) {
  * Implements hook_advanced_queue_info().
  */
 function hedley_stats_advanced_queue_info() {
-  $items['hedley_stats_calculate_stats'] = [
+  $items[HEDLEY_STATS_CALCULATE_STATS] = [
     'label' => t('Calculate the dashboard stats'),
-    'worker callback' => 'hedley_stats_calculate_stats_for_all_dashboards',
+    'worker callback' => 'hedley_stats_calculate_stats_worker',
     'groups' => [
       'hedley',
     ],
     // The number of seconds to retry after.
-    'retry after' => 10,
+    'retry after' => 60,
     // The maximum number of attempts after a failure.
-    'max attempts' => 5,
-    // Time after which an item is released from processing and requeued.
-    'lease time' => 45,
+    'max attempts' => 3,
   ];
 
   return $items;
@@ -128,13 +135,68 @@ function hedley_stats_advanced_queue_info() {
  *   Boolean indicating if the process succeeded, or an array with
  *   "status" and "result" keys.
  */
-function hedley_stats_calculate_stats_for_all_dashboards($item, $end_time = FALSE) {
-  print_r('hello');
+function hedley_stats_calculate_stats_worker($queue_item, $end_time = FALSE) {
+  if (!$health_center_nid = $queue_item->data['health_center_nid']) {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE,
+      'result' => t('Does not have Health Center Node ID.'),
+    ];
+  }
 
+  try {
+    hedley_stats_calculate_stats_for_health_center($health_center_nid);
+  }
+  catch (Exception $e) {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE_RETRY,
+      'result' => $e->getMessage(),
+    ];
+  }
+
+  $params = [
+    '@id' => $health_center_nid,
+  ];
   return [
     'status' => ADVANCEDQUEUE_STATUS_SUCCESS,
-    'result' => 'Processed ' . $item->item_id,
+    'result' => t('The statistics has been calculated for health center ID: @nid', $params),
   ];
+}
+
+/**
+ * Get all the stats for each health center.
+ *
+ * We don't worry about caching here because each function has its own caching.
+ *
+ * @param int $health_center_nid
+ *   The health center node ID.
+ *
+ * @return array|string
+ *   The stats or error message if anything went wrong.
+ */
+function hedley_stats_calculate_stats_for_health_center($health_center_nid) {
+  try {
+    // Calculate the stats.
+    list($completed_program, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_health_center($health_center_nid);
+    return [
+      'type' => 'statistics',
+      // UUID of the health center.
+      'case_management' => hedley_stats_get_case_management($health_center_nid),
+      'children_beneficiaries' => hedley_stats_get_children_beneficiaries_stats_by_period($health_center_nid, HEDLEY_STATS_PERIOD_THREE_MONTHS),
+      'completed_program' => $completed_program,
+      'completed_program_count' => 0,
+      'good_nutrition' => hedley_stats_get_good_nutrition($health_center_nid),
+      'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_nid, HEDLEY_STATS_PERIOD_THREE_MONTHS),
+      'malnourished_beneficiaries' => hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_center_nid, HEDLEY_STATS_PERIOD_THREE_MONTHS),
+      'missed_sessions' => $missed_sessions,
+      'missed_sessions_count' => 0,
+      'total_beneficiaries' => hedley_stats_get_fbf_beneficiaries_graphs_data($health_center_nid, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_GRAPH),
+      'total_beneficiaries_incidence' => hedley_stats_get_fbf_beneficiaries_graphs_data($health_center_nid, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_INCIDENCE_GRAPH),
+      'total_encounters' => hedley_stats_get_total_encounters($health_center_nid),
+    ];
+  }
+  catch (Exception $exception) {
+    return $exception->getMessage();
+  }
 }
 
 /**

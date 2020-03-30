@@ -1,0 +1,91 @@
+<?php
+/**
+ * @file
+ * Code for the Hedley General feature.
+ */
+
+/**
+ * Creating a new AQ task of a specific queue if not exist.
+ *
+ * @param string $machine_name
+ *   The machine name of the queue.
+ * @param int|string $unique_id
+ *   An arbitrary ID to avoid duplicating tasks.
+ * @param array $data
+ *   The data to add to the AQ task.
+ * @param array $statuses
+ *   Optional; The task statuses which considered as exist.
+ *
+ * @return int
+ *   Task ID, if created successfully.
+ */
+function hedley_general_add_task_to_advanced_queue_by_id($machine_name, $unique_id, array $data, array $statuses = [ADVANCEDQUEUE_STATUS_QUEUED, ADVANCEDQUEUE_STATUS_PROCESSING]) {
+  // Make sure a task with the same ID doesn't exist already in the given
+  // queue, using the queue machine name as a prefix.
+  // (the `$task_title` us being used as a unique ID for the given queue).
+  $task_title = $machine_name . '_' . $unique_id;
+  if (hedley_general_advanced_queue_task_exists($machine_name, $task_title, $statuses)) {
+    // Prevent from flooding the queue.
+    return FALSE;
+  }
+
+  return hedley_general_add_task_to_advanced_queue($machine_name, ['title' => $task_title] + $data);
+}
+
+/**
+ * Check whether a specific task exist and not processed yet.
+ *
+ * @param string $queue_machine_name
+ *   The machine name of the queue.
+ * @param string $title
+ *   The title of the task to search.
+ * @param array $statuses
+ *   The statuses to filter by.
+ *
+ * @return bool
+ *   TRUE if the task exist and not processed yet, otherwise returns FALSE.
+ */
+function hedley_general_advanced_queue_task_exists($queue_machine_name, $title, $statuses = [ADVANCEDQUEUE_STATUS_QUEUED, ADVANCEDQUEUE_STATUS_PROCESSING]) {
+  return (bool) db_select('advancedqueue', 'a')
+    ->fields('a')
+    ->condition('name', $queue_machine_name)
+    ->condition('title', $title)
+    ->condition('status', $statuses, 'IN')
+    ->countQuery()
+    ->execute()
+    ->fetchField();
+}
+
+/**
+ * Add a new task to a specific advanced queue.
+ *
+ * @param string $queue_machine_name
+ *   The machine name of the queue.
+ * @param array $task_arguments
+ *   The arguments we should pass to the task.
+ *
+ * @return int
+ *   The new advancedqueue_item ID.
+ */
+function hedley_general_add_task_to_advanced_queue($queue_machine_name, array $task_arguments) {
+  // Get the requested queue.
+  $queue = new AdvancedQueue($queue_machine_name);
+
+  $task = [
+    'timestamp' => REQUEST_TIME,
+  ];
+
+  $task += $task_arguments;
+
+  $item_id = $queue->createItem($task);
+
+  if (!$item_id) {
+    $args = [
+      '@name' => $queue_machine_name,
+      '@args' => serialize($task),
+    ];
+    drupal_set_message(format_string('Failed to create AQ job for queue "@name". Item arguments: "@args"', $args), 'error');
+  }
+
+  return $item_id;
+}
