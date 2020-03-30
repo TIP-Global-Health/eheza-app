@@ -96,6 +96,48 @@ function hedley_stats_node_presave($node) {
 }
 
 /**
+ * Implements hook_advanced_queue_info().
+ */
+function hedley_stats_advanced_queue_info() {
+  $items['hedley_stats_calculate_stats'] = [
+    'label' => t('Calculate the dashboard stats'),
+    'worker callback' => 'hedley_stats_calculate_stats_for_all_dashboards',
+    'groups' => [
+      'hedley',
+    ],
+    // The number of seconds to retry after.
+    'retry after' => 10,
+    // The maximum number of attempts after a failure.
+    'max attempts' => 5,
+    // Time after which an item is released from processing and requeued.
+    'lease time' => 45,
+  ];
+
+  return $items;
+}
+
+/**
+ * Advanced queue worker; Calculate stats for all dashboards.
+ *
+ * @param $item
+ *   The item object to process.
+ * @param $end_time
+ *   (Optional) The time this process should end.
+ *
+ * @return
+ *   Boolean indicating if the process succeeded, or an array with
+ *   "status" and "result" keys.
+ */
+function hedley_stats_calculate_stats_for_all_dashboards($item, $end_time = FALSE) {
+  print_r('hello');
+
+  return [
+    'status' => ADVANCEDQUEUE_STATUS_SUCCESS,
+    'result' => 'Processed ' . $item->item_id,
+  ];
+}
+
+/**
  * Return new people in a Health centers related stats.
  *
  * @param int $health_center_id
