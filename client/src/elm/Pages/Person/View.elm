@@ -495,6 +495,14 @@ viewCreateEditForm language currentDate operation initiator model db =
                             , birthDateSelectorTo = Date.add Years -13 today
                             }
 
+                        NutritionEncounter ->
+                            { goBackPage = UserPage (IndividualEncounterParticipantsPage NutritionEncounter)
+                            , expectedAge = ExpectChild
+                            , expectedGender = ExpectMaleOrFemale
+                            , birthDateSelectorFrom = Date.add Years -5 today
+                            , birthDateSelectorTo = today
+                            }
+
                         -- This will be redefined after we add support for more
                         -- individual encounter types.
                         _ ->

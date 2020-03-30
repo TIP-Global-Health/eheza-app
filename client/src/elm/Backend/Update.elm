@@ -1011,6 +1011,9 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                                                     AntenatalEncounter ->
                                                         PrenatalParticipantPage personId
 
+                                                    NutritionEncounter ->
+                                                        NutritionParticipantPage personId
+
                                                     _ ->
                                                         -- This will change as we add support for
                                                         -- new encounter types.

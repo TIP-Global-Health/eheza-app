@@ -162,11 +162,6 @@ fetch model =
                 |> List.map MsgIndexedDb
 
 
-
--- Pages.NutritionEncounter.Fetch.fetch id model.indexedDb
---     |> List.map MsgIndexedDb
-
-
 {-| Given a `Msg`, do we need to fetch the data it would fetch? We only answer
 `True` if the data is `NotAsked`. So, we don't automatically re-fetch errors.
 

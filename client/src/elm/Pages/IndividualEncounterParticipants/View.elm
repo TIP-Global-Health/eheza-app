@@ -213,7 +213,7 @@ viewSearchForm language currentDate selectedHealthCenterId encounterType model d
                 [ class "register-actions" ]
                 [ button
                     [ class "ui primary button fluid"
-                    , onClick <| SetActivePage <| UserPage <| CreatePersonPage Nothing (IndividualEncounterOrigin AntenatalEncounter)
+                    , onClick <| SetActivePage <| UserPage <| CreatePersonPage Nothing (IndividualEncounterOrigin encounterType)
                     ]
                     [ text <| translate language Translate.RegisterNewParticipant ]
                 ]
