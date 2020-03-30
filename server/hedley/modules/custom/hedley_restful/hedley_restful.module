@@ -5,8 +5,64 @@
  * Code for the RESTful integration.
  */
 
-define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 6);
+define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 7);
 
+/**
+ * Nodes synced to all devices.
+ *
+ * The content types and their restful handler for nodes that
+ * we sync to all devices.
+ */
+const HEDLEY_RESTFUL_ALL_DEVICES = [
+  'catchment_area' => 'catchment_areas',
+  'clinic' => 'clinics',
+  'counseling_schedule' => 'counseling-schedule',
+  'counseling_topic' => 'counseling-topics',
+  'health_center' => 'health_centers',
+  'nurse' => 'nurses',
+  'participant_form' => 'participants-form',
+  'person' => 'people',
+  'pmtct_participant' => 'pmtct-participants',
+  'individual_participant' => 'individual-participants',
+  'prenatal_encounter' => 'prenatal-encounters',
+  'relationship' => 'relationships',
+  'session' => 'sessions',
+];
+
+/**
+ * Nodes synced to just some devices.
+ *
+ * The content types and their restful handlers for nodes that
+ * we sync to just some devices.
+ */
+const HEDLEY_RESTFUL_SHARDED = [
+  'attendance' => 'attendances',
+  'breast_exam' => 'breast-exams',
+  'counseling_session' => 'counseling-sessions',
+  'core_physical_exam' => 'core-physical-exams',
+  'danger_signs' => 'danger-signs',
+  'family_planning' => 'family-plannings',
+  'height' => 'heights',
+  'last_menstrual_period' => 'last-menstrual-periods',
+  'medical_history' => 'medical-histories',
+  'medication' => 'medications',
+  'muac' => 'muacs',
+  'nutrition' => 'nutritions',
+  'obstetrical_exam' => 'obstetrical-exams',
+  'obstetric_history' => 'obstetric-histories',
+  'obstetric_history_step2' => 'obstetric-histories-step2',
+  'participant_consent' => 'participants-consent',
+  'prenatal_family_planning' => 'prenatal-family-plannings',
+  'prenatal_nutrition' => 'prenatal-nutritions',
+  'resource' => 'resources',
+  'social_history' => 'social-histories',
+  'photo' => 'photos',
+  'prenatal_photo' => 'prenatal-photos',
+  'vitals' => 'vitals',
+  'weight' => 'weights',
+];
+
+// Make sure that some headers get set.
 if (!drupal_is_cli()) {
   header('Access-Control-Allow-Origin: *');
   header('Access-Control-Allow-Credentials: true');

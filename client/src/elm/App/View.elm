@@ -3,22 +3,35 @@ module App.View exposing (view)
 import App.Model exposing (..)
 import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
-import Backend.Person.Model exposing (ParticipantDirectoryOperation(..))
+import Backend.Person.Model exposing (ParticipantDirectoryOperation(..), RegistrationInitiator(..))
 import Browser
 import Config.View
 import Date
+import EverySet
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
+import Pages.Clinical.View
+import Pages.ClinicalProgressReport.View
 import Pages.Clinics.View
+import Pages.DemographicsReport.View
 import Pages.Device.View
+import Pages.IndividualEncounterParticipants.View
+import Pages.IndividualEncounterTypes.View
 import Pages.MyAccount.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.People.View
 import Pages.Person.View
 import Pages.PinCode.View
+import Pages.PregnancyOutcome.Model
+import Pages.PregnancyOutcome.View
+import Pages.PrenatalActivity.Model
+import Pages.PrenatalActivity.View
+import Pages.PrenatalEncounter.Model
+import Pages.PrenatalEncounter.View
+import Pages.PrenatalParticipant.View
 import Pages.Relationship.Model
 import Pages.Relationship.View
 import Pages.Session.Model
@@ -181,62 +194,129 @@ viewUserPage page model configured =
     in
     case getLoggedInData model of
         Just ( healthCenterId, loggedInModel ) ->
-            case page of
-                MyAccountPage ->
-                    Pages.MyAccount.View.view model.language loggedInModel.nurse
-                        |> oldPageWrapper model
+            let
+                selectedAuthorizedHealthCenter =
+                    Tuple.second loggedInModel.nurse
+                        |> .healthCenters
+                        |> EverySet.member healthCenterId
+            in
+            if selectedAuthorizedHealthCenter then
+                case page of
+                    MyAccountPage ->
+                        Pages.MyAccount.View.view model.language loggedInModel.nurse
+                            |> oldPageWrapper model
 
-                ClinicsPage clinicId ->
-                    Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) healthCenterId clinicId loggedInModel.clinicsPage model.indexedDb
-                        |> Html.map (MsgLoggedIn << MsgPageClinics)
-                        |> flexPageWrapper model
+                    ClinicalPage ->
+                        Pages.Clinical.View.view model.language
+                            |> flexPageWrapper model
 
-                CreatePersonPage relation ->
-                    Pages.Person.View.viewCreateEditForm model.language currentDate (CreatePerson relation) loggedInModel.createPersonPage model.indexedDb
-                        |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
-                        |> flexPageWrapper model
+                    ClinicsPage clinicId ->
+                        Pages.Clinics.View.view model.language currentDate (Tuple.second loggedInModel.nurse) healthCenterId clinicId loggedInModel.clinicsPage model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPageClinics)
+                            |> flexPageWrapper model
 
-                EditPersonPage id ->
-                    Pages.Person.View.viewCreateEditForm model.language currentDate (EditPerson id) loggedInModel.editPersonPage model.indexedDb
-                        |> Html.map (MsgLoggedIn << MsgPageEditPerson)
-                        |> flexPageWrapper model
+                    ClinicalProgressReportPage prenatalEncounterId ->
+                        Pages.ClinicalProgressReport.View.view model.language currentDate prenatalEncounterId model.indexedDb
+                            |> flexPageWrapper model
 
-                PersonPage id ->
-                    Pages.Person.View.view model.language currentDate id model.indexedDb
-                        |> flexPageWrapper model
+                    CreatePersonPage relation initiator ->
+                        Pages.Person.View.viewCreateEditForm model.language currentDate (CreatePerson relation) initiator loggedInModel.createPersonPage model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPageCreatePerson)
+                            |> flexPageWrapper model
 
-                PersonsPage relation ->
-                    Pages.People.View.view model.language currentDate relation loggedInModel.personsPage model.indexedDb
-                        |> Html.map (MsgLoggedIn << MsgPagePersons)
-                        |> flexPageWrapper model
+                    DemographicsReportPage prenatalEncounterId ->
+                        Pages.DemographicsReport.View.view model.language currentDate prenatalEncounterId model.indexedDb
+                            |> flexPageWrapper model
 
-                RelationshipPage id1 id2 ->
-                    let
-                        page_ =
-                            Dict.get ( id1, id2 ) loggedInModel.relationshipPages
-                                |> Maybe.withDefault Pages.Relationship.Model.emptyModel
-                    in
-                    Pages.Relationship.View.view model.language currentDate id1 id2 model.indexedDb page_
-                        |> Html.map (MsgLoggedIn << MsgPageRelationship id1 id2)
-                        |> flexPageWrapper model
+                    EditPersonPage id ->
+                        Pages.Person.View.viewCreateEditForm model.language currentDate (EditPerson id) ParticipantDirectoryOrigin loggedInModel.editPersonPage model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPageEditPerson)
+                            |> flexPageWrapper model
 
-                SessionPage sessionId subPage ->
-                    let
-                        sessionPages =
-                            Dict.get sessionId loggedInModel.sessionPages
-                                |> Maybe.withDefault Pages.Session.Model.emptyModel
-                    in
-                    Pages.Session.View.view
-                        model.language
-                        currentDate
-                        model.zscores
-                        (Tuple.second loggedInModel.nurse)
-                        sessionId
-                        subPage
-                        sessionPages
-                        model.indexedDb
-                        |> Html.map (MsgLoggedIn << MsgPageSession sessionId)
-                        |> oldPageWrapper model
+                    PersonPage id ->
+                        Pages.Person.View.view model.language currentDate id model.indexedDb
+                            |> flexPageWrapper model
+
+                    PersonsPage relation ->
+                        Pages.People.View.view model.language currentDate relation loggedInModel.personsPage model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPagePersons)
+                            |> flexPageWrapper model
+
+                    PrenatalParticipantPage id ->
+                        Pages.PrenatalParticipant.View.view model.language currentDate id model.indexedDb
+                            |> flexPageWrapper model
+
+                    IndividualEncounterParticipantsPage encounterType ->
+                        Pages.IndividualEncounterParticipants.View.view model.language currentDate healthCenterId encounterType loggedInModel.individualEncounterParticipantsPage model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPageIndividualEncounterParticipants)
+                            |> flexPageWrapper model
+
+                    RelationshipPage id1 id2 ->
+                        let
+                            page_ =
+                                Dict.get ( id1, id2 ) loggedInModel.relationshipPages
+                                    |> Maybe.withDefault Pages.Relationship.Model.emptyModel
+                        in
+                        Pages.Relationship.View.view model.language currentDate id1 id2 model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageRelationship id1 id2)
+                            |> flexPageWrapper model
+
+                    SessionPage sessionId subPage ->
+                        let
+                            sessionPages =
+                                Dict.get sessionId loggedInModel.sessionPages
+                                    |> Maybe.withDefault Pages.Session.Model.emptyModel
+                        in
+                        Pages.Session.View.view
+                            model.language
+                            currentDate
+                            model.zscores
+                            (Tuple.second loggedInModel.nurse)
+                            sessionId
+                            subPage
+                            sessionPages
+                            model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPageSession sessionId)
+                            |> oldPageWrapper model
+
+                    PrenatalEncounterPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.prenatalEncounterPages
+                                    |> Maybe.withDefault Pages.PrenatalEncounter.Model.emptyModel
+                        in
+                        Pages.PrenatalEncounter.View.view model.language currentDate id model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPagePrenatalEncounter id)
+                            |> flexPageWrapper model
+
+                    PrenatalActivityPage id activity ->
+                        let
+                            page_ =
+                                Dict.get ( id, activity ) loggedInModel.prenatalActivityPages
+                                    |> Maybe.withDefault Pages.PrenatalActivity.Model.emptyModel
+                        in
+                        Pages.PrenatalActivity.View.view model.language currentDate id activity model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPagePrenatalActivity id activity)
+                            |> flexPageWrapper model
+
+                    IndividualEncounterTypesPage ->
+                        Pages.IndividualEncounterTypes.View.view model.language currentDate model.indexedDb
+                            |> flexPageWrapper model
+
+                    PregnancyOutcomePage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.pregnancyOutcomePages
+                                    |> Maybe.withDefault Pages.PregnancyOutcome.Model.emptyModel
+                        in
+                        Pages.PregnancyOutcome.View.view model.language currentDate id model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPagePregnancyOutcome id)
+                            |> flexPageWrapper model
+
+            else
+                Pages.PinCode.View.view model.language model.activePage (Success loggedInModel.nurse) model.healthCenterId configured.pinCodePage model.indexedDb
+                    |> Html.map MsgPagePinCode
+                    |> flexPageWrapper model
 
         Nothing ->
             Pages.PinCode.View.view model.language model.activePage (RemoteData.map .nurse configured.loggedIn) model.healthCenterId configured.pinCodePage model.indexedDb

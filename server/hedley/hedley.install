@@ -547,21 +547,18 @@ function hedley_update_7022() {
 }
 
 /**
- * Enable smtp, and set it up.
+ * Enable hedley_view_export.
  */
 function hedley_update_7023() {
-  module_enable(['smtp']);
+  module_enable(['advancedqueue', 'hedley_view_export']);
 
-  // SMTP settings.
-  variable_set('smtp_host', 'smtp.mandrillapp.com');
+  user_role_grant_permissions(variable_get('user_admin_role'), ['hedley export views']);
+}
+
+/**
+ * Enable smtp.
+ */
+function hedley_update_7024() {
+  module_enable(['smtp']);
   variable_set('smtp_on', TRUE);
-  // The password is also determining which mandrill api is used. Using the
-  // real one on live pantheon, and the general test api otherwise.
-  // See https://mandrillapp.com/settings.
-  $live = defined('PANTHEON_ENVIRONMENT') && PANTHEON_ENVIRONMENT == 'live';
-  $password = $live ? '5qhZ-oVcpBNL8X4elsJJnA' : 'wBiah7jHNHabzHybnidsMg';
-  variable_set('smtp_password', $password);
-  variable_set('smtp_port', '587');
-  variable_set('smtp_username', 'brice@gizra.com');
-  variable_set('smtp_from', 'system@***REMOVED***');
 }
