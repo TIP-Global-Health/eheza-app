@@ -487,6 +487,15 @@ viewCreateEditForm language currentDate operation initiator model db =
 
                 IndividualEncounterOrigin encounterType ->
                     case encounterType of
+                        AcuteIllnessEncounter ->
+                            -- Todo
+                            { goBackPage = PinCodePage
+                            , expectedAge = ExpectAdultOrChild
+                            , expectedGender = ExpectMaleOrFemale
+                            , birthDateSelectorFrom = Date.add Years -90 today
+                            , birthDateSelectorTo = today
+                            }
+
                         AntenatalEncounter ->
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage AntenatalEncounter)
                             , expectedAge = ExpectAdult

@@ -7,6 +7,9 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 encoudeIndividualEncounterTypeAsString : IndividualEncounterType -> String
 encoudeIndividualEncounterTypeAsString encounterType =
     case encounterType of
+        AcuteIllnessEncounter ->
+            "acute-illness"
+
         AntenatalEncounter ->
             "antenatal"
 
@@ -20,6 +23,9 @@ encoudeIndividualEncounterTypeAsString encounterType =
 decodeIndividualEncounterTypeFromString : String -> Maybe IndividualEncounterType
 decodeIndividualEncounterTypeFromString string =
     case string of
+        "acute-illness" ->
+            Just AcuteIllnessEncounter
+
         "antenatal" ->
             Just AntenatalEncounter
 

@@ -72,6 +72,9 @@ pageToFragment current =
 
                                 IndividualEncounterOrigin encounterType ->
                                     case encounterType of
+                                        AcuteIllnessEncounter ->
+                                            "acute-illness"
+
                                         AntenatalEncounter ->
                                             "antenatal"
 

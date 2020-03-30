@@ -2150,8 +2150,13 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        IndividualEncounterFirstVisit type_ ->
-            case type_ of
+        IndividualEncounterFirstVisit encounterType ->
+            case encounterType of
+                AcuteIllnessEncounter ->
+                    { english = "First Acute Illness Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
                 AntenatalEncounter ->
                     { english = "First Antenatal Encounter"
                     , kinyarwanda = Nothing
@@ -2167,8 +2172,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        IndividualEncounterLabel type_ ->
-            case type_ of
+        IndividualEncounterLabel encounterType ->
+            case encounterType of
+                AcuteIllnessEncounter ->
+                    { english = "Acute Illness Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
                 AntenatalEncounter ->
                     { english = "Antenatal Encounter"
                     , kinyarwanda = Nothing
@@ -2184,8 +2194,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        IndividualEncounterSelectVisit type_ ->
-            case type_ of
+        IndividualEncounterSelectVisit encounterType ->
+            case encounterType of
+                AcuteIllnessEncounter ->
+                    { english = "Select Acute Illness Visit"
+                    , kinyarwanda = Nothing
+                    }
+
                 AntenatalEncounter ->
                     { english = "Select Antenatal Visit"
                     , kinyarwanda = Nothing
@@ -2201,8 +2216,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        IndividualEncounterSubsequentVisit type_ ->
-            case type_ of
+        IndividualEncounterSubsequentVisit encounterType ->
+            case encounterType of
+                AcuteIllnessEncounter ->
+                    { english = "Subsequent Acute Illness Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
                 AntenatalEncounter ->
                     { english = "Subsequent Antenatal Encounter"
                     , kinyarwanda = Nothing
@@ -2218,8 +2238,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-        IndividualEncounterType type_ ->
-            case type_ of
+        IndividualEncounterType encounterType ->
+            case encounterType of
+                AcuteIllnessEncounter ->
+                    { english = "Acute Illness"
+                    , kinyarwanda = Nothing
+                    }
+
                 AntenatalEncounter ->
                     { english = "Antenatal"
                     , kinyarwanda = Nothing
@@ -4138,6 +4163,11 @@ translateActivePage page =
 
                 IndividualEncounterParticipantsPage encounterType ->
                     case encounterType of
+                        AcuteIllnessEncounter ->
+                            { english = "Acute Illness Participants"
+                            , kinyarwanda = Nothing
+                            }
+
                         AntenatalEncounter ->
                             { english = "Antenatal Participants"
                             , kinyarwanda = Nothing

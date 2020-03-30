@@ -143,6 +143,9 @@ viewSearchForm language currentDate selectedHealthCenterId encounterType model d
             -- Show only participants that belong to selected health center
             (person.healthCenterId == Just selectedHealthCenterId)
                 && (case encounterType of
+                        AcuteIllnessEncounter ->
+                            True
+
                         AntenatalEncounter ->
                             isPersonAFertileWoman currentDate person
 
@@ -226,6 +229,10 @@ viewParticipant language currentDate encounterType db id person =
     let
         action =
             case encounterType of
+                AcuteIllnessEncounter ->
+                    -- Todo
+                    []
+
                 AntenatalEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage id ]
 

@@ -54,6 +54,7 @@ viewContent language currentDate db =
                 ]
     in
     [ p [] [ text <| translate language Translate.SelectEncounterType ++ ":" ]
+    , encounterButton AcuteIllnessEncounter
     , encounterButton AntenatalEncounter
     , encounterButton NutritionEncounter
     ]

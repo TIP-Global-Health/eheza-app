@@ -1008,6 +1008,10 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
 
                                             IndividualEncounterOrigin encounterType ->
                                                 case encounterType of
+                                                    AcuteIllnessEncounter ->
+                                                        -- Todo:
+                                                        IndividualEncounterTypesPage
+
                                                     AntenatalEncounter ->
                                                         PrenatalParticipantPage personId
 
@@ -1091,6 +1095,10 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                     RemoteData.map
                         (\( sessionId, _ ) ->
                             case encounterType of
+                                AcuteIllnessEncounter ->
+                                    -- Todo
+                                    []
+
                                 AntenatalEncounter ->
                                     [ Backend.PrenatalEncounter.Model.PrenatalEncounter sessionId currentDate Nothing
                                         |> Backend.Model.PostPrenatalEncounter
