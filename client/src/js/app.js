@@ -50,12 +50,10 @@ setInterval(reportQuota, minutesToMillis(1));
 // Kick off a sync. If we're offline, the browser's sync mechanism will wait
 // until we're online.
 function trySyncing() {
-  var healthCenterId = window.localStorage.getItem('healthCenterId');
-
   navigator.serviceWorker.ready.then(function(reg) {
-    return reg.sync.register(JSON.stringify({msg: 'sync', uuid: healthCenterId})).catch(function() {
+    return reg.sync.register('sync').catch(function() {
       // Try a message instead.
-      reg.active.postMessage({msg: 'sync', uuid: healthCenterId});
+      reg.active.postMessage('sync');
     });
   });
 }

@@ -195,75 +195,6 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       $output = array_merge($output, $rendered_items);
     }
 
-    // Check if we have HC UUID and then check if we need to send statistics for
-    // the Dashboard of that HC.
-    if (!empty($request['health_center_uuid'])) {
-      // If we have HC then check the cache hash ID.
-      if ($health_center_nid = hedley_restful_resolve_nid_for_uuid($request['health_center_uuid'])) {
-        $cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_nid);
-
-        $calculate_stats = FALSE;
-        // Check if we need to calculate the statistics for this HC.
-        if (!empty($cache_data) && !empty($request['stats_cache_hash'])) {
-          if ($cache_data != $request['stats_cache_hash']) {
-            // Cache hash from the frontend doesn't match the one we have in the
-            // backend, this means that stats has been changed because it's only
-            // reset when a measurement has changed.
-            $calculate_stats = TRUE;
-          }
-        }
-        else {
-          // We either don't have cache hash yet or this frontend doesn't have
-          // it, in any case, we will calculate the statistics and send it to
-          // the frontend.
-          // We don't cache here because each statistic has its own cache inside
-          // the function.
-          $calculate_stats = TRUE;
-        }
-
-        if ($calculate_stats) {
-          // First check if the HC has "FBF" clinics, only those have stats for
-          // the dashboards and we shouldn't send any stats from a HC without
-          // FBF clinics.
-          // Get all clinics of type 'FBF' for the HC.
-          $fbf_clinic = hedley_health_center_get_clinics_by_health_center($health_center_nid, 'fbf', 1);
-          if (empty($fbf_clinic)) {
-            // We send empty stats so we don't upset the decoder in elm.
-            $stats = [
-              'type' => 'statistics',
-              // UUID of the health center.
-              'uuid' => $request['health_center_uuid'],
-              'case_management' => [],
-              'children_beneficiaries' => [],
-              'completed_program' => [],
-              'completed_program_count' => 0,
-              'good_nutrition' => NULL,
-              'family_planning' => [],
-              'malnourished_beneficiaries' => [],
-              'missed_sessions' => [],
-              'missed_sessions_count' => 0,
-              'total_beneficiaries' => NULL,
-              'total_beneficiaries_incidence' => NULL,
-              'total_encounters' => NULL,
-            ];
-          }
-          else {
-            // Calculate the stats.
-            $stats = hedley_stats_calculate_stats_for_health_center($health_center_nid);
-            $stats['uuid'] = $request['health_center_uuid'];
-
-            $stats['stats_cache_hash'] = md5(serialize($stats));
-
-            // Store in cache only the hash, inner statistics has their own
-            // cache.
-            hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_nid, NULL, $stats['stats_cache_hash']);
-          }
-
-          $output[] = $stats;
-        }
-      }
-    }
-
     return [
       'base_revision' => $base,
       'last_timestamp' => $last_timestamp,
@@ -385,6 +316,66 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       $output = array_merge($output, $rendered_items);
     }
 
+    // Check if we have HC UUID and then check if we need to send statistics for
+    // the Dashboard of that HC.
+    if (!empty($uuid)) {
+      // If we have HC NID then check the cache hash ID.
+      if ($health_center_nid = hedley_restful_resolve_nid_for_uuid($uuid)) {
+        $cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_nid);
+
+        $calculate_stats = FALSE;
+        // Check if we need to calculate the statistics for this HC.
+        if (!empty($cache_data) && !empty($request['stats_cache_hash'])) {
+          if ($cache_data != $request['stats_cache_hash']) {
+            // Cache hash from the frontend doesn't match the one we have in the
+            // backend, this means that stats has been changed because it's only
+            // reset when a measurement has changed.
+            $calculate_stats = TRUE;
+          }
+        }
+        else {
+          // We either don't have cache hash yet or this frontend doesn't have
+          // it, in any case, we will calculate the statistics and send it to
+          // the frontend.
+          // We don't cache here because each statistic has its own cache inside
+          // the function.
+          $calculate_stats = TRUE;
+
+          // In case the hash is not set at all but we have cached data, this
+          // means the worker has calculated the stats but we still didn't send
+          // it to the frontend, therefore we don't need to create another
+          // worker.
+          if (!empty($cache_data) && !isset($request['stats_cache_hash'])) {
+            $calculate_stats = FALSE;
+          }
+        }
+
+        if ($calculate_stats) {
+          // We need to create a worker which will calculate the data, if the
+          // worker already exists, the general function will know to not create
+          // a duplicated worker.
+          // The cache is set in the calculating function itself.
+          hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $health_center_nid, [
+            'health_center_nid' => $health_center_nid,
+          ]);
+        }
+
+        // Here we check if the output is empty OR that is less than a full
+        // output response (Meaning sync is done), this means the HC has
+        // finished syncing all data, now we have to send the stats which
+        // should be already calculated by the worker.
+        if ((!empty($cache_data)) && (empty($output) || count($output) < self::HEDLEY_RESTFUL_DB_QUERY_RANGE)) {
+          // This means the stats already have been calculated and cached.
+          // The cache is set in the calculating function itself.
+          $stats = hedley_stats_calculate_stats_for_health_center($health_center_nid);
+          $stats['uuid'] = $uuid;
+          $stats['stats_cache_hash'] = md5(serialize($stats));
+
+          $output[] = $stats;
+        }
+      }
+    }
+
     return [
       'base_revision' => $base,
       'last_timestamp' => $last_timestamp,
@@ -491,8 +482,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
             break;
         }
       }
-    }
-    catch (Exception $e) {
+    } catch (Exception $e) {
       $transaction->rollback();
 
       $m1 = '[MAIN] - ';
