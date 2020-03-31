@@ -573,16 +573,18 @@
                             return table.where({
                                 type: 'pmtct_participant',
                                 person: childId
-                            }).first().then(function (participation) {
-                                if (participation) {
-                                    criteria.clinic = participation.clinic;
+                            }).toArray().then(function (participations) {
+                                var clinics = [];
+                                participations.forEach(function(participation) {
+                                  clinics.push(['session', participation.clinic]);
+                                })
 
-                                    query = table.where(criteria).and(function (session) {
-                                        return expectedOnDate(participation, session.scheduled_date.value)
-                                    });
+                                if (clinics.length > 0) {
+                                    query = table.where('[type+clinic]').anyOf(clinics);
+                                    console.log(query.toArray());
 
                                     countQuery = query.clone();
-
+                                    console.log(countQuery.count());
                                     return Promise.resolve();
                                 } else {
                                     return Promise.reject('Could not find participation for child: ' + childId);
@@ -593,34 +595,32 @@
                 }
 
                 return modifyQuery.then(function () {
-                    return countQuery.count().catch(databaseError).then(function (count) {
-                        if (offset > 0) {
-                            query.offset(offset);
-                        }
+                    if (offset > 0) {
+                        query.offset(offset);
+                    }
 
-                        if (range > 0) {
-                            query.limit(range);
-                        }
+                    if (range > 0) {
+                        query.limit(range);
+                    }
 
-                        var getNodes = sortBy ? query.sortBy(sortBy) : query.toArray();
+                    var getNodes = sortBy ? query.sortBy(sortBy) : query.toArray();
 
-                        return getNodes.catch(databaseError).then(function (nodes) {
-                            var body = JSON.stringify({
-                                offset: offset,
-                                count: count,
-                                data: nodes
-                            });
-
-                            var response = new Response(body, {
-                                status: 200,
-                                statusText: 'OK',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                }
-                            });
-
-                            return Promise.resolve(response);
+                    return getNodes.catch(databaseError).then(function (nodes) {
+                        var body = JSON.stringify({
+                            offset: offset,
+                            count: nodes.length,
+                            data: nodes
                         });
+
+                        var response = new Response(body, {
+                            status: 200,
+                            statusText: 'OK',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        return Promise.resolve(response);
                     });
                 });
             });
