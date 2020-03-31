@@ -32,7 +32,7 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
                                     ]
                               )
                             ]
-                            |> sw.patchAny nutritionEncounterEndpoint encounterId
+                            |> sw.patchAny acuteIllnessEncounterEndpoint encounterId
                             |> withoutDecoder
                             |> toCmd (RemoteData.fromResult >> HandleClosedAcuteIllnessEncounter)
                         )

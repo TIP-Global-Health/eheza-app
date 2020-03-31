@@ -178,7 +178,9 @@ emptyModelIndexedDb =
 
 type MsgIndexedDb
     = -- Messages which fetch various kinds of data.
-      FetchChildMeasurements PersonId
+      FetchAcuteIllnessEncounter AcuteIllnessEncounterId
+    | FetchAcuteIllnessEncountersForParticipant IndividualEncounterParticipantId
+    | FetchChildMeasurements PersonId
     | FetchChildrenMeasurements (List PersonId)
     | FetchClinics
       -- For `FetchEditableSession`, you'll also need to send the messages
@@ -212,6 +214,8 @@ type MsgIndexedDb
     | FetchSessionsByClinic ClinicId
     | FetchSyncData
       -- Messages which handle responses to data
+    | HandleFetchedAcuteIllnessEncounter AcuteIllnessEncounterId (WebData AcuteIllnessEncounter)
+    | HandleFetchedAcuteIllnessEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
     | HandleFetchedChildMeasurements PersonId (WebData ChildMeasurementList)
     | HandleFetchedChildrenMeasurements (WebData (Dict PersonId ChildMeasurementList))
     | HandleFetchedClinics (WebData (Dict ClinicId Clinic))
@@ -247,6 +251,7 @@ type MsgIndexedDb
     | PostIndividualSession IndividualEncounterParticipant
     | PostPrenatalEncounter PrenatalEncounter
     | PostNutritionEncounter NutritionEncounter
+    | PostAcuteIllnessEncounter AcuteIllnessEncounter
       -- Messages which handle responses to mutating data
     | HandlePostedPerson (Maybe PersonId) RegistrationInitiator (WebData PersonId)
     | HandlePatchedPerson PersonId (WebData Person)
@@ -256,6 +261,7 @@ type MsgIndexedDb
     | HandlePostedIndividualSession PersonId IndividualEncounterType (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
     | HandlePostedPrenatalEncounter IndividualEncounterParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))
     | HandlePostedNutritionEncounter IndividualEncounterParticipantId (WebData ( NutritionEncounterId, NutritionEncounter ))
+    | HandlePostedAcuteIllnessEncounter IndividualEncounterParticipantId (WebData ( AcuteIllnessEncounterId, AcuteIllnessEncounter ))
       -- Process some revisions we've received from the backend. In some cases,
       -- we can update our in-memory structures appropriately. In other cases, we
       -- can set them to `NotAsked` and let the "fetch" mechanism re-fetch them.
@@ -269,6 +275,7 @@ type MsgIndexedDb
     | MsgSession SessionId Backend.Session.Model.Msg
     | MsgPrenatalEncounter PrenatalEncounterId Backend.PrenatalEncounter.Model.Msg
     | MsgNutritionEncounter NutritionEncounterId Backend.NutritionEncounter.Model.Msg
+    | MsgAcuteIllnessEncounter AcuteIllnessEncounterId Backend.AcuteIllnessEncounter.Model.Msg
     | MsgIndividualSession IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
 
 

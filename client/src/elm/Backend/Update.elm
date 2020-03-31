@@ -4,6 +4,8 @@ import Activity.Model exposing (SummaryByActivity, SummaryByParticipant)
 import Activity.Utils exposing (getAllChildActivities, getAllMotherActivities, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
 import App.Model
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model
+import Backend.AcuteIllnessEncounter.Update
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
@@ -358,6 +360,19 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , []
             )
 
+        FetchAcuteIllnessEncountersForParticipant id ->
+            ( { model | acuteIllnessEncountersByParticipant = Dict.insert id Loading model.acuteIllnessEncountersByParticipant }
+            , sw.select acuteIllnessEncounterEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedAcuteIllnessEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedAcuteIllnessEncountersForParticipant id data ->
+            ( { model | acuteIllnessEncountersByParticipant = Dict.insert id data model.acuteIllnessEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
         FetchPrenatalMeasurements id ->
             ( { model | prenatalMeasurements = Dict.insert id Loading model.prenatalMeasurements }
             , sw.get prenatalMeasurementsEndpoint id
@@ -609,6 +624,19 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , []
             )
 
+        FetchAcuteIllnessEncounter id ->
+            ( { model | acuteIllnessEncounters = Dict.insert id Loading model.acuteIllnessEncounters }
+            , sw.get acuteIllnessEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedAcuteIllnessEncounter id)
+            , []
+            )
+
+        HandleFetchedAcuteIllnessEncounter id data ->
+            ( { model | acuteIllnessEncounters = Dict.insert id data model.acuteIllnessEncounters }
+            , Cmd.none
+            , []
+            )
+
         FetchIndividualEncounterParticipant id ->
             ( { model | individualParticipants = Dict.insert id Loading model.individualParticipants }
             , sw.get individualEncounterParticipantEndpoint id
@@ -804,6 +832,25 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             in
             ( { model | nutritionEncounterRequests = Dict.insert encounterId subModel model.nutritionEncounterRequests }
             , Cmd.map (MsgNutritionEncounter encounterId) subCmd
+            , []
+            )
+
+        MsgAcuteIllnessEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.acuteIllnessEncounters
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.acuteIllnessEncounterRequests
+                        |> Maybe.withDefault Backend.AcuteIllnessEncounter.Model.emptyModel
+
+                ( subModel, subCmd ) =
+                    Backend.AcuteIllnessEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
+            in
+            ( { model | acuteIllnessEncounterRequests = Dict.insert encounterId subModel model.acuteIllnessEncounterRequests }
+            , Cmd.map (MsgAcuteIllnessEncounter encounterId) subCmd
             , []
             )
 
@@ -1157,6 +1204,27 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                     [ App.Model.SetActivePage <|
                         UserPage <|
                             Pages.Page.NutritionEncounterPage nutritionEncounterId
+                    ]
+                )
+                data
+                |> RemoteData.withDefault []
+            )
+
+        PostAcuteIllnessEncounter acuteIllnessEncounter ->
+            ( { model | postAcuteIllnessEncounter = Dict.insert acuteIllnessEncounter.participant Loading model.postAcuteIllnessEncounter }
+            , sw.post acuteIllnessEncounterEndpoint acuteIllnessEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedAcuteIllnessEncounter acuteIllnessEncounter.participant)
+            , []
+            )
+
+        HandlePostedAcuteIllnessEncounter participantId data ->
+            ( { model | postAcuteIllnessEncounter = Dict.insert participantId data model.postAcuteIllnessEncounter }
+            , Cmd.none
+            , RemoteData.map
+                (\( acuteIllnessEncounterId, _ ) ->
+                    [-- App.Model.SetActivePage <|
+                     --     UserPage <|
+                     --         Pages.Page.AcuteIllnessEncounterPage acuteIllnessEncounterId
                     ]
                 )
                 data
