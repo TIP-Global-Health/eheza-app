@@ -18,6 +18,7 @@ in the UI.
 -}
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, EveryCounselingSchedule)
 import Backend.Entities exposing (..)
@@ -78,6 +79,7 @@ type alias ModelIndexedDb =
     , sessionRequests : Dict SessionId Backend.Session.Model.Model
     , prenatalEncounterRequests : Dict PrenatalEncounterId Backend.PrenatalEncounter.Model.Model
     , nutritionEncounterRequests : Dict NutritionEncounterId Backend.NutritionEncounter.Model.Model
+    , acuteIllnessEncounterRequests : Dict AcuteIllnessEncounterId Backend.AcuteIllnessEncounter.Model.Model
     , individualSessionRequests : Dict IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Model
 
     -- We provide a mechanism for loading the children and mothers expected
@@ -98,12 +100,14 @@ type alias ModelIndexedDb =
     , people : Dict PersonId (WebData Person)
     , prenatalEncounters : Dict PrenatalEncounterId (WebData PrenatalEncounter)
     , nutritionEncounters : Dict NutritionEncounterId (WebData NutritionEncounter)
+    , acuteIllnessEncounters : Dict AcuteIllnessEncounterId (WebData AcuteIllnessEncounter)
     , individualParticipants : Dict IndividualEncounterParticipantId (WebData IndividualEncounterParticipant)
 
     -- Cache things organized in certain ways.
     , individualParticipantsByPerson : Dict PersonId (WebData (Dict IndividualEncounterParticipantId IndividualEncounterParticipant))
     , prenatalEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict PrenatalEncounterId PrenatalEncounter))
     , nutritionEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict NutritionEncounterId NutritionEncounter))
+    , acuteIllnessEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
     , prenatalMeasurements : Dict PrenatalEncounterId (WebData PrenatalMeasurements)
     , nutritionMeasurements : Dict NutritionEncounterId (WebData NutritionMeasurements)
 
@@ -122,6 +126,7 @@ type alias ModelIndexedDb =
     , postIndividualSession : Dict PersonId (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
     , postPrenatalEncounter : Dict IndividualEncounterParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))
     , postNutritionEncounter : Dict IndividualEncounterParticipantId (WebData ( NutritionEncounterId, NutritionEncounter ))
+    , postAcuteIllnessEncounter : Dict IndividualEncounterParticipantId (WebData ( AcuteIllnessEncounterId, AcuteIllnessEncounter ))
     }
 
 
@@ -138,6 +143,8 @@ emptyModelIndexedDb =
     , motherMeasurements = Dict.empty
     , nutritionEncounters = Dict.empty
     , nutritionEncountersByParticipant = Dict.empty
+    , acuteIllnessEncounters = Dict.empty
+    , acuteIllnessEncountersByParticipant = Dict.empty
     , nutritionMeasurements = Dict.empty
     , participantForms = NotAsked
     , participantsByPerson = Dict.empty
@@ -148,11 +155,13 @@ emptyModelIndexedDb =
     , postPmtctParticipant = Dict.empty
     , postIndividualSession = Dict.empty
     , postPrenatalEncounter = Dict.empty
+    , postAcuteIllnessEncounter = Dict.empty
     , postRelationship = Dict.empty
     , postSession = NotAsked
     , prenatalEncounters = Dict.empty
     , prenatalEncounterRequests = Dict.empty
     , nutritionEncounterRequests = Dict.empty
+    , acuteIllnessEncounterRequests = Dict.empty
     , individualSessionRequests = Dict.empty
     , individualParticipants = Dict.empty
     , individualParticipantsByPerson = Dict.empty
