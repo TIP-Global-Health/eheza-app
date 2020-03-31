@@ -3555,7 +3555,7 @@ translationSet trans =
 
         ServiceWorkerInstalled ->
             { english = "A new version of the app has been downloaded."
-            , kinyarwanda = Just "Gufungura verisio nshyashya."
+            , kinyarwanda = Just "Gufungura verisio nshyashya byarangiye."
             }
 
         ServiceWorkerSkipWaiting ->
