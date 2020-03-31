@@ -384,18 +384,36 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   public function createPMTCT($child_id, $mother_id, $clinic_id, $timestamp = REQUEST_TIME) {
     $date = date('Y-m-d', $timestamp);
 
-    $node = $this->drupalCreateNode(['type' => 'pmtct_participant']);
+    // We have to add the fields before saving because we have insert hooks that
+    // are looking for those values.
+    $options = [
+      'type' => 'pmtct_participant',
+      'field_adult' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $mother_id],
+        ],
+      ],
+      'field_person' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $child_id],
+        ],
+      ],
+      'field_clinic' => [
+        LANGUAGE_NONE => [
+          ['target_id' => $clinic_id],
+        ],
+      ],
+      'field_expected' => [
+        LANGUAGE_NONE => [
+          [
+            'value' => $date,
+            'value2' => $date,
+          ],
+        ],
+      ],
+    ];
 
-    $wrapper = entity_metadata_wrapper('node', $node);
-    $wrapper->field_adult->set($mother_id);
-    $wrapper->field_person->set($child_id);
-    $wrapper->field_clinic->set($clinic_id);
-    $wrapper->field_expected->set([
-      'value' => $date,
-      'value2' => $date,
-    ]);
-
-    $wrapper->save();
+    $node = $this->drupalCreateNode($options);
 
     return $node->nid;
   }
