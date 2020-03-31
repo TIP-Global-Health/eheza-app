@@ -115,7 +115,7 @@ function hedley_stats_advanced_queue_info() {
       'hedley',
     ],
     // The number of seconds to retry after.
-    'retry after' => 60,
+    'retry after' => 120,
     // The maximum number of attempts after a failure.
     'max attempts' => 3,
   ];
@@ -124,18 +124,16 @@ function hedley_stats_advanced_queue_info() {
 }
 
 /**
- * Advanced queue worker; Calculate stats for all dashboards.
+ * Advanced queue worker; Calculate stats for a dashboards.
  *
- * @param $item
+ * @param $queue_item
  *   The item object to process.
- * @param $end_time
- *   (Optional) The time this process should end.
  *
- * @return
- *   Boolean indicating if the process succeeded, or an array with
+ * @return array
+ *   Array indicating if the process succeeded, or an array with
  *   "status" and "result" keys.
  */
-function hedley_stats_calculate_stats_worker($queue_item, $end_time = FALSE) {
+function hedley_stats_calculate_stats_worker($queue_item) {
   if (!$health_center_nid = $queue_item->data['health_center_nid']) {
     return [
       'status' => ADVANCEDQUEUE_STATUS_FAILURE,
@@ -230,7 +228,10 @@ function hedley_stats_calculate_stats_for_health_center($health_center_nid) {
     return $stats;
   }
   catch (Exception $exception) {
-    return $exception->getMessage();
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE_RETRY,
+      'result' => $exception->getMessage(),
+    ];
   }
 }
 

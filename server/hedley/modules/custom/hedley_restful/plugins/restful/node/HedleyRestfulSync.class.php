@@ -364,7 +364,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
         // output response (Meaning sync is done), this means the HC has
         // finished syncing all data, now we have to send the stats which
         // should be already calculated by the worker.
-        if ((!empty($cache_data)) && (empty($output) || count($output) < self::HEDLEY_RESTFUL_DB_QUERY_RANGE)) {
+        if (!empty($cache_data) && (empty($output) || count($output) < self::HEDLEY_RESTFUL_DB_QUERY_RANGE)) {
           // This means the stats already have been calculated and cached.
           // The cache is set in the calculating function itself.
           $stats = hedley_stats_calculate_stats_for_health_center($health_center_nid);
