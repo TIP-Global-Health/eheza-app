@@ -364,7 +364,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       if (!empty($cache_data) && (empty($output) || count($output) < self::HEDLEY_RESTFUL_DB_QUERY_RANGE)) {
         // This means the stats already have been calculated and cached.
         // The cache is set in the calculating function itself.
-        if ($cache_data != $request['stats_cache_hash']) {
+        if (!isset($request['stats_cache_hash']) || (isset($request['stats_cache_hash']) && $cache_data != $request['stats_cache_hash'])) {
           $stats = hedley_stats_calculate_stats_for_health_center($health_center_nid);
 
           $output[] = $stats;
