@@ -68,7 +68,7 @@ view language currentDate id db model =
         -- content =
         --     viewWebData language (viewContent language currentDate id model) identity personWithMeasurements
     in
-    div [ class "page-acuteIllness-encounter" ] <|
+    div [ class "page-encounter acute-illness" ] <|
         [ header
 
         -- , content

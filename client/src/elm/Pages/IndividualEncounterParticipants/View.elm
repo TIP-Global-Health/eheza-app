@@ -39,7 +39,7 @@ view language currentDate healthCenterId encounterType model db =
             translate language Translate.SearchExistingParticipants
     in
     div
-        [ class "wrap wrap-alt-2 page-prenatal-participants" ]
+        [ class "wrap wrap-alt-2 page-participants" ]
         [ viewHeader title
         , viewBody language currentDate healthCenterId encounterType model db
         ]

@@ -29,7 +29,7 @@ view language currentDate id db =
                 |> Maybe.withDefault NotAsked
     in
     div
-        [ class "wrap wrap-alt-2 page-prenatal-participant" ]
+        [ class "wrap wrap-alt-2 page-participant prenatal" ]
         [ viewHeader language id
         , div
             [ class "ui full segment" ]

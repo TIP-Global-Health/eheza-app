@@ -62,7 +62,7 @@ view language currentDate id activity db model =
                 |> RemoteData.andMap person
                 |> RemoteData.andMap measurements
     in
-    div [ class "page-nutrition-activity" ] <|
+    div [ class "page-activity nutrition" ] <|
         [ viewHeader language id activity
         , viewWebData language (viewContent language currentDate id activity model) identity personWithMeasurements
         ]

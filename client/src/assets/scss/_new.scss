@@ -332,11 +332,9 @@ div.page-person {
   }
 }
 
-//Common for Prenatal Encounter and Prenatal Activity pages
-div.page-prenatal-activity,
-div.page-nutrition-activity,
-div.page-prenatal-encounter,
-div.page-nutrition-encounter,
+//Common for Encounter, Activity and Pregnancy outcome pages
+div.page-encounter,
+div.page-activity,
 div.page-pregnancy-outcome {
     display: flex;
     flex-direction: column;
@@ -381,8 +379,8 @@ div.page-pregnancy-outcome {
 
 }
 
-div.page-nutrition-activity,
-div.page-prenatal-activity {
+//Common for Activity pages
+div.page-activity {
 
     .ui.task.segment {
 
@@ -416,7 +414,7 @@ div.page-prenatal-activity {
 }
 
 // Prenatal Encounter page
-div.page-prenatal-encounter {
+div.page-encounter.prenatal {
 
     .ui.full.segment {
 
@@ -454,7 +452,7 @@ div.page-prenatal-encounter {
 }
 
 // Prenatal Activity page
-div.page-prenatal-activity {
+div.page-activity.prenatal {
 
     .ui.full.segment {
 
@@ -1275,7 +1273,7 @@ div.page-encounter-types {
     }
 }
 
-div.page-prenatal-participants {
+div.page-participants {
 
   div.search-wrapper {
       flex: 1 1 auto;
@@ -1301,7 +1299,7 @@ div.page-prenatal-participants {
   }
 }
 
-div.page-prenatal-participant {
+div.page-participant {
     padding-bottom: 35px;
 
     p {

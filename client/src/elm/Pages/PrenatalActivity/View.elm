@@ -54,7 +54,7 @@ view language currentDate id activity db model =
         content =
             viewWebData language (viewContent language currentDate activity model) identity data
     in
-    div [ class "page-prenatal-activity" ] <|
+    div [ class "page-activity prenatal" ] <|
         [ viewHeader language id activity
         , content
         ]

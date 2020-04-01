@@ -23,16 +23,16 @@ import Utils.WebData exposing (viewWebData)
 view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
 view language currentDate id db =
     let
-        prenatalSessions =
+        sessions =
             Dict.get id db.individualParticipantsByPerson
                 |> Maybe.withDefault NotAsked
     in
     div
-        [ class "wrap wrap-alt-2 page-prenatal-participant" ]
+        [ class "wrap wrap-alt-2 page-participant nutrition" ]
         [ viewHeader language id
         , div
             [ class "ui full segment" ]
-            [ viewWebData language (viewNutritionActions language currentDate id db) identity prenatalSessions
+            [ viewWebData language (viewActions language currentDate id db) identity sessions
             ]
         ]
 
@@ -61,12 +61,12 @@ viewHeader language id =
         ]
 
 
-viewNutritionActions : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
-viewNutritionActions language currentDate id db nutritionSessions =
+viewActions : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
+viewActions language currentDate id db sessions =
     let
         -- Person nutrition session.
         maybeSessionId =
-            nutritionSessions
+            sessions
                 |> Dict.toList
                 |> List.head
                 |> Maybe.map Tuple.first
