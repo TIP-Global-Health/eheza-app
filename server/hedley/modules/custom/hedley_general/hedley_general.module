@@ -89,3 +89,38 @@ function hedley_general_add_task_to_advanced_queue($queue_machine_name, array $t
 
   return $item_id;
 }
+
+/**
+ * Get the AQ Item ID by name.
+ *
+ * @param string $item_title
+ *   The unique AQ Item name.
+ * @param bool $all_status
+ *   Determine if AQ of any status should be retrieved. Defaults to FALSE.
+ *
+ * @return bool|int
+ *   FALSE if no Advanced queue Item is found, otherwise its ID.
+ */
+function hedley_general_get_aq_item_by_title($item_title, $all_status = FALSE) {
+  $status = [
+    ADVANCEDQUEUE_STATUS_QUEUED,
+    ADVANCEDQUEUE_STATUS_FAILURE_RETRY,
+  ];
+
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'advancedqueue_item')
+    ->propertyCondition('title', $item_title);
+
+  if (!$all_status) {
+    $query->propertyCondition('status', $status, 'IN');
+  }
+
+  $result = $query
+    // Get the latest one.
+    ->propertyOrderBy('item_id', 'DESC')
+    ->range(0, 1)
+    ->execute();
+
+  return !empty($result['advancedqueue_item']) ? key($result['advancedqueue_item']) : FALSE;
+}
