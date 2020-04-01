@@ -5,7 +5,7 @@
  * Code for the RESTful integration.
  */
 
-define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 8);
+define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 9);
 
 /**
  * Nodes synced to all devices.
@@ -14,6 +14,7 @@ define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 8);
  * we sync to all devices.
  */
 const HEDLEY_RESTFUL_ALL_DEVICES = [
+  'acute_illness_encounters' => 'acute-illness-encounters',
   'catchment_area' => 'catchment_areas',
   'clinic' => 'clinics',
   'counseling_schedule' => 'counseling-schedule',

@@ -14,7 +14,7 @@ fetch id db =
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.map
                     (Dict.keys
-                        >> List.map FetchNutritionEncountersForParticipant
+                        >> List.map FetchAcuteIllnessEncountersForParticipant
                     )
                 |> RemoteData.withDefault []
     in
