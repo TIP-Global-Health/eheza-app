@@ -1239,6 +1239,21 @@ nuanced way.
 handleRevision : Revision -> ( ModelIndexedDb, Bool ) -> ( ModelIndexedDb, Bool )
 handleRevision revision (( model, recalc ) as noChange) =
     case revision of
+        AcuteIllnessEncounterRevision uuid data ->
+            let
+                acuteIllnessEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.acuteIllnessEncounters
+
+                acuteIllnessEncountersByParticipant =
+                    Dict.remove data.participant model.acuteIllnessEncountersByParticipant
+            in
+            ( { model
+                | acuteIllnessEncounters = acuteIllnessEncounters
+                , acuteIllnessEncountersByParticipant = acuteIllnessEncountersByParticipant
+              }
+            , recalc
+            )
+
         AttendanceRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId

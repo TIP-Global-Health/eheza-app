@@ -1,5 +1,6 @@
 module Backend.Decoder exposing (decodeRevision)
 
+import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessEncounter)
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
@@ -26,6 +27,9 @@ decodeRevision =
                 -- Some of these aren't implemented yet, because they need
                 -- to be converted from ID to UUID references first.
                 case s of
+                    "acute_illness_encounter" ->
+                        decodeWithUuid AcuteIllnessEncounterRevision decodeAcuteIllnessEncounter
+
                     "attendance" ->
                         decodeWithUuid AttendanceRevision decodeAttendance
 

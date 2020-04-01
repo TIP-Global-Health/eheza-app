@@ -282,7 +282,8 @@ type MsgIndexedDb
 {-| Wrapper for all the revisions we can receive.
 -}
 type Revision
-    = AttendanceRevision AttendanceId Attendance
+    = AcuteIllnessEncounterRevision AcuteIllnessEncounterId AcuteIllnessEncounter
+    | AttendanceRevision AttendanceId Attendance
     | BreastExamRevision BreastExamId BreastExam
     | CatchmentAreaRevision CatchmentAreaId CatchmentArea
     | ChildNutritionRevision ChildNutritionId ChildNutrition
