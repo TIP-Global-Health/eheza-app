@@ -339,7 +339,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $handler->setAccount($this->nurse);
     $request = [
       'base_revision' => 1,
-      'db_version' => 7,
+      'db_version' => 8,
       'health_center_uuid' => $health_center_wrapper->field_uuid->value(),
     ];
 
