@@ -54,23 +54,24 @@ view language currentDate id db model =
                             |> Maybe.withDefault NotAsked
                     )
 
-        measurements =
-            Dict.get id db.acuteIllnessMeasurements
-                |> Maybe.withDefault NotAsked
-
-        personWithMeasurements =
-            RemoteData.map (\a b -> ( a, b )) person
-                |> RemoteData.andMap measurements
-
+        --
+        -- measurements =
+        --     Dict.get id db.acuteIllnessMeasurements
+        --         |> Maybe.withDefault NotAsked
+        --
+        -- personWithMeasurements =
+        --     RemoteData.map (\a b -> ( a, b )) person
+        --         |> RemoteData.andMap measurements
         header =
             viewWebData language (viewHeader language) identity participant
 
-        content =
-            viewWebData language (viewContent language currentDate id model) identity personWithMeasurements
+        -- content =
+        --     viewWebData language (viewContent language currentDate id model) identity personWithMeasurements
     in
     div [ class "page-acuteIllness-encounter" ] <|
         [ header
-        , content
+
+        -- , content
         ]
 
 
@@ -126,87 +127,89 @@ viewChildDetails language currentDate child =
 
 viewMainPageContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessMeasurements -> Model -> List (Html Msg)
 viewMainPageContent language currentDate id measurements model =
-    let
-        ( completedActivities, pendingActivities ) =
-            getAllActivities
-                |> List.partition
-                    (\activity ->
-                        case activity of
-                            AcuteIllnessAcuteIllness ->
-                                isJust measurements.acuteIllness
-                    )
-
-        pendingTabTitle =
-            translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
-
-        completedTabTitle =
-            translate language <| Translate.ActivitiesCompleted <| List.length completedActivities
-
-        tabs =
-            div [ class "ui tabular menu" ]
-                [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
-                , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
-                ]
-
-        viewCard activity =
-            div [ class "card" ]
-                [ div
-                    [ class "image"
-                    , onClick <| SetActivePage <| UserPage <| AcuteIllnessActivityPage id activity
-                    ]
-                    [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
-                , div [ class "content" ]
-                    [ p []
-                        [ Translate.AcuteIllnessActivityTitle activity
-                            |> translate language
-                            |> String.toUpper
-                            |> text
-                        ]
-                    ]
-                ]
-
-        ( selectedActivities, emptySectionMessage ) =
-            case model.selectedTab of
-                Pending ->
-                    ( pendingActivities, translate language Translate.NoActivitiesPending )
-
-                Completed ->
-                    ( completedActivities, translate language Translate.NoActivitiesCompleted )
-
-        innerContent =
-            div [ class "full content" ]
-                [ div [ class "wrap-cards" ]
-                    [ div [ class "ui four cards" ] <|
-                        if List.isEmpty selectedActivities then
-                            [ span [] [ text emptySectionMessage ] ]
-
-                        else
-                            List.map viewCard selectedActivities
-                    ]
-                ]
-
-        allowEndEcounter =
-            List.isEmpty pendingActivities
-
-        endEcounterButtonAttributes =
-            if allowEndEcounter then
-                [ class "ui fluid primary button"
-                , onClick <| CloseEncounter id
-                ]
-
-            else
-                [ class "ui fluid primary button disabled" ]
-
-        content =
-            div [ class "ui full segment" ]
-                [ innerContent
-                , div [ class "actions" ]
-                    [ button
-                        endEcounterButtonAttributes
-                        [ text <| translate language Translate.EndEncounter ]
-                    ]
-                ]
-    in
-    [ tabs
-    , content
-    ]
+    -- Todo
+    -- let
+    --     ( completedActivities, pendingActivities ) =
+    --         getAllActivities
+    --             |> List.partition
+    --                 (\activity ->
+    --                     case activity of
+    --                         AcuteIllnessAcuteIllness ->
+    --                             isJust measurements.acuteIllness
+    --                 )
+    --
+    --     pendingTabTitle =
+    --         translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
+    --
+    --     completedTabTitle =
+    --         translate language <| Translate.ActivitiesCompleted <| List.length completedActivities
+    --
+    --     tabs =
+    --         div [ class "ui tabular menu" ]
+    --             [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
+    --             , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
+    --             ]
+    --
+    --     viewCard activity =
+    --         div [ class "card" ]
+    --             [ div
+    --                 [ class "image"
+    --                 , onClick <| SetActivePage <| UserPage <| AcuteIllnessActivityPage id activity
+    --                 ]
+    --                 [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
+    --             , div [ class "content" ]
+    --                 [ p []
+    --                     [ Translate.AcuteIllnessActivityTitle activity
+    --                         |> translate language
+    --                         |> String.toUpper
+    --                         |> text
+    --                     ]
+    --                 ]
+    --             ]
+    --
+    --     ( selectedActivities, emptySectionMessage ) =
+    --         case model.selectedTab of
+    --             Pending ->
+    --                 ( pendingActivities, translate language Translate.NoActivitiesPending )
+    --
+    --             Completed ->
+    --                 ( completedActivities, translate language Translate.NoActivitiesCompleted )
+    --
+    --     innerContent =
+    --         div [ class "full content" ]
+    --             [ div [ class "wrap-cards" ]
+    --                 [ div [ class "ui four cards" ] <|
+    --                     if List.isEmpty selectedActivities then
+    --                         [ span [] [ text emptySectionMessage ] ]
+    --
+    --                     else
+    --                         List.map viewCard selectedActivities
+    --                 ]
+    --             ]
+    --
+    --     allowEndEcounter =
+    --         List.isEmpty pendingActivities
+    --
+    --     endEcounterButtonAttributes =
+    --         if allowEndEcounter then
+    --             [ class "ui fluid primary button"
+    --             , onClick <| CloseEncounter id
+    --             ]
+    --
+    --         else
+    --             [ class "ui fluid primary button disabled" ]
+    --
+    --     content =
+    --         div [ class "ui full segment" ]
+    --             [ innerContent
+    --             , div [ class "actions" ]
+    --                 [ button
+    --                     endEcounterButtonAttributes
+    --                     [ text <| translate language Translate.EndEncounter ]
+    --                 ]
+    --             ]
+    -- in
+    -- [ tabs
+    -- , content
+    -- ]
+    []

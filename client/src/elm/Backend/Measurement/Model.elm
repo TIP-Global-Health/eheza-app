@@ -1,5 +1,6 @@
 module Backend.Measurement.Model exposing
     ( AbdomenCPESign(..)
+    , AcuteIllnessMeasurements
     , Attendance
     , BreastExam
     , BreastExamSign(..)
