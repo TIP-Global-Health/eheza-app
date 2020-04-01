@@ -275,7 +275,7 @@
         var token = credentials.access_token;
         var backendUrl = credentials.backend_url;
 
-        return  [
+        return [
             backendUrl,
             '/api/file-upload?access_token=',
             token

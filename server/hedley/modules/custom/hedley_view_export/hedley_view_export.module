@@ -162,7 +162,7 @@ function hedley_view_export_add_item(string $type, string $view_name, string $di
     'range' => variable_get("hedley_view_export_range__{$view_name}", 500),
     'title' => $title,
   ];
-  hedley_view_export_add_advanced_queue_task(HEDLEY_VIEW_EXPORT_EXPORT_VIEW_QUEUE, $arguments);
+  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_VIEW_EXPORT_EXPORT_VIEW_QUEUE, 0, $arguments);
   // Display a message and a link back to the view.
   drupal_set_message(t('Exporting view. We will soon email you a link to @email', ['@email' => $user->mail]));
   return '<a href="javascript:history.back()">' . t('Go back') . '</a>';
@@ -293,25 +293,6 @@ function hedley_view_export_print_csv(array $row) {
   $row = array_map('strip_tags', $row);
   fputcsv($out, $row);
   fclose($out);
-}
-
-/**
- * Add task to an advanced queue.
- *
- * @param string $queue_name
- *   The machine name of the queue.
- * @param array $arguments
- *   Task arguments.
- *
- * @return int
- *   The new advancedqueue_item ID.
- *
- * @throws Exception
- */
-function hedley_view_export_add_advanced_queue_task(string $queue_name, array $arguments) {
-  $queue = new AdvancedQueue($queue_name);
-  $arguments['timestamp'] = REQUEST_TIME;
-  return $queue->createItem($arguments);
 }
 
 /**

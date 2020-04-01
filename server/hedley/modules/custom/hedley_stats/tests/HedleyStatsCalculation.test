@@ -340,10 +340,9 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $request = [
       'base_revision' => 1,
       'db_version' => 8,
-      'health_center_uuid' => $health_center_wrapper->field_uuid->value(),
     ];
 
-    $results = $handler->get('', $request);
+    $results = $handler->get($health_center_wrapper->field_uuid->value(), $request);
 
     $stats = end($results['batch']);
 
