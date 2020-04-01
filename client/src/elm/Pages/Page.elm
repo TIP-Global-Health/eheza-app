@@ -148,6 +148,7 @@ type UserPage
     | NutritionEncounterPage NutritionEncounterId -- nutrition activities index
     | NutritionActivityPage NutritionEncounterId NutritionActivity -- record nutrition activity
     | AcuteIllnessParticipantPage PersonId
+    | AcuteIllnessEncounterPage AcuteIllnessEncounterId -- nutrition activities index
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it

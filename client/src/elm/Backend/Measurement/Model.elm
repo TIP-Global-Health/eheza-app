@@ -637,6 +637,13 @@ type alias NutritionMeasurements =
     }
 
 
+{-| A set of Acute Illness measurements that correspond to the same Nutrition
+encounter.
+-}
+type alias AcuteIllnessMeasurements =
+    {}
+
+
 {-| This is like `ChildMeasurementList`, except that it just covers one
 of each kind of measurements (rather than a list of each kind).
 
