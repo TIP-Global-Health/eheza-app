@@ -18,8 +18,8 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionActivity.Utils exposing (nutritionFormWithDefault)
-import Pages.NutritionEncounter.View exposing (viewChildDetails)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
 import Pages.Utils exposing (taskCompleted, viewBoolInput, viewCheckBoxMultipleSelectInput, viewCustomLabel, viewLabel)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
@@ -87,7 +87,7 @@ viewHeader language id activity =
 
 viewContent : Language -> NominalDate -> NutritionEncounterId -> NutritionActivity -> Model -> ( PersonId, Person, NutritionMeasurements ) -> Html Msg
 viewContent language currentDate id activity model ( personId, person, measurements ) =
-    (viewChildDetails language currentDate person
+    ((viewPersonDetails language currentDate person |> div [ class "item" ])
         :: viewActivity language currentDate id activity ( personId, measurements ) model
     )
         |> div [ class "ui unstackable items" ]

@@ -407,6 +407,26 @@ h3.ui.header {
   background-size: 122px 122px;
 }
 
+.icon-task-symptoms {
+  background-image: url(#{$img-path}icon-symptoms.svg);
+  background-size: 78px 78px;
+}
+
+.icon-task-physical-exam {
+  background-image: url(#{$img-path}icon-physical-exam.svg);
+  background-size: 78px 78px;
+}
+
+.icon-task-laboratory {
+  background-image: url(#{$img-path}icon-laboratory.svg);
+  background-size: 78px 78px;
+}
+
+.icon-task-exposure {
+  background-image: url(#{$img-path}icon-travel.svg);
+  background-size: 78px 78px;
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {

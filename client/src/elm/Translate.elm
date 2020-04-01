@@ -23,6 +23,7 @@ general utilities, see `Translate.Model` and `Translate.Utils`.
 -}
 
 import Activity.Model exposing (Activity(..), ChildActivity(..), MotherActivity(..))
+import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..), CounselingTopic)
 import Backend.Entities exposing (..)
@@ -170,6 +171,7 @@ type TranslationId
     | ActivitiesToComplete Int
     | ActivityProgressReport Activity
     | ActivePage Page
+    | AcuteIllnessActivityTitle AcuteIllnessActivity
     | AddChild
     | AddFamilyMember
     | AddFamilyMemberFor String
@@ -919,6 +921,28 @@ translationSet trans =
 
         ActivePage page ->
             translateActivePage page
+
+        AcuteIllnessActivityTitle activity ->
+            case activity of
+                AcuteIllnessSymptoms ->
+                    { english = "Symptom Review"
+                    , kinyarwanda = Nothing
+                    }
+
+                AcuteIllnessPhysicalExam ->
+                    { english = "Physical Exam"
+                    , kinyarwanda = Nothing
+                    }
+
+                AcuteIllnessLaboratory ->
+                    { english = "Laboratory"
+                    , kinyarwanda = Nothing
+                    }
+
+                AcuteIllnessExposure ->
+                    { english = "Exposure / Travel History"
+                    , kinyarwanda = Nothing
+                    }
 
         Adherence adherence ->
             translateAdherence adherence

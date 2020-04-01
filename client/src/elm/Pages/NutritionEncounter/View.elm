@@ -1,4 +1,4 @@
-module Pages.NutritionEncounter.View exposing (view, viewChildDetails)
+module Pages.NutritionEncounter.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -17,18 +17,12 @@ import NutritionActivity.Model exposing (NutritionActivity(..))
 import NutritionActivity.Utils exposing (getActivityIcon, getAllActivities)
 import Pages.NutritionEncounter.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
 import Utils.NominalDate exposing (renderAgeMonthsDays)
 import Utils.WebData exposing (viewWebData)
-
-
-thumbnailDimensions : { width : Int, height : Int }
-thumbnailDimensions =
-    { width = 120
-    , height = 120
-    }
 
 
 view : Language -> NominalDate -> NutritionEncounterId -> ModelIndexedDb -> Model -> Html Msg
@@ -97,31 +91,10 @@ viewHeader language participant =
 
 viewContent : Language -> NominalDate -> NutritionEncounterId -> Model -> ( Person, NutritionMeasurements ) -> Html Msg
 viewContent language currentDate id model ( person, measurements ) =
-    (viewChildDetails language currentDate person
+    ((viewPersonDetails language currentDate person |> div [ class "item" ])
         :: viewMainPageContent language currentDate id measurements model
     )
         |> div [ class "ui unstackable items" ]
-
-
-viewChildDetails : Language -> NominalDate -> Person -> Html msg
-viewChildDetails language currentDate child =
-    div [ class "item" ]
-        [ div [ class "ui image" ]
-            [ thumbnailImage "child" child.avatarUrl child.name thumbnailDimensions.height thumbnailDimensions.width ]
-        , div [ class "content" ]
-            [ h2 [ class "ui header" ]
-                [ text child.name ]
-            , child.birthDate
-                |> Maybe.map
-                    (\birthDate ->
-                        p [ class "age-wrapper" ]
-                            [ span [ class "label" ] [ text <| translate language Translate.AgeWord ++ ":" ]
-                            , span [] [ text <| renderAgeMonthsDays language birthDate currentDate ]
-                            ]
-                    )
-                |> Maybe.withDefault emptyNode
-            ]
-        ]
 
 
 viewMainPageContent : Language -> NominalDate -> NutritionEncounterId -> NutritionMeasurements -> Model -> List (Html Msg)

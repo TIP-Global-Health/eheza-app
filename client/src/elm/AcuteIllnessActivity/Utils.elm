@@ -68,16 +68,16 @@ getActivityIcon : AcuteIllnessActivity -> String
 getActivityIcon activity =
     case activity of
         AcuteIllnessSymptoms ->
-            "acute-illness-symptoms"
+            "symptoms"
 
         AcuteIllnessPhysicalExam ->
-            "acute-illness-physical-exam"
+            "physical-exam"
 
         AcuteIllnessLaboratory ->
-            "acute-illness-laboratory"
+            "laboratory"
 
         AcuteIllnessExposure ->
-            "acute-illness-exposure"
+            "exposure"
 
 
 getAllActivities : List AcuteIllnessActivity
