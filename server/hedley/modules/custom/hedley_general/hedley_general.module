@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Code for the Hedley General feature.
@@ -19,7 +20,10 @@
  * @return int
  *   Task ID, if created successfully.
  */
-function hedley_general_add_task_to_advanced_queue_by_id($machine_name, $unique_id, array $data, array $statuses = [ADVANCEDQUEUE_STATUS_QUEUED, ADVANCEDQUEUE_STATUS_PROCESSING]) {
+function hedley_general_add_task_to_advanced_queue_by_id($machine_name, $unique_id, array $data, array $statuses = [
+  ADVANCEDQUEUE_STATUS_QUEUED,
+  ADVANCEDQUEUE_STATUS_PROCESSING,
+]) {
   // Make sure a task with the same ID doesn't exist already in the given
   // queue, using the queue machine name as a prefix.
   // (the `$task_title` us being used as a unique ID for the given queue).
@@ -45,7 +49,10 @@ function hedley_general_add_task_to_advanced_queue_by_id($machine_name, $unique_
  * @return bool
  *   TRUE if the task exist and not processed yet, otherwise returns FALSE.
  */
-function hedley_general_advanced_queue_task_exists($queue_machine_name, $title, $statuses = [ADVANCEDQUEUE_STATUS_QUEUED, ADVANCEDQUEUE_STATUS_PROCESSING]) {
+function hedley_general_advanced_queue_task_exists($queue_machine_name, $title, array $statuses = [
+  ADVANCEDQUEUE_STATUS_QUEUED,
+  ADVANCEDQUEUE_STATUS_PROCESSING,
+]) {
   return (bool) db_select('advancedqueue', 'a')
     ->fields('a')
     ->condition('name', $queue_machine_name)

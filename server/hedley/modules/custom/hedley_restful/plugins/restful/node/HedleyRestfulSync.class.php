@@ -478,7 +478,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
             break;
         }
       }
-    } catch (Exception $e) {
+    }
+    catch (Exception $e) {
       $transaction->rollback();
 
       $m1 = '[MAIN] - ';

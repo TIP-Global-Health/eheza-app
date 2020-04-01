@@ -126,7 +126,7 @@ function hedley_stats_advanced_queue_info() {
 /**
  * Advanced queue worker; Calculate stats for a dashboards.
  *
- * @param $queue_item
+ * @param object $queue_item
  *   The item object to process.
  *
  * @return array
@@ -198,7 +198,8 @@ function hedley_stats_calculate_stats_for_health_center($health_center_nid) {
         'total_beneficiaries_incidence' => NULL,
         'total_encounters' => NULL,
       ];
-    } else {
+    }
+    else {
       // Calculate the stats.
       list($completed_program, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_health_center($health_center_nid);
       $stats = [
