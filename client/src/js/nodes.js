@@ -86,6 +86,7 @@
     });
 
     var tableForType = {
+        acute_illness_encounter: 'nodes',
         attendance: 'shards',
         breast_exam: 'shards',
         catchment_area: 'nodes',
