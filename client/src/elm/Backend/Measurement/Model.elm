@@ -1,5 +1,6 @@
 module Backend.Measurement.Model exposing
     ( AbdomenCPESign(..)
+    , AcuteIllnessMeasurement
     , AcuteIllnessMeasurements
     , Attendance
     , BreastExam
@@ -123,12 +124,16 @@ type alias GroupMeasurement value =
     Measurement SessionId value
 
 
+type alias PrenatalMeasurement value =
+    Measurement PrenatalEncounterId value
+
+
 type alias NutritionMeasurement value =
     Measurement NutritionEncounterId value
 
 
-type alias PrenatalMeasurement value =
-    Measurement PrenatalEncounterId value
+type alias AcuteIllnessMeasurement value =
+    Measurement AcuteIllnessEncounterId value
 
 
 

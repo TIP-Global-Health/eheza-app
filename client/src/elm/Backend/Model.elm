@@ -110,6 +110,7 @@ type alias ModelIndexedDb =
     , acuteIllnessEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
     , prenatalMeasurements : Dict PrenatalEncounterId (WebData PrenatalMeasurements)
     , nutritionMeasurements : Dict NutritionEncounterId (WebData NutritionMeasurements)
+    , acuteIllnessMeasurements : Dict AcuteIllnessEncounterId (WebData AcuteIllnessMeasurements)
 
     -- From the point of view of the specified person, all of their relationships.
     , relationshipsByPerson : Dict PersonId (WebData (Dict RelationshipId MyRelationship))
@@ -145,6 +146,7 @@ emptyModelIndexedDb =
     , nutritionEncountersByParticipant = Dict.empty
     , acuteIllnessEncounters = Dict.empty
     , acuteIllnessEncountersByParticipant = Dict.empty
+    , acuteIllnessMeasurements = Dict.empty
     , nutritionMeasurements = Dict.empty
     , participantForms = NotAsked
     , participantsByPerson = Dict.empty
@@ -180,6 +182,7 @@ type MsgIndexedDb
     = -- Messages which fetch various kinds of data.
       FetchAcuteIllnessEncounter AcuteIllnessEncounterId
     | FetchAcuteIllnessEncountersForParticipant IndividualEncounterParticipantId
+    | FetchAcuteIllnessMeasurements AcuteIllnessEncounterId
     | FetchChildMeasurements PersonId
     | FetchChildrenMeasurements (List PersonId)
     | FetchClinics
@@ -216,6 +219,7 @@ type MsgIndexedDb
       -- Messages which handle responses to data
     | HandleFetchedAcuteIllnessEncounter AcuteIllnessEncounterId (WebData AcuteIllnessEncounter)
     | HandleFetchedAcuteIllnessEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
+    | HandleFetchedAcuteIllnessMeasurements AcuteIllnessEncounterId (WebData AcuteIllnessMeasurements)
     | HandleFetchedChildMeasurements PersonId (WebData ChildMeasurementList)
     | HandleFetchedChildrenMeasurements (WebData (Dict PersonId ChildMeasurementList))
     | HandleFetchedClinics (WebData (Dict ClinicId Clinic))

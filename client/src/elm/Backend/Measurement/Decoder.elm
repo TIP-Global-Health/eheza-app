@@ -1,5 +1,7 @@
 module Backend.Measurement.Decoder exposing
-    ( decodeAttendance
+    ( decodeAcuteIllnessMeasurement
+    , decodeAcuteIllnessMeasurements
+    , decodeAttendance
     , decodeBreastExam
     , decodeChildMeasurementList
     , decodeCorePhysicalExam
@@ -50,14 +52,19 @@ decodeGroupMeasurement =
     decodeMeasurement "session"
 
 
+decodePrenatalMeasurement : Decoder value -> Decoder (Measurement PrenatalEncounterId value)
+decodePrenatalMeasurement =
+    decodeMeasurement "prenatal_encounter"
+
+
 decodeNutritionMeasurement : Decoder value -> Decoder (Measurement NutritionEncounterId value)
 decodeNutritionMeasurement =
     decodeMeasurement "nutrition_encounter"
 
 
-decodePrenatalMeasurement : Decoder value -> Decoder (Measurement PrenatalEncounterId value)
-decodePrenatalMeasurement =
-    decodeMeasurement "prenatal_encounter"
+decodeAcuteIllnessMeasurement : Decoder value -> Decoder (Measurement AcuteIllnessEncounterId value)
+decodeAcuteIllnessMeasurement =
+    decodeMeasurement "acute_illness_encounter"
 
 
 decodeMeasurement : String -> Decoder value -> Decoder (Measurement (EntityUuid a) value)
@@ -121,6 +128,11 @@ decodeNutritionMeasurements : Decoder NutritionMeasurements
 decodeNutritionMeasurements =
     succeed NutritionMeasurements
         |> optional "nutrition_nutrition" (decodeHead decodeNutritionNutrition) Nothing
+
+
+decodeAcuteIllnessMeasurements : Decoder AcuteIllnessMeasurements
+decodeAcuteIllnessMeasurements =
+    succeed AcuteIllnessMeasurements
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))

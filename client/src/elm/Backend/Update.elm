@@ -399,6 +399,19 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , []
             )
 
+        FetchAcuteIllnessMeasurements id ->
+            ( { model | acuteIllnessMeasurements = Dict.insert id Loading model.acuteIllnessMeasurements }
+            , sw.get acuteIllnessMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedAcuteIllnessMeasurements id)
+            , []
+            )
+
+        HandleFetchedAcuteIllnessMeasurements id data ->
+            ( { model | acuteIllnessMeasurements = Dict.insert id data model.acuteIllnessMeasurements }
+            , Cmd.none
+            , []
+            )
+
         FetchParticipantsForPerson personId ->
             let
                 query1 =

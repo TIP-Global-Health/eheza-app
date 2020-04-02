@@ -1,5 +1,6 @@
 module Backend.Measurement.Encoder exposing
-    ( encodeAttendance
+    ( encodeAcuteIllnessMeasurement
+    , encodeAttendance
     , encodeAttendanceValue
     , encodeBreastExam
     , encodeBreastExamValue
@@ -190,14 +191,19 @@ encodeGroupMeasurement =
     encodeMeasurement "session"
 
 
+encodePrenatalMeasurement : (value -> List ( String, Value )) -> PrenatalMeasurement value -> List ( String, Value )
+encodePrenatalMeasurement =
+    encodeMeasurement "prenatal_encounter"
+
+
 encodeNutritionMeasurement : (value -> List ( String, Value )) -> NutritionMeasurement value -> List ( String, Value )
 encodeNutritionMeasurement =
     encodeMeasurement "nutrition_encounter"
 
 
-encodePrenatalMeasurement : (value -> List ( String, Value )) -> PrenatalMeasurement value -> List ( String, Value )
-encodePrenatalMeasurement =
-    encodeMeasurement "prenatal_encounter"
+encodeAcuteIllnessMeasurement : (value -> List ( String, Value )) -> AcuteIllnessMeasurement value -> List ( String, Value )
+encodeAcuteIllnessMeasurement =
+    encodeMeasurement "acute_illness_encounter"
 
 
 encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
