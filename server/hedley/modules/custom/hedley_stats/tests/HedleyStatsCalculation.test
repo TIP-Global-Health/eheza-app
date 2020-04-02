@@ -287,6 +287,31 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   }
 
   /**
+   * Testing the total beneficiaries stats.
+   */
+  public function testSessionsAttendance() {
+    $attendance = 30;
+    $this->createSessionsWithAttendance(0, $attendance, '-1 year', '-1 week');
+
+    $this_month = [
+      'start' => strtotime("-1 month"),
+      'end' => time(),
+    ];
+    list($completed_program, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_health_center($this->healthCenterId);
+
+    // Filter missed sessions.
+    $count_missed_sessions = 0;
+    foreach ($missed_sessions as $missed_session) {
+      $expected_date = strtotime($missed_session['expected_date']);
+      if ($expected_date >= $this_month['start'] && $expected_date <= $this_month['end']) {
+        $count_missed_sessions++;
+      }
+    }
+
+    $this->assertEqual($attendance, $count_missed_sessions);
+  }
+
+  /**
    * Testing the syncing and caching.
    */
   public function testSyncAndCache() {
