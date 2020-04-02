@@ -12,6 +12,8 @@ import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
 import Html.Events exposing (onClick)
+import Pages.AcuteIllnessActivity.Model
+import Pages.AcuteIllnessActivity.View
 import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessEncounter.View
 import Pages.AcuteIllnessParticipant.View
@@ -357,6 +359,16 @@ viewUserPage page model configured =
                         in
                         Pages.AcuteIllnessEncounter.View.view model.language currentDate id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessEncounter id)
+                            |> flexPageWrapper model
+
+                    AcuteIllnessActivityPage id activity ->
+                        let
+                            page_ =
+                                Dict.get ( id, activity ) loggedInModel.acuteIllnessActivityPages
+                                    |> Maybe.withDefault Pages.AcuteIllnessActivity.Model.emptyModel
+                        in
+                        Pages.AcuteIllnessActivity.View.view model.language currentDate id activity model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessActivity id activity)
                             |> flexPageWrapper model
 
             else

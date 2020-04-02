@@ -19,6 +19,8 @@ import Http exposing (Error(..))
 import HttpBuilder
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
+import Pages.AcuteIllnessActivity.Model
+import Pages.AcuteIllnessActivity.Update
 import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessEncounter.Update
 import Pages.Clinics.Update
@@ -348,6 +350,19 @@ update msg model =
                             in
                             ( { data | nutritionActivityPages = Dict.insert ( id, activity ) subModel data.nutritionActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPageNutritionActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageAcuteIllnessActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.acuteIllnessActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.AcuteIllnessActivity.Model.emptyModel
+                                        |> Pages.AcuteIllnessActivity.Update.update currentDate id model.indexedDb subMsg
+                            in
+                            ( { data | acuteIllnessActivityPages = Dict.insert ( id, activity ) subModel data.acuteIllnessActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessActivity id activity) subCmd
                             , extraMsgs
                             )
 

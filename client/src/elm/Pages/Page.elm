@@ -41,6 +41,7 @@ choices about what to show the user, rather than the details).
 -}
 
 import Activity.Model exposing (Activity(..))
+import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.Person.Model exposing (RegistrationInitiator)
@@ -148,7 +149,8 @@ type UserPage
     | NutritionEncounterPage NutritionEncounterId -- nutrition activities index
     | NutritionActivityPage NutritionEncounterId NutritionActivity -- record nutrition activity
     | AcuteIllnessParticipantPage PersonId
-    | AcuteIllnessEncounterPage AcuteIllnessEncounterId -- nutrition activities index
+    | AcuteIllnessEncounterPage AcuteIllnessEncounterId -- acute illness activities index
+    | AcuteIllnessActivityPage AcuteIllnessEncounterId AcuteIllnessActivity -- record acute illness activity
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it

@@ -5,6 +5,7 @@ import App.Utils exposing (getLoggedInData)
 import Backend.Fetch
 import Date
 import Gizra.NominalDate exposing (fromLocalDateTime)
+import Pages.AcuteIllnessActivity.Fetch
 import Pages.AcuteIllnessEncounter.Fetch
 import Pages.AcuteIllnessParticipant.Fetch
 import Pages.Clinical.Fetch
@@ -168,12 +169,16 @@ fetch model =
             Pages.NutritionEncounter.Fetch.fetch id model.indexedDb
                 |> List.map MsgIndexedDb
 
-        UserPage (NutritionActivityPage nutritionEncounterId _) ->
-            Pages.NutritionActivity.Fetch.fetch nutritionEncounterId model.indexedDb
+        UserPage (NutritionActivityPage id _) ->
+            Pages.NutritionActivity.Fetch.fetch id model.indexedDb
                 |> List.map MsgIndexedDb
 
         UserPage (AcuteIllnessEncounterPage id) ->
             Pages.AcuteIllnessEncounter.Fetch.fetch id model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (AcuteIllnessActivityPage id _) ->
+            Pages.AcuteIllnessActivity.Fetch.fetch id model.indexedDb
                 |> List.map MsgIndexedDb
 
 
