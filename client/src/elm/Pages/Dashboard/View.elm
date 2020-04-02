@@ -298,7 +298,7 @@ viewAllStatsCards language stats currentDate model healthCenterId db =
     in
     div [ class "ui equal width grid" ]
         [ viewMalnourishedCards language stats monthBeforeStats
-        , viewMiscCards language stats monthBeforeStats
+        , viewMiscCards language currentDate stats monthBeforeStats
         ]
 
 
@@ -397,8 +397,8 @@ viewMalnourishedCards language stats monthBeforeStats =
         ]
 
 
-viewMiscCards : Language -> DashboardStats -> DashboardStats -> Html Msg
-viewMiscCards language stats monthBeforeStats =
+viewMiscCards : Language -> NominalDate -> DashboardStats -> DashboardStats -> Html Msg
+viewMiscCards language currentDate stats monthBeforeStats =
     let
         totalNewBeneficiaries =
             stats.childrenBeneficiaries
@@ -416,7 +416,7 @@ viewMiscCards language stats monthBeforeStats =
                     , birthDate = childrenBeneficiaries.birthDate
                     , motherName = childrenBeneficiaries.motherName
                     , phoneNumber = childrenBeneficiaries.phoneNumber
-                    , dates = []
+                    , expectedDate = currentDate
                     }
                         :: accum
                 )
@@ -445,17 +445,17 @@ viewMiscCards language stats monthBeforeStats =
             , newCases = Nothing
             }
 
-        completedProgram =
-            stats.completedProgramCount
+        completedProgramCount =
+            List.length stats.completedPrograms
 
-        completedProgramBefore =
-            monthBeforeStats.completedProgramCount
+        completedProgramBeforeCount =
+            List.length monthBeforeStats.completedPrograms
 
         completedProgramDiff =
-            completedProgram - completedProgramBefore
+            completedProgramCount - completedProgramBeforeCount
 
         completedProgramPercentage =
-            calculatePercentage completedProgram completedProgramDiff
+            calculatePercentage completedProgramCount completedProgramDiff
                 |> round
 
         completedProgramTitle =
@@ -464,8 +464,8 @@ viewMiscCards language stats monthBeforeStats =
         completedProgramCard =
             { title = completedProgramTitle
             , cardClasses = "stats-card completed-program"
-            , cardAction = Just (ModalToggle True stats.completedProgram completedProgramTitle)
-            , value = completedProgram
+            , cardAction = Just (ModalToggle True stats.completedPrograms completedProgramTitle)
+            , value = completedProgramCount
             , valueSeverity = Good
             , valueIsPercentage = False
             , previousPercentage = completedProgramPercentage
@@ -473,17 +473,17 @@ viewMiscCards language stats monthBeforeStats =
             , newCases = Nothing
             }
 
-        missedSessions =
-            stats.missedSessionsCount
+        missedSessionsCount =
+            List.length stats.missedSessions
 
-        missedSessionsBefore =
-            monthBeforeStats.missedSessionsCount
+        missedSessionsBeforeCount =
+            List.length monthBeforeStats.missedSessions
 
         missedSessionsDiff =
-            missedSessions - missedSessionsBefore
+            missedSessionsCount - missedSessionsBeforeCount
 
         missedSessionsPercentage =
-            calculatePercentage missedSessions missedSessionsDiff
+            calculatePercentage missedSessionsCount missedSessionsDiff
                 |> round
 
         missedSessionsTitle =
@@ -493,7 +493,7 @@ viewMiscCards language stats monthBeforeStats =
             { title = missedSessionsTitle
             , cardClasses = "stats-card missed-sessions"
             , cardAction = Just (ModalToggle True stats.missedSessions missedSessionsTitle)
-            , value = missedSessions
+            , value = missedSessionsCount
             , valueSeverity = Severe
             , valueIsPercentage = False
             , previousPercentage = missedSessionsPercentage
@@ -647,7 +647,7 @@ viewBeneficiariesTable language currentDate stats model =
                 |> String.fromInt
 
         getCompletedProgramBeneficiariesCount stats_ =
-            stats_.completedProgram
+            stats_.completedPrograms
                 |> List.length
                 |> String.fromInt
 
@@ -1057,8 +1057,8 @@ filterStatsByAge currentDate func stats =
             stats.childrenBeneficiaries
                 |> List.filter (\row -> isDiffTruthy row.birthDate currentDate func)
 
-        completedProgram =
-            stats.completedProgram
+        completedPrograms =
+            stats.completedPrograms
                 |> List.filter (\row -> isDiffTruthy row.birthDate currentDate func)
 
         missedSessions =
@@ -1071,7 +1071,7 @@ filterStatsByAge currentDate func stats =
     in
     { stats
         | childrenBeneficiaries = childrenBeneficiaries
-        , completedProgram = completedProgram
+        , completedPrograms = completedPrograms
         , missedSessions = missedSessions
         , malnourished = malnourished
     }
@@ -1085,11 +1085,11 @@ filterStatsByPeriod currentDate model stats =
         ( startDate, endDate ) =
             case model.period of
                 OneYear ->
-                    ( Date.add Years -1 currentDate, currentDate )
+                    ( Date.add Years -1 currentDate, Date.add Days 1 currentDate )
 
                 ThisMonth ->
                     -- From beginning of the month to this day.
-                    ( Date.floor Date.Month currentDate, currentDate )
+                    ( Date.floor Date.Month currentDate, Date.add Days 1 currentDate )
 
                 LastMonth ->
                     -- From the beginning of last month to the end of last month.
@@ -1128,34 +1128,20 @@ filterStatsByPeriod currentDate model stats =
             stats.malnourished
                 |> List.filter (\malnourished -> filterPartial malnourished.created)
 
-        completedProgramCount =
-            List.foldl
-                (\completedProgram accum ->
-                    (List.filter filterPartial completedProgram.dates
-                        |> List.length
-                    )
-                        + accum
-                )
-                0
-                stats.completedProgram
+        completedPrograms =
+            stats.completedPrograms
+                |> List.filter (\completedProgram -> filterPartial completedProgram.expectedDate)
 
-        missedSessionsCount =
-            List.foldl
-                (\missedSessions accum ->
-                    (List.filter filterPartial missedSessions.dates
-                        |> List.length
-                    )
-                        + accum
-                )
-                0
-                stats.missedSessions
+        missedSessions =
+            stats.missedSessions
+                |> List.filter (\missedSession -> filterPartial missedSession.expectedDate)
     in
     { stats
         | childrenBeneficiaries = childrenBeneficiariesUpdated
         , familyPlanning = familyPlanningUpdated
         , malnourished = malnourishedUpdated
-        , completedProgramCount = completedProgramCount
-        , missedSessionsCount = missedSessionsCount
+        , completedPrograms = completedPrograms
+        , missedSessions = missedSessions
     }
 
 
@@ -1182,7 +1168,7 @@ filterStatsByGender currentDate model stats =
     in
     { stats
         | childrenBeneficiaries = filterByGender stats.childrenBeneficiaries
-        , completedProgram = filterByGender stats.completedProgram
+        , completedPrograms = filterByGender stats.completedPrograms
         , missedSessions = filterByGender stats.missedSessions
         , malnourished = filterByGender stats.malnourished
     }
