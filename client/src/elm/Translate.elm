@@ -43,6 +43,7 @@ import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Http
 import NutritionActivity.Model exposing (NutritionActivity(..))
+import Pages.AcuteIllnessActivity.Model exposing (SymptomsTask(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
@@ -572,6 +573,7 @@ type TranslationId
     | StillbornPreviousDelivery
     | SuccessiveAbortions
     | SuccessivePrematureDeliveries
+    | SymptomsTask SymptomsTask
     | GroupEncounterClosed
     | GroupEncounterClosed2 SessionId
     | GroupEncounterLoading
@@ -3779,6 +3781,23 @@ translationSet trans =
             { english = "Successive Premature Deliveries"
             , kinyarwanda = Nothing
             }
+
+        SymptomsTask task ->
+            case task of
+                SymptomsGeneral ->
+                    { english = "General"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomsRespiratory ->
+                    { english = "Respiratory"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomsGI ->
+                    { english = "GI"
+                    , kinyarwanda = Nothing
+                    }
 
         GroupEncounterClosed ->
             { english = "Group Encounter closed"

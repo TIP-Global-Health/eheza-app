@@ -1,10 +1,12 @@
 module Pages.Utils exposing
     ( filterDependentNoResultsMessage
+    , isTaskCompleted
     , matchFilter
     , matchMotherAndHerChildren
     , normalizeFilter
     , taskCompleted
     , taskListCompleted
+    , tasksBarId
     , viewBoolInput
     , viewCheckBoxMultipleSelectInput
     , viewCheckBoxSelectInput
@@ -17,6 +19,7 @@ module Pages.Utils exposing
     , viewQuestionLabel
     )
 
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model exposing (PhotoUrl(..))
 import Backend.Person.Model exposing (Person)
@@ -275,3 +278,15 @@ viewPhotoThumb url =
 viewPhotoThumbFromPhotoUrl : PhotoUrl -> Html any
 viewPhotoThumbFromPhotoUrl (PhotoUrl url) =
     viewPhotoThumb url
+
+
+isTaskCompleted : Dict t ( Int, Int ) -> t -> Bool
+isTaskCompleted dict task =
+    Dict.get task dict
+        |> Maybe.map (\( completed, total ) -> completed == total)
+        |> Maybe.withDefault False
+
+
+tasksBarId : String
+tasksBarId =
+    "tasks-bar"

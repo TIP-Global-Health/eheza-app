@@ -1415,13 +1415,11 @@ input::placeholder {
   }
 }
 
-.icon-history-task,
-.icon-examination-task,
-.icon-patient-provisions-task {
+.icon-activity-task {
   display: block;
-  width: 90px;
   height: 90px;
-  margin: 0 auto 10px auto;
+  margin: 0 auto 10px;
+  width: 90px;
 
   &:after {
     content: " ";
@@ -1571,6 +1569,48 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-resources-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-symptoms-general {
+  .active &:after {
+    background-image: url(#{$img-path}icon-symptoms-general-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-symptoms-general-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-symptoms-general-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-symptoms-respiratory {
+  .active &:after {
+    background-image: url(#{$img-path}icon-symptoms-respiratory-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-symptoms-respiratory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-symptoms-respiratory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-symptoms-gi {
+  .active &:after {
+    background-image: url(#{$img-path}icon-symptoms-gi-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-symptoms-gi-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-symptoms-gi-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 

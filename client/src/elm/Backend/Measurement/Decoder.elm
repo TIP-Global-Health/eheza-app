@@ -1,38 +1,4 @@
-module Backend.Measurement.Decoder exposing
-    ( decodeAcuteIllnessMeasurement
-    , decodeAcuteIllnessMeasurements
-    , decodeAttendance
-    , decodeBreastExam
-    , decodeChildMeasurementList
-    , decodeCorePhysicalExam
-    , decodeCounselingSession
-    , decodeDangerSigns
-    , decodeFamilyPlanning
-    , decodeHeight
-    , decodeLastMenstrualPeriod
-    , decodeMedicalHistory
-    , decodeMedication
-    , decodeMotherMeasurementList
-    , decodeMuac
-    , decodeNutrition
-    , decodeNutritionMeasurement
-    , decodeNutritionMeasurements
-    , decodeNutritionNutrition
-    , decodeObstetricHistory
-    , decodeObstetricHistoryStep2
-    , decodeObstetricalExam
-    , decodeParticipantConsent
-    , decodePhoto
-    , decodePrenatalFamilyPlanning
-    , decodePrenatalMeasurements
-    , decodePrenatalNutrition
-    , decodePrenatalPhoto
-    , decodeResource
-    , decodeSocialHistory
-    , decodeSocialHistoryHivTestingResult
-    , decodeVitals
-    , decodeWeight
-    )
+module Backend.Measurement.Decoder exposing (decodeAbdomenCPESign, decodeAcuteIllnessMeasurement, decodeAcuteIllnessMeasurements, decodeAttendance, decodeBreastExam, decodeBreastExamSign, decodeCSectionReason, decodeCSectionScar, decodeChildMeasurementList, decodeChildNutritionSign, decodeCorePhysicalExam, decodeCounselingSession, decodeDangerSign, decodeDangerSigns, decodeEyesCPESign, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeFetalPresentation, decodeGroupMeasurement, decodeHairHeadCPESign, decodeHandsCPESign, decodeHead, decodeHeartCPESign, decodeHeight, decodeLastMenstrualPeriod, decodeLegsCPESign, decodeLungsCPESign, decodeMeasurement, decodeMedicalHistory, decodeMedicalHistorySign, decodeMedication, decodeMedicationSign, decodeMotherMeasurementList, decodeMuac, decodeNeckCPESign, decodeNutrition, decodeNutritionMeasurement, decodeNutritionMeasurements, decodeNutritionNutrition, decodeObstetricHistory, decodeObstetricHistorySign, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodePrenatalFamilyPlanning, decodePrenatalMeasurement, decodePrenatalMeasurements, decodePrenatalNutrition, decodePrenatalPhoto, decodePreviousDeliveryPeriod, decodePreviousDeliverySign, decodeResource, decodeResourceSign, decodeSocialHistory, decodeSocialHistoryHivTestingResult, decodeSocialHistorySign, decodeSymptomsGI, decodeSymptomsGISign, decodeSymptomsGeneral, decodeSymptomsGeneralSign, decodeSymptomsRespiratory, decodeSymptomsRespiratorySign, decodeVitals, decodeWeight, decodeWithEntityUuid)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
@@ -133,6 +99,9 @@ decodeNutritionMeasurements =
 decodeAcuteIllnessMeasurements : Decoder AcuteIllnessMeasurements
 decodeAcuteIllnessMeasurements =
     succeed AcuteIllnessMeasurements
+        |> optional "symptoms_general" (decodeHead decodeSymptomsGeneral) Nothing
+        |> optional "symptoms_respiratory" (decodeHead decodeSymptomsRespiratory) Nothing
+        |> optional "symptoms_gi" (decodeHead decodeSymptomsGI) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -971,3 +940,117 @@ decodeNutritionNutrition =
     decodeEverySet decodeChildNutritionSign
         |> field "nutrition_signs"
         |> decodeNutritionMeasurement
+
+
+decodeSymptomsGeneral : Decoder SymptomsGeneral
+decodeSymptomsGeneral =
+    decodeEverySet decodeSymptomsGeneralSign
+        |> field "general_signs"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeSymptomsGeneralSign : Decoder SymptomsGeneralSign
+decodeSymptomsGeneralSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "body-aches" ->
+                        succeed BodyAches
+
+                    "chills" ->
+                        succeed Chills
+
+                    "fever" ->
+                        succeed SymptomGeneralFever
+
+                    "headache" ->
+                        succeed Headache
+
+                    "night-sweats" ->
+                        succeed NightSweats
+
+                    "none" ->
+                        succeed NoSymptomsGeneral
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized SymptomsGeneralSign"
+            )
+
+
+decodeSymptomsRespiratory : Decoder SymptomsRespiratory
+decodeSymptomsRespiratory =
+    decodeEverySet decodeSymptomsRespiratorySign
+        |> field "respiratory_signs"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeSymptomsRespiratorySign : Decoder SymptomsRespiratorySign
+decodeSymptomsRespiratorySign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "blood-in-sputum" ->
+                        succeed BloodInSputum
+
+                    "cough" ->
+                        succeed Cough
+
+                    "nasal-congestion" ->
+                        succeed NasalCongestion
+
+                    "shortness-of-breath" ->
+                        succeed ShortnessOfBreath
+
+                    "sore-throat" ->
+                        succeed SoreThroat
+
+                    "none" ->
+                        succeed NoSymptomsRespiratory
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized SymptomsRespiratorySign"
+            )
+
+
+decodeSymptomsGI : Decoder SymptomsGI
+decodeSymptomsGI =
+    decodeEverySet decodeSymptomsGISign
+        |> field "gi_signs"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeSymptomsGISign : Decoder SymptomsGISign
+decodeSymptomsGISign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "abdominal-pain" ->
+                        succeed SymptomGIAbdominalPain
+
+                    "bloody-diarrhea" ->
+                        succeed BloodyDiarrhea
+
+                    "nausea" ->
+                        succeed Nausea
+
+                    "non-bloody-diarrhea" ->
+                        succeed NonBloodyDiarrhea
+
+                    "vomiting" ->
+                        succeed Vomiting
+
+                    "none" ->
+                        succeed NoSymptomsGI
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized SymptomsGISign"
+            )

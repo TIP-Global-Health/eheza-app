@@ -73,6 +73,12 @@ module Backend.Measurement.Model exposing
     , SocialHistoryHivTestingResult(..)
     , SocialHistorySign(..)
     , SocialHistoryValue
+    , SymptomsGI
+    , SymptomsGISign(..)
+    , SymptomsGeneral
+    , SymptomsGeneralSign(..)
+    , SymptomsRespiratory
+    , SymptomsRespiratorySign(..)
     , Vitals
     , VitalsValue
     , Weight
@@ -546,6 +552,49 @@ type alias Vitals =
 
 
 
+-- ACUTE ILLNESS MEASUREMENTS
+
+
+type SymptomsGeneralSign
+    = BodyAches
+    | Chills
+    | SymptomGeneralFever
+    | Headache
+    | NightSweats
+    | NoSymptomsGeneral
+
+
+type alias SymptomsGeneral =
+    AcuteIllnessMeasurement (EverySet SymptomsGeneralSign)
+
+
+type SymptomsRespiratorySign
+    = BloodInSputum
+    | Cough
+    | NasalCongestion
+    | ShortnessOfBreath
+    | SoreThroat
+    | NoSymptomsRespiratory
+
+
+type alias SymptomsRespiratory =
+    AcuteIllnessMeasurement (EverySet SymptomsRespiratorySign)
+
+
+type SymptomsGISign
+    = SymptomGIAbdominalPain
+    | BloodyDiarrhea
+    | Nausea
+    | NonBloodyDiarrhea
+    | Vomiting
+    | NoSymptomsGI
+
+
+type alias SymptomsGI =
+    AcuteIllnessMeasurement (EverySet SymptomsGISign)
+
+
+
 -- LISTS OF MEASUREMENTS
 
 
@@ -647,7 +696,10 @@ type alias NutritionMeasurements =
 encounter.
 -}
 type alias AcuteIllnessMeasurements =
-    {}
+    { symptomsGeneral : Maybe ( SymptomsGeneralId, SymptomsGeneral )
+    , symptomsRespiratory : Maybe ( SymptomsRespiratoryId, SymptomsRespiratory )
+    , symptomsGI : Maybe ( SymptomsGIId, SymptomsGI )
+    }
 
 
 {-| This is like `ChildMeasurementList`, except that it just covers one

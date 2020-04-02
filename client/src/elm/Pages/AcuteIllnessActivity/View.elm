@@ -17,10 +17,24 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
-import Pages.AcuteIllnessActivity.Utils exposing (acuteIllnessFormWithDefault)
+import Pages.AcuteIllnessActivity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
-import Pages.Utils exposing (taskCompleted, viewBoolInput, viewCheckBoxMultipleSelectInput, viewCustomLabel, viewLabel)
+import Pages.Utils
+    exposing
+        ( isTaskCompleted
+        , taskCompleted
+        , taskListCompleted
+        , tasksBarId
+        , viewBoolInput
+        , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxSelectInput
+        , viewCustomLabel
+        , viewLabel
+        , viewMeasurementInput
+        , viewPhotoThumbFromPhotoUrl
+        , viewQuestionLabel
+        )
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.WebData exposing (viewWebData)
@@ -55,10 +69,10 @@ view language currentDate id activity db model =
 
         measurements =
             -- Todo
-            Success {}
+            -- Dict.get id db.acuteIllnessMeasurements
+            --     |> Maybe.withDefault NotAsked
+            Success (AcuteIllnessMeasurements Nothing Nothing Nothing)
 
-        -- Dict.get id db.acuteIllnessMeasurements
-        --     |> Maybe.withDefault NotAsked
         personWithMeasurements =
             RemoteData.map (\a b c -> ( a, b, c )) personId
                 |> RemoteData.andMap person
@@ -98,49 +112,158 @@ viewContent language currentDate id activity model ( personId, person, measureme
 viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> ( PersonId, AcuteIllnessMeasurements ) -> Model -> List (Html Msg)
 viewActivity language currentDate id activity ( personId, measurements ) model =
     case activity of
-        _ ->
-            [ div [] [ text "activity here" ] ]
+        AcuteIllnessSymptoms ->
+            viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) model.symptomsData
+
+        AcuteIllnessPhysicalExam ->
+            [ div [] [ text "AcuteIllnessPhysicalExam here" ] ]
+
+        AcuteIllnessLaboratory ->
+            [ div [] [ text "AcuteIllnessLaboratory here" ] ]
+
+        AcuteIllnessExposure ->
+            [ div [] [ text "AcuteIllnessExposure here" ] ]
 
 
+viewAcuteIllnessSymptomsContent : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> SymptomsData -> List (Html Msg)
+viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) data =
+    let
+        activity =
+            AcuteIllnessSymptoms
 
--- viewAcuteIllnessContent : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> AcuteIllnessData -> List (Html Msg)
--- viewAcuteIllnessContent language currentDate id ( personId, measurements ) data =
---     let
---         activity =
---             AcuteIllnessAcuteIllness
---
---         form =
---             measurements.acuteIllness
---                 |> Maybe.map (Tuple.second >> .value)
---                 |> acuteIllnessFormWithDefault data.form
---
---         totalTasks =
---             1
---
---         tasksCompleted =
---             taskCompleted form.signs
---     in
---     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
---     , div [ class "ui full segment" ]
---         [ div [ class "full content" ]
---             [ div [ class "ui form family-planning" ]
---                 [ p [] [ text <| translate language <| Translate.AcuteIllnessActivityHelper activity ]
---                 , viewLabel language Translate.SelectAllSigns
---                 , viewCheckBoxMultipleSelectInput language
---                     [ Edema, AbdominalDistension, DrySkin ]
---                     [ Apathy, PoorAppetite, BrittleHair ]
---                     (form.signs |> Maybe.withDefault [])
---                     (Just NormalChildAcuteIllness)
---                     SetAcuteIllnessSign
---                     Translate.ChildAcuteIllnessSignLabel
---                 ]
---             ]
---         , div [ class "actions" ]
---             [ button
---                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
---                 , onClick <| SaveAcuteIllness personId measurements.acuteIllness
---                 ]
---                 [ text <| translate language Translate.Save ]
---             ]
---         ]
---     ]
+        tasks =
+            [ SymptomsGeneral, SymptomsRespiratory, SymptomsGI ]
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        SymptomsGeneral ->
+                            ( "symptoms-general", isJust measurements.symptomsGeneral )
+
+                        SymptomsRespiratory ->
+                            ( "symptoms-respiratory", isJust measurements.symptomsRespiratory )
+
+                        SymptomsGI ->
+                            ( "symptoms-gi", isJust measurements.symptomsGI )
+
+                isActive =
+                    task == data.activeTask
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActivePageSymptomsTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ a attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.SymptomsTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, symptomsTasksCompletedFromTotal measurements data task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Dict.get data.activeTask tasksCompletedFromTotalDict
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case data.activeTask of
+                SymptomsGeneral ->
+                    measurements.symptomsGeneral
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> symptomsGeneralFormWithDefault data.symptomsGeneralForm
+                        |> viewSymptomsGeneralForm language currentDate measurements
+
+                SymptomsRespiratory ->
+                    measurements.symptomsRespiratory
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> symptomsRespiratoryFormWithDefault data.symptomsRespiratoryForm
+                        |> viewSymptomsRespiratoryForm language currentDate measurements
+
+                SymptomsGI ->
+                    measurements.symptomsGI
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> symptomsGIFormWithDefault data.symptomsGIForm
+                        |> viewSymptomsGIForm language currentDate measurements
+
+        getNextTask currentTask =
+            case currentTask of
+                SymptomsGeneral ->
+                    [ SymptomsRespiratory, SymptomsGI ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
+
+                SymptomsRespiratory ->
+                    [ SymptomsGI, SymptomsGeneral ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
+
+                SymptomsGI ->
+                    [ SymptomsGeneral, SymptomsRespiratory ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
+
+        actions =
+            let
+                nextTask =
+                    getNextTask data.activeTask
+
+                saveMsg =
+                    case data.activeTask of
+                        SymptomsGeneral ->
+                            SaveSymptomsGeneral personId measurements.symptomsGeneral nextTask
+
+                        SymptomsRespiratory ->
+                            SaveSymptomsRespiratory personId measurements.symptomsRespiratory nextTask
+
+                        SymptomsGI ->
+                            SaveSymptomsGI personId measurements.symptomsGI nextTask
+            in
+            div [ class "actions symptoms" ]
+                [ button
+                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                    , onClick saveMsg
+                    ]
+                    [ text <| translate language Translate.Save ]
+                ]
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask <|
+                tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
+            ]
+        ]
+    ]
+
+
+viewSymptomsGeneralForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsGeneralForm -> Html Msg
+viewSymptomsGeneralForm language currentDate measurements form =
+    div [] [ text "viewSymptomsGeneralForm" ]
+
+
+viewSymptomsRespiratoryForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsRespiratoryForm -> Html Msg
+viewSymptomsRespiratoryForm language currentDate measurements form =
+    div [] [ text "viewSymptomsRespiratoryForm" ]
+
+
+viewSymptomsGIForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsGIForm -> Html Msg
+viewSymptomsGIForm language currentDate measurements form =
+    div [] [ text "viewSymptomsGIForm" ]

@@ -9,7 +9,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
-import Pages.AcuteIllnessActivity.Utils exposing (acuteIllnessFormWithDefault, toAcuteIllnessValueWithDefault)
+import Pages.AcuteIllnessActivity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import RemoteData exposing (RemoteData(..))
 import Result exposing (Result)
@@ -22,6 +22,35 @@ update currentDate id db msg model =
             ( model
             , Cmd.none
             , [ App.Model.SetActivePage page ]
+            )
+
+        SetActivePageSymptomsTask task ->
+            let
+                updatedData =
+                    model.symptomsData
+                        |> (\data -> { data | activeTask = task })
+            in
+            ( { model | symptomsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveSymptomsGeneral personId saved nextTask ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
+        SaveSymptomsRespiratory personId saved nextTask ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
+        SaveSymptomsGI personId saved nextTask ->
+            ( model
+            , Cmd.none
+            , []
             )
 
 

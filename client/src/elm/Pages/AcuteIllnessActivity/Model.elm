@@ -1,11 +1,4 @@
-module Pages.AcuteIllnessActivity.Model exposing
-    ( AcuteIllnessData
-    , AcuteIllnessForm
-    , AcuteIllnessValue
-    , Model
-    , Msg(..)
-    , emptyModel
-    )
+module Pages.AcuteIllnessActivity.Model exposing (Model, Msg(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), emptyModel, emptySymptomsData)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
@@ -14,6 +7,10 @@ import Pages.Page exposing (Page)
 
 type Msg
     = SetActivePage Page
+    | SetActivePageSymptomsTask SymptomsTask
+    | SaveSymptomsGeneral PersonId (Maybe ( SymptomsGeneralId, SymptomsGeneral )) (Maybe SymptomsTask)
+    | SaveSymptomsRespiratory PersonId (Maybe ( SymptomsRespiratoryId, SymptomsRespiratory )) (Maybe SymptomsTask)
+    | SaveSymptomsGI PersonId (Maybe ( SymptomsGIId, SymptomsGI )) (Maybe SymptomsTask)
 
 
 
@@ -22,32 +19,49 @@ type Msg
 
 
 type alias Model =
-    { -- acuteIllnessData : AcuteIllnessData
+    { symptomsData : SymptomsData
     }
 
 
 emptyModel : Model
 emptyModel =
-    { -- acuteIllnessData = emptyAcuteIllnessData
+    { symptomsData = emptySymptomsData
     }
 
 
-type alias AcuteIllnessData =
-    { -- form : AcuteIllnessForm
+type alias SymptomsData =
+    { symptomsGeneralForm : SymptomsGeneralForm
+    , symptomsRespiratoryForm : SymptomsRespiratoryForm
+    , symptomsGIForm : SymptomsGIForm
+    , activeTask : SymptomsTask
     }
 
 
-emptyAcuteIllnessData : AcuteIllnessData
-emptyAcuteIllnessData =
-    { -- form = AcuteIllnessForm Nothing
+emptySymptomsData : SymptomsData
+emptySymptomsData =
+    { symptomsGeneralForm = SymptomsGeneralForm Nothing
+    , symptomsRespiratoryForm = SymptomsRespiratoryForm Nothing
+    , symptomsGIForm = SymptomsGIForm Nothing
+    , activeTask = SymptomsGeneral
     }
 
 
-type alias AcuteIllnessForm =
-    { -- signs : Maybe (List ChildAcuteIllnessSign)
+type SymptomsTask
+    = SymptomsGeneral
+    | SymptomsRespiratory
+    | SymptomsGI
+
+
+type alias SymptomsGeneralForm =
+    { signs : Maybe (List SymptomsGeneralSign)
     }
 
 
-type alias AcuteIllnessValue =
-    { -- signs : Maybe (List ChildAcuteIllnessSign)
+type alias SymptomsRespiratoryForm =
+    { signs : Maybe (List SymptomsRespiratorySign)
+    }
+
+
+type alias SymptomsGIForm =
+    { signs : Maybe (List SymptomsGISign)
     }
