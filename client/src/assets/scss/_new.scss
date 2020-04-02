@@ -379,6 +379,21 @@ div.page-pregnancy-outcome {
 
 }
 
+// Common for Encounter pages
+div.page-encounter {
+
+    .ui.full.segment {
+
+      .full.content {
+
+        .card .content p {
+          text-align: center;
+          white-space: unset;
+        }
+      }
+    }
+}
+
 //Common for Activity pages
 div.page-activity {
 
@@ -417,13 +432,6 @@ div.page-activity {
 div.page-encounter.prenatal {
 
     .ui.full.segment {
-
-      .full.content {
-
-        .card .content p {
-          white-space: unset;
-        }
-      }
 
       .reports-wrapper {
 
