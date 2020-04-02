@@ -227,6 +227,36 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create symptoms_general content'.
+  $permissions['create symptoms_general content'] = array(
+    'name' => 'create symptoms_general content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create symptoms_gi content'.
+  $permissions['create symptoms_gi content'] = array(
+    'name' => 'create symptoms_gi content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create symptoms_respiratory content'.
+  $permissions['create symptoms_respiratory content'] = array(
+    'name' => 'create symptoms_respiratory content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create vitals content'.
   $permissions['create vitals content'] = array(
     'name' => 'create vitals content',
@@ -437,6 +467,33 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any symptoms_general content'.
+  $permissions['delete any symptoms_general content'] = array(
+    'name' => 'delete any symptoms_general content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any symptoms_gi content'.
+  $permissions['delete any symptoms_gi content'] = array(
+    'name' => 'delete any symptoms_gi content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any symptoms_respiratory content'.
+  $permissions['delete any symptoms_respiratory content'] = array(
+    'name' => 'delete any symptoms_respiratory content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any vitals content'.
   $permissions['delete any vitals content'] = array(
     'name' => 'delete any vitals content',
@@ -638,6 +695,33 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own social_history content'.
   $permissions['delete own social_history content'] = array(
     'name' => 'delete own social_history content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own symptoms_general content'.
+  $permissions['delete own symptoms_general content'] = array(
+    'name' => 'delete own symptoms_general content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own symptoms_gi content'.
+  $permissions['delete own symptoms_gi content'] = array(
+    'name' => 'delete own symptoms_gi content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own symptoms_respiratory content'.
+  $permissions['delete own symptoms_respiratory content'] = array(
+    'name' => 'delete own symptoms_respiratory content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -878,6 +962,36 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any symptoms_general content'.
+  $permissions['edit any symptoms_general content'] = array(
+    'name' => 'edit any symptoms_general content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any symptoms_gi content'.
+  $permissions['edit any symptoms_gi content'] = array(
+    'name' => 'edit any symptoms_gi content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any symptoms_respiratory content'.
+  $permissions['edit any symptoms_respiratory content'] = array(
+    'name' => 'edit any symptoms_respiratory content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any vitals content'.
   $permissions['edit any vitals content'] = array(
     'name' => 'edit any vitals content',
@@ -1108,6 +1222,36 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit own social_history content'.
   $permissions['edit own social_history content'] = array(
     'name' => 'edit own social_history content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own symptoms_general content'.
+  $permissions['edit own symptoms_general content'] = array(
+    'name' => 'edit own symptoms_general content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own symptoms_gi content'.
+  $permissions['edit own symptoms_gi content'] = array(
+    'name' => 'edit own symptoms_gi content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own symptoms_respiratory content'.
+  $permissions['edit own symptoms_respiratory content'] = array(
+    'name' => 'edit own symptoms_respiratory content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
