@@ -128,9 +128,7 @@ viewMainPageContent language currentDate id measurements model =
             div [ class "card" ]
                 [ div
                     [ class "image"
-
-                    -- Todo
-                    -- , onClick <| SetActivePage <| UserPage <| AcuteIllnessActivityPage id activity
+                    , onClick <| SetActivePage <| UserPage <| AcuteIllnessActivityPage id activity
                     ]
                     [ span [ class <| "icon-task icon-task-" ++ getActivityIcon activity ] [] ]
                 , div [ class "content" ]
