@@ -83,18 +83,8 @@
     // So, we can issue as many of these as we like while offline -- we'll just
     // receive one event here, once we're online again.
     self.addEventListener('sync', function (event) {
-        var data = {};
-        try {
-            data = JSON.parse(event.tag);
-        } catch (e) {
-            data = {
-                msg: event.tag,
-                uuid: null
-            };
-        }
-
-        if (data.msg === syncTag) {
-            var action = syncAllShards(data.uuid).catch(function (attempt) {
+        if (event.tag === syncTag) {
+            var action = syncAllShards().catch(function (attempt) {
                 // Always indicate to the browser's sync mechanism that we
                 // succeeded. Otherwise, it seems that retries are disabled
                 // for a while, which isn't really suitable. And we'll retry
@@ -111,8 +101,8 @@
     // It's triggered via a message rather than the background sync mechanism,
     // so it by-passes the browser's notion of whether we're online or not.
     self.addEventListener('message', function(event) {
-        if (event.data.tag === syncTag) {
-            var action = syncAllShards(event.data.uuid);
+        if (event.data === syncTag) {
+            var action = syncAllShards();
 
             // Consider how to handle errors?
             return event.waitUntil(action);
@@ -182,13 +172,13 @@
     // This kicks off the sync process for all shards. So, resolves if all
     // succeed, and rejects if any reject. (However, each shard will record
     // its own success or failure).
-    function syncAllShards (maybeHealthCenterUuid) {
+    function syncAllShards () {
         return getCredentials().then(function (credentials) {
             return dbSync.open()
             .then(function () {
                 return nodeShardToSync()
                 .then(function (shard) {
-                    return processSingleShard (shard, credentials, maybeHealthCenterUuid).catch(function (err) {
+                    return processSingleShard (shard, credentials).catch(function (err) {
                         // When authentication token is invalid, besides standard 401 response,
                         // we may get 403 from file-upload resource.
                         // Therefore, we'll try to refresh token on 403 respnse as well.
@@ -201,7 +191,7 @@
                                 // If we could, then try again.
                                 // We fetch new credentials, since they got refreshed.
                                 return getCredentials().then(function (credentials) {
-                                    return processSingleShard (shard, credentials, maybeHealthCenterUuid);
+                                    return processSingleShard (shard, credentials);
                                 });
                             });
                         } else {
@@ -213,7 +203,7 @@
                         return getCredentials().then(function (credentials) {
                             return otherShardsToSync().then(function (shards) {
                                 var actions = shards.map(function (shard) {
-                                    return processSingleShard(shard, credentials, maybeHealthCenterUuid);
+                                    return processSingleShard(shard, credentials);
                                 });
 
                                 return Promise.all(actions);
@@ -226,16 +216,16 @@
     }
 
     // Uploads and then Downloads data for single shard.
-    function processSingleShard (shard, credentials, maybeHealthCenterUuid) {
+    function processSingleShard (shard, credentials) {
         // Probably makes sense to upload and then download ...
         // that way, we'll get the server's interpretation of
         // our changes immediately.
-        return uploadSingleShard(shard, credentials, maybeHealthCenterUuid).then(function () {
-            return downloadSingleShard(shard, credentials, maybeHealthCenterUuid);
+        return uploadSingleShard(shard, credentials).then(function () {
+            return downloadSingleShard(shard, credentials);
         });
     }
 
-    function getSyncUrl (shard, credentials, maybeHealthCenterUuid) {
+    function getSyncUrl (shard, credentials) {
         var token = credentials.access_token;
         var backendUrl = credentials.backend_url;
         var dbVersion = dbSync.verno;
@@ -247,11 +237,9 @@
             '&db_version=', dbVersion
           ]
 
-        if (maybeHealthCenterUuid) {
-            var healthCenterUuid = maybeHealthCenterUuid;
-
+        if (shard.uuid) {
             var criteria = {
-                uuid: healthCenterUuid
+                uuid: shard.uuid
             };
 
             var statsTable = dbSync.statistics;
@@ -259,23 +247,20 @@
 
             return query.first().then(function (syncData) {
                 if (syncData) {
-                    return getSyncUrlParams(urlArray, syncData['uuid'], syncData['stats_cache_hash']);
+                    return getSyncUrlParams(urlArray, syncData['stats_cache_hash']);
                 }
                 else {
-                    return getSyncUrlParams(urlArray, healthCenterUuid);
+                    return getSyncUrlParams(urlArray);
                 }
             }).catch(formatDatabaseError);
         }
         else {
-            // Sync without health center ID.
+            // Sync without stats cache hash.
             return Promise.resolve(getSyncUrlParams(urlArray));
         }
     }
 
-    function getSyncUrlParams(urlArray, maybeHealthCenterUuid, maybeStatsCacheHash) {
-        if (maybeHealthCenterUuid) {
-            urlArray.push('&health_center_uuid=', maybeHealthCenterUuid);
-        }
+    function getSyncUrlParams(urlArray, maybeStatsCacheHash) {
         if (maybeStatsCacheHash) {
             // We already have stats synced, however we send their md5 hash to
             // the server so it would know if we have the most up to date
@@ -301,8 +286,8 @@
     // case, the result has been recorded once this resolves or rejects.
     //
     // The parameter is our shard metadata.
-    function uploadSingleShard (shard, credentials, maybeHealthCenterUuid) {
-        return getSyncUrl(shard, credentials, maybeHealthCenterUuid).then(function (syncUrl) {
+    function uploadSingleShard (shard, credentials) {
+        return getSyncUrl(shard, credentials).then(function (syncUrl) {
             var uploadUrl = getUploadUrl(credentials);
 
             return recordAttempt(shard.uuid, {
@@ -320,7 +305,7 @@
                     }).then(function () {
                         if (status.remaining > 0) {
                             // Keep going if there are more.
-                            return uploadSingleShard(shard, credentials, maybeHealthCenterUuid);
+                            return uploadSingleShard(shard, credentials);
                         } else {
                             return Promise.resolve(status);
                         }
@@ -334,9 +319,9 @@
     // case, the result has been recorded once this resolves or rejects.
     //
     // The parameter is our shard metadata.
-    function downloadSingleShard (shard, credentials, maybeHealthCenterUuid) {
+    function downloadSingleShard (shard, credentials) {
         return getLastVid(shard.uuid).then(function (baseRevision) {
-            getSyncUrl(shard, credentials, maybeHealthCenterUuid).then(function (syncUrl) {
+            getSyncUrl(shard, credentials).then(function (syncUrl) {
                 var url = syncUrl + '&base_revision=' + baseRevision;
 
                 return recordAttempt(shard.uuid, {
@@ -358,7 +343,7 @@
                             }).then(sendSyncData).then(function () {
                                 if (status.remaining > 0) {
                                     // Keep going if there are more.
-                                    return downloadSingleShard(shard, credentials, maybeHealthCenterUuid);
+                                    return downloadSingleShard(shard, credentials);
                                 } else {
                                     return Promise.resolve(status);
                                 }

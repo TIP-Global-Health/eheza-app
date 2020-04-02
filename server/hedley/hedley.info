@@ -44,6 +44,7 @@ dependencies[] = hedley_activity
 dependencies[] = hedley_admin
 dependencies[] = hedley_device
 dependencies[] = hedley_health_center
+dependencies[] = hedley_general
 dependencies[] = hedley_patient
 dependencies[] = hedley_person
 dependencies[] = hedley_pusher

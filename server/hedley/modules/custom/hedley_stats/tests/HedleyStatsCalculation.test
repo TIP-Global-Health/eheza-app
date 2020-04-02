@@ -340,12 +340,26 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $request = [
       'base_revision' => 1,
       'db_version' => 8,
-      'health_center_uuid' => $health_center_wrapper->field_uuid->value(),
     ];
 
-    $results = $handler->get('', $request);
+    // First request will create the AQ item and get all the data for the HC.
+    $handler->get($health_center_wrapper->field_uuid->value(), $request);
+
+    $aq_item = $this->loadAqItemByTitle(HEDLEY_STATS_CALCULATE_STATS . '_' . $this->healthCenterId);
+    $this->processAqItem($aq_item);
+
+    // Then, send the second request to get the stats.
+    $results = $handler->get($health_center_wrapper->field_uuid->value(), $request);
 
     $stats = end($results['batch']);
+
+    $this->assertTrue(is_array($stats));
+
+    if (!is_array($stats)) {
+      // No need to check the rest if it's not an array, the above test will
+      // fail and this will be enough to know something went wrong.
+      return;
+    }
 
     // Check that we got the stats.
     $this->assertEqual($stats['type'], 'statistics');
@@ -359,7 +373,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     // Call again with cache hash to make sure we don't get the results this
     // time.
     $request['stats_cache_hash'] = $stats['stats_cache_hash'];
-    $results2 = $handler->get('', $request);
+    $results2 = $handler->get($health_center_wrapper->field_uuid->value(), $request);
 
     // Check the results are empty which means that it is cached and won't sent
     // it again to the frontend.
@@ -370,7 +384,12 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
     // Send with a random hash to dummy an old cache hash.
     $request['stats_cache_hash'] = 'some-old-cache';
-    $results3 = $handler->get('', $request);
+    $handler->get($health_center_wrapper->field_uuid->value(), $request);
+
+    $aq_item = $this->loadAqItemByTitle(HEDLEY_STATS_CALCULATE_STATS . '_' . $this->healthCenterId);
+    $this->processAqItem($aq_item);
+
+    $results3 = $handler->get($health_center_wrapper->field_uuid->value(), $request);
     $stats3 = end($results3['batch']);
 
     // Check that we got the stats.
@@ -379,11 +398,16 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
 
     // Remove the cache hash and expect to get the stats again.
     unset($request['stats_cache_hash']);
-    $results4 = $handler->get('', $request);
+    $handler->get($health_center_wrapper->field_uuid->value(), $request);
+
+    $aq_item = $this->loadAqItemByTitle(HEDLEY_STATS_CALCULATE_STATS . '_' . $this->healthCenterId);
+    $this->processAqItem($aq_item);
+
+    $results4 = $handler->get($health_center_wrapper->field_uuid->value(), $request);
     $stats4 = end($results4['batch']);
 
     // Check that we got the stats.
-    $this->assertEqual($stats4['type'], 'statistics');
+    $this->assertTrue(is_array($stats4));
   }
 
   /**
@@ -467,6 +491,43 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     $this->assertEqual($moderate_count, $beneficiaries[$session_month]['wasting'][HEDLEY_STATS_MODERATE]);
     $this->assertEqual($severe_count, $beneficiaries[$session_month]['muac'][HEDLEY_STATS_SEVERE]);
     $this->assertEqual($moderate_count, $beneficiaries[$session_month]['muac'][HEDLEY_STATS_MODERATE]);
+  }
+
+  /**
+   * Load an AQ Item.
+   *
+   * @param string $item_title
+   *   The AQ item unique title.
+   *
+   * @return mixed
+   *   The loaded AQ item, or FALSE if none found.
+   */
+  protected function loadAqItemByTitle($item_title) {
+    $aq_item_id = hedley_general_get_aq_item_by_title($item_title, TRUE);
+    if (!$aq_item_id) {
+      return FALSE;
+    }
+
+    entity_get_controller('advancedqueue_item')->resetCache();
+    return entity_load_single('advancedqueue_item', $aq_item_id);
+  }
+
+  /**
+   * Process AQ item.
+   *
+   * @param object $aq_item
+   *   The AQ item.
+   * @param array $queue_info_overrides
+   *   Array that will override existing Queue info. Defaults to empty array.
+   */
+  protected function processAqItem($aq_item, array $queue_info_overrides = []) {
+    $queues = advancedqueue_get_queues_info();
+
+    $queue_name = $aq_item->name;
+    $queue_info = $queue_info_overrides + $queues[$queue_name];
+    $queue = DrupalQueue::get($queue_name);
+
+    advancedqueue_process_item($queue, $queue_name, $queue_info, $aq_item);
   }
 
 }

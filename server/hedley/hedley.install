@@ -561,3 +561,10 @@ function hedley_update_7023() {
 function hedley_update_7024() {
   module_enable(['hedley_stats']);
 }
+
+/**
+ * Enable the Hedley General module.
+ */
+function hedley_update_7025() {
+  module_enable(['hedley_general']);
+}
