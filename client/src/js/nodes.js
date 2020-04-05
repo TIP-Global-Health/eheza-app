@@ -125,6 +125,9 @@
         session: 'nodes',
         social_history: 'shards',
         syncmetadata: 'syncMetadata',
+        symptoms_general: 'shards',
+        symptoms_gi: 'shards',
+        symptoms_respiratory: 'shards',
         vitals: 'shards',
         weight: 'shards'
     };
