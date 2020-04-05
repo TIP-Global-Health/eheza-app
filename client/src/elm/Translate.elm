@@ -573,6 +573,9 @@ type TranslationId
     | StillbornPreviousDelivery
     | SuccessiveAbortions
     | SuccessivePrematureDeliveries
+    | SymptomsGeneralSign SymptomsGeneralSign
+    | SymptomsGISign SymptomsGISign
+    | SymptomsRespiratorySign SymptomsRespiratorySign
     | SymptomsTask SymptomsTask
     | GroupEncounterClosed
     | GroupEncounterClosed2 SessionId
@@ -3781,6 +3784,102 @@ translationSet trans =
             { english = "Successive Premature Deliveries"
             , kinyarwanda = Nothing
             }
+
+        SymptomsGeneralSign sign ->
+            case sign of
+                BodyAches ->
+                    { english = "Body Aches"
+                    , kinyarwanda = Nothing
+                    }
+
+                Chills ->
+                    { english = "Chills"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomGeneralFever ->
+                    { english = "Fever"
+                    , kinyarwanda = Nothing
+                    }
+
+                Headache ->
+                    { english = "Headache"
+                    , kinyarwanda = Nothing
+                    }
+
+                NightSweats ->
+                    { english = "Night Sweats"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoSymptomsGeneral ->
+                    { english = "None of the above"
+                    , kinyarwanda = Nothing
+                    }
+
+        SymptomsGISign sign ->
+            case sign of
+                SymptomGIAbdominalPain ->
+                    { english = "Abdominal Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                BloodyDiarrhea ->
+                    { english = "Bloody Diarrhea"
+                    , kinyarwanda = Nothing
+                    }
+
+                Nausea ->
+                    { english = "Nausea"
+                    , kinyarwanda = Nothing
+                    }
+
+                NonBloodyDiarrhea ->
+                    { english = "Non-Blood yDiarrhea"
+                    , kinyarwanda = Nothing
+                    }
+
+                Vomiting ->
+                    { english = "Vomiting"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoSymptomsGI ->
+                    { english = "None of the above"
+                    , kinyarwanda = Nothing
+                    }
+
+        SymptomsRespiratorySign sign ->
+            case sign of
+                BloodInSputum ->
+                    { english = "Blood in Sputum"
+                    , kinyarwanda = Nothing
+                    }
+
+                Cough ->
+                    { english = "Cough"
+                    , kinyarwanda = Nothing
+                    }
+
+                NasalCongestion ->
+                    { english = "Nasal Congestion"
+                    , kinyarwanda = Nothing
+                    }
+
+                ShortnessOfBreath ->
+                    { english = "Shortness of Breath"
+                    , kinyarwanda = Nothing
+                    }
+
+                SoreThroat ->
+                    { english = "Sore Throat"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoSymptomsRespiratory ->
+                    { english = "None of the above"
+                    , kinyarwanda = Nothing
+                    }
 
         SymptomsTask task ->
             case task of
