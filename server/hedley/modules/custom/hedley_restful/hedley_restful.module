@@ -14,7 +14,7 @@ define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 9);
  * we sync to all devices.
  */
 const HEDLEY_RESTFUL_ALL_DEVICES = [
-  'acute_illness_encounters' => 'acute-illness-encounters',
+  'acute_illness_encounter' => 'acute-illness-encounters',
   'catchment_area' => 'catchment_areas',
   'clinic' => 'clinics',
   'counseling_schedule' => 'counseling-schedule',

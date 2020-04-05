@@ -71,8 +71,8 @@
         'stillbirths_preterm',
         'term_pregnancy',
         'timestamp',
-        'vid'
-        'vomiting_period',
+        'vid',
+        'vomiting_period'
     ];
 
     var floatFields = [
