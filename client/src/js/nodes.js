@@ -44,6 +44,9 @@
                     else if (type === 'nutrition-measurements') {
                         return event.respondWith(viewMeasurements('nutrition_encounter', uuid));
                     }
+                    else if (type === 'acute-illness-measurements') {
+                        return event.respondWith(viewMeasurements('acute_illness_encounter', uuid));
+                    }
                     else {
                         return event.respondWith(view(type, uuid));
                     }
@@ -442,6 +445,9 @@
                     else if (key === 'nutrition_encounter') {
                       target = node.nutrition_encounter;
                     }
+                    else if (key === 'acute_illness_encounter') {
+                      target = node.acute_illness_encounter;
+                    }
 
                     data[target] = data[target] || {};
                     if (data[target][node.type]) {
@@ -561,7 +567,7 @@
                     }
                 }
 
-                if (type === 'prenatal_encounter' || type === 'nutrition_encounter') {
+                if (type === 'prenatal_encounter' || type === 'nutrition_encounter' || type === 'acute_illness_encounter') {
                   var individualSessionId = params.get('individual_participant');
                   if (individualSessionId) {
                     modifyQuery = modifyQuery.then(function () {
