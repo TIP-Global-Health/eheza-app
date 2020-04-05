@@ -455,7 +455,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    *   The date in string for last year's session.
    * @param string $this_year_session_date
    *   The date in string for this year's session.
-   * * @param string|bool $children_bd
+   * @param string|bool $children_bd
    *   The birthday of the children created in the sessions.
    *
    * @return array
