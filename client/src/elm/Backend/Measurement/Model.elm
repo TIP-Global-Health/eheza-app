@@ -565,7 +565,7 @@ type SymptomsGeneralSign
 
 
 type alias SymptomsGeneral =
-    AcuteIllnessMeasurement (EverySet SymptomsGeneralSign)
+    AcuteIllnessMeasurement (Dict SymptomsGeneralSign Int)
 
 
 type SymptomsRespiratorySign
@@ -578,7 +578,7 @@ type SymptomsRespiratorySign
 
 
 type alias SymptomsRespiratory =
-    AcuteIllnessMeasurement (EverySet SymptomsRespiratorySign)
+    AcuteIllnessMeasurement (Dict SymptomsRespiratorySign Int)
 
 
 type SymptomsGISign
@@ -591,7 +591,7 @@ type SymptomsGISign
 
 
 type alias SymptomsGI =
-    AcuteIllnessMeasurement (EverySet SymptomsGISign)
+    AcuteIllnessMeasurement (Dict SymptomsGISign Int)
 
 
 

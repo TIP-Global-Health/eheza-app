@@ -944,9 +944,24 @@ decodeNutritionNutrition =
 
 decodeSymptomsGeneral : Decoder SymptomsGeneral
 decodeSymptomsGeneral =
-    decodeEverySet decodeSymptomsGeneralSign
-        |> field "general_signs"
-        |> decodeAcuteIllnessMeasurement
+    decodeAcuteIllnessMeasurement <|
+        map5 symptomsGeneralToDict
+            (field "fever_period" decodeInt)
+            (field "chills_period" decodeInt)
+            (field "night_sweats_period" decodeInt)
+            (field "body_aches_period" decodeInt)
+            (field "headache_period" decodeInt)
+
+
+symptomsGeneralToDict : Int -> Int -> Int -> Int -> Int -> Dict SymptomsGeneralSign Int
+symptomsGeneralToDict fever chills nightSweats bodyAches headache =
+    [ ( SymptomGeneralFever, fever )
+    , ( Chills, chills )
+    , ( NightSweats, nightSweats )
+    , ( BodyAches, bodyAches )
+    , ( Headache, headache )
+    ]
+        |> Dict.fromList
 
 
 decodeSymptomsGeneralSign : Decoder SymptomsGeneralSign
@@ -982,9 +997,24 @@ decodeSymptomsGeneralSign =
 
 decodeSymptomsRespiratory : Decoder SymptomsRespiratory
 decodeSymptomsRespiratory =
-    decodeEverySet decodeSymptomsRespiratorySign
-        |> field "respiratory_signs"
-        |> decodeAcuteIllnessMeasurement
+    decodeAcuteIllnessMeasurement <|
+        map5 symptomsRespiratoryToDict
+            (field "cough_period" decodeInt)
+            (field "shortness_of_breath_period" decodeInt)
+            (field "nasal_congestion_period" decodeInt)
+            (field "blood_in_sputum_period" decodeInt)
+            (field "sore_throat_period" decodeInt)
+
+
+symptomsRespiratoryToDict : Int -> Int -> Int -> Int -> Int -> Dict SymptomsRespiratorySign Int
+symptomsRespiratoryToDict cough shortnessOfBreath nasalCongestion bloodInSputum soreThroat =
+    [ ( Cough, cough )
+    , ( ShortnessOfBreath, shortnessOfBreath )
+    , ( NasalCongestion, nasalCongestion )
+    , ( BloodInSputum, bloodInSputum )
+    , ( SoreThroat, soreThroat )
+    ]
+        |> Dict.fromList
 
 
 decodeSymptomsRespiratorySign : Decoder SymptomsRespiratorySign
@@ -1020,9 +1050,24 @@ decodeSymptomsRespiratorySign =
 
 decodeSymptomsGI : Decoder SymptomsGI
 decodeSymptomsGI =
-    decodeEverySet decodeSymptomsGISign
-        |> field "gi_signs"
-        |> decodeAcuteIllnessMeasurement
+    decodeAcuteIllnessMeasurement <|
+        map5 symptomsGIToDict
+            (field "bloody_diarrhea_period" decodeInt)
+            (field "non_bloody_diarrhea_period" decodeInt)
+            (field "nausea_period" decodeInt)
+            (field "vomiting_period" decodeInt)
+            (field "abdominal_pain_period" decodeInt)
+
+
+symptomsGIToDict : Int -> Int -> Int -> Int -> Int -> Dict SymptomsGISign Int
+symptomsGIToDict bloodyDiarrhea nonBloodyDiarrhea nausea vomiting abdominalPain =
+    [ ( BloodyDiarrhea, bloodyDiarrhea )
+    , ( NonBloodyDiarrhea, nonBloodyDiarrhea )
+    , ( Nausea, nausea )
+    , ( Vomiting, vomiting )
+    , ( SymptomGIAbdominalPain, abdominalPain )
+    ]
+        |> Dict.fromList
 
 
 decodeSymptomsGISign : Decoder SymptomsGISign

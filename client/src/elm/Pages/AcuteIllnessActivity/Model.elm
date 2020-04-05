@@ -1,5 +1,6 @@
 module Pages.AcuteIllnessActivity.Model exposing (Model, Msg(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), emptyModel, emptySymptomsData)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Pages.Page exposing (Page)
@@ -53,15 +54,15 @@ type SymptomsTask
 
 
 type alias SymptomsGeneralForm =
-    { signs : Maybe (List SymptomsGeneralSign)
+    { signs : Maybe (Dict SymptomsGeneralSign Int)
     }
 
 
 type alias SymptomsRespiratoryForm =
-    { signs : Maybe (List SymptomsRespiratorySign)
+    { signs : Maybe (Dict SymptomsRespiratorySign Int)
     }
 
 
 type alias SymptomsGIForm =
-    { signs : Maybe (List SymptomsGISign)
+    { signs : Maybe (Dict SymptomsGISign Int)
     }

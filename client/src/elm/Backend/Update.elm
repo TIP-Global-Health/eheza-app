@@ -26,7 +26,7 @@ import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getMyMother)
-import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements)
+import Backend.Utils exposing (mapAcuteIllnessMeasurements, mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements)
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -1587,6 +1587,30 @@ handleRevision revision (( model, recalc ) as noChange) =
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | socialHistory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        SymptomsGeneralRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | symptomsGeneral = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        SymptomsGIRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | symptomsGI = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        SymptomsRespiratoryRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | symptomsRespiratory = Just ( uuid, data ) })
                 model
             , recalc
             )

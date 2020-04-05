@@ -1,8 +1,7 @@
-module Pages.AcuteIllnessActivity.Utils exposing (fromSymptomsGIValue, fromSymptomsGeneralValue, fromSymptomsRespiratoryValue, ifEmpty, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, toSymptomsGIValue, toSymptomsGIValueWithDefault, toSymptomsGeneralValue, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValue, toSymptomsRespiratoryValueWithDefault)
+module Pages.AcuteIllnessActivity.Utils exposing (fromSymptomsGIValue, fromSymptomsGeneralValue, fromSymptomsRespiratoryValue, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, toSymptomsGIValue, toSymptomsGIValueWithDefault, toSymptomsGeneralValue, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValue, toSymptomsRespiratoryValueWithDefault)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (AcuteIllnessMeasurements, SymptomsGISign(..), SymptomsGeneralSign(..), SymptomsRespiratorySign(..))
-import EverySet exposing (EverySet)
 import Maybe.Extra exposing (or, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.Utils exposing (taskCompleted)
@@ -45,88 +44,79 @@ symptomsTasksCompletedFromTotal measurements data task =
             )
 
 
-ifEmpty : a -> EverySet a -> EverySet a
-ifEmpty value set =
-    if EverySet.isEmpty set then
-        EverySet.singleton value
-
-    else
-        set
-
-
-fromSymptomsGeneralValue : Maybe (EverySet SymptomsGeneralSign) -> SymptomsGeneralForm
+fromSymptomsGeneralValue : Maybe (Dict SymptomsGeneralSign Int) -> SymptomsGeneralForm
 fromSymptomsGeneralValue saved =
-    { signs = Maybe.map EverySet.toList saved }
+    { signs = saved }
 
 
-symptomsGeneralFormWithDefault : SymptomsGeneralForm -> Maybe (EverySet SymptomsGeneralSign) -> SymptomsGeneralForm
+symptomsGeneralFormWithDefault : SymptomsGeneralForm -> Maybe (Dict SymptomsGeneralSign Int) -> SymptomsGeneralForm
 symptomsGeneralFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { signs = or form.signs (EverySet.toList value |> Just) }
+                { signs = or form.signs (Just value) }
             )
 
 
-toSymptomsGeneralValueWithDefault : Maybe (EverySet SymptomsGeneralSign) -> SymptomsGeneralForm -> Maybe (EverySet SymptomsGeneralSign)
+toSymptomsGeneralValueWithDefault : Maybe (Dict SymptomsGeneralSign Int) -> SymptomsGeneralForm -> Maybe (Dict SymptomsGeneralSign Int)
 toSymptomsGeneralValueWithDefault saved form =
     symptomsGeneralFormWithDefault form saved
         |> toSymptomsGeneralValue
 
 
-toSymptomsGeneralValue : SymptomsGeneralForm -> Maybe (EverySet SymptomsGeneralSign)
+toSymptomsGeneralValue : SymptomsGeneralForm -> Maybe (Dict SymptomsGeneralSign Int)
 toSymptomsGeneralValue form =
-    Maybe.map (EverySet.fromList >> ifEmpty NoSymptomsGeneral) form.signs
+    form.signs
 
 
-fromSymptomsRespiratoryValue : Maybe (EverySet SymptomsRespiratorySign) -> SymptomsRespiratoryForm
+fromSymptomsRespiratoryValue : Maybe (Dict SymptomsRespiratorySign Int) -> SymptomsRespiratoryForm
 fromSymptomsRespiratoryValue saved =
-    { signs = Maybe.map EverySet.toList saved }
+    { signs = saved }
 
 
-symptomsRespiratoryFormWithDefault : SymptomsRespiratoryForm -> Maybe (EverySet SymptomsRespiratorySign) -> SymptomsRespiratoryForm
+symptomsRespiratoryFormWithDefault : SymptomsRespiratoryForm -> Maybe (Dict SymptomsRespiratorySign Int) -> SymptomsRespiratoryForm
 symptomsRespiratoryFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { signs = or form.signs (EverySet.toList value |> Just) }
+                { signs = or form.signs (Just value) }
             )
 
 
-toSymptomsRespiratoryValueWithDefault : Maybe (EverySet SymptomsRespiratorySign) -> SymptomsRespiratoryForm -> Maybe (EverySet SymptomsRespiratorySign)
+toSymptomsRespiratoryValueWithDefault : Maybe (Dict SymptomsRespiratorySign Int) -> SymptomsRespiratoryForm -> Maybe (Dict SymptomsRespiratorySign Int)
 toSymptomsRespiratoryValueWithDefault saved form =
     symptomsRespiratoryFormWithDefault form saved
         |> toSymptomsRespiratoryValue
 
 
-toSymptomsRespiratoryValue : SymptomsRespiratoryForm -> Maybe (EverySet SymptomsRespiratorySign)
+toSymptomsRespiratoryValue : SymptomsRespiratoryForm -> Maybe (Dict SymptomsRespiratorySign Int)
 toSymptomsRespiratoryValue form =
-    Maybe.map (EverySet.fromList >> ifEmpty NoSymptomsRespiratory) form.signs
+    form.signs
 
 
-fromSymptomsGIValue : Maybe (EverySet SymptomsGISign) -> SymptomsGIForm
+fromSymptomsGIValue : Maybe (Dict SymptomsGISign Int) -> SymptomsGIForm
 fromSymptomsGIValue saved =
-    { signs = Maybe.map EverySet.toList saved }
+    { signs = saved }
 
 
-symptomsGIFormWithDefault : SymptomsGIForm -> Maybe (EverySet SymptomsGISign) -> SymptomsGIForm
+symptomsGIFormWithDefault : SymptomsGIForm -> Maybe (Dict SymptomsGISign Int) -> SymptomsGIForm
 symptomsGIFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { signs = or form.signs (EverySet.toList value |> Just) }
+                { signs = or form.signs (Just value) }
             )
 
 
-toSymptomsGIValueWithDefault : Maybe (EverySet SymptomsGISign) -> SymptomsGIForm -> Maybe (EverySet SymptomsGISign)
+toSymptomsGIValueWithDefault : Maybe (Dict SymptomsGISign Int) -> SymptomsGIForm -> Maybe (Dict SymptomsGISign Int)
 toSymptomsGIValueWithDefault saved form =
     symptomsGIFormWithDefault form saved
         |> toSymptomsGIValue
 
 
-toSymptomsGIValue : SymptomsGIForm -> Maybe (EverySet SymptomsGISign)
+toSymptomsGIValue : SymptomsGIForm -> Maybe (Dict SymptomsGISign Int)
 toSymptomsGIValue form =
-    Maybe.map (EverySet.fromList >> ifEmpty NoSymptomsGI) form.signs
+    form.signs
