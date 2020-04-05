@@ -1,7 +1,7 @@
 module Pages.AcuteIllnessActivity.View exposing (view)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
@@ -78,7 +78,7 @@ view language currentDate id activity db model =
                 |> RemoteData.andMap person
                 |> RemoteData.andMap measurements
     in
-    div [ class "page-activity acuteIllness" ] <|
+    div [ class "page-activity acute-illness" ] <|
         [ viewHeader language id activity
         , viewWebData language (viewContent language currentDate id activity model) identity personWithMeasurements
         ]
@@ -256,7 +256,7 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
 
 viewSymptomsGeneralForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsGeneralForm -> Html Msg
 viewSymptomsGeneralForm language currentDate measurements form =
-    div [] [ text "viewSymptomsGeneralForm" ]
+    viewCheckBoxSelectInputItem language form.signs ToggleSymptomsGeneralSign SetSymptomsGeneralSignValue Translate.SymptomsGeneralSign NightSweats
 
 
 viewSymptomsRespiratoryForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsRespiratoryForm -> Html Msg
@@ -267,3 +267,54 @@ viewSymptomsRespiratoryForm language currentDate measurements form =
 viewSymptomsGIForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsGIForm -> Html Msg
 viewSymptomsGIForm language currentDate measurements form =
     div [] [ text "viewSymptomsGIForm" ]
+
+
+viewCheckBoxSelectInputItem : Language -> Dict a Int -> (a -> msg) -> (a -> String -> msg) -> (a -> TranslationId) -> a -> Html msg
+viewCheckBoxSelectInputItem language data toggleMsg setMsg translateFunc sign =
+    let
+        currentValue =
+            Dict.get sign data
+
+        isChecked =
+            isJust currentValue
+
+        periodSection =
+            if isChecked then
+                let
+                    periodInput =
+                        List.range 1 14
+                            |> List.map
+                                (\number ->
+                                    option
+                                        [ value (Debug.toString number)
+                                        , selected (currentValue == Just number)
+                                        ]
+                                        [ text (Debug.toString number) ]
+                                )
+                            |> select [ onInput (setMsg sign), class "form-input period" ]
+                in
+                [ div [ class "three wide column" ] [ periodInput ]
+                , div [ class "four wide column" ]
+                    [ div [ class "days-present" ] [ text <| translate language Translate.DaysPresent ] ]
+                ]
+
+            else
+                []
+    in
+    div [ class "ui grid" ] <|
+        div [ class "seven wide column" ]
+            [ div
+                [ class "ui checkbox activity"
+                , onClick <| toggleMsg sign
+                ]
+                [ input
+                    [ type_ "checkbox"
+                    , checked isChecked
+                    , classList [ ( "checked", isChecked ) ]
+                    ]
+                    []
+                , label []
+                    [ text <| translate language (translateFunc sign) ]
+                ]
+            ]
+            :: periodSection

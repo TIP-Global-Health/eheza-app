@@ -271,6 +271,7 @@ type TranslationId
     | DaySinglePlural Int
     | DateOfBirth
     | Days
+    | DaysPresent
     | Delete
     | DeleteTrainingGroupEncounters
     | DeliveryLocation
@@ -1566,6 +1567,11 @@ translationSet trans =
         Days ->
             { english = "days"
             , kinyarwanda = Just "Iminsi"
+            }
+
+        DaysPresent ->
+            { english = "Days present"
+            , kinyarwanda = Nothing
             }
 
         Delete ->

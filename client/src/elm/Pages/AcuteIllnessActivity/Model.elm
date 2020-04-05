@@ -9,6 +9,8 @@ import Pages.Page exposing (Page)
 type Msg
     = SetActivePage Page
     | SetActivePageSymptomsTask SymptomsTask
+    | ToggleSymptomsGeneralSign SymptomsGeneralSign
+    | SetSymptomsGeneralSignValue SymptomsGeneralSign String
     | SaveSymptomsGeneral PersonId (Maybe ( SymptomsGeneralId, SymptomsGeneral )) (Maybe SymptomsTask)
     | SaveSymptomsRespiratory PersonId (Maybe ( SymptomsRespiratoryId, SymptomsRespiratory )) (Maybe SymptomsTask)
     | SaveSymptomsGI PersonId (Maybe ( SymptomsGIId, SymptomsGI )) (Maybe SymptomsTask)
@@ -40,9 +42,9 @@ type alias SymptomsData =
 
 emptySymptomsData : SymptomsData
 emptySymptomsData =
-    { symptomsGeneralForm = SymptomsGeneralForm Nothing
-    , symptomsRespiratoryForm = SymptomsRespiratoryForm Nothing
-    , symptomsGIForm = SymptomsGIForm Nothing
+    { symptomsGeneralForm = SymptomsGeneralForm Dict.empty
+    , symptomsRespiratoryForm = SymptomsRespiratoryForm Dict.empty
+    , symptomsGIForm = SymptomsGIForm Dict.empty
     , activeTask = SymptomsGeneral
     }
 
@@ -54,15 +56,15 @@ type SymptomsTask
 
 
 type alias SymptomsGeneralForm =
-    { signs : Maybe (Dict SymptomsGeneralSign Int)
+    { signs : Dict SymptomsGeneralSign Int
     }
 
 
 type alias SymptomsRespiratoryForm =
-    { signs : Maybe (Dict SymptomsRespiratorySign Int)
+    { signs : Dict SymptomsRespiratorySign Int
     }
 
 
 type alias SymptomsGIForm =
-    { signs : Maybe (Dict SymptomsGISign Int)
+    { signs : Dict SymptomsGISign Int
     }

@@ -460,6 +460,37 @@ div.page-encounter.prenatal {
 }
 
 // Prenatal Activity page
+div.page-activity.acute-illness {
+
+  .ui.full.segment {
+
+    .form-input {
+
+      // Pregnanacy Dating Inputs
+      &.period {
+        background: $color-white;
+        border: 2px solid $color-light-gray;
+        margin-top: -10px;
+        padding: 5px;
+        width: 100%;
+      }
+    }
+
+    .days-present {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .separator {
+      border: 1px solid;
+      color: $color-light-gray;
+      margin: 30px 0;
+      width: 100%;
+    }
+  }
+}
+
+// Prenatal Activity page
 div.page-activity.prenatal {
 
     .ui.full.segment {

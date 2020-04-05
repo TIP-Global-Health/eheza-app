@@ -17,6 +17,10 @@ import Result exposing (Result)
 
 update : NominalDate -> AcuteIllnessEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id db msg model =
+    let
+        noChange =
+            ( model, Cmd.none, [] )
+    in
     case msg of
         SetActivePage page ->
             ( model
@@ -34,6 +38,58 @@ update currentDate id db msg model =
             , Cmd.none
             , []
             )
+
+        ToggleSymptomsGeneralSign sign ->
+            let
+                form =
+                    model.symptomsData.symptomsGeneralForm
+
+                signs =
+                    form.signs
+
+                updatedSigns =
+                    if Dict.member sign signs then
+                        Dict.remove sign signs
+
+                    else
+                        Dict.insert sign 1 signs
+
+                updatedForm =
+                    { form | signs = updatedSigns }
+
+                updatedData =
+                    model.symptomsData
+                        |> (\data -> { data | symptomsGeneralForm = updatedForm })
+            in
+            ( { model | symptomsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetSymptomsGeneralSignValue sign string ->
+            String.toInt string
+                |> Maybe.map
+                    (\value ->
+                        let
+                            form =
+                                model.symptomsData.symptomsGeneralForm
+
+                            signs =
+                                form.signs
+
+                            updatedForm =
+                                { form | signs = Dict.insert sign value form.signs }
+
+                            updatedData =
+                                model.symptomsData
+                                    |> (\data -> { data | symptomsGeneralForm = updatedForm })
+                        in
+                        ( { model | symptomsData = updatedData }
+                        , Cmd.none
+                        , []
+                        )
+                    )
+                |> Maybe.withDefault noChange
 
         SaveSymptomsGeneral personId saved nextTask ->
             ( model
