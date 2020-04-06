@@ -223,6 +223,7 @@ type TranslationId
     | Celsius
     | Cell
     | ChartPhrase ChartPhrase
+    | CheckAllThatApply
     | CheckIn
     | ChildHmisNumber
     | ChildDemographicInformation
@@ -462,6 +463,7 @@ type TranslationId
     | PartnerHivTestResult
     | PartnerReceivedHivCounseling
     | PartnerReceivedHivTesting
+    | PatientGotAnySymptoms
     | PatientProgress
     | PatientInformation
     | PatientProvisionsTask PatientProvisionsTask
@@ -1170,6 +1172,11 @@ translationSet trans =
 
         ChartPhrase phrase ->
             translateChartPhrase phrase
+
+        CheckAllThatApply ->
+            { english = "Please check all that apply"
+            , kinyarwanda = Nothing
+            }
 
         CheckIn ->
             { english = "Check in:"
@@ -3033,6 +3040,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PatientGotAnySymptoms ->
+            { english = "Does the patient have any of these symptoms"
+            , kinyarwanda = Nothing
+            }
+
         PatientProgress ->
             { english = "Patient Progress"
             , kinyarwanda = Nothing
@@ -3841,7 +3853,7 @@ translationSet trans =
                     }
 
                 NonBloodyDiarrhea ->
-                    { english = "Non-Blood yDiarrhea"
+                    { english = "Non-Bloody Diarrhea"
                     , kinyarwanda = Nothing
                     }
 

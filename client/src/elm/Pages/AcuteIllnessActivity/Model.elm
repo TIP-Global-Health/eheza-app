@@ -10,7 +10,11 @@ type Msg
     = SetActivePage Page
     | SetActivePageSymptomsTask SymptomsTask
     | ToggleSymptomsGeneralSign SymptomsGeneralSign
+    | ToggleSymptomsGISign SymptomsGISign
+    | ToggleSymptomsRespiratorySign SymptomsRespiratorySign
     | SetSymptomsGeneralSignValue SymptomsGeneralSign String
+    | SetSymptomsGISignValue SymptomsGISign String
+    | SetSymptomsRespiratorySignValue SymptomsRespiratorySign String
     | SaveSymptomsGeneral PersonId (Maybe ( SymptomsGeneralId, SymptomsGeneral )) (Maybe SymptomsTask)
     | SaveSymptomsRespiratory PersonId (Maybe ( SymptomsRespiratoryId, SymptomsRespiratory )) (Maybe SymptomsTask)
     | SaveSymptomsGI PersonId (Maybe ( SymptomsGIId, SymptomsGI )) (Maybe SymptomsTask)

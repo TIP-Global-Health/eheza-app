@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Utils exposing (symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskCompleted)
+module Pages.AcuteIllnessActivity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskCompleted, toggleSymptomsSign)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (AcuteIllnessMeasurements, SymptomsGISign(..), SymptomsGeneralSign(..), SymptomsRespiratorySign(..))
@@ -17,6 +17,66 @@ taskCompleted notCompleted =
 
     else
         1
+
+
+allSymptomsGeneralSigns : ( List SymptomsGeneralSign, SymptomsGeneralSign )
+allSymptomsGeneralSigns =
+    ( [ SymptomGeneralFever
+      , Chills
+      , NightSweats
+      , BodyAches
+      , Headache
+      ]
+    , NoSymptomsGeneral
+    )
+
+
+allSymptomsRespiratorySigns : ( List SymptomsRespiratorySign, SymptomsRespiratorySign )
+allSymptomsRespiratorySigns =
+    ( [ Cough
+      , ShortnessOfBreath
+      , NasalCongestion
+      , BloodInSputum
+      , SoreThroat
+      ]
+    , NoSymptomsRespiratory
+    )
+
+
+allSymptomsGISigns : ( List SymptomsGISign, SymptomsGISign )
+allSymptomsGISigns =
+    ( [ BloodyDiarrhea
+      , NonBloodyDiarrhea
+      , Nausea
+      , Vomiting
+      , SymptomGIAbdominalPain
+      ]
+    , NoSymptomsGI
+    )
+
+
+toggleSymptomsSign : SymptomsTask -> a -> a -> { signs : Dict a Int } -> { signs : Dict a Int }
+toggleSymptomsSign task sign noneSign form =
+    let
+        signs =
+            form.signs
+
+        updatedSigns =
+            if sign == noneSign then
+                Dict.singleton sign 1
+
+            else
+                let
+                    signs_ =
+                        Dict.remove noneSign signs
+                in
+                if Dict.member sign signs_ then
+                    Dict.remove sign signs_
+
+                else
+                    Dict.insert sign 1 signs_
+    in
+    { form | signs = updatedSigns }
 
 
 symptomsTasksCompletedFromTotal : AcuteIllnessMeasurements -> SymptomsData -> SymptomsTask -> ( Int, Int )

@@ -256,21 +256,63 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
 
 viewSymptomsGeneralForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsGeneralForm -> Html Msg
 viewSymptomsGeneralForm language currentDate measurements form =
-    viewCheckBoxSelectInputItem language form.signs ToggleSymptomsGeneralSign SetSymptomsGeneralSignValue Translate.SymptomsGeneralSign NightSweats
+    viewCheckBoxValueInput language
+        allSymptomsGeneralSigns
+        form.signs
+        ToggleSymptomsGeneralSign
+        SetSymptomsGeneralSignValue
+        Translate.SymptomsGeneralSign
+        |> List.append
+            [ viewQuestionLabel language Translate.PatientGotAnySymptoms
+            , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+            ]
+        |> div [ class "symptoms-form general" ]
 
 
 viewSymptomsRespiratoryForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsRespiratoryForm -> Html Msg
 viewSymptomsRespiratoryForm language currentDate measurements form =
-    div [] [ text "viewSymptomsRespiratoryForm" ]
+    viewCheckBoxValueInput language
+        allSymptomsRespiratorySigns
+        form.signs
+        ToggleSymptomsRespiratorySign
+        SetSymptomsRespiratorySignValue
+        Translate.SymptomsRespiratorySign
+        |> List.append
+            [ viewQuestionLabel language Translate.PatientGotAnySymptoms
+            , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+            ]
+        |> div [ class "symptoms-form respiratory" ]
 
 
 viewSymptomsGIForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsGIForm -> Html Msg
 viewSymptomsGIForm language currentDate measurements form =
-    div [] [ text "viewSymptomsGIForm" ]
+    viewCheckBoxValueInput language
+        allSymptomsGISigns
+        form.signs
+        ToggleSymptomsGISign
+        SetSymptomsGISignValue
+        Translate.SymptomsGISign
+        |> List.append
+            [ viewQuestionLabel language Translate.PatientGotAnySymptoms
+            , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+            ]
+        |> div [ class "symptoms-form gi" ]
 
 
-viewCheckBoxSelectInputItem : Language -> Dict a Int -> (a -> msg) -> (a -> String -> msg) -> (a -> TranslationId) -> a -> Html msg
-viewCheckBoxSelectInputItem language data toggleMsg setMsg translateFunc sign =
+viewCheckBoxValueInput : Language -> ( List a, a ) -> Dict a Int -> (a -> msg) -> (a -> String -> msg) -> (a -> TranslationId) -> List (Html msg)
+viewCheckBoxValueInput language ( signs, none ) data toggleMsg setMsg translateFunc =
+    let
+        items =
+            List.map (viewCheckBoxValueInputItem language data toggleMsg setMsg translateFunc) signs
+
+        noneItem =
+            [ viewCheckBoxValueInputNone language data toggleMsg translateFunc none ]
+    in
+    items ++ noneItem
+
+
+viewCheckBoxValueInputItem : Language -> Dict a Int -> (a -> msg) -> (a -> String -> msg) -> (a -> TranslationId) -> a -> Html msg
+viewCheckBoxValueInputItem language data toggleMsg setMsg translateFunc sign =
     let
         currentValue =
             Dict.get sign data
@@ -302,7 +344,7 @@ viewCheckBoxSelectInputItem language data toggleMsg setMsg translateFunc sign =
                 []
     in
     div [ class "ui grid" ] <|
-        div [ class "seven wide column" ]
+        div [ class "eight wide column" ]
             [ div
                 [ class "ui checkbox activity"
                 , onClick <| toggleMsg sign
@@ -318,3 +360,36 @@ viewCheckBoxSelectInputItem language data toggleMsg setMsg translateFunc sign =
                 ]
             ]
             :: periodSection
+
+
+viewCheckBoxValueInputNone : Language -> Dict a Int -> (a -> msg) -> (a -> TranslationId) -> a -> Html msg
+viewCheckBoxValueInputNone language data setMsg translateFunc noneSign =
+    let
+        currentValue =
+            Dict.get noneSign data
+
+        isChecked =
+            isJust currentValue
+
+        action =
+            if isChecked then
+                []
+
+            else
+                [ onClick <| setMsg noneSign ]
+    in
+    div [ class "ui grid" ]
+        [ div
+            [ class "seven wide column" ]
+            [ div (class "ui checkbox activity" :: action)
+                [ input
+                    [ type_ "checkbox"
+                    , checked isChecked
+                    , classList [ ( "checked", isChecked ) ]
+                    ]
+                    []
+                , label []
+                    [ text <| translate language (translateFunc noneSign) ]
+                ]
+            ]
+        ]

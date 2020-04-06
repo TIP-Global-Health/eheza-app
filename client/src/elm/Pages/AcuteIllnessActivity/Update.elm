@@ -5,6 +5,7 @@ import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Model
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
+import Backend.Measurement.Model exposing (SymptomsGISign(..), SymptomsGeneralSign(..), SymptomsRespiratorySign(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
@@ -44,22 +45,46 @@ update currentDate id db msg model =
                 form =
                     model.symptomsData.symptomsGeneralForm
 
-                signs =
-                    form.signs
-
-                updatedSigns =
-                    if Dict.member sign signs then
-                        Dict.remove sign signs
-
-                    else
-                        Dict.insert sign 1 signs
-
                 updatedForm =
-                    { form | signs = updatedSigns }
+                    toggleSymptomsSign SymptomsGeneral sign NoSymptomsGeneral form
 
                 updatedData =
                     model.symptomsData
                         |> (\data -> { data | symptomsGeneralForm = updatedForm })
+            in
+            ( { model | symptomsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        ToggleSymptomsGISign sign ->
+            let
+                form =
+                    model.symptomsData.symptomsGIForm
+
+                updatedForm =
+                    toggleSymptomsSign SymptomsGI sign NoSymptomsGI form
+
+                updatedData =
+                    model.symptomsData
+                        |> (\data -> { data | symptomsGIForm = updatedForm })
+            in
+            ( { model | symptomsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        ToggleSymptomsRespiratorySign sign ->
+            let
+                form =
+                    model.symptomsData.symptomsRespiratoryForm
+
+                updatedForm =
+                    toggleSymptomsSign SymptomsRespiratory sign NoSymptomsRespiratory form
+
+                updatedData =
+                    model.symptomsData
+                        |> (\data -> { data | symptomsRespiratoryForm = updatedForm })
             in
             ( { model | symptomsData = updatedData }
             , Cmd.none
@@ -74,15 +99,56 @@ update currentDate id db msg model =
                             form =
                                 model.symptomsData.symptomsGeneralForm
 
-                            signs =
-                                form.signs
-
                             updatedForm =
                                 { form | signs = Dict.insert sign value form.signs }
 
                             updatedData =
                                 model.symptomsData
                                     |> (\data -> { data | symptomsGeneralForm = updatedForm })
+                        in
+                        ( { model | symptomsData = updatedData }
+                        , Cmd.none
+                        , []
+                        )
+                    )
+                |> Maybe.withDefault noChange
+
+        SetSymptomsGISignValue sign string ->
+            String.toInt string
+                |> Maybe.map
+                    (\value ->
+                        let
+                            form =
+                                model.symptomsData.symptomsGIForm
+
+                            updatedForm =
+                                { form | signs = Dict.insert sign value form.signs }
+
+                            updatedData =
+                                model.symptomsData
+                                    |> (\data -> { data | symptomsGIForm = updatedForm })
+                        in
+                        ( { model | symptomsData = updatedData }
+                        , Cmd.none
+                        , []
+                        )
+                    )
+                |> Maybe.withDefault noChange
+
+        SetSymptomsRespiratorySignValue sign string ->
+            String.toInt string
+                |> Maybe.map
+                    (\value ->
+                        let
+                            form =
+                                model.symptomsData.symptomsRespiratoryForm
+
+                            updatedForm =
+                                { form | signs = Dict.insert sign value form.signs }
+
+                            updatedData =
+                                model.symptomsData
+                                    |> (\data -> { data | symptomsRespiratoryForm = updatedForm })
                         in
                         ( { model | symptomsData = updatedData }
                         , Cmd.none
