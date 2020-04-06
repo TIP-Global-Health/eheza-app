@@ -238,7 +238,7 @@ nutritionMeasurementsEndpoint =
 
 acuteIllnessMeasurementsEndpoint : ReadOnlyEndPoint Error AcuteIllnessEncounterId AcuteIllnessMeasurements ()
 acuteIllnessMeasurementsEndpoint =
-    swEndpoint "nodes/acuteIllness-measurements" decodeAcuteIllnessMeasurements
+    swEndpoint "nodes/acute-illness-measurements" decodeAcuteIllnessMeasurements
 
 
 {-| Type-safe params ... how nice!
