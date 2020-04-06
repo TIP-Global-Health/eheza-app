@@ -1,5 +1,6 @@
 module Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter, Model, Msg(..), emptyModel)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
@@ -19,17 +20,27 @@ to peform the updates indicated by the `Msg` type below.
 -}
 type alias Model =
     { closeAcuteIllnessEncounter : WebData ()
-    , saveNutrition : WebData ()
+    , saveSymptomsGeneral : WebData ()
+    , saveSymptomsRespiratory : WebData ()
+    , saveSymptomsGI : WebData ()
     }
 
 
 emptyModel : Model
 emptyModel =
     { closeAcuteIllnessEncounter = NotAsked
-    , saveNutrition = NotAsked
+    , saveSymptomsGeneral = NotAsked
+    , saveSymptomsRespiratory = NotAsked
+    , saveSymptomsGI = NotAsked
     }
 
 
 type Msg
     = CloseAcuteIllnessEncounter
     | HandleClosedAcuteIllnessEncounter (WebData ())
+    | SaveSymptomsGeneral PersonId (Maybe SymptomsGeneralId) (Dict SymptomsGeneralSign Int)
+    | HandleSavedSymptomsGeneral (WebData ())
+    | SaveSymptomsRespiratory PersonId (Maybe SymptomsRespiratoryId) (Dict SymptomsRespiratorySign Int)
+    | HandleSavedSymptomsRespiratory (WebData ())
+    | SaveSymptomsGI PersonId (Maybe SymptomsGIId) (Dict SymptomsGISign Int)
+    | HandleSavedSymptomsGI (WebData ())

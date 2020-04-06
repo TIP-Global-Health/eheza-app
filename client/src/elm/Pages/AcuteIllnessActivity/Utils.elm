@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskCompleted, toggleSymptomsSign)
+module Pages.AcuteIllnessActivity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskCompleted, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toggleSymptomsSign)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (AcuteIllnessMeasurements, SymptomsGISign(..), SymptomsGeneralSign(..), SymptomsRespiratorySign(..))
@@ -138,13 +138,13 @@ symptomsGeneralFormWithDefault form saved =
             )
 
 
+toSymptomsGeneralValueWithDefault : Maybe (Dict SymptomsGeneralSign Int) -> SymptomsGeneralForm -> Dict SymptomsGeneralSign Int
+toSymptomsGeneralValueWithDefault saved form =
+    symptomsGeneralFormWithDefault form saved
+        |> .signs
 
---
---
--- toSymptomsGeneralValueWithDefault : Maybe (Dict SymptomsGeneralSign Int) -> SymptomsGeneralForm -> Maybe (Dict SymptomsGeneralSign Int)
--- toSymptomsGeneralValueWithDefault saved form =
---     symptomsGeneralFormWithDefault form saved
---         |> toSymptomsGeneralValue
+
+
 --
 --
 -- toSymptomsGeneralValue : SymptomsGeneralForm -> Maybe (Dict SymptomsGeneralSign Int)
@@ -173,13 +173,13 @@ symptomsRespiratoryFormWithDefault form saved =
             )
 
 
+toSymptomsRespiratoryValueWithDefault : Maybe (Dict SymptomsRespiratorySign Int) -> SymptomsRespiratoryForm -> Dict SymptomsRespiratorySign Int
+toSymptomsRespiratoryValueWithDefault saved form =
+    symptomsRespiratoryFormWithDefault form saved
+        |> .signs
 
---
---
--- toSymptomsRespiratoryValueWithDefault : Maybe (Dict SymptomsRespiratorySign Int) -> SymptomsRespiratoryForm -> Maybe (Dict SymptomsRespiratorySign Int)
--- toSymptomsRespiratoryValueWithDefault saved form =
---     symptomsRespiratoryFormWithDefault form saved
---         |> toSymptomsRespiratoryValue
+
+
 --
 --
 -- toSymptomsRespiratoryValue : SymptomsRespiratoryForm -> Maybe (Dict SymptomsRespiratorySign Int)
@@ -208,13 +208,13 @@ symptomsGIFormWithDefault form saved =
             )
 
 
+toSymptomsGIValueWithDefault : Maybe (Dict SymptomsGISign Int) -> SymptomsGIForm -> Dict SymptomsGISign Int
+toSymptomsGIValueWithDefault saved form =
+    symptomsGIFormWithDefault form saved
+        |> .signs
 
---
---
--- toSymptomsGIValueWithDefault : Maybe (Dict SymptomsGISign Int) -> SymptomsGIForm -> Maybe (Dict SymptomsGISign Int)
--- toSymptomsGIValueWithDefault saved form =
---     symptomsGIFormWithDefault form saved
---         |> toSymptomsGIValue
+
+
 --
 --
 -- toSymptomsGIValue : SymptomsGIForm -> Maybe (Dict SymptomsGISign Int)

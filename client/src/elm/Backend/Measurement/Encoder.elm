@@ -46,6 +46,12 @@ module Backend.Measurement.Encoder exposing
     , encodeSocialHistory
     , encodeSocialHistoryHivTestingResult
     , encodeSocialHistoryValue
+    , encodeSymptomsGI
+    , encodeSymptomsGIValue
+    , encodeSymptomsGeneral
+    , encodeSymptomsGeneralValue
+    , encodeSymptomsRespiratory
+    , encodeSymptomsRespiratoryValue
     , encodeVitals
     , encodeVitalsValue
     , encodeWeight
@@ -53,7 +59,7 @@ module Backend.Measurement.Encoder exposing
     , socialHistoryHivTestingResultToString
     )
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
@@ -878,4 +884,97 @@ encodeVitalsValue value =
     , ( "heart_rate", int value.heartRate )
     , ( "respiratory_rate", int value.respiratoryRate )
     , ( "body_temperature", float value.bodyTemperature )
+    ]
+
+
+encodeSymptomsGeneral : SymptomsGeneral -> List ( String, Value )
+encodeSymptomsGeneral =
+    encodeAcuteIllnessMeasurement encodeSymptomsGeneralValue
+
+
+encodeSymptomsGeneralValue : Dict SymptomsGeneralSign Int -> List ( String, Value )
+encodeSymptomsGeneralValue signs =
+    let
+        fever =
+            Dict.get SymptomGeneralFever signs |> Maybe.withDefault 0
+
+        chills =
+            Dict.get Chills signs |> Maybe.withDefault 0
+
+        nightSweats =
+            Dict.get NightSweats signs |> Maybe.withDefault 0
+
+        bodyAches =
+            Dict.get BodyAches signs |> Maybe.withDefault 0
+
+        headache =
+            Dict.get Headache signs |> Maybe.withDefault 0
+    in
+    [ ( "fever_period", int fever )
+    , ( "chills_period", int chills )
+    , ( "night_sweats_period", int nightSweats )
+    , ( "body_aches_period", int bodyAches )
+    , ( "headache_period", int headache )
+    ]
+
+
+encodeSymptomsRespiratory : SymptomsRespiratory -> List ( String, Value )
+encodeSymptomsRespiratory =
+    encodeAcuteIllnessMeasurement encodeSymptomsRespiratoryValue
+
+
+encodeSymptomsRespiratoryValue : Dict SymptomsRespiratorySign Int -> List ( String, Value )
+encodeSymptomsRespiratoryValue signs =
+    let
+        cough =
+            Dict.get Cough signs |> Maybe.withDefault 0
+
+        shortnessOfBreath =
+            Dict.get ShortnessOfBreath signs |> Maybe.withDefault 0
+
+        nasalCongestion =
+            Dict.get NasalCongestion signs |> Maybe.withDefault 0
+
+        bloodInSputum =
+            Dict.get BloodInSputum signs |> Maybe.withDefault 0
+
+        soreThroat =
+            Dict.get SoreThroat signs |> Maybe.withDefault 0
+    in
+    [ ( "cough_period", int cough )
+    , ( "shortness_of_breath_period", int shortnessOfBreath )
+    , ( "nasal_congestion_period", int nasalCongestion )
+    , ( "blood_in_sputum_period", int bloodInSputum )
+    , ( "sore_throat_period", int soreThroat )
+    ]
+
+
+encodeSymptomsGI : SymptomsGI -> List ( String, Value )
+encodeSymptomsGI =
+    encodeAcuteIllnessMeasurement encodeSymptomsGIValue
+
+
+encodeSymptomsGIValue : Dict SymptomsGISign Int -> List ( String, Value )
+encodeSymptomsGIValue signs =
+    let
+        bloodyDiarrhea =
+            Dict.get BloodyDiarrhea signs |> Maybe.withDefault 0
+
+        nonBloodyDiarrhea =
+            Dict.get NonBloodyDiarrhea signs |> Maybe.withDefault 0
+
+        nausea =
+            Dict.get Nausea signs |> Maybe.withDefault 0
+
+        vomiting =
+            Dict.get Vomiting signs |> Maybe.withDefault 0
+
+        abdominalPain =
+            Dict.get SymptomGIAbdominalPain signs |> Maybe.withDefault 0
+    in
+    [ ( "bloody_diarrhea_period", int bloodyDiarrhea )
+    , ( "non_bloody_diarrhea_period", int nonBloodyDiarrhea )
+    , ( "nausea_period", int nausea )
+    , ( "vomiting_period", int vomiting )
+    , ( "abdominal_pain_period", int abdominalPain )
     ]

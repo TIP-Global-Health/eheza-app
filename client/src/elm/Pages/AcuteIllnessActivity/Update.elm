@@ -157,100 +157,116 @@ update currentDate id db msg model =
                     )
                 |> Maybe.withDefault noChange
 
-        SaveSymptomsGeneral personId saved nextTask ->
-            ( model
+        SaveSymptomsGeneral personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
+                            , SymptomsGeneral
+                            )
+
+                form =
+                    model.symptomsData.symptomsGeneralForm
+
+                value =
+                    toSymptomsGeneralValueWithDefault measurement form
+
+                appMsgs =
+                    (Backend.AcuteIllnessEncounter.Model.SaveSymptomsGeneral personId measurementId value
+                        |> Backend.Model.MsgAcuteIllnessEncounter id
+                        |> App.Model.MsgIndexedDb
+                    )
+                        :: backToActivitiesMsg
+
+                updatedData =
+                    model.symptomsData
+                        |> (\data -> { data | activeTask = nextTask })
+            in
+            ( { model | symptomsData = updatedData }
             , Cmd.none
-            , []
+            , appMsgs
             )
 
-        SaveSymptomsRespiratory personId saved nextTask ->
-            ( model
+        SaveSymptomsRespiratory personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
+                            , SymptomsGeneral
+                            )
+
+                form =
+                    model.symptomsData.symptomsRespiratoryForm
+
+                value =
+                    toSymptomsRespiratoryValueWithDefault measurement form
+
+                appMsgs =
+                    (Backend.AcuteIllnessEncounter.Model.SaveSymptomsRespiratory personId measurementId value
+                        |> Backend.Model.MsgAcuteIllnessEncounter id
+                        |> App.Model.MsgIndexedDb
+                    )
+                        :: backToActivitiesMsg
+
+                updatedData =
+                    model.symptomsData
+                        |> (\data -> { data | activeTask = nextTask })
+            in
+            ( { model | symptomsData = updatedData }
             , Cmd.none
-            , []
+            , appMsgs
             )
 
-        SaveSymptomsGI personId saved nextTask ->
-            ( model
+        SaveSymptomsGI personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
+                            , SymptomsGeneral
+                            )
+
+                form =
+                    model.symptomsData.symptomsGIForm
+
+                value =
+                    toSymptomsGIValueWithDefault measurement form
+
+                appMsgs =
+                    (Backend.AcuteIllnessEncounter.Model.SaveSymptomsGI personId measurementId value
+                        |> Backend.Model.MsgAcuteIllnessEncounter id
+                        |> App.Model.MsgIndexedDb
+                    )
+                        :: backToActivitiesMsg
+
+                updatedData =
+                    model.symptomsData
+                        |> (\data -> { data | activeTask = nextTask })
+            in
+            ( { model | symptomsData = updatedData }
             , Cmd.none
-            , []
+            , appMsgs
             )
-
-
-
--- SetAcuteIllnessSign sign ->
---     let
---         form =
---             Dict.get id db.acuteIllnessMeasurements
---                 |> Maybe.withDefault NotAsked
---                 |> RemoteData.toMaybe
---                 |> Maybe.map (.acuteIllness >> Maybe.map (Tuple.second >> .value) >> acuteIllnessFormWithDefault model.acuteIllnessData.form)
---                 |> Maybe.withDefault model.acuteIllnessData.form
---
---         updatedForm =
---             case form.signs of
---                 Just signs ->
---                     if List.member sign signs then
---                         let
---                             updatedSigns =
---                                 if List.length signs == 1 then
---                                     Nothing
---
---                                 else
---                                     signs |> List.filter ((/=) sign) |> Just
---                         in
---                         { form | signs = updatedSigns }
---
---                     else
---                         case sign of
---                             NormalChildAcuteIllness ->
---                                 { form | signs = Just [ sign ] }
---
---                             _ ->
---                                 let
---                                     updatedSigns =
---                                         case signs of
---                                             [ NormalChildAcuteIllness ] ->
---                                                 Just [ sign ]
---
---                                             _ ->
---                                                 Just (sign :: signs)
---                                 in
---                                 { form | signs = updatedSigns }
---
---                 Nothing ->
---                     { form | signs = Just [ sign ] }
---
---         updatedData =
---             model.acuteIllnessData
---                 |> (\data -> { data | form = updatedForm })
---     in
---     ( { model | acuteIllnessData = updatedData }
---     , Cmd.none
---     , []
---     )
---
--- SaveAcuteIllness personId saved ->
---     let
---         measurementId =
---             Maybe.map Tuple.first saved
---
---         measurement =
---             Maybe.map (Tuple.second >> .value) saved
---
---         appMsgs =
---             model.acuteIllnessData.form
---                 |> toAcuteIllnessValueWithDefault measurement
---                 |> unwrap
---                     []
---                     (\value ->
---                         [ Backend.AcuteIllnessEncounter.Model.SaveAcuteIllness personId measurementId value
---                             |> Backend.Model.MsgAcuteIllnessEncounter id
---                             |> App.Model.MsgIndexedDb
---                         , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
---                         ]
---                     )
---     in
---     ( model
---     , Cmd.none
---     , appMsgs
---     )
