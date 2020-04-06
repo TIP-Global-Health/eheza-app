@@ -92,7 +92,7 @@ viewHeightForAgeBoys5To19 language model data =
         , yAxisLinesAndText heightForAgeConfig5To19
         , xAxisLinesAndText heightForAgeConfig5To19
         , zScoreLabelsHeightForAgeBoys5To19
-        , model.lengthHeightForAge
+        , model.lengthHeightForAge5to19
             |> RemoteData.map (.male >> .byDay >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData heightForAgeConfig5To19
@@ -167,6 +167,15 @@ type alias XAxisConfig =
 type alias YAxisConfig =
     { yAxisIntervals : Int
     , innerLinesNumber : Int
+    }
+
+
+type alias LabelConfig =
+    { title : ChartPhrase
+    , subtitle : ChartPhrase
+    , xAxis1 : Maybe ChartPhrase
+    , xAxis2 : ChartPhrase
+    , yAxis : ChartPhrase
     }
 
 
@@ -272,6 +281,86 @@ weightForHeightConfig =
         { yAxisIntervals = 2
         , innerLinesNumber = 1
         }
+    }
+
+
+heightForAgeBoysLabels : LabelConfig
+heightForAgeBoysLabels =
+    { title = Translate.LengthForAgeBoys
+    , subtitle = Translate.BirthToTwoYears
+    , xAxis1 = Just Translate.Months
+    , xAxis2 = Translate.AgeCompletedMonthsYears
+    , yAxis = Translate.LengthCm
+    }
+
+
+heightForAgeBoysLabels5To19 : LabelConfig
+heightForAgeBoysLabels5To19 =
+    { title = Translate.HeightForAgeBoys
+    , subtitle = Translate.TwoToNineteenYears
+    , xAxis1 = Just Translate.Months
+    , xAxis2 = Translate.AgeCompletedMonthsYears
+    , yAxis = Translate.HeightCm
+    }
+
+
+heightForAgeGirlsLabels5To19 : LabelConfig
+heightForAgeGirlsLabels5To19 =
+    { title = Translate.HeightForAgeGirls
+    , subtitle = Translate.TwoToNineteenYears
+    , xAxis1 = Just Translate.Months
+    , xAxis2 = Translate.AgeCompletedMonthsYears
+    , yAxis = Translate.HeightCm
+    }
+
+
+weightForAgeBoysLabels : LabelConfig
+weightForAgeBoysLabels =
+    { title = Translate.WeightForAgeBoys
+    , subtitle = Translate.BirthToTwoYears
+    , xAxis1 = Just Translate.Months
+    , xAxis2 = Translate.AgeCompletedMonthsYears
+    , yAxis = Translate.WeightKg
+    }
+
+
+weightForHeightBoysLabels : LabelConfig
+weightForHeightBoysLabels =
+    { title = Translate.WeightForLengthBoys
+    , subtitle = Translate.BirthToTwoYears
+    , xAxis1 = Nothing
+    , xAxis2 = Translate.LengthCm
+    , yAxis = Translate.WeightKg
+    }
+
+
+weightForHeightGirlsLabels : LabelConfig
+weightForHeightGirlsLabels =
+    { title = Translate.WeightForLengthGirls
+    , subtitle = Translate.BirthToTwoYears
+    , xAxis1 = Nothing
+    , xAxis2 = Translate.LengthCm
+    , yAxis = Translate.WeightKg
+    }
+
+
+weightForAgeGirlsLabels : LabelConfig
+weightForAgeGirlsLabels =
+    { title = Translate.WeightForAgeGirls
+    , subtitle = Translate.BirthToTwoYears
+    , xAxis1 = Just Translate.Months
+    , xAxis2 = Translate.AgeCompletedMonthsYears
+    , yAxis = Translate.WeightKg
+    }
+
+
+heightForAgeGirlsLabels : LabelConfig
+heightForAgeGirlsLabels =
+    { title = Translate.LengthForAgeGirls
+    , subtitle = Translate.BirthToTwoYears
+    , xAxis1 = Just Translate.Months
+    , xAxis2 = Translate.AgeCompletedMonthsYears
+    , yAxis = Translate.LengthCm
     }
 
 
@@ -882,95 +971,6 @@ yAxisLinesAndText config =
     in
     g []
         lines
-
-
-type alias LabelConfig =
-    { title : ChartPhrase
-    , subtitle : ChartPhrase
-    , xAxis1 : Maybe ChartPhrase
-    , xAxis2 : ChartPhrase
-    , yAxis : ChartPhrase
-    }
-
-
-heightForAgeBoysLabels : LabelConfig
-heightForAgeBoysLabels =
-    { title = Translate.LengthForAgeBoys
-    , subtitle = Translate.BirthToTwoYears
-    , xAxis1 = Just Translate.Months
-    , xAxis2 = Translate.AgeCompletedMonthsYears
-    , yAxis = Translate.LengthCm
-    }
-
-
-heightForAgeBoysLabels5To19 : LabelConfig
-heightForAgeBoysLabels5To19 =
-    { title = Translate.HeightForAgeBoys
-    , subtitle = Translate.TwoToNineteenYears
-    , xAxis1 = Just Translate.Months
-    , xAxis2 = Translate.AgeCompletedMonthsYears
-    , yAxis = Translate.HeightCm
-    }
-
-
-heightForAgeGirlsLabels5To19 : LabelConfig
-heightForAgeGirlsLabels5To19 =
-    { title = Translate.HeightForAgeGirls
-    , subtitle = Translate.TwoToNineteenYears
-    , xAxis1 = Just Translate.Months
-    , xAxis2 = Translate.AgeCompletedMonthsYears
-    , yAxis = Translate.HeightCm
-    }
-
-
-weightForAgeBoysLabels : LabelConfig
-weightForAgeBoysLabels =
-    { title = Translate.WeightForAgeBoys
-    , subtitle = Translate.BirthToTwoYears
-    , xAxis1 = Just Translate.Months
-    , xAxis2 = Translate.AgeCompletedMonthsYears
-    , yAxis = Translate.WeightKg
-    }
-
-
-weightForHeightBoysLabels : LabelConfig
-weightForHeightBoysLabels =
-    { title = Translate.WeightForLengthBoys
-    , subtitle = Translate.BirthToTwoYears
-    , xAxis1 = Nothing
-    , xAxis2 = Translate.LengthCm
-    , yAxis = Translate.WeightKg
-    }
-
-
-weightForHeightGirlsLabels : LabelConfig
-weightForHeightGirlsLabels =
-    { title = Translate.WeightForLengthGirls
-    , subtitle = Translate.BirthToTwoYears
-    , xAxis1 = Nothing
-    , xAxis2 = Translate.LengthCm
-    , yAxis = Translate.WeightKg
-    }
-
-
-weightForAgeGirlsLabels : LabelConfig
-weightForAgeGirlsLabels =
-    { title = Translate.WeightForAgeGirls
-    , subtitle = Translate.BirthToTwoYears
-    , xAxis1 = Just Translate.Months
-    , xAxis2 = Translate.AgeCompletedMonthsYears
-    , yAxis = Translate.WeightKg
-    }
-
-
-heightForAgeGirlsLabels : LabelConfig
-heightForAgeGirlsLabels =
-    { title = Translate.LengthForAgeGirls
-    , subtitle = Translate.BirthToTwoYears
-    , xAxis1 = Just Translate.Months
-    , xAxis2 = Translate.AgeCompletedMonthsYears
-    , yAxis = Translate.LengthCm
-    }
 
 
 labels : Language -> LabelConfig -> Svg any

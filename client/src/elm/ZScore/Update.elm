@@ -31,6 +31,13 @@ lengthHeightForAgePaths =
     }
 
 
+lengthHeightForAge5to19Paths : MonthsAndDays String
+lengthHeightForAge5to19Paths =
+    { days = "assets/z-score/lenanthro5to19.json"
+    , months = "assets/z-score/hfawho2007.json"
+    }
+
+
 weightForAgePaths : MonthsAndDays String
 weightForAgePaths =
     { days = "assets/z-score/weianthro.json"
@@ -79,6 +86,15 @@ update msg model =
             else
                 ( model, Cmd.none )
 
+        FetchLengthHeightForAge5to19Tables ->
+            if isNotAsked model.lengthHeightForAge5to19 then
+                ( { model | lengthHeightForAge5to19 = Loading }
+                , fetchForAge lengthHeightForAge5to19Paths Centimetres HandleLengthHeightForAge5to19Tables
+                )
+
+            else
+                ( model, Cmd.none )
+
         FetchWeightForAgeTables ->
             if isNotAsked model.weightForAge then
                 ( { model | weightForAge = Loading }
@@ -113,6 +129,11 @@ update msg model =
 
         HandleLengthHeightForAgeTables data ->
             ( { model | lengthHeightForAge = data }
+            , Cmd.none
+            )
+
+        HandleLengthHeightForAge5to19Tables data ->
+            ( { model | lengthHeightForAge5to19 = data }
             , Cmd.none
             )
 
