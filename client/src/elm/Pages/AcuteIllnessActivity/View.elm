@@ -69,10 +69,8 @@ view language currentDate id activity db model =
                     )
 
         measurements =
-            -- Todo
-            -- Dict.get id db.acuteIllnessMeasurements
-            --     |> Maybe.withDefault NotAsked
-            Success (AcuteIllnessMeasurements Nothing Nothing Nothing)
+            Dict.get id db.acuteIllnessMeasurements
+                |> Maybe.withDefault NotAsked
 
         personWithMeasurements =
             RemoteData.map (\a b c -> ( a, b, c )) personId

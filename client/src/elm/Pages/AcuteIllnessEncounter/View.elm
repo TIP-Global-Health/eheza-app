@@ -49,10 +49,8 @@ view language currentDate id db model =
                     )
 
         measurements =
-            -- Todo
-            -- Dict.get id db.acuteIllnessMeasurements
-            --     |> Maybe.withDefault NotAsked
-            Success (AcuteIllnessMeasurements Nothing Nothing Nothing)
+            Dict.get id db.acuteIllnessMeasurements
+                |> Maybe.withDefault NotAsked
 
         personWithMeasurements =
             RemoteData.map (\a b -> ( a, b )) person
@@ -107,6 +105,11 @@ viewMainPageContent language currentDate id measurements model =
                 |> List.partition
                     (\activity ->
                         case activity of
+                            AcuteIllnessSymptoms ->
+                                isJust measurements.symptomsGeneral
+                                    && isJust measurements.symptomsRespiratory
+                                    && isJust measurements.symptomsGI
+
                             -- Todo
                             _ ->
                                 False
