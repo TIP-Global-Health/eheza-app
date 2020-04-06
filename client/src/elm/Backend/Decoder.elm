@@ -141,6 +141,15 @@ decodeRevision =
                     "social_history" ->
                         decodeWithUuid SocialHistoryRevision decodeSocialHistory
 
+                    "symptoms_general" ->
+                        decodeWithUuid SymptomsGeneralRevision decodeSymptomsGeneral
+
+                    "symptoms_respiratory" ->
+                        decodeWithUuid SymptomsRespiratoryRevision decodeSymptomsRespiratory
+
+                    "symptoms_gi" ->
+                        decodeWithUuid SymptomsGIRevision decodeSymptomsGI
+
                     "vitals" ->
                         decodeWithUuid VitalsRevision decodeVitals
 
