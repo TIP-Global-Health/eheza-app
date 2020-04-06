@@ -140,7 +140,7 @@ type alias PlotConfig xAxis yAxis =
     , drawSD1 : Bool
     , paintLevels : Bool
     , xAxis : XAxisConfig
-    , yAxisIntervals : Int
+    , yAxis : YAxisConfig
     }
 
 
@@ -157,9 +157,16 @@ type alias XAxisConfig =
     , minYear : Int
     , maxYear : Int
     , monthsList : List Int
+    , innerLinesNumber : Int
     , minLength : Int
     , maxLength : Int
     , xAxisType : XAxisTypes
+    }
+
+
+type alias YAxisConfig =
+    { yAxisIntervals : Int
+    , innerLinesNumber : Int
     }
 
 
@@ -181,11 +188,15 @@ heightForAgeConfig =
         , minYear = 0
         , maxYear = 2
         , monthsList = List.range 1 11
+        , innerLinesNumber = 0
         , minLength = 0
         , maxLength = 0
         , xAxisType = Age
         }
-    , yAxisIntervals = 5
+    , yAxis =
+        { yAxisIntervals = 5
+        , innerLinesNumber = 4
+        }
     }
 
 
@@ -202,11 +213,15 @@ heightForAgeConfig5To19 =
         , minYear = 5
         , maxYear = 19
         , monthsList = [ 3, 6, 9 ]
+        , innerLinesNumber = 0
         , minLength = 0
         , maxLength = 0
         , xAxisType = Age
         }
-    , yAxisIntervals = 10
+    , yAxis =
+        { yAxisIntervals = 10
+        , innerLinesNumber = 1
+        }
     }
 
 
@@ -223,11 +238,15 @@ weightForAgeConfig =
         , minYear = 0
         , maxYear = 2
         , monthsList = List.range 1 11
+        , innerLinesNumber = 0
         , minLength = 0
         , maxLength = 0
         , xAxisType = Age
         }
-    , yAxisIntervals = 1
+    , yAxis =
+        { yAxisIntervals = 1
+        , innerLinesNumber = 4
+        }
     }
 
 
@@ -244,11 +263,15 @@ weightForHeightConfig =
         , minYear = 0
         , maxYear = 0
         , monthsList = []
+        , innerLinesNumber = 4
         , minLength = 45
         , maxLength = 110
         , xAxisType = Height
         }
-    , yAxisIntervals = 2
+    , yAxis =
+        { yAxisIntervals = 2
+        , innerLinesNumber = 1
+        }
     }
 
 
@@ -652,7 +675,7 @@ zScoreLabelsWeightForAgeGirls =
 xAxisLinesAndText : PlotConfig x y -> Svg any
 xAxisLinesAndText config =
     let
-        ( xAxisList, innerLines ) =
+        ( xAxisList, monthList ) =
             case config.xAxis.xAxisType of
                 Age ->
                     ( List.range config.xAxis.minYear config.xAxis.maxYear, True )
@@ -677,13 +700,13 @@ xAxisLinesAndText config =
         spaceBetweenLines =
             config.xAxis.width / toFloat listCount
 
-        maybeSpaceBetweenInnerLines =
-            if innerLines then
+        spaceBetweenInnerLines =
+            if monthList then
                 -- We add one here because we want to give space before the next year.
-                Just <| spaceBetweenLines / toFloat (List.length config.xAxis.monthsList + 1)
+                spaceBetweenLines / toFloat (List.length config.xAxis.monthsList + 1)
 
             else
-                Nothing
+                spaceBetweenLines / toFloat (config.xAxis.innerLinesNumber + 1)
 
         -- Here we can define the lines as we want.
         lines =
@@ -713,42 +736,60 @@ xAxisLinesAndText config =
                             toString linesMargin
 
                         innerLinesAndText =
-                            case maybeSpaceBetweenInnerLines of
-                                Just spaceBetweenInnerLines ->
-                                    List.indexedMap
-                                        (\ii month ->
+                            if monthList then
+                                List.indexedMap
+                                    (\ii month ->
+                                        let
+                                            innerIndex =
+                                                toFloat ii
+
+                                            innerMargin =
+                                                linesMargin + (spaceBetweenInnerLines * (innerIndex + 1))
+
+                                            innerTextPosition =
+                                                if month < 10 then
+                                                    (innerMargin - 2)
+                                                        |> toString
+
+                                                else
+                                                    (innerMargin - 5)
+                                                        |> toString
+
+                                            innerLinePosition =
+                                                toString innerMargin
+                                        in
+                                        if year < config.xAxis.maxYear then
+                                            [ line [ class "month-line", x1 innerLinePosition, y1 "506.5", x2 innerLinePosition, y2 "119.5" ] []
+                                            , text_ [ transform <| "matrix(1 0 0 1 " ++ innerTextPosition ++ " 516.5436)", class "z-score-white z-score-semibold st16" ] [ text <| toString month ]
+                                            ]
+
+                                        else
+                                            []
+                                    )
+                                    config.xAxis.monthsList
+                                    |> List.concat
+
+                            else if config.xAxis.innerLinesNumber > 0 then
+                                List.range 1 config.xAxis.innerLinesNumber
+                                    |> List.map
+                                        (\innerLine ->
                                             let
                                                 innerIndex =
-                                                    toFloat ii
-
-                                                innerMargin =
-                                                    linesMargin + (spaceBetweenInnerLines * (innerIndex + 1))
-
-                                                innerTextPosition =
-                                                    if month < 10 then
-                                                        (innerMargin - 2)
-                                                            |> toString
-
-                                                    else
-                                                        (innerMargin - 5)
-                                                            |> toString
+                                                    toFloat innerLine
 
                                                 innerLinePosition =
-                                                    toString innerMargin
+                                                    toString <| linesMargin + (spaceBetweenInnerLines * innerIndex)
                                             in
-                                            if year < config.xAxis.maxYear then
-                                                [ line [ class "month-line", x1 innerLinePosition, y1 "506.5", x2 innerLinePosition, y2 "119.5" ] []
-                                                , text_ [ transform <| "matrix(1 0 0 1 " ++ innerTextPosition ++ " 516.5436)", class "z-score-white z-score-semibold st16" ] [ text <| toString month ]
-                                                ]
+                                            if year < config.xAxis.maxLength then
+                                                [ line [ class "month-line", x1 innerLinePosition, y1 "506.5", x2 innerLinePosition, y2 "119.5" ] [] ]
 
                                             else
                                                 []
                                         )
-                                        config.xAxis.monthsList
-                                        |> List.concat
+                                    |> List.concat
 
-                                Nothing ->
-                                    []
+                            else
+                                []
                     in
                     [ line [ class "year-line", x1 linePosition, y1 "514.5", x2 linePosition, y2 "119.5" ] []
                     , text_
@@ -774,7 +815,7 @@ yAxisLinesAndText config =
                 -- We only display the successive numbers of the intervals defined in the config.
                 |> List.filter
                     (\yInput ->
-                        if remainderBy config.yAxisIntervals yInput == 0 then
+                        if remainderBy config.yAxis.yAxisIntervals yInput == 0 then
                             True
 
                         else
@@ -790,8 +831,8 @@ yAxisLinesAndText config =
         spaceBetweenLines =
             height / toFloat listCount
 
-        halfSpaceBetweenLines =
-            spaceBetweenLines / 2
+        spaceBetweenInnerLines =
+            spaceBetweenLines / (toFloat config.yAxis.innerLinesNumber + 1)
 
         -- Here we can define the lines as we want.
         lines =
@@ -808,25 +849,33 @@ yAxisLinesAndText config =
                             else
                                 config.output.maxY - (spaceBetweenLines * index)
 
-                        -- Between the main y-axis lines, we add a bit fainter lines to give the chart a more square
-                        -- grid shape.
-                        halfMargin =
-                            linesMargin
-                                - halfSpaceBetweenLines
-                                |> toString
-
                         lineTextPosition =
                             (linesMargin + 2)
                                 |> toString
 
                         linePosition =
                             toString linesMargin
+
+                        innerLines =
+                            List.range 1 config.yAxis.innerLinesNumber
+                                |> List.map
+                                    (\innerLine ->
+                                        let
+                                            innerIndex =
+                                                toFloat innerLine
+
+                                            innerLinePosition =
+                                                toString <| linesMargin - (spaceBetweenInnerLines * innerIndex)
+                                        in
+                                        [ line [ class "st19", x1 "110.8", y1 innerLinePosition, x2 "715.4", y2 innerLinePosition ] [] ]
+                                    )
+                                |> List.concat
                     in
                     [ line [ class "st18", x1 "110.8", y1 linePosition, x2 "737.6", y2 linePosition ] []
-                    , line [ class "st19", x1 "110.8", y1 halfMargin, x2 "715.4", y2 halfMargin ] []
                     , text_ [ transform <| "matrix(1 0 0 1 95.4252 " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| toString lineText ]
                     , text_ [ transform <| "matrix(1 0 0 1 745.0155 " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| toString lineText ]
                     ]
+                        |> List.append innerLines
                 )
                 yAxisList
                 |> List.concat
