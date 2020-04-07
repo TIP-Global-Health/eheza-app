@@ -56,13 +56,14 @@ jobs:
         - "$TRAVIS_BUILD_DIR/ci-scripts/test_server.sh"
     - stage: Test
       name: "Client-side"
+      if: commit_message ~= [test client]
       script:
         - "$TRAVIS_BUILD_DIR/ci-scripts/install_client.sh"
         - "$TRAVIS_BUILD_DIR/ci-scripts/prepare_client.sh"
         - "$TRAVIS_BUILD_DIR/ci-scripts/test_client.sh"
     - stage: Deploy
       name: "Deployment to Pantheon"
-      if: branch = 227-deployment
+      if: branch = develop
       env:
         - PANTHEON_ENV=qa
         - PANTHEON_BRANCH=qa
