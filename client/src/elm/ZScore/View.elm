@@ -22,7 +22,7 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Translate exposing (ChartPhrase(..), Language, TranslationId(..), translate)
 import Utils.AllDict as AllDict exposing (AllDict)
-import Utils.NominalDate exposing (Days(..))
+import Utils.NominalDate exposing (Days(..), Months)
 import ZScore.Model exposing (..)
 import ZScore.Utils exposing (valueForZScore)
 
@@ -79,7 +79,7 @@ viewHeightForAgeBoys language model data =
         ]
 
 
-viewHeightForAgeBoys5To19 : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeightForAgeBoys5To19 : Language -> Model -> List ( Months, Centimetres ) -> Html any
 viewHeightForAgeBoys5To19 language model data =
     svg
         [ class "z-score boys"
@@ -93,14 +93,14 @@ viewHeightForAgeBoys5To19 language model data =
         , xAxisLinesAndText heightForAgeConfig5To19
         , zScoreLabelsHeightForAgeBoys5To19
         , model.lengthHeightForAge5to19
-            |> RemoteData.map (.male >> .byDay >> AllDict.toList)
+            |> RemoteData.map (.male >> .byMonth >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData heightForAgeConfig5To19
         , plotChildData heightForAgeConfig5To19 data
         ]
 
 
-viewHeightForAgeGirls5To19 : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeightForAgeGirls5To19 : Language -> Model -> List ( Months, Centimetres ) -> Html any
 viewHeightForAgeGirls5To19 language model data =
     svg
         [ class "z-score girls"
@@ -108,13 +108,13 @@ viewHeightForAgeGirls5To19 language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language "z-score-blue"
+        [ frame language "z-score-pink"
         , labels language heightForAgeGirlsLabels5To19
         , yAxisLinesAndText heightForAgeConfig5To19
         , xAxisLinesAndText heightForAgeConfig5To19
         , zScoreLabelsHeightForAgeBoys5To19
-        , model.lengthHeightForAge
-            |> RemoteData.map (.female >> .byDay >> AllDict.toList)
+        , model.lengthHeightForAge5to19
+            |> RemoteData.map (.female >> .byMonth >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData heightForAgeConfig5To19
         , plotChildData heightForAgeConfig5To19 data
@@ -209,9 +209,9 @@ heightForAgeConfig =
     }
 
 
-heightForAgeConfig5To19 : PlotConfig Days Centimetres
+heightForAgeConfig5To19 : PlotConfig Months Centimetres
 heightForAgeConfig5To19 =
-    { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
+    { toFloatX = \(Utils.NominalDate.Months months) -> toFloat months
     , toFloatY = \(Centimetres cm) -> cm
     , input = { minY = 90, maxY = 200, minX = 365 * 2, maxX = 365 * 19 }
     , output = { minX = 111, maxX = 758, minY = 119.9, maxY = 506.7 }
@@ -297,7 +297,7 @@ heightForAgeBoysLabels =
 heightForAgeBoysLabels5To19 : LabelConfig
 heightForAgeBoysLabels5To19 =
     { title = Translate.HeightForAgeBoys
-    , subtitle = Translate.TwoToNineteenYears
+    , subtitle = Translate.FiveToNineteenYears
     , xAxis1 = Just Translate.Months
     , xAxis2 = Translate.AgeCompletedMonthsYears
     , yAxis = Translate.HeightCm
@@ -307,7 +307,7 @@ heightForAgeBoysLabels5To19 =
 heightForAgeGirlsLabels5To19 : LabelConfig
 heightForAgeGirlsLabels5To19 =
     { title = Translate.HeightForAgeGirls
-    , subtitle = Translate.TwoToNineteenYears
+    , subtitle = Translate.FiveToNineteenYears
     , xAxis1 = Just Translate.Months
     , xAxis2 = Translate.AgeCompletedMonthsYears
     , yAxis = Translate.HeightCm
@@ -509,6 +509,10 @@ plotReferenceData config zscoreList =
     , Just <| makeLine neg3points "three-line-new"
     , Just <| makeLine neg2points "two-line-new"
     , if config.drawSD1 then
+        let
+            _ =
+                Debug.log "getPoints" (getPoints 2)
+        in
         Just <| makeLine (getPoints -1) "one-line-new"
 
       else

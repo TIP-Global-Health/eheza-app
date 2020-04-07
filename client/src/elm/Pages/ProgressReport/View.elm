@@ -25,7 +25,7 @@ import Pages.Session.Model
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
-import Utils.NominalDate exposing (Days(..), Months(..), diffDays, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate)
+import Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), Length(..), ZScore)
 import ZScore.Utils exposing (zScoreLengthHeightForAge, zScoreWeightForAge)
@@ -490,6 +490,9 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
         heightForAgeData =
             List.filterMap (chartHeightForAge child) heightValues
 
+        heightForAgeData5to19 =
+            List.filterMap (chartHeightForAge5to19 child) heightValues
+
         weightForAgeData =
             List.filterMap (chartWeightForAge child) weightValues
 
@@ -501,7 +504,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                 [ class "image-report" ]
                 [ ZScore.View.viewMarkers
                 , zScoreViewCharts.heightForAge language zscores heightForAgeData
-                , zScoreViewCharts.heightForAge5To19 language zscores heightForAgeData
+                , zScoreViewCharts.heightForAge5To19 language zscores heightForAgeData5to19
                 , zScoreViewCharts.weightForAge language zscores weightForAgeData
                 , zScoreViewCharts.weightForHeight language zscores weightForHeightData
                 ]
@@ -571,6 +574,21 @@ chartHeightForAge child height =
         |> Maybe.map
             (\birthDate ->
                 ( diffDays birthDate height.dateMeasured
+                  -- I suppose one could avoid this little transformation
+                  -- by unifiying the two tags.
+                , case height.value of
+                    HeightInCm cm ->
+                        Centimetres cm
+                )
+            )
+
+
+chartHeightForAge5to19 : Person -> Height -> Maybe ( Months, Centimetres )
+chartHeightForAge5to19 child height =
+    child.birthDate
+        |> Maybe.map
+            (\birthDate ->
+                ( diffMonths birthDate height.dateMeasured
                   -- I suppose one could avoid this little transformation
                   -- by unifiying the two tags.
                 , case height.value of
