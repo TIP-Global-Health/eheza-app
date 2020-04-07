@@ -11,6 +11,16 @@
 function hedley_activity_user_default_permissions() {
   $permissions = array();
 
+  // Exported permission: 'create acute_illness_vitals content'.
+  $permissions['create acute_illness_vitals content'] = array(
+    'name' => 'create acute_illness_vitals content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create attendance content'.
   $permissions['create attendance content'] = array(
     'name' => 'create attendance content',
@@ -278,6 +288,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any acute_illness_vitals content'.
+  $permissions['delete any acute_illness_vitals content'] = array(
+    'name' => 'delete any acute_illness_vitals content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any attendance content'.
   $permissions['delete any attendance content'] = array(
     'name' => 'delete any attendance content',
@@ -506,6 +525,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete any weight content'.
   $permissions['delete any weight content'] = array(
     'name' => 'delete any weight content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own acute_illness_vitals content'.
+  $permissions['delete own acute_illness_vitals content'] = array(
+    'name' => 'delete own acute_illness_vitals content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -742,6 +770,16 @@ function hedley_activity_user_default_permissions() {
     'name' => 'delete own weight content',
     'roles' => array(
       'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any acute_illness_vitals content'.
+  $permissions['edit any acute_illness_vitals content'] = array(
+    'name' => 'edit any acute_illness_vitals content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
     ),
     'module' => 'node',
   );
@@ -1008,6 +1046,16 @@ function hedley_activity_user_default_permissions() {
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own acute_illness_vitals content'.
+  $permissions['edit own acute_illness_vitals content'] = array(
+    'name' => 'edit own acute_illness_vitals content',
+    'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',

@@ -19,6 +19,14 @@ function hedley_activity_ctools_plugin_api($module = NULL, $api = NULL) {
  */
 function hedley_activity_node_info() {
   $items = array(
+    'acute_illness_vitals' => array(
+      'name' => t('Acute Illness Vitals'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'attendance' => array(
       'name' => t('Attendance'),
       'base' => 'node_content',
