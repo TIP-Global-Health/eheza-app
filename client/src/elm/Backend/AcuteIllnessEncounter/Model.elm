@@ -23,6 +23,7 @@ type alias Model =
     , saveSymptomsGeneral : WebData ()
     , saveSymptomsRespiratory : WebData ()
     , saveSymptomsGI : WebData ()
+    , saveVitals : WebData ()
     }
 
 
@@ -32,6 +33,7 @@ emptyModel =
     , saveSymptomsGeneral = NotAsked
     , saveSymptomsRespiratory = NotAsked
     , saveSymptomsGI = NotAsked
+    , saveVitals = NotAsked
     }
 
 
@@ -44,3 +46,5 @@ type Msg
     | HandleSavedSymptomsRespiratory (WebData ())
     | SaveSymptomsGI PersonId (Maybe SymptomsGIId) (Dict SymptomsGISign Int)
     | HandleSavedSymptomsGI (WebData ())
+    | SaveVitals PersonId (Maybe AcuteIllnessVitalsId) AcuteIllnessVitalsValue
+    | HandleSavedVitals (WebData ())

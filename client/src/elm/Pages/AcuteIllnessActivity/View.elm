@@ -366,21 +366,15 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) 
 
         actions =
             let
-                nextTask =
-                    getNextTask data.activeTask
-
-                -- Todo
-                -- saveMsg =
-                --     case data.activeTask of
-                --         SymptomsGeneral ->
-                --             PhysicalExamVitals personId measurements.symptomsGeneral nextTask
+                saveMsg =
+                    case data.activeTask of
+                        PhysicalExamVitals ->
+                            SaveVitals personId measurements.vitals
             in
             div [ class "actions symptoms" ]
                 [ button
                     [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-
-                    -- Todo
-                    -- , onClick saveMsg
+                    , onClick saveMsg
                     ]
                     [ text <| translate language Translate.Save ]
                 ]

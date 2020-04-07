@@ -23,6 +23,7 @@ type Msg
     | SetActivePhysicalExamTask PhysicalExamTask
     | SetVitalsResporatoryRate String
     | SetVitalsBodyTemperature String
+    | SaveVitals PersonId (Maybe ( AcuteIllnessVitalsId, AcuteIllnessVitals ))
 
 
 type alias Model =

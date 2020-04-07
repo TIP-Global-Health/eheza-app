@@ -150,3 +150,39 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveSymptomsGI = data }
             , Cmd.none
             )
+
+        SaveVitals personId valueId value ->
+            let
+                cmd =
+                    case valueId of
+                        Nothing ->
+                            { participantId = personId
+                            , dateMeasured = currentDate
+                            , encounterId = Just encounterId
+                            , nurse = nurseId
+                            , healthCenter = healthCenterId
+                            , value = value
+                            }
+                                |> sw.post acuteIllnessVitalsEndpoint
+                                |> withoutDecoder
+                                |> toCmd (RemoteData.fromResult >> HandleSavedVitals)
+
+                        Just id ->
+                            encodeAcuteIllnessVitalsValue value
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
+                                |> object
+                                |> sw.patchAny acuteIllnessVitalsEndpoint id
+                                |> withoutDecoder
+                                |> toCmd (RemoteData.fromResult >> HandleSavedVitals)
+            in
+            ( { model | saveVitals = Loading }
+            , cmd
+            )
+
+        HandleSavedVitals data ->
+            ( { model | saveVitals = data }
+            , Cmd.none
+            )
