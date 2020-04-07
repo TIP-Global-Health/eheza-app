@@ -1614,6 +1614,20 @@ input::placeholder {
   }
 }
 
+.icon-physical-exam-vitals {
+  .active &:after {
+    background-image: url(#{$img-path}icon-vitals-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-vitals-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-vitals-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
 // Lists
 
 .ui.list {
