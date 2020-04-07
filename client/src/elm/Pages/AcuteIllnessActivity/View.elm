@@ -313,9 +313,7 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) 
                     case task of
                         PhysicalExamVitals ->
                             ( "physical-exam-vitals"
-                            , False
-                              -- Todo
-                              -- isJust measurements.symptomsGeneral
+                            , isJust measurements.vitals
                             )
 
                 isActive =
@@ -338,14 +336,12 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) 
                 ]
 
         tasksCompletedFromTotalDict =
-            -- Todo
-            -- tasks
-            --     |> List.map
-            --         (\task ->
-            --             ( task, symptomsTasksCompletedFromTotal measurements data task )
-            --         )
-            --     |> Dict.fromList
-            Dict.empty
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, physicalExamTasksCompletedFromTotal measurements data task )
+                    )
+                |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
             Dict.get data.activeTask tasksCompletedFromTotalDict

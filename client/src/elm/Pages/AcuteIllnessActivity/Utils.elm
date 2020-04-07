@@ -1,17 +1,14 @@
-module Pages.AcuteIllnessActivity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, fromVitalsValue, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskCompleted, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, vitalsFormWithDefault)
+module Pages.AcuteIllnessActivity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, fromVitalsValue, physicalExamTasksCompletedFromTotal, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, vitalsFormWithDefault)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (AcuteIllnessMeasurements, AcuteIllnessVitalsValue, SymptomsGISign(..), SymptomsGeneralSign(..), SymptomsRespiratorySign(..))
-import Maybe.Extra exposing (andMap, or, unwrap)
+import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
+import Pages.Utils exposing (taskCompleted)
 
 
-
--- import Pages.Utils exposing (taskCompleted)
-
-
-taskCompleted : Bool -> Int
-taskCompleted notCompleted =
+taskNotCompleted : Bool -> Int
+taskNotCompleted notCompleted =
     if notCompleted then
         0
 
@@ -89,7 +86,7 @@ symptomsTasksCompletedFromTotal measurements data task =
                         |> Maybe.map (Tuple.second >> .value)
                         |> symptomsGeneralFormWithDefault data.symptomsGeneralForm
             in
-            ( taskCompleted (Dict.isEmpty form.signs)
+            ( taskNotCompleted (Dict.isEmpty form.signs)
             , 1
             )
 
@@ -100,7 +97,7 @@ symptomsTasksCompletedFromTotal measurements data task =
                         |> Maybe.map (Tuple.second >> .value)
                         |> symptomsRespiratoryFormWithDefault data.symptomsRespiratoryForm
             in
-            ( taskCompleted (Dict.isEmpty form.signs)
+            ( taskNotCompleted (Dict.isEmpty form.signs)
             , 1
             )
 
@@ -111,8 +108,23 @@ symptomsTasksCompletedFromTotal measurements data task =
                         |> Maybe.map (Tuple.second >> .value)
                         |> symptomsGIFormWithDefault data.symptomsGIForm
             in
-            ( taskCompleted (Dict.isEmpty form.signs)
+            ( taskNotCompleted (Dict.isEmpty form.signs)
             , 1
+            )
+
+
+physicalExamTasksCompletedFromTotal : AcuteIllnessMeasurements -> PhysicalExamData -> PhysicalExamTask -> ( Int, Int )
+physicalExamTasksCompletedFromTotal measurements data task =
+    case task of
+        PhysicalExamVitals ->
+            let
+                form =
+                    measurements.vitals
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> vitalsFormWithDefault data.vitalsForm
+            in
+            ( taskCompleted form.respiratoryRate + taskCompleted form.bodyTemperature
+            , 2
             )
 
 

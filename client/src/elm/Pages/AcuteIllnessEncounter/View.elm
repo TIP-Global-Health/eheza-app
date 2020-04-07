@@ -110,8 +110,13 @@ viewMainPageContent language currentDate id measurements model =
                                     && isJust measurements.symptomsRespiratory
                                     && isJust measurements.symptomsGI
 
-                            -- Todo
-                            _ ->
+                            AcuteIllnessPhysicalExam ->
+                                isJust measurements.vitals
+
+                            AcuteIllnessLaboratory ->
+                                False
+
+                            AcuteIllnessExposure ->
                                 False
                     )
 
