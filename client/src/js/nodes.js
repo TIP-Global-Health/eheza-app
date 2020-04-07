@@ -90,6 +90,7 @@
 
     var tableForType = {
         acute_illness_encounter: 'nodes',
+        acute_illness_vitals: 'shards',
         attendance: 'shards',
         breast_exam: 'shards',
         catchment_area: 'nodes',
