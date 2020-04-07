@@ -43,7 +43,7 @@ import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Http
 import NutritionActivity.Model exposing (NutritionActivity(..))
-import Pages.AcuteIllnessActivity.Model exposing (SymptomsTask(..))
+import Pages.AcuteIllnessActivity.Model exposing (PhysicalExamTask(..), SymptomsTask(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
@@ -471,6 +471,7 @@ type TranslationId
     | PersistentStorage Bool
     | Person
     | PersonHasBeenSaved
+    | PhysicalExamTask PhysicalExamTask
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
     | PlaceholderEnterParticipantName
@@ -3092,6 +3093,13 @@ translationSet trans =
             { english = "Person has been saved"
             , kinyarwanda = Just "Amakuru kuri uyu muntu yabitswe"
             }
+
+        PhysicalExamTask task ->
+            case task of
+                PhysicalExamVitals ->
+                    { english = "Vitals"
+                    , kinyarwanda = Nothing
+                    }
 
         PlaceholderEnterHeight ->
             { english = "Enter height here…"

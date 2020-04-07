@@ -115,7 +115,7 @@ viewActivity language currentDate id activity ( personId, measurements ) model =
             viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) model.symptomsData
 
         AcuteIllnessPhysicalExam ->
-            [ div [] [ text "AcuteIllnessPhysicalExam here" ] ]
+            viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) model.physicalExamData
 
         AcuteIllnessLaboratory ->
             [ div [] [ text "AcuteIllnessLaboratory here" ] ]
@@ -155,7 +155,7 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
                                 []
 
                             else
-                                [ onClick <| SetActivePageSymptomsTask task ]
+                                [ onClick <| SetActiveSymptomsTask task ]
                            )
             in
             div [ class "column" ]
@@ -240,8 +240,7 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui five column grid" ] <|
-            List.map viewTask <|
-                tasks
+            List.map viewTask tasks
         ]
     , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -296,3 +295,106 @@ viewSymptomsGIForm language currentDate measurements form =
             , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
             ]
         |> div [ class "symptoms-form gi" ]
+
+
+viewAcuteIllnessPhysicalExam : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> PhysicalExamData -> List (Html Msg)
+viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) data =
+    let
+        activity =
+            AcuteIllnessPhysicalExam
+
+        tasks =
+            [ PhysicalExamVitals ]
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        PhysicalExamVitals ->
+                            ( "physical-exam-vitals"
+                            , False
+                              -- Todo
+                              -- isJust measurements.symptomsGeneral
+                            )
+
+                isActive =
+                    task == data.activeTask
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActivePhysicalExamTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ a attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.PhysicalExamTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            -- Todo
+            -- tasks
+            --     |> List.map
+            --         (\task ->
+            --             ( task, symptomsTasksCompletedFromTotal measurements data task )
+            --         )
+            --     |> Dict.fromList
+            Dict.empty
+
+        ( tasksCompleted, totalTasks ) =
+            Dict.get data.activeTask tasksCompletedFromTotalDict
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case data.activeTask of
+                PhysicalExamVitals ->
+                    -- Todo
+                    -- measurements.physicalExamVitals
+                    --     |> Maybe.map (Tuple.second >> .value)
+                    --     |> symptomsGeneralFormWithDefault data.symptomsGeneralForm
+                    --     |> viewSymptomsGeneralForm language currentDate measurements
+                    div [] [ text "PhysicalExamVitals form" ]
+
+        getNextTask currentTask =
+            case currentTask of
+                PhysicalExamVitals ->
+                    []
+
+        actions =
+            let
+                nextTask =
+                    getNextTask data.activeTask
+
+                -- Todo
+                -- saveMsg =
+                --     case data.activeTask of
+                --         SymptomsGeneral ->
+                --             PhysicalExamVitals personId measurements.symptomsGeneral nextTask
+            in
+            div [ class "actions symptoms" ]
+                [ button
+                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+
+                    -- Todo
+                    -- , onClick saveMsg
+                    ]
+                    [ text <| translate language Translate.Save ]
+                ]
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
+            ]
+        ]
+    ]

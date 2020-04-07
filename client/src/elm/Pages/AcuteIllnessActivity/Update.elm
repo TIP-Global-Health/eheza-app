@@ -29,7 +29,7 @@ update currentDate id db msg model =
             , [ App.Model.SetActivePage page ]
             )
 
-        SetActivePageSymptomsTask task ->
+        SetActiveSymptomsTask task ->
             let
                 updatedData =
                     model.symptomsData
@@ -269,4 +269,15 @@ update currentDate id db msg model =
             ( { model | symptomsData = updatedData }
             , Cmd.none
             , appMsgs
+            )
+
+        SetActivePhysicalExamTask task ->
+            let
+                updatedData =
+                    model.physicalExamData
+                        |> (\data -> { data | activeTask = task })
+            in
+            ( { model | physicalExamData = updatedData }
+            , Cmd.none
+            , []
             )
