@@ -2,6 +2,8 @@ module Backend.Measurement.Model exposing
     ( AbdomenCPESign(..)
     , AcuteIllnessMeasurement
     , AcuteIllnessMeasurements
+    , AcuteIllnessVitals
+    , AcuteIllnessVitalsValue
     , Attendance
     , BreastExam
     , BreastExamSign(..)
@@ -594,6 +596,16 @@ type alias SymptomsGI =
     AcuteIllnessMeasurement (Dict SymptomsGISign Int)
 
 
+type alias AcuteIllnessVitalsValue =
+    { respiratoryRate : Int
+    , bodyTemperature : Float
+    }
+
+
+type alias AcuteIllnessVitals =
+    AcuteIllnessMeasurement AcuteIllnessVitalsValue
+
+
 
 -- LISTS OF MEASUREMENTS
 
@@ -699,6 +711,7 @@ type alias AcuteIllnessMeasurements =
     { symptomsGeneral : Maybe ( SymptomsGeneralId, SymptomsGeneral )
     , symptomsRespiratory : Maybe ( SymptomsRespiratoryId, SymptomsRespiratory )
     , symptomsGI : Maybe ( SymptomsGIId, SymptomsGI )
+    , vitals : Maybe ( AcuteIllnessVitalsId, AcuteIllnessVitals )
     }
 
 

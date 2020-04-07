@@ -1,5 +1,7 @@
 module Backend.Measurement.Encoder exposing
     ( encodeAcuteIllnessMeasurement
+    , encodeAcuteIllnessVitals
+    , encodeAcuteIllnessVitalsValue
     , encodeAttendance
     , encodeAttendanceValue
     , encodeBreastExam
@@ -977,4 +979,16 @@ encodeSymptomsGIValue signs =
     , ( "nausea_period", int nausea )
     , ( "vomiting_period", int vomiting )
     , ( "abdominal_pain_period", int abdominalPain )
+    ]
+
+
+encodeAcuteIllnessVitals : AcuteIllnessVitals -> List ( String, Value )
+encodeAcuteIllnessVitals =
+    encodeAcuteIllnessMeasurement encodeAcuteIllnessVitalsValue
+
+
+encodeAcuteIllnessVitalsValue : AcuteIllnessVitalsValue -> List ( String, Value )
+encodeAcuteIllnessVitalsValue value =
+    [ ( "respiratory_rate", int value.respiratoryRate )
+    , ( "body_temperature", float value.bodyTemperature )
     ]

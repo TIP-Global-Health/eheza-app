@@ -1,4 +1,4 @@
-module Backend.Measurement.Decoder exposing (decodeAbdomenCPESign, decodeAcuteIllnessMeasurement, decodeAcuteIllnessMeasurements, decodeAttendance, decodeBreastExam, decodeBreastExamSign, decodeCSectionReason, decodeCSectionScar, decodeChildMeasurementList, decodeChildNutritionSign, decodeCorePhysicalExam, decodeCounselingSession, decodeDangerSign, decodeDangerSigns, decodeEyesCPESign, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeFetalPresentation, decodeGroupMeasurement, decodeHairHeadCPESign, decodeHandsCPESign, decodeHead, decodeHeartCPESign, decodeHeight, decodeLastMenstrualPeriod, decodeLegsCPESign, decodeLungsCPESign, decodeMeasurement, decodeMedicalHistory, decodeMedicalHistorySign, decodeMedication, decodeMedicationSign, decodeMotherMeasurementList, decodeMuac, decodeNeckCPESign, decodeNutrition, decodeNutritionMeasurement, decodeNutritionMeasurements, decodeNutritionNutrition, decodeObstetricHistory, decodeObstetricHistorySign, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodePrenatalFamilyPlanning, decodePrenatalMeasurement, decodePrenatalMeasurements, decodePrenatalNutrition, decodePrenatalPhoto, decodePreviousDeliveryPeriod, decodePreviousDeliverySign, decodeResource, decodeResourceSign, decodeSocialHistory, decodeSocialHistoryHivTestingResult, decodeSocialHistorySign, decodeSymptomsGI, decodeSymptomsGISign, decodeSymptomsGeneral, decodeSymptomsGeneralSign, decodeSymptomsRespiratory, decodeSymptomsRespiratorySign, decodeVitals, decodeWeight, decodeWithEntityUuid)
+module Backend.Measurement.Decoder exposing (decodeAbdomenCPESign, decodeAcuteIllnessMeasurement, decodeAcuteIllnessMeasurements, decodeAcuteIllnessVitals, decodeAttendance, decodeBreastExam, decodeBreastExamSign, decodeCSectionReason, decodeCSectionScar, decodeChildMeasurementList, decodeChildNutritionSign, decodeCorePhysicalExam, decodeCounselingSession, decodeDangerSign, decodeDangerSigns, decodeEyesCPESign, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeFetalPresentation, decodeGroupMeasurement, decodeHairHeadCPESign, decodeHandsCPESign, decodeHead, decodeHeartCPESign, decodeHeight, decodeLastMenstrualPeriod, decodeLegsCPESign, decodeLungsCPESign, decodeMeasurement, decodeMedicalHistory, decodeMedicalHistorySign, decodeMedication, decodeMedicationSign, decodeMotherMeasurementList, decodeMuac, decodeNeckCPESign, decodeNutrition, decodeNutritionMeasurement, decodeNutritionMeasurements, decodeNutritionNutrition, decodeObstetricHistory, decodeObstetricHistorySign, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodePrenatalFamilyPlanning, decodePrenatalMeasurement, decodePrenatalMeasurements, decodePrenatalNutrition, decodePrenatalPhoto, decodePreviousDeliveryPeriod, decodePreviousDeliverySign, decodeResource, decodeResourceSign, decodeSocialHistory, decodeSocialHistoryHivTestingResult, decodeSocialHistorySign, decodeSymptomsGI, decodeSymptomsGISign, decodeSymptomsGeneral, decodeSymptomsGeneralSign, decodeSymptomsRespiratory, decodeSymptomsRespiratorySign, decodeVitals, decodeWeight, decodeWithEntityUuid)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
@@ -102,6 +102,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "symptoms_general" (decodeHead decodeSymptomsGeneral) Nothing
         |> optional "symptoms_respiratory" (decodeHead decodeSymptomsRespiratory) Nothing
         |> optional "symptoms_gi" (decodeHead decodeSymptomsGI) Nothing
+        |> optional "acute_illness_vitals" (decodeHead decodeAcuteIllnessVitals) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -1099,3 +1100,11 @@ decodeSymptomsGISign =
                             sign
                                 ++ " is not a recognized SymptomsGISign"
             )
+
+
+decodeAcuteIllnessVitals : Decoder AcuteIllnessVitals
+decodeAcuteIllnessVitals =
+    succeed AcuteIllnessVitalsValue
+        |> required "respiratory_rate" decodeInt
+        |> required "body_temperature" decodeFloat
+        |> decodeAcuteIllnessMeasurement
