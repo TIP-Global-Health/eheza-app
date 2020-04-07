@@ -29,6 +29,9 @@ jobs:
       name: "Drupal coding standard: PhpCs"
       env:
         - REVIEW_STANDARD="Drupal"
+      script:
+        - "$TRAVIS_BUILD_DIR/ci-scripts/install_coder.sh"
+        - "$TRAVIS_BUILD_DIR/ci-scripts/test_coder.sh"
     - stage: Lint
       name: "Drupal Practice coding standard: PhpCs"
       env:
