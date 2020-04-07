@@ -4,6 +4,7 @@ import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
@@ -71,12 +72,10 @@ viewActions language currentDate id db sessions =
                 |> List.head
                 |> Maybe.map Tuple.first
 
-        -- Resolve active prenatal encounter for person. There should not be more than one.
-        -- We count the number of completed encounters, so that we know if to
-        -- allow 'Pregnancy Outcome' action.
+        -- Resolve active encounter for person. There should not be more than one.
         -- We also want to know if there's an encounter that was completed today,
         -- (started and ended on the same day), as we do not want to allow creating new encounter
-        -- at same day previous one has ended.
+        -- at same day, previous one has ended.
         ( maybeActiveEncounterId, encounterWasCompletedToday ) =
             maybeSessionId
                 |> Maybe.map
@@ -86,7 +85,7 @@ viewActions language currentDate id db sessions =
                             |> RemoteData.map
                                 (\dict ->
                                     ( Dict.toList dict
-                                        |> List.filter (\( _, encounter ) -> isNothing encounter.endDate)
+                                        |> List.filter (Tuple.second >> isDailyEncounterActive currentDate)
                                         |> List.head
                                         |> Maybe.map Tuple.first
                                     , Dict.toList dict
@@ -116,7 +115,7 @@ viewActions language currentDate id db sessions =
                                             let
                                                 activeEncounters =
                                                     encounters
-                                                        |> List.filter (.endDate >> isNothing)
+                                                        |> List.filter (isDailyEncounterActive currentDate)
                                             in
                                             List.length encounters == 1 && List.length activeEncounters == 1
                                        )
