@@ -17,6 +17,7 @@ module Pages.Utils exposing
     , viewNameFilter
     , viewPhotoThumb
     , viewPhotoThumbFromPhotoUrl
+    , viewPreviousMeasurement
     , viewQuestionLabel
     )
 
@@ -339,6 +340,25 @@ viewCheckBoxValueInputNone language data setMsg translateFunc noneSign =
                 ]
             ]
         ]
+
+
+viewPreviousMeasurement : Language -> Maybe Float -> TranslationId -> Html any
+viewPreviousMeasurement language maybePreviousValue unitTranslationId =
+    let
+        message =
+            maybePreviousValue
+                |> unwrap
+                    (translate language Translate.PreviousMeasurementNotFound)
+                    (\previousValue ->
+                        (previousValue
+                            |> Translate.PreviousFloatMeasurement
+                            |> translate language
+                        )
+                            ++ " "
+                            ++ translate language unitTranslationId
+                    )
+    in
+    div [ class "previous-value" ] [ text message ]
 
 
 taskCompleted : Maybe a -> Int

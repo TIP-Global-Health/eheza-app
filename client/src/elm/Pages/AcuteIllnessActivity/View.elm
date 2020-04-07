@@ -34,6 +34,7 @@ import Pages.Utils
         , viewLabel
         , viewMeasurementInput
         , viewPhotoThumbFromPhotoUrl
+        , viewPreviousMeasurement
         , viewQuestionLabel
         )
 import RemoteData exposing (RemoteData(..), WebData)
@@ -353,12 +354,10 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) 
         viewForm =
             case data.activeTask of
                 PhysicalExamVitals ->
-                    -- Todo
-                    -- measurements.physicalExamVitals
-                    --     |> Maybe.map (Tuple.second >> .value)
-                    --     |> symptomsGeneralFormWithDefault data.symptomsGeneralForm
-                    --     |> viewSymptomsGeneralForm language currentDate measurements
-                    div [] [ text "PhysicalExamVitals form" ]
+                    measurements.vitals
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> vitalsFormWithDefault data.vitalsForm
+                        |> viewVitalsForm language currentDate measurements
 
         getNextTask currentTask =
             case currentTask of
@@ -398,3 +397,54 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) 
             ]
         ]
     ]
+
+
+viewVitalsForm : Language -> NominalDate -> AcuteIllnessMeasurements -> VitalsForm -> Html Msg
+viewVitalsForm language currentDate measurements form =
+    let
+        respiratoryRatePreviousValue =
+            -- Todo
+            -- resolvePreviousValue assembled .vitals .respiratoryRate
+            --     |> Maybe.map toFloat
+            Nothing
+
+        bodyTemperaturePreviousValue =
+            -- Todo
+            -- resolvePreviousValue assembled .vitals .bodyTemperature
+            Nothing
+    in
+    div [ class "ui form examination vitals" ]
+        [ div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.RespiratoryRate ]
+            , div [ class "four wide column" ]
+                [-- viewConditionalAlert form.respiratoryRate
+                 --    [ [ (>) 12 ], [ (<) 30 ] ]
+                 --    [ [ (<=) 21, (>=) 30 ] ]
+                ]
+            ]
+        , viewMeasurementInput
+            language
+            (Maybe.map toFloat form.respiratoryRate)
+            SetVitalsResporatoryRate
+            "respiratory-rate"
+            Translate.BpmUnit
+        , viewPreviousMeasurement language respiratoryRatePreviousValue Translate.BpmUnit
+        , div [ class "separator" ] []
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.BodyTemperature ]
+            , div [ class "four wide column" ]
+                [-- viewConditionalAlert form.bodyTemperature
+                 --     [ [ (>) 35 ], [ (<) 37.5 ] ]
+                 --     []
+                ]
+            ]
+        , viewMeasurementInput
+            language
+            form.bodyTemperature
+            SetVitalsBodyTemperature
+            "body-temperature"
+            Translate.Celsius
+        , viewPreviousMeasurement language bodyTemperaturePreviousValue Translate.Celsius
+        ]

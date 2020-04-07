@@ -1,8 +1,8 @@
-module Pages.AcuteIllnessActivity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskCompleted, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toggleSymptomsSign)
+module Pages.AcuteIllnessActivity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, fromVitalsValue, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskCompleted, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, vitalsFormWithDefault)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Measurement.Model exposing (AcuteIllnessMeasurements, SymptomsGISign(..), SymptomsGeneralSign(..), SymptomsRespiratorySign(..))
-import Maybe.Extra exposing (or, unwrap)
+import Backend.Measurement.Model exposing (AcuteIllnessMeasurements, AcuteIllnessVitalsValue, SymptomsGISign(..), SymptomsGeneralSign(..), SymptomsRespiratorySign(..))
+import Maybe.Extra exposing (andMap, or, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 
 
@@ -220,3 +220,34 @@ toSymptomsGIValueWithDefault saved form =
 -- toSymptomsGIValue : SymptomsGIForm -> Maybe (Dict SymptomsGISign Int)
 -- toSymptomsGIValue form =
 --     form.signs
+
+
+fromVitalsValue : Maybe AcuteIllnessVitalsValue -> VitalsForm
+fromVitalsValue saved =
+    { respiratoryRate = Maybe.map .respiratoryRate saved
+    , bodyTemperature = Maybe.map .bodyTemperature saved
+    }
+
+
+vitalsFormWithDefault : VitalsForm -> Maybe AcuteIllnessVitalsValue -> VitalsForm
+vitalsFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { respiratoryRate = or form.respiratoryRate (Just value.respiratoryRate)
+                , bodyTemperature = or form.bodyTemperature (Just value.bodyTemperature)
+                }
+            )
+
+
+toVitalsValueWithDefault : Maybe AcuteIllnessVitalsValue -> VitalsForm -> Maybe AcuteIllnessVitalsValue
+toVitalsValueWithDefault saved form =
+    vitalsFormWithDefault form saved
+        |> toVitalsValue
+
+
+toVitalsValue : VitalsForm -> Maybe AcuteIllnessVitalsValue
+toVitalsValue form =
+    Maybe.map AcuteIllnessVitalsValue form.respiratoryRate
+        |> andMap form.bodyTemperature

@@ -281,3 +281,37 @@ update currentDate id db msg model =
             , Cmd.none
             , []
             )
+
+        SetVitalsResporatoryRate value ->
+            let
+                form =
+                    model.physicalExamData.vitalsForm
+
+                updatedForm =
+                    { form | respiratoryRate = String.toInt value }
+
+                updatedData =
+                    model.physicalExamData
+                        |> (\data -> { data | vitalsForm = updatedForm })
+            in
+            ( { model | physicalExamData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetVitalsBodyTemperature value ->
+            let
+                form =
+                    model.physicalExamData.vitalsForm
+
+                updatedForm =
+                    { form | bodyTemperature = String.toFloat value }
+
+                updatedData =
+                    model.physicalExamData
+                        |> (\data -> { data | vitalsForm = updatedForm })
+            in
+            ( { model | physicalExamData = updatedData }
+            , Cmd.none
+            , []
+            )

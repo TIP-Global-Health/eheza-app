@@ -21,6 +21,8 @@ type Msg
     | SaveSymptomsGI PersonId (Maybe ( SymptomsGIId, SymptomsGI )) (Maybe SymptomsTask)
       -- PHYSICAL EXAM Msgs
     | SetActivePhysicalExamTask PhysicalExamTask
+    | SetVitalsResporatoryRate String
+    | SetVitalsBodyTemperature String
 
 
 type alias Model =
