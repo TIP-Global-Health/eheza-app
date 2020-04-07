@@ -962,6 +962,7 @@ symptomsGeneralToDict fever chills nightSweats bodyAches headache =
     , ( BodyAches, bodyAches )
     , ( Headache, headache )
     ]
+        |> List.filter (Tuple.second >> (/=) 0)
         |> Dict.fromList
 
 
@@ -1015,6 +1016,7 @@ symptomsRespiratoryToDict cough shortnessOfBreath nasalCongestion bloodInSputum 
     , ( BloodInSputum, bloodInSputum )
     , ( SoreThroat, soreThroat )
     ]
+        |> List.filter (Tuple.second >> (/=) 0)
         |> Dict.fromList
 
 
@@ -1068,6 +1070,7 @@ symptomsGIToDict bloodyDiarrhea nonBloodyDiarrhea nausea vomiting abdominalPain 
     , ( Vomiting, vomiting )
     , ( SymptomGIAbdominalPain, abdominalPain )
     ]
+        |> List.filter (Tuple.second >> (/=) 0)
         |> Dict.fromList
 
 
