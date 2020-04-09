@@ -38,6 +38,9 @@ function arguments_usage {
   echo
 }
 
+if [[ $CI != true]];
+then
+
 # Check and process arguments.
 # See http://rsalveti.wordpress.com/2007/04/03/bash-parsing-arguments-with-getopts/
 while getopts "dl" OPTION
@@ -63,6 +66,8 @@ if ! hash drush 2>/dev/null; then
   echo -e "${RED}Drush executable is not available ${RESTORE}"
   echo "http://docs.drush.org/en/master/install/"
   exit 1
+fi
+
 fi
 
 echo -e "${GREEN}Resets Pantheon folder to $PANTHEON_BRANCH at Git.${NORMAL}\n"
