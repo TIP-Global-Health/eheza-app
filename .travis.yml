@@ -12,7 +12,7 @@ stages:
   - lint
   - test
   - deploy
-  -
+
 before_install:
 - openssl aes-256-cbc -K $encrypted_414fa4dd00a5_key -iv $encrypted_414fa4dd00a5_iv
   -in deployment-robot-key.enc -out deployment-robot-key -d
@@ -59,11 +59,11 @@ jobs:
         - "$TRAVIS_BUILD_DIR/ci-scripts/test_client.sh"
     - stage: Deploy
       name: "Deployment to Pantheon"
-      if: branch = develop && commit_message ~= [deploy]
+      if: branch = 1535-deploy
       env:
         - PANTHEON_ENV=qa
         - PANTHEON_DIR=/tmp/pantheon-ihangane
-        - PANTHEON_BRANCH=qa
+        - PANTHEON_BRANCH=1535-deploy
         - MAIN_REPO_BRANCH=develop
       script:
         - "$TRAVIS_BUILD_DIR/ci-scripts/prepare_deploy.sh"
