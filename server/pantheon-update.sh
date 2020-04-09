@@ -6,8 +6,6 @@ set -e
 
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-source "$BASE_DIR"/config.sh
-
 # Some variable definitions
 NORMAL=$(tput sgr0)
 
@@ -38,35 +36,37 @@ function arguments_usage {
   echo
 }
 
-if [[ $CI != true]];
+MAKE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+if [ "$CI" != 'true' ];
 then
+  source "$BASE_DIR"/config.sh
 
-# Check and process arguments.
-# See http://rsalveti.wordpress.com/2007/04/03/bash-parsing-arguments-with-getopts/
-while getopts "dl" OPTION
-do
-  case $OPTION in
-    l)
-      AUTO_LOGIN=1
-      ;;
-    ?)
-      arguments_usage
-      exit
-      ;;
-  esac
-done
+  # Check and process arguments.
+  # See http://rsalveti.wordpress.com/2007/04/03/bash-parsing-arguments-with-getopts/
+  while getopts "dl" OPTION
+  do
+    case $OPTION in
+      l)
+        AUTO_LOGIN=1
+        ;;
+      ?)
+        arguments_usage
+        exit
+        ;;
+    esac
+  done
 
-if [ $# -ge 1 ]
-then
-    PANTHEON_BRANCH=$1
-fi
+  if [ $# -ge 1 ]
+  then
+      PANTHEON_BRANCH=$1
+  fi
 
-# Check essential command-line tools.
-if ! hash drush 2>/dev/null; then
-  echo -e "${RED}Drush executable is not available ${RESTORE}"
-  echo "http://docs.drush.org/en/master/install/"
-  exit 1
-fi
+  # Check essential command-line tools.
+  if ! hash drush 2>/dev/null; then
+    echo -e "${RED}Drush executable is not available ${RESTORE}"
+    echo "http://docs.drush.org/en/master/install/"
+    exit 1
+  fi
 
 fi
 
@@ -91,20 +91,23 @@ rsync -avzr --delete-after "$MAKE_DIR/$PROFILE/" "$PANTHEON_DIR/profiles/$PROFIL
 rsync -avzr --delete-after "$MAKE_DIR"/www/sites/all/ "$PANTHEON_DIR"/sites/all/
 
 echo -e "${GREEN}Re-building the app and copy to {$PANTHEON_DIR}/app.${NORMAL}"
-cd $MAKE_DIR/../client
+cd "$MAKE_DIR"/../client
 bower install
 gulp publish
-rm -rf $PANTHEON_DIR/app
-mkdir $PANTHEON_DIR/app
-cp -Ra dist/. $PANTHEON_DIR/app/
+rm -rf "$PANTHEON_DIR"/app
+mkdir "$PANTHEON_DIR"/app
+cp -Ra dist/. "$PANTHEON_DIR"/app/
 
 cd "$PANTHEON_DIR"
 echo -e "${GREEN}Git commit new code.${NORMAL}\n"
 git add . --all
 git status
 
-echo -e "${YELLOW}Sleeping for 5 seconds, you can abort the process before push by hitting Ctrl-C.${NORMAL}\n"
-sleep 5
+if [ "$CI" != 'true' ];
+then
+  echo -e "${YELLOW}Sleeping for 5 seconds, you can abort the process before push by hitting Ctrl-C.${NORMAL}\n"
+  sleep 5
+fi
 git commit -am "Site update from $ORIGIN_BRANCH"
 git push
 
