@@ -196,7 +196,7 @@ type TranslationId
     | BabyName String
     | Back
     | BackendError
-    | BegingNewEncounter
+    | BeginNewEncounter
     | BloodPressure
     | BloodPressureElevatedOcassions
     | BloodPressureDiaLabel
@@ -1009,8 +1009,8 @@ translationSet trans =
             , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
             }
 
-        BegingNewEncounter ->
-            { english = "Beging a New Encounter"
+        BeginNewEncounter ->
+            { english = "Begin a New Encounter"
             , kinyarwanda = Nothing
             }
 
