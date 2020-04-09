@@ -1938,7 +1938,7 @@ translationSet trans =
             }
 
         GroupAssessment ->
-            { english = "Group Assessment"
+            { english = "Group Encounter"
             , kinyarwanda = Just "Gukorera itsinda"
             }
 
