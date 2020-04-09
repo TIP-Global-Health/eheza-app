@@ -2148,7 +2148,7 @@ translationSet trans =
 
         IndividualEncounter ->
             { english = "Individual Encounter"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gukorera umuntu umwe"
             }
 
         IndividualEncounterType type_ ->
