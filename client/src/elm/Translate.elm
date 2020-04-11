@@ -3450,7 +3450,7 @@ translationSet trans =
 
         SearchExistingParticipants ->
             { english = "Search Existing Participants"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gushaka abagenerwabikorwa basanzwe muri sisiteme"
             }
 
         SearchHelper ->
