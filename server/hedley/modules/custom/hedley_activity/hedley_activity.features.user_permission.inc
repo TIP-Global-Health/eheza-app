@@ -94,6 +94,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create malaria_testing content'.
+  $permissions['create malaria_testing content'] = array(
+    'name' => 'create malaria_testing content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create medical_history content'.
   $permissions['create medical_history content'] = array(
     'name' => 'create medical_history content',
@@ -360,6 +370,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any malaria_testing content'.
+  $permissions['delete any malaria_testing content'] = array(
+    'name' => 'delete any malaria_testing content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any medical_history content'.
   $permissions['delete any medical_history content'] = array(
     'name' => 'delete any medical_history content',
@@ -597,6 +616,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own last_menstrual_period content'.
   $permissions['delete own last_menstrual_period content'] = array(
     'name' => 'delete own last_menstrual_period content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own malaria_testing content'.
+  $permissions['delete own malaria_testing content'] = array(
+    'name' => 'delete own malaria_testing content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -850,6 +878,16 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit any last_menstrual_period content'.
   $permissions['edit any last_menstrual_period content'] = array(
     'name' => 'edit any last_menstrual_period content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any malaria_testing content'.
+  $permissions['edit any malaria_testing content'] = array(
+    'name' => 'edit any malaria_testing content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -1127,6 +1165,16 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit own last_menstrual_period content'.
   $permissions['edit own last_menstrual_period content'] = array(
     'name' => 'edit own last_menstrual_period content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own malaria_testing content'.
+  $permissions['edit own malaria_testing content'] = array(
+    'name' => 'edit own malaria_testing content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
