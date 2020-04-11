@@ -47,6 +47,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'family_planning' => 'family-plannings',
   'height' => 'heights',
   'last_menstrual_period' => 'last-menstrual-periods',
+  'malaria_testing' => 'malaria-testings',
   'medical_history' => 'medical-histories',
   'medication' => 'medications',
   'muac' => 'muacs',

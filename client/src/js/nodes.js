@@ -104,6 +104,7 @@
         health_center: 'nodes',
         height: 'shards',
         last_menstrual_period: 'shards',
+        malaria_testing: 'shards',
         medical_history: 'shards',
         medication: 'shards',
         muac: 'shards',
