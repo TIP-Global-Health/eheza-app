@@ -119,7 +119,7 @@ viewActivity language currentDate id activity ( personId, measurements ) model =
             viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) model.physicalExamData
 
         AcuteIllnessLaboratory ->
-            [ div [] [ text "AcuteIllnessLaboratory here" ] ]
+            viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) model.laboratoryData
 
         AcuteIllnessExposure ->
             [ div [] [ text "AcuteIllnessExposure here" ] ]
@@ -437,4 +437,116 @@ viewVitalsForm language currentDate measurements form =
             "body-temperature"
             Translate.Celsius
         , viewPreviousMeasurement language bodyTemperaturePreviousValue Translate.Celsius
+        ]
+
+
+viewAcuteIllnessLaboratory : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> LaboratoryData -> List (Html Msg)
+viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) data =
+    let
+        activity =
+            AcuteIllnessLaboratory
+
+        tasks =
+            [ LaboratoryMalariaTesting ]
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        LaboratoryMalariaTesting ->
+                            ( "laboratory-malaria-testing"
+                            , isJust measurements.malariaTesting
+                            )
+
+                isActive =
+                    task == data.activeTask
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveLaboratoryTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ a attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.LaboratoryTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, laboratoryTasksCompletedFromTotal measurements data task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Dict.get data.activeTask tasksCompletedFromTotalDict
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case data.activeTask of
+                LaboratoryMalariaTesting ->
+                    measurements.malariaTesting
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> malariaTestingFormWithDefault data.malariaTestingForm
+                        |> viewMalariaTestingForm language currentDate measurements
+
+        getNextTask currentTask =
+            case currentTask of
+                LaboratoryMalariaTesting ->
+                    []
+
+        actions =
+            let
+                saveMsg =
+                    case data.activeTask of
+                        LaboratoryMalariaTesting ->
+                            SaveMalariaTesting personId measurements.malariaTesting
+            in
+            div [ class "actions malaria-testing" ]
+                [ button
+                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                    , onClick saveMsg
+                    ]
+                    [ text <| translate language Translate.Save ]
+                ]
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui five column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
+            ]
+        ]
+    ]
+
+
+viewMalariaTestingForm : Language -> NominalDate -> AcuteIllnessMeasurements -> MalariaTestingForm -> Html Msg
+viewMalariaTestingForm language currentDate measurements form =
+    div [ class "ui form laboratory malaria-testing" ]
+        [ div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.RapidTestResult ]
+            , div [ class "four wide column" ]
+                [-- viewConditionalAlert form.respiratoryRate
+                 --    [ [ (>) 12 ], [ (<) 30 ] ]
+                 --    [ [ (<=) 21, (>=) 30 ] ]
+                ]
+            ]
+        , viewBoolInput
+            language
+            form.rapidTestPositive
+            SetRapidTestPositive
+            "rapid-test-positive"
+            (Just ( Translate.PositiveLabel, Translate.NegativeLabel ))
         ]

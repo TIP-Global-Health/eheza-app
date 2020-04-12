@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Model exposing (Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), VitalsForm, emptyModel, emptyPhysicalExamData, emptySymptomsData)
+module Pages.AcuteIllnessActivity.Model exposing (LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), VitalsForm, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptySymptomsData)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -24,11 +24,16 @@ type Msg
     | SetVitalsResporatoryRate String
     | SetVitalsBodyTemperature String
     | SaveVitals PersonId (Maybe ( AcuteIllnessVitalsId, AcuteIllnessVitals ))
+      -- LABORATORY Msgs
+    | SetActiveLaboratoryTask LaboratoryTask
+    | SetRapidTestPositive Bool
+    | SaveMalariaTesting PersonId (Maybe ( MalariaTestingId, MalariaTesting ))
 
 
 type alias Model =
     { symptomsData : SymptomsData
     , physicalExamData : PhysicalExamData
+    , laboratoryData : LaboratoryData
     }
 
 
@@ -36,6 +41,7 @@ emptyModel : Model
 emptyModel =
     { symptomsData = emptySymptomsData
     , physicalExamData = emptyPhysicalExamData
+    , laboratoryData = emptyLaboratoryData
     }
 
 
@@ -105,4 +111,30 @@ type PhysicalExamTask
 type alias VitalsForm =
     { respiratoryRate : Maybe Int
     , bodyTemperature : Maybe Float
+    }
+
+
+
+-- LABORATORY
+
+
+type alias LaboratoryData =
+    { malariaTestingForm : MalariaTestingForm
+    , activeTask : LaboratoryTask
+    }
+
+
+emptyLaboratoryData : LaboratoryData
+emptyLaboratoryData =
+    { malariaTestingForm = MalariaTestingForm Nothing
+    , activeTask = LaboratoryMalariaTesting
+    }
+
+
+type LaboratoryTask
+    = LaboratoryMalariaTesting
+
+
+type alias MalariaTestingForm =
+    { rapidTestPositive : Maybe Bool
     }

@@ -72,6 +72,9 @@ decodeRevision =
                     "last_menstrual_period" ->
                         decodeWithUuid LastMenstrualPeriodRevision decodeLastMenstrualPeriod
 
+                    "malaria_testing" ->
+                        decodeWithUuid MalariaTestingRevision decodeMalariaTesting
+
                     "medical_history" ->
                         decodeWithUuid MedicalHistoryRevision decodeMedicalHistory
 

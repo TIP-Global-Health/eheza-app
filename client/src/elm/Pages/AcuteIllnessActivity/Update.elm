@@ -341,3 +341,57 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetActiveLaboratoryTask task ->
+            let
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | activeTask = task })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetRapidTestPositive value ->
+            let
+                form =
+                    model.laboratoryData.malariaTestingForm
+
+                updatedForm =
+                    { form | rapidTestPositive = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | malariaTestingForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveMalariaTesting personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.laboratoryData.malariaTestingForm
+                        |> toMalariaTestingValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.AcuteIllnessEncounter.Model.SaveMalariaTesting personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )

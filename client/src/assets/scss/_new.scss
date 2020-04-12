@@ -464,6 +464,10 @@ div.page-activity.acute-illness {
 
   .ui.full.segment {
 
+    .full.content {
+      min-height: 210px;
+    }
+
     .label {
       margin-bottom: 5px;
     }
@@ -500,6 +504,45 @@ div.page-activity.acute-illness {
 
       &.disabled input{
         pointer-events: none;
+      }
+    }
+
+    .form-input.yes-no {
+      margin-left: 25px;
+      padding-bottom: 15px;
+
+      label {
+        font-size: 25px;
+        margin-left: 10px;
+      }
+
+      label:before {
+        background-color: transparent;
+        border: 2px solid $color-gray-border;
+        border-radius: 13px;
+        content: " ";
+        display: inline-block;
+        height: 26px;
+        margin-right: 10px;
+        position: relative;
+        top: 5px;
+        width: 26px;
+      }
+
+      input[type=radio] {
+        display: none;
+      }
+
+      input[type=radio]:checked + label:after {
+        background: $color-text;
+        border-radius: 7px;
+        content: " ";
+        display: block;
+        height: 14px;
+        left: 30px;
+        position: absolute;
+        top: 25px;
+        width: 14px;
       }
     }
 

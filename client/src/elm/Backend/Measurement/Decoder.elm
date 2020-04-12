@@ -1,4 +1,4 @@
-module Backend.Measurement.Decoder exposing (decodeAbdomenCPESign, decodeAcuteIllnessMeasurement, decodeAcuteIllnessMeasurements, decodeAcuteIllnessVitals, decodeAttendance, decodeBreastExam, decodeBreastExamSign, decodeCSectionReason, decodeCSectionScar, decodeChildMeasurementList, decodeChildNutritionSign, decodeCorePhysicalExam, decodeCounselingSession, decodeDangerSign, decodeDangerSigns, decodeEyesCPESign, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeFetalPresentation, decodeGroupMeasurement, decodeHairHeadCPESign, decodeHandsCPESign, decodeHead, decodeHeartCPESign, decodeHeight, decodeLastMenstrualPeriod, decodeLegsCPESign, decodeLungsCPESign, decodeMeasurement, decodeMedicalHistory, decodeMedicalHistorySign, decodeMedication, decodeMedicationSign, decodeMotherMeasurementList, decodeMuac, decodeNeckCPESign, decodeNutrition, decodeNutritionMeasurement, decodeNutritionMeasurements, decodeNutritionNutrition, decodeObstetricHistory, decodeObstetricHistorySign, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodePrenatalFamilyPlanning, decodePrenatalMeasurement, decodePrenatalMeasurements, decodePrenatalNutrition, decodePrenatalPhoto, decodePreviousDeliveryPeriod, decodePreviousDeliverySign, decodeResource, decodeResourceSign, decodeSocialHistory, decodeSocialHistoryHivTestingResult, decodeSocialHistorySign, decodeSymptomsGI, decodeSymptomsGISign, decodeSymptomsGeneral, decodeSymptomsGeneralSign, decodeSymptomsRespiratory, decodeSymptomsRespiratorySign, decodeVitals, decodeWeight, decodeWithEntityUuid)
+module Backend.Measurement.Decoder exposing (decodeAbdomenCPESign, decodeAcuteIllnessMeasurement, decodeAcuteIllnessMeasurements, decodeAcuteIllnessVitals, decodeAttendance, decodeBreastExam, decodeBreastExamSign, decodeCSectionReason, decodeCSectionScar, decodeChildMeasurementList, decodeChildNutritionSign, decodeCorePhysicalExam, decodeCounselingSession, decodeDangerSign, decodeDangerSigns, decodeEyesCPESign, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeFetalPresentation, decodeGroupMeasurement, decodeHairHeadCPESign, decodeHandsCPESign, decodeHead, decodeHeartCPESign, decodeHeight, decodeLastMenstrualPeriod, decodeLegsCPESign, decodeLungsCPESign, decodeMalariaTesting, decodeMalariaTestingSign, decodeMeasurement, decodeMedicalHistory, decodeMedicalHistorySign, decodeMedication, decodeMedicationSign, decodeMotherMeasurementList, decodeMuac, decodeNeckCPESign, decodeNutrition, decodeNutritionMeasurement, decodeNutritionMeasurements, decodeNutritionNutrition, decodeObstetricHistory, decodeObstetricHistorySign, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodePrenatalFamilyPlanning, decodePrenatalMeasurement, decodePrenatalMeasurements, decodePrenatalNutrition, decodePrenatalPhoto, decodePreviousDeliveryPeriod, decodePreviousDeliverySign, decodeResource, decodeResourceSign, decodeSocialHistory, decodeSocialHistoryHivTestingResult, decodeSocialHistorySign, decodeSymptomsGI, decodeSymptomsGISign, decodeSymptomsGeneral, decodeSymptomsGeneralSign, decodeSymptomsRespiratory, decodeSymptomsRespiratorySign, decodeVitals, decodeWeight, decodeWithEntityUuid, symptomsGIToDict, symptomsGeneralToDict, symptomsRespiratoryToDict)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
@@ -103,6 +103,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "symptoms_respiratory" (decodeHead decodeSymptomsRespiratory) Nothing
         |> optional "symptoms_gi" (decodeHead decodeSymptomsGI) Nothing
         |> optional "acute_illness_vitals" (decodeHead decodeAcuteIllnessVitals) Nothing
+        |> optional "malaria_testing" (decodeHead decodeMalariaTesting) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -1111,3 +1112,29 @@ decodeAcuteIllnessVitals =
         |> required "respiratory_rate" decodeInt
         |> required "body_temperature" decodeFloat
         |> decodeAcuteIllnessMeasurement
+
+
+decodeMalariaTesting : Decoder MalariaTesting
+decodeMalariaTesting =
+    decodeEverySet decodeMalariaTestingSign
+        |> field "malaria_testing"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeMalariaTestingSign : Decoder MalariaTestingSign
+decodeMalariaTestingSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "rapid-test-positive" ->
+                        succeed RapidTestPositive
+
+                    "none" ->
+                        succeed NoMalariaTestingSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized MalariaTestingSign"
+            )

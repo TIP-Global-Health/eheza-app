@@ -303,6 +303,7 @@ type Revision
     | HeightRevision HeightId Height
     | IndividualEncounterParticipantRevision IndividualEncounterParticipantId IndividualEncounterParticipant
     | LastMenstrualPeriodRevision LastMenstrualPeriodId LastMenstrualPeriod
+    | MalariaTestingRevision MalariaTestingId MalariaTesting
     | MedicalHistoryRevision MedicalHistoryId MedicalHistory
     | MedicationRevision MedicationId Medication
     | MuacRevision MuacId Muac

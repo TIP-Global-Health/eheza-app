@@ -114,7 +114,7 @@ viewMainPageContent language currentDate id measurements model =
                                 isJust measurements.vitals
 
                             AcuteIllnessLaboratory ->
-                                False
+                                isJust measurements.malariaTesting
 
                             AcuteIllnessExposure ->
                                 False

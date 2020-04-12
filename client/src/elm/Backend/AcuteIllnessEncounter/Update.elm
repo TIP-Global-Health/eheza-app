@@ -186,3 +186,39 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveVitals = data }
             , Cmd.none
             )
+
+        SaveMalariaTesting personId valueId value ->
+            let
+                cmd =
+                    case valueId of
+                        Nothing ->
+                            { participantId = personId
+                            , dateMeasured = currentDate
+                            , encounterId = Just encounterId
+                            , nurse = nurseId
+                            , healthCenter = healthCenterId
+                            , value = value
+                            }
+                                |> sw.post malariaTestingEndpoint
+                                |> withoutDecoder
+                                |> toCmd (RemoteData.fromResult >> HandleSavedMalariaTesting)
+
+                        Just id ->
+                            encodeMalariaTestingValue value
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
+                                |> object
+                                |> sw.patchAny malariaTestingEndpoint id
+                                |> withoutDecoder
+                                |> toCmd (RemoteData.fromResult >> HandleSavedMalariaTesting)
+            in
+            ( { model | saveMalariaTesting = Loading }
+            , cmd
+            )
+
+        HandleSavedMalariaTesting data ->
+            ( { model | saveMalariaTesting = data }
+            , Cmd.none
+            )

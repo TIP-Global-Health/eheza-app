@@ -1,65 +1,4 @@
-module Backend.Measurement.Encoder exposing
-    ( encodeAcuteIllnessMeasurement
-    , encodeAcuteIllnessVitals
-    , encodeAcuteIllnessVitalsValue
-    , encodeAttendance
-    , encodeAttendanceValue
-    , encodeBreastExam
-    , encodeBreastExamValue
-    , encodeCorePhysicalExam
-    , encodeCorePhysicalExamValue
-    , encodeCounselingSession
-    , encodeCounselingSessionValue
-    , encodeDangerSigns
-    , encodeDangerSignsValue
-    , encodeFamilyPlanning
-    , encodeFamilyPlanningSignAsString
-    , encodeFamilyPlanningValue
-    , encodeHeight
-    , encodeHeightValue
-    , encodeLastMenstrualPeriod
-    , encodeLastMenstrualPeriodValue
-    , encodeMedicalHistory
-    , encodeMedicalHistoryValue
-    , encodeMedication
-    , encodeMedicationValue
-    , encodeMuac
-    , encodeMuacValue
-    , encodeNutrition
-    , encodeNutritionNutrition
-    , encodeNutritionSignAsString
-    , encodeNutritionValue
-    , encodeObstetricHistory
-    , encodeObstetricHistoryStep2
-    , encodeObstetricHistoryStep2Value
-    , encodeObstetricHistoryValue
-    , encodeObstetricalExam
-    , encodeObstetricalExamValue
-    , encodeParticipantConsent
-    , encodeParticipantConsentValue
-    , encodePhoto
-    , encodePhotoUrl
-    , encodePrenatalFamilyPlanning
-    , encodePrenatalNutrition
-    , encodePrenatalNutritionValue
-    , encodePrenatalPhoto
-    , encodeResource
-    , encodeResourceValue
-    , encodeSocialHistory
-    , encodeSocialHistoryHivTestingResult
-    , encodeSocialHistoryValue
-    , encodeSymptomsGI
-    , encodeSymptomsGIValue
-    , encodeSymptomsGeneral
-    , encodeSymptomsGeneralValue
-    , encodeSymptomsRespiratory
-    , encodeSymptomsRespiratoryValue
-    , encodeVitals
-    , encodeVitalsValue
-    , encodeWeight
-    , encodeWeightValue
-    , socialHistoryHivTestingResultToString
-    )
+module Backend.Measurement.Encoder exposing (encodeAbdomenCPESign, encodeAcuteIllnessMeasurement, encodeAcuteIllnessVitals, encodeAcuteIllnessVitalsValue, encodeAttendance, encodeAttendanceValue, encodeBreastExam, encodeBreastExamSign, encodeBreastExamValue, encodeCSectionReason, encodeCSectionScar, encodeCorePhysicalExam, encodeCorePhysicalExamValue, encodeCounselingSession, encodeCounselingSessionValue, encodeDangerSign, encodeDangerSigns, encodeDangerSignsValue, encodeEverySet, encodeEyesCPESign, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeFetalPresentation, encodeGroupMeasurement, encodeHairHeadCPESign, encodeHandsCPESign, encodeHeartCPESign, encodeHeight, encodeHeightInCm, encodeHeightValue, encodeLastMenstrualPeriod, encodeLastMenstrualPeriodValue, encodeLegsCPESign, encodeLungsCPESign, encodeMalariaTesting, encodeMalariaTestingSign, encodeMalariaTestingValue, encodeMeasurement, encodeMedicalHistory, encodeMedicalHistorySign, encodeMedicalHistoryValue, encodeMedication, encodeMedicationSign, encodeMedicationValue, encodeMuac, encodeMuacInCm, encodeMuacValue, encodeNeckCPESign, encodeNutrition, encodeNutritionMeasurement, encodeNutritionNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeObstetricHistory, encodeObstetricHistorySign, encodeObstetricHistoryStep2, encodeObstetricHistoryStep2Value, encodeObstetricHistoryValue, encodeObstetricalExam, encodeObstetricalExamValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodePrenatalFamilyPlanning, encodePrenatalMeasurement, encodePrenatalNutrition, encodePrenatalNutritionValue, encodePrenatalPhoto, encodePreviousDeliveryPeriod, encodePreviousDeliverySign, encodeResource, encodeResourceSign, encodeResourceValue, encodeSocialHistory, encodeSocialHistoryHivTestingResult, encodeSocialHistorySign, encodeSocialHistoryValue, encodeSymptomsGI, encodeSymptomsGIValue, encodeSymptomsGeneral, encodeSymptomsGeneralValue, encodeSymptomsRespiratory, encodeSymptomsRespiratoryValue, encodeVitals, encodeVitalsValue, encodeWeight, encodeWeightInKg, encodeWeightValue, socialHistoryHivTestingResultToString)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
@@ -992,3 +931,24 @@ encodeAcuteIllnessVitalsValue value =
     [ ( "respiratory_rate", int value.respiratoryRate )
     , ( "body_temperature", float value.bodyTemperature )
     ]
+
+
+encodeMalariaTesting : MalariaTesting -> List ( String, Value )
+encodeMalariaTesting =
+    encodeAcuteIllnessMeasurement encodeMalariaTestingValue
+
+
+encodeMalariaTestingValue : EverySet MalariaTestingSign -> List ( String, Value )
+encodeMalariaTestingValue value =
+    [ ( "malaria_testing", encodeEverySet encodeMalariaTestingSign value ) ]
+
+
+encodeMalariaTestingSign : MalariaTestingSign -> Value
+encodeMalariaTestingSign sign =
+    string <|
+        case sign of
+            RapidTestPositive ->
+                "rapid-test-positive"
+
+            NoMalariaTestingSigns ->
+                "none"

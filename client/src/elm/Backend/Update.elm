@@ -1373,10 +1373,33 @@ handleRevision revision (( model, recalc ) as noChange) =
             , True
             )
 
+        IndividualEncounterParticipantRevision uuid data ->
+            let
+                individualParticipants =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.individualParticipants
+
+                individualParticipantsByPerson =
+                    Dict.remove data.person model.individualParticipantsByPerson
+            in
+            ( { model
+                | individualParticipants = individualParticipants
+                , individualParticipantsByPerson = individualParticipantsByPerson
+              }
+            , recalc
+            )
+
         LastMenstrualPeriodRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | lastMenstrualPeriod = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        MalariaTestingRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | malariaTesting = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -1503,21 +1526,6 @@ handleRevision revision (( model, recalc ) as noChange) =
                         |> Dict.remove data.adult
               }
             , True
-            )
-
-        IndividualEncounterParticipantRevision uuid data ->
-            let
-                individualParticipants =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.individualParticipants
-
-                individualParticipantsByPerson =
-                    Dict.remove data.person model.individualParticipantsByPerson
-            in
-            ( { model
-                | individualParticipants = individualParticipants
-                , individualParticipantsByPerson = individualParticipantsByPerson
-              }
-            , recalc
             )
 
         PrenatalEncounterRevision uuid data ->

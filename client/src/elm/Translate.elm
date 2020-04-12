@@ -43,7 +43,7 @@ import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Http
 import NutritionActivity.Model exposing (NutritionActivity(..))
-import Pages.AcuteIllnessActivity.Model exposing (PhysicalExamTask(..), SymptomsTask(..))
+import Pages.AcuteIllnessActivity.Model exposing (LaboratoryTask(..), PhysicalExamTask(..), SymptomsTask(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
@@ -364,6 +364,7 @@ type TranslationId
     | IndividualEncounterTypes
     | InitialResultsDisplay InitialResultsDisplay
     | KilogramShorthand
+    | LaboratoryTask LaboratoryTask
     | LastChecked
     | LastSuccesfulContactLabel
     | Legs
@@ -414,6 +415,7 @@ type TranslationId
     | NationalIdNumber
     | Neck
     | NeckCPESign NeckCPESign
+    | NegativeLabel
     | Next
     | No
     | NoActivitiesCompleted
@@ -478,6 +480,7 @@ type TranslationId
     | PlaceholderEnterWeight
     | PleaseSelectGroup
     | PleaseSync
+    | PositiveLabel
     | PreeclampsiaPreviousPregnancy
     | PregnancyTrimester PregnancyTrimester
     | PrenatalActivitiesTitle PrenatalActivity
@@ -501,6 +504,7 @@ type TranslationId
     | PrenatalParticipants
     | PreTermPregnancy
     | Province
+    | RapidTestResult
     | ReasonForCSection
     | ReceivedDewormingPill
     | ReceivedIronFolicAcid
@@ -2325,6 +2329,13 @@ translationSet trans =
             , kinyarwanda = Just "kg"
             }
 
+        LaboratoryTask task ->
+            case task of
+                LaboratoryMalariaTesting ->
+                    { english = "Malaria Results"
+                    , kinyarwanda = Nothing
+                    }
+
         LastChecked ->
             { english = "Last checked"
             , kinyarwanda = Just "Isuzuma riheruka"
@@ -2735,8 +2746,13 @@ translationSet trans =
                 NormalNeck ->
                     translationSet Normal
 
+        NegativeLabel ->
+            { english = "Negative"
+            , kinyarwanda = Just "Nta bwandu afite"
+            }
+
         Next ->
-            { english = "Next"
+            { english = "Nexst"
             , kinyarwanda = Nothing
             }
 
@@ -3131,6 +3147,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PositiveLabel ->
+            { english = "Positive"
+            , kinyarwanda = Just "Afite ubwandu"
+            }
+
         PreeclampsiaPreviousPregnancy ->
             { english = "Preeclampsia in previous pregnancy "
             , kinyarwanda = Nothing
@@ -3322,6 +3343,11 @@ translationSet trans =
         Province ->
             { english = "Province"
             , kinyarwanda = Just "Intara"
+            }
+
+        RapidTestResult ->
+            { english = "Rapid Test Result"
+            , kinyarwanda = Nothing
             }
 
         ReasonForCSection ->

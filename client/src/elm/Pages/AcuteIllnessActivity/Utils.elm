@@ -1,9 +1,19 @@
-module Pages.AcuteIllnessActivity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, fromVitalsValue, physicalExamTasksCompletedFromTotal, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, vitalsFormWithDefault)
+module Pages.AcuteIllnessActivity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, fromMalariaTestingValue, fromVitalsValue, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, physicalExamTasksCompletedFromTotal, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toMalariaTestingValue, toMalariaTestingValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, vitalsFormWithDefault)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Measurement.Model exposing (AcuteIllnessMeasurements, AcuteIllnessVitalsValue, SymptomsGISign(..), SymptomsGeneralSign(..), SymptomsRespiratorySign(..))
+import Backend.Measurement.Model
+    exposing
+        ( AcuteIllnessMeasurements
+        , AcuteIllnessVitalsValue
+        , MalariaTestingSign(..)
+        , SymptomsGISign(..)
+        , SymptomsGeneralSign(..)
+        , SymptomsRespiratorySign(..)
+        )
+import EverySet exposing (EverySet)
 import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
+import Pages.PrenatalActivity.Utils exposing (ifEmpty, ifTrue)
 import Pages.Utils exposing (taskCompleted)
 
 
@@ -125,6 +135,21 @@ physicalExamTasksCompletedFromTotal measurements data task =
             in
             ( taskCompleted form.respiratoryRate + taskCompleted form.bodyTemperature
             , 2
+            )
+
+
+laboratoryTasksCompletedFromTotal : AcuteIllnessMeasurements -> LaboratoryData -> LaboratoryTask -> ( Int, Int )
+laboratoryTasksCompletedFromTotal measurements data task =
+    case task of
+        LaboratoryMalariaTesting ->
+            let
+                form =
+                    measurements.malariaTesting
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> malariaTestingFormWithDefault data.malariaTestingForm
+            in
+            ( taskCompleted form.rapidTestPositive
+            , 1
             )
 
 
@@ -263,3 +288,34 @@ toVitalsValue : VitalsForm -> Maybe AcuteIllnessVitalsValue
 toVitalsValue form =
     Maybe.map AcuteIllnessVitalsValue form.respiratoryRate
         |> andMap form.bodyTemperature
+
+
+fromMalariaTestingValue : Maybe (EverySet MalariaTestingSign) -> MalariaTestingForm
+fromMalariaTestingValue saved =
+    { rapidTestPositive = Maybe.map (EverySet.member RapidTestPositive) saved
+    }
+
+
+malariaTestingFormWithDefault : MalariaTestingForm -> Maybe (EverySet MalariaTestingSign) -> MalariaTestingForm
+malariaTestingFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { rapidTestPositive = or form.rapidTestPositive (EverySet.member RapidTestPositive value |> Just)
+                }
+            )
+
+
+toMalariaTestingValueWithDefault : Maybe (EverySet MalariaTestingSign) -> MalariaTestingForm -> Maybe (EverySet MalariaTestingSign)
+toMalariaTestingValueWithDefault saved form =
+    malariaTestingFormWithDefault form saved
+        |> toMalariaTestingValue
+
+
+toMalariaTestingValue : MalariaTestingForm -> Maybe (EverySet MalariaTestingSign)
+toMalariaTestingValue form =
+    [ Maybe.map (ifTrue RapidTestPositive) form.rapidTestPositive
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoMalariaTestingSigns)
