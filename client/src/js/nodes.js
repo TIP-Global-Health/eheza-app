@@ -100,6 +100,7 @@
         counseling_topic: 'nodes',
         core_physical_exam: 'shards',
         danger_signs: 'shards',
+        exposure: 'shards',
         family_planning: 'shards',
         health_center: 'nodes',
         height: 'shards',
@@ -133,6 +134,7 @@
         symptoms_general: 'shards',
         symptoms_gi: 'shards',
         symptoms_respiratory: 'shards',
+        travel_history: 'shards',
         vitals: 'shards',
         weight: 'shards'
     };
