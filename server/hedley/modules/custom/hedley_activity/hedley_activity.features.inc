@@ -59,6 +59,14 @@ function hedley_activity_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'exposure' => array(
+      'name' => t('Exposure'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'family_planning' => array(
       'name' => t('Family Planning'),
       'base' => 'node_content',
@@ -221,6 +229,14 @@ function hedley_activity_node_info() {
     ),
     'symptoms_respiratory' => array(
       'name' => t('Symptoms Respiratory'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'travel_history' => array(
+      'name' => t('Travel History'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',

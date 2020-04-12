@@ -62,6 +62,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create exposure content'.
+  $permissions['create exposure content'] = array(
+    'name' => 'create exposure content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create family_planning content'.
   $permissions['create family_planning content'] = array(
     'name' => 'create family_planning content',
@@ -277,6 +287,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create travel_history content'.
+  $permissions['create travel_history content'] = array(
+    'name' => 'create travel_history content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create vitals content'.
   $permissions['create vitals content'] = array(
     'name' => 'create vitals content',
@@ -337,6 +357,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete any danger_signs content'.
   $permissions['delete any danger_signs content'] = array(
     'name' => 'delete any danger_signs content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any exposure content'.
+  $permissions['delete any exposure content'] = array(
+    'name' => 'delete any exposure content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -532,6 +561,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any travel_history content'.
+  $permissions['delete any travel_history content'] = array(
+    'name' => 'delete any travel_history content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any vitals content'.
   $permissions['delete any vitals content'] = array(
     'name' => 'delete any vitals content',
@@ -589,6 +627,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own danger_signs content'.
   $permissions['delete own danger_signs content'] = array(
     'name' => 'delete own danger_signs content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own exposure content'.
+  $permissions['delete own exposure content'] = array(
+    'name' => 'delete own exposure content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -784,6 +831,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete own travel_history content'.
+  $permissions['delete own travel_history content'] = array(
+    'name' => 'delete own travel_history content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own vitals content'.
   $permissions['delete own vitals content'] = array(
     'name' => 'delete own vitals content',
@@ -846,6 +902,16 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit any danger_signs content'.
   $permissions['edit any danger_signs content'] = array(
     'name' => 'edit any danger_signs content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any exposure content'.
+  $permissions['edit any exposure content'] = array(
+    'name' => 'edit any exposure content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -1068,6 +1134,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any travel_history content'.
+  $permissions['edit any travel_history content'] = array(
+    'name' => 'edit any travel_history content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any vitals content'.
   $permissions['edit any vitals content'] = array(
     'name' => 'edit any vitals content',
@@ -1133,6 +1209,16 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit own danger_signs content'.
   $permissions['edit own danger_signs content'] = array(
     'name' => 'edit own danger_signs content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own exposure content'.
+  $permissions['edit own exposure content'] = array(
+    'name' => 'edit own exposure content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -1348,6 +1434,16 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit own symptoms_respiratory content'.
   $permissions['edit own symptoms_respiratory content'] = array(
     'name' => 'edit own symptoms_respiratory content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own travel_history content'.
+  $permissions['edit own travel_history content'] = array(
+    'name' => 'edit own travel_history content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
