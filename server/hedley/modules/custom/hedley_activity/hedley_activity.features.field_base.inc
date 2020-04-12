@@ -921,6 +921,7 @@ function hedley_activity_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'rapid-test-positive' => 'Rapid Test Positive',
+        'none' => 'None of these',
       ),
       'allowed_values_function' => '',
     ),
