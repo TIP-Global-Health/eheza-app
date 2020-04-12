@@ -35,7 +35,6 @@ application startup), and then provide the `Model` to the functions in
 type alias Model =
     { bmiForAge : WebData BmiForAgeTables
     , lengthHeightForAge : WebData LengthHeightForAgeTables
-    , lengthHeightForAge5to19 : WebData LengthHeightForAgeTables
     , weightForAge : WebData WeightForAgeTables
     , weightForHeight : WebData WeightForHeightTables
     , weightForLength : WebData WeightForLengthTables
@@ -46,7 +45,6 @@ emptyModel : Model
 emptyModel =
     { bmiForAge = NotAsked
     , lengthHeightForAge = NotAsked
-    , lengthHeightForAge5to19 = NotAsked
     , weightForAge = NotAsked
     , weightForHeight = NotAsked
     , weightForLength = NotAsked
@@ -60,13 +58,11 @@ type Msg
     = FetchAllTables
     | FetchBmiForAgeTables
     | FetchLengthHeightForAgeTables
-    | FetchLengthHeightForAge5to19Tables
     | FetchWeightForAgeTables
     | FetchWeightForHeightTables
     | FetchWeightForLengthTables
     | HandleBmiForAgeTables (WebData BmiForAgeTables)
     | HandleLengthHeightForAgeTables (WebData LengthHeightForAgeTables)
-    | HandleLengthHeightForAge5to19Tables (WebData LengthHeightForAgeTables)
     | HandleWeightForAgeTables (WebData WeightForAgeTables)
     | HandleWeightForHeightTables (WebData WeightForHeightTables)
     | HandleWeightForLengthTables (WebData WeightForLengthTables)

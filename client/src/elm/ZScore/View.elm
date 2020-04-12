@@ -92,7 +92,7 @@ viewHeightForAgeBoys5To19 language model data =
         , yAxisLinesAndText heightForAgeConfig5To19
         , xAxisLinesAndText heightForAgeConfig5To19
         , zScoreLabelsHeightForAgeBoys5To19
-        , model.lengthHeightForAge5to19
+        , model.lengthHeightForAge
             |> RemoteData.map (.male >> .byMonth >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData heightForAgeConfig5To19
@@ -113,7 +113,7 @@ viewHeightForAgeGirls5To19 language model data =
         , yAxisLinesAndText heightForAgeConfig5To19
         , xAxisLinesAndText heightForAgeConfig5To19
         , zScoreLabelsHeightForAgeBoys5To19
-        , model.lengthHeightForAge5to19
+        , model.lengthHeightForAge
             |> RemoteData.map (.female >> .byMonth >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData heightForAgeConfig5To19
@@ -214,8 +214,8 @@ heightForAgeConfig5To19 =
     { toFloatX = \(Utils.NominalDate.Months months) -> toFloat months
     , toFloatY = \(Centimetres cm) -> cm
     , input = { minY = 90, maxY = 200, minX = 61, maxX = 228 }
-    , output = { minX = 111, maxX = 758, minY = 119.9, maxY = 506.7 }
-    , drawSD1 = False
+    , output = { minX = 111, maxX = 715.4, minY = 119.9, maxY = 506.7 }
+    , drawSD1 = True
     , paintLevels = False
     , xAxis =
         { width = 647
