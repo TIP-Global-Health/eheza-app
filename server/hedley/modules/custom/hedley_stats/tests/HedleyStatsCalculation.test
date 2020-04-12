@@ -291,7 +291,7 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    */
   public function testSessionsAttendance() {
     $attendance = 30;
-    $this->createSessionsWithAttendance(0, $attendance, '-1 year', '-1 week', strtotime('-25 months'));
+    $this->createSessionsWithAttendance(0, $attendance, '-1 year', '-1 week', strtotime('-24 months'));
 
     $this_month = [
       'start' => strtotime("-1 month"),
