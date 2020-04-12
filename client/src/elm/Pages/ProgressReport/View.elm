@@ -424,6 +424,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
             case child.gender of
                 Male ->
                     { heightForAge = ZScore.View.viewHeightForAgeBoys
+                    , heightForAge2To5 = ZScore.View.viewHeightForAgeGirls2To5
                     , heightForAge5To19 = ZScore.View.viewHeightForAgeBoys5To19
                     , weightForAge = ZScore.View.viewWeightForAgeBoys
                     , weightForHeight = ZScore.View.viewWeightForHeightBoys
@@ -431,6 +432,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
 
                 Female ->
                     { heightForAge = ZScore.View.viewHeightForAgeGirls
+                    , heightForAge2To5 = ZScore.View.viewHeightForAgeGirls2To5
                     , heightForAge5To19 = ZScore.View.viewHeightForAgeGirls5To19
                     , weightForAge = ZScore.View.viewWeightForAgeGirls
                     , weightForHeight = ZScore.View.viewWeightForHeightGirls
@@ -490,8 +492,8 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
         heightForAgeData =
             List.filterMap (chartHeightForAge child) heightValues
 
-        heightForAgeData5to19 =
-            List.filterMap (chartHeightForAge5to19 child) heightValues
+        heightForAgeDataMonths =
+            List.filterMap (chartHeightForAgeMonths child) heightValues
 
         weightForAgeData =
             List.filterMap (chartWeightForAge child) weightValues
@@ -504,7 +506,8 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                 [ class "image-report" ]
                 [ ZScore.View.viewMarkers
                 , zScoreViewCharts.heightForAge language zscores heightForAgeData
-                , zScoreViewCharts.heightForAge5To19 language zscores heightForAgeData5to19
+                , zScoreViewCharts.heightForAge2To5 language zscores heightForAgeData
+                , zScoreViewCharts.heightForAge5To19 language zscores heightForAgeDataMonths
                 , zScoreViewCharts.weightForAge language zscores weightForAgeData
                 , zScoreViewCharts.weightForHeight language zscores weightForHeightData
                 ]
@@ -583,8 +586,8 @@ chartHeightForAge child height =
             )
 
 
-chartHeightForAge5to19 : Person -> Height -> Maybe ( Months, Centimetres )
-chartHeightForAge5to19 child height =
+chartHeightForAgeMonths : Person -> Height -> Maybe ( Months, Centimetres )
+chartHeightForAgeMonths child height =
     child.birthDate
         |> Maybe.map
             (\birthDate ->

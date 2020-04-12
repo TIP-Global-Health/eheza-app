@@ -1,4 +1,4 @@
-module ZScore.View exposing (Bounds, LabelConfig, PlotConfig, frame, heightForAgeBoysLabels, heightForAgeConfig, heightForAgeGirlsLabels, labels, plotChildData, plotData, plotReferenceData, viewHeightForAgeBoys, viewHeightForAgeBoys5To19, viewHeightForAgeGirls, viewHeightForAgeGirls5To19, viewMarkers, viewWeightForAgeBoys, viewWeightForAgeGirls, viewWeightForHeightBoys, viewWeightForHeightGirls, weightForAgeBoysLabels, weightForAgeConfig, weightForAgeGirlsLabels, weightForHeightBoysLabels, weightForHeightConfig, weightForHeightGirlsLabels, zScoreLabelsHeightForAgeBoys, zScoreLabelsHeightForAgeGirls, zScoreLabelsWeightForAgeBoys, zScoreLabelsWeightForAgeGirls, zScoreLabelsWeightForHeightBoys, zScoreLabelsWeightForHeightGirls)
+module ZScore.View exposing (Bounds, LabelConfig, PlotConfig, frame, heightForAgeBoysLabels, heightForAgeConfig, heightForAgeGirlsLabels, labels, plotChildData, plotData, plotReferenceData, viewHeightForAgeBoys, viewHeightForAgeBoys5To19, viewHeightForAgeGirls, viewHeightForAgeGirls2To5, viewHeightForAgeGirls5To19, viewMarkers, viewWeightForAgeBoys, viewWeightForAgeGirls, viewWeightForHeightBoys, viewWeightForHeightGirls, weightForAgeBoysLabels, weightForAgeConfig, weightForAgeGirlsLabels, weightForHeightBoysLabels, weightForHeightConfig, weightForHeightGirlsLabels, zScoreLabelsHeightForAgeBoys, zScoreLabelsHeightForAgeGirls, zScoreLabelsWeightForAgeBoys, zScoreLabelsWeightForAgeGirls, zScoreLabelsWeightForHeightBoys, zScoreLabelsWeightForHeightGirls)
 
 {-| Ultimately, the idea is that we've got information in the `Model` that we
 can use to draw the elements below more programmatically ... that is, we don't
@@ -97,6 +97,27 @@ viewHeightForAgeBoys5To19 language model data =
             |> RemoteData.withDefault []
             |> plotReferenceData heightForAgeConfig5To19
         , plotChildData heightForAgeConfig5To19 data
+        ]
+
+
+viewHeightForAgeGirls2To5 : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeightForAgeGirls2To5 language model data =
+    svg
+        [ class "z-score girls"
+        , x "0px"
+        , y "0px"
+        , viewBox "0 0 841.9 595.3"
+        ]
+        [ frame language "z-score-pink"
+        , labels language heightForAgeGirlsLabels5To19
+        , yAxisLinesAndText heightForAgeConfig2To5
+        , xAxisLinesAndText heightForAgeConfig2To5
+        , zScoreLabelsHeightForAgeBoys5To19
+        , model.lengthHeightForAge
+            |> RemoteData.map (.female >> .byDay >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData heightForAgeConfig2To5
+        , plotChildData heightForAgeConfig2To5 data
         ]
 
 
@@ -230,6 +251,31 @@ heightForAgeConfig5To19 =
     , yAxis =
         { yAxisIntervals = 10
         , innerLinesNumber = 1
+        }
+    }
+
+
+heightForAgeConfig2To5 : PlotConfig Days Centimetres
+heightForAgeConfig2To5 =
+    { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
+    , toFloatY = \(Centimetres cm) -> cm
+    , input = { minY = 80, maxY = 125, minX = 24, maxX = 60 }
+    , output = { minX = 111, maxX = 715.4, minY = 119.9, maxY = 506.7 }
+    , drawSD1 = True
+    , paintLevels = False
+    , xAxis =
+        { width = 908
+        , minYear = 2
+        , maxYear = 5
+        , monthsList = [ 2, 4, 6, 8, 10 ]
+        , innerLinesNumber = 0
+        , minLength = 0
+        , maxLength = 0
+        , xAxisType = Age
+        }
+    , yAxis =
+        { yAxisIntervals = 5
+        , innerLinesNumber = 4
         }
     }
 
