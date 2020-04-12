@@ -17,12 +17,10 @@ decodeDashboardStats =
         |> required "case_management" (list decodeCaseManagement)
         |> required "children_beneficiaries" (list decodePeopleStats)
         |> required "completed_program" (list decodeParticipantStats)
-        |> required "completed_program_count" decodeInt
         |> required "family_planning" (list decodeFamilyPlanningStats)
         |> optional "good_nutrition" (nullable decodeGoodNutrition) Nothing
         |> required "malnourished_beneficiaries" (list decodeMalnourishedStats)
         |> required "missed_sessions" (list decodeParticipantStats)
-        |> required "missed_sessions_count" decodeInt
         |> optional "total_beneficiaries" (nullable decodeTotalBeneficiariesDict) Nothing
         |> optional "total_beneficiaries_incidence" (nullable decodeTotalBeneficiariesDict) Nothing
         |> optional "total_encounters" (nullable decodePeriods) Nothing
@@ -137,16 +135,7 @@ decodeParticipantStats =
         |> required "birth_date" decodeYYYYMMDD
         |> required "mother_name" string
         |> optional "phone_number" (nullable string) Nothing
-        |> required "dates" (list decodeDatesList)
-
-
-decodeDatesList : Decoder NominalDate
-decodeDatesList =
-    string
-        |> andThen
-            (\date ->
-                decodeYYYYMMDD
-            )
+        |> required "expected_date" decodeYYYYMMDD
 
 
 decodeFamilyPlanningStats : Decoder FamilyPlanningStats

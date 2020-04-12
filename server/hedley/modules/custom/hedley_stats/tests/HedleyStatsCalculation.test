@@ -287,6 +287,40 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
   }
 
   /**
+   * Testing the total beneficiaries stats.
+   */
+  public function testSessionsAttendance() {
+    $attendance = 30;
+    $this->createSessionsWithAttendance(0, $attendance, '-1 year', '-1 week', strtotime('-25 months'));
+
+    $this_month = [
+      'start' => strtotime("-1 month"),
+      'end' => time(),
+    ];
+    list($completed_programs, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_health_center($this->healthCenterId);
+
+    // Filter missed sessions.
+    $count_missed_sessions = 0;
+    foreach ($missed_sessions as $missed_session) {
+      $expected_date = strtotime($missed_session['expected_date']);
+      if ($expected_date >= $this_month['start'] && $expected_date <= $this_month['end']) {
+        $count_missed_sessions++;
+      }
+    }
+
+    // Filter completed programs.
+    $count_completed_programs = 0;
+    foreach ($completed_programs as $completed_program) {
+      $expected_date = strtotime($completed_program['expected_date']);
+      if ($expected_date >= $this_month['start'] && $expected_date <= $this_month['end']) {
+        $count_completed_programs++;
+      }
+    }
+
+    $this->assertEqual($attendance, $count_completed_programs);
+  }
+
+  /**
    * Testing the syncing and caching.
    */
   public function testSyncAndCache() {
@@ -421,11 +455,13 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
    *   The date in string for last year's session.
    * @param string $this_year_session_date
    *   The date in string for this year's session.
+   * @param string|bool $children_bd
+   *   The birthday of the children created in the sessions.
    *
    * @return array
    *   The sessions created with all the data created related to the session.
    */
-  protected function createSessionsWithAttendance($attendance_last_year, $attendance_this_year, $last_year_session_date = '-18 months', $this_year_session_date = '-9 months') {
+  protected function createSessionsWithAttendance($attendance_last_year, $attendance_this_year, $last_year_session_date = '-18 months', $this_year_session_date = '-9 months', $children_bd = FALSE) {
     $sessions = [
       [
         'date' => strtotime($last_year_session_date),
@@ -449,7 +485,8 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       $children = [];
       for ($i = 1; $i <= $session['number_of_attendance']; $i++) {
         $mother_nid = $this->createMother($this->clinicId);
-        $child_nid = $this->createChild($mother_nid, $this->healthCenterId, strtotime('-23 months'), strtotime('-23 months'));
+        $child_bd = $children_bd ? $children_bd : strtotime('-23 months');
+        $child_nid = $this->createChild($mother_nid, $this->healthCenterId, $child_bd, strtotime('-23 months'));
         $children[] = $child_nid;
 
         // Create this because the health centers are assigned to "attendance"

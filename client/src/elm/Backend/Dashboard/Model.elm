@@ -7,19 +7,23 @@ import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
 import Backend.Person.Model exposing (Gender)
 import Gizra.NominalDate exposing (NominalDate)
-import ZScore.Model exposing (ZScore)
+
+
+{-| To void a cycle in dependency, we just define the zScore here.
+Added a comment in the main definition to point to this one.
+-}
+type alias ZScore =
+    Float
 
 
 type alias DashboardStats =
     { caseManagement : List CaseManagement
     , childrenBeneficiaries : List ChildrenBeneficiariesStats
-    , completedProgram : List ParticipantStats
-    , completedProgramCount : Int
+    , completedPrograms : List ParticipantStats
     , familyPlanning : List FamilyPlanningStats
     , maybeGoodNutrition : Maybe GoodNutrition
     , malnourished : List MalnourishedStats
     , missedSessions : List ParticipantStats
-    , missedSessionsCount : Int
     , maybeTotalBeneficiaries : Maybe (Dict Int TotalBeneficiaries)
     , maybeTotalBeneficiariesIncidence : Maybe (Dict Int TotalBeneficiaries)
     , maybeTotalEncounters : Maybe Periods
@@ -30,13 +34,11 @@ emptyModel : DashboardStats
 emptyModel =
     { caseManagement = []
     , childrenBeneficiaries = []
-    , completedProgram = []
-    , completedProgramCount = 0
+    , completedPrograms = []
     , familyPlanning = []
     , maybeGoodNutrition = Nothing
     , malnourished = []
     , missedSessions = []
-    , missedSessionsCount = 0
     , maybeTotalEncounters = Nothing
     , maybeTotalBeneficiaries = Nothing
     , maybeTotalBeneficiariesIncidence = Nothing
@@ -87,7 +89,7 @@ type alias ParticipantStats =
     , birthDate : NominalDate
     , motherName : String
     , phoneNumber : Maybe String
-    , dates : List NominalDate
+    , expectedDate : NominalDate
     }
 
 

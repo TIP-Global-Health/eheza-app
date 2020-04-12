@@ -21,9 +21,8 @@ module Pages.Dashboard.Model exposing
 -}
 
 import AssocList exposing (Dict)
+import Backend.Dashboard.Model exposing (ParticipantStats)
 import Backend.Measurement.Model exposing (FamilyPlanningSign)
-import Backend.Person.Model exposing (Gender)
-import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (DashboardPage(..), Page(..))
 
 
@@ -83,16 +82,6 @@ filterCharts =
     , Wasting
     , MUAC
     ]
-
-
-type alias ParticipantStats =
-    { name : String
-    , gender : Gender
-    , birthDate : NominalDate
-    , motherName : String
-    , phoneNumber : Maybe String
-    , dates : List NominalDate
-    }
 
 
 type alias Model =
