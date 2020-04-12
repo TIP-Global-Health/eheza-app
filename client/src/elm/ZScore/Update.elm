@@ -34,13 +34,13 @@ lengthHeightForAgePaths =
 lengthHeightForAge5to19Paths : MonthsAndDays String
 lengthHeightForAge5to19Paths =
     { days = "assets/z-score/lenanthro5to19.json"
-    , months = "assets/z-score/lenanthro5to19.json"
+    , months = "assets/z-score/hfawho2007.json"
     }
 
 
 weightForAgePaths : MonthsAndDays String
 weightForAgePaths =
-    { days = "assets/z-score/weianthro.json"
+    { days = "assets/z-score/lenanthro.json"
     , months = "assets/z-score/wfawho2007.json"
     }
 

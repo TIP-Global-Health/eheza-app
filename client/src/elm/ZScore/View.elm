@@ -213,7 +213,7 @@ heightForAgeConfig5To19 : PlotConfig Months Centimetres
 heightForAgeConfig5To19 =
     { toFloatX = \(Utils.NominalDate.Months months) -> toFloat months
     , toFloatY = \(Centimetres cm) -> cm
-    , input = { minY = 90, maxY = 200, minX = 365 * 2, maxX = 365 * 19 }
+    , input = { minY = 90, maxY = 200, minX = 61, maxX = 228 }
     , output = { minX = 111, maxX = 758, minY = 119.9, maxY = 506.7 }
     , drawSD1 = False
     , paintLevels = False
@@ -509,10 +509,6 @@ plotReferenceData config zscoreList =
     , Just <| makeLine neg3points "three-line-new"
     , Just <| makeLine neg2points "two-line-new"
     , if config.drawSD1 then
-        let
-            _ =
-                Debug.log "getPoints" (getPoints 2)
-        in
         Just <| makeLine (getPoints -1) "one-line-new"
 
       else
