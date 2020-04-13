@@ -107,6 +107,35 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
+  // Exported field_base: 'field_ambulance_arrival_time'.
+  $field_bases['field_ambulance_arrival_time'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_ambulance_arrival_time',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'less-than-30m' => 'Less than 30 min',
+        '30m-1h' => '30 min - 1 hour',
+        '1h-2h' => '1 hour- 2 hours',
+        '2h-1d' => '2hours - 1 day',
+        'more-than-1d' => 'More than 1 day',
+        'n-a' => 'Not applicable',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_attended'.
   $field_bases['field_attended'] = array(
     'active' => 1,
@@ -707,6 +736,88 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_hc_contact'.
+  $field_bases['field_hc_contact'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_hc_contact',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'contact-hc' => 'Contact HC',
+        'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_hc_recommendation'.
+  $field_bases['field_hc_recommendation'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_hc_recommendation',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'send-ambulance' => 'Send ambulance',
+        'home-isolation' => 'Home isolation',
+        'come-to-hc' => 'Come to HC',
+        'chw-monitoring' => 'CHW monitoring',
+        'n-a' => 'Not applicable',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_hc_response_time'.
+  $field_bases['field_hc_response_time'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_hc_response_time',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'less-than-30m' => 'Less than 30 min',
+        '30m-1h' => '30 min - 1 hour',
+        '1h-2h' => '1 hour- 2 hours',
+        '2h-1d' => '2hours - 1 day',
+        'more-than-1d' => 'More than 1 day',
+        'n-a' => 'Not applicable',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_head_hair'.
   $field_bases['field_head_hair'] = array(
     'active' => 1,
@@ -828,6 +939,33 @@ function hedley_activity_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'number_float',
+  );
+
+  // Exported field_base: 'field_isolation'.
+  $field_bases['field_isolation'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_isolation',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'patient-isolated' => 'Patient isolated',
+        'sign-on-door' => 'Isolation sign on door',
+        'health-education' => 'Health education',
+        'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_last_menstrual_period'.
@@ -1376,6 +1514,34 @@ function hedley_activity_field_default_field_bases() {
         'less-than-18-month' => 'Less than 18 Month',
         'more-than-5-years' => 'More Than 5 Years',
         'neither' => 'Neither',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_reason_for_not_isolating'.
+  $field_bases['field_reason_for_not_isolating'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_reason_for_not_isolating',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'no-space' => 'No space',
+        'too-ill' => 'Too ill',
+        'can-not-separate' => 'Can not separate from family',
+        'other' => 'Other',
+        'n-a' => 'Not applicable',
       ),
       'allowed_values_function' => '',
     ),

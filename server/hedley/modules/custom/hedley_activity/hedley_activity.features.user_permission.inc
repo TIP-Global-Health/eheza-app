@@ -83,12 +83,32 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create hc_contact content'.
+  $permissions['create hc_contact content'] = array(
+    'name' => 'create hc_contact content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create height content'.
   $permissions['create height content'] = array(
     'name' => 'create height content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create isolation content'.
+  $permissions['create isolation content'] = array(
+    'name' => 'create isolation content',
+    'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -381,9 +401,27 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any hc_contact content'.
+  $permissions['delete any hc_contact content'] = array(
+    'name' => 'delete any hc_contact content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any height content'.
   $permissions['delete any height content'] = array(
     'name' => 'delete any height content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any isolation content'.
+  $permissions['delete any isolation content'] = array(
+    'name' => 'delete any isolation content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -651,9 +689,27 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete own hc_contact content'.
+  $permissions['delete own hc_contact content'] = array(
+    'name' => 'delete own hc_contact content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own height content'.
   $permissions['delete own height content'] = array(
     'name' => 'delete own height content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own isolation content'.
+  $permissions['delete own isolation content'] = array(
+    'name' => 'delete own isolation content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -930,12 +986,32 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any hc_contact content'.
+  $permissions['edit any hc_contact content'] = array(
+    'name' => 'edit any hc_contact content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any height content'.
   $permissions['edit any height content'] = array(
     'name' => 'edit any height content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any isolation content'.
+  $permissions['edit any isolation content'] = array(
+    'name' => 'edit any isolation content',
+    'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1237,12 +1313,32 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit own hc_contact content'.
+  $permissions['edit own hc_contact content'] = array(
+    'name' => 'edit own hc_contact content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit own height content'.
   $permissions['edit own height content'] = array(
     'name' => 'edit own height content',
     'roles' => array(
       'administrator' => 'administrator',
       'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own isolation content'.
+  $permissions['edit own isolation content'] = array(
+    'name' => 'edit own isolation content',
+    'roles' => array(
+      'administrator' => 'administrator',
       'sync' => 'sync',
     ),
     'module' => 'node',
