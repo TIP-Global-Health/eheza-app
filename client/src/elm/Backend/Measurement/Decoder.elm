@@ -104,6 +104,10 @@ decodeAcuteIllnessMeasurements =
         |> optional "symptoms_gi" (decodeHead decodeSymptomsGI) Nothing
         |> optional "acute_illness_vitals" (decodeHead decodeAcuteIllnessVitals) Nothing
         |> optional "malaria_testing" (decodeHead decodeMalariaTesting) Nothing
+        |> optional "travel_history" (decodeHead decodeTravelHistory) Nothing
+        |> optional "exposure" (decodeHead decodeExposure) Nothing
+        |> optional "isolation" (decodeHead decodeIsolation) Nothing
+        |> optional "hc_contact" (decodeHead decodeHCContact) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -1137,4 +1141,208 @@ decodeMalariaTestingSign =
                         fail <|
                             sign
                                 ++ " is not a recognized MalariaTestingSign"
+            )
+
+
+decodeTravelHistory : Decoder TravelHistory
+decodeTravelHistory =
+    decodeEverySet decodeTravelHistorySign
+        |> field "travel_history"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeTravelHistorySign : Decoder TravelHistorySign
+decodeTravelHistorySign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "covid19-country" ->
+                        succeed COVID19Country
+
+                    "none" ->
+                        succeed NoTravelHistorySigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized TravelHistorySign"
+            )
+
+
+decodeExposure : Decoder Exposure
+decodeExposure =
+    decodeEverySet decodeExposureSign
+        |> field "exposure"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeExposureSign : Decoder ExposureSign
+decodeExposureSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "covid19-symptioms" ->
+                        succeed COVID19Symptoms
+
+                    "similar-symptoms" ->
+                        succeed SimilarSymptoms
+
+                    "none" ->
+                        succeed NoExposureSign
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized ExposureSign"
+            )
+
+
+decodeIsolation : Decoder Isolation
+decodeIsolation =
+    succeed IsolationValue
+        |> required "isolation" (decodeEverySet decodeIsolationSign)
+        |> required "reason_for_not_isolating" (decodeEverySet decodeReasonForNotIsolating)
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeIsolationSign : Decoder IsolationSign
+decodeIsolationSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "patient-isolated" ->
+                        succeed PatientIsolated
+
+                    "sign-on-door" ->
+                        succeed IsolationSignOnDoor
+
+                    "health-education" ->
+                        succeed HealthEducation
+
+                    "none" ->
+                        succeed NoIsolationSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized IsolationSign"
+            )
+
+
+decodeReasonForNotIsolating : Decoder ReasonForNotIsolating
+decodeReasonForNotIsolating =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "no-space" ->
+                        succeed NoSpace
+
+                    "too-ill" ->
+                        succeed TooIll
+
+                    "can-not-separate" ->
+                        succeed CanNotSeparateFromFamily
+
+                    "other" ->
+                        succeed OtherReason
+
+                    "n-a" ->
+                        succeed IsolationReasonNotApplicable
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized IsolationSign"
+            )
+
+
+decodeHCContact : Decoder HCContact
+decodeHCContact =
+    succeed HCContactValue
+        |> required "hc_contact" (decodeEverySet decodeHCContactSign)
+        |> required "hc_recommendation" (decodeEverySet decodeHCRecomendation)
+        |> required "hc_response_time" decodeResponsePeriod
+        |> required "ambulance_arrival_time" decodeResponsePeriod
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeHCContactSign : Decoder HCContactSign
+decodeHCContactSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "contact-hc" ->
+                        succeed ContactedHealthCenter
+
+                    "none" ->
+                        succeed NoHCContactSign
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized HCContactSign"
+            )
+
+
+decodeHCRecomendation : Decoder HCRecomendation
+decodeHCRecomendation =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "send-ambulance" ->
+                        succeed SendAmbulance
+
+                    "home-isolation" ->
+                        succeed HomeIsolation
+
+                    "come-to-hc" ->
+                        succeed ComeToHealthCenter
+
+                    "chw-monitoring" ->
+                        succeed ChwMonitoring
+
+                    "n-a" ->
+                        succeed HCRecomendationNotApplicable
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized HCRecomendation"
+            )
+
+
+decodeResponsePeriod : Decoder ResponsePeriod
+decodeResponsePeriod =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "less-than-30m" ->
+                        succeed LessThan30Min
+
+                    "30m-1h" ->
+                        succeed Between30min1Hour
+
+                    "1h-2h" ->
+                        succeed Between1Hour2Hour
+
+                    "2h-1d" ->
+                        succeed Between2Hour1Day
+
+                    "more-than-1d" ->
+                        succeed MoreThan1Day
+
+                    "n-a" ->
+                        succeed ResponsePeriodNotApplicable
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized ResponsePeriod"
             )
