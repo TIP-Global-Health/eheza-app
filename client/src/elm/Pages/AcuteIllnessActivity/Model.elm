@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Model exposing (ContactHCForm, ExposureData, ExposureForm, ExposureTask(..), HCRecomendation(..), IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), ReasonsForNotIsolating(..), ResponsePeriod(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelForm, VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptySymptomsData)
+module Pages.AcuteIllnessActivity.Model exposing (ContactHCForm, ExposureData, ExposureForm, ExposureTask(..), IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), ReasonsForNotIsolating(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelForm, VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptySymptomsData)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -203,23 +203,6 @@ type ReasonsForNotIsolating
 type alias ContactHCForm =
     { contactedHC : Maybe Bool
     , recomendations : Maybe (List HCRecomendation)
-    , responseTime : Maybe ResponsePeriod
-    , ambulanceArrivalTime : Maybe ResponsePeriod
+    , responsePeriod : Maybe ResponsePeriod
+    , ambulanceArrivalPeriod : Maybe ResponsePeriod
     }
-
-
-type HCRecomendation
-    = SendAmbulance
-    | HomeIsolation
-    | ComeToHC
-    | ChwMonitoring
-    | HCRecomendationNotApplicable
-
-
-type ResponsePeriod
-    = LessThan30Min
-    | Between30min1Hour
-    | Between1Hour2Hour
-    | Between2Hour1Day
-    | MoreThan1Day
-    | ResponsePeriodNotApplicable
