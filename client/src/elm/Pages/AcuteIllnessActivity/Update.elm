@@ -395,3 +395,14 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetActiveExposureTask task ->
+            let
+                updatedData =
+                    model.exposureData
+                        |> (\data -> { data | activeTask = task })
+            in
+            ( { model | exposureData = updatedData }
+            , Cmd.none
+            , []
+            )

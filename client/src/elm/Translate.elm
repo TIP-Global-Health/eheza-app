@@ -43,7 +43,7 @@ import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Http
 import NutritionActivity.Model exposing (NutritionActivity(..))
-import Pages.AcuteIllnessActivity.Model exposing (LaboratoryTask(..), PhysicalExamTask(..), SymptomsTask(..))
+import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..), LaboratoryTask(..), PhysicalExamTask(..), SymptomsTask(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
@@ -302,6 +302,7 @@ type TranslationId
     | ErrorConfigurationError
     | Estimated
     | ExaminationTask ExaminationTask
+    | ExposureTask ExposureTask
     | Extremities
     | Eyes
     | Facility
@@ -1755,6 +1756,28 @@ translationSet trans =
 
                 Pages.PrenatalActivity.Model.BreastExam ->
                     translationSet BreastExam
+
+        ExposureTask task ->
+            case task of
+                ExposureTravel ->
+                    { english = "Travel History"
+                    , kinyarwanda = Nothing
+                    }
+
+                ExposureExposure ->
+                    { english = "Contact Exposure"
+                    , kinyarwanda = Nothing
+                    }
+
+                ExposureIsolation ->
+                    { english = "Isolate Patient"
+                    , kinyarwanda = Nothing
+                    }
+
+                ExposureContactHC ->
+                    { english = "Contact Health Center"
+                    , kinyarwanda = Nothing
+                    }
 
         Failure ->
             { english = "Failure"
