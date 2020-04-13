@@ -1642,6 +1642,62 @@ input::placeholder {
   }
 }
 
+.icon-exposure-travel {
+  .active &:after {
+    background-image: url(#{$img-path}icon-travel-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-travel-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-travel-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-exposure-exposure {
+  .active &:after {
+    background-image: url(#{$img-path}icon-exposure-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-exposure-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-exposure-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-exposure-isolation {
+  .active &:after {
+    background-image: url(#{$img-path}icon-isolation-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-isolation-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-isolation-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-exposure-contact-hc {
+  .active &:after {
+    background-image: url(#{$img-path}icon-contact-hc-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-contact-hc-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-contact-hc-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
 // Lists
 
 .ui.list {
