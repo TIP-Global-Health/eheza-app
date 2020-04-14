@@ -196,7 +196,7 @@ type TranslationId
     | BabyName String
     | Back
     | BackendError
-    | BegingNewEncounter
+    | BeginNewEncounter
     | BloodPressure
     | BloodPressureElevatedOcassions
     | BloodPressureDiaLabel
@@ -1009,8 +1009,8 @@ translationSet trans =
             , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
             }
 
-        BegingNewEncounter ->
-            { english = "Beging a New Encounter"
+        BeginNewEncounter ->
+            { english = "Begin a New Encounter"
             , kinyarwanda = Nothing
             }
 
@@ -1938,7 +1938,7 @@ translationSet trans =
             }
 
         GroupAssessment ->
-            { english = "Group Assessment"
+            { english = "Group Encounter"
             , kinyarwanda = Just "Gukorera itsinda"
             }
 
@@ -3450,7 +3450,7 @@ translationSet trans =
 
         SearchExistingParticipants ->
             { english = "Search Existing Participants"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gushaka abagenerwabikorwa basanzwe muri sisiteme"
             }
 
         SearchHelper ->
