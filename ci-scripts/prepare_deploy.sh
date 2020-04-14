@@ -25,6 +25,7 @@ chmod +x drush
 # Make the site semi-installed.
 export ROOT="$TRAVIS_BUILD_DIR/server"
 cd "$ROOT" || exit 1
+pwd
 drupal_make
 symlink_externals
 composer_install
