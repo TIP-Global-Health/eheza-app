@@ -57,7 +57,7 @@ source "$ROOT"/scripts/helper-colors.sh
   rm -Rf www || true
 
   # Build core.
-  $DRUSH make $PROFILE_NAME/drupal-org-core.make www
+  $DRUSH make "$ROOT/$PROFILE_NAME/drupal-org-core.make" www
 
   # Restore the sites directory.
   if [ -d sites-backup ] || [ -L sites-backup ]; then
