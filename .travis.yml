@@ -22,6 +22,7 @@ before_install:
 jobs:
   include:
     - stage: Lint
+      if: branch != 1535-deploy
       name: "Drupal coding standard: PhpCs"
       env:
         - REVIEW_STANDARD="Drupal"
@@ -29,6 +30,7 @@ jobs:
         - "$TRAVIS_BUILD_DIR/ci-scripts/install_coder.sh"
         - "$TRAVIS_BUILD_DIR/ci-scripts/test_coder.sh"
     - stage: Lint
+      if: branch != 1535-deploy
       name: "Drupal Practice coding standard: PhpCs"
       env:
         - REVIEW_STANDARD="DrupalPractice"
@@ -36,16 +38,19 @@ jobs:
         - "$TRAVIS_BUILD_DIR/ci-scripts/install_coder.sh"
         - "$TRAVIS_BUILD_DIR/ci-scripts/test_coder.sh"
     - stage: Lint
+      if: branch != 1535-deploy
       name: "Elm coding standard: Elm Format"
       script:
         - "$TRAVIS_BUILD_DIR/ci-scripts/install_elm_format.sh"
         - "$TRAVIS_BUILD_DIR/ci-scripts/test_elm_format.sh"
     - stage: Lint
+      if: branch != 1535-deploy
       name: "Drupal coding standard: Shellcheck"
       script:
         - "$TRAVIS_BUILD_DIR/ci-scripts/install_shell.sh"
         - "$TRAVIS_BUILD_DIR/ci-scripts/test_shell.sh"
     - stage: Test
+      if: branch != 1535-deploy
       name: "Server-side"
       script:
         - "$TRAVIS_BUILD_DIR/ci-scripts/install_server.sh"
