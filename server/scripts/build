@@ -7,13 +7,20 @@ set -e
 # Define the root.
 cd ${0%/*}/..
 ROOT=$(pwd)
-cd $ROOT
+cd "$ROOT" || exit 1
 
 # Load the configuration file.
-source $ROOT/config.sh
+if [[ -f "$ROOT/config.sh" ]];
+then
+  source "$ROOT"/config.sh
+else
+  # Minimal defaults to be able to build (but no installation).
+  export PROFILE_NAME="hedley"
+  export PROFILE_TITLE="Hedley"
+fi
 
 # Load the colors
-source $ROOT/scripts/helper-colors.sh
+source "$ROOT"/scripts/helper-colors.sh
 
 
 
