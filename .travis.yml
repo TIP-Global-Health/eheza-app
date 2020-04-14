@@ -4,10 +4,6 @@ language: php
 
 php:
 - 7.2
--
-env:
-  global:
-    secure: MQsAEcpRpKvI3eZ6ECJCJ/NTOq5pAoSWWuBGyVBZpU1kG8OrtPNW7zp8suZHfmrnKqsMySs2PIwY7XBhgtkVEM748YzQPkmD+ITUVB2lVrGKSZKsXY3FI6rYhQc8+EJzkHO9AV3rb3iQl2rO5ZD81b9194dng1S8QEfKp/Ph0fVZUObzXO96EmiWxQjOIg0NtpKPZYMvehzbeYcYqMt2fx2Ogt98yDyjOT8dnPaOwy7+HJgAoCYdQfRcItcBBQnIX8PgR+0t1Sas/eE/lIyFZmpHAFfgB0kOYU9qcdyYYC4yjxCp2wkFbmSjZeBLmt33vAN6GaBwo/HvmjubeVNyGKpUonWLSDkFid8t4Tm8qEpPDNzSYSQR98XG9pORw1RyAjgxHhnwrY5X8ZE6A5X/AP83qp9vdlXQ5ZpzEBEahpH6sNzfeKf8o0sSW13WPjK6L9v52UZS0FTEfXU0hJtZWBXexITM8WtJjJUQBBWnKouNXpNiFqYz0Ky7zuOp+qjKo5jhEz6tALfhluYy81kxfEu5jQ2tc0infLLHiBWxEX2KFE+H+mnI7D8EnhHgfDhts3zEg1lwgmzBP/7SIiubQ86Y18xzlFt2PkpgcJQtkWiwzJ0o5/xKxMTLYbSuqWxaSYfU05UkUqyW/hPrrGNs9uJZSChH1SS2o9hIuGX0oDA=
 
 services:
 - docker
@@ -18,8 +14,6 @@ stages:
   - deploy
   -
 before_install:
-- openssl aes-256-cbc -K $encrypted_414fa4dd00a5_key -iv $encrypted_414fa4dd00a5_iv
-  -in gdrive-service-account.json.enc -out gdrive-service-account.json -d
 - export PATH="$HOME/.config/composer/vendor/bin:$PATH"
 - "([ ! -z $BUILD_WEBDRIVERIO ] && sudo pip install docker-compose) || :"
 
