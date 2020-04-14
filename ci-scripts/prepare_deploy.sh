@@ -3,7 +3,6 @@
 set -e
 
 cd "$TRAVIS_BUILD_DIR" || exit 1
-export ROOT="$TRAVIS_BUILD_DIR/server"
 source "$TRAVIS_BUILD_DIR/server/scripts/helper-functions.sh"
 
 phpenv config-rm xdebug.ini
@@ -13,7 +12,8 @@ cp deployment-robot-key ~/.ssh/id_rsa
 chmod 600 ~/.ssh/id_rsa
 
 # Make the site semi-installed.
-cd server
+export ROOT="$TRAVIS_BUILD_DIR/server"
+cd "$ROOT" || exit 1
 drupal_make
 symlink_externals
 composer_install
