@@ -16,7 +16,7 @@ stages:
 before_install:
 - openssl aes-256-cbc -K $encrypted_414fa4dd00a5_key -iv $encrypted_414fa4dd00a5_iv
   -in deployment-robot-key.enc -out deployment-robot-key -d
-- export PATH="$HOME/.config/composer/vendor/bin:$PATH"
+- export PATH="$HOME/.config/composer/vendor/bin:$HOME/.vendor/bin:$PATH"
 - "([ ! -z $BUILD_WEBDRIVERIO ] && sudo pip install docker-compose) || :"
 
 jobs:
