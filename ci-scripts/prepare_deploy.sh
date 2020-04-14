@@ -3,6 +3,7 @@
 set -e
 
 cd "$TRAVIS_BUILD_DIR" || exit 1
+export ROOT="$TRAVIS_BUILD_DIR/server"
 source "$TRAVIS_BUILD_DIR/server/scripts/helper-functions.sh"
 
 phpenv config-rm xdebug.ini
