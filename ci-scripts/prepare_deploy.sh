@@ -11,6 +11,13 @@ phpenv config-rm xdebug.ini
 cp deployment-robot-key ~/.ssh/id_rsa
 chmod 600 ~/.ssh/id_rsa
 
+# Make the site semi-installed.
+cd server
+drupal_make
+symlink_externals
+composer_install
+create_sites_default_files_directory
+
 # Make Terminus available.
 cd ~ || exit 1
 export COMPOSER_MEMORY_LIMIT=-1
