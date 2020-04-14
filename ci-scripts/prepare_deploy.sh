@@ -11,6 +11,11 @@ phpenv config-rm xdebug.ini
 cp deployment-robot-key ~/.ssh/id_rsa
 chmod 600 ~/.ssh/id_rsa
 
+# Make Terminus available.
+cd ~ || exit 1
+export COMPOSER_MEMORY_LIMIT=-1
+curl -s -S -O https://raw.githubusercontent.com/pantheon-systems/terminus-installer/master/builds/installer.phar && php installer.phar install
+
 # Make Drush available.
 cd ~/vendor/bin || exit 1
 wget --quiet https://github.com/drush-ops/drush/releases/download/8.3.0/drush.phar
@@ -24,11 +29,6 @@ drupal_make
 symlink_externals
 composer_install
 create_sites_default_files_directory
-
-# Make Terminus available.
-cd ~ || exit 1
-export COMPOSER_MEMORY_LIMIT=-1
-curl -s -S -O https://raw.githubusercontent.com/pantheon-systems/terminus-installer/master/builds/installer.phar && php installer.phar install
 
 # Authenticate with Terminus
 terminus auth:login --machine-token="$TERMINUS_TOKEN"
