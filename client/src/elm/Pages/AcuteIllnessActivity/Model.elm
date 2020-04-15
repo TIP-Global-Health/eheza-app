@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Model exposing (ContactHCForm, ExposureData, ExposureForm, ExposureTask(..), IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), ReasonsForNotIsolating(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelForm, VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptySymptomsData)
+module Pages.AcuteIllnessActivity.Model exposing (ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptySymptomsData)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -30,6 +30,9 @@ type Msg
     | SaveMalariaTesting PersonId (Maybe ( MalariaTestingId, MalariaTesting ))
       -- EXPOSURE Msgs
     | SetActiveExposureTask ExposureTask
+    | SetCovid19Country Bool
+    | SetCovid19Symptoms Bool
+    | SetSimilarSymptoms Bool
 
 
 type alias Model =
@@ -149,20 +152,20 @@ type alias MalariaTestingForm =
 
 
 type alias ExposureData =
-    { travelForm : TravelForm
+    { travelHistoryForm : TravelHistoryForm
     , exposureForm : ExposureForm
     , isolationForm : IsolationForm
-    , contactHCForm : ContactHCForm
+    , hcContactForm : HCContactForm
     , activeTask : ExposureTask
     }
 
 
 emptyExposureData : ExposureData
 emptyExposureData =
-    { travelForm = TravelForm Nothing
+    { travelHistoryForm = TravelHistoryForm Nothing
     , exposureForm = ExposureForm Nothing Nothing
     , isolationForm = IsolationForm Nothing Nothing Nothing Nothing
-    , contactHCForm = ContactHCForm Nothing Nothing Nothing Nothing
+    , hcContactForm = HCContactForm Nothing Nothing Nothing Nothing
     , activeTask = ExposureTravel
     }
 
@@ -174,7 +177,7 @@ type ExposureTask
     | ExposureContactHC
 
 
-type alias TravelForm =
+type alias TravelHistoryForm =
     { covid19Country : Maybe Bool
     }
 
@@ -189,18 +192,11 @@ type alias IsolationForm =
     { patientIsolated : Maybe Bool
     , signOnDoor : Maybe Bool
     , healthEducation : Maybe Bool
-    , reasonsForNotIsolating : Maybe (List ReasonsForNotIsolating)
+    , reasonsForNotIsolating : Maybe (List ReasonForNotIsolating)
     }
 
 
-type ReasonsForNotIsolating
-    = NoSpace
-    | Other
-    | TooIll
-    | ReasonsForNotIsolatingNotApplicable
-
-
-type alias ContactHCForm =
+type alias HCContactForm =
     { contactedHC : Maybe Bool
     , recomendations : Maybe (List HCRecomendation)
     , responsePeriod : Maybe ResponsePeriod

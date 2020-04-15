@@ -238,6 +238,8 @@ type TranslationId
     | ClinicType ClinicType
     | Clinical
     | ClinicalProgressReport
+    | ContactWithCOVID19SymptomsQuestion
+    | ContactWithSimilarSymptomsQuestion
     | ConvulsionsAndUnconsciousPreviousDelivery
     | ConvulsionsPreviousDelivery
     | CSectionScar CSectionScar
@@ -613,6 +615,7 @@ type TranslationId
     | Training
     | TrainingGroupEncounterCreateSuccessMessage
     | TrainingGroupEncounterDeleteSuccessMessage
+    | TraveledToCOVID19CountryQuestion
     | TrySyncing
     | TuberculosisPast
     | TuberculosisPresent
@@ -1319,6 +1322,16 @@ translationSet trans =
 
         ClinicalProgressReport ->
             { english = "Clinical Progress Report"
+            , kinyarwanda = Nothing
+            }
+
+        ContactWithCOVID19SymptomsQuestion ->
+            { english = "Have you had contacts with others who exhibit symptoms or have been exposed to COVID-19"
+            , kinyarwanda = Nothing
+            }
+
+        ContactWithSimilarSymptomsQuestion ->
+            { english = "Have you had contacts with others who have similar symptoms to you"
             , kinyarwanda = Nothing
             }
 
@@ -4105,6 +4118,11 @@ translationSet trans =
 
         TrainingGroupEncounterDeleteSuccessMessage ->
             { english = "Training encounters were deleted."
+            , kinyarwanda = Nothing
+            }
+
+        TraveledToCOVID19CountryQuestion ->
+            { english = "Have you traveld to any country known to have Covid-19 in the past 14 days"
             , kinyarwanda = Nothing
             }
 

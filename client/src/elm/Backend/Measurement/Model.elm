@@ -534,7 +534,7 @@ type alias TravelHistory =
 type ExposureSign
     = COVID19Symptoms
     | SimilarSymptoms
-    | NoExposureSign
+    | NoExposureSigns
 
 
 type alias Exposure =
@@ -543,7 +543,7 @@ type alias Exposure =
 
 type IsolationSign
     = PatientIsolated
-    | IsolationSignOnDoor
+    | SignOnDoor
     | HealthEducation
     | NoIsolationSigns
 
@@ -568,7 +568,7 @@ type alias Isolation =
 
 type HCContactSign
     = ContactedHealthCenter
-    | NoHCContactSign
+    | NoHCContactSigns
 
 
 type HCRecomendation
@@ -590,8 +590,8 @@ type ResponsePeriod
 type alias HCContactValue =
     { signs : EverySet HCContactSign
     , recomendations : EverySet HCRecomendation
-    , responsePeriod : ResponsePeriod
-    , ambulanceArrivalPeriod : ResponsePeriod
+    , responsePeriod : EverySet ResponsePeriod
+    , ambulanceArrivalPeriod : EverySet ResponsePeriod
     }
 
 

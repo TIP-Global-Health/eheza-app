@@ -1190,7 +1190,7 @@ decodeExposureSign =
                         succeed SimilarSymptoms
 
                     "none" ->
-                        succeed NoExposureSign
+                        succeed NoExposureSigns
 
                     _ ->
                         fail <|
@@ -1217,7 +1217,7 @@ decodeIsolationSign =
                         succeed PatientIsolated
 
                     "sign-on-door" ->
-                        succeed IsolationSignOnDoor
+                        succeed SignOnDoor
 
                     "health-education" ->
                         succeed HealthEducation
@@ -1265,8 +1265,8 @@ decodeHCContact =
     succeed HCContactValue
         |> required "hc_contact" (decodeEverySet decodeHCContactSign)
         |> required "hc_recommendation" (decodeEverySet decodeHCRecomendation)
-        |> required "hc_response_time" decodeResponsePeriod
-        |> required "ambulance_arrival_time" decodeResponsePeriod
+        |> required "hc_response_time" (decodeEverySet decodeResponsePeriod)
+        |> required "ambulance_arrival_time" (decodeEverySet decodeResponsePeriod)
         |> decodeAcuteIllnessMeasurement
 
 
@@ -1280,7 +1280,7 @@ decodeHCContactSign =
                         succeed ContactedHealthCenter
 
                     "none" ->
-                        succeed NoHCContactSign
+                        succeed NoHCContactSigns
 
                     _ ->
                         fail <|

@@ -567,22 +567,22 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data
                     case task of
                         ExposureTravel ->
                             ( "exposure-travel"
-                            , False
+                            , isJust measurements.travelHistory
                             )
 
                         ExposureExposure ->
                             ( "exposure-exposure"
-                            , False
+                            , isJust measurements.exposure
                             )
 
                         ExposureIsolation ->
                             ( "exposure-isolation"
-                            , False
+                            , isJust measurements.isolation
                             )
 
                         ExposureContactHC ->
                             ( "exposure-contact-hc"
-                            , False
+                            , isJust measurements.hcContact
                             )
 
                 isActive =
@@ -604,31 +604,49 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data
                     ]
                 ]
 
-        -- tasksCompletedFromTotalDict =
-        --     tasks
-        --         |> List.map
-        --             (\task ->
-        --                 ( task, laboratoryTasksCompletedFromTotal measurements data task )
-        --             )
-        --         |> Dict.fromList
-        --
-        -- ( tasksCompleted, totalTasks ) =
-        --     Dict.get data.activeTask tasksCompletedFromTotalDict
-        --         |> Maybe.withDefault ( 0, 0 )
-        --
-        -- viewForm =
-        --     case data.activeTask of
-        --         LaboratoryMalariaTesting ->
-        --             measurements.malariaTesting
-        --                 |> Maybe.map (Tuple.second >> .value)
-        --                 |> malariaTestingFormWithDefault data.malariaTestingForm
-        --                 |> viewMalariaTestingForm language currentDate measurements
-        --
-        -- getNextTask currentTask =
-        --     case currentTask of
-        --         LaboratoryMalariaTesting ->
-        --             []
-        --
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, exposureTasksCompletedFromTotal measurements data task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Dict.get data.activeTask tasksCompletedFromTotalDict
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case data.activeTask of
+                ExposureTravel ->
+                    measurements.travelHistory
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> travelHistoryFormWithDefault data.travelHistoryForm
+                        |> viewTravelHistoryForm language currentDate measurements
+
+                ExposureExposure ->
+                    measurements.exposure
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> exposureFormWithDefault data.exposureForm
+                        |> viewExposureForm language currentDate measurements
+
+                ExposureIsolation ->
+                    measurements.isolation
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> isolationFormWithDefault data.isolationForm
+                        |> viewIsolationForm language currentDate measurements
+
+                ExposureContactHC ->
+                    measurements.hcContact
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> hcContactFormWithDefault data.hcContactForm
+                        |> viewHCContactForm language currentDate measurements
+
+        getNextTask currentTask =
+            case currentTask of
+                _ ->
+                    []
+
         -- actions =
         --     let
         --         saveMsg =
@@ -648,12 +666,79 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data
         [ div [ class "ui four column grid" ] <|
             List.map viewTask tasks
         ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
 
-    -- , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
-    -- , div [ class "ui full segment" ]
-    --     [ div [ class "full content" ]
-    --         [ viewForm
-    --         , actions
-    --         ]
-    --     ]
+            -- , actions
+            ]
+        ]
     ]
+
+
+viewTravelHistoryForm : Language -> NominalDate -> AcuteIllnessMeasurements -> TravelHistoryForm -> Html Msg
+viewTravelHistoryForm language currentDate measurements form =
+    div [ class "ui form exposure travel-history-testing" ]
+        [ div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewQuestionLabel language Translate.TraveledToCOVID19CountryQuestion ]
+            , div [ class "four wide column" ]
+                [-- viewConditionalAlert form.respiratoryRate
+                 --    [ [ (>) 12 ], [ (<) 30 ] ]
+                 --    [ [ (<=) 21, (>=) 30 ] ]
+                ]
+            ]
+        , viewBoolInput
+            language
+            form.covid19Country
+            SetCovid19Country
+            "covid19-country"
+            Nothing
+        ]
+
+
+viewExposureForm : Language -> NominalDate -> AcuteIllnessMeasurements -> ExposureForm -> Html Msg
+viewExposureForm language currentDate measurements form =
+    div [ class "ui form exposure travel-history-testing" ]
+        [ div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewQuestionLabel language Translate.ContactWithCOVID19SymptomsQuestion ]
+            , div [ class "four wide column" ]
+                [-- viewConditionalAlert form.respiratoryRate
+                 --    [ [ (>) 12 ], [ (<) 30 ] ]
+                 --    [ [ (<=) 21, (>=) 30 ] ]
+                ]
+            ]
+        , viewBoolInput
+            language
+            form.covid19Symptoms
+            SetCovid19Symptoms
+            "covid19-symptoms"
+            Nothing
+        , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewQuestionLabel language Translate.ContactWithSimilarSymptomsQuestion ]
+            , div [ class "four wide column" ]
+                [-- viewConditionalAlert form.respiratoryRate
+                 --    [ [ (>) 12 ], [ (<) 30 ] ]
+                 --    [ [ (<=) 21, (>=) 30 ] ]
+                ]
+            ]
+        , viewBoolInput
+            language
+            form.similarSymptoms
+            SetSimilarSymptoms
+            "similar-symptoms"
+            Nothing
+        ]
+
+
+viewIsolationForm : Language -> NominalDate -> AcuteIllnessMeasurements -> IsolationForm -> Html Msg
+viewIsolationForm language currentDate measurements form =
+    emptyNode
+
+
+viewHCContactForm : Language -> NominalDate -> AcuteIllnessMeasurements -> HCContactForm -> Html Msg
+viewHCContactForm language currentDate measurements form =
+    emptyNode

@@ -406,3 +406,54 @@ update currentDate id db msg model =
             , Cmd.none
             , []
             )
+
+        SetCovid19Country value ->
+            let
+                form =
+                    model.exposureData.travelHistoryForm
+
+                updatedForm =
+                    { form | covid19Country = Just value }
+
+                updatedData =
+                    model.exposureData
+                        |> (\data -> { data | travelHistoryForm = updatedForm })
+            in
+            ( { model | exposureData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetCovid19Symptoms value ->
+            let
+                form =
+                    model.exposureData.exposureForm
+
+                updatedForm =
+                    { form | covid19Symptoms = Just value }
+
+                updatedData =
+                    model.exposureData
+                        |> (\data -> { data | exposureForm = updatedForm })
+            in
+            ( { model | exposureData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetSimilarSymptoms value ->
+            let
+                form =
+                    model.exposureData.exposureForm
+
+                updatedForm =
+                    { form | similarSymptoms = Just value }
+
+                updatedData =
+                    model.exposureData
+                        |> (\data -> { data | exposureForm = updatedForm })
+            in
+            ( { model | exposureData = updatedData }
+            , Cmd.none
+            , []
+            )
