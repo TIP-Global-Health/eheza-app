@@ -1335,9 +1335,6 @@ decodeResponsePeriod =
                     "2h-1d" ->
                         succeed Between2Hour1Day
 
-                    "more-than-1d" ->
-                        succeed MoreThan1Day
-
                     "n-a" ->
                         succeed ResponsePeriodNotApplicable
 

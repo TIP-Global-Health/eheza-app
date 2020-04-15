@@ -584,7 +584,6 @@ type ResponsePeriod
     | Between30min1Hour
     | Between1Hour2Hour
     | Between2Hour1Day
-    | MoreThan1Day
     | ResponsePeriodNotApplicable
 
 
