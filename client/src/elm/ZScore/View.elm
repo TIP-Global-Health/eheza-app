@@ -16,6 +16,7 @@ far it doesn't seem to be a performance problem, so no premature optimization!
 
 import Debug exposing (toString)
 import Float.Extra
+import Gizra.Html exposing (emptyNode)
 import Html exposing (Html)
 import RemoteData
 import Round
@@ -960,7 +961,16 @@ yAxisLinesAndText : PlotConfig x y -> Svg any
 yAxisLinesAndText config =
     let
         yAxisList =
-            Float.Extra.range { start = config.input.minY, end = config.input.maxY, steps = config.yAxis.yAxisIntervals }
+            Float.Extra.range { start = config.input.minY, end = config.input.maxY, steps = round <| config.input.maxY - config.input.minY }
+                -- We only display the successive numbers of the intervals defined in the config.
+                |> List.filter
+                    (\yInput ->
+                        if (yInput == config.input.minY) || (yInput == config.input.maxY) || (remainderBy config.yAxis.yAxisIntervals (round yInput) == 0) then
+                            True
+
+                        else
+                            False
+                    )
 
         height =
             config.output.maxY - config.output.minY
@@ -1014,10 +1024,44 @@ yAxisLinesAndText config =
 
                             else
                                 []
+
+                        ( beginningText, endText ) =
+                            ( text_ [ transform <| "matrix(1 0 0 1 95.4252 " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| toString lineText ]
+                            , text_ [ transform <| "matrix(1 0 0 1 745.0155 " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| toString lineText ]
+                            )
+
+                        ( beginningTextConditional, endTextConditional ) =
+                            -- There're multiple types of showing the text for each graph, in some of them, we don't
+                            -- need to show the text on the first line, some on the last and some we don't want to show
+                            -- on either side.
+                            case config.yAxis.spaceType of
+                                SpaceAround ->
+                                    if lineText == config.input.minY || lineText == config.input.maxY then
+                                        ( emptyNode, emptyNode )
+
+                                    else
+                                        ( beginningText, endText )
+
+                                SpaceBelow ->
+                                    if lineText == config.input.minY then
+                                        ( emptyNode, emptyNode )
+
+                                    else
+                                        ( beginningText, endText )
+
+                                SpaceAbove ->
+                                    if lineText == config.input.maxY then
+                                        ( emptyNode, emptyNode )
+
+                                    else
+                                        ( beginningText, endText )
+
+                                NoSpace ->
+                                    ( beginningText, endText )
                     in
                     [ line [ class "st18", x1 "110.8", y1 linePosition, x2 "737.6", y2 linePosition ] []
-                    , text_ [ transform <| "matrix(1 0 0 1 95.4252 " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| toString lineText ]
-                    , text_ [ transform <| "matrix(1 0 0 1 745.0155 " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| toString lineText ]
+                    , beginningTextConditional
+                    , endTextConditional
                     ]
                         |> List.append innerLines
                 )
