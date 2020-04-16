@@ -8,6 +8,7 @@ module Pages.Utils exposing
     , taskListCompleted
     , tasksBarId
     , viewBoolInput
+    , viewCheckBoxMultipleSelectCustomInput
     , viewCheckBoxMultipleSelectInput
     , viewCheckBoxSelectInput
     , viewCheckBoxValueInput
@@ -181,30 +182,49 @@ viewCheckBoxSelectInput language leftOptions rightOptions currentValue setMsg tr
 viewCheckBoxMultipleSelectInput : Language -> List a -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> TranslationId) -> Html msg
 viewCheckBoxMultipleSelectInput language leftOptions rightOptions checkedOptions noneOption setMsg translateFunc =
     let
+        viewOptionFunc option =
+            label []
+                [ translateFunc option |> translate language |> text ]
+    in
+    viewCheckBoxMultipleSelectCustomInput language leftOptions rightOptions checkedOptions noneOption setMsg viewOptionFunc
+
+
+viewCheckBoxMultipleSelectCustomInput : Language -> List a -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> Html msg) -> Html msg
+viewCheckBoxMultipleSelectCustomInput language leftOptions rightOptions checkedOptions noneOption setMsg viewOptionFunc =
+    let
         noneSection =
             noneOption
                 |> unwrap
                     []
                     (\option ->
                         [ div [ class "ui divider" ] []
-                        , viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc option
+                        , viewCheckBoxSelectInputItem language checkedOptions setMsg viewOptionFunc option
                         ]
                     )
+
+        ( leftOptionsClass, rightOptionsSection ) =
+            if List.isEmpty rightOptions then
+                ( "sixteen", emptyNode )
+
+            else
+                ( "eight"
+                , rightOptions
+                    |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg viewOptionFunc)
+                    |> div [ class "eight wide column" ]
+                )
     in
     div [ class "checkbox-select-input" ] <|
         div [ class "ui grid" ]
             [ leftOptions
-                |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc)
-                |> div [ class "eight wide column" ]
-            , rightOptions
-                |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc)
-                |> div [ class "eight wide column" ]
+                |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg viewOptionFunc)
+                |> div [ class <| leftOptionsClass ++ " wide column" ]
+            , rightOptionsSection
             ]
             :: noneSection
 
 
-viewCheckBoxSelectInputItem : Language -> List a -> (a -> msg) -> (a -> TranslationId) -> a -> Html msg
-viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc option =
+viewCheckBoxSelectInputItem : Language -> List a -> (a -> msg) -> (a -> Html msg) -> a -> Html msg
+viewCheckBoxSelectInputItem language checkedOptions setMsg viewOptionFunc option =
     let
         isChecked =
             List.member option checkedOptions
@@ -219,8 +239,7 @@ viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc option 
             , classList [ ( "checked", isChecked ) ]
             ]
             []
-        , label []
-            [ text <| translate language (translateFunc option) ]
+        , viewOptionFunc option
         ]
 
 

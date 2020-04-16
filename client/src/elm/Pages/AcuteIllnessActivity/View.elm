@@ -27,6 +27,7 @@ import Pages.Utils
         , taskListCompleted
         , tasksBarId
         , viewBoolInput
+        , viewCheckBoxMultipleSelectCustomInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewCheckBoxValueInput
@@ -679,7 +680,7 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data
 
 viewTravelHistoryForm : Language -> NominalDate -> AcuteIllnessMeasurements -> TravelHistoryForm -> Html Msg
 viewTravelHistoryForm language currentDate measurements form =
-    div [ class "ui form exposure travel-history-testing" ]
+    div [ class "ui form exposure travel-history" ]
         [ div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
                 [ viewQuestionLabel language Translate.TraveledToCOVID19CountryQuestion ]
@@ -700,7 +701,7 @@ viewTravelHistoryForm language currentDate measurements form =
 
 viewExposureForm : Language -> NominalDate -> AcuteIllnessMeasurements -> ExposureForm -> Html Msg
 viewExposureForm language currentDate measurements form =
-    div [ class "ui form exposure travel-history-testing" ]
+    div [ class "ui form exposure" ]
         [ div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
                 [ viewQuestionLabel language Translate.ContactWithCOVID19SymptomsQuestion ]
@@ -736,9 +737,184 @@ viewExposureForm language currentDate measurements form =
 
 viewIsolationForm : Language -> NominalDate -> AcuteIllnessMeasurements -> IsolationForm -> Html Msg
 viewIsolationForm language currentDate measurements form =
-    emptyNode
+    let
+        patientIsolatedInput =
+            [ div [ class "ui grid" ]
+                [ div [ class "twelve wide column" ]
+                    [ viewQuestionLabel language Translate.PatientIsolatedQuestion ]
+                , div [ class "four wide column" ]
+                    [-- viewConditionalAlert form.respiratoryRate
+                     --    [ [ (>) 12 ], [ (<) 30 ] ]
+                     --    [ [ (<=) 21, (>=) 30 ] ]
+                    ]
+                ]
+            , viewBoolInput
+                language
+                form.patientIsolated
+                SetPatientIsolated
+                "patient-isolated"
+                Nothing
+            ]
+
+        derrivedInputs =
+            case form.patientIsolated of
+                Just True ->
+                    [ div [ class "ui grid" ]
+                        [ div [ class "twelve wide column" ]
+                            [ viewQuestionLabel language Translate.SignOnDoorPostedQuestion ]
+                        , div [ class "four wide column" ]
+                            [-- viewConditionalAlert form.respiratoryRate
+                             --    [ [ (>) 12 ], [ (<) 30 ] ]
+                             --    [ [ (<=) 21, (>=) 30 ] ]
+                            ]
+                        ]
+                    , viewBoolInput
+                        language
+                        form.signOnDoor
+                        SetSignOnDoor
+                        "sign-on-door"
+                        Nothing
+                    ]
+                        ++ healthEducationInput
+
+                Just False ->
+                    [ viewQuestionLabel language Translate.WhyNot
+                    , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+                    , viewCheckBoxMultipleSelectInput language
+                        [ NoSpace, TooIll, CanNotSeparateFromFamily, OtherReason ]
+                        []
+                        (form.reasonsForNotIsolating |> Maybe.withDefault [])
+                        Nothing
+                        SetReasonForNotIsolating
+                        Translate.ReasonForNotIsolating
+                    ]
+                        ++ healthEducationInput
+
+                Nothing ->
+                    []
+
+        healthEducationInput =
+            [ div [ class "ui grid" ]
+                [ div [ class "twelve wide column" ]
+                    [ viewQuestionLabel language Translate.HealthEducationProvidedQuestion ]
+                , div [ class "four wide column" ]
+                    [-- viewConditionalAlert form.respiratoryRate
+                     --    [ [ (>) 12 ], [ (<) 30 ] ]
+                     --    [ [ (<=) 21, (>=) 30 ] ]
+                    ]
+                ]
+            , viewBoolInput
+                language
+                form.healthEducation
+                SetHealthEducation
+                "health-education"
+                Nothing
+            ]
+    in
+    patientIsolatedInput
+        ++ derrivedInputs
+        |> div [ class "ui form exposure isolation" ]
 
 
 viewHCContactForm : Language -> NominalDate -> AcuteIllnessMeasurements -> HCContactForm -> Html Msg
 viewHCContactForm language currentDate measurements form =
-    emptyNode
+    let
+        contactedHCInput =
+            [ div [ class "ui grid" ]
+                [ div [ class "twelve wide column" ]
+                    [ viewQuestionLabel language Translate.ContactedHCQuestion ]
+                , div [ class "four wide column" ]
+                    [-- viewConditionalAlert form.respiratoryRate
+                     --    [ [ (>) 12 ], [ (<) 30 ] ]
+                     --    [ [ (<=) 21, (>=) 30 ] ]
+                    ]
+                ]
+            , viewBoolInput
+                language
+                form.contactedHC
+                SetContactedHC
+                "contacted-hc"
+                Nothing
+            ]
+
+        derrivedInputs =
+            case form.contactedHC of
+                Just True ->
+                    let
+                        hcRespnonseInput =
+                            [ viewQuestionLabel language Translate.HCResponseQuestion
+                            , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+                            , viewCheckBoxMultipleSelectCustomInput language
+                                [ SendAmbulance, HomeIsolation, ComeToHealthCenter, ChwMonitoring ]
+                                []
+                                (form.recomendations |> Maybe.withDefault [])
+                                Nothing
+                                SetHCRecommendation
+                                (viewHCRecomendation language)
+                            ]
+
+                        hcRespnonsePerionInput =
+                            [ viewQuestionLabel language Translate.HCResponsePeriodQuestion
+                            , viewCheckBoxSelectInput language
+                                [ LessThan30Min, Between30min1Hour, Between1Hour2Hour, Between2Hour1Day ]
+                                []
+                                form.responsePeriod
+                                SetResponsePeriod
+                                Translate.ResponsePeriod
+                            ]
+
+                        derrivedInput =
+                            form.recomendations
+                                |> Maybe.map
+                                    (\recomendations ->
+                                        if List.member SendAmbulance recomendations then
+                                            [ viewQuestionLabel language Translate.AmbulancArrivalPeriodQuestion
+                                            , viewCheckBoxSelectInput language
+                                                [ LessThan30Min, Between30min1Hour, Between1Hour2Hour, Between2Hour1Day ]
+                                                []
+                                                form.ambulanceArrivalPeriod
+                                                SetAmbulanceArrivalPeriod
+                                                Translate.ResponsePeriod
+                                            ]
+
+                                        else
+                                            []
+                                    )
+                                |> Maybe.withDefault []
+                    in
+                    hcRespnonseInput ++ hcRespnonsePerionInput ++ derrivedInput
+
+                _ ->
+                    []
+    in
+    contactedHCInput
+        ++ derrivedInputs
+        |> div [ class "ui form exposure hc-contact" ]
+
+
+viewHCRecomendation : Language -> HCRecomendation -> Html Msg
+viewHCRecomendation language recomendation =
+    let
+        riskLevel =
+            case recomendation of
+                SendAmbulance ->
+                    Translate.HighRisk
+
+                HomeIsolation ->
+                    Translate.HighRisk
+
+                ComeToHealthCenter ->
+                    Translate.LowRisk
+
+                ChwMonitoring ->
+                    Translate.LowRisk
+
+                HCRecomendationNotApplicable ->
+                    Translate.LowRisk
+    in
+    label []
+        [ translate language Translate.HealthCenterDetermined |> text
+        , span [ class "strong" ] [ translate language riskLevel |> text ]
+        , translate language Translate.And |> text
+        , span [ class "strong" ] [ Translate.HCRecomendation recomendation |> translate language |> text ]
+        ]

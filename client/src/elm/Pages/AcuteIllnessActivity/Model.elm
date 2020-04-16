@@ -33,6 +33,14 @@ type Msg
     | SetCovid19Country Bool
     | SetCovid19Symptoms Bool
     | SetSimilarSymptoms Bool
+    | SetPatientIsolated Bool
+    | SetHealthEducation Bool
+    | SetSignOnDoor Bool
+    | SetReasonForNotIsolating ReasonForNotIsolating
+    | SetContactedHC Bool
+    | SetHCRecommendation HCRecomendation
+    | SetResponsePeriod ResponsePeriod
+    | SetAmbulanceArrivalPeriod ResponsePeriod
 
 
 type alias Model =

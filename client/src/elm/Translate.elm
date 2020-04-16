@@ -190,6 +190,8 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int Int
+    | AmbulancArrivalPeriodQuestion
+    | And
     | AppName
     | AreYouSure
     | Assessment
@@ -238,6 +240,7 @@ type TranslationId
     | ClinicType ClinicType
     | Clinical
     | ClinicalProgressReport
+    | ContactedHCQuestion
     | ContactWithCOVID19SymptomsQuestion
     | ContactWithSimilarSymptomsQuestion
     | ConvulsionsAndUnconsciousPreviousDelivery
@@ -337,14 +340,20 @@ type TranslationId
     | GroupEncounter
     | Hands
     | HandsCPESign HandsCPESign
+    | HCRecomendation HCRecomendation
+    | HCResponseQuestion
+    | HCResponsePeriodQuestion
     | HeadHair
     | HealthCenter
+    | HealthCenterDetermined
+    | HealthEducationProvidedQuestion
     | Heart
     | HeartMurmur
     | HeartCPESign HeartCPESign
     | HeartRate
     | Height
     | High
+    | HighRisk
     | HighRiskFactor HighRiskFactor
     | HighRiskFactors
     | HighSeverityAlert HighSeverityAlert
@@ -382,6 +391,7 @@ type TranslationId
     | LmpRange LmpRange
     | LoginPhrase LoginPhrase
     | Low
+    | LowRisk
     | Lungs
     | LungsCPESign LungsCPESign
     | MakeSureYouAreConnected
@@ -471,6 +481,7 @@ type TranslationId
     | PatientGotAnySymptoms
     | PatientProgress
     | PatientInformation
+    | PatientIsolatedQuestion
     | PatientProvisionsTask PatientProvisionsTask
     | People
     | PersistentStorage Bool
@@ -509,6 +520,7 @@ type TranslationId
     | Province
     | RapidTestResult
     | ReasonForCSection
+    | ReasonForNotIsolating ReasonForNotIsolating
     | ReceivedDewormingPill
     | ReceivedIronFolicAcid
     | ReceivedMosquitoNet
@@ -537,6 +549,7 @@ type TranslationId
     | ReportCompleted { pending : Int, completed : Int }
     | ResolveMonth Month
     | RespiratoryRate
+    | ResponsePeriod ResponsePeriod
     | Retry
     | RhNegative
     | RiskFactorAlert RiskFactor
@@ -580,6 +593,7 @@ type TranslationId
     | ServiceWorkerRegSuccess
     | ServiceWorkerStatus
     | SevereHemorrhagingPreviousDelivery
+    | SignOnDoorPostedQuestion
     | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
     | StillbornPreviousDelivery
     | SuccessiveAbortions
@@ -634,6 +648,7 @@ type TranslationId
     | Weight
     | WelcomeUser String
     | WhatDoYouWantToDo
+    | WhyNot
     | Year
     | YearsOld Int
     | Yes
@@ -999,6 +1014,16 @@ translationSet trans =
             , kinyarwanda = Just <| Debug.toString days ++ " Umunsi"
             }
 
+        And ->
+            { english = "and"
+            , kinyarwanda = Nothing
+            }
+
+        AmbulancArrivalPeriodQuestion ->
+            { english = "How long did it take the ambulance to arrive"
+            , kinyarwanda = Nothing
+            }
+
         AgeSingleMonthWithoutDay month ->
             { english = Debug.toString month ++ " month"
             , kinyarwanda = Just <| Debug.toString month ++ " Ukwezi"
@@ -1322,6 +1347,11 @@ translationSet trans =
 
         ClinicalProgressReport ->
             { english = "Clinical Progress Report"
+            , kinyarwanda = Nothing
+            }
+
+        ContactedHCQuestion ->
+            { english = "Have you contacted the health center"
             , kinyarwanda = Nothing
             }
 
@@ -2050,6 +2080,43 @@ translationSet trans =
                 NormalHands ->
                     translationSet Normal
 
+        HCRecomendation recomendation ->
+            case recomendation of
+                SendAmbulance ->
+                    { english = "agreed to call the District Hospital to send an ambulance"
+                    , kinyarwanda = Nothing
+                    }
+
+                HomeIsolation ->
+                    { english = "adviced patient to stay home in isolation"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComeToHealthCenter ->
+                    { english = "come to health center for further evaluation"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChwMonitoring ->
+                    { english = "CHW should continue to monitor"
+                    , kinyarwanda = Nothing
+                    }
+
+                HCRecomendationNotApplicable ->
+                    { english = "Not Applicable"
+                    , kinyarwanda = Nothing
+                    }
+
+        HCResponseQuestion ->
+            { english = "What was the Health Center's response"
+            , kinyarwanda = Nothing
+            }
+
+        HCResponsePeriodQuestion ->
+            { english = "How long did it take the Health Center to respond"
+            , kinyarwanda = Nothing
+            }
+
         HeadHair ->
             { english = "Head/Hair"
             , kinyarwanda = Nothing
@@ -2058,6 +2125,16 @@ translationSet trans =
         HealthCenter ->
             { english = "Health Center"
             , kinyarwanda = Just "Ikigo Nderabuzima"
+            }
+
+        HealthCenterDetermined ->
+            { english = "Health center determined this is a"
+            , kinyarwanda = Nothing
+            }
+
+        HealthEducationProvidedQuestion ->
+            { english = "Have you provided health education (or anticipatory guidance)"
+            , kinyarwanda = Nothing
             }
 
         Heart ->
@@ -2099,6 +2176,11 @@ translationSet trans =
 
         High ->
             { english = "High"
+            , kinyarwanda = Nothing
+            }
+
+        HighRisk ->
+            { english = "high-risk"
             , kinyarwanda = Nothing
             }
 
@@ -2487,6 +2569,11 @@ translationSet trans =
 
         Low ->
             { english = "Low"
+            , kinyarwanda = Nothing
+            }
+
+        LowRisk ->
+            { english = "low-risk"
             , kinyarwanda = Nothing
             }
 
@@ -3108,6 +3195,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PatientIsolatedQuestion ->
+            { english = "Have you isolated the patient"
+            , kinyarwanda = Nothing
+            }
+
         PatientProvisionsTask task ->
             case task of
                 Medication ->
@@ -3391,6 +3483,33 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        ReasonForNotIsolating reason ->
+            case reason of
+                NoSpace ->
+                    { english = "No space avilable at home or clinic"
+                    , kinyarwanda = Nothing
+                    }
+
+                TooIll ->
+                    { english = "Too ill to leave alone"
+                    , kinyarwanda = Nothing
+                    }
+
+                CanNotSeparateFromFamily ->
+                    { english = "Unable to separate from family"
+                    , kinyarwanda = Nothing
+                    }
+
+                OtherReason ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
+                IsolationReasonNotApplicable ->
+                    { english = "Not Applicable "
+                    , kinyarwanda = Nothing
+                    }
+
         ReceivedDewormingPill ->
             { english = "Has the mother received deworming pill"
             , kinyarwanda = Nothing
@@ -3537,6 +3656,33 @@ translationSet trans =
             { english = "Respiratory Rate"
             , kinyarwanda = Nothing
             }
+
+        ResponsePeriod period ->
+            case period of
+                LessThan30Min ->
+                    { english = "Less than 30 min"
+                    , kinyarwanda = Nothing
+                    }
+
+                Between30min1Hour ->
+                    { english = "30 min - 1 hour"
+                    , kinyarwanda = Nothing
+                    }
+
+                Between1Hour2Hour ->
+                    { english = "1 hour - 2 hours"
+                    , kinyarwanda = Nothing
+                    }
+
+                Between2Hour1Day ->
+                    { english = "2 hours - 1 day"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResponsePeriodNotApplicable ->
+                    { english = "Not Applicable"
+                    , kinyarwanda = Nothing
+                    }
 
         Retry ->
             { english = "Retry"
@@ -3833,6 +3979,11 @@ translationSet trans =
 
         SevereHemorrhagingPreviousDelivery ->
             { english = "Severe Hemorrhaging in previous delivery (>500 ml)"
+            , kinyarwanda = Nothing
+            }
+
+        SignOnDoorPostedQuestion ->
+            { english = "Have you posted signs on the door indicating that the space is an isolation area"
             , kinyarwanda = Nothing
             }
 
@@ -4221,6 +4372,11 @@ translationSet trans =
         WhatDoYouWantToDo ->
             { english = "What do you want to do?"
             , kinyarwanda = Just "Urashaka gukora iki?"
+            }
+
+        WhyNot ->
+            { english = "Why not"
+            , kinyarwanda = Nothing
             }
 
         Year ->

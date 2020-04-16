@@ -546,6 +546,31 @@ div.page-activity.acute-illness {
       }
     }
 
+    .checkbox-select-input {
+      padding-bottom: 15px;
+
+      .ui.checkbox.activity {
+        margin-bottom: 10px;
+
+        label {
+          font-size: 24px;
+
+          span {
+            margin: 7px;
+
+            &.strong {
+              font-weight: 600;
+            }
+          }
+
+          &:before {
+            height: 24px;
+            width: 24px;
+          }
+        }
+      }
+    }
+
     .previous-value {
       display: inline-block;
       font-size: 18px;
@@ -699,8 +724,16 @@ div.page-activity.prenatal {
         .ui.checkbox.activity {
           margin-bottom: 10px;
 
-          label {
+          .label {
             font-size: 24px;
+
+            span {
+              margin: 7px;
+
+              &.strong {
+                font-weight: 600;
+              }
+            }
 
             &:before {
               height: 24px;

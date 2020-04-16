@@ -457,3 +457,191 @@ update currentDate id db msg model =
             , Cmd.none
             , []
             )
+
+        SetPatientIsolated value ->
+            let
+                form =
+                    model.exposureData.isolationForm
+
+                updatedForm =
+                    { form | patientIsolated = Just value }
+
+                updatedData =
+                    model.exposureData
+                        |> (\data -> { data | isolationForm = updatedForm })
+            in
+            ( { model | exposureData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHealthEducation value ->
+            let
+                form =
+                    model.exposureData.isolationForm
+
+                updatedForm =
+                    { form | healthEducation = Just value }
+
+                updatedData =
+                    model.exposureData
+                        |> (\data -> { data | isolationForm = updatedForm })
+            in
+            ( { model | exposureData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetSignOnDoor value ->
+            let
+                form =
+                    model.exposureData.isolationForm
+
+                updatedForm =
+                    { form | signOnDoor = Just value }
+
+                updatedData =
+                    model.exposureData
+                        |> (\data -> { data | isolationForm = updatedForm })
+            in
+            ( { model | exposureData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetReasonForNotIsolating reason ->
+            let
+                form =
+                    model.exposureData.isolationForm
+
+                updatedForm =
+                    case form.reasonsForNotIsolating of
+                        Just reasons ->
+                            if List.member reason reasons then
+                                let
+                                    updated =
+                                        if List.length reasons == 1 then
+                                            Nothing
+
+                                        else
+                                            reasons |> List.filter ((/=) reason) |> Just
+                                in
+                                { form | reasonsForNotIsolating = updated }
+
+                            else
+                                { form | reasonsForNotIsolating = reason :: reasons |> Just }
+
+                        Nothing ->
+                            { form | reasonsForNotIsolating = Just [ reason ] }
+
+                updatedData =
+                    model.exposureData
+                        |> (\data -> { data | isolationForm = updatedForm })
+            in
+            ( { model | exposureData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetContactedHC value ->
+            let
+                form =
+                    model.exposureData.hcContactForm
+
+                updatedForm =
+                    { form | contactedHC = Just value }
+
+                updatedData =
+                    model.exposureData
+                        |> (\data -> { data | hcContactForm = updatedForm })
+            in
+            ( { model | exposureData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHCRecommendation recomendation ->
+            let
+                form =
+                    model.exposureData.hcContactForm
+
+                updatedForm =
+                    case form.recomendations of
+                        Just recomendations ->
+                            if List.member recomendation recomendations then
+                                let
+                                    updated =
+                                        if List.length recomendations == 1 then
+                                            Nothing
+
+                                        else
+                                            recomendations |> List.filter ((/=) recomendation) |> Just
+                                in
+                                { form | recomendations = updated }
+
+                            else
+                                { form | recomendations = recomendation :: recomendations |> Just }
+
+                        Nothing ->
+                            { form | recomendations = Just [ recomendation ] }
+
+                updatedData =
+                    model.exposureData
+                        |> (\data -> { data | hcContactForm = updatedForm })
+            in
+            ( { model | exposureData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetResponsePeriod value ->
+            let
+                form =
+                    model.exposureData.hcContactForm
+
+                updatedForm =
+                    case form.responsePeriod of
+                        Just period ->
+                            if period == value then
+                                { form | responsePeriod = Nothing }
+
+                            else
+                                { form | responsePeriod = Just value }
+
+                        Nothing ->
+                            { form | responsePeriod = Just value }
+
+                updatedData =
+                    model.exposureData
+                        |> (\data -> { data | hcContactForm = updatedForm })
+            in
+            ( { model | exposureData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetAmbulanceArrivalPeriod value ->
+            let
+                form =
+                    model.exposureData.hcContactForm
+
+                updatedForm =
+                    case form.ambulanceArrivalPeriod of
+                        Just period ->
+                            if period == value then
+                                { form | ambulanceArrivalPeriod = Nothing }
+
+                            else
+                                { form | ambulanceArrivalPeriod = Just value }
+
+                        Nothing ->
+                            { form | ambulanceArrivalPeriod = Just value }
+
+                updatedData =
+                    model.exposureData
+                        |> (\data -> { data | hcContactForm = updatedForm })
+            in
+            ( { model | exposureData = updatedData }
+            , Cmd.none
+            , []
+            )

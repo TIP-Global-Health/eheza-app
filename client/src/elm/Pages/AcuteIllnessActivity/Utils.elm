@@ -197,16 +197,16 @@ exposureTasksCompletedFromTotal measurements data task =
                 ( derrivedActive, derrivedCompleted ) =
                     case form.patientIsolated of
                         Just True ->
-                            ( 1, taskCompleted form.signOnDoor )
+                            ( 2, taskCompleted form.healthEducation + taskCompleted form.signOnDoor )
 
                         Just False ->
-                            ( 1, taskCompleted form.reasonsForNotIsolating )
+                            ( 2, taskCompleted form.healthEducation + taskCompleted form.reasonsForNotIsolating )
 
                         Nothing ->
                             ( 0, 0 )
             in
-            ( taskCompleted form.patientIsolated + taskCompleted form.healthEducation + derrivedCompleted
-            , 2 + derrivedActive
+            ( taskCompleted form.patientIsolated + derrivedCompleted
+            , 1 + derrivedActive
             )
 
         ExposureContactHC ->
