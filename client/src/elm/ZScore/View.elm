@@ -15,6 +15,7 @@ far it doesn't seem to be a performance problem, so no premature optimization!
 -}
 
 import Debug exposing (toString)
+import Float.Extra
 import Html exposing (Html)
 import RemoteData
 import Round
@@ -188,6 +189,7 @@ type alias XAxisConfig =
 type alias YAxisConfig =
     { yAxisIntervals : Int
     , innerLinesNumber : Int
+    , spaceType : YAxisSpaceType
     }
 
 
@@ -203,6 +205,13 @@ type alias LabelConfig =
 type XAxisTypes
     = Age
     | Height
+
+
+type YAxisSpaceType
+    = SpaceAround
+    | SpaceAbove
+    | SpaceBelow
+    | NoSpace
 
 
 heightForAgeConfig : PlotConfig Days Centimetres
@@ -226,6 +235,33 @@ heightForAgeConfig =
     , yAxis =
         { yAxisIntervals = 5
         , innerLinesNumber = 4
+        , spaceType = SpaceAround
+        }
+    }
+
+
+heightForAgeConfig2To5 : PlotConfig Days Centimetres
+heightForAgeConfig2To5 =
+    { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
+    , toFloatY = \(Centimetres cm) -> cm
+    , input = { minY = 76, maxY = 125, minX = 365 * 2, maxX = 365 * 5 }
+    , output = { minX = 111, maxX = 715.4, minY = 119.9, maxY = 506.7 }
+    , drawSD1 = False
+    , paintLevels = False
+    , xAxis =
+        { width = 806
+        , minYear = 2
+        , maxYear = 5
+        , monthsList = [ 2, 4, 6, 8, 10 ]
+        , innerLinesNumber = 0
+        , minLength = 0
+        , maxLength = 0
+        , xAxisType = Age
+        }
+    , yAxis =
+        { yAxisIntervals = 5
+        , innerLinesNumber = 4
+        , spaceType = SpaceBelow
         }
     }
 
@@ -251,31 +287,7 @@ heightForAgeConfig5To19 =
     , yAxis =
         { yAxisIntervals = 10
         , innerLinesNumber = 1
-        }
-    }
-
-
-heightForAgeConfig2To5 : PlotConfig Days Centimetres
-heightForAgeConfig2To5 =
-    { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
-    , toFloatY = \(Centimetres cm) -> cm
-    , input = { minY = 80, maxY = 125, minX = 24, maxX = 60 }
-    , output = { minX = 111, maxX = 715.4, minY = 119.9, maxY = 506.7 }
-    , drawSD1 = True
-    , paintLevels = False
-    , xAxis =
-        { width = 908
-        , minYear = 2
-        , maxYear = 5
-        , monthsList = [ 2, 4, 6, 8, 10 ]
-        , innerLinesNumber = 0
-        , minLength = 0
-        , maxLength = 0
-        , xAxisType = Age
-        }
-    , yAxis =
-        { yAxisIntervals = 5
-        , innerLinesNumber = 4
+        , spaceType = NoSpace
         }
     }
 
@@ -301,6 +313,7 @@ weightForAgeConfig =
     , yAxis =
         { yAxisIntervals = 1
         , innerLinesNumber = 4
+        , spaceType = SpaceAround
         }
     }
 
@@ -326,6 +339,7 @@ weightForHeightConfig =
     , yAxis =
         { yAxisIntervals = 2
         , innerLinesNumber = 1
+        , spaceType = SpaceAround
         }
     }
 
@@ -946,16 +960,7 @@ yAxisLinesAndText : PlotConfig x y -> Svg any
 yAxisLinesAndText config =
     let
         yAxisList =
-            List.range (round config.input.minY) (round config.input.maxY)
-                -- We only display the successive numbers of the intervals defined in the config.
-                |> List.filter
-                    (\yInput ->
-                        if remainderBy config.yAxis.yAxisIntervals yInput == 0 then
-                            True
-
-                        else
-                            False
-                    )
+            Float.Extra.range { start = config.input.minY, end = config.input.maxY, steps = config.yAxis.yAxisIntervals }
 
         height =
             config.output.maxY - config.output.minY
@@ -964,7 +969,7 @@ yAxisLinesAndText config =
             List.length yAxisList
 
         spaceBetweenLines =
-            height / toFloat listCount
+            height / toFloat (listCount - 1)
 
         spaceBetweenInnerLines =
             spaceBetweenLines / (toFloat config.yAxis.innerLinesNumber + 1)
@@ -992,19 +997,23 @@ yAxisLinesAndText config =
                             toString linesMargin
 
                         innerLines =
-                            List.range 1 config.yAxis.innerLinesNumber
-                                |> List.map
-                                    (\innerLine ->
-                                        let
-                                            innerIndex =
-                                                toFloat innerLine
+                            if lineText /= config.input.maxY then
+                                List.range 1 config.yAxis.innerLinesNumber
+                                    |> List.map
+                                        (\innerLine ->
+                                            let
+                                                innerIndex =
+                                                    toFloat innerLine
 
-                                            innerLinePosition =
-                                                toString <| linesMargin - (spaceBetweenInnerLines * innerIndex)
-                                        in
-                                        [ line [ class "st19", x1 "110.8", y1 innerLinePosition, x2 "715.4", y2 innerLinePosition ] [] ]
-                                    )
-                                |> List.concat
+                                                innerLinePosition =
+                                                    toString <| linesMargin - (spaceBetweenInnerLines * innerIndex)
+                                            in
+                                            [ line [ class "st19", x1 "110.8", y1 innerLinePosition, x2 "715.4", y2 innerLinePosition ] [] ]
+                                        )
+                                    |> List.concat
+
+                            else
+                                []
                     in
                     [ line [ class "st18", x1 "110.8", y1 linePosition, x2 "737.6", y2 linePosition ] []
                     , text_ [ transform <| "matrix(1 0 0 1 95.4252 " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| toString lineText ]
