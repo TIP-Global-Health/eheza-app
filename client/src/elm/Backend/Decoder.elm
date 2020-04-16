@@ -60,14 +60,23 @@ decodeRevision =
                     "danger_signs" ->
                         decodeWithUuid DangerSignsRevision decodeDangerSigns
 
+                    "exposure" ->
+                        decodeWithUuid ExposureRevision decodeExposure
+
                     "family_planning" ->
                         decodeWithUuid FamilyPlanningRevision decodeFamilyPlanning
+
+                    "hc_contact" ->
+                        decodeWithUuid HCContactRevision decodeHCContact
 
                     "health_center" ->
                         decodeWithUuid HealthCenterRevision decodeHealthCenter
 
                     "height" ->
                         decodeWithUuid HeightRevision decodeHeight
+
+                    "isolation" ->
+                        decodeWithUuid IsolationRevision decodeIsolation
 
                     "last_menstrual_period" ->
                         decodeWithUuid LastMenstrualPeriodRevision decodeLastMenstrualPeriod
@@ -155,6 +164,9 @@ decodeRevision =
 
                     "symptoms_gi" ->
                         decodeWithUuid SymptomsGIRevision decodeSymptomsGI
+
+                    "travel_history" ->
+                        decodeWithUuid TravelHistoryRevision decodeTravelHistory
 
                     "vitals" ->
                         decodeWithUuid VitalsRevision decodeVitals

@@ -25,6 +25,10 @@ type alias Model =
     , saveSymptomsGI : WebData ()
     , saveVitals : WebData ()
     , saveMalariaTesting : WebData ()
+    , saveTravelHistory : WebData ()
+    , saveExposure : WebData ()
+    , saveIsolation : WebData ()
+    , saveHCContact : WebData ()
     }
 
 
@@ -36,6 +40,10 @@ emptyModel =
     , saveSymptomsGI = NotAsked
     , saveVitals = NotAsked
     , saveMalariaTesting = NotAsked
+    , saveTravelHistory = NotAsked
+    , saveExposure = NotAsked
+    , saveIsolation = NotAsked
+    , saveHCContact = NotAsked
     }
 
 
@@ -52,3 +60,11 @@ type Msg
     | HandleSavedVitals (WebData ())
     | SaveMalariaTesting PersonId (Maybe MalariaTestingId) (EverySet MalariaTestingSign)
     | HandleSavedMalariaTesting (WebData ())
+    | SaveTravelHistory PersonId (Maybe TravelHistoryId) (EverySet TravelHistorySign)
+    | HandleSavedTravelHistory (WebData ())
+    | SaveExposure PersonId (Maybe ExposureId) (EverySet ExposureSign)
+    | HandleSavedExposure (WebData ())
+    | SaveIsolation PersonId (Maybe IsolationId) IsolationValue
+    | HandleSavedIsolation (WebData ())
+    | SaveHCContact PersonId (Maybe HCContactId) HCContactValue
+    | HandleSavedHCContact (WebData ())

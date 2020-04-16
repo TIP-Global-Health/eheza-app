@@ -298,10 +298,13 @@ type Revision
     | CounselingSessionRevision CounselingSessionId CounselingSession
     | CounselingTopicRevision CounselingTopicId CounselingTopic
     | DangerSignsRevision DangerSignsId DangerSigns
+    | ExposureRevision ExposureId Exposure
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
+    | HCContactRevision HCContactId HCContact
     | HealthCenterRevision HealthCenterId HealthCenter
     | HeightRevision HeightId Height
     | IndividualEncounterParticipantRevision IndividualEncounterParticipantId IndividualEncounterParticipant
+    | IsolationRevision IsolationId Isolation
     | LastMenstrualPeriodRevision LastMenstrualPeriodId LastMenstrualPeriod
     | MalariaTestingRevision MalariaTestingId MalariaTesting
     | MedicalHistoryRevision MedicalHistoryId MedicalHistory
@@ -329,5 +332,6 @@ type Revision
     | SymptomsGeneralRevision SymptomsGeneralId SymptomsGeneral
     | SymptomsGIRevision SymptomsGIId SymptomsGI
     | SymptomsRespiratoryRevision SymptomsRespiratoryId SymptomsRespiratory
+    | TravelHistoryRevision TravelHistoryId TravelHistory
     | VitalsRevision VitalsId Vitals
     | WeightRevision WeightId Weight

@@ -1348,12 +1348,28 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        ExposureRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | exposure = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         FamilyPlanningRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId
                 (\measurements -> { measurements | familyPlannings = Dict.insert uuid data measurements.familyPlannings })
                 model
             , True
+            )
+
+        HCContactRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hcContact = Just ( uuid, data ) })
+                model
+            , recalc
             )
 
         HealthCenterRevision uuid data ->
@@ -1371,6 +1387,14 @@ handleRevision revision (( model, recalc ) as noChange) =
                 (\measurements -> { measurements | heights = Dict.insert uuid data measurements.heights })
                 model
             , True
+            )
+
+        IsolationRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | isolation = Just ( uuid, data ) })
+                model
+            , recalc
             )
 
         IndividualEncounterParticipantRevision uuid data ->
@@ -1619,6 +1643,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             ( mapAcuteIllnessMeasurements
                 data.encounterId
                 (\measurements -> { measurements | symptomsGI = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        TravelHistoryRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | travelHistory = Just ( uuid, data ) })
                 model
             , recalc
             )

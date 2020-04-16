@@ -424,6 +424,44 @@ update currentDate id db msg model =
             , []
             )
 
+        SaveTravelHistory personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
+                            , ExposureTravel
+                            )
+
+                appMsgs =
+                    model.exposureData.travelHistoryForm
+                        |> toTravelHistoryValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.AcuteIllnessEncounter.Model.SaveTravelHistory personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+
+                updatedData =
+                    model.exposureData
+                        |> (\data -> { data | activeTask = nextTask })
+            in
+            ( { model | exposureData = updatedData }
+            , Cmd.none
+            , appMsgs
+            )
+
         SetCovid19Symptoms value ->
             let
                 form =
@@ -456,6 +494,44 @@ update currentDate id db msg model =
             ( { model | exposureData = updatedData }
             , Cmd.none
             , []
+            )
+
+        SaveExposure personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
+                            , ExposureTravel
+                            )
+
+                appMsgs =
+                    model.exposureData.exposureForm
+                        |> toExposureValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.AcuteIllnessEncounter.Model.SaveExposure personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+
+                updatedData =
+                    model.exposureData
+                        |> (\data -> { data | activeTask = nextTask })
+            in
+            ( { model | exposureData = updatedData }
+            , Cmd.none
+            , appMsgs
             )
 
         SetPatientIsolated value ->
@@ -541,6 +617,44 @@ update currentDate id db msg model =
             ( { model | exposureData = updatedData }
             , Cmd.none
             , []
+            )
+
+        SaveIsolation personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
+                            , ExposureTravel
+                            )
+
+                appMsgs =
+                    model.exposureData.isolationForm
+                        |> toIsolationValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.AcuteIllnessEncounter.Model.SaveIsolation personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+
+                updatedData =
+                    model.exposureData
+                        |> (\data -> { data | activeTask = nextTask })
+            in
+            ( { model | exposureData = updatedData }
+            , Cmd.none
+            , appMsgs
             )
 
         SetContactedHC value ->
@@ -644,4 +758,42 @@ update currentDate id db msg model =
             ( { model | exposureData = updatedData }
             , Cmd.none
             , []
+            )
+
+        SaveHCContact personId saved nextTask_ ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
+                            , ExposureTravel
+                            )
+
+                appMsgs =
+                    model.exposureData.hcContactForm
+                        |> toHCContactValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                (Backend.AcuteIllnessEncounter.Model.SaveHCContact personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                )
+                                    :: backToActivitiesMsg
+                            )
+
+                updatedData =
+                    model.exposureData
+                        |> (\data -> { data | activeTask = nextTask })
+            in
+            ( { model | exposureData = updatedData }
+            , Cmd.none
+            , appMsgs
             )

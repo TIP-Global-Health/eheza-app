@@ -1,4 +1,4 @@
-module Backend.Measurement.Encoder exposing (encodeAbdomenCPESign, encodeAcuteIllnessMeasurement, encodeAcuteIllnessVitals, encodeAcuteIllnessVitalsValue, encodeAttendance, encodeAttendanceValue, encodeBreastExam, encodeBreastExamSign, encodeBreastExamValue, encodeCSectionReason, encodeCSectionScar, encodeCorePhysicalExam, encodeCorePhysicalExamValue, encodeCounselingSession, encodeCounselingSessionValue, encodeDangerSign, encodeDangerSigns, encodeDangerSignsValue, encodeEverySet, encodeEyesCPESign, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeFetalPresentation, encodeGroupMeasurement, encodeHairHeadCPESign, encodeHandsCPESign, encodeHeartCPESign, encodeHeight, encodeHeightInCm, encodeHeightValue, encodeLastMenstrualPeriod, encodeLastMenstrualPeriodValue, encodeLegsCPESign, encodeLungsCPESign, encodeMalariaTesting, encodeMalariaTestingSign, encodeMalariaTestingValue, encodeMeasurement, encodeMedicalHistory, encodeMedicalHistorySign, encodeMedicalHistoryValue, encodeMedication, encodeMedicationSign, encodeMedicationValue, encodeMuac, encodeMuacInCm, encodeMuacValue, encodeNeckCPESign, encodeNutrition, encodeNutritionMeasurement, encodeNutritionNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeObstetricHistory, encodeObstetricHistorySign, encodeObstetricHistoryStep2, encodeObstetricHistoryStep2Value, encodeObstetricHistoryValue, encodeObstetricalExam, encodeObstetricalExamValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodePrenatalFamilyPlanning, encodePrenatalMeasurement, encodePrenatalNutrition, encodePrenatalNutritionValue, encodePrenatalPhoto, encodePreviousDeliveryPeriod, encodePreviousDeliverySign, encodeResource, encodeResourceSign, encodeResourceValue, encodeSocialHistory, encodeSocialHistoryHivTestingResult, encodeSocialHistorySign, encodeSocialHistoryValue, encodeSymptomsGI, encodeSymptomsGIValue, encodeSymptomsGeneral, encodeSymptomsGeneralValue, encodeSymptomsRespiratory, encodeSymptomsRespiratoryValue, encodeVitals, encodeVitalsValue, encodeWeight, encodeWeightInKg, encodeWeightValue, socialHistoryHivTestingResultToString)
+module Backend.Measurement.Encoder exposing (encodeAbdomenCPESign, encodeAcuteIllnessMeasurement, encodeAcuteIllnessVitals, encodeAcuteIllnessVitalsValue, encodeAttendance, encodeAttendanceValue, encodeBreastExam, encodeBreastExamSign, encodeBreastExamValue, encodeCSectionReason, encodeCSectionScar, encodeCorePhysicalExam, encodeCorePhysicalExamValue, encodeCounselingSession, encodeCounselingSessionValue, encodeDangerSign, encodeDangerSigns, encodeDangerSignsValue, encodeEverySet, encodeExposure, encodeExposureSign, encodeExposureValue, encodeEyesCPESign, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeFetalPresentation, encodeGroupMeasurement, encodeHCContact, encodeHCContactSign, encodeHCContactValue, encodeHCRecomendation, encodeHairHeadCPESign, encodeHandsCPESign, encodeHeartCPESign, encodeHeight, encodeHeightInCm, encodeHeightValue, encodeIsolation, encodeIsolationSign, encodeIsolationValue, encodeLastMenstrualPeriod, encodeLastMenstrualPeriodValue, encodeLegsCPESign, encodeLungsCPESign, encodeMalariaTesting, encodeMalariaTestingSign, encodeMalariaTestingValue, encodeMeasurement, encodeMedicalHistory, encodeMedicalHistorySign, encodeMedicalHistoryValue, encodeMedication, encodeMedicationSign, encodeMedicationValue, encodeMuac, encodeMuacInCm, encodeMuacValue, encodeNeckCPESign, encodeNutrition, encodeNutritionMeasurement, encodeNutritionNutrition, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeObstetricHistory, encodeObstetricHistorySign, encodeObstetricHistoryStep2, encodeObstetricHistoryStep2Value, encodeObstetricHistoryValue, encodeObstetricalExam, encodeObstetricalExamValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodePrenatalFamilyPlanning, encodePrenatalMeasurement, encodePrenatalNutrition, encodePrenatalNutritionValue, encodePrenatalPhoto, encodePreviousDeliveryPeriod, encodePreviousDeliverySign, encodeReasonForNotIsolating, encodeResource, encodeResourceSign, encodeResourceValue, encodeResponsePeriod, encodeSocialHistory, encodeSocialHistoryHivTestingResult, encodeSocialHistorySign, encodeSocialHistoryValue, encodeSymptomsGI, encodeSymptomsGIValue, encodeSymptomsGeneral, encodeSymptomsGeneralValue, encodeSymptomsRespiratory, encodeSymptomsRespiratoryValue, encodeTravelHistory, encodeTravelHistorySign, encodeTravelHistoryValue, encodeVitals, encodeVitalsValue, encodeWeight, encodeWeightInKg, encodeWeightValue, socialHistoryHivTestingResultToString)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
@@ -952,3 +952,162 @@ encodeMalariaTestingSign sign =
 
             NoMalariaTestingSigns ->
                 "none"
+
+
+encodeTravelHistory : TravelHistory -> List ( String, Value )
+encodeTravelHistory =
+    encodeAcuteIllnessMeasurement encodeTravelHistoryValue
+
+
+encodeTravelHistoryValue : EverySet TravelHistorySign -> List ( String, Value )
+encodeTravelHistoryValue value =
+    [ ( "travel_history", encodeEverySet encodeTravelHistorySign value ) ]
+
+
+encodeTravelHistorySign : TravelHistorySign -> Value
+encodeTravelHistorySign sign =
+    string <|
+        case sign of
+            COVID19Country ->
+                "covid19-country"
+
+            NoTravelHistorySigns ->
+                "none"
+
+
+encodeExposure : Exposure -> List ( String, Value )
+encodeExposure =
+    encodeAcuteIllnessMeasurement encodeExposureValue
+
+
+encodeExposureValue : EverySet ExposureSign -> List ( String, Value )
+encodeExposureValue value =
+    [ ( "exposure", encodeEverySet encodeExposureSign value ) ]
+
+
+encodeExposureSign : ExposureSign -> Value
+encodeExposureSign sign =
+    string <|
+        case sign of
+            COVID19Symptoms ->
+                "covid19-symptioms"
+
+            SimilarSymptoms ->
+                "similar-symptoms"
+
+            NoExposureSigns ->
+                "none"
+
+
+encodeIsolation : Isolation -> List ( String, Value )
+encodeIsolation =
+    encodeAcuteIllnessMeasurement encodeIsolationValue
+
+
+encodeIsolationValue : IsolationValue -> List ( String, Value )
+encodeIsolationValue value =
+    [ ( "isolation", encodeEverySet encodeIsolationSign value.signs )
+    , ( "reason_for_not_isolating", encodeEverySet encodeReasonForNotIsolating value.reasonsForNotIsolating )
+    ]
+
+
+encodeIsolationSign : IsolationSign -> Value
+encodeIsolationSign sign =
+    string <|
+        case sign of
+            PatientIsolated ->
+                "patient-isolated"
+
+            SignOnDoor ->
+                "sign-on-door"
+
+            HealthEducation ->
+                "health-education"
+
+            NoIsolationSigns ->
+                "none"
+
+
+encodeReasonForNotIsolating : ReasonForNotIsolating -> Value
+encodeReasonForNotIsolating reason =
+    string <|
+        case reason of
+            NoSpace ->
+                "no-space"
+
+            TooIll ->
+                "too-ill"
+
+            CanNotSeparateFromFamily ->
+                "can-not-separate"
+
+            OtherReason ->
+                "other"
+
+            IsolationReasonNotApplicable ->
+                "n-a"
+
+
+encodeHCContact : HCContact -> List ( String, Value )
+encodeHCContact =
+    encodeAcuteIllnessMeasurement encodeHCContactValue
+
+
+encodeHCContactValue : HCContactValue -> List ( String, Value )
+encodeHCContactValue value =
+    [ ( "hc_contact", encodeEverySet encodeHCContactSign value.signs )
+    , ( "hc_recommendation", encodeEverySet encodeHCRecomendation value.recomendations )
+    , ( "hc_response_time", encodeEverySet encodeResponsePeriod value.responsePeriod )
+    , ( "ambulance_arrival_time", encodeEverySet encodeResponsePeriod value.ambulanceArrivalPeriod )
+    ]
+
+
+encodeHCContactSign : HCContactSign -> Value
+encodeHCContactSign sign =
+    string <|
+        case sign of
+            ContactedHealthCenter ->
+                "contact-hc"
+
+            NoHCContactSigns ->
+                "none"
+
+
+encodeHCRecomendation : HCRecomendation -> Value
+encodeHCRecomendation recomendation =
+    string <|
+        case recomendation of
+            SendAmbulance ->
+                "send-ambulance"
+
+            HomeIsolation ->
+                "home-isolation"
+
+            ComeToHealthCenter ->
+                "come-to-hc"
+
+            ChwMonitoring ->
+                "chw-monitoring"
+
+            HCRecomendationNotApplicable ->
+                "n-a"
+
+
+encodeResponsePeriod : ResponsePeriod -> Value
+encodeResponsePeriod period =
+    string <|
+        case period of
+            LessThan30Min ->
+                "less-than-30m"
+
+            Between30min1Hour ->
+                "30m-1h"
+
+            Between1Hour2Hour ->
+                "1h-2h"
+
+            Between2Hour1Day ->
+                "2h-1d"
+
+            ResponsePeriodNotApplicable ->
+                "n-a"

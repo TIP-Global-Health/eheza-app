@@ -22,7 +22,7 @@ import Backend.Measurement.Model
 import EverySet exposing (EverySet)
 import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
-import Pages.PrenatalActivity.Utils exposing (ifEmpty, ifTrue)
+import Pages.PrenatalActivity.Utils exposing (ifEmpty, ifNullableTrue, ifTrue)
 import Pages.Utils exposing (taskCompleted)
 
 
@@ -487,6 +487,7 @@ toIsolationValueWithDefault : Maybe IsolationValue -> IsolationForm -> Maybe Iso
 toIsolationValueWithDefault saved form =
     isolationFormWithDefault form saved
         |> toIsolationValue
+        |> isolationValuePostProcess
 
 
 toIsolationValue : IsolationForm -> Maybe IsolationValue
@@ -494,18 +495,35 @@ toIsolationValue form =
     let
         signs =
             [ Maybe.map (ifTrue PatientIsolated) form.patientIsolated
-            , Maybe.map (ifTrue SignOnDoor) form.signOnDoor
+            , ifNullableTrue SignOnDoor form.signOnDoor
             , Maybe.map (ifTrue HealthEducation) form.healthEducation
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoIsolationSigns)
 
         reasonsForNotIsolating =
-            form.reasonsForNotIsolating
-                |> Maybe.map (EverySet.fromList >> ifEmpty IsolationReasonNotApplicable)
+            case form.reasonsForNotIsolating of
+                Just reasons ->
+                    EverySet.fromList reasons |> ifEmpty IsolationReasonNotApplicable |> Just
+
+                Nothing ->
+                    Just (EverySet.singleton IsolationReasonNotApplicable)
     in
     Maybe.map IsolationValue signs
         |> andMap reasonsForNotIsolating
+
+
+isolationValuePostProcess : Maybe IsolationValue -> Maybe IsolationValue
+isolationValuePostProcess saved =
+    saved
+        |> Maybe.map
+            (\value ->
+                if EverySet.member PatientIsolated value.signs then
+                    { value | reasonsForNotIsolating = EverySet.singleton IsolationReasonNotApplicable }
+
+                else
+                    { value | signs = EverySet.remove SignOnDoor value.signs }
+            )
 
 
 fromHCContactValue : Maybe HCContactValue -> HCContactForm

@@ -31,16 +31,20 @@ type Msg
       -- EXPOSURE Msgs
     | SetActiveExposureTask ExposureTask
     | SetCovid19Country Bool
+    | SaveTravelHistory PersonId (Maybe ( TravelHistoryId, TravelHistory )) (Maybe ExposureTask)
     | SetCovid19Symptoms Bool
     | SetSimilarSymptoms Bool
+    | SaveExposure PersonId (Maybe ( ExposureId, Exposure )) (Maybe ExposureTask)
     | SetPatientIsolated Bool
     | SetHealthEducation Bool
     | SetSignOnDoor Bool
     | SetReasonForNotIsolating ReasonForNotIsolating
+    | SaveIsolation PersonId (Maybe ( IsolationId, Isolation )) (Maybe ExposureTask)
     | SetContactedHC Bool
     | SetHCRecommendation HCRecomendation
     | SetResponsePeriod ResponsePeriod
     | SetAmbulanceArrivalPeriod ResponsePeriod
+    | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe ExposureTask)
 
 
 type alias Model =

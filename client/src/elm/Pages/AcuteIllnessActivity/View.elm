@@ -645,23 +645,36 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data
 
         getNextTask currentTask =
             case currentTask of
+                -- Todo
                 _ ->
-                    []
+                    Nothing
 
-        -- actions =
-        --     let
-        --         saveMsg =
-        --             case data.activeTask of
-        --                 LaboratoryMalariaTesting ->
-        --                     SaveMalariaTesting personId measurements.malariaTesting
-        --     in
-        --     div [ class "actions malaria-testing" ]
-        --         [ button
-        --             [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-        --             , onClick saveMsg
-        --             ]
-        --             [ text <| translate language Translate.Save ]
-        --         ]
+        actions =
+            let
+                nextTask =
+                    getNextTask data.activeTask
+
+                saveMsg =
+                    case data.activeTask of
+                        ExposureTravel ->
+                            SaveTravelHistory personId measurements.travelHistory nextTask
+
+                        ExposureExposure ->
+                            SaveExposure personId measurements.exposure nextTask
+
+                        ExposureIsolation ->
+                            SaveIsolation personId measurements.isolation nextTask
+
+                        ExposureContactHC ->
+                            SaveHCContact personId measurements.hcContact nextTask
+            in
+            div [ class "actions exposure" ]
+                [ button
+                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                    , onClick saveMsg
+                    ]
+                    [ text <| translate language Translate.Save ]
+                ]
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui four column grid" ] <|
@@ -671,8 +684,7 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ viewForm
-
-            -- , actions
+            , actions
             ]
         ]
     ]
