@@ -377,7 +377,7 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) 
                 ]
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
-        [ div [ class "ui two column grid" ] <|
+        [ div [ class "ui three column grid" ] <|
             List.map viewTask tasks
         ]
     , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
@@ -519,7 +519,7 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) da
                 ]
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
-        [ div [ class "ui two column grid" ] <|
+        [ div [ class "ui three column grid" ] <|
             List.map viewTask tasks
         ]
     , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
