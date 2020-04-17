@@ -13,15 +13,9 @@ class HedleyRestfulHCContacts extends HedleyRestfulAcuteIllnessActivityBase {
   /**
    * {@inheritdoc}
    */
-  protected $fields = [
+  protected $multiFields = [
     'field_hc_response_time',
     'field_ambulance_arrival_time',
-  ];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $multiFields = [
     'field_hc_contact',
     'field_hc_recommendation',
   ];
