@@ -554,3 +554,11 @@ function hedley_update_7023() {
 
   user_role_grant_permissions(variable_get('user_admin_role'), ['hedley export views']);
 }
+
+/**
+ * Enable smtp.
+ */
+function hedley_update_7024() {
+  module_enable(['smtp']);
+  variable_set('smtp_on', TRUE);
+}
