@@ -5,7 +5,15 @@ import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Model
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
-import Backend.Measurement.Model exposing (SymptomsGISign(..), SymptomsGeneralSign(..), SymptomsRespiratorySign(..))
+import Backend.Measurement.Model
+    exposing
+        ( HCRecomendation(..)
+        , ReasonForNotIsolating(..)
+        , ResponsePeriod(..)
+        , SymptomsGISign(..)
+        , SymptomsGeneralSign(..)
+        , SymptomsRespiratorySign(..)
+        )
 import Backend.Model exposing (ModelIndexedDb)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
@@ -601,19 +609,24 @@ update currentDate id db msg model =
                 updatedForm =
                     case form.reasonsForNotIsolating of
                         Just reasons ->
-                            if List.member reason reasons then
-                                let
-                                    updated =
-                                        if List.length reasons == 1 then
-                                            Nothing
+                            case reasons of
+                                [ IsolationReasonNotApplicable ] ->
+                                    { form | reasonsForNotIsolating = [ reason ] |> Just }
 
-                                        else
-                                            reasons |> List.filter ((/=) reason) |> Just
-                                in
-                                { form | reasonsForNotIsolating = updated }
+                                _ ->
+                                    if List.member reason reasons then
+                                        let
+                                            updated =
+                                                if List.length reasons == 1 then
+                                                    Nothing
 
-                            else
-                                { form | reasonsForNotIsolating = reason :: reasons |> Just }
+                                                else
+                                                    reasons |> List.filter ((/=) reason) |> Just
+                                        in
+                                        { form | reasonsForNotIsolating = updated }
+
+                                    else
+                                        { form | reasonsForNotIsolating = reason :: reasons |> Just }
 
                         Nothing ->
                             { form | reasonsForNotIsolating = Just [ reason ] }
@@ -685,24 +698,37 @@ update currentDate id db msg model =
         SetHCRecommendation recomendation ->
             let
                 form =
-                    model.exposureData.hcContactForm
+                    Dict.get id db.acuteIllnessMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map
+                            (.hcContact
+                                >> Maybe.map (Tuple.second >> .value)
+                                >> hcContactFormWithDefault model.exposureData.hcContactForm
+                            )
+                        |> Maybe.withDefault model.exposureData.hcContactForm
 
                 updatedForm =
                     case form.recomendations of
                         Just recomendations ->
-                            if List.member recomendation recomendations then
-                                let
-                                    updated =
-                                        if List.length recomendations == 1 then
-                                            Nothing
+                            case recomendations of
+                                [ HCRecomendationNotApplicable ] ->
+                                    { form | recomendations = [ recomendation ] |> Just }
 
-                                        else
-                                            recomendations |> List.filter ((/=) recomendation) |> Just
-                                in
-                                { form | recomendations = updated }
+                                _ ->
+                                    if List.member recomendation recomendations then
+                                        let
+                                            updated =
+                                                if List.length recomendations == 1 then
+                                                    Nothing
 
-                            else
-                                { form | recomendations = recomendation :: recomendations |> Just }
+                                                else
+                                                    recomendations |> List.filter ((/=) recomendation) |> Just
+                                        in
+                                        { form | recomendations = updated }
+
+                                    else
+                                        { form | recomendations = recomendation :: recomendations |> Just }
 
                         Nothing ->
                             { form | recomendations = Just [ recomendation ] }

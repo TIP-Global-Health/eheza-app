@@ -117,7 +117,10 @@ viewMainPageContent language currentDate id measurements model =
                                 isJust measurements.malariaTesting
 
                             AcuteIllnessExposure ->
-                                False
+                                isJust measurements.travelHistory
+                                    && isJust measurements.exposure
+                                    && isJust measurements.isolation
+                                    && isJust measurements.hcContact
                     )
 
         pendingTabTitle =
