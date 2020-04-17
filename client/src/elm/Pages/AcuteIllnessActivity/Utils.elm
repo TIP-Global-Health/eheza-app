@@ -200,7 +200,7 @@ exposureTasksCompletedFromTotal measurements data task =
                             ( 2, taskCompleted form.healthEducation + taskCompleted form.signOnDoor )
 
                         Just False ->
-                            ( 2, taskCompleted form.healthEducation + taskCompleted form.reasonsForNotIsolating )
+                            ( 2, taskCompleted form.healthEducation + naListTaskCompleted IsolationReasonNotApplicable form.reasonsForNotIsolating )
 
                         Nothing ->
                             ( 0, 0 )
@@ -221,26 +221,51 @@ exposureTasksCompletedFromTotal measurements data task =
                     (\contactedHC ->
                         if contactedHC then
                             let
+                                recomendationsCompleted =
+                                    naListTaskCompleted HCRecomendationNotApplicable form.recomendations
+
                                 ( ambulanceActive, ambulanceCompleted ) =
                                     form.recomendations
                                         |> Maybe.map
                                             (\recomendations ->
                                                 if List.member SendAmbulance recomendations then
-                                                    ( taskCompleted form.ambulanceArrivalPeriod, taskCompleted form.ambulanceArrivalPeriod )
+                                                    ( naTaskCompleted ResponsePeriodNotApplicable form.ambulanceArrivalPeriod
+                                                    , naTaskCompleted ResponsePeriodNotApplicable form.ambulanceArrivalPeriod
+                                                    )
 
                                                 else
                                                     ( 0, 0 )
                                             )
                                         |> Maybe.withDefault ( 0, 0 )
                             in
-                            ( 1 + taskCompleted form.recomendations + taskCompleted form.responsePeriod + ambulanceCompleted
-                            , 2 + taskCompleted form.responsePeriod + ambulanceActive
+                            ( 1 + recomendationsCompleted + naTaskCompleted ResponsePeriodNotApplicable form.responsePeriod + ambulanceCompleted
+                            , 2 + naTaskCompleted ResponsePeriodNotApplicable form.responsePeriod + ambulanceActive
                             )
 
                         else
                             ( 1, 1 )
                     )
                 |> Maybe.withDefault ( 0, 1 )
+
+
+naTaskCompleted : a -> Maybe a -> Int
+naTaskCompleted na maybe =
+    Maybe.map List.singleton maybe
+        |> naListTaskCompleted na
+
+
+naListTaskCompleted : a -> Maybe (List a) -> Int
+naListTaskCompleted na maybeList =
+    case maybeList of
+        Just [ value ] ->
+            if value == na then
+                0
+
+            else
+                1
+
+        _ ->
+            taskCompleted maybeList
 
 
 symptomsGeneralFormWithDefault : SymptomsGeneralForm -> Maybe (Dict SymptomsGeneralSign Int) -> SymptomsGeneralForm
@@ -502,12 +527,9 @@ toIsolationValue form =
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoIsolationSigns)
 
         reasonsForNotIsolating =
-            case form.reasonsForNotIsolating of
-                Just reasons ->
-                    EverySet.fromList reasons |> ifEmpty IsolationReasonNotApplicable |> Just
-
-                Nothing ->
-                    Just (EverySet.singleton IsolationReasonNotApplicable)
+            form.reasonsForNotIsolating
+                |> fromListWithDefaultValue IsolationReasonNotApplicable
+                |> Just
     in
     Maybe.map IsolationValue signs
         |> andMap reasonsForNotIsolating
@@ -553,6 +575,7 @@ toHCContactValueWithDefault : Maybe HCContactValue -> HCContactForm -> Maybe HCC
 toHCContactValueWithDefault saved form =
     hcContactFormWithDefault form saved
         |> toHCContactValue
+        |> hcContactValuePostProcess
 
 
 toHCContactValue : HCContactForm -> Maybe HCContactValue
@@ -565,9 +588,47 @@ toHCContactValue form =
 
         recomendations =
             form.recomendations
-                |> Maybe.map (EverySet.fromList >> ifEmpty HCRecomendationNotApplicable)
+                |> fromListWithDefaultValue HCRecomendationNotApplicable
+                |> Just
     in
     Maybe.map HCContactValue signs
         |> andMap recomendations
-        |> andMap (Maybe.map EverySet.singleton form.responsePeriod)
-        |> andMap (Maybe.map EverySet.singleton form.ambulanceArrivalPeriod)
+        |> andMap (form.responsePeriod |> withDefaultValue ResponsePeriodNotApplicable |> Just)
+        |> andMap (form.ambulanceArrivalPeriod |> withDefaultValue ResponsePeriodNotApplicable |> Just)
+
+
+hcContactValuePostProcess : Maybe HCContactValue -> Maybe HCContactValue
+hcContactValuePostProcess saved =
+    saved
+        |> Maybe.map
+            (\value ->
+                if EverySet.member ContactedHealthCenter value.signs then
+                    if EverySet.member SendAmbulance value.recomendations then
+                        value
+
+                    else
+                        { value | ambulanceArrivalPeriod = EverySet.singleton ResponsePeriodNotApplicable }
+
+                else
+                    { value
+                        | recomendations = EverySet.singleton HCRecomendationNotApplicable
+                        , responsePeriod = EverySet.singleton ResponsePeriodNotApplicable
+                        , ambulanceArrivalPeriod = EverySet.singleton ResponsePeriodNotApplicable
+                    }
+            )
+
+
+withDefaultValue : a -> Maybe a -> EverySet a
+withDefaultValue default maybe =
+    Maybe.map List.singleton maybe
+        |> fromListWithDefaultValue default
+
+
+fromListWithDefaultValue : a -> Maybe (List a) -> EverySet a
+fromListWithDefaultValue default maybeList =
+    case maybeList of
+        Just list ->
+            EverySet.fromList list |> ifEmpty default
+
+        Nothing ->
+            EverySet.singleton default

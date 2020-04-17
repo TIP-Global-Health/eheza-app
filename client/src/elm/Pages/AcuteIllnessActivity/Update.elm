@@ -588,7 +588,15 @@ update currentDate id db msg model =
         SetReasonForNotIsolating reason ->
             let
                 form =
-                    model.exposureData.isolationForm
+                    Dict.get id db.acuteIllnessMeasurements
+                        |> Maybe.withDefault NotAsked
+                        |> RemoteData.toMaybe
+                        |> Maybe.map
+                            (.isolation
+                                >> Maybe.map (Tuple.second >> .value)
+                                >> isolationFormWithDefault model.exposureData.isolationForm
+                            )
+                        |> Maybe.withDefault model.exposureData.isolationForm
 
                 updatedForm =
                     case form.reasonsForNotIsolating of
