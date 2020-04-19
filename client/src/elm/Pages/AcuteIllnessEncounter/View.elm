@@ -92,17 +92,21 @@ viewHeader language participant =
 
 viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Model -> ( Person, AcuteIllnessMeasurements ) -> Html Msg
 viewContent language currentDate id model ( person, measurements ) =
-    (viewPersonDetailsWithAlert language currentDate ( person, measurements ) model.showAlertsDialog SetAlertsDialogState
+    let
+        isSuspected =
+            suspectedCovid19Case measurements
+    in
+    (viewPersonDetailsWithAlert language currentDate person isSuspected model.showAlertsDialog SetAlertsDialogState
         :: viewMainPageContent language currentDate id measurements model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewPersonDetailsWithAlert : Language -> NominalDate -> ( Person, AcuteIllnessMeasurements ) -> Bool -> (Bool -> msg) -> Html msg
-viewPersonDetailsWithAlert language currentDate ( person, measurements ) isDialogOpen setAlertsDialogStateMsg =
+viewPersonDetailsWithAlert : Language -> NominalDate -> Person -> Bool -> Bool -> (Bool -> msg) -> Html msg
+viewPersonDetailsWithAlert language currentDate person isSuspected isDialogOpen setAlertsDialogStateMsg =
     let
         alertSign =
-            if suspectedCovid19Case measurements then
+            if isSuspected then
                 div
                     [ class "alerts"
                     , onClick <| setAlertsDialogStateMsg True
@@ -258,4 +262,35 @@ viewMainPageContent language currentDate id measurements model =
     in
     [ tabs
     , content
+    , viewModal <|
+        covid19Popup language
+            model.showCovid19Popup
+            SetCovid19PopupState
     ]
+
+
+covid19Popup : Language -> Bool -> (Bool -> msg) -> Maybe (Html msg)
+covid19Popup language isOpen setStateMsg =
+    if isOpen then
+        Just <|
+            div [ class "ui active modal alerts-dialog" ]
+                [ div [ class "content" ]
+                    [ div [ class "high-severity-alerts" ]
+                        [ div [ class "section-label-wrapper" ]
+                            [ img [ src "assets/images/exclamation-red.png" ] []
+                            , div [ class "section-label" ] [ text <| translate language Translate.Warning ++ "!" ]
+                            ]
+                        ]
+                    ]
+                , div
+                    [ class "actions" ]
+                    [ button
+                        [ class "ui primary fluid button"
+                        , onClick <| setStateMsg False
+                        ]
+                        [ text <| translate language Translate.Close ]
+                    ]
+                ]
+
+    else
+        Nothing

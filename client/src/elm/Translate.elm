@@ -646,6 +646,7 @@ type TranslationId
     | View
     | ViewProgressReport
     | Village
+    | Warning
     | WeekSinglePlural Int
     | Weight
     | WelcomeUser String
@@ -4358,6 +4359,11 @@ translationSet trans =
         Village ->
             { english = "Village"
             , kinyarwanda = Just "Umudugudu"
+            }
+
+        Warning ->
+            { english = "Warning"
+            , kinyarwanda = Nothing
             }
 
         WeekSinglePlural value ->

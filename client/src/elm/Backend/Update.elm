@@ -33,6 +33,8 @@ import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
 import Maybe.Extra exposing (isJust, unwrap)
+import Pages.AcuteIllnessEncounter.Model
+import Pages.AcuteIllnessEncounter.Utils exposing (suspectedCovid19Case)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model
 import Pages.Relationship.Model
@@ -751,6 +753,97 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                     ( withRecalc
                     , Cmd.none
                     , []
+                    )
+
+                -- Notify, when we see a suspected COVID 19 case.
+                [ SymptomsGeneralRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateSuspectedCovid19Msgs model newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ SymptomsRespiratoryRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateSuspectedCovid19Msgs model newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ SymptomsGIRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateSuspectedCovid19Msgs model newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TravelHistoryRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateSuspectedCovid19Msgs model newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ExposureRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateSuspectedCovid19Msgs model newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ AcuteIllnessVitalsRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateSuspectedCovid19Msgs model newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
                     )
 
                 _ ->
@@ -1678,6 +1771,34 @@ handleRevision revision (( model, recalc ) as noChange) =
                 model
             , True
             )
+
+
+generateSuspectedCovid19Msgs : ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
+generateSuspectedCovid19Msgs before after id =
+    let
+        suspectedBeforeChange =
+            Dict.get id before.acuteIllnessMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.map suspectedCovid19Case
+                |> Maybe.withDefault False
+
+        suspectedAfterChange =
+            Dict.get id after.acuteIllnessMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.map suspectedCovid19Case
+                |> Maybe.withDefault False
+    in
+    if suspectedBeforeChange == False && suspectedAfterChange == True then
+        [ App.Model.SetActivePage (UserPage (AcuteIllnessEncounterPage id))
+        , Pages.AcuteIllnessEncounter.Model.SetCovid19PopupState True
+            |> App.Model.MsgPageAcuteIllnessEncounter id
+            |> App.Model.MsgLoggedIn
+        ]
+
+    else
+        []
 
 
 {-| Construct an EditableSession from our data, if we have all the needed data.

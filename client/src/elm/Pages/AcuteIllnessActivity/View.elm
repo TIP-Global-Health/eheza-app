@@ -18,6 +18,7 @@ import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
+import Pages.AcuteIllnessEncounter.Utils exposing (suspectedCovid19Case)
 import Pages.AcuteIllnessEncounter.View exposing (viewPersonDetailsWithAlert)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
@@ -104,14 +105,18 @@ viewHeader language id activity =
 
 viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Model -> ( PersonId, Person, AcuteIllnessMeasurements ) -> Html Msg
 viewContent language currentDate id activity model ( personId, person, measurements ) =
-    (viewPersonDetailsWithAlert language currentDate ( person, measurements ) model.showAlertsDialog SetAlertsDialogState
-        :: viewActivity language currentDate id activity ( personId, measurements ) model
+    let
+        isSuspected =
+            suspectedCovid19Case measurements
+    in
+    (viewPersonDetailsWithAlert language currentDate person isSuspected model.showAlertsDialog SetAlertsDialogState
+        :: viewActivity language currentDate id activity ( personId, measurements ) isSuspected model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> ( PersonId, AcuteIllnessMeasurements ) -> Model -> List (Html Msg)
-viewActivity language currentDate id activity ( personId, measurements ) model =
+viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> ( PersonId, AcuteIllnessMeasurements ) -> Bool -> Model -> List (Html Msg)
+viewActivity language currentDate id activity ( personId, measurements ) isSuspected model =
     case activity of
         AcuteIllnessSymptoms ->
             viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) model.symptomsData
@@ -123,7 +128,7 @@ viewActivity language currentDate id activity ( personId, measurements ) model =
             viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) model.laboratoryData
 
         AcuteIllnessExposure ->
-            viewAcuteIllnessExposure language currentDate id ( personId, measurements ) model.exposureData
+            viewAcuteIllnessExposure language currentDate id ( personId, measurements ) isSuspected model.exposureData
 
 
 viewAcuteIllnessSymptomsContent : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> SymptomsData -> List (Html Msg)
@@ -553,14 +558,44 @@ viewMalariaTestingForm language currentDate measurements form =
         ]
 
 
-viewAcuteIllnessExposure : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> ExposureData -> List (Html Msg)
-viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data =
+viewAcuteIllnessExposure : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> Bool -> ExposureData -> List (Html Msg)
+viewAcuteIllnessExposure language currentDate id ( personId, measurements ) isSuspected data =
     let
         activity =
             AcuteIllnessExposure
 
         tasks =
             [ ExposureTravel, ExposureExposure, ExposureIsolation, ExposureContactHC ]
+                |> List.filter expectTask
+
+        expectTask task =
+            if isSuspected then
+                case task of
+                    ExposureTravel ->
+                        isJust measurements.travelHistory
+
+                    ExposureExposure ->
+                        isJust measurements.exposure
+
+                    ExposureIsolation ->
+                        True
+
+                    ExposureContactHC ->
+                        True
+
+            else
+                case task of
+                    ExposureTravel ->
+                        True
+
+                    ExposureExposure ->
+                        True
+
+                    ExposureIsolation ->
+                        False
+
+                    ExposureContactHC ->
+                        False
 
         viewTask task =
             let
@@ -644,10 +679,26 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data
                         |> viewHCContactForm language currentDate measurements
 
         getNextTask currentTask =
-            case currentTask of
-                -- Todo
-                _ ->
-                    Nothing
+            case data.activeTask of
+                ExposureTravel ->
+                    [ ExposureExposure ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
+
+                ExposureExposure ->
+                    [ ExposureTravel ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
+
+                ExposureIsolation ->
+                    [ ExposureContactHC ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
+
+                ExposureContactHC ->
+                    [ ExposureIsolation ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
 
         actions =
             let
