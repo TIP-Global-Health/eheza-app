@@ -8,6 +8,7 @@ import Pages.Page exposing (Page)
 
 type Msg
     = SetActivePage Page
+    | SetAlertsDialogState Bool
       -- SYMPTOMS Msgs
     | SetActiveSymptomsTask SymptomsTask
     | ToggleSymptomsGeneralSign SymptomsGeneralSign
@@ -52,6 +53,7 @@ type alias Model =
     , physicalExamData : PhysicalExamData
     , laboratoryData : LaboratoryData
     , exposureData : ExposureData
+    , showAlertsDialog : Bool
     }
 
 
@@ -61,6 +63,7 @@ emptyModel =
     , physicalExamData = emptyPhysicalExamData
     , laboratoryData = emptyLaboratoryData
     , exposureData = emptyExposureData
+    , showAlertsDialog = False
     }
 
 

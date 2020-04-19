@@ -598,6 +598,8 @@ type TranslationId
     | StillbornPreviousDelivery
     | SuccessiveAbortions
     | SuccessivePrematureDeliveries
+    | SuspectedCovid19CaseAlert
+    | SuspectedCovid19CaseAlertHelper
     | SymptomsGeneralSign SymptomsGeneralSign
     | SymptomsGISign SymptomsGISign
     | SymptomsRespiratorySign SymptomsRespiratorySign
@@ -4021,6 +4023,16 @@ translationSet trans =
 
         SuccessivePrematureDeliveries ->
             { english = "Successive Premature Deliveries"
+            , kinyarwanda = Nothing
+            }
+
+        SuspectedCovid19CaseAlert ->
+            { english = "Suspected COVID-19 case"
+            , kinyarwanda = Nothing
+            }
+
+        SuspectedCovid19CaseAlertHelper ->
+            { english = "Please isolate immediatly from family and contact health center"
             , kinyarwanda = Nothing
             }
 

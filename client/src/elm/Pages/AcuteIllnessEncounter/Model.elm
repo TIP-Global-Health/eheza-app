@@ -11,12 +11,15 @@ import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { selectedTab : Tab }
+    { selectedTab : Tab
+    , showAlertsDialog : Bool
+    }
 
 
 type Msg
     = CloseEncounter AcuteIllnessEncounterId
     | SetActivePage Page
+    | SetAlertsDialogState Bool
     | SetSelectedTab Tab
 
 
@@ -28,4 +31,5 @@ type Tab
 emptyModel : Model
 emptyModel =
     { selectedTab = Pending
+    , showAlertsDialog = False
     }

@@ -18,8 +18,8 @@ import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
+import Pages.AcuteIllnessEncounter.View exposing (viewPersonDetailsWithAlert)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
 import Pages.Utils
     exposing
         ( isTaskCompleted
@@ -104,7 +104,7 @@ viewHeader language id activity =
 
 viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Model -> ( PersonId, Person, AcuteIllnessMeasurements ) -> Html Msg
 viewContent language currentDate id activity model ( personId, person, measurements ) =
-    ((viewPersonDetails language currentDate person |> div [ class "item" ])
+    (viewPersonDetailsWithAlert language currentDate ( person, measurements ) model.showAlertsDialog SetAlertsDialogState
         :: viewActivity language currentDate id activity ( personId, measurements ) model
     )
         |> div [ class "ui unstackable items" ]

@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessEncounter.View exposing (view)
+module Pages.AcuteIllnessEncounter.View exposing (view, viewPersonDetailsWithAlert)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AcuteIllnessActivity.Utils exposing (getActivityIcon, getAllActivities)
@@ -16,6 +16,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.AcuteIllnessEncounter.Model exposing (..)
+import Pages.AcuteIllnessEncounter.Utils exposing (suspectedCovid19Case)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -91,10 +92,71 @@ viewHeader language participant =
 
 viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Model -> ( Person, AcuteIllnessMeasurements ) -> Html Msg
 viewContent language currentDate id model ( person, measurements ) =
-    ((viewPersonDetails language currentDate person |> div [ class "item" ])
+    (viewPersonDetailsWithAlert language currentDate ( person, measurements ) model.showAlertsDialog SetAlertsDialogState
         :: viewMainPageContent language currentDate id measurements model
     )
         |> div [ class "ui unstackable items" ]
+
+
+viewPersonDetailsWithAlert : Language -> NominalDate -> ( Person, AcuteIllnessMeasurements ) -> Bool -> (Bool -> msg) -> Html msg
+viewPersonDetailsWithAlert language currentDate ( person, measurements ) isDialogOpen setAlertsDialogStateMsg =
+    let
+        alertSign =
+            if suspectedCovid19Case measurements then
+                div
+                    [ class "alerts"
+                    , onClick <| setAlertsDialogStateMsg True
+                    ]
+                    [ img [ src "assets/images/exclamation-red.png" ] [] ]
+
+            else
+                emptyNode
+    in
+    div [ class "item" ] <|
+        viewPersonDetails language currentDate person
+            ++ [ alertSign
+               , viewModal <|
+                    alertsDialog language
+                        isDialogOpen
+                        setAlertsDialogStateMsg
+               ]
+
+
+alertsDialog : Language -> Bool -> (Bool -> msg) -> Maybe (Html msg)
+alertsDialog language isOpen setAlertsDialogStateMsg =
+    if isOpen then
+        let
+            sectionLabel title =
+                div [ class "section-label-wrapper" ]
+                    [ img [ src "assets/images/exclamation-red.png" ] []
+                    , div [ class "section-label" ] [ text <| translate language title ++ ":" ]
+                    ]
+        in
+        Just <|
+            div [ class "ui active modal alerts-dialog" ]
+                [ div [ class "content" ]
+                    [ div [ class "high-severity-alerts" ]
+                        [ sectionLabel Translate.HighSeverityAlerts
+                        , div [ class "section-items" ]
+                            [ div [ class "alert" ]
+                                [ div [ class "alert-text upper" ] [ text <| "- " ++ translate language Translate.SuspectedCovid19CaseAlert ++ "." ]
+                                , div [ class "alert-helper" ] [ text <| translate language Translate.SuspectedCovid19CaseAlertHelper ++ "." ]
+                                ]
+                            ]
+                        ]
+                    ]
+                , div
+                    [ class "actions" ]
+                    [ button
+                        [ class "ui primary fluid button"
+                        , onClick <| setAlertsDialogStateMsg False
+                        ]
+                        [ text <| translate language Translate.Close ]
+                    ]
+                ]
+
+    else
+        Nothing
 
 
 viewMainPageContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessMeasurements -> Model -> List (Html Msg)

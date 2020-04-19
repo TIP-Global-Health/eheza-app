@@ -26,15 +26,6 @@ import Pages.PrenatalActivity.Utils exposing (ifEmpty, ifNullableTrue, ifTrue)
 import Pages.Utils exposing (taskCompleted)
 
 
-taskNotCompleted : Bool -> Int
-taskNotCompleted notCompleted =
-    if notCompleted then
-        0
-
-    else
-        1
-
-
 allSymptomsGeneralSigns : ( List SymptomsGeneralSign, SymptomsGeneralSign )
 allSymptomsGeneralSigns =
     ( [ SymptomGeneralFever
@@ -246,6 +237,15 @@ exposureTasksCompletedFromTotal measurements data task =
                             ( 1, 1 )
                     )
                 |> Maybe.withDefault ( 0, 1 )
+
+
+taskNotCompleted : Bool -> Int
+taskNotCompleted notCompleted =
+    if notCompleted then
+        0
+
+    else
+        1
 
 
 naTaskCompleted : a -> Maybe a -> Int

@@ -21,10 +21,10 @@ update msg model =
             )
 
         SetActivePage page ->
-            ( model
-            , Cmd.none
-            , [ App.Model.SetActivePage page ]
-            )
+            ( model, Cmd.none, [ App.Model.SetActivePage page ] )
+
+        SetAlertsDialogState isOpen ->
+            ( { model | showAlertsDialog = isOpen }, Cmd.none, [] )
 
         SetSelectedTab tab ->
             ( { model | selectedTab = tab }, Cmd.none, [] )

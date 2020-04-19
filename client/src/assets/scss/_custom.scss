@@ -1086,6 +1086,10 @@ input::placeholder {
         .alert {
           margin-bottom: 5px;
 
+          .alert-text.upper {
+            text-transform: uppercase;
+          }
+
           .alert-value {
             color: $color-red-alert;
             margin-left: 10px;
@@ -1094,6 +1098,10 @@ input::placeholder {
           .alert-date {
             color: $color-green-alert;
             margin-left: 10px;
+          }
+
+          .alert-helper {
+            margin-left: 13px;
           }
         }
       }

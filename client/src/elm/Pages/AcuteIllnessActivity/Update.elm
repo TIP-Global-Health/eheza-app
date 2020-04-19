@@ -37,6 +37,9 @@ update currentDate id db msg model =
             , [ App.Model.SetActivePage page ]
             )
 
+        SetAlertsDialogState isOpen ->
+            ( { model | showAlertsDialog = isOpen }, Cmd.none, [] )
+
         SetActiveSymptomsTask task ->
             let
                 updatedData =
