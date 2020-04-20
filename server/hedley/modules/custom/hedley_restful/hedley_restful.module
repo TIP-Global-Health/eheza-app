@@ -38,7 +38,7 @@ const HEDLEY_RESTFUL_ALL_DEVICES = [
  * we sync to just some devices.
  */
 const HEDLEY_RESTFUL_SHARDED = [
-  'acute_illness_vitals' =>'acute-illness-vitals',
+  'acute_illness_vitals' => 'acute-illness-vitals',
   'attendance' => 'attendances',
   'breast_exam' => 'breast-exams',
   'counseling_session' => 'counseling-sessions',
