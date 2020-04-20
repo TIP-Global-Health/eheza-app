@@ -29,6 +29,39 @@ update currentDate id db msg model =
     let
         noChange =
             ( model, Cmd.none, [] )
+
+        symptomsGeneralForm =
+            Dict.get id db.acuteIllnessMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.map
+                    (.symptomsGeneral
+                        >> Maybe.map (Tuple.second >> .value)
+                        >> symptomsGeneralFormWithDefault model.symptomsData.symptomsGeneralForm
+                    )
+                |> Maybe.withDefault model.symptomsData.symptomsGeneralForm
+
+        symptomsRespiratoryForm =
+            Dict.get id db.acuteIllnessMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.map
+                    (.symptomsRespiratory
+                        >> Maybe.map (Tuple.second >> .value)
+                        >> symptomsRespiratoryFormWithDefault model.symptomsData.symptomsRespiratoryForm
+                    )
+                |> Maybe.withDefault model.symptomsData.symptomsRespiratoryForm
+
+        symptomsGIForm =
+            Dict.get id db.acuteIllnessMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.map
+                    (.symptomsGI
+                        >> Maybe.map (Tuple.second >> .value)
+                        >> symptomsGIFormWithDefault model.symptomsData.symptomsGIForm
+                    )
+                |> Maybe.withDefault model.symptomsData.symptomsGIForm
     in
     case msg of
         SetActivePage page ->
@@ -56,11 +89,8 @@ update currentDate id db msg model =
 
         ToggleSymptomsGeneralSign sign ->
             let
-                form =
-                    model.symptomsData.symptomsGeneralForm
-
                 updatedForm =
-                    toggleSymptomsSign SymptomsGeneral sign NoSymptomsGeneral form
+                    toggleSymptomsSign SymptomsGeneral sign NoSymptomsGeneral symptomsGeneralForm
 
                 updatedData =
                     model.symptomsData
@@ -73,11 +103,8 @@ update currentDate id db msg model =
 
         ToggleSymptomsGISign sign ->
             let
-                form =
-                    model.symptomsData.symptomsGIForm
-
                 updatedForm =
-                    toggleSymptomsSign SymptomsGI sign NoSymptomsGI form
+                    toggleSymptomsSign SymptomsGI sign NoSymptomsGI symptomsGIForm
 
                 updatedData =
                     model.symptomsData
@@ -90,11 +117,8 @@ update currentDate id db msg model =
 
         ToggleSymptomsRespiratorySign sign ->
             let
-                form =
-                    model.symptomsData.symptomsRespiratoryForm
-
                 updatedForm =
-                    toggleSymptomsSign SymptomsRespiratory sign NoSymptomsRespiratory form
+                    toggleSymptomsSign SymptomsRespiratory sign NoSymptomsRespiratory symptomsRespiratoryForm
 
                 updatedData =
                     model.symptomsData
@@ -110,11 +134,8 @@ update currentDate id db msg model =
                 |> Maybe.map
                     (\value ->
                         let
-                            form =
-                                model.symptomsData.symptomsGeneralForm
-
                             updatedForm =
-                                { form | signs = Dict.insert sign value form.signs }
+                                { symptomsGeneralForm | signs = Dict.insert sign value symptomsGeneralForm.signs }
 
                             updatedData =
                                 model.symptomsData
@@ -132,11 +153,8 @@ update currentDate id db msg model =
                 |> Maybe.map
                     (\value ->
                         let
-                            form =
-                                model.symptomsData.symptomsGIForm
-
                             updatedForm =
-                                { form | signs = Dict.insert sign value form.signs }
+                                { symptomsGIForm | signs = Dict.insert sign value symptomsGIForm.signs }
 
                             updatedData =
                                 model.symptomsData
@@ -154,11 +172,8 @@ update currentDate id db msg model =
                 |> Maybe.map
                     (\value ->
                         let
-                            form =
-                                model.symptomsData.symptomsRespiratoryForm
-
                             updatedForm =
-                                { form | signs = Dict.insert sign value form.signs }
+                                { symptomsRespiratoryForm | signs = Dict.insert sign value symptomsRespiratoryForm.signs }
 
                             updatedData =
                                 model.symptomsData
