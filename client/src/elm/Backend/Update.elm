@@ -757,7 +757,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                     , []
                     )
 
-                -- Notify, when we see a suspected COVID 19 case.
+                -- When we see a suspected COVID 19 case, notify with a pop-up.
                 [ SymptomsGeneralRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
@@ -773,6 +773,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                     , extraMsgs
                     )
 
+                -- When we see a suspected COVID 19 case, notify with a pop-up.
                 [ SymptomsRespiratoryRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
@@ -788,6 +789,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                     , extraMsgs
                     )
 
+                -- When we see a suspected COVID 19 case, notify with a pop-up.
                 [ SymptomsGIRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
@@ -803,6 +805,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                     , extraMsgs
                     )
 
+                -- When we see a suspected COVID 19 case, notify with a pop-up.
                 [ TravelHistoryRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
@@ -818,6 +821,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                     , extraMsgs
                     )
 
+                -- When we see a suspected COVID 19 case, notify with a pop-up.
                 [ ExposureRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
@@ -833,6 +837,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                     , extraMsgs
                     )
 
+                -- When we see a suspected COVID 19 case, notify with a pop-up.
                 [ AcuteIllnessVitalsRevision uuid data ] ->
                     let
                         ( newModel, _ ) =
@@ -841,6 +846,40 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                         extraMsgs =
                             data.encounterId
                                 |> Maybe.map (generateSuspectedCovid19Msgs model newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                -- When we see that needed data for suspected COVID 19 case was collected,
+                -- view a pop-up suggesting to end the encounter.
+                [ IsolationRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateEndAcuteIllnessEncounterMsgs newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                -- When we see that needed data for suspected COVID 19 case was collected,
+                -- view a pop-up suggesting to end the encounter.
+                [ HCContactRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateEndAcuteIllnessEncounterMsgs newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -1804,6 +1843,26 @@ generateSuspectedCovid19Msgs before after id =
 
     else
         []
+
+
+generateEndAcuteIllnessEncounterMsgs : ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
+generateEndAcuteIllnessEncounterMsgs db id =
+    Dict.get id db.acuteIllnessMeasurements
+        |> Maybe.withDefault NotAsked
+        |> RemoteData.toMaybe
+        |> Maybe.map
+            (\measurements ->
+                if isJust measurements.isolation && isJust measurements.hcContact then
+                    [ App.Model.SetActivePage (UserPage (AcuteIllnessEncounterPage id))
+                    , Pages.AcuteIllnessEncounter.Model.SetEndEncounterDialogState True
+                        |> App.Model.MsgPageAcuteIllnessEncounter id
+                        |> App.Model.MsgLoggedIn
+                    ]
+
+                else
+                    []
+            )
+        |> Maybe.withDefault []
 
 
 {-| Construct an EditableSession from our data, if we have all the needed data.

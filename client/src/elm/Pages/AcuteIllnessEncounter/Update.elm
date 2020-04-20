@@ -11,7 +11,7 @@ update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update msg model =
     case msg of
         CloseEncounter id ->
-            ( model
+            ( { model | showEndEncounetrDialog = False }
             , Cmd.none
             , [ Backend.AcuteIllnessEncounter.Model.CloseAcuteIllnessEncounter
                     |> Backend.Model.MsgAcuteIllnessEncounter id
