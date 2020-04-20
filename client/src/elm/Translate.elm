@@ -600,6 +600,8 @@ type TranslationId
     | SuccessivePrematureDeliveries
     | SuspectedCovid19CaseAlert
     | SuspectedCovid19CaseAlertHelper
+    | SuspectedCovid19CaseIsolate
+    | SuspectedCovid19CaseContactHC
     | SymptomsGeneralSign SymptomsGeneralSign
     | SymptomsGISign SymptomsGISign
     | SymptomsRespiratorySign SymptomsRespiratorySign
@@ -4034,6 +4036,16 @@ translationSet trans =
 
         SuspectedCovid19CaseAlertHelper ->
             { english = "Please isolate immediatly from family and contact health center"
+            , kinyarwanda = Nothing
+            }
+
+        SuspectedCovid19CaseIsolate ->
+            { english = "Isolate immediately from family"
+            , kinyarwanda = Nothing
+            }
+
+        SuspectedCovid19CaseContactHC ->
+            { english = "Contact health center immediately"
             , kinyarwanda = Nothing
             }
 

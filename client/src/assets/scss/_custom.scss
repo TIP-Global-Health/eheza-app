@@ -1116,6 +1116,63 @@ input::placeholder {
     }
   }
 
+  &.warning-popup {
+    border-top: 15px solid $color-red-alert;
+    width: 600px !important;
+    margin-left: -300px !important;
+
+    > .content {
+      display: inline-block;
+      max-height: 600px;
+      min-height: 200px;
+      overflow-y: auto;
+
+      .popup-heading-wrapper {
+        height: 48px;
+        margin-bottom: 1rem;
+
+        img {
+          float: left;
+          width: 48px;
+        }
+
+        .popup-heading {
+          color: $color-dark-gray;
+          float: left;
+          font-size: 30px;
+          font-weight: bold;
+          line-height: 48px;
+          text-align: center;
+          text-transform: uppercase;
+          width: 400px;
+        }
+      }
+
+      .popup-title {
+        color: $color-dark-gray;
+        font-size: 30px;
+        font-weight: bold;
+        margin-bottom: 1rem;
+        text-align: center;
+        text-transform: uppercase;
+      }
+
+      .popup-action {
+        color: $color-dark-gray;
+        font-size: 30px;
+        margin-bottom: 2rem;
+        padding: 0 4rem;
+        text-align: center;
+        text-transform: uppercase;
+      }
+    }
+
+    > .actions > .button {
+      background: $color-red-alert;
+      margin-left: 0;
+    }
+  }
+
   > .icon:first-child+*,
   >:first-child:not(.icon) {
     border-top-left-radius: 0;

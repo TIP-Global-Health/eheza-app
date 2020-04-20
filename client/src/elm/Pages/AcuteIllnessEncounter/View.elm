@@ -273,14 +273,15 @@ covid19Popup : Language -> Bool -> (Bool -> msg) -> Maybe (Html msg)
 covid19Popup language isOpen setStateMsg =
     if isOpen then
         Just <|
-            div [ class "ui active modal alerts-dialog" ]
+            div [ class "ui active modal warning-popup" ]
                 [ div [ class "content" ]
-                    [ div [ class "high-severity-alerts" ]
-                        [ div [ class "section-label-wrapper" ]
-                            [ img [ src "assets/images/exclamation-red.png" ] []
-                            , div [ class "section-label" ] [ text <| translate language Translate.Warning ++ "!" ]
-                            ]
+                    [ div [ class "popup-heading-wrapper" ]
+                        [ img [ src "assets/images/exclamation-red.png" ] []
+                        , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
                         ]
+                    , div [ class "popup-title" ] [ text <| translate language Translate.SuspectedCovid19CaseAlert ]
+                    , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
+                    , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
                     ]
                 , div
                     [ class "actions" ]
@@ -288,7 +289,7 @@ covid19Popup language isOpen setStateMsg =
                         [ class "ui primary fluid button"
                         , onClick <| setStateMsg False
                         ]
-                        [ text <| translate language Translate.Close ]
+                        [ text <| translate language Translate.Continue ]
                     ]
                 ]
 
