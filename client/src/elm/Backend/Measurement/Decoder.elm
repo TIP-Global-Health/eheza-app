@@ -968,6 +968,13 @@ symptomsGeneralToDict fever chills nightSweats bodyAches headache =
     , ( Headache, headache )
     ]
         |> List.filter (Tuple.second >> (/=) 0)
+        |> (\list ->
+                if List.isEmpty list then
+                    [ ( NoSymptomsGeneral, 0 ) ]
+
+                else
+                    list
+           )
         |> Dict.fromList
 
 
@@ -1022,6 +1029,13 @@ symptomsRespiratoryToDict cough shortnessOfBreath nasalCongestion bloodInSputum 
     , ( SoreThroat, soreThroat )
     ]
         |> List.filter (Tuple.second >> (/=) 0)
+        |> (\list ->
+                if List.isEmpty list then
+                    [ ( NoSymptomsRespiratory, 0 ) ]
+
+                else
+                    list
+           )
         |> Dict.fromList
 
 
@@ -1076,6 +1090,13 @@ symptomsGIToDict bloodyDiarrhea nonBloodyDiarrhea nausea vomiting abdominalPain 
     , ( SymptomGIAbdominalPain, abdominalPain )
     ]
         |> List.filter (Tuple.second >> (/=) 0)
+        |> (\list ->
+                if List.isEmpty list then
+                    [ ( NoSymptomsGI, 0 ) ]
+
+                else
+                    list
+           )
         |> Dict.fromList
 
 
