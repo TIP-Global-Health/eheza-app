@@ -2,6 +2,7 @@ module Backend.Update exposing (updateIndexedDb)
 
 import Activity.Model exposing (SummaryByActivity, SummaryByParticipant)
 import Activity.Utils exposing (getAllChildActivities, getAllMotherActivities, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
+import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model
@@ -33,6 +34,7 @@ import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
 import Maybe.Extra exposing (isJust, unwrap)
+import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessEncounter.Model
 import Pages.AcuteIllnessEncounter.Utils exposing (suspectedCovid19Case)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -1791,9 +1793,12 @@ generateSuspectedCovid19Msgs before after id =
                 |> Maybe.withDefault False
     in
     if suspectedBeforeChange == False && suspectedAfterChange == True then
-        [ App.Model.SetActivePage (UserPage (AcuteIllnessEncounterPage id))
-        , Pages.AcuteIllnessEncounter.Model.SetCovid19PopupState True
-            |> App.Model.MsgPageAcuteIllnessEncounter id
+        [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessExposure))
+        , Pages.AcuteIllnessActivity.Model.SetCovid19PopupState True
+            |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessExposure
+            |> App.Model.MsgLoggedIn
+        , Pages.AcuteIllnessActivity.Model.SetActiveExposureTask Pages.AcuteIllnessActivity.Model.ExposureIsolation
+            |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessExposure
             |> App.Model.MsgLoggedIn
         ]
 

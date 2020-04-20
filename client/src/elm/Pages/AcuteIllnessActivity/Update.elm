@@ -40,6 +40,9 @@ update currentDate id db msg model =
         SetAlertsDialogState isOpen ->
             ( { model | showAlertsDialog = isOpen }, Cmd.none, [] )
 
+        SetCovid19PopupState isOpen ->
+            ( { model | showCovid19Popup = isOpen }, Cmd.none, [] )
+
         SetActiveSymptomsTask task ->
             let
                 updatedData =

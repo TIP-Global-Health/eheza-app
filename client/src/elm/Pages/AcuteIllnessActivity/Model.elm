@@ -9,6 +9,7 @@ import Pages.Page exposing (Page)
 type Msg
     = SetActivePage Page
     | SetAlertsDialogState Bool
+    | SetCovid19PopupState Bool
       -- SYMPTOMS Msgs
     | SetActiveSymptomsTask SymptomsTask
     | ToggleSymptomsGeneralSign SymptomsGeneralSign
@@ -54,6 +55,7 @@ type alias Model =
     , laboratoryData : LaboratoryData
     , exposureData : ExposureData
     , showAlertsDialog : Bool
+    , showCovid19Popup : Bool
     }
 
 
@@ -64,6 +66,7 @@ emptyModel =
     , laboratoryData = emptyLaboratoryData
     , exposureData = emptyExposureData
     , showAlertsDialog = False
+    , showCovid19Popup = False
     }
 
 

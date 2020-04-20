@@ -262,36 +262,4 @@ viewMainPageContent language currentDate id measurements model =
     in
     [ tabs
     , content
-    , viewModal <|
-        covid19Popup language
-            model.showCovid19Popup
-            SetCovid19PopupState
     ]
-
-
-covid19Popup : Language -> Bool -> (Bool -> msg) -> Maybe (Html msg)
-covid19Popup language isOpen setStateMsg =
-    if isOpen then
-        Just <|
-            div [ class "ui active modal warning-popup" ]
-                [ div [ class "content" ]
-                    [ div [ class "popup-heading-wrapper" ]
-                        [ img [ src "assets/images/exclamation-red.png" ] []
-                        , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
-                        ]
-                    , div [ class "popup-title" ] [ text <| translate language Translate.SuspectedCovid19CaseAlert ]
-                    , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
-                    , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
-                    ]
-                , div
-                    [ class "actions" ]
-                    [ button
-                        [ class "ui primary fluid button"
-                        , onClick <| setStateMsg False
-                        ]
-                        [ text <| translate language Translate.Continue ]
-                    ]
-                ]
-
-    else
-        Nothing

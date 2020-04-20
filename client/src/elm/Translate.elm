@@ -4035,7 +4035,7 @@ translationSet trans =
             }
 
         SuspectedCovid19CaseAlertHelper ->
-            { english = "Please isolate immediatly from family and contact health center"
+            { english = "Please isolate immediately from family and contact health center"
             , kinyarwanda = Nothing
             }
 

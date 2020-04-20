@@ -26,8 +26,5 @@ update msg model =
         SetAlertsDialogState isOpen ->
             ( { model | showAlertsDialog = isOpen }, Cmd.none, [] )
 
-        SetCovid19PopupState isOpen ->
-            ( { model | showCovid19Popup = isOpen }, Cmd.none, [] )
-
         SetSelectedTab tab ->
             ( { model | selectedTab = tab }, Cmd.none, [] )
