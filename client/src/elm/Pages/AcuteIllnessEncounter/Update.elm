@@ -26,5 +26,8 @@ update msg model =
         SetAlertsDialogState isOpen ->
             ( { model | showAlertsDialog = isOpen }, Cmd.none, [] )
 
+        SetEndEncounterDialogState isOpen ->
+            ( { model | showEndEncounetrDialog = isOpen }, Cmd.none, [] )
+
         SetSelectedTab tab ->
             ( { model | selectedTab = tab }, Cmd.none, [] )

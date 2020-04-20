@@ -19,6 +19,7 @@ import Pages.AcuteIllnessEncounter.Model exposing (..)
 import Pages.AcuteIllnessEncounter.Utils exposing (suspectedCovid19Case)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
+import Pages.Utils exposing (viewEndEncounterDialog)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
@@ -62,10 +63,23 @@ view language currentDate id db model =
 
         content =
             viewWebData language (viewContent language currentDate id model) identity personWithMeasurements
+
+        endEncounterDialog =
+            if model.showEndEncounetrDialog then
+                Just <|
+                    viewEndEncounterDialog language
+                        Translate.EndEncounterQuestion
+                        Translate.OnceYouEndTheEncounter
+                        (CloseEncounter id)
+                        (SetEndEncounterDialogState False)
+
+            else
+                Nothing
     in
     div [ class "page-encounter acute-illness" ] <|
         [ header
         , content
+        , viewModal endEncounterDialog
         ]
 
 
@@ -97,7 +111,7 @@ viewContent language currentDate id model ( person, measurements ) =
             suspectedCovid19Case measurements
     in
     (viewPersonDetailsWithAlert language currentDate person isSuspected model.showAlertsDialog SetAlertsDialogState
-        :: viewMainPageContent language currentDate id measurements model
+        :: viewMainPageContent language currentDate id measurements isSuspected model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -163,8 +177,8 @@ alertsDialog language isOpen setAlertsDialogStateMsg =
         Nothing
 
 
-viewMainPageContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessMeasurements -> Model -> List (Html Msg)
-viewMainPageContent language currentDate id measurements model =
+viewMainPageContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessMeasurements -> Bool -> Model -> List (Html Msg)
+viewMainPageContent language currentDate id measurements isSuspected model =
     let
         ( completedActivities, pendingActivities ) =
             getAllActivities
@@ -185,8 +199,12 @@ viewMainPageContent language currentDate id measurements model =
                             AcuteIllnessExposure ->
                                 isJust measurements.travelHistory
                                     && isJust measurements.exposure
-                                    && isJust measurements.isolation
-                                    && isJust measurements.hcContact
+                                    && (if isSuspected then
+                                            isJust measurements.isolation && isJust measurements.hcContact
+
+                                        else
+                                            True
+                                       )
                     )
 
         pendingTabTitle =
@@ -239,12 +257,16 @@ viewMainPageContent language currentDate id measurements model =
                 ]
 
         allowEndEcounter =
-            List.isEmpty pendingActivities
+            if isSuspected then
+                isJust measurements.isolation && isJust measurements.hcContact
+
+            else
+                List.isEmpty pendingActivities
 
         endEcounterButtonAttributes =
             if allowEndEcounter then
                 [ class "ui fluid primary button"
-                , onClick <| CloseEncounter id
+                , onClick <| SetEndEncounterDialogState True
                 ]
 
             else

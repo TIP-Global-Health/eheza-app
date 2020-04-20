@@ -301,6 +301,7 @@ type TranslationId
     | EgaWeeks
     | EmptyString
     | EndEncounter
+    | EndEncounterQuestion
     | EndGroupEncounter
     | EnterPairingCode
     | ErrorCheckLocalConfig
@@ -459,6 +460,7 @@ type TranslationId
     | OK
     | Old
     | OneVisit
+    | OnceYouEndTheEncounter
     | OnceYouEndYourGroupEncounter
     | Or
     | Page
@@ -1737,6 +1739,11 @@ translationSet trans =
 
         EndEncounter ->
             { english = "End Encounter"
+            , kinyarwanda = Nothing
+            }
+
+        EndEncounterQuestion ->
+            { english = "End Encounter?"
             , kinyarwanda = Nothing
             }
 
@@ -3087,6 +3094,11 @@ translationSet trans =
 
         OneVisit ->
             { english = "One visit"
+            , kinyarwanda = Nothing
+            }
+
+        OnceYouEndTheEncounter ->
+            { english = "Once you end the Encounter, you will no longer be able to edit or add data."
             , kinyarwanda = Nothing
             }
 

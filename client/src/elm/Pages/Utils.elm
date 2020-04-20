@@ -13,6 +13,7 @@ module Pages.Utils exposing
     , viewCheckBoxSelectInput
     , viewCheckBoxValueInput
     , viewCustomLabel
+    , viewEndEncounterDialog
     , viewLabel
     , viewMeasurementInput
     , viewNameFilter
@@ -378,6 +379,33 @@ viewPreviousMeasurement language maybePreviousValue unitTranslationId =
                     )
     in
     div [ class "previous-value" ] [ text message ]
+
+
+viewEndEncounterDialog : Language -> TranslationId -> TranslationId -> msg -> msg -> Html msg
+viewEndEncounterDialog language heading message confirmAction cancelAction =
+    div [ class "ui tiny active modal" ]
+        [ div [ class "header" ]
+            [ text <| translate language heading ]
+        , div
+            [ class "content" ]
+            [ p [] [ text <| translate language message ]
+            ]
+        , div
+            [ class "actions" ]
+            [ div [ class "two ui buttons" ]
+                [ button
+                    [ class "ui fluid button"
+                    , onClick cancelAction
+                    ]
+                    [ text <| translate language Translate.Cancel ]
+                , button
+                    [ class "ui primary fluid button"
+                    , onClick confirmAction
+                    ]
+                    [ text <| translate language Translate.Continue ]
+                ]
+            ]
+        ]
 
 
 taskCompleted : Maybe a -> Int
