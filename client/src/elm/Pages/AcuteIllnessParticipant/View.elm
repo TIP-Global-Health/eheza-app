@@ -68,6 +68,10 @@ viewActions language currentDate id db sessions =
         maybeSessionId =
             sessions
                 |> Dict.toList
+                |> List.filter
+                    (\( sessionId, session ) ->
+                        session.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                    )
                 |> List.head
                 |> Maybe.map Tuple.first
 
