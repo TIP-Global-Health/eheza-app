@@ -62,7 +62,11 @@ viewPrenatalActions language currentDate id db prenatalSessions =
         maybeSessionId =
             prenatalSessions
                 |> Dict.toList
-                |> List.filter (Tuple.second >> isPregnancyActive currentDate)
+                |> List.filter
+                    (\( sessionId, session ) ->
+                        (session.encounterType == Backend.IndividualEncounterParticipant.Model.AntenatalEncounter)
+                            && isPregnancyActive currentDate session
+                    )
                 |> List.head
                 |> Maybe.map Tuple.first
 
