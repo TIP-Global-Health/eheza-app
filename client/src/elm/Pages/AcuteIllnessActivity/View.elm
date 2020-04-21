@@ -18,7 +18,8 @@ import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
-import Pages.AcuteIllnessEncounter.Utils exposing (suspectedCovid19Case)
+import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
+import Pages.AcuteIllnessEncounter.Utils exposing (..)
 import Pages.AcuteIllnessEncounter.View exposing (viewPersonDetailsWithAlert)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
@@ -48,42 +49,15 @@ import Utils.WebData exposing (viewWebData)
 view : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id activity db model =
     let
-        encounter =
-            Dict.get id db.acuteIllnessEncounters
-                |> Maybe.withDefault NotAsked
+        data =
+            generateAssembledData id db
 
-        participant =
-            encounter
-                |> RemoteData.andThen
-                    (\encounter_ ->
-                        Dict.get encounter_.participant db.individualParticipants
-                            |> Maybe.withDefault NotAsked
-                    )
-
-        personId =
-            participant
-                |> RemoteData.map .person
-
-        person =
-            participant
-                |> RemoteData.andThen
-                    (\participant_ ->
-                        Dict.get participant_.person db.people
-                            |> Maybe.withDefault NotAsked
-                    )
-
-        measurements =
-            Dict.get id db.acuteIllnessMeasurements
-                |> Maybe.withDefault NotAsked
-
-        personWithMeasurements =
-            RemoteData.map (\a b c -> ( a, b, c )) personId
-                |> RemoteData.andMap person
-                |> RemoteData.andMap measurements
+        content =
+            viewWebData language (viewContent language currentDate id activity model) identity data
     in
     div [ class "page-activity acute-illness" ] <|
         [ viewHeader language id activity
-        , viewWebData language (viewContent language currentDate id activity model) identity personWithMeasurements
+        , viewWebData language (viewContent language currentDate id activity model) identity data
         , viewModal <|
             covid19Popup language
                 model.showCovid19Popup
@@ -108,14 +82,14 @@ viewHeader language id activity =
         ]
 
 
-viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Model -> ( PersonId, Person, AcuteIllnessMeasurements ) -> Html Msg
-viewContent language currentDate id activity model ( personId, person, measurements ) =
+viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Model -> AssembledData -> Html Msg
+viewContent language currentDate id activity model data =
     let
         isSuspected =
-            suspectedCovid19Case measurements
+            suspectedCovid19Case data.measurements
     in
-    (viewPersonDetailsWithAlert language currentDate person isSuspected model.showAlertsDialog SetAlertsDialogState
-        :: viewActivity language currentDate id activity ( personId, measurements ) isSuspected model
+    (viewPersonDetailsWithAlert language currentDate data.person isSuspected model.showAlertsDialog SetAlertsDialogState
+        :: viewActivity language currentDate id activity isSuspected data model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -148,8 +122,15 @@ covid19Popup language isOpen setStateMsg =
         Nothing
 
 
-viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> ( PersonId, AcuteIllnessMeasurements ) -> Bool -> Model -> List (Html Msg)
-viewActivity language currentDate id activity ( personId, measurements ) isSuspected model =
+viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Bool -> AssembledData -> Model -> List (Html Msg)
+viewActivity language currentDate id activity isSuspected data model =
+    let
+        personId =
+            data.participant.person
+
+        measurements =
+            data.measurements
+    in
     case activity of
         AcuteIllnessSymptoms ->
             viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) model.symptomsData

@@ -1,6 +1,7 @@
-module Pages.AcuteIllnessEncounter.Utils exposing (suspectedCovid19Case)
+module Pages.AcuteIllnessEncounter.Utils exposing (generateAssembledData, suspectedCovid19Case)
 
 import AssocList as Dict exposing (Dict)
+import Backend.Entities exposing (..)
 import Backend.Measurement.Model
     exposing
         ( AcuteIllnessMeasurements
@@ -19,7 +20,12 @@ import Backend.Measurement.Model
         , SymptomsRespiratorySign(..)
         , TravelHistorySign(..)
         )
+import Backend.Model exposing (ModelIndexedDb)
 import EverySet exposing (EverySet)
+import Gizra.NominalDate exposing (NominalDate)
+import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
+import RemoteData exposing (RemoteData(..), WebData)
+import Utils.NominalDate exposing (compareDates)
 
 
 suspectedCovid19Case : AcuteIllnessMeasurements -> Bool
@@ -95,3 +101,74 @@ suspectedCovid19Case measurements =
                 |> Maybe.withDefault False
     in
     totalSigns > 0 && (fever || totalSymptoms > 1)
+
+
+generateAssembledData : AcuteIllnessEncounterId -> ModelIndexedDb -> WebData AssembledData
+generateAssembledData id db =
+    let
+        encounter =
+            Dict.get id db.acuteIllnessEncounters
+                |> Maybe.withDefault NotAsked
+
+        measurements =
+            Dict.get id db.acuteIllnessMeasurements
+                |> Maybe.withDefault NotAsked
+
+        participant =
+            encounter
+                |> RemoteData.andThen
+                    (\encounter_ ->
+                        Dict.get encounter_.participant db.individualParticipants
+                            |> Maybe.withDefault NotAsked
+                    )
+
+        person =
+            participant
+                |> RemoteData.andThen
+                    (\participant_ ->
+                        Dict.get participant_.person db.people
+                            |> Maybe.withDefault NotAsked
+                    )
+
+        previousMeasurementsWithDates =
+            encounter
+                |> RemoteData.andThen
+                    (\encounter_ ->
+                        generatePreviousMeasurements id encounter_.participant db
+                    )
+                |> RemoteData.withDefault []
+
+        previousMeasurements =
+            List.map Tuple.second previousMeasurementsWithDates
+    in
+    RemoteData.map AssembledData (Success id)
+        |> RemoteData.andMap encounter
+        |> RemoteData.andMap participant
+        |> RemoteData.andMap person
+        |> RemoteData.andMap measurements
+        |> RemoteData.andMap (Success previousMeasurementsWithDates)
+
+
+generatePreviousMeasurements : AcuteIllnessEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, AcuteIllnessMeasurements ))
+generatePreviousMeasurements currentEncounterId participantId db =
+    Dict.get participantId db.acuteIllnessEncountersByParticipant
+        |> Maybe.withDefault NotAsked
+        |> RemoteData.map
+            (Dict.toList
+                >> List.filterMap
+                    (\( encounterId, encounter ) ->
+                        -- We do not want to get data of current encounter.
+                        if encounterId == currentEncounterId then
+                            Nothing
+
+                        else
+                            case Dict.get encounterId db.acuteIllnessMeasurements of
+                                Just (Success data) ->
+                                    Just ( encounter.startDate, data )
+
+                                _ ->
+                                    Nothing
+                    )
+                >> List.sortWith
+                    (\( date1, _ ) ( date2, _ ) -> compareDates date1 date2)
+            )
