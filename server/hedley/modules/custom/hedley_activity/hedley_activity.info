@@ -196,6 +196,7 @@ features[field_instance][] = node-nutrition_photo-field_person
 features[field_instance][] = node-nutrition_photo-field_photo
 features[field_instance][] = node-nutrition_photo-field_shards
 features[field_instance][] = node-nutrition_photo-field_uuid
+features[field_instance][] = node-nutrition_weight-field_bmi
 features[field_instance][] = node-nutrition_weight-field_date_measured
 features[field_instance][] = node-nutrition_weight-field_nurse
 features[field_instance][] = node-nutrition_weight-field_nutrition_encounter
