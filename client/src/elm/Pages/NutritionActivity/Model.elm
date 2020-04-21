@@ -7,6 +7,10 @@ import Pages.Page exposing (Page)
 
 type Msg
     = SetActivePage Page
+    | SetMuac String
+    | SaveMuac PersonId (Maybe ( NutritionMuacId, NutritionMuac ))
+    | SetHeight String
+    | SaveHeight PersonId (Maybe ( NutritionHeightId, NutritionHeight ))
     | SetNutritionSign ChildNutritionSign
     | SaveNutrition PersonId (Maybe ( NutritionNutritionId, NutritionNutrition ))
 

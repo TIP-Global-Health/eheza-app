@@ -25,6 +25,30 @@ update currentDate id db msg model =
             , [ App.Model.SetActivePage page ]
             )
 
+        SetMuac string ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
+        SaveMuac personId saved ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
+        SetHeight string ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
+        SaveHeight personId saved ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
         SetNutritionSign sign ->
             let
                 form =

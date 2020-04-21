@@ -8,19 +8,20 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.Person.Model exposing (Person)
 import EverySet
-import Gizra.Html exposing (emptyNode)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Measurement.Decoder exposing (decodeDropZoneFile)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.NutritionActivity.Model exposing (..)
-import Pages.NutritionActivity.Utils exposing (nutritionFormWithDefault)
+import Pages.NutritionActivity.Utils exposing (..)
 import Pages.NutritionEncounter.View exposing (viewChildDetails)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (taskCompleted, viewBoolInput, viewCheckBoxMultipleSelectInput, viewCustomLabel, viewLabel)
+import Pages.Utils exposing (taskCompleted, viewBoolInput, viewCheckBoxMultipleSelectInput, viewCustomLabel, viewLabel, viewMeasurementInput, viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.WebData exposing (viewWebData)
@@ -96,15 +97,59 @@ viewContent language currentDate id activity model ( personId, person, measureme
 viewActivity : Language -> NominalDate -> NutritionEncounterId -> NutritionActivity -> ( PersonId, NutritionMeasurements ) -> Model -> List (Html Msg)
 viewActivity language currentDate id activity ( personId, measurements ) model =
     case activity of
+        Muac ->
+            viewMuacContent language currentDate ( personId, measurements ) model.muacData
+
         Nutrition ->
-            viewNutritionContent language currentDate id ( personId, measurements ) model.nutritionData
+            viewNutritionContent language currentDate ( personId, measurements ) model.nutritionData
 
         _ ->
             []
 
 
-viewNutritionContent : Language -> NominalDate -> NutritionEncounterId -> ( PersonId, NutritionMeasurements ) -> NutritionData -> List (Html Msg)
-viewNutritionContent language currentDate id ( personId, measurements ) data =
+viewMuacContent : Language -> NominalDate -> ( PersonId, NutritionMeasurements ) -> MuacData -> List (Html Msg)
+viewMuacContent language currentDate ( personId, measurements ) data =
+    let
+        activity =
+            Muac
+
+        form =
+            measurements.muac
+                |> Maybe.map (Tuple.second >> .value)
+                |> muacFormWithDefault data.form
+
+        totalTasks =
+            1
+
+        tasksCompleted =
+            taskCompleted form.muac
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form muac" ]
+                [ p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
+                , viewMeasurementInput
+                    language
+                    form.muac
+                    SetMuac
+                    "muac"
+                    Translate.CentimeterShorthand
+                ]
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                , onClick <| SaveMuac personId measurements.muac
+                ]
+                [ text <| translate language Translate.Save ]
+            ]
+        ]
+    ]
+
+
+viewNutritionContent : Language -> NominalDate -> ( PersonId, NutritionMeasurements ) -> NutritionData -> List (Html Msg)
+viewNutritionContent language currentDate ( personId, measurements ) data =
     let
         activity =
             Nutrition
@@ -123,7 +168,7 @@ viewNutritionContent language currentDate id ( personId, measurements ) data =
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form family-planning" ]
+            [ div [ class "ui form nutrition" ]
                 [ p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
                 , viewLabel language Translate.SelectAllSigns
                 , viewCheckBoxMultipleSelectInput language
@@ -142,5 +187,86 @@ viewNutritionContent language currentDate id ( personId, measurements ) data =
                 ]
                 [ text <| translate language Translate.Save ]
             ]
+        ]
+    ]
+
+
+viewPhotoContent : Language -> NominalDate -> ( PersonId, NutritionMeasurements ) -> PhotoData -> List (Html Msg)
+viewPhotoContent language currentDate ( personId, measurements ) data =
+    let
+        photoId =
+            Maybe.map Tuple.first measurements.photo
+
+        -- If we have a photo that we've just taken, but not saved, that is in
+        -- `data.url`. We show that if we have it. Otherwise, we'll show the saved
+        -- measurement, if we have that.
+        ( displayPhoto, saveMsg, isDisabled ) =
+            case data.form.url of
+                Just url ->
+                    ( Just url
+                    , []
+                      -- , [ onClick <| SavePrenatalPhoto personId photoId url ]
+                    , False
+                    )
+
+                Nothing ->
+                    ( Maybe.map (Tuple.second >> .value) measurements.photo
+                    , []
+                    , True
+                    )
+
+        totalTasks =
+            1
+
+        tasksCompleted =
+            if isJust displayPhoto then
+                1
+
+            else
+                0
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , divKeyed [ class "ui full segment photo" ]
+        [ keyedDivKeyed "content"
+            [ class "content" ]
+            [ p [] [ text <| translate language Translate.PrenatalPhotoHelper ]
+                |> keyed "help"
+            , keyedDivKeyed "grid"
+                [ class "ui grid" ]
+                [ Maybe.map viewPhotoThumbFromPhotoUrl displayPhoto
+                    |> showMaybe
+                    |> List.singleton
+                    |> div [ class "eight wide column" ]
+                    |> keyed "thumbnail"
+                , div
+                    [ id "dropzone"
+                    , class "eight wide column dropzone"
+
+                    -- , on "dropzonecomplete" (Json.Decode.map DropZoneComplete decodeDropZoneFile)
+                    ]
+                    [ div
+                        [ class "dz-message"
+                        , attribute "data-dz-message" ""
+                        ]
+                        [ span
+                            []
+                            [ text <| translate language Translate.DropzoneDefaultMessage ]
+                        ]
+                    ]
+                    |> keyed "dropzone"
+                ]
+            ]
+        , keyed "button" <|
+            div [ class "actions" ]
+                [ button
+                    ([ classList
+                        [ ( "ui fluid primary button", True )
+                        , ( "disabled", isDisabled )
+                        ]
+                     ]
+                        ++ saveMsg
+                    )
+                    [ text <| translate language Translate.Save ]
+                ]
         ]
     ]
