@@ -21,7 +21,7 @@ import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionActivity.Utils exposing (..)
 import Pages.NutritionEncounter.View exposing (viewChildDetails)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (taskCompleted, viewBoolInput, viewCheckBoxMultipleSelectInput, viewCustomLabel, viewLabel, viewMeasurementInput, viewPhotoThumbFromPhotoUrl)
+import Pages.Utils exposing (taskCompleted, viewCheckBoxMultipleSelectInput, viewCustomLabel, viewLabel, viewMeasurementInput, viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.WebData exposing (viewWebData)
@@ -97,14 +97,62 @@ viewContent language currentDate id activity model ( personId, person, measureme
 viewActivity : Language -> NominalDate -> NutritionEncounterId -> NutritionActivity -> ( PersonId, NutritionMeasurements ) -> Model -> List (Html Msg)
 viewActivity language currentDate id activity ( personId, measurements ) model =
     case activity of
+        Height ->
+            viewHeightContent language currentDate ( personId, measurements ) model.heightData
+
         Muac ->
             viewMuacContent language currentDate ( personId, measurements ) model.muacData
 
         Nutrition ->
             viewNutritionContent language currentDate ( personId, measurements ) model.nutritionData
 
-        _ ->
-            []
+        Photo ->
+            viewPhotoContent language currentDate ( personId, measurements ) model.photoData
+
+        Weight ->
+            viewWeightContent language currentDate ( personId, measurements ) model.weightData
+
+
+viewHeightContent : Language -> NominalDate -> ( PersonId, NutritionMeasurements ) -> HeightData -> List (Html Msg)
+viewHeightContent language currentDate ( personId, measurements ) data =
+    let
+        activity =
+            Height
+
+        form =
+            measurements.height
+                |> Maybe.map (Tuple.second >> .value)
+                |> heightFormWithDefault data.form
+
+        totalTasks =
+            1
+
+        tasksCompleted =
+            taskCompleted form.height
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form height" ]
+                [ viewLabel language <| Translate.NutritionActivityTitle activity
+                , p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
+                , viewMeasurementInput
+                    language
+                    form.height
+                    SetHeight
+                    "height"
+                    Translate.CentimeterShorthand
+                ]
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                , onClick <| SaveHeight personId measurements.height
+                ]
+                [ text <| translate language Translate.Save ]
+            ]
+        ]
+    ]
 
 
 viewMuacContent : Language -> NominalDate -> ( PersonId, NutritionMeasurements ) -> MuacData -> List (Html Msg)
@@ -128,7 +176,8 @@ viewMuacContent language currentDate ( personId, measurements ) data =
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form muac" ]
-                [ p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
+                [ viewLabel language <| Translate.NutritionActivityTitle activity
+                , p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
                 , viewMeasurementInput
                     language
                     form.muac
@@ -268,5 +317,47 @@ viewPhotoContent language currentDate ( personId, measurements ) data =
                     )
                     [ text <| translate language Translate.Save ]
                 ]
+        ]
+    ]
+
+
+viewWeightContent : Language -> NominalDate -> ( PersonId, NutritionMeasurements ) -> WeightData -> List (Html Msg)
+viewWeightContent language currentDate ( personId, measurements ) data =
+    let
+        activity =
+            Weight
+
+        form =
+            measurements.weight
+                |> Maybe.map (Tuple.second >> .value)
+                |> weightFormWithDefault data.form
+
+        totalTasks =
+            1
+
+        tasksCompleted =
+            taskCompleted form.weight
+    in
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ div [ class "ui form weight" ]
+                [ viewLabel language <| Translate.NutritionActivityTitle activity
+                , p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
+                , viewMeasurementInput
+                    language
+                    form.weight
+                    SetWeight
+                    "weight"
+                    Translate.CentimeterShorthand
+                ]
+            ]
+        , div [ class "actions" ]
+            [ button
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                , onClick <| SaveWeight personId measurements.weight
+                ]
+                [ text <| translate language Translate.Save ]
+            ]
         ]
     ]

@@ -25,18 +25,6 @@ update currentDate id db msg model =
             , [ App.Model.SetActivePage page ]
             )
 
-        SetMuac string ->
-            ( model
-            , Cmd.none
-            , []
-            )
-
-        SaveMuac personId saved ->
-            ( model
-            , Cmd.none
-            , []
-            )
-
         SetHeight string ->
             ( model
             , Cmd.none
@@ -44,6 +32,18 @@ update currentDate id db msg model =
             )
 
         SaveHeight personId saved ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
+        SetMuac string ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
+        SaveMuac personId saved ->
             ( model
             , Cmd.none
             , []
@@ -125,4 +125,16 @@ update currentDate id db msg model =
             ( model
             , Cmd.none
             , appMsgs
+            )
+
+        SetWeight string ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
+        SaveWeight personId saved ->
+            ( model
+            , Cmd.none
+            , []
             )

@@ -412,6 +412,10 @@ div.page-prenatal-activity {
           margin-bottom: 40px;
         }
       }
+
+      .form.muac .measurement {
+        margin-top: 70px;
+      }
     }
 }
 
@@ -454,7 +458,8 @@ div.page-prenatal-encounter {
 }
 
 // Prenatal Activity page
-div.page-prenatal-activity {
+div.page-prenatal-activity,
+div.page-nutrition-activity {
 
     .ui.full.segment {
 

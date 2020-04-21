@@ -7,12 +7,14 @@ import Pages.Page exposing (Page)
 
 type Msg
     = SetActivePage Page
-    | SetMuac String
-    | SaveMuac PersonId (Maybe ( NutritionMuacId, NutritionMuac ))
     | SetHeight String
     | SaveHeight PersonId (Maybe ( NutritionHeightId, NutritionHeight ))
+    | SetMuac String
+    | SaveMuac PersonId (Maybe ( NutritionMuacId, NutritionMuac ))
     | SetNutritionSign ChildNutritionSign
     | SaveNutrition PersonId (Maybe ( NutritionNutritionId, NutritionNutrition ))
+    | SetWeight String
+    | SaveWeight PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
 
 
 type alias Model =
