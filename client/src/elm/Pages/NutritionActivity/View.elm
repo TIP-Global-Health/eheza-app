@@ -96,15 +96,18 @@ viewContent language currentDate id activity model ( personId, person, measureme
 viewActivity : Language -> NominalDate -> NutritionEncounterId -> NutritionActivity -> ( PersonId, NutritionMeasurements ) -> Model -> List (Html Msg)
 viewActivity language currentDate id activity ( personId, measurements ) model =
     case activity of
-        NutritionNutrition ->
+        Nutrition ->
             viewNutritionContent language currentDate id ( personId, measurements ) model.nutritionData
+
+        _ ->
+            []
 
 
 viewNutritionContent : Language -> NominalDate -> NutritionEncounterId -> ( PersonId, NutritionMeasurements ) -> NutritionData -> List (Html Msg)
 viewNutritionContent language currentDate id ( personId, measurements ) data =
     let
         activity =
-            NutritionNutrition
+            Nutrition
 
         form =
             measurements.nutrition
