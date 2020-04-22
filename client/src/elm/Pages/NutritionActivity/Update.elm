@@ -10,7 +10,7 @@ import Backend.NutritionEncounter.Model
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.NutritionActivity.Model exposing (..)
-import Pages.NutritionActivity.Utils exposing (nutritionFormWithDefault, toNutritionValueWithDefault)
+import Pages.NutritionActivity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import RemoteData exposing (RemoteData(..))
 import Result exposing (Result)
@@ -44,9 +44,29 @@ update currentDate id db msg model =
             )
 
         SaveHeight personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.heightData.form
+                        |> toHeightValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.NutritionEncounter.Model.SaveHeight personId measurementId value
+                                    |> Backend.Model.MsgNutritionEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id
+                                ]
+                            )
+            in
             ( model
             , Cmd.none
-            , []
+            , appMsgs
             )
 
         SetMuac string ->
@@ -68,9 +88,29 @@ update currentDate id db msg model =
             )
 
         SaveMuac personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.muacData.form
+                        |> toMuacValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.NutritionEncounter.Model.SaveMuac personId measurementId value
+                                    |> Backend.Model.MsgNutritionEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id
+                                ]
+                            )
+            in
             ( model
             , Cmd.none
-            , []
+            , appMsgs
             )
 
         SetNutritionSign sign ->
@@ -198,7 +238,27 @@ update currentDate id db msg model =
             )
 
         SaveWeight personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.weightData.form
+                        |> toWeightValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.NutritionEncounter.Model.SaveWeight personId measurementId value
+                                    |> Backend.Model.MsgNutritionEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id
+                                ]
+                            )
+            in
             ( model
             , Cmd.none
-            , []
+            , appMsgs
             )

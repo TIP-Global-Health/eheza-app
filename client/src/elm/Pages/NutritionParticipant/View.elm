@@ -4,6 +4,7 @@ import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showIf, showMaybe)
@@ -90,7 +91,7 @@ viewNutritionActions language currentDate id db nutritionSessions =
                             |> RemoteData.map
                                 (\dict ->
                                     ( Dict.toList dict
-                                        |> List.filter (\( _, encounter ) -> isNothing encounter.endDate)
+                                        |> List.filter (Tuple.second >> isDailyEncounterActive currentDate)
                                         |> List.head
                                         |> Maybe.map Tuple.first
                                     , Dict.toList dict
@@ -120,7 +121,7 @@ viewNutritionActions language currentDate id db nutritionSessions =
                                             let
                                                 activeEncounters =
                                                     encounters
-                                                        |> List.filter (.endDate >> isNothing)
+                                                        |> List.filter (isDailyEncounterActive currentDate)
                                             in
                                             List.length encounters == 1 && List.length activeEncounters == 1
                                        )
