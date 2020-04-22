@@ -169,6 +169,16 @@ update currentDate id db msg model =
             , []
             )
 
+        SavePhoto personId maybePhotoId url ->
+            ( { model | photoData = emptyPhotoData }
+            , Cmd.none
+            , [ Backend.NutritionEncounter.Model.SavePhoto personId maybePhotoId url
+                    |> Backend.Model.MsgNutritionEncounter id
+                    |> App.Model.MsgIndexedDb
+              , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id
+              ]
+            )
+
         SetWeight string ->
             let
                 updatedData =

@@ -253,8 +253,7 @@ viewPhotoContent language currentDate ( personId, measurements ) data =
             case data.form.url of
                 Just url ->
                     ( Just url
-                    , []
-                      -- , [ onClick <| SavePrenatalPhoto personId photoId url ]
+                    , [ onClick <| SavePhoto personId photoId url ]
                     , False
                     )
 
@@ -268,11 +267,7 @@ viewPhotoContent language currentDate ( personId, measurements ) data =
             1
 
         tasksCompleted =
-            if isJust displayPhoto then
-                1
-
-            else
-                0
+            taskCompleted displayPhoto
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , divKeyed [ class "ui full segment photo" ]

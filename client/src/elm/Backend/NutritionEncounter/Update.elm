@@ -78,3 +78,39 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveNutrition = data }
             , Cmd.none
             )
+
+        SavePhoto personId valueId value ->
+            let
+                cmd =
+                    case valueId of
+                        Nothing ->
+                            { participantId = personId
+                            , dateMeasured = currentDate
+                            , encounterId = Just encounterId
+                            , nurse = nurseId
+                            , healthCenter = healthCenterId
+                            , value = value
+                            }
+                                |> sw.post nutritionPhotoEndpoint
+                                |> withoutDecoder
+                                |> toCmd (RemoteData.fromResult >> HandleSavedPhoto)
+
+                        Just id ->
+                            encodePhotoUrl value
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
+                                |> object
+                                |> sw.patchAny nutritionPhotoEndpoint id
+                                |> withoutDecoder
+                                |> toCmd (RemoteData.fromResult >> HandleSavedPhoto)
+            in
+            ( { model | savePhoto = Loading }
+            , cmd
+            )
+
+        HandleSavedPhoto data ->
+            ( { model | savePhoto = data }
+            , Cmd.none
+            )

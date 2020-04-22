@@ -15,6 +15,7 @@ type Msg
     | SetNutritionSign ChildNutritionSign
     | SaveNutrition PersonId (Maybe ( NutritionNutritionId, NutritionNutrition ))
     | DropZoneComplete DropZoneFile
+    | SavePhoto PersonId (Maybe NutritionPhotoId) PhotoUrl
     | SetWeight String
     | SaveWeight PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
 
