@@ -2,6 +2,7 @@ module Pages.NutritionActivity.Model exposing (HeightData, HeightForm, Model, Ms
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Measurement.Model exposing (DropZoneFile)
 import Pages.Page exposing (Page)
 
 
@@ -13,6 +14,7 @@ type Msg
     | SaveMuac PersonId (Maybe ( NutritionMuacId, NutritionMuac ))
     | SetNutritionSign ChildNutritionSign
     | SaveNutrition PersonId (Maybe ( NutritionNutritionId, NutritionNutrition ))
+    | DropZoneComplete DropZoneFile
     | SetWeight String
     | SaveWeight PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
 

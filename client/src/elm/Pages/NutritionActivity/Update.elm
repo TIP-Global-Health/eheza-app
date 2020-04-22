@@ -4,7 +4,7 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
-import Backend.Measurement.Model exposing (ChildNutritionSign(..))
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), PhotoUrl(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model
 import Gizra.NominalDate exposing (NominalDate)
@@ -26,7 +26,19 @@ update currentDate id db msg model =
             )
 
         SetHeight string ->
-            ( model
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            model.heightData.form
+                                |> (\form ->
+                                        { form | height = String.toFloat string }
+                                   )
+                    in
+                    model.heightData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | heightData = updatedData }
             , Cmd.none
             , []
             )
@@ -38,7 +50,19 @@ update currentDate id db msg model =
             )
 
         SetMuac string ->
-            ( model
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            model.muacData.form
+                                |> (\form ->
+                                        { form | muac = String.toFloat string }
+                                   )
+                    in
+                    model.muacData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | muacData = updatedData }
             , Cmd.none
             , []
             )
@@ -127,8 +151,38 @@ update currentDate id db msg model =
             , appMsgs
             )
 
+        DropZoneComplete result ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            model.photoData.form
+                                |> (\form ->
+                                        { form | url = Just (PhotoUrl result.url) }
+                                   )
+                    in
+                    model.photoData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | photoData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetWeight string ->
-            ( model
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            model.weightData.form
+                                |> (\form ->
+                                        { form | weight = String.toFloat string }
+                                   )
+                    in
+                    model.weightData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | weightData = updatedData }
             , Cmd.none
             , []
             )

@@ -1,10 +1,12 @@
 module Pages.NutritionEncounter.Update exposing (update)
 
 import App.Model
+import App.Ports
 import Backend.Model
 import Backend.NutritionEncounter.Model
+import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.NutritionEncounter.Model exposing (..)
-import Pages.Page exposing (Page(..))
+import Pages.Page exposing (Page(..), UserPage(..))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -21,8 +23,17 @@ update msg model =
             )
 
         SetActivePage page ->
+            let
+                cmd =
+                    case page of
+                        UserPage (NutritionActivityPage _ Photo) ->
+                            App.Ports.bindDropZone ()
+
+                        _ ->
+                            Cmd.none
+            in
             ( model
-            , Cmd.none
+            , cmd
             , [ App.Model.SetActivePage page ]
             )
 
