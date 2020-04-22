@@ -16,6 +16,7 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
+import Measurement.View exposing (zScoreForHeightOrLength)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionActivity.Utils exposing (..)
@@ -24,11 +25,14 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (taskCompleted, viewCheckBoxMultipleSelectInput, viewCustomLabel, viewLabel, viewMeasurementInput, viewPhotoThumbFromPhotoUrl)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
+import Utils.NominalDate exposing (Days(..), diffDays)
 import Utils.WebData exposing (viewWebData)
+import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
+import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
 
 
-view : Language -> NominalDate -> NutritionEncounterId -> NutritionActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id activity db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores id activity db model =
     let
         encounter =
             Dict.get id db.nutritionEncounters
@@ -65,7 +69,7 @@ view language currentDate id activity db model =
     in
     div [ class "page-nutrition-activity" ] <|
         [ viewHeader language id activity
-        , viewWebData language (viewContent language currentDate id activity model) identity personWithMeasurements
+        , viewWebData language (viewContent language currentDate zscores id activity model) identity personWithMeasurements
         ]
 
 
@@ -86,19 +90,19 @@ viewHeader language id activity =
         ]
 
 
-viewContent : Language -> NominalDate -> NutritionEncounterId -> NutritionActivity -> Model -> ( PersonId, Person, NutritionMeasurements ) -> Html Msg
-viewContent language currentDate id activity model ( personId, person, measurements ) =
+viewContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Model -> ( PersonId, Person, NutritionMeasurements ) -> Html Msg
+viewContent language currentDate zscores id activity model ( personId, person, measurements ) =
     (viewChildDetails language currentDate person
-        :: viewActivity language currentDate id activity ( personId, measurements ) model
+        :: viewActivity language currentDate zscores id activity ( personId, person, measurements ) model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewActivity : Language -> NominalDate -> NutritionEncounterId -> NutritionActivity -> ( PersonId, NutritionMeasurements ) -> Model -> List (Html Msg)
-viewActivity language currentDate id activity ( personId, measurements ) model =
+viewActivity : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> ( PersonId, Person, NutritionMeasurements ) -> Model -> List (Html Msg)
+viewActivity language currentDate zscores id activity ( personId, person, measurements ) model =
     case activity of
         Height ->
-            viewHeightContent language currentDate ( personId, measurements ) model.heightData
+            viewHeightContent language currentDate zscores ( personId, person, measurements ) model.heightData
 
         Muac ->
             viewMuacContent language currentDate ( personId, measurements ) model.muacData
@@ -110,11 +114,11 @@ viewActivity language currentDate id activity ( personId, measurements ) model =
             viewPhotoContent language currentDate ( personId, measurements ) model.photoData
 
         Weight ->
-            viewWeightContent language currentDate ( personId, measurements ) model.weightData
+            viewWeightContent language currentDate zscores ( personId, person, measurements ) model.weightData
 
 
-viewHeightContent : Language -> NominalDate -> ( PersonId, NutritionMeasurements ) -> HeightData -> List (Html Msg)
-viewHeightContent language currentDate ( personId, measurements ) data =
+viewHeightContent : Language -> NominalDate -> ZScore.Model.Model -> ( PersonId, Person, NutritionMeasurements ) -> HeightData -> List (Html Msg)
+viewHeightContent language currentDate zscores ( personId, person, measurements ) data =
     let
         activity =
             Height
@@ -129,6 +133,24 @@ viewHeightContent language currentDate ( personId, measurements ) data =
 
         tasksCompleted =
             taskCompleted form.height
+
+        maybeAgeInDays =
+            Maybe.map
+                (\birthDate -> diffDays birthDate currentDate)
+                person.birthDate
+
+        zScoreText =
+            form.height
+                |> Maybe.andThen
+                    (\height ->
+                        Maybe.andThen
+                            (\ageInDays ->
+                                zScoreLengthHeightForAge zscores ageInDays person.gender (Centimetres height)
+                            )
+                            maybeAgeInDays
+                    )
+                |> Maybe.map viewZScore
+                |> Maybe.withDefault (translate language Translate.NotAvailable)
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -142,6 +164,11 @@ viewHeightContent language currentDate ( personId, measurements ) data =
                     SetHeight
                     "height"
                     Translate.CentimeterShorthand
+                ]
+            , div [ class "ui large header z-score age" ]
+                [ text <| translate language Translate.ZScoreHeightForAge
+                , span [ class "sub header" ]
+                    [ text zScoreText ]
                 ]
             ]
         , div [ class "actions" ]
@@ -315,8 +342,8 @@ viewPhotoContent language currentDate ( personId, measurements ) data =
     ]
 
 
-viewWeightContent : Language -> NominalDate -> ( PersonId, NutritionMeasurements ) -> WeightData -> List (Html Msg)
-viewWeightContent language currentDate ( personId, measurements ) data =
+viewWeightContent : Language -> NominalDate -> ZScore.Model.Model -> ( PersonId, Person, NutritionMeasurements ) -> WeightData -> List (Html Msg)
+viewWeightContent language currentDate zscores ( personId, person, measurements ) data =
     let
         activity =
             Weight
@@ -331,6 +358,42 @@ viewWeightContent language currentDate ( personId, measurements ) data =
 
         tasksCompleted =
             taskCompleted form.weight
+
+        maybeAgeInDays =
+            Maybe.map
+                (\birthDate -> diffDays birthDate currentDate)
+                person.birthDate
+
+        zScoreForAgeText =
+            form.weight
+                |> Maybe.andThen
+                    (\weight ->
+                        Maybe.andThen
+                            (\ageInDays ->
+                                zScoreWeightForAge zscores ageInDays person.gender (Kilograms weight)
+                            )
+                            maybeAgeInDays
+                    )
+                |> Maybe.map viewZScore
+                |> Maybe.withDefault (translate language Translate.NotAvailable)
+
+        zScoreForHeightText =
+            measurements.height
+                |> Maybe.map (Tuple.second >> .value)
+                |> Maybe.andThen
+                    (\(HeightInCm height) ->
+                        form.weight
+                            |> Maybe.andThen
+                                (\weight ->
+                                    Maybe.andThen
+                                        (\ageInDays ->
+                                            zScoreForHeightOrLength zscores ageInDays (Centimetres height) person.gender weight
+                                        )
+                                        maybeAgeInDays
+                                )
+                    )
+                |> Maybe.map viewZScore
+                |> Maybe.withDefault (translate language Translate.NotAvailable)
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -343,7 +406,18 @@ viewWeightContent language currentDate ( personId, measurements ) data =
                     form.weight
                     SetWeight
                     "weight"
-                    Translate.CentimeterShorthand
+                    Translate.KilogramShorthand
+                ]
+            , div [ class "ui large header z-score age" ]
+                [ text <| translate language Translate.ZScoreWeightForAge
+                , span [ class "sub header" ]
+                    [ text zScoreForAgeText ]
+                ]
+            , div [ class "ui large header z-score height" ]
+                [ text <| translate language Translate.ZScoreWeightForHeight
+                , span [ class "sub header" ]
+                    [ text zScoreForHeightText
+                    ]
                 ]
             ]
         , div [ class "actions" ]
