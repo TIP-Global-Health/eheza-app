@@ -285,7 +285,11 @@ type Revision
     | MuacRevision MuacId Muac
     | NurseRevision NurseId Nurse
     | NutritionEncounterRevision NutritionEncounterId NutritionEncounter
+    | NutritionHeightRevision NutritionHeightId NutritionHeight
+    | NutritionMuacRevision NutritionMuacId NutritionMuac
     | NutritionNutritionRevision NutritionNutritionId NutritionNutrition
+    | NutritionPhotoRevision NutritionPhotoId NutritionPhoto
+    | NutritionWeightRevision NutritionWeightId NutritionWeight
     | ObstetricalExamRevision ObstetricalExamId ObstetricalExam
     | ObstetricHistoryRevision ObstetricHistoryId ObstetricHistory
     | ObstetricHistoryStep2Revision ObstetricHistoryStep2Id ObstetricHistoryStep2

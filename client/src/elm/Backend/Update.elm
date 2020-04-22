@@ -1311,10 +1311,42 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        NutritionHeightRevision uuid data ->
+            ( mapNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | height = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NutritionMuacRevision uuid data ->
+            ( mapNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | muac = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         NutritionNutritionRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
                 (\measurements -> { measurements | nutrition = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NutritionPhotoRevision uuid data ->
+            ( mapNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | photo = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NutritionWeightRevision uuid data ->
+            ( mapNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | weight = Just ( uuid, data ) })
                 model
             , recalc
             )

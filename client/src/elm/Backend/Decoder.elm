@@ -83,8 +83,20 @@ decodeRevision =
                     "nutrition_encounter" ->
                         decodeWithUuid NutritionEncounterRevision decodeNutritionEncounter
 
+                    "nutrition_height" ->
+                        decodeWithUuid NutritionHeightRevision decodeNutritionHeight
+
+                    "nutrition_muac" ->
+                        decodeWithUuid NutritionMuacRevision decodeNutritionMuac
+
                     "nutrition_nutrition" ->
                         decodeWithUuid NutritionNutritionRevision decodeNutritionNutrition
+
+                    "nutrition_photo" ->
+                        decodeWithUuid NutritionPhotoRevision decodeNutritionPhoto
+
+                    "nutrition_weight" ->
+                        decodeWithUuid NutritionWeightRevision decodeNutritionWeight
 
                     "obstetric_history" ->
                         decodeWithUuid ObstetricHistoryRevision decodeObstetricHistory
