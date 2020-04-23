@@ -463,6 +463,17 @@ div.page-encounter.prenatal {
     }
 }
 
+// Acute Illness Encounter page
+div.page-encounter.acute-illness {
+
+    .ui.full.segment {
+
+      .full.content {
+        min-height: 430px;
+      }
+    }
+}
+
 // Acute Illness Activity page
 div.page-activity.acute-illness {
 
