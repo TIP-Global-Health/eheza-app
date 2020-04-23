@@ -240,31 +240,32 @@ function hedley_activity_node_by_peer_in_session($wrapper, $child_id) {
   $bundle = $wrapper->getBundle();
   switch($bundle) {
     case 'height':
-      $session_id = $wrapper->field_session->getIdentifier();
       $session_field = 'field_session';
       $target_bundle = 'weight';
       break;
 
     case 'nutrition_height':
-      $session_id = $wrapper->field_nutrition_encounter->getIdentifier();
       $session_field = 'field_nutrition_encounter';
       $target_bundle = 'nutrition_weight';
       break;
 
     case 'weight':
-      $session_id = $wrapper->field_session->getIdentifier();
       $session_field = 'field_session';
       $target_bundle = 'height';
       break;
 
     case 'nutrition_weight':
-      $session_id = $wrapper->field_nutrition_encounter->getIdentifier();
       $session_field = 'field_nutrition_encounter';
       $target_bundle = 'nutrition_height';
       break;
 
     default:
       return NULL;
+  }
+
+  $session_id = $wrapper->{$session_field}->getIdentifier();
+  if (empty($session_id)) {
+    return NULL;
   }
 
   $query = new EntityFieldQuery();
