@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessEncounter.Utils exposing (generateAssembledData, suspectedCovid19Case)
+module Pages.AcuteIllnessEncounter.Utils exposing (exposureTasksCompleted, generateAssembledData, resolveExposureTasks, suspectedCovid19Case)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -23,6 +23,8 @@ import Backend.Measurement.Model
 import Backend.Model exposing (ModelIndexedDb)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
+import Maybe.Extra exposing (isJust)
+import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..))
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Utils.NominalDate exposing (compareDates)
@@ -171,4 +173,60 @@ generatePreviousMeasurements currentEncounterId participantId db =
                     )
                 >> List.sortWith
                     (\( date1, _ ) ( date2, _ ) -> compareDates date1 date2)
+            )
+
+
+resolveExposureTasks : AcuteIllnessMeasurements -> Bool -> List ExposureTask
+resolveExposureTasks measurements isSuspected =
+    let
+        expectTask task =
+            if isSuspected then
+                case task of
+                    ExposureTravel ->
+                        isJust measurements.travelHistory
+
+                    ExposureExposure ->
+                        isJust measurements.exposure
+
+                    ExposureIsolation ->
+                        True
+
+                    ExposureContactHC ->
+                        True
+
+            else
+                case task of
+                    ExposureTravel ->
+                        True
+
+                    ExposureExposure ->
+                        True
+
+                    ExposureIsolation ->
+                        False
+
+                    ExposureContactHC ->
+                        False
+    in
+    [ ExposureTravel, ExposureExposure, ExposureIsolation, ExposureContactHC ]
+        |> List.filter expectTask
+
+
+exposureTasksCompleted : AcuteIllnessMeasurements -> Bool -> Bool
+exposureTasksCompleted measurements isSuspected =
+    resolveExposureTasks measurements isSuspected
+        |> List.all
+            (\task ->
+                case task of
+                    ExposureTravel ->
+                        isJust measurements.travelHistory
+
+                    ExposureExposure ->
+                        isJust measurements.exposure
+
+                    ExposureIsolation ->
+                        isJust measurements.isolation
+
+                    ExposureContactHC ->
+                        isJust measurements.hcContact
             )

@@ -175,14 +175,7 @@ viewMainPageContent language currentDate id data isSuspected model =
                                 isJust measurements.malariaTesting
 
                             AcuteIllnessExposure ->
-                                isJust measurements.travelHistory
-                                    && isJust measurements.exposure
-                                    && (if isSuspected then
-                                            isJust measurements.isolation && isJust measurements.hcContact
-
-                                        else
-                                            True
-                                       )
+                                exposureTasksCompleted measurements isSuspected
                     )
 
         pendingTabTitle =

@@ -1873,6 +1873,12 @@ generateSuspectedCovid19Msgs before after id =
             |> App.Model.MsgLoggedIn
         ]
 
+    else if suspectedBeforeChange == True && suspectedAfterChange == False then
+        [ Pages.AcuteIllnessActivity.Model.SetActiveExposureTask Pages.AcuteIllnessActivity.Model.ExposureTravel
+            |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessExposure
+            |> App.Model.MsgLoggedIn
+        ]
+
     else
         []
 

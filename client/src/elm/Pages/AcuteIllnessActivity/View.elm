@@ -579,37 +579,7 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) isSu
             AcuteIllnessExposure
 
         tasks =
-            [ ExposureTravel, ExposureExposure, ExposureIsolation, ExposureContactHC ]
-                |> List.filter expectTask
-
-        expectTask task =
-            if isSuspected then
-                case task of
-                    ExposureTravel ->
-                        isJust measurements.travelHistory
-
-                    ExposureExposure ->
-                        isJust measurements.exposure
-
-                    ExposureIsolation ->
-                        True
-
-                    ExposureContactHC ->
-                        True
-
-            else
-                case task of
-                    ExposureTravel ->
-                        True
-
-                    ExposureExposure ->
-                        True
-
-                    ExposureIsolation ->
-                        False
-
-                    ExposureContactHC ->
-                        False
+            resolveExposureTasks measurements isSuspected
 
         viewTask task =
             let
