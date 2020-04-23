@@ -20,8 +20,20 @@ for that).
 encodeActivityAsString : NutritionActivity -> String
 encodeActivityAsString activity =
     case activity of
-        NutritionNutrition ->
+        Muac ->
+            "nutrition-muac"
+
+        Height ->
+            "nutrition-height"
+
+        Nutrition ->
             "nutrition-nutrition"
+
+        Photo ->
+            "nutrition-photo"
+
+        Weight ->
+            "nutrition-weight"
 
 
 {-| The inverse of encodeActivityTypeAsString
@@ -29,8 +41,20 @@ encodeActivityAsString activity =
 decodeActivityFromString : String -> Maybe NutritionActivity
 decodeActivityFromString s =
     case s of
+        "nutrition-muac" ->
+            Just Muac
+
+        "nutrition-height" ->
+            Just Height
+
         "nutrition-nutrition" ->
-            Just NutritionNutrition
+            Just Nutrition
+
+        "nutrition-photo" ->
+            Just Photo
+
+        "nutrition-weight" ->
+            Just Weight
 
         _ ->
             Nothing
@@ -40,7 +64,7 @@ decodeActivityFromString s =
 -}
 defaultActivity : NutritionActivity
 defaultActivity =
-    NutritionNutrition
+    Muac
 
 
 {-| Returns a string representing an icon for the activity, for use in a
@@ -49,10 +73,22 @@ defaultActivity =
 getActivityIcon : NutritionActivity -> String
 getActivityIcon activity =
     case activity of
-        NutritionNutrition ->
+        Muac ->
+            "muac"
+
+        Height ->
+            "height"
+
+        Nutrition ->
             "nutrition"
+
+        Photo ->
+            "photo"
+
+        Weight ->
+            "weight"
 
 
 getAllActivities : List NutritionActivity
 getAllActivities =
-    [ NutritionNutrition ]
+    [ Height, Muac, Nutrition, Photo, Weight ]

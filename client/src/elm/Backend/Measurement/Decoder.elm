@@ -1,38 +1,4 @@
-module Backend.Measurement.Decoder exposing
-    ( decodeAcuteIllnessMeasurement
-    , decodeAcuteIllnessMeasurements
-    , decodeAttendance
-    , decodeBreastExam
-    , decodeChildMeasurementList
-    , decodeCorePhysicalExam
-    , decodeCounselingSession
-    , decodeDangerSigns
-    , decodeFamilyPlanning
-    , decodeHeight
-    , decodeLastMenstrualPeriod
-    , decodeMedicalHistory
-    , decodeMedication
-    , decodeMotherMeasurementList
-    , decodeMuac
-    , decodeNutrition
-    , decodeNutritionMeasurement
-    , decodeNutritionMeasurements
-    , decodeNutritionNutrition
-    , decodeObstetricHistory
-    , decodeObstetricHistoryStep2
-    , decodeObstetricalExam
-    , decodeParticipantConsent
-    , decodePhoto
-    , decodePrenatalFamilyPlanning
-    , decodePrenatalMeasurements
-    , decodePrenatalNutrition
-    , decodePrenatalPhoto
-    , decodeResource
-    , decodeSocialHistory
-    , decodeSocialHistoryHivTestingResult
-    , decodeVitals
-    , decodeWeight
-    )
+module Backend.Measurement.Decoder exposing (decodeAbdomenCPESign, decodeAcuteIllnessMeasurement, decodeAcuteIllnessMeasurements, decodeAttendance, decodeBreastExam, decodeBreastExamSign, decodeCSectionReason, decodeCSectionScar, decodeChildMeasurementList, decodeChildNutritionSign, decodeCorePhysicalExam, decodeCounselingSession, decodeDangerSign, decodeDangerSigns, decodeEyesCPESign, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeFetalPresentation, decodeGroupMeasurement, decodeHairHeadCPESign, decodeHandsCPESign, decodeHead, decodeHeartCPESign, decodeHeight, decodeLastMenstrualPeriod, decodeLegsCPESign, decodeLungsCPESign, decodeMeasurement, decodeMedicalHistory, decodeMedicalHistorySign, decodeMedication, decodeMedicationSign, decodeMotherMeasurementList, decodeMuac, decodeNeckCPESign, decodeNutrition, decodeNutritionHeight, decodeNutritionMeasurement, decodeNutritionMeasurements, decodeNutritionMuac, decodeNutritionNutrition, decodeNutritionPhoto, decodeNutritionWeight, decodeObstetricHistory, decodeObstetricHistorySign, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodePrenatalFamilyPlanning, decodePrenatalMeasurement, decodePrenatalMeasurements, decodePrenatalNutrition, decodePrenatalPhoto, decodePreviousDeliveryPeriod, decodePreviousDeliverySign, decodeResource, decodeResourceSign, decodeSocialHistory, decodeSocialHistoryHivTestingResult, decodeSocialHistorySign, decodeVitals, decodeWeight, decodeWithEntityUuid)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
@@ -127,7 +93,11 @@ decodePrenatalMeasurements =
 decodeNutritionMeasurements : Decoder NutritionMeasurements
 decodeNutritionMeasurements =
     succeed NutritionMeasurements
+        |> optional "nutrition_muac" (decodeHead decodeNutritionMuac) Nothing
+        |> optional "nutrition_height" (decodeHead decodeNutritionHeight) Nothing
         |> optional "nutrition_nutrition" (decodeHead decodeNutritionNutrition) Nothing
+        |> optional "nutrition_photo" (decodeHead decodeNutritionPhoto) Nothing
+        |> optional "nutrition_weight" (decodeHead decodeNutritionWeight) Nothing
 
 
 decodeAcuteIllnessMeasurements : Decoder AcuteIllnessMeasurements
@@ -966,8 +936,36 @@ decodeObstetricHistoryStep2 =
         |> decodePrenatalMeasurement
 
 
+decodeNutritionMuac : Decoder NutritionMuac
+decodeNutritionMuac =
+    field "muac" decodeFloat
+        |> map MuacInCm
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionHeight : Decoder NutritionHeight
+decodeNutritionHeight =
+    field "height" decodeFloat
+        |> map HeightInCm
+        |> decodeNutritionMeasurement
+
+
 decodeNutritionNutrition : Decoder NutritionNutrition
 decodeNutritionNutrition =
     decodeEverySet decodeChildNutritionSign
         |> field "nutrition_signs"
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionPhoto : Decoder NutritionPhoto
+decodeNutritionPhoto =
+    field "photo" string
+        |> map PhotoUrl
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionWeight : Decoder NutritionWeight
+decodeNutritionWeight =
+    field "weight" decodeFloat
+        |> map WeightInKg
         |> decodeNutritionMeasurement

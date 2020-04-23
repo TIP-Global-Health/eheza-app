@@ -12,6 +12,6 @@ $plugin = array(
   'entity_type' => 'node',
   'bundle' => 'prenatal_encounter',
   'description' => t('Exports the Prenatal Encounter bundle.'),
-  'class' => 'HedleyRestfulPrenatalEncounters',
+  'class' => 'HedleyRestfulIndividualEncounter',
   'authentication_types' => TRUE,
 );

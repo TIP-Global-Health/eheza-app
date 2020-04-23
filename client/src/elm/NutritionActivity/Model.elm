@@ -6,4 +6,8 @@ nutrition activities.
 
 
 type NutritionActivity
-    = NutritionNutrition
+    = Muac
+    | Height
+    | Nutrition
+    | Photo
+    | Weight

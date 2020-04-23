@@ -347,7 +347,7 @@ viewUserPage page model configured =
                                 Dict.get ( id, activity ) loggedInModel.nutritionActivityPages
                                     |> Maybe.withDefault Pages.NutritionActivity.Model.emptyModel
                         in
-                        Pages.NutritionActivity.View.view model.language currentDate id activity model.indexedDb page_
+                        Pages.NutritionActivity.View.view model.language currentDate model.zscores id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNutritionActivity id activity)
                             |> flexPageWrapper model
 
