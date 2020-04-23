@@ -3905,7 +3905,7 @@ translationSet trans =
             }
 
         SelectEncounterType ->
-            { english = "Select encounter type"
+            { english = "Select Encounter Type"
             , kinyarwanda = Nothing
             }
 
