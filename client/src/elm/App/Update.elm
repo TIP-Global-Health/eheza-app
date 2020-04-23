@@ -19,6 +19,7 @@ import Http exposing (Error(..))
 import HttpBuilder
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
+import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessActivity.Update
 import Pages.AcuteIllnessEncounter.Model
