@@ -238,8 +238,7 @@ function hedley_activity_node_by_peer_in_session(\EntityMetadataWrapper $wrapper
   }
 
   $bundle = $wrapper->getBundle();
-  switch($bundle) {
-
+  switch ($bundle) {
     case 'height':
       $session_field = 'field_session';
       $target_bundle = 'weight';
