@@ -43,7 +43,7 @@ function hedley_activity_node_insert($node) {
  * Implements hook_node_update().
  */
 function hedley_activity_node_update($node) {
-  if (!in_array($node->type, array_merge(['person'],HEDLEY_ACTIVITY_HEIGHT_BUNDLES))) {
+  if (!in_array($node->type, array_merge(['person'], HEDLEY_ACTIVITY_HEIGHT_BUNDLES))) {
     return;
   }
 
@@ -67,7 +67,7 @@ function hedley_activity_node_update($node) {
     return;
   }
 
-  if (in_array($node->type,HEDLEY_ACTIVITY_HEIGHT_BUNDLES)) {
+  if (in_array($node->type, HEDLEY_ACTIVITY_HEIGHT_BUNDLES)) {
     hedley_activity_handle_height($node->nid);
     return;
   }
@@ -232,13 +232,14 @@ function hedley_activity_node_presave($node) {
  * @return int|null
  *   The node ID of the target node, or NULL.
  */
-function hedley_activity_node_by_peer_in_session($wrapper, $child_id) {
+function hedley_activity_node_by_peer_in_session(\EntityMetadataWrapper $wrapper, $child_id) {
   if (empty($child_id)) {
     return NULL;
   }
 
   $bundle = $wrapper->getBundle();
   switch($bundle) {
+
     case 'height':
       $session_field = 'field_session';
       $target_bundle = 'weight';
