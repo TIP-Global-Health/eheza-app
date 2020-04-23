@@ -27,8 +27,10 @@ import Pages.PrenatalEncounter.Utils exposing (..)
 import Pages.PrenatalEncounter.View exposing (viewMotherAndMeasurements)
 import Pages.Utils
     exposing
-        ( taskCompleted
+        ( isTaskCompleted
+        , taskCompleted
         , taskListCompleted
+        , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
@@ -36,6 +38,7 @@ import Pages.Utils
         , viewLabel
         , viewMeasurementInput
         , viewPhotoThumbFromPhotoUrl
+        , viewPreviousMeasurement
         , viewQuestionLabel
         )
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
@@ -235,7 +238,7 @@ viewHistoryContent language currentDate assembled data_ =
             in
             div [ class "column" ]
                 [ a attributes
-                    [ span [ class <| "icon-history-task icon-" ++ iconClass ] []
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.HistoryTask task)
                     ]
                 ]
@@ -488,7 +491,7 @@ viewExaminationContent language currentDate assembled data =
             in
             div [ class <| "column " ++ iconClass ]
                 [ a attributes
-                    [ span [ class <| "icon-examination-task icon-" ++ iconClass ] []
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.ExaminationTask task)
                     ]
                 ]
@@ -769,7 +772,7 @@ viewPatientProvisionsContent language currentDate assembled data =
             in
             div [ class "column" ]
                 [ a attributes
-                    [ span [ class <| "icon-patient-provisions-task icon-" ++ iconClass ] []
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
                     , text <| translate language (Translate.PatientProvisionsTask task)
                     ]
                 ]
@@ -2215,25 +2218,6 @@ viewResourcesForm language currentDate assembled form =
 
 
 -- Components
-
-
-viewPreviousMeasurement : Language -> Maybe Float -> TranslationId -> Html any
-viewPreviousMeasurement language maybePreviousValue unitTranslationId =
-    let
-        message =
-            maybePreviousValue
-                |> unwrap
-                    (translate language Translate.PreviousMeasurementNotFound)
-                    (\previousValue ->
-                        (previousValue
-                            |> Translate.PreviousFloatMeasurement
-                            |> translate language
-                        )
-                            ++ " "
-                            ++ translate language unitTranslationId
-                    )
-    in
-    div [ class "previous-value" ] [ text message ]
 
 
 viewRedAlertForSelect : List a -> List a -> Html any

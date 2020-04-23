@@ -21,16 +21,16 @@ encodeActivityAsString : AcuteIllnessActivity -> String
 encodeActivityAsString activity =
     case activity of
         AcuteIllnessSymptoms ->
-            "acute-illness-symptoms"
+            "symptoms"
 
         AcuteIllnessPhysicalExam ->
-            "acute-illness-physical-exam"
+            "physical-exam"
 
         AcuteIllnessLaboratory ->
-            "acute-illness-laboratory"
+            "laboratory"
 
         AcuteIllnessExposure ->
-            "acute-illness-exposure"
+            "exposure"
 
 
 {-| The inverse of encodeActivityTypeAsString
@@ -38,16 +38,16 @@ encodeActivityAsString activity =
 decodeActivityFromString : String -> Maybe AcuteIllnessActivity
 decodeActivityFromString s =
     case s of
-        "acute-illness-symptoms" ->
+        "symptoms" ->
             Just AcuteIllnessSymptoms
 
-        "acute-illness-physical-exam" ->
+        "physical-exam" ->
             Just AcuteIllnessPhysicalExam
 
-        "acute-illness-laboratory" ->
+        "laboratory" ->
             Just AcuteIllnessLaboratory
 
-        "acute-illness-exposure" ->
+        "exposure" ->
             Just AcuteIllnessExposure
 
         _ ->
@@ -66,20 +66,9 @@ defaultActivity =
 -}
 getActivityIcon : AcuteIllnessActivity -> String
 getActivityIcon activity =
-    case activity of
-        AcuteIllnessSymptoms ->
-            "symptoms"
-
-        AcuteIllnessPhysicalExam ->
-            "physical-exam"
-
-        AcuteIllnessLaboratory ->
-            "laboratory"
-
-        AcuteIllnessExposure ->
-            "exposure"
+    encodeActivityAsString activity
 
 
 getAllActivities : List AcuteIllnessActivity
 getAllActivities =
-    [ AcuteIllnessSymptoms, AcuteIllnessPhysicalExam, AcuteIllnessLaboratory, AcuteIllnessExposure ]
+    [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPhysicalExam, AcuteIllnessLaboratory ]

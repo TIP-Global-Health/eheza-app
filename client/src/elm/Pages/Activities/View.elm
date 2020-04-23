@@ -11,6 +11,7 @@ import List as List
 import LocalData
 import Pages.Activities.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.Utils exposing (viewEndEncounterDialog)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, viewModal)
 
@@ -74,32 +75,7 @@ view language ( sessionId, session ) model =
         endSessionDialog =
             if model.showEndSessionDialog then
                 Just <|
-                    div [ class "ui tiny active modal" ]
-                        [ div
-                            [ class "header" ]
-                            [ text <| translate language Trans.AreYouSure ]
-                        , div
-                            [ class "content" ]
-                            [ p []
-                                [ text <| translate language Trans.OnceYouEndYourGroupEncounter ]
-                            ]
-                        , div
-                            [ class "actions" ]
-                            [ div
-                                [ class "two ui buttons" ]
-                                [ button
-                                    [ class "ui fluid button"
-                                    , onClick <| ShowEndSessionDialog False
-                                    ]
-                                    [ text <| translate language Trans.Cancel ]
-                                , button
-                                    [ class "ui primary fluid button"
-                                    , onClick CloseSession
-                                    ]
-                                    [ text <| translate language Trans.Continue ]
-                                ]
-                            ]
-                        ]
+                    viewEndEncounterDialog language Trans.AreYouSure Trans.OnceYouEndYourGroupEncounter CloseSession (ShowEndSessionDialog False)
 
             else
                 Nothing

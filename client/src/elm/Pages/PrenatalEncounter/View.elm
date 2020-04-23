@@ -157,7 +157,7 @@ viewPersonDetails language currentDate person =
                 )
     in
     [ div [ class "ui image" ]
-        [ thumbnailImage "person" person.avatarUrl person.name thumbnailDimensions.height thumbnailDimensions.width ]
+        [ thumbnailImage thumbnailClass person.avatarUrl person.name thumbnailDimensions.height thumbnailDimensions.width ]
     , div [ class "content" ]
         [ h2 [ class "ui header" ]
             [ text person.name ]

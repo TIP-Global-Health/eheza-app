@@ -110,6 +110,7 @@ type alias ModelIndexedDb =
     , acuteIllnessEncountersByParticipant : Dict IndividualEncounterParticipantId (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
     , prenatalMeasurements : Dict PrenatalEncounterId (WebData PrenatalMeasurements)
     , nutritionMeasurements : Dict NutritionEncounterId (WebData NutritionMeasurements)
+    , acuteIllnessMeasurements : Dict AcuteIllnessEncounterId (WebData AcuteIllnessMeasurements)
 
     -- From the point of view of the specified person, all of their relationships.
     , relationshipsByPerson : Dict PersonId (WebData (Dict RelationshipId MyRelationship))
@@ -145,6 +146,7 @@ emptyModelIndexedDb =
     , nutritionEncountersByParticipant = Dict.empty
     , acuteIllnessEncounters = Dict.empty
     , acuteIllnessEncountersByParticipant = Dict.empty
+    , acuteIllnessMeasurements = Dict.empty
     , nutritionMeasurements = Dict.empty
     , participantForms = NotAsked
     , participantsByPerson = Dict.empty
@@ -180,6 +182,7 @@ type MsgIndexedDb
     = -- Messages which fetch various kinds of data.
       FetchAcuteIllnessEncounter AcuteIllnessEncounterId
     | FetchAcuteIllnessEncountersForParticipant IndividualEncounterParticipantId
+    | FetchAcuteIllnessMeasurements AcuteIllnessEncounterId
     | FetchChildMeasurements PersonId
     | FetchChildrenMeasurements (List PersonId)
     | FetchClinics
@@ -216,6 +219,7 @@ type MsgIndexedDb
       -- Messages which handle responses to data
     | HandleFetchedAcuteIllnessEncounter AcuteIllnessEncounterId (WebData AcuteIllnessEncounter)
     | HandleFetchedAcuteIllnessEncountersForParticipant IndividualEncounterParticipantId (WebData (Dict AcuteIllnessEncounterId AcuteIllnessEncounter))
+    | HandleFetchedAcuteIllnessMeasurements AcuteIllnessEncounterId (WebData AcuteIllnessMeasurements)
     | HandleFetchedChildMeasurements PersonId (WebData ChildMeasurementList)
     | HandleFetchedChildrenMeasurements (WebData (Dict PersonId ChildMeasurementList))
     | HandleFetchedClinics (WebData (Dict ClinicId Clinic))
@@ -283,6 +287,7 @@ type MsgIndexedDb
 -}
 type Revision
     = AcuteIllnessEncounterRevision AcuteIllnessEncounterId AcuteIllnessEncounter
+    | AcuteIllnessVitalsRevision AcuteIllnessVitalsId AcuteIllnessVitals
     | AttendanceRevision AttendanceId Attendance
     | BreastExamRevision BreastExamId BreastExam
     | CatchmentAreaRevision CatchmentAreaId CatchmentArea
@@ -293,10 +298,15 @@ type Revision
     | CounselingSessionRevision CounselingSessionId CounselingSession
     | CounselingTopicRevision CounselingTopicId CounselingTopic
     | DangerSignsRevision DangerSignsId DangerSigns
+    | ExposureRevision ExposureId Exposure
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
+    | HCContactRevision HCContactId HCContact
     | HealthCenterRevision HealthCenterId HealthCenter
     | HeightRevision HeightId Height
+    | IndividualEncounterParticipantRevision IndividualEncounterParticipantId IndividualEncounterParticipant
+    | IsolationRevision IsolationId Isolation
     | LastMenstrualPeriodRevision LastMenstrualPeriodId LastMenstrualPeriod
+    | MalariaTestingRevision MalariaTestingId MalariaTesting
     | MedicalHistoryRevision MedicalHistoryId MedicalHistory
     | MedicationRevision MedicationId Medication
     | MuacRevision MuacId Muac
@@ -317,12 +327,15 @@ type Revision
     | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
     | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
     | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
-    | IndividualEncounterParticipantRevision IndividualEncounterParticipantId IndividualEncounterParticipant
     | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
     | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto
     | RelationshipRevision RelationshipId Relationship
     | ResourceRevision ResourceId Resource
     | SessionRevision SessionId Session
     | SocialHistoryRevision SocialHistoryId SocialHistory
+    | SymptomsGeneralRevision SymptomsGeneralId SymptomsGeneral
+    | SymptomsGIRevision SymptomsGIId SymptomsGI
+    | SymptomsRespiratoryRevision SymptomsRespiratoryId SymptomsRespiratory
+    | TravelHistoryRevision TravelHistoryId TravelHistory
     | VitalsRevision VitalsId Vitals
     | WeightRevision WeightId Weight

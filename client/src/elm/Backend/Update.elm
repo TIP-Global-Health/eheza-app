@@ -2,6 +2,7 @@ module Backend.Update exposing (updateIndexedDb)
 
 import Activity.Model exposing (SummaryByActivity, SummaryByParticipant)
 import Activity.Utils exposing (getAllChildActivities, getAllMotherActivities, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
+import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import App.Model
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model
@@ -26,13 +27,16 @@ import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getMyMother)
-import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements)
+import Backend.Utils exposing (mapAcuteIllnessMeasurements, mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements)
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
 import Maybe.Extra exposing (isJust, unwrap)
+import Pages.AcuteIllnessActivity.Model
+import Pages.AcuteIllnessEncounter.Model
+import Pages.AcuteIllnessEncounter.Utils exposing (suspectedCovid19Case)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model
 import Pages.Relationship.Model
@@ -399,6 +403,19 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , []
             )
 
+        FetchAcuteIllnessMeasurements id ->
+            ( { model | acuteIllnessMeasurements = Dict.insert id Loading model.acuteIllnessMeasurements }
+            , sw.get acuteIllnessMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedAcuteIllnessMeasurements id)
+            , []
+            )
+
+        HandleFetchedAcuteIllnessMeasurements id data ->
+            ( { model | acuteIllnessMeasurements = Dict.insert id data model.acuteIllnessMeasurements }
+            , Cmd.none
+            , []
+            )
+
         FetchParticipantsForPerson personId ->
             let
                 query1 =
@@ -738,6 +755,136 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                     ( withRecalc
                     , Cmd.none
                     , []
+                    )
+
+                -- When we see a suspected COVID 19 case, notify with a pop-up.
+                [ SymptomsGeneralRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateSuspectedCovid19Msgs model newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                -- When we see a suspected COVID 19 case, notify with a pop-up.
+                [ SymptomsRespiratoryRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateSuspectedCovid19Msgs model newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                -- When we see a suspected COVID 19 case, notify with a pop-up.
+                [ SymptomsGIRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateSuspectedCovid19Msgs model newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                -- When we see a suspected COVID 19 case, notify with a pop-up.
+                [ TravelHistoryRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateSuspectedCovid19Msgs model newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                -- When we see a suspected COVID 19 case, notify with a pop-up.
+                [ ExposureRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateSuspectedCovid19Msgs model newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                -- When we see a suspected COVID 19 case, notify with a pop-up.
+                [ AcuteIllnessVitalsRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateSuspectedCovid19Msgs model newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                -- When we see that needed data for suspected COVID 19 case was collected,
+                -- view a pop-up suggesting to end the encounter.
+                [ IsolationRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateEndAcuteIllnessEncounterMsgs newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                -- When we see that needed data for suspected COVID 19 case was collected,
+                -- view a pop-up suggesting to end the encounter.
+                [ HCContactRevision uuid data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl handleRevision ( model, False ) revisions
+
+                        extraMsgs =
+                            data.encounterId
+                                |> Maybe.map (generateEndAcuteIllnessEncounterMsgs newModel)
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
                     )
 
                 _ ->
@@ -1256,6 +1403,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        AcuteIllnessVitalsRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | vitals = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         AttendanceRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId
@@ -1327,12 +1482,28 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        ExposureRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | exposure = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         FamilyPlanningRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId
                 (\measurements -> { measurements | familyPlannings = Dict.insert uuid data measurements.familyPlannings })
                 model
             , True
+            )
+
+        HCContactRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hcContact = Just ( uuid, data ) })
+                model
+            , recalc
             )
 
         HealthCenterRevision uuid data ->
@@ -1352,10 +1523,41 @@ handleRevision revision (( model, recalc ) as noChange) =
             , True
             )
 
+        IsolationRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | isolation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        IndividualEncounterParticipantRevision uuid data ->
+            let
+                individualParticipants =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.individualParticipants
+
+                individualParticipantsByPerson =
+                    Dict.remove data.person model.individualParticipantsByPerson
+            in
+            ( { model
+                | individualParticipants = individualParticipants
+                , individualParticipantsByPerson = individualParticipantsByPerson
+              }
+            , recalc
+            )
+
         LastMenstrualPeriodRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | lastMenstrualPeriod = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        MalariaTestingRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | malariaTesting = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -1516,21 +1718,6 @@ handleRevision revision (( model, recalc ) as noChange) =
             , True
             )
 
-        IndividualEncounterParticipantRevision uuid data ->
-            let
-                individualParticipants =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.individualParticipants
-
-                individualParticipantsByPerson =
-                    Dict.remove data.person model.individualParticipantsByPerson
-            in
-            ( { model
-                | individualParticipants = individualParticipants
-                , individualParticipantsByPerson = individualParticipantsByPerson
-              }
-            , recalc
-            )
-
         PrenatalEncounterRevision uuid data ->
             let
                 prenatalEncounters =
@@ -1610,6 +1797,38 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        SymptomsGeneralRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | symptomsGeneral = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        SymptomsGIRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | symptomsGI = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        TravelHistoryRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | travelHistory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        SymptomsRespiratoryRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | symptomsRespiratory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         VitalsRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
@@ -1625,6 +1844,57 @@ handleRevision revision (( model, recalc ) as noChange) =
                 model
             , True
             )
+
+
+generateSuspectedCovid19Msgs : ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
+generateSuspectedCovid19Msgs before after id =
+    let
+        suspectedBeforeChange =
+            Dict.get id before.acuteIllnessMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.map suspectedCovid19Case
+                |> Maybe.withDefault False
+
+        suspectedAfterChange =
+            Dict.get id after.acuteIllnessMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.map suspectedCovid19Case
+                |> Maybe.withDefault False
+    in
+    if suspectedBeforeChange == False && suspectedAfterChange == True then
+        [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessExposure))
+        , Pages.AcuteIllnessActivity.Model.SetCovid19PopupState True
+            |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessExposure
+            |> App.Model.MsgLoggedIn
+        , Pages.AcuteIllnessActivity.Model.SetActiveExposureTask Pages.AcuteIllnessActivity.Model.ExposureIsolation
+            |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessExposure
+            |> App.Model.MsgLoggedIn
+        ]
+
+    else
+        []
+
+
+generateEndAcuteIllnessEncounterMsgs : ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
+generateEndAcuteIllnessEncounterMsgs db id =
+    Dict.get id db.acuteIllnessMeasurements
+        |> Maybe.withDefault NotAsked
+        |> RemoteData.toMaybe
+        |> Maybe.map
+            (\measurements ->
+                if isJust measurements.isolation && isJust measurements.hcContact then
+                    [ App.Model.SetActivePage (UserPage (AcuteIllnessEncounterPage id))
+                    , Pages.AcuteIllnessEncounter.Model.SetEndEncounterDialogState True
+                        |> App.Model.MsgPageAcuteIllnessEncounter id
+                        |> App.Model.MsgLoggedIn
+                    ]
+
+                else
+                    []
+            )
+        |> Maybe.withDefault []
 
 
 {-| Construct an EditableSession from our data, if we have all the needed data.

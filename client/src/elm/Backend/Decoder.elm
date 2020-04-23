@@ -30,6 +30,9 @@ decodeRevision =
                     "acute_illness_encounter" ->
                         decodeWithUuid AcuteIllnessEncounterRevision decodeAcuteIllnessEncounter
 
+                    "acute_illness_vitals" ->
+                        decodeWithUuid AcuteIllnessVitalsRevision decodeAcuteIllnessVitals
+
                     "attendance" ->
                         decodeWithUuid AttendanceRevision decodeAttendance
 
@@ -57,8 +60,14 @@ decodeRevision =
                     "danger_signs" ->
                         decodeWithUuid DangerSignsRevision decodeDangerSigns
 
+                    "exposure" ->
+                        decodeWithUuid ExposureRevision decodeExposure
+
                     "family_planning" ->
                         decodeWithUuid FamilyPlanningRevision decodeFamilyPlanning
+
+                    "hc_contact" ->
+                        decodeWithUuid HCContactRevision decodeHCContact
 
                     "health_center" ->
                         decodeWithUuid HealthCenterRevision decodeHealthCenter
@@ -66,8 +75,14 @@ decodeRevision =
                     "height" ->
                         decodeWithUuid HeightRevision decodeHeight
 
+                    "isolation" ->
+                        decodeWithUuid IsolationRevision decodeIsolation
+
                     "last_menstrual_period" ->
                         decodeWithUuid LastMenstrualPeriodRevision decodeLastMenstrualPeriod
+
+                    "malaria_testing" ->
+                        decodeWithUuid MalariaTestingRevision decodeMalariaTesting
 
                     "medical_history" ->
                         decodeWithUuid MedicalHistoryRevision decodeMedicalHistory
@@ -152,6 +167,18 @@ decodeRevision =
 
                     "social_history" ->
                         decodeWithUuid SocialHistoryRevision decodeSocialHistory
+
+                    "symptoms_general" ->
+                        decodeWithUuid SymptomsGeneralRevision decodeSymptomsGeneral
+
+                    "symptoms_respiratory" ->
+                        decodeWithUuid SymptomsRespiratoryRevision decodeSymptomsRespiratory
+
+                    "symptoms_gi" ->
+                        decodeWithUuid SymptomsGIRevision decodeSymptomsGI
+
+                    "travel_history" ->
+                        decodeWithUuid TravelHistoryRevision decodeTravelHistory
 
                     "vitals" ->
                         decodeWithUuid VitalsRevision decodeVitals

@@ -1,5 +1,6 @@
 module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, MemoryQuota, Model, Msg(..), MsgLoggedIn(..), StorageQuota, Version, emptyLoggedInModel, emptyModel)
 
+import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model
@@ -11,6 +12,7 @@ import Device.Model exposing (Device)
 import Http
 import Json.Encode exposing (Value)
 import NutritionActivity.Model exposing (NutritionActivity)
+import Pages.AcuteIllnessActivity.Model
 import Pages.AcuteIllnessEncounter.Model
 import Pages.Clinics.Model
 import Pages.Device.Model
@@ -166,6 +168,7 @@ type alias LoggedInModel =
     , nutritionEncounterPages : Dict NutritionEncounterId Pages.NutritionEncounter.Model.Model
     , nutritionActivityPages : Dict ( NutritionEncounterId, NutritionActivity ) Pages.NutritionActivity.Model.Model
     , acuteIllnessEncounterPages : Dict AcuteIllnessEncounterId Pages.AcuteIllnessEncounter.Model.Model
+    , acuteIllnessActivityPages : Dict ( AcuteIllnessEncounterId, AcuteIllnessActivity ) Pages.AcuteIllnessActivity.Model.Model
     }
 
 
@@ -185,6 +188,7 @@ emptyLoggedInModel nurse =
     , nutritionEncounterPages = Dict.empty
     , nutritionActivityPages = Dict.empty
     , acuteIllnessEncounterPages = Dict.empty
+    , acuteIllnessActivityPages = Dict.empty
     }
 
 
@@ -239,6 +243,7 @@ type MsgLoggedIn
     | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.PrenatalActivity.Model.Msg
     | MsgPageNutritionActivity NutritionEncounterId NutritionActivity Pages.NutritionActivity.Model.Msg
     | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.PregnancyOutcome.Model.Msg
+    | MsgPageAcuteIllnessActivity AcuteIllnessEncounterId AcuteIllnessActivity Pages.AcuteIllnessActivity.Model.Msg
 
 
 type alias Flags =

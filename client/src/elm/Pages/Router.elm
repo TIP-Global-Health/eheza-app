@@ -2,6 +2,8 @@ module Pages.Router exposing (activePageByUrl, pageToFragment)
 
 import Activity.Model exposing (Activity)
 import Activity.Utils
+import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
+import AcuteIllnessActivity.Utils
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString, encoudeIndividualEncounterTypeAsString)
 import Backend.Person.Model exposing (RegistrationInitiator(..))
@@ -180,6 +182,9 @@ pageToFragment current =
                 AcuteIllnessEncounterPage id ->
                     Just <| "acute-illness-encounter/" ++ fromEntityUuid id
 
+                AcuteIllnessActivityPage id activity ->
+                    Just <| "acute-illness-activity/" ++ fromEntityUuid id ++ "/" ++ AcuteIllnessActivity.Utils.encodeActivityAsString activity
+
 
 parser : Parser (Page -> c) c
 parser =
@@ -212,6 +217,7 @@ parser =
         , map (\id -> UserPage <| NutritionEncounterPage id) (s "nutrition-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| NutritionActivityPage id activity) (s "nutrition-activity" </> parseUuid </> parseNutritionActivity)
         , map (\id -> UserPage <| AcuteIllnessEncounterPage id) (s "acute-illness-encounter" </> parseUuid)
+        , map (\id activity -> UserPage <| AcuteIllnessActivityPage id activity) (s "acute-illness-activity" </> parseUuid </> parseAcuteIllnessActivity)
 
         -- `top` represents the page without any segements ... i.e. the
         -- root page.
@@ -250,6 +256,11 @@ parsePrenatalActivity =
 parseNutritionActivity : Parser (NutritionActivity -> c) c
 parseNutritionActivity =
     custom "NutritionActivity" NutritionActivity.Utils.decodeActivityFromString
+
+
+parseAcuteIllnessActivity : Parser (AcuteIllnessActivity -> c) c
+parseAcuteIllnessActivity =
+    custom "AcuteIllnessActivity" AcuteIllnessActivity.Utils.decodeActivityFromString
 
 
 parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c

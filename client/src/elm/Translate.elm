@@ -43,6 +43,7 @@ import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Http
 import NutritionActivity.Model exposing (NutritionActivity(..))
+import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..), LaboratoryTask(..), PhysicalExamTask(..), SymptomsTask(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
@@ -189,6 +190,8 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int Int
+    | AmbulancArrivalPeriodQuestion
+    | And
     | AppName
     | AreYouSure
     | Assessment
@@ -222,6 +225,7 @@ type TranslationId
     | Celsius
     | Cell
     | ChartPhrase ChartPhrase
+    | CheckAllThatApply
     | CheckIn
     | ChildHmisNumber
     | ChildDemographicInformation
@@ -236,6 +240,9 @@ type TranslationId
     | ClinicType ClinicType
     | Clinical
     | ClinicalProgressReport
+    | ContactedHCQuestion
+    | ContactWithCOVID19SymptomsQuestion
+    | ContactWithSimilarSymptomsQuestion
     | ConvulsionsAndUnconsciousPreviousDelivery
     | ConvulsionsPreviousDelivery
     | CSectionScar CSectionScar
@@ -270,6 +277,7 @@ type TranslationId
     | DaySinglePlural Int
     | DateOfBirth
     | Days
+    | DaysPresent
     | Delete
     | DeleteTrainingGroupEncounters
     | DeliveryLocation
@@ -293,12 +301,14 @@ type TranslationId
     | EgaWeeks
     | EmptyString
     | EndEncounter
+    | EndEncounterQuestion
     | EndGroupEncounter
     | EnterPairingCode
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
     | Estimated
     | ExaminationTask ExaminationTask
+    | ExposureTask ExposureTask
     | Extremities
     | Eyes
     | Facility
@@ -331,14 +341,20 @@ type TranslationId
     | GroupEncounter
     | Hands
     | HandsCPESign HandsCPESign
+    | HCRecomendation HCRecomendation
+    | HCResponseQuestion
+    | HCResponsePeriodQuestion
     | HeadHair
     | HealthCenter
+    | HealthCenterDetermined
+    | HealthEducationProvidedQuestion
     | Heart
     | HeartMurmur
     | HeartCPESign HeartCPESign
     | HeartRate
     | Height
     | High
+    | HighRisk
     | HighRiskFactor HighRiskFactor
     | HighRiskFactors
     | HighSeverityAlert HighSeverityAlert
@@ -361,6 +377,7 @@ type TranslationId
     | IndividualEncounterTypes
     | InitialResultsDisplay InitialResultsDisplay
     | KilogramShorthand
+    | LaboratoryTask LaboratoryTask
     | LastChecked
     | LastSuccesfulContactLabel
     | Legs
@@ -375,6 +392,7 @@ type TranslationId
     | LmpRange LmpRange
     | LoginPhrase LoginPhrase
     | Low
+    | LowRisk
     | Lungs
     | LungsCPESign LungsCPESign
     | MakeSureYouAreConnected
@@ -411,6 +429,7 @@ type TranslationId
     | NationalIdNumber
     | Neck
     | NeckCPESign NeckCPESign
+    | NegativeLabel
     | Next
     | No
     | NoActivitiesCompleted
@@ -441,6 +460,7 @@ type TranslationId
     | OK
     | Old
     | OneVisit
+    | OnceYouEndTheEncounter
     | OnceYouEndYourGroupEncounter
     | Or
     | Page
@@ -460,19 +480,23 @@ type TranslationId
     | PartnerHivTestResult
     | PartnerReceivedHivCounseling
     | PartnerReceivedHivTesting
+    | PatientGotAnySymptoms
     | PatientProgress
     | PatientInformation
+    | PatientIsolatedQuestion
     | PatientProvisionsTask PatientProvisionsTask
     | People
     | PersistentStorage Bool
     | Person
     | PersonHasBeenSaved
+    | PhysicalExamTask PhysicalExamTask
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
     | PlaceholderEnterParticipantName
     | PlaceholderEnterWeight
     | PleaseSelectGroup
     | PleaseSync
+    | PositiveLabel
     | PreeclampsiaPreviousPregnancy
     | PregnancyTrimester PregnancyTrimester
     | PrenatalActivitiesTitle PrenatalActivity
@@ -496,7 +520,9 @@ type TranslationId
     | PrenatalParticipants
     | PreTermPregnancy
     | Province
+    | RapidTestResult
     | ReasonForCSection
+    | ReasonForNotIsolating ReasonForNotIsolating
     | ReceivedDewormingPill
     | ReceivedIronFolicAcid
     | ReceivedMosquitoNet
@@ -525,6 +551,7 @@ type TranslationId
     | ReportCompleted { pending : Int, completed : Int }
     | ResolveMonth Month
     | RespiratoryRate
+    | ResponsePeriod ResponsePeriod
     | Retry
     | RhNegative
     | RiskFactorAlert RiskFactor
@@ -568,10 +595,19 @@ type TranslationId
     | ServiceWorkerRegSuccess
     | ServiceWorkerStatus
     | SevereHemorrhagingPreviousDelivery
+    | SignOnDoorPostedQuestion
     | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
     | StillbornPreviousDelivery
     | SuccessiveAbortions
     | SuccessivePrematureDeliveries
+    | SuspectedCovid19CaseAlert
+    | SuspectedCovid19CaseAlertHelper
+    | SuspectedCovid19CaseIsolate
+    | SuspectedCovid19CaseContactHC
+    | SymptomsGeneralSign SymptomsGeneralSign
+    | SymptomsGISign SymptomsGISign
+    | SymptomsRespiratorySign SymptomsRespiratorySign
+    | SymptomsTask SymptomsTask
     | GroupEncounterClosed
     | GroupEncounterClosed2 SessionId
     | GroupEncounterLoading
@@ -599,6 +635,7 @@ type TranslationId
     | Training
     | TrainingGroupEncounterCreateSuccessMessage
     | TrainingGroupEncounterDeleteSuccessMessage
+    | TraveledToCOVID19CountryQuestion
     | TrySyncing
     | TuberculosisPast
     | TuberculosisPresent
@@ -613,10 +650,12 @@ type TranslationId
     | View
     | ViewProgressReport
     | Village
+    | Warning
     | WeekSinglePlural Int
     | Weight
     | WelcomeUser String
     | WhatDoYouWantToDo
+    | WhyNot
     | Year
     | YearsOld Int
     | Yes
@@ -982,6 +1021,16 @@ translationSet trans =
             , kinyarwanda = Just <| Debug.toString days ++ " Umunsi"
             }
 
+        And ->
+            { english = "and"
+            , kinyarwanda = Nothing
+            }
+
+        AmbulancArrivalPeriodQuestion ->
+            { english = "How long did it take the ambulance to arrive"
+            , kinyarwanda = Nothing
+            }
+
         AgeSingleMonthWithoutDay month ->
             { english = Debug.toString month ++ " month"
             , kinyarwanda = Just <| Debug.toString month ++ " Ukwezi"
@@ -1165,6 +1214,11 @@ translationSet trans =
         ChartPhrase phrase ->
             translateChartPhrase phrase
 
+        CheckAllThatApply ->
+            { english = "Please check all that apply"
+            , kinyarwanda = Nothing
+            }
+
         CheckIn ->
             { english = "Check in:"
             , kinyarwanda = Just "Kureba abaje"
@@ -1300,6 +1354,21 @@ translationSet trans =
 
         ClinicalProgressReport ->
             { english = "Clinical Progress Report"
+            , kinyarwanda = Nothing
+            }
+
+        ContactedHCQuestion ->
+            { english = "Have you contacted the health center"
+            , kinyarwanda = Nothing
+            }
+
+        ContactWithCOVID19SymptomsQuestion ->
+            { english = "Have you had contacts with others who exhibit symptoms or have been exposed to COVID-19"
+            , kinyarwanda = Nothing
+            }
+
+        ContactWithSimilarSymptomsQuestion ->
+            { english = "Have you had contacts with others who have similar symptoms to you"
             , kinyarwanda = Nothing
             }
 
@@ -1563,6 +1632,11 @@ translationSet trans =
             , kinyarwanda = Just "Iminsi"
             }
 
+        DaysPresent ->
+            { english = "Days present"
+            , kinyarwanda = Nothing
+            }
+
         Delete ->
             { english = "Delete"
             , kinyarwanda = Nothing
@@ -1668,6 +1742,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        EndEncounterQuestion ->
+            { english = "End Encounter?"
+            , kinyarwanda = Nothing
+            }
+
         EndGroupEncounter ->
             { english = "End Group Encounter"
             , kinyarwanda = Just "Gusoza igikorwa"
@@ -1732,6 +1811,28 @@ translationSet trans =
 
                 Pages.PrenatalActivity.Model.BreastExam ->
                     translationSet BreastExam
+
+        ExposureTask task ->
+            case task of
+                ExposureTravel ->
+                    { english = "Travel History"
+                    , kinyarwanda = Nothing
+                    }
+
+                ExposureExposure ->
+                    { english = "Contact Exposure"
+                    , kinyarwanda = Nothing
+                    }
+
+                ExposureIsolation ->
+                    { english = "Isolate Patient"
+                    , kinyarwanda = Nothing
+                    }
+
+                ExposureContactHC ->
+                    { english = "Contact Health Center"
+                    , kinyarwanda = Nothing
+                    }
 
         Failure ->
             { english = "Failure"
@@ -1991,6 +2092,43 @@ translationSet trans =
                 NormalHands ->
                     translationSet Normal
 
+        HCRecomendation recomendation ->
+            case recomendation of
+                SendAmbulance ->
+                    { english = "agreed to call the District Hospital to send an ambulance"
+                    , kinyarwanda = Nothing
+                    }
+
+                HomeIsolation ->
+                    { english = "adviced patient to stay home in isolation"
+                    , kinyarwanda = Nothing
+                    }
+
+                ComeToHealthCenter ->
+                    { english = "come to health center for further evaluation"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChwMonitoring ->
+                    { english = "CHW should continue to monitor"
+                    , kinyarwanda = Nothing
+                    }
+
+                HCRecomendationNotApplicable ->
+                    { english = "Not Applicable"
+                    , kinyarwanda = Nothing
+                    }
+
+        HCResponseQuestion ->
+            { english = "What was the Health Center's response"
+            , kinyarwanda = Nothing
+            }
+
+        HCResponsePeriodQuestion ->
+            { english = "How long did it take the Health Center to respond"
+            , kinyarwanda = Nothing
+            }
+
         HeadHair ->
             { english = "Head/Hair"
             , kinyarwanda = Nothing
@@ -1999,6 +2137,16 @@ translationSet trans =
         HealthCenter ->
             { english = "Health Center"
             , kinyarwanda = Just "Ikigo Nderabuzima"
+            }
+
+        HealthCenterDetermined ->
+            { english = "Health center determined this is a"
+            , kinyarwanda = Nothing
+            }
+
+        HealthEducationProvidedQuestion ->
+            { english = "Have you provided health education (or anticipatory guidance)"
+            , kinyarwanda = Nothing
             }
 
         Heart ->
@@ -2040,6 +2188,11 @@ translationSet trans =
 
         High ->
             { english = "High"
+            , kinyarwanda = Nothing
+            }
+
+        HighRisk ->
+            { english = "high-risk"
             , kinyarwanda = Nothing
             }
 
@@ -2306,6 +2459,13 @@ translationSet trans =
             , kinyarwanda = Just "kg"
             }
 
+        LaboratoryTask task ->
+            case task of
+                LaboratoryMalariaTesting ->
+                    { english = "Malaria Results"
+                    , kinyarwanda = Nothing
+                    }
+
         LastChecked ->
             { english = "Last checked"
             , kinyarwanda = Just "Isuzuma riheruka"
@@ -2421,6 +2581,11 @@ translationSet trans =
 
         Low ->
             { english = "Low"
+            , kinyarwanda = Nothing
+            }
+
+        LowRisk ->
+            { english = "low-risk"
             , kinyarwanda = Nothing
             }
 
@@ -2716,8 +2881,13 @@ translationSet trans =
                 NormalNeck ->
                     translationSet Normal
 
+        NegativeLabel ->
+            { english = "Negative"
+            , kinyarwanda = Just "Nta bwandu afite"
+            }
+
         Next ->
-            { english = "Next"
+            { english = "Nexst"
             , kinyarwanda = Nothing
             }
 
@@ -2967,6 +3137,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        OnceYouEndTheEncounter ->
+            { english = "Once you end the Encounter, you will no longer be able to edit or add data."
+            , kinyarwanda = Nothing
+            }
+
         OnceYouEndYourGroupEncounter ->
             { english = "Once you end your Group Encounter, you will no longer be able to edit or add data."
             , kinyarwanda = Just "Igihe ushoze igikorwa, ntabwo ushobora guhindura cg wongeremo andi makuru."
@@ -3062,6 +3237,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PatientGotAnySymptoms ->
+            { english = "Does the patient have any of these symptoms"
+            , kinyarwanda = Nothing
+            }
+
         PatientProgress ->
             { english = "Patient Progress"
             , kinyarwanda = Nothing
@@ -3069,6 +3249,11 @@ translationSet trans =
 
         PatientInformation ->
             { english = "Patient Information"
+            , kinyarwanda = Nothing
+            }
+
+        PatientIsolatedQuestion ->
+            { english = "Have you isolated the patient"
             , kinyarwanda = Nothing
             }
 
@@ -3110,6 +3295,13 @@ translationSet trans =
             , kinyarwanda = Just "Amakuru kuri uyu muntu yabitswe"
             }
 
+        PhysicalExamTask task ->
+            case task of
+                PhysicalExamVitals ->
+                    { english = "Vitals"
+                    , kinyarwanda = Nothing
+                    }
+
         PlaceholderEnterHeight ->
             { english = "Enter height here…"
             , kinyarwanda = Just "Andika uburebure hano…"
@@ -3138,6 +3330,11 @@ translationSet trans =
         PleaseSync ->
             { english = "Please sync data for selected Health Center."
             , kinyarwanda = Nothing
+            }
+
+        PositiveLabel ->
+            { english = "Positive"
+            , kinyarwanda = Just "Afite ubwandu"
             }
 
         PreeclampsiaPreviousPregnancy ->
@@ -3333,10 +3530,42 @@ translationSet trans =
             , kinyarwanda = Just "Intara"
             }
 
+        RapidTestResult ->
+            { english = "Rapid Test Result"
+            , kinyarwanda = Nothing
+            }
+
         ReasonForCSection ->
             { english = "Reason for C-section"
             , kinyarwanda = Nothing
             }
+
+        ReasonForNotIsolating reason ->
+            case reason of
+                NoSpace ->
+                    { english = "No space avilable at home or clinic"
+                    , kinyarwanda = Nothing
+                    }
+
+                TooIll ->
+                    { english = "Too ill to leave alone"
+                    , kinyarwanda = Nothing
+                    }
+
+                CanNotSeparateFromFamily ->
+                    { english = "Unable to separate from family"
+                    , kinyarwanda = Nothing
+                    }
+
+                OtherReason ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
+                IsolationReasonNotApplicable ->
+                    { english = "Not Applicable "
+                    , kinyarwanda = Nothing
+                    }
 
         ReceivedDewormingPill ->
             { english = "Has the mother received deworming pill"
@@ -3484,6 +3713,33 @@ translationSet trans =
             { english = "Respiratory Rate"
             , kinyarwanda = Nothing
             }
+
+        ResponsePeriod period ->
+            case period of
+                LessThan30Min ->
+                    { english = "Less than 30 min"
+                    , kinyarwanda = Nothing
+                    }
+
+                Between30min1Hour ->
+                    { english = "30 min - 1 hour"
+                    , kinyarwanda = Nothing
+                    }
+
+                Between1Hour2Hour ->
+                    { english = "1 hour - 2 hours"
+                    , kinyarwanda = Nothing
+                    }
+
+                Between2Hour1Day ->
+                    { english = "2 hours - 1 day"
+                    , kinyarwanda = Nothing
+                    }
+
+                ResponsePeriodNotApplicable ->
+                    { english = "Not Applicable"
+                    , kinyarwanda = Nothing
+                    }
 
         Retry ->
             { english = "Retry"
@@ -3649,7 +3905,7 @@ translationSet trans =
             }
 
         SelectEncounterType ->
-            { english = "Select encounter type"
+            { english = "Select Encounter Type"
             , kinyarwanda = Nothing
             }
 
@@ -3783,6 +4039,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        SignOnDoorPostedQuestion ->
+            { english = "Have you posted signs on the door indicating that the space is an isolation area"
+            , kinyarwanda = Nothing
+            }
+
         SocialHistoryHivTestingResult result ->
             case result of
                 ResultHivPositive ->
@@ -3819,6 +4080,139 @@ translationSet trans =
             { english = "Successive Premature Deliveries"
             , kinyarwanda = Nothing
             }
+
+        SuspectedCovid19CaseAlert ->
+            { english = "Suspected COVID-19 case"
+            , kinyarwanda = Nothing
+            }
+
+        SuspectedCovid19CaseAlertHelper ->
+            { english = "Please isolate immediately from family and contact health center"
+            , kinyarwanda = Nothing
+            }
+
+        SuspectedCovid19CaseIsolate ->
+            { english = "Isolate immediately from family"
+            , kinyarwanda = Nothing
+            }
+
+        SuspectedCovid19CaseContactHC ->
+            { english = "Contact health center immediately"
+            , kinyarwanda = Nothing
+            }
+
+        SymptomsGeneralSign sign ->
+            case sign of
+                BodyAches ->
+                    { english = "Body Aches"
+                    , kinyarwanda = Nothing
+                    }
+
+                Chills ->
+                    { english = "Chills"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomGeneralFever ->
+                    { english = "Fever"
+                    , kinyarwanda = Nothing
+                    }
+
+                Headache ->
+                    { english = "Headache"
+                    , kinyarwanda = Nothing
+                    }
+
+                NightSweats ->
+                    { english = "Night Sweats"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoSymptomsGeneral ->
+                    { english = "None of the above"
+                    , kinyarwanda = Nothing
+                    }
+
+        SymptomsGISign sign ->
+            case sign of
+                SymptomGIAbdominalPain ->
+                    { english = "Abdominal Pain"
+                    , kinyarwanda = Nothing
+                    }
+
+                BloodyDiarrhea ->
+                    { english = "Bloody Diarrhea"
+                    , kinyarwanda = Nothing
+                    }
+
+                Nausea ->
+                    { english = "Nausea"
+                    , kinyarwanda = Nothing
+                    }
+
+                NonBloodyDiarrhea ->
+                    { english = "Non-Bloody Diarrhea"
+                    , kinyarwanda = Nothing
+                    }
+
+                Vomiting ->
+                    { english = "Vomiting"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoSymptomsGI ->
+                    { english = "None of the above"
+                    , kinyarwanda = Nothing
+                    }
+
+        SymptomsRespiratorySign sign ->
+            case sign of
+                BloodInSputum ->
+                    { english = "Blood in Sputum"
+                    , kinyarwanda = Nothing
+                    }
+
+                Cough ->
+                    { english = "Cough"
+                    , kinyarwanda = Nothing
+                    }
+
+                NasalCongestion ->
+                    { english = "Nasal Congestion"
+                    , kinyarwanda = Nothing
+                    }
+
+                ShortnessOfBreath ->
+                    { english = "Shortness of Breath"
+                    , kinyarwanda = Nothing
+                    }
+
+                SoreThroat ->
+                    { english = "Sore Throat"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoSymptomsRespiratory ->
+                    { english = "None of the above"
+                    , kinyarwanda = Nothing
+                    }
+
+        SymptomsTask task ->
+            case task of
+                SymptomsGeneral ->
+                    { english = "General"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomsRespiratory ->
+                    { english = "Respiratory"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomsGI ->
+                    { english = "GI"
+                    , kinyarwanda = Nothing
+                    }
 
         GroupEncounterClosed ->
             { english = "Group Encounter closed"
@@ -3955,6 +4349,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        TraveledToCOVID19CountryQuestion ->
+            { english = "Have you traveld to any country known to have Covid-19 in the past 14 days"
+            , kinyarwanda = Nothing
+            }
+
         TrySyncing ->
             { english = "Try syncing with backend"
             , kinyarwanda = Just "Gerageza guhuza amakuru y'iki gikoresho cy'ikoranabuhanga n'abakoze E-Heza"
@@ -4026,6 +4425,11 @@ translationSet trans =
             , kinyarwanda = Just "Umudugudu"
             }
 
+        Warning ->
+            { english = "Warning"
+            , kinyarwanda = Nothing
+            }
+
         WeekSinglePlural value ->
             if value == 1 then
                 { english = "1 Week"
@@ -4050,6 +4454,11 @@ translationSet trans =
         WhatDoYouWantToDo ->
             { english = "What do you want to do?"
             , kinyarwanda = Just "Urashaka gukora iki?"
+            }
+
+        WhyNot ->
+            { english = "Why not"
+            , kinyarwanda = Nothing
             }
 
         Year ->
@@ -4331,6 +4740,11 @@ translateActivePage page =
 
                 AcuteIllnessEncounterPage _ ->
                     { english = "AcuteIllness Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                AcuteIllnessActivityPage _ _ ->
+                    { english = "Acute Illness Activity"
                     , kinyarwanda = Nothing
                     }
 

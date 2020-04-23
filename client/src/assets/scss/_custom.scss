@@ -419,7 +419,7 @@ h3.ui.header {
 }
 
 .icon-task-laboratory {
-  background-image: url(#{$img-path}icon-laboratory.svg);
+  background-image: url(#{$img-path}icon-laboratory-white.svg);
   background-size: 78px 78px;
 }
 
@@ -1087,6 +1087,10 @@ input::placeholder {
         .alert {
           margin-bottom: 5px;
 
+          .alert-text.upper {
+            text-transform: uppercase;
+          }
+
           .alert-value {
             color: $color-red-alert;
             margin-left: 10px;
@@ -1095,6 +1099,10 @@ input::placeholder {
           .alert-date {
             color: $color-green-alert;
             margin-left: 10px;
+          }
+
+          .alert-helper {
+            margin-left: 13px;
           }
         }
       }
@@ -1105,6 +1113,63 @@ input::placeholder {
     }
 
     > .actions > .button {
+      margin-left: 0;
+    }
+  }
+
+  &.warning-popup {
+    border-top: 15px solid $color-red-alert;
+    width: 600px !important;
+    margin-left: -300px !important;
+
+    > .content {
+      display: inline-block;
+      max-height: 600px;
+      min-height: 200px;
+      overflow-y: auto;
+
+      .popup-heading-wrapper {
+        height: 48px;
+        margin-bottom: 1rem;
+
+        img {
+          float: left;
+          width: 48px;
+        }
+
+        .popup-heading {
+          color: $color-dark-gray;
+          float: left;
+          font-size: 30px;
+          font-weight: bold;
+          line-height: 48px;
+          text-align: center;
+          text-transform: uppercase;
+          width: 400px;
+        }
+      }
+
+      .popup-title {
+        color: $color-dark-gray;
+        font-size: 30px;
+        font-weight: bold;
+        margin-bottom: 1rem;
+        text-align: center;
+        text-transform: uppercase;
+      }
+
+      .popup-action {
+        color: $color-dark-gray;
+        font-size: 30px;
+        margin-bottom: 2rem;
+        padding: 0 4rem;
+        text-align: center;
+        text-transform: uppercase;
+      }
+    }
+
+    > .actions > .button {
+      background: $color-red-alert;
       margin-left: 0;
     }
   }
@@ -1416,13 +1481,11 @@ input::placeholder {
   }
 }
 
-.icon-history-task,
-.icon-examination-task,
-.icon-patient-provisions-task {
+.icon-activity-task {
   display: block;
-  width: 90px;
   height: 90px;
-  margin: 0 auto 10px auto;
+  margin: 0 auto 10px;
+  width: 90px;
 
   &:after {
     content: " ";
@@ -1572,6 +1635,132 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-resources-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-symptoms-general {
+  .active &:after {
+    background-image: url(#{$img-path}icon-symptoms-general-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-symptoms-general-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-symptoms-general-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-symptoms-respiratory {
+  .active &:after {
+    background-image: url(#{$img-path}icon-symptoms-respiratory-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-symptoms-respiratory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-symptoms-respiratory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-symptoms-gi {
+  .active &:after {
+    background-image: url(#{$img-path}icon-symptoms-gi-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-symptoms-gi-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-symptoms-gi-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-physical-exam-vitals {
+  .active &:after {
+    background-image: url(#{$img-path}icon-vitals-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-vitals-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-vitals-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-laboratory-malaria-testing {
+  .active &:after {
+    background-image: url(#{$img-path}icon-laboratory-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-laboratory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-laboratory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-exposure-travel {
+  .active &:after {
+    background-image: url(#{$img-path}icon-travel-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-travel-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-travel-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-exposure-exposure {
+  .active &:after {
+    background-image: url(#{$img-path}icon-exposure-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-exposure-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-exposure-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-exposure-isolation {
+  .active &:after {
+    background-image: url(#{$img-path}icon-isolation-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-isolation-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-isolation-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-exposure-contact-hc {
+  .active &:after {
+    background-image: url(#{$img-path}icon-contact-hc-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-contact-hc-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-contact-hc-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 

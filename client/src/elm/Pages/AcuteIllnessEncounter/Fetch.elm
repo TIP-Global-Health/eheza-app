@@ -33,13 +33,11 @@ fetch id db =
                     )
                 |> Maybe.withDefault []
 
-        -- We fetch measurements for  all encounters, to be
+        -- We fetch measurements for all encounters, to be
         -- able to apply `expectedAcuteIllnessActivity` logic.
         fetchMeasurements =
-            -- Todo
-            -- encountersIds
-            --     |> List.map FetchAcuteIllnessMeasurements
-            []
+            encountersIds
+                |> List.map FetchAcuteIllnessMeasurements
     in
     List.filterMap identity
         [ Maybe.map FetchIndividualEncounterParticipant participantId
