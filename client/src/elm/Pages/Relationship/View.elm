@@ -5,7 +5,7 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, Relationship)
 import Gizra.Html exposing (emptyNode, showMaybe)
@@ -335,15 +335,7 @@ viewParticipant : Language -> NominalDate -> PersonId -> Person -> Html Msg
 viewParticipant language currentDate id person =
     let
         typeForThumbnail =
-            case isPersonAnAdult currentDate person of
-                Just True ->
-                    "mother"
-
-                Just False ->
-                    "child"
-
-                Nothing ->
-                    "mother"
+            defaultIconForPerson currentDate person
 
         content =
             div [ class "content" ]

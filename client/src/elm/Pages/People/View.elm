@@ -4,7 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (ExpectedAge(..), Person, RegistrationInitiator(..))
-import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isPersonAnAdult)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -239,15 +239,7 @@ viewParticipant : Language -> NominalDate -> Maybe PersonId -> ModelIndexedDb ->
 viewParticipant language currentDate relation db id person =
     let
         typeForThumbnail =
-            case isPersonAnAdult currentDate person of
-                Just True ->
-                    "mother"
-
-                Just False ->
-                    "child"
-
-                Nothing ->
-                    "mother"
+            defaultIconForPerson currentDate person
 
         nextPage =
             case relation of

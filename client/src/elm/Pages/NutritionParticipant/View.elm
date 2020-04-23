@@ -76,12 +76,10 @@ viewActions language currentDate id db sessions =
                 |> List.head
                 |> Maybe.map Tuple.first
 
-        -- Resolve active prenatal encounter for person. There should not be more than one.
-        -- We count the number of completed encounters, so that we know if to
-        -- allow 'Pregnancy Outcome' action.
+        -- Resolve active encounter for person. There should not be more than one.
         -- We also want to know if there's an encounter that was completed today,
         -- (started and ended on the same day), as we do not want to allow creating new encounter
-        -- at same day previous one has ended.
+        -- at same day, previous one has ended.
         ( maybeActiveEncounterId, encounterWasCompletedToday ) =
             maybeSessionId
                 |> Maybe.map

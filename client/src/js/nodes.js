@@ -44,6 +44,9 @@
                     else if (type === 'nutrition-measurements') {
                         return event.respondWith(viewMeasurements('nutrition_encounter', uuid));
                     }
+                    else if (type === 'acute-illness-measurements') {
+                        return event.respondWith(viewMeasurements('acute_illness_encounter', uuid));
+                    }
                     else {
                         return event.respondWith(view(type, uuid));
                     }
@@ -87,6 +90,7 @@
 
     var tableForType = {
         acute_illness_encounter: 'nodes',
+        acute_illness_vitals: 'shards',
         attendance: 'shards',
         breast_exam: 'shards',
         catchment_area: 'nodes',
@@ -96,10 +100,14 @@
         counseling_topic: 'nodes',
         core_physical_exam: 'shards',
         danger_signs: 'shards',
+        exposure: 'shards',
         family_planning: 'shards',
+        hc_contact: 'shards',        
         health_center: 'nodes',
         height: 'shards',
+        isolation: 'shards',
         last_menstrual_period: 'shards',
+        malaria_testing: 'shards',
         medical_history: 'shards',
         medication: 'shards',
         muac: 'shards',
@@ -129,6 +137,10 @@
         session: 'nodes',
         social_history: 'shards',
         syncmetadata: 'syncMetadata',
+        symptoms_general: 'shards',
+        symptoms_gi: 'shards',
+        symptoms_respiratory: 'shards',
+        travel_history: 'shards',
         vitals: 'shards',
         weight: 'shards'
     };
@@ -443,6 +455,9 @@
                     else if (key === 'nutrition_encounter') {
                       target = node.nutrition_encounter;
                     }
+                    else if (key === 'acute_illness_encounter') {
+                      target = node.acute_illness_encounter;
+                    }
 
                     data[target] = data[target] || {};
                     if (data[target][node.type]) {
@@ -562,7 +577,7 @@
                     }
                 }
 
-                if (type === 'prenatal_encounter' || type === 'nutrition_encounter') {
+                if (type === 'prenatal_encounter' || type === 'nutrition_encounter' || type === 'acute_illness_encounter') {
                   var individualSessionId = params.get('individual_participant');
                   if (individualSessionId) {
                     modifyQuery = modifyQuery.then(function () {

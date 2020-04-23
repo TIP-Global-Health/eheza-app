@@ -1,4 +1,4 @@
-module Backend.Person.Utils exposing (ageInYears, decodeRegistrationInitiatorFromString, diffInYears, expectedAgeByPerson, isAdult, isPersonAFertileWoman, isPersonAnAdult, resolveExpectedAge)
+module Backend.Person.Utils exposing (ageInYears, decodeRegistrationInitiatorFromString, defaultIconForPerson, diffInYears, expectedAgeByPerson, isAdult, isPersonAFertileWoman, isPersonAnAdult, resolveExpectedAge)
 
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), ParticipantDirectoryOperation(..), Person, RegistrationInitiator(..))
@@ -102,3 +102,17 @@ decodeRegistrationInitiatorFromString s =
 
         _ ->
             Nothing
+
+
+defaultIconForPerson : NominalDate -> Person -> String
+defaultIconForPerson currentDate person =
+    isPersonAnAdult currentDate person
+        |> Maybe.map
+            (\adult ->
+                if adult then
+                    "mother"
+
+                else
+                    "child"
+            )
+        |> Maybe.withDefault "mother"

@@ -287,6 +287,7 @@ type MsgIndexedDb
 -}
 type Revision
     = AcuteIllnessEncounterRevision AcuteIllnessEncounterId AcuteIllnessEncounter
+    | AcuteIllnessVitalsRevision AcuteIllnessVitalsId AcuteIllnessVitals
     | AttendanceRevision AttendanceId Attendance
     | BreastExamRevision BreastExamId BreastExam
     | CatchmentAreaRevision CatchmentAreaId CatchmentArea
@@ -297,10 +298,15 @@ type Revision
     | CounselingSessionRevision CounselingSessionId CounselingSession
     | CounselingTopicRevision CounselingTopicId CounselingTopic
     | DangerSignsRevision DangerSignsId DangerSigns
+    | ExposureRevision ExposureId Exposure
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
+    | HCContactRevision HCContactId HCContact
     | HealthCenterRevision HealthCenterId HealthCenter
     | HeightRevision HeightId Height
+    | IndividualEncounterParticipantRevision IndividualEncounterParticipantId IndividualEncounterParticipant
+    | IsolationRevision IsolationId Isolation
     | LastMenstrualPeriodRevision LastMenstrualPeriodId LastMenstrualPeriod
+    | MalariaTestingRevision MalariaTestingId MalariaTesting
     | MedicalHistoryRevision MedicalHistoryId MedicalHistory
     | MedicationRevision MedicationId Medication
     | MuacRevision MuacId Muac
@@ -321,12 +327,15 @@ type Revision
     | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
     | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
     | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
-    | IndividualEncounterParticipantRevision IndividualEncounterParticipantId IndividualEncounterParticipant
     | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
     | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto
     | RelationshipRevision RelationshipId Relationship
     | ResourceRevision ResourceId Resource
     | SessionRevision SessionId Session
     | SocialHistoryRevision SocialHistoryId SocialHistory
+    | SymptomsGeneralRevision SymptomsGeneralId SymptomsGeneral
+    | SymptomsGIRevision SymptomsGIId SymptomsGI
+    | SymptomsRespiratoryRevision SymptomsRespiratoryId SymptomsRespiratory
+    | TravelHistoryRevision TravelHistoryId TravelHistory
     | VitalsRevision VitalsId Vitals
     | WeightRevision WeightId Weight

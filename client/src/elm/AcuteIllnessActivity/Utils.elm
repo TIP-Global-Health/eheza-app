@@ -71,4 +71,4 @@ getActivityIcon activity =
 
 getAllActivities : List AcuteIllnessActivity
 getAllActivities =
-    [ AcuteIllnessSymptoms, AcuteIllnessPhysicalExam, AcuteIllnessLaboratory, AcuteIllnessExposure ]
+    [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPhysicalExam, AcuteIllnessLaboratory ]

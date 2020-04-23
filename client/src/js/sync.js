@@ -42,22 +42,37 @@
     var imageTimeout = 120000; // 2 minutes
 
     var integerFields = [
+        'abdominal_pain_period',
         'abortions',
+        'blood_in_sputum_period',
+        'bloody_diarrhea_period',
+        'body_aches_period',
+        'chills_period',
+        'cough_period',
         'c_sections',
         'fetal_heart_rate',
+        'fever_period',
+        'headache_period',
         'heart_rate',
         'household_size',
         'id',
         'live_children',
+        'nasal_congestion_period',
+        'nausea_period',
+        'night_sweats_period',
+        'non_bloody_diarrhea_period',
         'number_of_children',
         'preterm_pregnancy',
         'respiratory_rate',
+        'shortness_of_breath_period',
+        'sore_throat_period',
         'status',
         'stillbirths_at_term',
         'stillbirths_preterm',
         'term_pregnancy',
         'timestamp',
-        'vid'
+        'vid',
+        'vomiting_period'
     ];
 
     var floatFields = [

@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (ExpectedAge(..), Person, RegistrationInitiator(..))
-import Backend.Person.Utils exposing (ageInYears, isPersonAFertileWoman, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isPersonAFertileWoman, isPersonAnAdult)
 import Backend.SyncData.Model
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -272,11 +272,14 @@ viewParticipant language currentDate encounterType db id person =
                     ]
                 , viewAction
                 ]
+
+        defaultIcon =
+            defaultIconForPerson currentDate person
     in
     div
         [ class "item participant-view" ]
         [ div
             [ class "ui image" ]
-            [ thumbnailImage "mother" person.avatarUrl person.name 120 120 ]
+            [ thumbnailImage defaultIcon person.avatarUrl person.name 120 120 ]
         , viewContent
         ]

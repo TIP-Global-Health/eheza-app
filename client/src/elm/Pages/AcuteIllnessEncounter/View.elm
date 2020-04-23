@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessEncounter.View exposing (view)
+module Pages.AcuteIllnessEncounter.View exposing (view, viewPersonDetailsWithAlert)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AcuteIllnessActivity.Utils exposing (getActivityIcon, getAllActivities)
@@ -16,8 +16,10 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.AcuteIllnessEncounter.Model exposing (..)
+import Pages.AcuteIllnessEncounter.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
+import Pages.Utils exposing (viewEndEncounterDialog)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewLoading, viewModal)
@@ -28,50 +30,36 @@ import Utils.WebData exposing (viewWebData)
 view : Language -> NominalDate -> AcuteIllnessEncounterId -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id db model =
     let
-        encounter =
-            Dict.get id db.acuteIllnessEncounters
-                |> Maybe.withDefault NotAsked
-
-        participant =
-            encounter
-                |> RemoteData.andThen
-                    (\encounter_ ->
-                        Dict.get encounter_.participant db.individualParticipants
-                            |> Maybe.withDefault NotAsked
-                    )
-
-        person =
-            participant
-                |> RemoteData.andThen
-                    (\participant_ ->
-                        Dict.get participant_.person db.people
-                            |> Maybe.withDefault NotAsked
-                    )
-
-        measurements =
-            -- Todo
-            Success {}
-
-        -- Dict.get id db.acuteIllnessMeasurements
-        --     |> Maybe.withDefault NotAsked
-        personWithMeasurements =
-            RemoteData.map (\a b -> ( a, b )) person
-                |> RemoteData.andMap measurements
+        data =
+            generateAssembledData id db
 
         header =
-            viewWebData language (viewHeader language) identity participant
+            viewWebData language (viewHeader language) identity data
 
         content =
-            viewWebData language (viewContent language currentDate id model) identity personWithMeasurements
+            viewWebData language (viewContent language currentDate id model) identity data
+
+        endEncounterDialog =
+            if model.showEndEncounetrDialog then
+                Just <|
+                    viewEndEncounterDialog language
+                        Translate.EndEncounterQuestion
+                        Translate.OnceYouEndTheEncounter
+                        (CloseEncounter id)
+                        (SetEndEncounterDialogState False)
+
+            else
+                Nothing
     in
     div [ class "page-encounter acute-illness" ] <|
         [ header
         , content
+        , viewModal endEncounterDialog
         ]
 
 
-viewHeader : Language -> IndividualEncounterParticipant -> Html Msg
-viewHeader language participant =
+viewHeader : Language -> AssembledData -> Html Msg
+viewHeader language data =
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -83,7 +71,7 @@ viewHeader language participant =
             ]
         , a
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage participant.person
+            , onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage data.participant.person
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -91,25 +79,110 @@ viewHeader language participant =
         ]
 
 
-viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Model -> ( Person, AcuteIllnessMeasurements ) -> Html Msg
-viewContent language currentDate id model ( person, measurements ) =
-    ((viewPersonDetails language currentDate person |> div [ class "item" ])
-        :: viewMainPageContent language currentDate id measurements model
+viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Model -> AssembledData -> Html Msg
+viewContent language currentDate id model data =
+    let
+        isSuspected =
+            suspectedCovid19Case data.measurements
+    in
+    (viewPersonDetailsWithAlert language currentDate data.person isSuspected model.showAlertsDialog SetAlertsDialogState
+        :: viewMainPageContent language currentDate id data isSuspected model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewMainPageContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessMeasurements -> Model -> List (Html Msg)
-viewMainPageContent language currentDate id measurements model =
+viewPersonDetailsWithAlert : Language -> NominalDate -> Person -> Bool -> Bool -> (Bool -> msg) -> Html msg
+viewPersonDetailsWithAlert language currentDate person isSuspected isDialogOpen setAlertsDialogStateMsg =
     let
+        alertSign =
+            if isSuspected then
+                div
+                    [ class "alerts"
+                    , onClick <| setAlertsDialogStateMsg True
+                    ]
+                    [ img [ src "assets/images/exclamation-red.png" ] [] ]
+
+            else
+                emptyNode
+    in
+    div [ class "item" ] <|
+        viewPersonDetails language currentDate person
+            ++ [ alertSign
+               , viewModal <|
+                    alertsDialog language
+                        isDialogOpen
+                        setAlertsDialogStateMsg
+               ]
+
+
+alertsDialog : Language -> Bool -> (Bool -> msg) -> Maybe (Html msg)
+alertsDialog language isOpen setAlertsDialogStateMsg =
+    if isOpen then
+        let
+            sectionLabel title =
+                div [ class "section-label-wrapper" ]
+                    [ img [ src "assets/images/exclamation-red.png" ] []
+                    , div [ class "section-label" ] [ text <| translate language title ++ ":" ]
+                    ]
+        in
+        Just <|
+            div [ class "ui active modal alerts-dialog" ]
+                [ div [ class "content" ]
+                    [ div [ class "high-severity-alerts" ]
+                        [ sectionLabel Translate.HighSeverityAlerts
+                        , div [ class "section-items" ]
+                            [ div [ class "alert" ]
+                                [ div [ class "alert-text upper" ] [ text <| "- " ++ translate language Translate.SuspectedCovid19CaseAlert ++ "." ]
+                                , div [ class "alert-helper" ] [ text <| translate language Translate.SuspectedCovid19CaseAlertHelper ++ "." ]
+                                ]
+                            ]
+                        ]
+                    ]
+                , div
+                    [ class "actions" ]
+                    [ button
+                        [ class "ui primary fluid button"
+                        , onClick <| setAlertsDialogStateMsg False
+                        ]
+                        [ text <| translate language Translate.Close ]
+                    ]
+                ]
+
+    else
+        Nothing
+
+
+viewMainPageContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AssembledData -> Bool -> Model -> List (Html Msg)
+viewMainPageContent language currentDate id data isSuspected model =
+    let
+        measurements =
+            data.measurements
+
         ( completedActivities, pendingActivities ) =
             getAllActivities
                 |> List.partition
                     (\activity ->
                         case activity of
-                            -- Todo
-                            _ ->
-                                False
+                            AcuteIllnessSymptoms ->
+                                isJust measurements.symptomsGeneral
+                                    && isJust measurements.symptomsRespiratory
+                                    && isJust measurements.symptomsGI
+
+                            AcuteIllnessPhysicalExam ->
+                                isJust measurements.vitals
+
+                            AcuteIllnessLaboratory ->
+                                isJust measurements.malariaTesting
+
+                            AcuteIllnessExposure ->
+                                isJust measurements.travelHistory
+                                    && isJust measurements.exposure
+                                    && (if isSuspected then
+                                            isJust measurements.isolation && isJust measurements.hcContact
+
+                                        else
+                                            True
+                                       )
                     )
 
         pendingTabTitle =
@@ -162,12 +235,16 @@ viewMainPageContent language currentDate id measurements model =
                 ]
 
         allowEndEcounter =
-            List.isEmpty pendingActivities
+            if isSuspected then
+                isJust measurements.isolation && isJust measurements.hcContact
+
+            else
+                List.isEmpty pendingActivities
 
         endEcounterButtonAttributes =
             if allowEndEcounter then
                 [ class "ui fluid primary button"
-                , onClick <| CloseEncounter id
+                , onClick <| SetEndEncounterDialogState True
                 ]
 
             else

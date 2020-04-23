@@ -29,7 +29,7 @@ import Backend.Person.Model
         , allModesOfDelivery
         , allUbudehes
         )
-import Backend.Person.Utils exposing (expectedAgeByPerson, isAdult, isPersonAnAdult)
+import Backend.Person.Utils exposing (defaultIconForPerson, expectedAgeByPerson, isAdult, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Date exposing (Unit(..))
@@ -247,15 +247,7 @@ viewPerson : Language -> NominalDate -> PersonId -> Person -> Html App.Model.Msg
 viewPerson language currentDate id person =
     let
         typeForThumbnail =
-            case isPersonAnAdult currentDate person of
-                Just True ->
-                    "mother"
-
-                Just False ->
-                    "child"
-
-                Nothing ->
-                    "mother"
+            defaultIconForPerson currentDate person
 
         action =
             div
@@ -306,15 +298,7 @@ viewOtherPerson : Language -> NominalDate -> PersonId -> ( PersonId, OtherPerson
 viewOtherPerson language currentDate relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
     let
         typeForThumbnail =
-            case isPersonAnAdult currentDate person of
-                Just True ->
-                    "mother"
-
-                Just False ->
-                    "child"
-
-                Nothing ->
-                    "mother"
+            defaultIconForPerson currentDate person
 
         relationshipLabel =
             otherPerson.relationship

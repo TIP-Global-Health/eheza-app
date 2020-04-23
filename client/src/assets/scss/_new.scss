@@ -463,6 +463,151 @@ div.page-encounter.prenatal {
     }
 }
 
+// Acute Illness Encounter page
+div.page-encounter.acute-illness {
+
+    .ui.full.segment {
+
+      .full.content {
+        min-height: 430px;
+      }
+    }
+}
+
+// Acute Illness Activity page
+div.page-activity.acute-illness {
+
+  .ui.full.segment {
+
+    .full.content {
+      min-height: 210px;
+    }
+
+    .label {
+      margin-bottom: 5px;
+    }
+
+    .helper {
+      margin-bottom: 20px;
+    }
+
+    .form-input.period {
+      background: $color-white;
+      border: 2px solid $color-light-gray;
+      margin-top: -10px;
+      padding: 5px;
+      width: 100%;
+    }
+
+    .form-input.measurement {
+      margin-bottom: 10px;
+
+      .unit {
+        float: left;
+        font-weight: 700;
+        margin-left: 20px;
+        margin-top: 10px;
+        width: 35%;
+      }
+
+      input {
+        background-color: $color-white;
+        border: 2px solid $color-gray-border;
+        float: left;
+        width: 60%;
+      }
+
+      &.disabled input{
+        pointer-events: none;
+      }
+    }
+
+    .form-input.yes-no {
+      margin-left: 25px;
+      padding-bottom: 15px;
+
+      label {
+        font-size: 25px;
+        margin-left: 10px;
+      }
+
+      label:before {
+        background-color: transparent;
+        border: 2px solid $color-gray-border;
+        border-radius: 13px;
+        content: " ";
+        display: inline-block;
+        height: 26px;
+        margin-right: 10px;
+        position: relative;
+        top: 5px;
+        width: 26px;
+      }
+
+      input[type=radio] {
+        display: none;
+      }
+
+      input[type=radio]:checked + label:after {
+        background: $color-text;
+        border-radius: 7px;
+        content: " ";
+        display: block;
+        height: 14px;
+        left: 30px;
+        position: absolute;
+        top: 25px;
+        width: 14px;
+      }
+    }
+
+    .checkbox-select-input {
+      padding-bottom: 15px;
+
+      .ui.checkbox.activity {
+        margin-bottom: 10px;
+
+        label {
+          font-size: 24px;
+
+          span {
+            margin: 7px;
+
+            &.strong {
+              font-weight: 600;
+            }
+          }
+
+          &:before {
+            height: 24px;
+            width: 24px;
+          }
+        }
+      }
+    }
+
+    .previous-value {
+      display: inline-block;
+      font-size: 18px;
+      width: 100%;
+    }
+
+    .separator {
+      margin: 30px 0;
+      width: 100%;
+    }
+
+    .days-present {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .checkbox.activity {
+      margin-bottom: 12px;
+    }
+  }
+}
+
 // Prenatal Activity page
 div.page-activity.prenatal,
 div.page-activity.nutrition {
@@ -596,8 +741,16 @@ div.page-activity.nutrition {
         .ui.checkbox.activity {
           margin-bottom: 10px;
 
-          label {
+          .label {
             font-size: 24px;
+
+            span {
+              margin: 7px;
+
+              &.strong {
+                font-weight: 600;
+              }
+            }
 
             &:before {
               height: 24px;
