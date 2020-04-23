@@ -733,6 +733,9 @@ update msg model =
                         UserPage (PrenatalActivityPage _ PrenatalPhoto) ->
                             App.Ports.bindDropZone ()
 
+                        UserPage (NutritionActivityPage _ Photo) ->
+                            App.Ports.bindDropZone ()
+
                         _ ->
                             Cmd.none
             in

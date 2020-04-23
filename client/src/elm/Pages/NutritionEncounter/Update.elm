@@ -23,17 +23,8 @@ update msg model =
             )
 
         SetActivePage page ->
-            let
-                cmd =
-                    case page of
-                        UserPage (NutritionActivityPage _ Photo) ->
-                            App.Ports.bindDropZone ()
-
-                        _ ->
-                            Cmd.none
-            in
             ( model
-            , cmd
+            , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
 
