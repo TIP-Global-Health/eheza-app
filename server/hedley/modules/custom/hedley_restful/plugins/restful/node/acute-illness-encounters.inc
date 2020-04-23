@@ -12,6 +12,6 @@ $plugin = array(
   'entity_type' => 'node',
   'bundle' => 'acute_illness_encounter',
   'description' => t('Exports the Acute Illness Encounter bundle.'),
-  'class' => 'HedleyRestfulAcuteIllnessEncounters',
+  'class' => 'HedleyRestfulIndividualEncounter',
   'authentication_types' => TRUE,
 );

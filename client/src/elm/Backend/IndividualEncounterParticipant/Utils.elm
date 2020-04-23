@@ -2,8 +2,8 @@ module Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEn
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
-import Maybe.Extra exposing (isJust, isNothing)
+import Gizra.NominalDate exposing (NominalDate)
+import Maybe.Extra exposing (isNothing)
 
 
 encoudeIndividualEncounterTypeAsString : IndividualEncounterType -> String

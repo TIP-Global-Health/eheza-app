@@ -1,4 +1,4 @@
-module Backend.Measurement.Model exposing (AbdomenCPESign(..), AcuteIllnessMeasurement, AcuteIllnessMeasurements, AcuteIllnessVitals, AcuteIllnessVitalsValue, Attendance, BreastExam, BreastExamSign(..), BreastExamValue, CSectionReason(..), CSectionScar(..), ChildMeasurementList, ChildMeasurements, ChildNutrition, ChildNutritionSign(..), CorePhysicalExam, CorePhysicalExamValue, CounselingSession, DangerSign(..), DangerSigns, Exposure, ExposureSign(..), EyesCPESign(..), FamilyPlanning, FamilyPlanningSign(..), FetalPresentation(..), GroupMeasurement, HCContact, HCContactSign(..), HCContactValue, HCRecomendation(..), HairHeadCPESign(..), HandsCPESign(..), HeartCPESign(..), Height, HeightInCm(..), HistoricalMeasurements, Isolation, IsolationSign(..), IsolationValue, LastMenstrualPeriod, LastMenstrualPeriodValue, LegsCPESign(..), LungsCPESign(..), MalariaTesting, MalariaTestingSign(..), Measurement, MeasurementData, Measurements, MedicalHistory, MedicalHistorySign(..), Medication, MedicationSign(..), MotherMeasurementList, MotherMeasurements, Muac, MuacInCm(..), MuacIndication(..), NeckCPESign(..), NutritionMeasurement, NutritionMeasurements, NutritionNutrition, ObstetricHistory, ObstetricHistorySign(..), ObstetricHistoryStep2, ObstetricHistoryStep2Value, ObstetricHistoryValue, ObstetricalExam, ObstetricalExamValue, ParticipantConsent, ParticipantConsentValue, Photo, PhotoUrl(..), PrenatalFamilyPlanning, PrenatalMeasurement, PrenatalMeasurements, PrenatalNutrition, PrenatalNutritionValue, PrenatalPhoto, PreviousDeliveryPeriod(..), PreviousDeliverySign(..), ReasonForNotIsolating(..), Resource, ResourceSign(..), ResponsePeriod(..), SocialHistory, SocialHistoryHivTestingResult(..), SocialHistorySign(..), SocialHistoryValue, SymptomsGI, SymptomsGISign(..), SymptomsGeneral, SymptomsGeneralSign(..), SymptomsRespiratory, SymptomsRespiratorySign(..), TravelHistory, TravelHistorySign(..), Vitals, VitalsValue, Weight, WeightInKg(..), emptyChildMeasurementList, emptyChildMeasurements, emptyHistoricalMeasurements, emptyMeasurements, emptyMotherMeasurementList, emptyMotherMeasurements)
+module Backend.Measurement.Model exposing (AbdomenCPESign(..), AcuteIllnessMeasurement, AcuteIllnessMeasurements, AcuteIllnessVitals, AcuteIllnessVitalsValue, Attendance, BreastExam, BreastExamSign(..), BreastExamValue, CSectionReason(..), CSectionScar(..), ChildMeasurementList, ChildMeasurements, ChildNutrition, ChildNutritionSign(..), CorePhysicalExam, CorePhysicalExamValue, CounselingSession, DangerSign(..), DangerSigns, Exposure, ExposureSign(..), EyesCPESign(..), FamilyPlanning, FamilyPlanningSign(..), FetalPresentation(..), GroupMeasurement, HCContact, HCContactSign(..), HCContactValue, HCRecomendation(..), HairHeadCPESign(..), HandsCPESign(..), HeartCPESign(..), Height, HeightInCm(..), HistoricalMeasurements, Isolation, IsolationSign(..), IsolationValue, LastMenstrualPeriod, LastMenstrualPeriodValue, LegsCPESign(..), LungsCPESign(..), MalariaTesting, MalariaTestingSign(..), Measurement, MeasurementData, Measurements, MedicalHistory, MedicalHistorySign(..), Medication, MedicationSign(..), MotherMeasurementList, MotherMeasurements, Muac, MuacInCm(..), MuacIndication(..), NeckCPESign(..), NutritionHeight, NutritionMeasurement, NutritionMeasurements, NutritionMuac, NutritionNutrition, NutritionPhoto, NutritionWeight, ObstetricHistory, ObstetricHistorySign(..), ObstetricHistoryStep2, ObstetricHistoryStep2Value, ObstetricHistoryValue, ObstetricalExam, ObstetricalExamValue, ParticipantConsent, ParticipantConsentValue, Photo, PhotoUrl(..), PrenatalFamilyPlanning, PrenatalMeasurement, PrenatalMeasurements, PrenatalNutrition, PrenatalNutritionValue, PrenatalPhoto, PreviousDeliveryPeriod(..), PreviousDeliverySign(..), ReasonForNotIsolating(..), Resource, ResourceSign(..), ResponsePeriod(..), SocialHistory, SocialHistoryHivTestingResult(..), SocialHistorySign(..), SocialHistoryValue, SymptomsGI, SymptomsGISign(..), SymptomsGeneral, SymptomsGeneralSign(..), SymptomsRespiratory, SymptomsRespiratorySign(..), TravelHistory, TravelHistorySign(..), Vitals, VitalsValue, Weight, WeightInKg(..), emptyChildMeasurementList, emptyChildMeasurements, emptyHistoricalMeasurements, emptyMeasurements, emptyMotherMeasurementList, emptyMotherMeasurements)
 
 {-| This module represents various measurements to be stored on the backend,
 and cached in local storage.
@@ -159,8 +159,24 @@ type alias CounselingSession =
 -- NUTRITION MEASUREMENTS
 
 
+type alias NutritionMuac =
+    NutritionMeasurement MuacInCm
+
+
+type alias NutritionHeight =
+    NutritionMeasurement HeightInCm
+
+
 type alias NutritionNutrition =
     NutritionMeasurement (EverySet ChildNutritionSign)
+
+
+type alias NutritionPhoto =
+    NutritionMeasurement PhotoUrl
+
+
+type alias NutritionWeight =
+    NutritionMeasurement WeightInKg
 
 
 
@@ -693,7 +709,11 @@ type alias PrenatalMeasurements =
 encounter.
 -}
 type alias NutritionMeasurements =
-    { nutrition : Maybe ( NutritionNutritionId, NutritionNutrition )
+    { muac : Maybe ( NutritionMuacId, NutritionMuac )
+    , height : Maybe ( NutritionHeightId, NutritionHeight )
+    , nutrition : Maybe ( NutritionNutritionId, NutritionNutrition )
+    , photo : Maybe ( NutritionPhotoId, NutritionPhoto )
+    , weight : Maybe ( NutritionWeightId, NutritionWeight )
     }
 
 

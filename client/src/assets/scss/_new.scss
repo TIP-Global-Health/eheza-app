@@ -425,6 +425,10 @@ div.page-activity {
           margin-bottom: 40px;
         }
       }
+
+      .form.muac .measurement {
+        margin-top: 70px;
+      }
     }
 }
 
@@ -594,7 +598,8 @@ div.page-activity.acute-illness {
 }
 
 // Prenatal Activity page
-div.page-activity.prenatal {
+div.page-activity.prenatal,
+div.page-activity.nutrition {
 
     .ui.full.segment {
 
@@ -656,6 +661,7 @@ div.page-activity.prenatal {
 
         // Number inputs
         &.measurement {
+          height: 50px;
           margin-bottom: 10px;
 
           .unit {
