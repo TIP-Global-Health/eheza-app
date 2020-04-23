@@ -1,4 +1,4 @@
-module Measurement.View exposing (viewChild, viewMother, viewMuacIndication)
+module Measurement.View exposing (viewChild, viewMother, viewMuacIndication, zScoreForHeightOrLength)
 
 {-| This module provides a form for entering measurements.
 -}

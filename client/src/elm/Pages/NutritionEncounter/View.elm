@@ -105,8 +105,20 @@ viewMainPageContent language currentDate id measurements model =
                 |> List.partition
                     (\activity ->
                         case activity of
-                            NutritionNutrition ->
+                            Height ->
+                                isJust measurements.height
+
+                            Muac ->
+                                isJust measurements.muac
+
+                            Nutrition ->
                                 isJust measurements.nutrition
+
+                            Photo ->
+                                isJust measurements.photo
+
+                            Weight ->
+                                isJust measurements.weight
                     )
 
         pendingTabTitle =
