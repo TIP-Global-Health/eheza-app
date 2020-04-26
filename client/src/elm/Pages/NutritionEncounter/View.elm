@@ -16,6 +16,7 @@ import Maybe.Extra exposing (isJust, unwrap)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import NutritionActivity.Utils exposing (getActivityIcon, getAllActivities)
 import Pages.NutritionEncounter.Model exposing (..)
+import Pages.NutritionEncounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -28,39 +29,14 @@ import Utils.WebData exposing (viewWebData)
 view : Language -> NominalDate -> NutritionEncounterId -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate id db model =
     let
-        encounter =
-            Dict.get id db.nutritionEncounters
-                |> Maybe.withDefault NotAsked
-
-        participant =
-            encounter
-                |> RemoteData.andThen
-                    (\encounter_ ->
-                        Dict.get encounter_.participant db.individualParticipants
-                            |> Maybe.withDefault NotAsked
-                    )
-
-        person =
-            participant
-                |> RemoteData.andThen
-                    (\participant_ ->
-                        Dict.get participant_.person db.people
-                            |> Maybe.withDefault NotAsked
-                    )
-
-        measurements =
-            Dict.get id db.nutritionMeasurements
-                |> Maybe.withDefault NotAsked
-
-        personWithMeasurements =
-            RemoteData.map (\a b -> ( a, b )) person
-                |> RemoteData.andMap measurements
+        data =
+            generateAssembledData id db
 
         header =
-            viewWebData language (viewHeader language) identity participant
+            viewWebData language (viewHeader language) identity data
 
         content =
-            viewWebData language (viewContent language currentDate id model) identity personWithMeasurements
+            viewWebData language (viewContent language currentDate id model) identity data
     in
     div [ class "page-encounter nutrition" ] <|
         [ header
@@ -68,8 +44,8 @@ view language currentDate id db model =
         ]
 
 
-viewHeader : Language -> IndividualEncounterParticipant -> Html Msg
-viewHeader language participant =
+viewHeader : Language -> AssembledData -> Html Msg
+viewHeader language data =
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -81,7 +57,7 @@ viewHeader language participant =
             ]
         , a
             [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| NutritionParticipantPage participant.person
+            , onClick <| SetActivePage <| UserPage <| NutritionParticipantPage data.participant.person
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -89,17 +65,20 @@ viewHeader language participant =
         ]
 
 
-viewContent : Language -> NominalDate -> NutritionEncounterId -> Model -> ( Person, NutritionMeasurements ) -> Html Msg
-viewContent language currentDate id model ( person, measurements ) =
-    ((viewPersonDetails language currentDate person |> div [ class "item" ])
-        :: viewMainPageContent language currentDate id measurements model
+viewContent : Language -> NominalDate -> NutritionEncounterId -> Model -> AssembledData -> Html Msg
+viewContent language currentDate id model data =
+    ((viewPersonDetails language currentDate data.person |> div [ class "item" ])
+        :: viewMainPageContent language currentDate id data model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewMainPageContent : Language -> NominalDate -> NutritionEncounterId -> NutritionMeasurements -> Model -> List (Html Msg)
-viewMainPageContent language currentDate id measurements model =
+viewMainPageContent : Language -> NominalDate -> NutritionEncounterId -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language currentDate id data model =
     let
+        measurements =
+            data.measurements
+
         ( completedActivities, pendingActivities ) =
             getAllActivities
                 |> List.partition

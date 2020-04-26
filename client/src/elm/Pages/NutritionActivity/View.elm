@@ -4,6 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.Person.Model exposing (Person)
@@ -16,13 +17,15 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Measurement.View exposing (zScoreForHeightOrLength)
+import Measurement.View exposing (viewMeasurementFloatDiff, viewMuacIndication, zScoreForHeightOrLength)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionActivity.Utils exposing (..)
+import Pages.NutritionEncounter.Model exposing (AssembledData)
+import Pages.NutritionEncounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.View exposing (viewPersonDetails)
-import Pages.Utils exposing (taskCompleted, viewCheckBoxMultipleSelectInput, viewCustomLabel, viewLabel, viewMeasurementInput, viewPhotoThumbFromPhotoUrl)
+import Pages.Utils exposing (taskCompleted, viewCheckBoxMultipleSelectInput, viewCustomLabel, viewLabel, viewMeasurementInput, viewPhotoThumbFromPhotoUrl, viewPreviousMeasurement)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.NominalDate exposing (Days(..), diffDays)
@@ -34,42 +37,12 @@ import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeight
 view : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate zscores id activity db model =
     let
-        encounter =
-            Dict.get id db.nutritionEncounters
-                |> Maybe.withDefault NotAsked
-
-        participant =
-            encounter
-                |> RemoteData.andThen
-                    (\encounter_ ->
-                        Dict.get encounter_.participant db.individualParticipants
-                            |> Maybe.withDefault NotAsked
-                    )
-
-        personId =
-            participant
-                |> RemoteData.map .person
-
-        person =
-            participant
-                |> RemoteData.andThen
-                    (\participant_ ->
-                        Dict.get participant_.person db.people
-                            |> Maybe.withDefault NotAsked
-                    )
-
-        measurements =
-            Dict.get id db.nutritionMeasurements
-                |> Maybe.withDefault NotAsked
-
-        personWithMeasurements =
-            RemoteData.map (\a b c -> ( a, b, c )) personId
-                |> RemoteData.andMap person
-                |> RemoteData.andMap measurements
+        data =
+            generateAssembledData id db
     in
     div [ class "page-activity nutrition" ] <|
         [ viewHeader language id activity
-        , viewWebData language (viewContent language currentDate zscores id activity model) identity personWithMeasurements
+        , viewWebData language (viewContent language currentDate zscores id activity model) identity data
         ]
 
 
@@ -90,41 +63,41 @@ viewHeader language id activity =
         ]
 
 
-viewContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Model -> ( PersonId, Person, NutritionMeasurements ) -> Html Msg
-viewContent language currentDate zscores id activity model ( personId, person, measurements ) =
-    ((viewPersonDetails language currentDate person |> div [ class "item" ])
-        :: viewActivity language currentDate zscores id activity ( personId, person, measurements ) model
+viewContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Model -> AssembledData -> Html Msg
+viewContent language currentDate zscores id activity model assembled =
+    ((viewPersonDetails language currentDate assembled.person |> div [ class "item" ])
+        :: viewActivity language currentDate zscores id activity assembled model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewActivity : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> ( PersonId, Person, NutritionMeasurements ) -> Model -> List (Html Msg)
-viewActivity language currentDate zscores id activity ( personId, person, measurements ) model =
+viewActivity : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> AssembledData -> Model -> List (Html Msg)
+viewActivity language currentDate zscores id activity assembled model =
     case activity of
         Height ->
-            viewHeightContent language currentDate zscores ( personId, person, measurements ) model.heightData
+            viewHeightContent language currentDate zscores assembled model.heightData
 
         Muac ->
-            viewMuacContent language currentDate ( personId, measurements ) model.muacData
+            viewMuacContent language currentDate assembled model.muacData
 
         Nutrition ->
-            viewNutritionContent language currentDate ( personId, measurements ) model.nutritionData
+            viewNutritionContent language currentDate ( assembled.participant.person, assembled.measurements ) model.nutritionData
 
         Photo ->
-            viewPhotoContent language currentDate ( personId, measurements ) model.photoData
+            viewPhotoContent language currentDate ( assembled.participant.person, assembled.measurements ) model.photoData
 
         Weight ->
-            viewWeightContent language currentDate zscores ( personId, person, measurements ) model.weightData
+            viewWeightContent language currentDate zscores assembled model.weightData
 
 
-viewHeightContent : Language -> NominalDate -> ZScore.Model.Model -> ( PersonId, Person, NutritionMeasurements ) -> HeightData -> List (Html Msg)
-viewHeightContent language currentDate zscores ( personId, person, measurements ) data =
+viewHeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> HeightData -> List (Html Msg)
+viewHeightContent language currentDate zscores assembled data =
     let
         activity =
             Height
 
         form =
-            measurements.height
+            assembled.measurements.height
                 |> Maybe.map (Tuple.second >> .value)
                 |> heightFormWithDefault data.form
 
@@ -137,7 +110,10 @@ viewHeightContent language currentDate zscores ( personId, person, measurements 
         maybeAgeInDays =
             Maybe.map
                 (\birthDate -> diffDays birthDate currentDate)
-                person.birthDate
+                assembled.person.birthDate
+
+        previousValue =
+            resolvePreviousValue assembled .height (\(HeightInCm cm) -> cm)
 
         zScoreText =
             form.height
@@ -145,7 +121,7 @@ viewHeightContent language currentDate zscores ( personId, person, measurements 
                     (\height ->
                         Maybe.andThen
                             (\ageInDays ->
-                                zScoreLengthHeightForAge zscores ageInDays person.gender (Centimetres height)
+                                zScoreLengthHeightForAge zscores ageInDays assembled.person.gender (Centimetres height)
                             )
                             maybeAgeInDays
                     )
@@ -158,12 +134,24 @@ viewHeightContent language currentDate zscores ( personId, person, measurements 
             [ div [ class "ui form height" ]
                 [ viewLabel language <| Translate.NutritionActivityTitle activity
                 , p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
-                , viewMeasurementInput
-                    language
-                    form.height
-                    SetHeight
-                    "height"
-                    Translate.CentimeterShorthand
+                , div [ class "ui grid" ]
+                    [ div [ class "eleven wide column" ]
+                        [ viewMeasurementInput
+                            language
+                            form.height
+                            SetHeight
+                            "height"
+                            Translate.CentimeterShorthand
+                        ]
+                    , div
+                        [ class "five wide column" ]
+                        [ showMaybe <|
+                            Maybe.map2 (viewMeasurementFloatDiff language Translate.CentimeterShorthand)
+                                form.height
+                                previousValue
+                        ]
+                    ]
+                , viewPreviousMeasurement language previousValue Translate.CentimeterShorthand
                 ]
             , div [ class "ui large header z-score age" ]
                 [ text <| translate language Translate.ZScoreHeightForAge
@@ -174,7 +162,7 @@ viewHeightContent language currentDate zscores ( personId, person, measurements 
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveHeight personId measurements.height
+                , onClick <| SaveHeight assembled.participant.person assembled.measurements.height
                 ]
                 [ text <| translate language Translate.Save ]
             ]
@@ -182,14 +170,14 @@ viewHeightContent language currentDate zscores ( personId, person, measurements 
     ]
 
 
-viewMuacContent : Language -> NominalDate -> ( PersonId, NutritionMeasurements ) -> MuacData -> List (Html Msg)
-viewMuacContent language currentDate ( personId, measurements ) data =
+viewMuacContent : Language -> NominalDate -> AssembledData -> MuacData -> List (Html Msg)
+viewMuacContent language currentDate assembled data =
     let
         activity =
             Muac
 
         form =
-            measurements.muac
+            assembled.measurements.muac
                 |> Maybe.map (Tuple.second >> .value)
                 |> muacFormWithDefault data.form
 
@@ -198,6 +186,9 @@ viewMuacContent language currentDate ( personId, measurements ) data =
 
         tasksCompleted =
             taskCompleted form.muac
+
+        previousValue =
+            resolvePreviousValue assembled .muac (\(MuacInCm cm) -> cm)
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -205,18 +196,28 @@ viewMuacContent language currentDate ( personId, measurements ) data =
             [ div [ class "ui form muac" ]
                 [ viewLabel language <| Translate.NutritionActivityTitle activity
                 , p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
-                , viewMeasurementInput
-                    language
-                    form.muac
-                    SetMuac
-                    "muac"
-                    Translate.CentimeterShorthand
+                , div [ class "ui grid" ]
+                    [ div [ class "eleven wide column" ]
+                        [ viewMeasurementInput
+                            language
+                            form.muac
+                            SetMuac
+                            "muac"
+                            Translate.CentimeterShorthand
+                        ]
+                    , div
+                        [ class "five wide column" ]
+                        [ showMaybe <|
+                            Maybe.map (MuacInCm >> muacIndication >> viewMuacIndication language) form.muac
+                        ]
+                    ]
+                , viewPreviousMeasurement language previousValue Translate.CentimeterShorthand
                 ]
             ]
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveMuac personId measurements.muac
+                , onClick <| SaveMuac assembled.participant.person assembled.measurements.muac
                 ]
                 [ text <| translate language Translate.Save ]
             ]
@@ -342,14 +343,14 @@ viewPhotoContent language currentDate ( personId, measurements ) data =
     ]
 
 
-viewWeightContent : Language -> NominalDate -> ZScore.Model.Model -> ( PersonId, Person, NutritionMeasurements ) -> WeightData -> List (Html Msg)
-viewWeightContent language currentDate zscores ( personId, person, measurements ) data =
+viewWeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> WeightData -> List (Html Msg)
+viewWeightContent language currentDate zscores assembled data =
     let
         activity =
             Weight
 
         form =
-            measurements.weight
+            assembled.measurements.weight
                 |> Maybe.map (Tuple.second >> .value)
                 |> weightFormWithDefault data.form
 
@@ -362,7 +363,10 @@ viewWeightContent language currentDate zscores ( personId, person, measurements 
         maybeAgeInDays =
             Maybe.map
                 (\birthDate -> diffDays birthDate currentDate)
-                person.birthDate
+                assembled.person.birthDate
+
+        previousValue =
+            resolvePreviousValue assembled .weight (\(WeightInKg kg) -> kg)
 
         zScoreForAgeText =
             form.weight
@@ -370,7 +374,7 @@ viewWeightContent language currentDate zscores ( personId, person, measurements 
                     (\weight ->
                         Maybe.andThen
                             (\ageInDays ->
-                                zScoreWeightForAge zscores ageInDays person.gender (Kilograms weight)
+                                zScoreWeightForAge zscores ageInDays assembled.person.gender (Kilograms weight)
                             )
                             maybeAgeInDays
                     )
@@ -378,7 +382,7 @@ viewWeightContent language currentDate zscores ( personId, person, measurements 
                 |> Maybe.withDefault (translate language Translate.NotAvailable)
 
         zScoreForHeightText =
-            measurements.height
+            assembled.measurements.height
                 |> Maybe.map (Tuple.second >> .value)
                 |> Maybe.andThen
                     (\(HeightInCm height) ->
@@ -387,7 +391,7 @@ viewWeightContent language currentDate zscores ( personId, person, measurements 
                                 (\weight ->
                                     Maybe.andThen
                                         (\ageInDays ->
-                                            zScoreForHeightOrLength zscores ageInDays (Centimetres height) person.gender weight
+                                            zScoreForHeightOrLength zscores ageInDays (Centimetres height) assembled.person.gender weight
                                         )
                                         maybeAgeInDays
                                 )
@@ -401,12 +405,24 @@ viewWeightContent language currentDate zscores ( personId, person, measurements 
             [ div [ class "ui form weight" ]
                 [ viewLabel language <| Translate.NutritionActivityTitle activity
                 , p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
-                , viewMeasurementInput
-                    language
-                    form.weight
-                    SetWeight
-                    "weight"
-                    Translate.KilogramShorthand
+                , div [ class "ui grid" ]
+                    [ div [ class "eleven wide column" ]
+                        [ viewMeasurementInput
+                            language
+                            form.weight
+                            SetWeight
+                            "weight"
+                            Translate.KilogramShorthand
+                        ]
+                    , div
+                        [ class "five wide column" ]
+                        [ showMaybe <|
+                            Maybe.map2 (viewMeasurementFloatDiff language Translate.KilogramShorthand)
+                                form.weight
+                                previousValue
+                        ]
+                    ]
+                , viewPreviousMeasurement language previousValue Translate.KilogramShorthand
                 ]
             , div [ class "ui large header z-score age" ]
                 [ text <| translate language Translate.ZScoreWeightForAge
@@ -423,7 +439,7 @@ viewWeightContent language currentDate zscores ( personId, person, measurements 
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveWeight personId measurements.weight
+                , onClick <| SaveWeight assembled.participant.person assembled.measurements.weight
                 ]
                 [ text <| translate language Translate.Save ]
             ]

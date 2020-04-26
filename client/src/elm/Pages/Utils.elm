@@ -266,6 +266,25 @@ viewMeasurementInput language maybeCurrentValue setMsg inputClass unitTranslatio
         ]
 
 
+viewPreviousMeasurement : Language -> Maybe Float -> TranslationId -> Html any
+viewPreviousMeasurement language maybePreviousValue unitTranslationId =
+    let
+        message =
+            maybePreviousValue
+                |> unwrap
+                    (translate language Translate.PreviousMeasurementNotFound)
+                    (\previousValue ->
+                        (previousValue
+                            |> Translate.PreviousFloatMeasurement
+                            |> translate language
+                        )
+                            ++ " "
+                            ++ translate language unitTranslationId
+                    )
+    in
+    div [ class "previous-value" ] [ text message ]
+
+
 viewCheckBoxValueInput : Language -> ( List a, a ) -> Dict a Int -> (a -> msg) -> (a -> String -> msg) -> (a -> TranslationId) -> List (Html msg)
 viewCheckBoxValueInput language ( signs, none ) data toggleMsg setMsg translateFunc =
     let
@@ -360,25 +379,6 @@ viewCheckBoxValueInputNone language data setMsg translateFunc noneSign =
                 ]
             ]
         ]
-
-
-viewPreviousMeasurement : Language -> Maybe Float -> TranslationId -> Html any
-viewPreviousMeasurement language maybePreviousValue unitTranslationId =
-    let
-        message =
-            maybePreviousValue
-                |> unwrap
-                    (translate language Translate.PreviousMeasurementNotFound)
-                    (\previousValue ->
-                        (previousValue
-                            |> Translate.PreviousFloatMeasurement
-                            |> translate language
-                        )
-                            ++ " "
-                            ++ translate language unitTranslationId
-                    )
-    in
-    div [ class "previous-value" ] [ text message ]
 
 
 viewEndEncounterDialog : Language -> TranslationId -> TranslationId -> msg -> msg -> Html msg

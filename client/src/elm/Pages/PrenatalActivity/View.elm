@@ -2362,19 +2362,3 @@ viewAlert color =
             "assets/images/alert-" ++ color ++ ".png"
     in
     img [ src icon ] []
-
-
-
--- Helper functions
-
-
-resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
-resolvePreviousValue assembled measurementFunc valueFunc =
-    assembled.previousMeasurementsWithDates
-        |> List.filterMap
-            (\( _, measurements ) ->
-                measurementFunc measurements
-                    |> Maybe.map (Tuple.second >> .value >> valueFunc)
-            )
-        |> List.reverse
-        |> List.head

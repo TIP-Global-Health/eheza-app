@@ -426,8 +426,19 @@ div.page-activity {
         }
       }
 
-      .form.muac .measurement {
-        margin-top: 70px;
+      .form .ui.grid {
+
+        .measurement input {
+          width: 85%;
+        }
+
+        .measurement .unit {
+          width: unset;
+        }
+      }
+
+      .form.muac .ui.grid {
+        margin-top: 50px;
       }
     }
 }
