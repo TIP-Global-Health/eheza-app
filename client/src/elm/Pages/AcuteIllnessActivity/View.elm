@@ -712,7 +712,7 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) isSu
                 ]
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
-        [ div [ class "ui four column grid" ] <|
+        [ div [ class "ui five column grid" ] <|
             List.map viewTask tasks
         ]
     , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
@@ -750,14 +750,10 @@ viewExposureForm : Language -> NominalDate -> AcuteIllnessMeasurements -> Exposu
 viewExposureForm language currentDate measurements form =
     div [ class "ui form exposure" ]
         [ div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
+            [ div [ class "sixteen wide column" ]
                 [ viewQuestionLabel language Translate.ContactWithCOVID19SymptomsQuestion ]
-            , div [ class "four wide column" ]
-                [-- viewConditionalAlert form.respiratoryRate
-                 --    [ [ (>) 12 ], [ (<) 30 ] ]
-                 --    [ [ (<=) 21, (>=) 30 ] ]
-                ]
             ]
+        , div [ class "question-helper" ] [ text <| translate language Translate.ContactWithCOVID19SymptomsHelper ++ "." ]
         , viewBoolInput
             language
             form.covid19Symptoms

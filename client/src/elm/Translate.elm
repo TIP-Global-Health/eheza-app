@@ -241,6 +241,7 @@ type TranslationId
     | Clinical
     | ClinicalProgressReport
     | ContactedHCQuestion
+    | ContactWithCOVID19SymptomsHelper
     | ContactWithCOVID19SymptomsQuestion
     | ContactWithSimilarSymptomsQuestion
     | ConvulsionsAndUnconsciousPreviousDelivery
@@ -1359,6 +1360,11 @@ translationSet trans =
 
         ContactedHCQuestion ->
             { english = "Have you contacted the health center"
+            , kinyarwanda = Nothing
+            }
+
+        ContactWithCOVID19SymptomsHelper ->
+            { english = "Symptoms include fever, dry cough, and shortness of breath"
             , kinyarwanda = Nothing
             }
 
