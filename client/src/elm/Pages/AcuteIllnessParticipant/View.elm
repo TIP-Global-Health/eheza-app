@@ -104,7 +104,7 @@ viewActions language currentDate id db sessions =
                     )
                 |> Maybe.withDefault ( Nothing, False )
 
-        -- Wither first encounter for person is in process.
+        -- Whether first acute-illness encounter for person is in process.
         -- This is True when there's only one encounter, and it's active.
         firstEncounterInProcess =
             maybeSessionId

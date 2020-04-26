@@ -106,7 +106,7 @@ viewPrenatalActions language currentDate id db prenatalSessions =
                     )
                 |> Maybe.withDefault ( Nothing, 0, False )
 
-        -- Wither first prenatal encounter for person is in process.
+        -- Whether first prenatal encounter for person is in process.
         -- This is True when there's only one encounter, and it's active.
         firstEncounterInProcess =
             maybeSessionId
