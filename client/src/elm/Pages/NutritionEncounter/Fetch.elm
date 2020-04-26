@@ -33,8 +33,7 @@ fetch id db =
                     )
                 |> Maybe.withDefault []
 
-        -- We fetch measurements for  all encounters, to be
-        -- able to apply `expectedNutritionActivity` logic.
+        -- We fetch measurements of all encounters.
         fetchMeasurements =
             encountersIds
                 |> List.map FetchNutritionMeasurements

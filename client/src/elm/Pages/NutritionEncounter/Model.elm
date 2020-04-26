@@ -1,4 +1,4 @@
-module Pages.NutritionEncounter.Model exposing (Model, Msg(..), Tab(..), emptyModel)
+module Pages.NutritionEncounter.Model exposing (AssembledData, Model, Msg(..), Tab(..), emptyModel)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
@@ -27,4 +27,14 @@ type Tab
 emptyModel : Model
 emptyModel =
     { selectedTab = Pending
+    }
+
+
+type alias AssembledData =
+    { id : NutritionEncounterId
+    , encounter : NutritionEncounter
+    , participant : IndividualEncounterParticipant
+    , person : Person
+    , measurements : NutritionMeasurements
+    , previousMeasurementsWithDates : List ( NominalDate, NutritionMeasurements )
     }

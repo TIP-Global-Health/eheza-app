@@ -1,10 +1,11 @@
-module Pages.NutritionActivity.Utils exposing (fromHeightValue, fromMuacValue, fromNutritionValue, fromWeightValue, heightFormWithDefault, ifEmpty, muacFormWithDefault, nutritionFormWithDefault, toHeightValue, toHeightValueWithDefault, toMuacValue, toMuacValueWithDefault, toNutritionValue, toNutritionValueWithDefault, toWeightValue, toWeightValueWithDefault, weightFormWithDefault)
+module Pages.NutritionActivity.Utils exposing (fromHeightValue, fromMuacValue, fromNutritionValue, fromWeightValue, heightFormWithDefault, ifEmpty, muacFormWithDefault, nutritionFormWithDefault, resolvePreviousValue, toHeightValue, toHeightValueWithDefault, toMuacValue, toMuacValueWithDefault, toNutritionValue, toNutritionValueWithDefault, toWeightValue, toWeightValueWithDefault, weightFormWithDefault)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Measurement.Model exposing (ChildNutritionSign(..), HeightInCm(..), MuacInCm(..), WeightInKg(..))
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), HeightInCm(..), MuacInCm(..), NutritionMeasurement, NutritionMeasurements, WeightInKg(..))
 import EverySet exposing (EverySet)
 import Maybe.Extra exposing (or, unwrap)
 import Pages.NutritionActivity.Model exposing (..)
+import Pages.NutritionEncounter.Model exposing (AssembledData)
 
 
 ifEmpty : a -> EverySet a -> EverySet a
@@ -14,6 +15,18 @@ ifEmpty value set =
 
     else
         set
+
+
+resolvePreviousValue : AssembledData -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a )) -> (a -> b) -> Maybe b
+resolvePreviousValue assembled measurementFunc valueFunc =
+    assembled.previousMeasurementsWithDates
+        |> List.filterMap
+            (\( _, measurements ) ->
+                measurementFunc measurements
+                    |> Maybe.map (Tuple.second >> .value >> valueFunc)
+            )
+        |> List.reverse
+        |> List.head
 
 
 fromMuacValue : Maybe MuacInCm -> MuacForm
