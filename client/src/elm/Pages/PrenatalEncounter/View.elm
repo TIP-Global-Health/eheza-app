@@ -60,7 +60,7 @@ view language currentDate id db model =
 viewContent : Language -> NominalDate -> Model -> AssembledData -> Html Msg
 viewContent language currentDate model data =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate data model.showAlertsDialog SetAlertsDialogState
+        viewMotherAndMeasurements language currentDate data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
             ++ viewMainPageContent language currentDate data model
 
 
@@ -81,15 +81,15 @@ viewHeader language data =
         ]
 
 
-viewMotherAndMeasurements : Language -> NominalDate -> AssembledData -> Bool -> (Bool -> msg) -> List (Html msg)
-viewMotherAndMeasurements language currentDate data isDialogOpen setAlertsDialogStateMsg =
-    [ viewMotherDetails language currentDate data isDialogOpen setAlertsDialogStateMsg
+viewMotherAndMeasurements : Language -> NominalDate -> AssembledData -> Maybe ( Bool, Bool -> msg ) -> List (Html msg)
+viewMotherAndMeasurements language currentDate data alertsDialogData =
+    [ viewMotherDetails language currentDate data alertsDialogData
     , viewMeasurements language currentDate data.globalLmpDate data.globalObstetricHistory
     ]
 
 
-viewMotherDetails : Language -> NominalDate -> AssembledData -> Bool -> (Bool -> msg) -> Html msg
-viewMotherDetails language currentDate data isDialogOpen setAlertsDialogStateMsg =
+viewMotherDetails : Language -> NominalDate -> AssembledData -> Maybe ( Bool, Bool -> msg ) -> Html msg
+viewMotherDetails language currentDate data alertsDialogData =
     let
         mother =
             data.person
@@ -110,18 +110,38 @@ viewMotherDetails language currentDate data isDialogOpen setAlertsDialogStateMsg
                 |> List.map (generateRecurringHighSeverityAlertData language currentDate data)
                 |> List.filter (List.isEmpty >> not)
 
-        alertSign =
-            if List.isEmpty highRiskAlertsData && List.isEmpty highSeverityAlertsData && List.isEmpty recurringHighSeverityAlertsData then
-                emptyNode
+        alertsDialogSection =
+            alertsDialogData
+                |> Maybe.map
+                    (\( isDialogOpen, setAlertsDialogStateMsg ) ->
+                        let
+                            alertSign =
+                                if List.isEmpty highRiskAlertsData && List.isEmpty highSeverityAlertsData && List.isEmpty recurringHighSeverityAlertsData then
+                                    emptyNode
 
-            else
-                div
-                    [ class "alerts"
-                    , onClick <| setAlertsDialogStateMsg True
-                    ]
-                    [ img [ src "assets/images/exclamation-red.png" ] [] ]
+                                else
+                                    div
+                                        [ class "alerts"
+                                        , onClick <| setAlertsDialogStateMsg True
+                                        ]
+                                        [ img [ src "assets/images/exclamation-red.png" ] [] ]
+
+                            dialog =
+                                viewModal <|
+                                    alertsDialog language
+                                        highRiskAlertsData
+                                        highSeverityAlertsData
+                                        recurringHighSeverityAlertsData
+                                        isDialogOpen
+                                        setAlertsDialogStateMsg
+                        in
+                        [ alertSign
+                        , dialog
+                        ]
+                    )
+                |> Maybe.withDefault []
     in
-    div [ class "item" ]
+    div [ class "item" ] <|
         [ div [ class "ui image" ]
             [ thumbnailImage "mother" mother.avatarUrl mother.name thumbnailDimensions.height thumbnailDimensions.width ]
         , div [ class "content" ]
@@ -137,15 +157,8 @@ viewMotherDetails language currentDate data isDialogOpen setAlertsDialogStateMsg
                     )
                     (ageInYears currentDate mother)
             ]
-        , alertSign
-        , viewModal <|
-            alertsDialog language
-                highRiskAlertsData
-                highSeverityAlertsData
-                recurringHighSeverityAlertsData
-                isDialogOpen
-                setAlertsDialogStateMsg
         ]
+            ++ alertsDialogSection
 
 
 alertsDialog :
