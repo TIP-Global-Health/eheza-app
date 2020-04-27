@@ -941,19 +941,19 @@ viewHCRecomendation language recomendation =
         riskLevel =
             case recomendation of
                 SendAmbulance ->
-                    Translate.HighRisk
+                    Translate.HighRiskCase
 
                 HomeIsolation ->
-                    Translate.HighRisk
+                    Translate.HighRiskCase
 
                 ComeToHealthCenter ->
-                    Translate.LowRisk
+                    Translate.LowRiskCase
 
                 ChwMonitoring ->
-                    Translate.LowRisk
+                    Translate.LowRiskCase
 
                 HCRecomendationNotApplicable ->
-                    Translate.LowRisk
+                    Translate.LowRiskCase
     in
     label []
         [ translate language Translate.HealthCenterDetermined |> text

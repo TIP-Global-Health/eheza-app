@@ -355,7 +355,7 @@ type TranslationId
     | HeartRate
     | Height
     | High
-    | HighRisk
+    | HighRiskCase
     | HighRiskFactor HighRiskFactor
     | HighRiskFactors
     | HighSeverityAlert HighSeverityAlert
@@ -393,7 +393,7 @@ type TranslationId
     | LmpRange LmpRange
     | LoginPhrase LoginPhrase
     | Low
-    | LowRisk
+    | LowRiskCase
     | Lungs
     | LungsCPESign LungsCPESign
     | MakeSureYouAreConnected
@@ -2106,12 +2106,12 @@ translationSet trans =
                     }
 
                 HomeIsolation ->
-                    { english = "adviced patient to stay home in isolation"
+                    { english = "advised patient to stay home in isolation"
                     , kinyarwanda = Nothing
                     }
 
                 ComeToHealthCenter ->
-                    { english = "come to health center for further evaluation"
+                    { english = "advised patient to come to the health center for further evaluation"
                     , kinyarwanda = Nothing
                     }
 
@@ -2197,8 +2197,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        HighRisk ->
-            { english = "high-risk"
+        HighRiskCase ->
+            { english = "high-risk case"
             , kinyarwanda = Nothing
             }
 
@@ -2590,8 +2590,8 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
-        LowRisk ->
-            { english = "low-risk"
+        LowRiskCase ->
+            { english = "low-risk case"
             , kinyarwanda = Nothing
             }
 
@@ -4356,7 +4356,7 @@ translationSet trans =
             }
 
         TraveledToCOVID19CountryQuestion ->
-            { english = "Have you traveld to any country known to have Covid-19 in the past 14 days"
+            { english = "Have you traveled to any country known to have COVID-19 in the past 14 days"
             , kinyarwanda = Nothing
             }
 
