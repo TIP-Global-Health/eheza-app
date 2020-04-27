@@ -216,7 +216,7 @@ type alias IsolationForm =
 
 type alias HCContactForm =
     { contactedHC : Maybe Bool
-    , recomendations : Maybe (List HCRecomendation)
+    , recomendations : Maybe HCRecomendation
     , responsePeriod : Maybe ResponsePeriod
     , ambulanceArrivalPeriod : Maybe ResponsePeriod
     }

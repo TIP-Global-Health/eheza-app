@@ -716,43 +716,22 @@ update currentDate id db msg model =
             , []
             )
 
-        SetHCRecommendation recomendation ->
+        SetHCRecommendation value ->
             let
                 form =
-                    Dict.get id db.acuteIllnessMeasurements
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
-                        |> Maybe.map
-                            (.hcContact
-                                >> Maybe.map (Tuple.second >> .value)
-                                >> hcContactFormWithDefault model.exposureData.hcContactForm
-                            )
-                        |> Maybe.withDefault model.exposureData.hcContactForm
+                    model.exposureData.hcContactForm
 
                 updatedForm =
                     case form.recomendations of
-                        Just recomendations ->
-                            case recomendations of
-                                [ HCRecomendationNotApplicable ] ->
-                                    { form | recomendations = [ recomendation ] |> Just }
+                        Just period ->
+                            if period == value then
+                                { form | recomendations = Nothing }
 
-                                _ ->
-                                    if List.member recomendation recomendations then
-                                        let
-                                            updated =
-                                                if List.length recomendations == 1 then
-                                                    Nothing
-
-                                                else
-                                                    recomendations |> List.filter ((/=) recomendation) |> Just
-                                        in
-                                        { form | recomendations = updated }
-
-                                    else
-                                        { form | recomendations = recomendation :: recomendations |> Just }
+                            else
+                                { form | recomendations = Just value }
 
                         Nothing ->
-                            { form | recomendations = Just [ recomendation ] }
+                            { form | recomendations = Just value }
 
                 updatedData =
                     model.exposureData

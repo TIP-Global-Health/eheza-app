@@ -10,6 +10,7 @@ module Pages.Utils exposing
     , viewBoolInput
     , viewCheckBoxMultipleSelectCustomInput
     , viewCheckBoxMultipleSelectInput
+    , viewCheckBoxSelectCustomInput
     , viewCheckBoxSelectInput
     , viewCheckBoxValueInput
     , viewCustomLabel
@@ -178,6 +179,15 @@ viewCheckBoxSelectInput language leftOptions rightOptions currentValue setMsg tr
             currentValue |> Maybe.map List.singleton |> Maybe.withDefault []
     in
     viewCheckBoxMultipleSelectInput language leftOptions rightOptions checkedOptions Nothing setMsg translateFunc
+
+
+viewCheckBoxSelectCustomInput : Language -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> Html msg) -> Html msg
+viewCheckBoxSelectCustomInput language leftOptions rightOptions currentValue setMsg viewOptionFunc =
+    let
+        checkedOptions =
+            currentValue |> Maybe.map List.singleton |> Maybe.withDefault []
+    in
+    viewCheckBoxMultipleSelectCustomInput language leftOptions rightOptions checkedOptions Nothing setMsg viewOptionFunc
 
 
 viewCheckBoxMultipleSelectInput : Language -> List a -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> TranslationId) -> Html msg

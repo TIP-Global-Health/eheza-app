@@ -29,8 +29,8 @@ import Pages.Utils
         , taskListCompleted
         , tasksBarId
         , viewBoolInput
-        , viewCheckBoxMultipleSelectCustomInput
         , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxSelectCustomInput
         , viewCheckBoxSelectInput
         , viewCheckBoxValueInput
         , viewCustomLabel
@@ -886,12 +886,10 @@ viewHCContactForm language currentDate measurements form =
                     let
                         hcRespnonseInput =
                             [ viewQuestionLabel language Translate.HCResponseQuestion
-                            , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
-                            , viewCheckBoxMultipleSelectCustomInput language
+                            , viewCheckBoxSelectCustomInput language
                                 [ SendAmbulance, HomeIsolation, ComeToHealthCenter, ChwMonitoring ]
                                 []
-                                (form.recomendations |> Maybe.withDefault [])
-                                Nothing
+                                form.recomendations
                                 SetHCRecommendation
                                 (viewHCRecomendation language)
                             ]
@@ -910,7 +908,7 @@ viewHCContactForm language currentDate measurements form =
                             form.recomendations
                                 |> Maybe.map
                                     (\recomendations ->
-                                        if List.member SendAmbulance recomendations then
+                                        if recomendations == SendAmbulance then
                                             [ viewQuestionLabel language Translate.AmbulancArrivalPeriodQuestion
                                             , viewCheckBoxSelectInput language
                                                 [ LessThan30Min, Between30min1Hour, Between1Hour2Hour, Between2Hour1Day ]
