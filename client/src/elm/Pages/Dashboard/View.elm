@@ -646,11 +646,6 @@ viewBeneficiariesTable language currentDate stats model =
                 |> List.length
                 |> String.fromInt
 
-        getCompletedProgramBeneficiariesCount stats_ =
-            stats_.completedPrograms
-                |> List.length
-                |> String.fromInt
-
         getMissedSessionBeneficiariesCount stats_ =
             stats_.missedSessions
                 |> List.length
@@ -685,13 +680,6 @@ viewBeneficiariesTable language currentDate stats model =
                         , td [] [ text <| getNewBeneficiariesCount stats6_8 ]
                         , td [] [ text <| getNewBeneficiariesCount stats9_11 ]
                         , td [] [ text <| getNewBeneficiariesCount stats12_23 ]
-                        ]
-                    , tr []
-                        [ td [ class "label" ] [ translateText language <| Translate.Dashboard <| Translate.BeneficiariesTableColumnLabel Completed ]
-                        , td [] [ text <| getCompletedProgramBeneficiariesCount stats0_5 ]
-                        , td [] [ text <| getCompletedProgramBeneficiariesCount stats6_8 ]
-                        , td [] [ text <| getCompletedProgramBeneficiariesCount stats9_11 ]
-                        , td [] [ text <| getCompletedProgramBeneficiariesCount stats12_23 ]
                         ]
                     , tr []
                         [ td [ class "label" ] [ translateText language <| Translate.Dashboard <| Translate.BeneficiariesTableColumnLabel Missed ]

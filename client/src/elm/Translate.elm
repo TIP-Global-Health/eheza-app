@@ -4346,11 +4346,6 @@ translateDashboard trans =
                     , kinyarwanda = Nothing
                     }
 
-                Completed ->
-                    { english = "Beneficiaries completed program"
-                    , kinyarwanda = Nothing
-                    }
-
                 Missed ->
                     { english = "Missed session by beneficiaries"
                     , kinyarwanda = Nothing

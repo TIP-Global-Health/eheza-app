@@ -35,7 +35,6 @@ type FilterPeriod
 
 type BeneficiariesTableLabels
     = New
-    | Completed
     | Missed
     | Malnourished
 
