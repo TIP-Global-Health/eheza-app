@@ -437,7 +437,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
         current =
             getChildMeasurementData childId session
 
-        -- This includes any edits that have been saved locally, but not as-you=type
+        -- This includes any edits that have been saved locally, but not as-you-type
         -- in the UI before you hit "Save" or "Update".
         getValues func =
             Dict.values (func historical)
