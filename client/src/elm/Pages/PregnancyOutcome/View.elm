@@ -9,7 +9,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
