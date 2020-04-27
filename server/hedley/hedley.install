@@ -545,3 +545,20 @@ function hedley_update_7022() {
   $ledger_viewer_role->name = 'E-ledger viewer';
   user_role_save($ledger_viewer_role);
 }
+
+/**
+ * Enable hedley_view_export.
+ */
+function hedley_update_7023() {
+  module_enable(['advancedqueue', 'hedley_view_export']);
+
+  user_role_grant_permissions(variable_get('user_admin_role'), ['hedley export views']);
+}
+
+/**
+ * Enable smtp.
+ */
+function hedley_update_7024() {
+  module_enable(['smtp']);
+  variable_set('smtp_on', TRUE);
+}
