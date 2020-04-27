@@ -51,7 +51,7 @@ view language currentDate id activity db model =
 viewContent : Language -> NominalDate -> PrenatalActivity -> Model -> AssembledData -> Html Msg
 viewContent language currentDate activity model data =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate data model.showAlertsDialog SetAlertsDialogState
+        viewMotherAndMeasurements language currentDate data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
             ++ viewActivity language currentDate activity data model
 
 
