@@ -33,6 +33,7 @@ dependencies[] = message
 dependencies[] = module_filter
 dependencies[] = restful
 dependencies[] = restful_token_auth
+dependencies[] = smtp
 dependencies[] = strongarm
 dependencies[] = title
 dependencies[] = token
@@ -43,6 +44,7 @@ dependencies[] = views_bulk_operations
 dependencies[] = hedley_activity
 dependencies[] = hedley_admin
 dependencies[] = hedley_chw
+dependencies[] = hedley_device
 dependencies[] = hedley_health_center
 dependencies[] = hedley_patient
 dependencies[] = hedley_person
@@ -50,7 +52,7 @@ dependencies[] = hedley_pusher
 dependencies[] = hedley_restful
 dependencies[] = hedley_schedule
 dependencies[] = hedley_user
-dependencies[] = hedley_device
+dependencies[] = hedley_view_export
 
 ; Base class for SimpleTests.
 files[] = HedleyWebTestBase.inc
