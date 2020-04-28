@@ -106,7 +106,7 @@ shouldFetch model msg =
                 hasPeoplesNotSuccess =
                     hasNoSuccessValues model.people
             in
-            expectedNotSuccess || expectedNotSuccess
+            expectedNotSuccess || hasPeoplesNotSuccess
 
         FetchExpectedSessions childId ->
             Dict.get childId model.expectedSessions
