@@ -25,7 +25,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Maybe.Extra exposing (isJust, unwrap)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import PrenatalActivity.Model exposing (..)
@@ -71,7 +71,7 @@ generateEDDandEGA language currentDate defaults maybeLmpDate =
                 ( eddDate, diffInDays ) =
                     calculateEDDandEGADays currentDate lmpDate
             in
-            ( formatMMDDYYYY eddDate, generateEGAWeeksDaysLabel language diffInDays )
+            ( formatDDMMYYYY eddDate, generateEGAWeeksDaysLabel language diffInDays )
         )
         maybeLmpDate
 
