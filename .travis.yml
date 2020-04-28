@@ -55,16 +55,6 @@ jobs:
         - "$TRAVIS_BUILD_DIR/ci-scripts/install_client.sh"
         - "$TRAVIS_BUILD_DIR/ci-scripts/prepare_client.sh"
         - "$TRAVIS_BUILD_DIR/ci-scripts/test_client.sh"
-    - stage: Deploy
-      name: "Deployment to Pantheon"
-      if: branch = develop && commit_message ~= [deploy]
-      env:
-        - PANTHEON_ENV=qa
-        - PANTHEON_BRANCH=qa
-        - MAIN_REPO_BRANCH=develop
-      script:
-        - "$TRAVIS_BUILD_DIR/ci-scripts/prepare_deploy.sh"
-        - /tmp/pantheon-ihangane/deploy-to-env.sh"
 
 cache:
   directories:
