@@ -10,7 +10,7 @@ import Backend.Person.Utils exposing (ageInYears)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, formatMMDDYYYY)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -110,7 +110,7 @@ viewPatientInformationPane language currentDate data =
 
         birthDate =
             data.person.birthDate
-                |> Maybe.map formatMMDDYYYY
+                |> Maybe.map formatDDMMYYYY
                 |> Maybe.withDefault ""
 
         gender =

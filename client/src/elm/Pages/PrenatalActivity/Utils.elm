@@ -3,7 +3,7 @@ module Pages.PrenatalActivity.Utils exposing (breastExamFormWithDefault, calcula
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY, fromLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
