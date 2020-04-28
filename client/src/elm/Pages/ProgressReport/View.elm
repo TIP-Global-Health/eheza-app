@@ -13,6 +13,7 @@ import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements,
 import Date
 import EverySet
 import Gizra.Html exposing (emptyNode)
+import Gizra.NominalDate
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -246,6 +247,21 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                 |> Dict.toList
                 |> List.sortWith sessionsSortFunc
                 |> List.reverse
+                -- Filter out sessions that occured before child was born.
+                |> List.filter
+                    (\( id, columnSession ) ->
+                        child.birthDate
+                            |> Maybe.map
+                                (\birthDate ->
+                                    case Gizra.NominalDate.compare birthDate columnSession.startDate of
+                                        LT ->
+                                            True
+
+                                        _ ->
+                                            False
+                                )
+                            |> Maybe.withDefault False
+                    )
                 |> greedyGroupsOf 6
                 |> List.map
                     (\groupOfSix ->
