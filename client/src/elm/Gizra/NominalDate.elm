@@ -5,7 +5,6 @@ module Gizra.NominalDate exposing
     , fromLocalDateTime
     , diffDays, diffCalendarMonthsAndDays
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
-    , compare, diffCalendarMonths
     , compare, diffCalendarMonths, formatDDMMYYYY
     )
 
