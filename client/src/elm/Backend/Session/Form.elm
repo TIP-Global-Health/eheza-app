@@ -15,7 +15,6 @@ import Form.Validate exposing (..)
 import Gizra.NominalDate exposing (NominalDateRange)
 import Restful.Endpoint exposing (toEntityUuid)
 import Translate exposing (ValidationError(..))
-import Utils.NominalDate exposing (setNominalDateRange)
 
 
 type alias SessionForm =

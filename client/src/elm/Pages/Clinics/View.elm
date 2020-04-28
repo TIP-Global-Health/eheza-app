@@ -17,7 +17,7 @@ import Backend.Session.Utils exposing (isClosed)
 import Backend.SyncData.Model exposing (SyncData)
 import Date exposing (Unit(..))
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -396,7 +396,7 @@ viewSession language currentDate sessionId session =
                 [ text <| translate language Translate.Attendance ]
     in
     tr []
-        [ td [] [ text <| formatYYYYMMDD session.startDate ]
-        , td [] [ text <| Maybe.withDefault "" <| Maybe.map formatYYYYMMDD session.endDate ]
+        [ td [] [ text <| formatDDMMYYYY session.startDate ]
+        , td [] [ text <| Maybe.withDefault "" <| Maybe.map formatDDMMYYYY session.endDate ]
         , td [] [ link ]
         ]

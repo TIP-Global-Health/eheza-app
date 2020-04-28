@@ -9,7 +9,7 @@ import Backend.Person.Model exposing (ExpectedAge(..), ParticipantDirectoryOpera
 import Date
 import Form
 import Form.Field
-import Gizra.NominalDate exposing (NominalDate, formatYYYYMMDD)
+import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
 import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)

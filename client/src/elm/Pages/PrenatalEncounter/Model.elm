@@ -5,7 +5,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model exposing (ObstetricHistoryValue, PrenatalMeasurements)
 import Backend.Person.Model exposing (Person)
 import Backend.PrenatalEncounter.Model exposing (..)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
+import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
 
 
