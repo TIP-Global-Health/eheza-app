@@ -196,7 +196,7 @@ type TranslationId
     | BabyName String
     | Back
     | BackendError
-    | BegingNewEncounter
+    | BeginNewEncounter
     | BloodPressure
     | BloodPressureElevatedOcassions
     | BloodPressureDiaLabel
@@ -1077,8 +1077,8 @@ translationSet trans =
             , kinyarwanda = Just "Seriveri yerekanye amakosa akurikira"
             }
 
-        BegingNewEncounter ->
-            { english = "Beging a New Encounter"
+        BeginNewEncounter ->
+            { english = "Begin a New Encounter"
             , kinyarwanda = Nothing
             }
 
@@ -1308,7 +1308,7 @@ translationSet trans =
 
         Clear ->
             { english = "Clear"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gukuraho"
             }
 
         ClickTheCheckMark ->
@@ -2045,7 +2045,7 @@ translationSet trans =
             }
 
         GroupAssessment ->
-            { english = "Group Assessment"
+            { english = "Group Encounter"
             , kinyarwanda = Just "Gukorera itsinda"
             }
 
@@ -2255,7 +2255,7 @@ translationSet trans =
 
         IndividualEncounter ->
             { english = "Individual Encounter"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gukorera umuntu umwe"
             }
 
         IndividualEncounterType type_ ->
@@ -3567,7 +3567,7 @@ translationSet trans =
 
         SearchExistingParticipants ->
             { english = "Search Existing Participants"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gushaka abagenerwabikorwa basanzwe muri sisiteme"
             }
 
         SearchHelper ->
@@ -3672,12 +3672,12 @@ translationSet trans =
 
         ServiceWorkerInstalled ->
             { english = "A new version of the app has been downloaded."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gufungura verisio nshyashya byarangiye."
             }
 
         ServiceWorkerSkipWaiting ->
             { english = "Activate new version of the app"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gufungura verisio nshyashya"
             }
 
         ServiceWorkerRestarting ->

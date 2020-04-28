@@ -12,7 +12,7 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
 import EverySet
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, diffDays, formatMMDDYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -51,7 +51,7 @@ view language currentDate id activity db model =
 viewContent : Language -> NominalDate -> PrenatalActivity -> Model -> AssembledData -> Html Msg
 viewContent language currentDate activity model data =
     div [ class "ui unstackable items" ] <|
-        viewMotherAndMeasurements language currentDate data model.showAlertsDialog SetAlertsDialogState
+        viewMotherAndMeasurements language currentDate data (Just ( model.showAlertsDialog, SetAlertsDialogState ))
             ++ viewActivity language currentDate activity data model
 
 
