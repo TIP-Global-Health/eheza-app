@@ -2470,7 +2470,7 @@ translationSet trans =
                     Just "Umunota umwe ushize"
 
                 else
-                  Just <| Debug.toString minutes ++ " hashize iminota micye"
+                    Just <| Debug.toString minutes ++ " hashize iminota micye"
             }
 
         ModeOfDelivery mode ->
