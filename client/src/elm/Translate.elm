@@ -1061,7 +1061,7 @@ translationSet trans =
 
         BpmUnit ->
             { english = "bpm"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Inshuro ahumeka ku munota"
             }
 
         BreastExam ->
@@ -1506,7 +1506,7 @@ translationSet trans =
 
         DatePregnancyConcluded ->
             { english = "Date Pregnancy Concluded"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Date Pregnancy Concluded"
             }
 
         Day ->
@@ -2287,17 +2287,17 @@ translationSet trans =
             case range of
                 OneMonth ->
                     { english = "Within 1 month"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu kwezi kumwe"
                     }
 
                 ThreeMonth ->
                     { english = "Within 3 months"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu mezi atatu"
                     }
 
                 SixMonth ->
                     { english = "Within 6 months"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Mu mezi atandatu"
                     }
 
         LoginPhrase phrase ->
@@ -2305,7 +2305,7 @@ translationSet trans =
 
         Low ->
             { english = "Low"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kwemeza amakosa"
             }
 
         Lungs ->
@@ -2462,7 +2462,15 @@ translationSet trans =
 
                 else
                     Debug.toString minutes ++ " minutes ago"
-            , kinyarwanda = Nothing
+            , kinyarwanda =
+                if minutes == 0 then
+                    Just "Nonaha"
+
+                else if minutes == 1 then
+                    Just "Umunota umwe ushize"
+
+                else
+                  Just <| Debug.toString minutes ++ " hashize iminota micye"
             }
 
         ModeOfDelivery mode ->
@@ -2911,7 +2919,7 @@ translationSet trans =
 
                 Resources ->
                     { english = "Resources"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibihabwa umubyeyi utwite"
                     }
 
         People ->
@@ -2922,7 +2930,7 @@ translationSet trans =
         PersistentStorage authorized ->
             if authorized then
                 { english = "Persistent storage has been authorized. The browser will not delete locally cached data without your approval."
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Ububiko buhoraho bwaremejwe,amakuru wabitse ntabwo yatsibama udatanze uburenganzira/utabyemeje"
                 }
 
             else
@@ -3058,27 +3066,27 @@ translationSet trans =
             case outcome of
                 OutcomeLiveAtTerm ->
                     { english = "Live Birth at Term (38 weeks EGA or more)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubyara umwana muzima/Ushyitse (ku byumweru 38 kuzamura)"
                     }
 
                 OutcomeLivePreTerm ->
                     { english = "Live Birth Preterm (less than 38 weeks EGA)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubyara mwana udashyitse (munsi y'ibyumweru 38)"
                     }
 
                 OutcomeStillAtTerm ->
                     { english = "Stillbirth at Term (38 weeks EGA or more)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Abana bapfiriye mu nda bageze igihe cyo kuvuka (ku byumweru 38 kuzamura)"
                     }
 
                 OutcomeStillPreTerm ->
                     { english = "Stillbirth Preterm (less than 38 weeks EGA)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Abana bapfiriye mu nda batagejeje igihe cyo kuvuka (munsi y'ibyumweru 38)"
                     }
 
                 OutcomeAbortions ->
                     { english = "Abortions (before 24 weeks EGA)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuvanamo inda (mbere y'ibyumweru 24)"
                     }
 
         PreviousCSectionScar ->
@@ -3150,12 +3158,12 @@ translationSet trans =
 
         PrenatalParticipant ->
             { english = "Antenatal Participant"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umubyeyi witabiriye kwipimisha inda"
             }
 
         PrenatalParticipants ->
             { english = "Antenatal Participants"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ababyeyi bitabiriye kwipimisha inda"
             }
 
         PreTermPregnancy ->
@@ -3335,12 +3343,12 @@ translationSet trans =
                 FactorNumberOfCSections number ->
                     if number == 1 then
                         { english = "1 previous C-section"
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just "Yabazwe inshuro imwe ubushize"
                         }
 
                     else
                         { english = Debug.toString number ++ " previous C-sections"
-                        , kinyarwanda = Nothing
+                        , kinyarwanda = Just <| Debug.toString number ++ " ubushize yarabazwe"
                         }
 
                 FactorCSectionInPreviousDelivery ->
@@ -3350,7 +3358,7 @@ translationSet trans =
 
                 FactorCSectionReason ->
                     { english = "C-section in previous delivery due to"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ubushize yabazwe abyara kubera"
                     }
 
                 FactorPreviousDeliveryPeriod ->
@@ -3360,17 +3368,17 @@ translationSet trans =
 
                 FactorSuccessiveAbortions ->
                     { english = "Patient experienced successive abortions"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi yavanyemo inda zikurikiranye"
                     }
 
                 FactorSuccessivePrematureDeliveries ->
                     { english = "Patient experienced successive preterm deliveries"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi yabyaye inda zidashyitse zikurikiranye"
                     }
 
                 FactorStillbornPreviousDelivery ->
                     { english = "Stillbirth in previous delivery"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ubushize yabyaye umwana upfuye(wapfiriye mu nda)"
                     }
 
                 FactorBabyDiedOnDayOfBirthPreviousDelivery ->
@@ -3380,42 +3388,42 @@ translationSet trans =
 
                 FactorPartialPlacentaPreviousDelivery ->
                     { english = "Patient had partial placenta in previous pregnancy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ku nda y'ubushize iya nyuma ntiyavutse yose/yaje igice"
                     }
 
                 FactorSevereHemorrhagingPreviousDelivery ->
                     { english = "Patient experienced severe hemorrhage in previous pregnancy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi yaravuye cyane/bikabije ku nda y'ubushize"
                     }
 
                 FactorPreeclampsiaPreviousPregnancy ->
                     { english = "Patient had preeclampsia in previous pregnancy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi yagize ibimenyetso bibanziriza kugagara ku nda y'ubushize"
                     }
 
                 FactorConvulsionsPreviousDelivery ->
                     { english = "Patient experienced convulsions in previous delivery"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ubushize mubyeyi yagize ibimenyetso byo kugagara/Guhinda umushyitsi abyara"
                     }
 
                 FactorConvulsionsAndUnconsciousPreviousDelivery ->
                     { english = "Patient experienced convulsions and resulted in becoming unconscious after delivery"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Umubyeyi yagize ibimenyetso byo kugagara nyuma yo kubyara bimuviramo kutumva/guta ubwenge"
                     }
 
                 FactorIncompleteCervixPreviousPregnancy ->
                     { english = "Patient had an Incomplete Cervix in previous pregnancy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ku nda y'ubushize inkondo y'umura ntiyashoboye kwifunga neza"
                     }
 
                 FactorVerticalCSectionScar ->
                     { english = "Vertical C-Section Scar"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Inkovu yo kubagwa irahagaze"
                     }
 
                 FactorGestationalDiabetesPreviousPregnancy ->
                     { english = "Patient had Gestational Diabetes in previous pregnancy"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ubushize umubyeyi yagize indwara ya Diyabete itewe no gutwita"
                     }
 
         RiskFactors ->
@@ -3485,7 +3493,7 @@ translationSet trans =
 
         SelectEncounterType ->
             { english = "Select encounter type"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo ubwoko bw'icyiciro cyo gukorera"
             }
 
         SelectLanguage ->
@@ -3679,7 +3687,7 @@ translationSet trans =
 
         GroupEncounterLoading ->
             { english = "Loading Group Encounter"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gufungura icyiciro cyo gukorera"
             }
 
         GroupEncounterUnauthorized ->
@@ -3777,7 +3785,7 @@ translationSet trans =
 
         ThisGroupHasNoMothers ->
             { english = "This Group has no mothers assigned to it."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Iki cyiciro nta mubyeyi cyagenewe."
             }
 
         Training ->
@@ -4509,7 +4517,7 @@ translateValidationError id =
 
         RequiredField ->
             { english = "is a required field"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "ni ngombwa kuhuzuza"
             }
 
         UnknownGroup ->
@@ -4558,7 +4566,7 @@ translateFormError error =
 
         InvalidString ->
             { english = "is not a valid string"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ntibyemewe kwandikama inyuguti"
             }
 
         InvalidEmail ->
