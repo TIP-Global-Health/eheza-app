@@ -147,7 +147,7 @@ function attachDropzone() {
       if (dropZone) dropZone.destroy();
     }
   } else {
-    console.log("Could not find dropzone div");
+    // If we don't find it, do nothing.
     return;
   }
 
