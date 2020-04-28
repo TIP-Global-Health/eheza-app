@@ -11,7 +11,6 @@ type alias Model =
     , pregnancyOutcome : Maybe PregnancyOutcome
     , isFacilityDelivery : Maybe Bool
     , isDateSelectorOpen : Bool
-    , showAlertsDialog : Bool
     }
 
 
@@ -23,7 +22,6 @@ type Msg
     | SetPregnancyConcludedDate Date
     | SetPregnancyOutcome String
     | ToggleDateSelector
-    | SetAlertsDialogState Bool
 
 
 emptyModel : Model
@@ -32,5 +30,4 @@ emptyModel =
     , pregnancyOutcome = Nothing
     , isFacilityDelivery = Nothing
     , isDateSelectorOpen = False
-    , showAlertsDialog = False
     }
