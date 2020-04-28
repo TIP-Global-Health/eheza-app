@@ -4,6 +4,7 @@ import Activity.Model exposing (SummaryByActivity, SummaryByParticipant)
 import Activity.Utils exposing (getAllChildActivities, getAllMotherActivities, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
 import App.Model
 import AssocList as Dict exposing (Dict)
+import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
@@ -29,7 +30,7 @@ import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
 import Maybe.Extra exposing (isJust, unwrap)
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Person.Model
 import Pages.Relationship.Model
 import RemoteData exposing (RemoteData(..), WebData)
@@ -1004,12 +1005,41 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
         PostSession session ->
             ( { model | postSession = Loading }
             , sw.post sessionEndpoint session
-                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedSession)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedSession session.clinicType)
             , []
             )
 
-        HandlePostedSession data ->
+        HandlePostedSession clinicType data ->
+            let
+                msgs =
+                    if clinicType == Chw then
+                        data
+                            |> RemoteData.map
+                                (\sessionId ->
+                                    SessionPage sessionId AttendancePage
+                                        |> UserPage
+                                        |> App.Model.SetActivePage
+                                        |> List.singleton
+                                )
+                            |> RemoteData.withDefault []
+
+                    else
+                        []
+            in
             ( { model | postSession = data }
+            , Cmd.none
+            , msgs
+            )
+
+        FetchVillages ->
+            ( { model | villages = Loading }
+            , sw.select villageEndpoint ()
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedVillages)
+            , []
+            )
+
+        HandleFetchedVillages data ->
+            ( { model | villages = data }
             , Cmd.none
             , []
             )
@@ -1367,6 +1397,15 @@ handleRevision revision (( model, recalc ) as noChange) =
                 data.encounterId
                 (\measurements -> { measurements | socialHistory = Just ( uuid, data ) })
                 model
+            , recalc
+            )
+
+        VillageRevision uuid data ->
+            let
+                villages =
+                    RemoteData.map (Dict.insert uuid data) model.villages
+            in
+            ( { model | villages = villages }
             , recalc
             )
 

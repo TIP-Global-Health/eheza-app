@@ -119,6 +119,7 @@
         session: 'nodes',
         social_history: 'shards',
         syncmetadata: 'syncMetadata',
+        village: 'nodes',
         vitals: 'shards',
         weight: 'shards'
     };

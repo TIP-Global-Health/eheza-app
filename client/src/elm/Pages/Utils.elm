@@ -1,21 +1,9 @@
-module Pages.Utils exposing
-    ( filterDependentNoResultsMessage
-    , matchFilter
-    , matchMotherAndHerChildren
-    , normalizeFilter
-    , taskCompleted
-    , taskListCompleted
-    , viewBoolInput
-    , viewCustomLabel
-    , viewLabel
-    , viewNameFilter
-    , viewPhotoThumb
-    , viewPhotoThumbFromPhotoUrl
-    , viewQuestionLabel
-    )
+module Pages.Utils exposing (backFromSessionPage, filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, taskCompleted, taskListCompleted, viewBoolInput, viewCustomLabel, viewLabel, viewNameFilter, viewPhotoThumb, viewPhotoThumbFromPhotoUrl, viewQuestionLabel)
 
 import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model exposing (PhotoUrl(..))
+import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
@@ -23,6 +11,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust)
+import Pages.Page exposing (Page(..), UserPage(..))
 import Translate exposing (Language, TranslationId, translate)
 
 
@@ -91,6 +80,15 @@ viewNameFilter language filterInput setFilterMsg =
             ]
             [ text <| translate language Translate.Clear ]
         ]
+
+
+backFromSessionPage : Nurse -> OfflineSession -> Page
+backFromSessionPage nurse offlineSession =
+    if isCommunityHealthWorker nurse then
+        UserPage ClinicalPage
+
+    else
+        UserPage <| ClinicsPage (Just offlineSession.session.clinicId)
 
 
 viewLabel : Language -> TranslationId -> Html any
