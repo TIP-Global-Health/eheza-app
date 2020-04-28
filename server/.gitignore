@@ -5,8 +5,6 @@ hedley/modules/development
 hedley/1
 hedley/themes/contrib
 hedley/libraries
-hedley/modules/custom/hedley_device/composer.lock
-hedley/modules/custom/hedley_device/vendor
 
 # Temporary "build" files
 www
