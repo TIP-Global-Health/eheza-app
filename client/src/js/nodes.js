@@ -592,32 +592,35 @@
                 }
 
                 return modifyQuery.then(function () {
-                    if (offset > 0) {
-                        query.offset(offset);
-                    }
+                    return countQuery.count().catch(databaseError).then(function (count) {
 
-                    if (range > 0) {
-                        query.limit(range);
-                    }
+                        if (offset > 0) {
+                            query.offset(offset);
+                        }
 
-                    var getNodes = sortBy ? query.sortBy(sortBy) : query.toArray();
+                        if (range > 0) {
+                            query.limit(range);
+                        }
 
-                    return getNodes.catch(databaseError).then(function (nodes) {
-                        var body = JSON.stringify({
-                            offset: offset,
-                            count: nodes.length,
-                            data: nodes
+                        var getNodes = sortBy ? query.sortBy(sortBy) : query.toArray();
+
+                        return getNodes.catch(databaseError).then(function (nodes) {
+                            var body = JSON.stringify({
+                                offset: offset,
+                                count: count,
+                                data: nodes
+                            });
+
+                            var response = new Response(body, {
+                                status: 200,
+                                statusText: 'OK',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+
+                            return Promise.resolve(response);
                         });
-
-                        var response = new Response(body, {
-                            status: 200,
-                            statusText: 'OK',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
-
-                        return Promise.resolve(response);
                     });
                 });
             });
