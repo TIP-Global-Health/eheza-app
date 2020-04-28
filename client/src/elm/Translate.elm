@@ -1240,7 +1240,7 @@ translationSet trans =
 
         Clear ->
             { english = "Clear"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gukuraho"
             }
 
         ClickTheCheckMark ->
@@ -3555,12 +3555,12 @@ translationSet trans =
 
         ServiceWorkerInstalled ->
             { english = "A new version of the app has been downloaded."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gufungura verisio nshyashya byarangiye."
             }
 
         ServiceWorkerSkipWaiting ->
             { english = "Activate new version of the app"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gufungura verisio nshyashya"
             }
 
         ServiceWorkerRestarting ->
