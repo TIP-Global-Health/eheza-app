@@ -6,7 +6,7 @@ import Backend.Measurement.Model exposing (MeasurementData, MotherMeasurements)
 import Measurement.Model
 import Measurement.Update
 import Pages.Page exposing (Page)
-import Pages.Participant.Model exposing (ChildUpdateReturns, Model, MotherUpdateReturns, Msg(..), emptyModel)
+import Pages.Participant.Model exposing (ChildUpdateReturns, Model, MotherUpdateReturns, Msg(..), Tab(..), emptyModel)
 
 
 {-| This is a bit of a variation on the usual `update` function.
@@ -71,12 +71,26 @@ updateChild msg model childForm =
                 Nothing
 
         SetSelectedTab tab ->
+            let
+                cmd =
+                    case tab of
+                        -- When moving to tab that may view photo as first activity,
+                        -- bind DropZone to be able to take pictures.
+                        Completed ->
+                            bindDropZone ()
+
+                        Pending ->
+                            bindDropZone ()
+
+                        ProgressReport ->
+                            Cmd.none
+            in
             ChildUpdateReturns
                 { model
                     | selectedTab = tab
                     , selectedActivity = Nothing
                 }
-                Cmd.none
+                cmd
                 childForm
                 Nothing
                 Nothing

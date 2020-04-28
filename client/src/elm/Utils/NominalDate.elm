@@ -1,4 +1,4 @@
-module Utils.NominalDate exposing (Days(..), Months(..), compareDates, diffDays, diffMonths, endField, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate, setNominalDateRange, startField)
+module Utils.NominalDate exposing (Days(..), Months(..), compareDates, diffDays, diffMonths, endField, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate, startField)
 
 {-| An extra utility for elm-community/elm-time ... should integrate with
 Gizra.NominalDate.
@@ -8,7 +8,7 @@ import Date
 import Form.Field exposing (Field)
 import Form.Init exposing (setGroup, setString)
 import Form.Validate as Validate exposing (Validation, field)
-import Gizra.NominalDate exposing (NominalDate, NominalDateRange, diffCalendarMonthsAndDays, formatYYYYMMDD)
+import Gizra.NominalDate exposing (NominalDate, NominalDateRange, diffCalendarMonthsAndDays)
 import Html exposing (Html)
 import Translate exposing (Language, translate)
 
@@ -212,20 +212,6 @@ startField =
 endField : String
 endField =
     "end"
-
-
-{-| For an initial grouped field. The string parameter is your name for the
-grouped field ... we'll supply the `start` and `end` field names for the inner
-fields.
--}
-setNominalDateRange : String -> NominalDateRange -> ( String, Field )
-setNominalDateRange fieldName range =
-    setGroup fieldName
-        -- I suppose this ought to be locale-dependent in some way, but we'll
-        -- just start with YYYY-MM-DD
-        [ setString startField (formatYYYYMMDD range.start)
-        , setString endField (formatYYYYMMDD range.end)
-        ]
 
 
 compareDates : NominalDate -> NominalDate -> Order
