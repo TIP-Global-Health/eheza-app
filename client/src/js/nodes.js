@@ -581,10 +581,7 @@
 
                                 if (clinics.length > 0) {
                                     query = table.where('[type+clinic]').anyOf(clinics);
-                                    console.log(query.toArray());
-
                                     countQuery = query.clone();
-                                    console.log(countQuery.count());
                                     return Promise.resolve();
                                 } else {
                                     return Promise.reject('Could not find participation for child: ' + childId);
