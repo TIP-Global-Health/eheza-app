@@ -190,10 +190,10 @@ viewSyncData language data =
                 |> Maybe.withDefault "NA"
     in
     div [ class "general-status" ]
-        [ div [] [ text <| "Last Successful Contact: " ++ lastSuccessfulContact ]
-        , div [] [ text <| "Remaining for Upload: " ++ remainingForUpload ]
-        , div [] [ text <| "Remaining for Download: " ++ remainingForDownload ]
-        , div [] [ text <| "Status: " ++ viewAttempt data.attempt ]
+        [ div [] [ text <| translate language Translate.LastSuccesfulContactLabel ++ ": " ++ lastSuccessfulContact ]
+        , div [] [ text <| translate language Translate.RemainingForUploadLabel ++ ": " ++ remainingForUpload ]
+        , div [] [ text <| translate language Translate.RemainingForDownloadLabel ++ ": " ++ remainingForDownload ]
+        , div [] [ text <| translate language Translate.StatusLabel ++ ": " ++ viewAttempt data.attempt ]
         ]
 
 
@@ -297,6 +297,7 @@ viewPairingForm language device model =
                     [ placeholder <| translate language Translate.EnterPairingCode
                     , type_ "text"
                     , name "pairing-code"
+                    , class "pairing-code"
                     , onInput SetCode
                     , value model.code
                     , autofocus True

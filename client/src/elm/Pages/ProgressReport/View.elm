@@ -189,7 +189,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                         , th
                             [ class "last" ]
                             [ child.birthDate
-                                |> Maybe.map (\birthDate -> renderAgeMonthsDaysAbbrev language birthDate session.offlineSession.session.startDate)
+                                |> Maybe.map (\birthDate -> renderAgeMonthsDaysAbbrev language birthDate dateOfLastAssessment)
                                 |> Maybe.withDefault ""
                                 |> text
                             ]
@@ -234,6 +234,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
         lastSessionWithMeasurement =
             expectedSessions
                 |> Dict.toList
+                |> List.sortWith sessionsSortFunc
                 |> List.reverse
                 |> List.Extra.find hasMeasurement
 
@@ -261,7 +262,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                                         [ ( "center", True )
                                                         , ( "bottom", True )
                                                         , ( "aligned", True )
-                                                        , ( "last", id == sessionId )
+                                                        , ( "last", columnSession.startDate == dateOfLastAssessment )
                                                         , ( "date-header", True )
                                                         ]
                                                     ]
@@ -460,7 +461,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
             values
                 |> List.filterMap
                     (\value ->
-                        case value.sessionId of
+                        case value.encounterId of
                             Just id ->
                                 Just ( id, value )
 
@@ -597,7 +598,7 @@ chartWeightForHeight heights weight =
     -- Eventually, we shouild take age into account to distingiush height
     -- and length.
     heights
-        |> List.Extra.find (\height -> height.sessionId == weight.sessionId)
+        |> List.Extra.find (\height -> height.encounterId == weight.encounterId)
         |> Maybe.map
             (\height ->
                 ( case height.value of

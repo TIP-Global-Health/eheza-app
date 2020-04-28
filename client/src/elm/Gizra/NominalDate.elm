@@ -5,7 +5,7 @@ module Gizra.NominalDate exposing
     , fromLocalDateTime
     , diffDays, diffCalendarMonthsAndDays
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
-    , compare
+    , compare, diffMonths, formatDDMMYYYY
     )
 
 {-| Some utilities for dealing with "pure" dates that have no time or
@@ -56,14 +56,22 @@ compare =
 
 {-| Convert a nominal date to formatted string.
 
-    import Time.Date exposing (date)
-
-    formatMMDDYYYY (date 2017 5 2) --> "05/02/2017"
+    formatMMDDYYYY (date 2017 5 22) --> "05-22-2017"
 
 -}
 formatMMDDYYYY : NominalDate -> String
 formatMMDDYYYY =
     Date.format "MM-dd-yyyy"
+
+
+{-| Convert a nominal date to formatted string.
+
+    formatMMDDYYYY (date 2017 5 22) --> "22-05-2017"
+
+-}
+formatDDMMYYYY : NominalDate -> String
+formatDDMMYYYY =
+    Date.format "dd-MM-yyyy"
 
 
 {-| Convert nominal date to a formatted string..
@@ -170,6 +178,11 @@ The result is positive if the second parameter is after the first parameter.
 diffDays : NominalDate -> NominalDate -> Int
 diffDays low high =
     Date.diff Date.Days low high
+
+
+diffMonths : NominalDate -> NominalDate -> Int
+diffMonths low high =
+    Date.diff Date.Months low high
 
 
 {-| Difference between two dates, in terms of months and days. This is based on

@@ -22,17 +22,25 @@ import Json.Encode
 import Pages.Clinics.Update
 import Pages.Device.Model
 import Pages.Device.Update
+import Pages.IndividualEncounterParticipants.Update
 import Pages.Page exposing (..)
-import Pages.Participant.Update
 import Pages.People.Update
 import Pages.Person.Update
 import Pages.PinCode.Model
 import Pages.PinCode.Update
+import Pages.PregnancyOutcome.Model
+import Pages.PregnancyOutcome.Update
+import Pages.PrenatalActivity.Model
+import Pages.PrenatalActivity.Update
+import Pages.PrenatalEncounter.Model
+import Pages.PrenatalEncounter.Update
+import Pages.PrenatalParticipant.Update
 import Pages.Relationship.Model
 import Pages.Relationship.Update
 import Pages.Router exposing (activePageByUrl, pageToFragment)
 import Pages.Session.Model
 import Pages.Session.Update
+import PrenatalActivity.Model exposing (PrenatalActivity(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid, select, toCmd)
 import Rollbar
@@ -60,11 +68,8 @@ init flags url key =
                 Err msg ->
                     English
 
-        fragment =
-            pageToFragment PinCodePage
-
         url_ =
-            { url | fragment = fragment, query = Nothing }
+            { url | query = Nothing }
 
         model =
             emptyModel key url_ flags
@@ -168,7 +173,7 @@ update msg model =
         MsgIndexedDb subMsg ->
             let
                 ( subModel, subCmd, extraMsgs ) =
-                    Backend.Update.updateIndexedDb currentDate nurseId subMsg model.indexedDb
+                    Backend.Update.updateIndexedDb currentDate nurseId model.healthCenterId subMsg model.indexedDb
 
                 -- Most revisions are handled at the IndexedDB level, but there
                 -- is at least one we need to catch here.
@@ -229,6 +234,26 @@ update msg model =
                             , appMsgs
                             )
 
+                        MsgPagePrenatalParticipant id subMsg ->
+                            let
+                                ( subCmd, appMsgs ) =
+                                    Pages.PrenatalParticipant.Update.update currentDate id subMsg
+                            in
+                            ( data
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalParticipant id) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPageIndividualEncounterParticipants subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.IndividualEncounterParticipants.Update.update subMsg data.individualEncounterParticipantsPage
+                            in
+                            ( { data | individualEncounterParticipantsPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageIndividualEncounterParticipants) subCmd
+                            , appMsgs
+                            )
+
                         MsgPageRelationship id1 id2 subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
@@ -253,6 +278,45 @@ update msg model =
                             ( { data | sessionPages = Dict.insert sessionId subModel data.sessionPages }
                             , Cmd.map (MsgLoggedIn << MsgPageSession sessionId) subCmd
                             , extraMsgs
+                            )
+
+                        MsgPagePrenatalEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.prenatalEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.PrenatalEncounter.Model.emptyModel
+                                        |> Pages.PrenatalEncounter.Update.update subMsg
+                            in
+                            ( { data | prenatalEncounterPages = Dict.insert id subModel data.prenatalEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalEncounter id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPagePrenatalActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.prenatalActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.PrenatalActivity.Model.emptyModel
+                                        |> Pages.PrenatalActivity.Update.update currentDate id model.indexedDb subMsg
+                            in
+                            ( { data | prenatalActivityPages = Dict.insert ( id, activity ) subModel data.prenatalActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPagePregnancyOutcome id subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    data.pregnancyOutcomePages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.PregnancyOutcome.Model.emptyModel
+                                        |> Pages.PregnancyOutcome.Update.update currentDate id subMsg
+                            in
+                            ( { data | pregnancyOutcomePages = Dict.insert id subModel data.pregnancyOutcomePages }
+                            , Cmd.map (MsgLoggedIn << MsgPagePregnancyOutcome id) subCmd
+                            , appMsgs
                             )
                 )
                 model
@@ -365,6 +429,9 @@ update msg model =
             ( { model | zscores = subModel }
             , Cmd.map MsgZScore subCmd
             )
+
+        ScrollToElement elementId ->
+            ( model, scrollToElement elementId )
 
         SetActivePage page ->
             let
@@ -595,12 +662,16 @@ update msg model =
 
                 cmd =
                     case activePage of
-                        -- When at 'create / edit person' oage, bind
-                        -- DropZone to be able to take pictures.
-                        UserPage (CreatePersonPage _) ->
+                        UserPage (SessionPage _ (ChildPage _)) ->
+                            App.Ports.bindDropZone ()
+
+                        UserPage (CreatePersonPage _ _) ->
                             App.Ports.bindDropZone ()
 
                         UserPage (EditPersonPage _) ->
+                            App.Ports.bindDropZone ()
+
+                        UserPage (PrenatalActivityPage _ PrenatalPhoto) ->
                             App.Ports.bindDropZone ()
 
                         _ ->

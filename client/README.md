@@ -3,7 +3,7 @@
 Make sure the following are installed:
 
 * NodeJs (and npm) - known working version: v8.10.0 - `nvm use 8.10.0`
-* Elm (e.g. `npm install -g elm@~0.18.0`)
+* Elm (e.g. `npm install -g elm@~0.19.1`)
 * Compass (for SASS) (`gem update --system && gem install compass`)
 * Elm Format (`npm install -g elm-format@0.8.1`), not strictly required for the development, but the standard must be followed, as Travis checks that. Therefore it's highly suggested to run Elm Format upon save at your IDE (https://github.com/avh4/elm-format#editor-integration).
 

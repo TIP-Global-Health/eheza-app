@@ -125,6 +125,15 @@ dbSync.version(6).stores({
     }).delete();
 });
 
+dbSync.version(7).stores({
+    nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter',
+}).upgrade(function (tx) {
+    return tx.nodes.where({
+        type: 'session'
+    }).delete();
+});
+
 function gatherWords (text) {
     // Split on spaces, and remove blanks from result.
     return (text || '').split(/\s+/).flatMap(function (word) {

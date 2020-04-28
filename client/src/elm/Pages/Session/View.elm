@@ -9,7 +9,7 @@ import Backend.Nurse.Utils exposing (assignedToHealthCenter)
 import Backend.Session.Model exposing (EditableSession, Session)
 import Backend.Session.Utils exposing (isClosed)
 import Gizra.Html exposing (showMaybe)
-import Gizra.NominalDate exposing (NominalDate, fromLocalDateTime)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -138,7 +138,7 @@ viewEditableSession language currentDate zscores nurse sessionId page model db s
         MotherPage motherId ->
             Dict.get motherId model.motherPages
                 |> Maybe.withDefault Pages.Participant.Model.emptyModel
-                |> Pages.Participant.View.viewMother language motherId ( sessionId, session ) model
+                |> Pages.Participant.View.viewMother language currentDate motherId ( sessionId, session ) model
                 |> Html.map (MsgMother motherId)
 
 

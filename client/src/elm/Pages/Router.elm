@@ -1,8 +1,14 @@
 module Pages.Router exposing (activePageByUrl, pageToFragment)
 
 import Activity.Model exposing (Activity)
-import Activity.Utils exposing (decodeActivityFromString, defaultActivity, encodeActivityAsString)
+import Activity.Utils
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString, encoudeIndividualEncounterTypeAsString)
+import Backend.Person.Model exposing (RegistrationInitiator(..))
+import Backend.Person.Utils exposing (decodeRegistrationInitiatorFromString)
 import Pages.Page exposing (..)
+import PrenatalActivity.Model exposing (PrenatalActivity)
+import PrenatalActivity.Utils
 import Restful.Endpoint exposing (EntityUuid, fromEntityUuid, toEntityUuid)
 import Url
 import Url.Parser as Parser exposing ((</>), Parser, custom, int, map, oneOf, s, string, top)
@@ -34,6 +40,9 @@ pageToFragment current =
         -- These are pages that required a logged-in user
         UserPage userPage ->
             case userPage of
+                ClinicalPage ->
+                    Just "clinical"
+
                 ClinicsPage clinicId ->
                     let
                         clinic =
@@ -43,17 +52,39 @@ pageToFragment current =
                     in
                     Just ("clinics" ++ clinic)
 
+                ClinicalProgressReportPage prenatalEncounterId ->
+                    Just <| "clinical-progress-report/" ++ fromEntityUuid prenatalEncounterId
+
+                DemographicsReportPage prenatalEncounterId ->
+                    Just <| "demographics-report/" ++ fromEntityUuid prenatalEncounterId
+
                 MyAccountPage ->
                     Just "my-account"
 
-                CreatePersonPage relationId ->
+                CreatePersonPage relationId initiator ->
                     let
+                        origin =
+                            case initiator of
+                                ParticipantDirectoryOrigin ->
+                                    "directory"
+
+                                IndividualEncounterOrigin encounterType ->
+                                    case encounterType of
+                                        AntenatalEncounter ->
+                                            "antenatal"
+
+                                        InmmunizationEncounter ->
+                                            "inmmunization"
+
+                                        NutritionEncounter ->
+                                            "nutrition"
+
                         relation =
                             relationId
                                 |> Maybe.map (\id -> "/" ++ fromEntityUuid id)
                                 |> Maybe.withDefault ""
                     in
-                    Just ("person/new" ++ relation)
+                    Just ("person/" ++ origin ++ "/new" ++ relation)
 
                 EditPersonPage id ->
                     Just ("person/" ++ fromEntityUuid id ++ "/edit")
@@ -73,6 +104,12 @@ pageToFragment current =
                     in
                     Just url
 
+                PrenatalParticipantPage id ->
+                    Just <| "prenatal-participant/" ++ fromEntityUuid id
+
+                IndividualEncounterParticipantsPage encounterType ->
+                    Just <| "individual-participants/" ++ encoudeIndividualEncounterTypeAsString encounterType
+
                 RelationshipPage id1 id2 ->
                     Just
                         ("relationship/"
@@ -89,7 +126,7 @@ pageToFragment current =
                                     "/activities"
 
                                 ActivityPage activity ->
-                                    "/activity/" ++ encodeActivityAsString activity
+                                    "/activity/" ++ Activity.Utils.encodeActivityAsString activity
 
                                 AttendancePage ->
                                     ""
@@ -111,6 +148,18 @@ pageToFragment current =
                     in
                     Just url
 
+                PrenatalEncounterPage id ->
+                    Just <| "prenatal-encounter/" ++ fromEntityUuid id
+
+                PrenatalActivityPage id activity ->
+                    Just <| "prenatal-activity/" ++ fromEntityUuid id ++ "/" ++ PrenatalActivity.Utils.encodeActivityAsString activity
+
+                IndividualEncounterTypesPage ->
+                    Just "individual-encounter-types/"
+
+                PregnancyOutcomePage id ->
+                    Just <| "pregnancy-outcome/" ++ fromEntityUuid id
+
 
 parser : Parser (Page -> c) c
 parser =
@@ -121,14 +170,23 @@ parser =
         , map PinCodePage (s "pincode")
         , map ServiceWorkerPage (s "deployment")
         , map (UserPage MyAccountPage) (s "my-account")
+        , map (UserPage ClinicalPage) (s "clinical")
         , map (\id page -> UserPage <| SessionPage id page) (s "session" </> parseUuid </> parseSessionPage)
         , map (UserPage <| PersonsPage Nothing) (s "persons")
         , map (\id -> UserPage <| PersonsPage (Just id)) (s "relations" </> parseUuid)
-        , map (\id -> UserPage <| CreatePersonPage (Just id)) (s "person" </> s "new" </> parseUuid)
-        , map (UserPage <| CreatePersonPage Nothing) (s "person" </> s "new")
+        , map (\origin id -> UserPage <| CreatePersonPage (Just id) origin) (s "person" </> parseOrigin </> s "new" </> parseUuid)
+        , map (\origin -> UserPage <| CreatePersonPage Nothing origin) (s "person" </> parseOrigin </> s "new")
         , map (\id -> UserPage <| EditPersonPage id) (s "person" </> parseUuid </> s "edit")
         , map (\id -> UserPage <| PersonPage id) (s "person" </> parseUuid)
+        , map (\id -> UserPage <| PrenatalParticipantPage id) (s "prenatal-participant" </> parseUuid)
         , map (\id1 id2 -> UserPage <| RelationshipPage id1 id2) (s "relationship" </> parseUuid </> parseUuid)
+        , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
+        , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
+        , map (\id -> UserPage <| ClinicalProgressReportPage id) (s "clinical-progress-report" </> parseUuid)
+        , map (\id -> UserPage <| DemographicsReportPage id) (s "demographics-report" </> parseUuid)
+        , map (UserPage <| IndividualEncounterTypesPage) (s "individual-encounter-types")
+        , map (\encounterType -> UserPage <| IndividualEncounterParticipantsPage encounterType) (s "individual-participants" </> parseIndividualEncounterType)
+        , map (\id -> UserPage <| PregnancyOutcomePage id) (s "pregnancy-outcome" </> parseUuid)
 
         -- `top` represents the page without any segements ... i.e. the
         -- root page.
@@ -156,4 +214,19 @@ parseUuid =
 
 parseActivity : Parser (Activity -> c) c
 parseActivity =
-    custom "Activity" decodeActivityFromString
+    custom "Activity" Activity.Utils.decodeActivityFromString
+
+
+parsePrenatalActivity : Parser (PrenatalActivity -> c) c
+parsePrenatalActivity =
+    custom "PrenatalActivity" PrenatalActivity.Utils.decodeActivityFromString
+
+
+parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c
+parseIndividualEncounterType =
+    custom "IndividualEncounterType" decodeIndividualEncounterTypeFromString
+
+
+parseOrigin : Parser (RegistrationInitiator -> c) c
+parseOrigin =
+    custom "RegistrationInitiator" decodeRegistrationInitiatorFromString

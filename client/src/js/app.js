@@ -82,6 +82,13 @@ elmApp.ports.setLanguage.subscribe(function(language) {
   localStorage.setItem('language', language);
 });
 
+elmApp.ports.scrollToElement.subscribe(function(elementId) {
+  var element = document.getElementById(elementId);
+
+  if (element) {
+    element.scrollIntoView(true);
+  }
+});
 
 // Dropzone.
 
