@@ -32,8 +32,8 @@ thumbnailDimensions =
     }
 
 
-view : Language -> NominalDate -> NutritionEncounterId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id db model =
+view : Language -> NominalDate -> NutritionEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate id isChw db model =
     let
         data =
             generateAssembledData id db
@@ -42,7 +42,7 @@ view language currentDate id db model =
             viewWebData language (viewHeader language) identity data
 
         content =
-            viewWebData language (viewContent language currentDate id model) identity data
+            viewWebData language (viewContent language currentDate id isChw model) identity data
     in
     div [ class "page-nutrition-encounter" ] <|
         [ header
@@ -71,10 +71,10 @@ viewHeader language data =
         ]
 
 
-viewContent : Language -> NominalDate -> NutritionEncounterId -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id model data =
+viewContent : Language -> NominalDate -> NutritionEncounterId -> Bool -> Model -> AssembledData -> Html Msg
+viewContent language currentDate id isChw model data =
     (viewChildDetails language currentDate data.person
-        :: viewMainPageContent language currentDate id data model
+        :: viewMainPageContent language currentDate id isChw data model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -100,14 +100,14 @@ viewChildDetails language currentDate child =
         ]
 
 
-viewMainPageContent : Language -> NominalDate -> NutritionEncounterId -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate id data model =
+viewMainPageContent : Language -> NominalDate -> NutritionEncounterId -> Bool -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language currentDate id isChw data model =
     let
         measurements =
             data.measurements
 
         ( completedActivities, pendingActivities ) =
-            getAllActivities
+            getAllActivities isChw
                 |> List.partition
                     (\activity ->
                         case activity of
