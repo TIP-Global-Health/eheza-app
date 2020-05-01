@@ -1,4 +1,4 @@
-APIVersion: v1.11.2
+APIVersion: v1.13.0
 name: ihangane
 type: drupal7
 docroot: www
@@ -14,34 +14,12 @@ nfs_mount_enabled: false
 provider: default
 use_dns_when_possible: true
 timezone: ""
-hooks:
-  pre-start:
-    - exec-host: "chmod +x ./scripts/build && ./scripts/build"
-  post-import-db:
-    # Sanitize email addresses
-    - exec: drush sqlq "UPDATE users SET mail = concat(mail, '.test') WHERE uid > 0
-        AND mail NOT LIKE '%~%'"
-    - exec: drush sqlq "UPDATE users SET mail = replace(mail, '~', '.test~') WHERE uid
-        > 0 AND mail LIKE '%~%'"
-    - exec: drush en devel views_ui -y
-    - exec: drush uli
-  post-start:
-    - exec: drush site-install -y hedley install_configure_form.update_status_module='array(FALSE,FALSE)' --locale=en --account-name="admin" --account-pass="admin" --account-mail="admin@example.com" --db-url=mysql://db:db@db/db --uri="https://ihangane.ddev.site:4443"
-    - exec: drush en devel views_ui -y
-    - exec: composer install -d sites/default/files/composer
-    - exec: drush en -y hedley_migrate
-    - exec: drush en -y migrate migrate_ui migrate_extras
-    - exec: drush mi --group=default --user=1
-    - exec: drush mi --group=counseling --user=1
-    - exec: drush mi --group=forms --user=1
-    - exec: drush uli
 
 
-# This config.yaml was created with ddev version v1.11.2
-# webimage: drud/ddev-webserver:v1.11.0
-# dbimage: drud/ddev-dbserver:v1.11.0-10.2
-# dbaimage: drud/phpmyadmin:v1.11.0
-# bgsyncimage: drud/ddev-bgsync:v1.11.0
+# This config.yaml was created with ddev version v1.13.0
+# webimage: drud/ddev-webserver:v1.13.0
+# dbimage: drud/ddev-dbserver-mariadb-10.2:v1.13.0
+# dbaimage: phpmyadmin/phpmyadmin:5
 # However we do not recommend explicitly wiring these images into the
 # config.yaml as they may break future versions of ddev.
 # You can update this config.yaml using 'ddev config'.
@@ -55,7 +33,7 @@ hooks:
 
 # docroot: <relative_path> # Relative path to the directory containing index.php.
 
-# php_version: "7.2"  # PHP version to use, "5.6", "7.0", "7.1", "7.2", "7.3", "7.4"
+# php_version: "7.3"  # PHP version to use, "5.6", "7.0", "7.1", "7.2", "7.3", "7.4"
 
 # You can explicitly specify the webimage, dbimage, dbaimage lines but this
 # is not recommended, as the images are often closely tied to ddev's' behavior,
@@ -64,7 +42,12 @@ hooks:
 # webimage: <docker_image>  # nginx/php docker image.
 # dbimage: <docker_image>  # mariadb docker image.
 # dbaimage: <docker_image>
-# bgsyncimage: <docker_image>
+
+# mariadb_version and mysql_version
+# ddev can use many versions of mariadb and mysql
+# However these directives are mutually exclusive
+# mariadb_version: 10.2
+# mysql_version: 8.0
 
 # router_http_port: <port>  # Port to be used for http (defaults to port 80)
 # router_https_port: <port> # Port for https (defaults to 443)
@@ -114,10 +97,6 @@ hooks:
 # Great performance improvement but requires host configuration first.
 # See https://ddev.readthedocs.io/en/stable/users/performance/#using-nfs-to-mount-the-project-into-the-container
 
-# webcache_enabled: false (deprecated)
-# Was only for macOS, but now deprecated.
-# See https://ddev.readthedocs.io/en/stable/users/performance/#using-webcache_enabled-to-cache-the-project-directory
-
 # host_https_port: "59002"
 # The host port binding for https can be explicitly specified. It is
 # dynamic unless otherwise specified.
@@ -161,6 +140,11 @@ hooks:
 # ngrok_args: --subdomain mysite --auth username:pass
 # Provide extra flags to the "ngrok http" command, see
 # https://ngrok.com/docs#http or run "ngrok http -h"
+
+# disable_settings_management: false
+# If true, ddev will not create CMS-specific settings files like
+# Drupal's settings.php/settings.ddev.php or TYPO3's AdditionalSettings.php
+# In this case the user must provide all such settings.
 
 # provider: default # Currently either "default" or "pantheon"
 #

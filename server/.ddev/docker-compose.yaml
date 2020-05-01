@@ -4,14 +4,15 @@ services:
 
   db:
     container_name: ddev-${DDEV_SITENAME}-db
-    build: 
-      context: '/home/amitaibu/Sites/ihangane/server/.ddev/.dbimageBuild'
-      args: 
+    build:
+      context: '/home/adamhstewart/Sites/ihangane/server/.ddev/db-build'
+      dockerfile: '/home/adamhstewart/Sites/ihangane/server/.ddev/.dbimageBuild/Dockerfile'
+      args:
         BASE_IMAGE: $DDEV_DBIMAGE
-        username: 'amitaibu'
+        username: 'adamhstewart'
         uid: '1000'
         gid: '1000'
-    image: ${DDEV_DBIMAGE}-built
+    image: ${DDEV_DBIMAGE}-${DDEV_SITENAME}-built
     stop_grace_period: 60s
     volumes:
       - type: "volume"
@@ -47,14 +48,15 @@ services:
 
   web:
     container_name: ddev-${DDEV_SITENAME}-web
-    build: 
-      context: '/home/amitaibu/Sites/ihangane/server/.ddev/.webimageBuild'
-      args: 
+    build:
+      context: '/home/adamhstewart/Sites/ihangane/server/.ddev/web-build'
+      dockerfile: '/home/adamhstewart/Sites/ihangane/server/.ddev/.webimageBuild/Dockerfile'
+      args:
         BASE_IMAGE: $DDEV_WEBIMAGE
-        username: 'amitaibu'
+        username: 'adamhstewart'
         uid: '1000'
         gid: '1000'
-    image: ${DDEV_WEBIMAGE}-built
+    image: ${DDEV_WEBIMAGE}-${DDEV_SITENAME}-built
     cap_add:
       - SYS_PTRACE
     volumes:
@@ -89,6 +91,7 @@ services:
       - DDEV_ROUTER_HTTP_PORT=$DDEV_ROUTER_HTTP_PORT
       - DDEV_ROUTER_HTTPS_PORT=$DDEV_ROUTER_HTTPS_PORT
       - DDEV_XDEBUG_ENABLED=$DDEV_XDEBUG_ENABLED
+      - IS_DDEV_PROJECT=true
       - DOCKER_IP=127.0.0.1
       - HOST_DOCKER_INTERNAL_IP=172.17.0.1
       - DEPLOY_NAME=local
@@ -113,14 +116,13 @@ services:
     extra_hosts: [ "host.docker.internal:172.17.0.1" ]
 
     external_links:
-    - "ddev-router:ihangane.ddev.site" 
+    - "ddev-router:ihangane.ddev.site"
     
     healthcheck:
       interval: 1s
       retries: 10
       start_period: 10s
       timeout: 120s
-
 
 
   dba:
@@ -164,7 +166,7 @@ volumes:
   
   ddev-global-cache:
     name: ddev-global-cache
-  
+
   
 
   
