@@ -375,6 +375,14 @@ type SessionUuidType
     = SessionUuidType
 
 
+type alias VillageId =
+    EntityUuid VillageUuidType
+
+
+type VillageUuidType
+    = VillageUuidType
+
+
 type alias WeightId =
     EntityUuid WeightUuidType
 

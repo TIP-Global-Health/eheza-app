@@ -69,7 +69,7 @@ fetch model =
             []
 
         UserPage ClinicalPage ->
-            Pages.Clinical.Fetch.fetch
+            Pages.Clinical.Fetch.fetch model.villageId model.indexedDb
                 |> List.map MsgIndexedDb
 
         UserPage (ClinicsPage clinicId) ->

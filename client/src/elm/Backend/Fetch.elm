@@ -97,9 +97,16 @@ shouldFetch model msg =
             isNotAsked model.everyCounselingSchedule
 
         FetchExpectedParticipants sessionId ->
-            Dict.get sessionId model.expectedParticipants
-                |> Maybe.withDefault NotAsked
-                |> isNotAsked
+            let
+                expectedNotSuccess =
+                    Dict.get sessionId model.expectedParticipants
+                        |> Maybe.withDefault NotAsked
+                        |> isNotAsked
+
+                hasPeoplesNotSuccess =
+                    hasNoSuccessValues model.people
+            in
+            expectedNotSuccess || hasPeoplesNotSuccess
 
         FetchExpectedSessions childId ->
             Dict.get childId model.expectedSessions
@@ -108,6 +115,9 @@ shouldFetch model msg =
 
         FetchHealthCenters ->
             isNotAsked model.healthCenters
+
+        FetchVillages ->
+            isNotAsked model.villages
 
         FetchMotherMeasurements motherId ->
             Dict.get motherId model.motherMeasurements
@@ -249,6 +259,9 @@ forget msg model =
 
         FetchHealthCenters ->
             { model | healthCenters = NotAsked }
+
+        FetchVillages ->
+            { model | villages = NotAsked }
 
         FetchMotherMeasurements motherId ->
             { model | motherMeasurements = Dict.remove motherId model.motherMeasurements }

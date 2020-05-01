@@ -4,15 +4,18 @@ import Activity.Model exposing (emptySummaryByParticipant)
 import Activity.Utils exposing (getActivityCountForMother)
 import AssocList as Dict
 import Backend.Entities exposing (..)
+import Backend.Nurse.Model exposing (Nurse)
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
+import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import LocalData
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participants.Model exposing (Model, Msg(..), Tab(..))
-import Pages.Utils exposing (filterDependentNoResultsMessage, matchMotherAndHerChildren, normalizeFilter, viewEndEncounterDialog, viewNameFilter)
+import Pages.Utils exposing (..)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
 
@@ -24,8 +27,8 @@ thumbnailDimensions =
     }
 
 
-view : Language -> ( SessionId, EditableSession ) -> Model -> Html Msg
-view language ( sessionId, session ) model =
+view : Language -> Nurse -> ( SessionId, EditableSession ) -> Model -> Html Msg
+view language nurse ( sessionId, session ) model =
     let
         filter =
             normalizeFilter model.filter
@@ -121,11 +124,21 @@ view language ( sessionId, session ) model =
             else
                 Nothing
 
+        goBackPage =
+            backFromSessionPage nurse session.offlineSession
+
+        endSessionAction =
+            if isCommunityHealthWorker nurse then
+                SetRedirectPage goBackPage
+
+            else
+                ShowEndSessionDialog True
+
         endSessionButton =
             div [ class "actions" ]
                 [ button
                     [ class "ui fluid primary button"
-                    , onClick <| ShowEndSessionDialog True
+                    , onClick endSessionAction
                     ]
                     [ text <| translate language Trans.EndGroupEncounter ]
                 ]
@@ -138,7 +151,7 @@ view language ( sessionId, session ) model =
                     [ text <| translate language Trans.Participants ]
                 , a
                     [ class "link-back"
-                    , onClick <| SetRedirectPage <| UserPage <| ClinicsPage <| Just session.offlineSession.session.clinicId
+                    , onClick <| SetRedirectPage goBackPage
                     ]
                     [ span [ class "icon-back" ] []
                     , span [] []

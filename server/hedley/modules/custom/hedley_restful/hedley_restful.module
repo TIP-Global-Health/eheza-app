@@ -29,6 +29,7 @@ const HEDLEY_RESTFUL_ALL_DEVICES = [
   'nutrition_encounter' => 'nutrition-encounters',
   'relationship' => 'relationships',
   'session' => 'sessions',
+  'village' => 'villages',
 ];
 
 /**

@@ -95,6 +95,9 @@ type alias Model =
 
     -- Which health center a nurse is working at.
     , healthCenterId : Maybe HealthCenterId
+
+    -- Which health center a nurse is working at.
+    , villageId : Maybe VillageId
     }
 
 
@@ -220,6 +223,7 @@ type Msg
     | SetStorageQuota StorageQuota
     | SetMemoryQuota MemoryQuota
     | SetHealthCenter (Maybe HealthCenterId)
+    | SetVillage (Maybe VillageId)
     | Tick Time.Posix
     | CheckDataWanted
     | UrlRequested Browser.UrlRequest
@@ -252,6 +256,7 @@ type alias Flags =
     , hostname : String
     , pinCode : String
     , healthCenterId : String
+    , villageId : String
     }
 
 
@@ -264,6 +269,13 @@ emptyModel key url flags =
 
             else
                 Just (toEntityUuid flags.healthCenterId)
+
+        villageId =
+            if flags.villageId == "" then
+                Nothing
+
+            else
+                Just (toEntityUuid flags.villageId)
     in
     { activePage = PinCodePage
     , navigationKey = key
@@ -280,4 +292,5 @@ emptyModel key url flags =
     , storageQuota = Nothing
     , zscores = ZScore.Model.emptyModel
     , healthCenterId = healthCenterId
+    , villageId = villageId
     }
