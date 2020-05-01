@@ -5,9 +5,6 @@ This is a starting base to create Drupal 7 websites using an install profile.
 
 ## Installation
 
-**Warning:** you need to setup [Drush](https://github.com/drush-ops/drush)
-first or the installation and update scripts will not work.
-
 ### Install with DDEV
 
   cp .ddev/config.local.yaml.example .ddev/config.local.yaml
@@ -15,6 +12,9 @@ first or the installation and update scripts will not work.
 
 
 ### Native Install
+
+**Warning:** you need to setup [Drush](https://github.com/drush-ops/drush)
+first or the installation and update scripts will not work.
 
 #### Create config file
 
