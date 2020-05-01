@@ -13,9 +13,4 @@ hooks:
     - exec: drush site-install -y hedley install_configure_form.update_status_module='array(FALSE,FALSE)' --locale=en --account-name="admin" --account-pass="admin" --account-mail="admin@example.com" --db-url=mysql://db:db@db/db --uri="https://ihangane.ddev.site:4443"
     - exec: drush en devel views_ui -y
     - exec: composer install -d sites/default/files/composer
-    - exec: drush en -y hedley_migrate
-    - exec: drush en -y migrate migrate_ui migrate_extras
-    - exec: drush mi --group=default --user=1
-    - exec: drush mi --group=counseling --user=1
-    - exec: drush mi --group=forms --user=1
     - exec: drush uli
