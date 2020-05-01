@@ -91,4 +91,4 @@ getActivityIcon activity =
 
 getAllActivities : List NutritionActivity
 getAllActivities =
-    [ Height, Muac, Nutrition, Photo, Weight ]
+    [ Height, Muac, Nutrition, Weight, Photo ]
