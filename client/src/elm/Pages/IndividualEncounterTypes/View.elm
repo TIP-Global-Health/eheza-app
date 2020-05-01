@@ -15,12 +15,12 @@ import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 
 
-view : Language -> NominalDate -> ModelIndexedDb -> Html App.Model.Msg
-view language currentDate db =
+view : Language -> NominalDate -> Bool -> ModelIndexedDb -> Html App.Model.Msg
+view language currentDate isChw db =
     div
         [ class "wrap wrap-alt-2 page-encounter-types" ]
         [ viewHeader language
-        , viewContent language currentDate db
+        , viewContent language currentDate isChw db
             |> div [ class "ui full segment" ]
         ]
 
@@ -41,8 +41,8 @@ viewHeader language =
         ]
 
 
-viewContent : Language -> NominalDate -> ModelIndexedDb -> List (Html App.Model.Msg)
-viewContent language currentDate db =
+viewContent : Language -> NominalDate -> Bool -> ModelIndexedDb -> List (Html App.Model.Msg)
+viewContent language currentDate isChw db =
     let
         encounterButton encounterType =
             button
@@ -52,8 +52,10 @@ viewContent language currentDate db =
                 [ span [ class "text" ] [ text <| translate language <| Translate.IndividualEncounterType encounterType ]
                 , span [ class "icon-back" ] []
                 ]
+
+        buttons =
+                [ encounterButton AntenatalEncounter
+                , encounterButton NutritionEncounter
+                ]
     in
-    [ p [] [ text <| translate language Translate.SelectEncounterType ++ ":" ]
-    , encounterButton AntenatalEncounter
-    , encounterButton NutritionEncounter
-    ]
+    p [] [ text <| translate language Translate.SelectEncounterType ++ ":" ] :: buttons
