@@ -9,7 +9,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.Person.Model exposing (Person)
 import EverySet
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -34,15 +34,15 @@ import ZScore.Model exposing (Centimetres(..), Kilograms(..), ZScore)
 import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeightForAge, zScoreWeightForHeight, zScoreWeightForLength)
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate zscores id activity db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores id activity isChw db model =
     let
         data =
             generateAssembledData id db
     in
     div [ class "page-nutrition-activity" ] <|
         [ viewHeader language id activity
-        , viewWebData language (viewContent language currentDate zscores id activity model) identity data
+        , viewWebData language (viewContent language currentDate zscores id activity isChw model) identity data
         ]
 
 
@@ -63,16 +63,16 @@ viewHeader language id activity =
         ]
 
 
-viewContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Model -> AssembledData -> Html Msg
-viewContent language currentDate zscores id activity model assembled =
+viewContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Bool -> Model -> AssembledData -> Html Msg
+viewContent language currentDate zscores id activity isChw model assembled =
     (viewChildDetails language currentDate assembled.person
-        :: viewActivity language currentDate zscores id activity assembled model
+        :: viewActivity language currentDate zscores id activity isChw assembled model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewActivity : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> AssembledData -> Model -> List (Html Msg)
-viewActivity language currentDate zscores id activity assembled model =
+viewActivity : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Bool -> AssembledData -> Model -> List (Html Msg)
+viewActivity language currentDate zscores id activity isChw assembled model =
     case activity of
         Height ->
             viewHeightContent language currentDate zscores assembled model.heightData
@@ -87,7 +87,7 @@ viewActivity language currentDate zscores id activity assembled model =
             viewPhotoContent language currentDate ( assembled.participant.person, assembled.measurements ) model.photoData
 
         Weight ->
-            viewWeightContent language currentDate zscores assembled model.weightData
+            viewWeightContent language currentDate zscores isChw assembled model.weightData
 
 
 viewHeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> HeightData -> List (Html Msg)
@@ -343,8 +343,8 @@ viewPhotoContent language currentDate ( personId, measurements ) data =
     ]
 
 
-viewWeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> WeightData -> List (Html Msg)
-viewWeightContent language currentDate zscores assembled data =
+viewWeightContent : Language -> NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> WeightData -> List (Html Msg)
+viewWeightContent language currentDate zscores isChw assembled data =
     let
         activity =
             Weight
@@ -435,6 +435,7 @@ viewWeightContent language currentDate zscores assembled data =
                     [ text zScoreForHeightText
                     ]
                 ]
+                |> showIf (not isChw)
             ]
         , div [ class "actions" ]
             [ button
