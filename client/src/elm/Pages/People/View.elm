@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (ExpectedAge(..), Person, RegistrationInitiator(..))
 import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isPersonAnAdult)
-import Backend.Village.Utils exposing (getVillageById)
+import Backend.Village.Utils exposing (personLivesInVillage)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -169,15 +169,7 @@ viewSearchForm language currentDate maybeVillageId isChw relation model db =
                     chwCondition filteredPerson =
                         if isChw then
                             maybeVillageId
-                                |> Maybe.andThen (getVillageById db)
-                                |> Maybe.map
-                                    (\village ->
-                                        (Just village.province == filteredPerson.province)
-                                            && (Just village.district == filteredPerson.district)
-                                            && (Just village.sector == filteredPerson.sector)
-                                            && (Just village.cell == filteredPerson.cell)
-                                            && (Just village.village == filteredPerson.village)
-                                    )
+                                |> Maybe.map (personLivesInVillage filteredPerson db)
                                 |> Maybe.withDefault False
 
                         else

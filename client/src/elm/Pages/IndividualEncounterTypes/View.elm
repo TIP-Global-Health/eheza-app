@@ -55,7 +55,9 @@ viewContent language currentDate isChw db =
 
         buttons =
             if isChw then
-                [ encounterButton AcuteIllnessEncounter ]
+                [ encounterButton AcuteIllnessEncounter
+                , encounterButton NutritionEncounter
+                ]
 
             else
                 [ encounterButton AntenatalEncounter

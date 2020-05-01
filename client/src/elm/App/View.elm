@@ -288,7 +288,13 @@ viewUserPage page model configured =
                             |> flexPageWrapper model
 
                     IndividualEncounterParticipantsPage encounterType ->
-                        Pages.IndividualEncounterParticipants.View.view model.language currentDate healthCenterId encounterType loggedInModel.individualEncounterParticipantsPage model.indexedDb
+                        Pages.IndividualEncounterParticipants.View.view model.language
+                            currentDate
+                            ( healthCenterId, model.villageId )
+                            isChw
+                            encounterType
+                            loggedInModel.individualEncounterParticipantsPage
+                            model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPageIndividualEncounterParticipants)
                             |> flexPageWrapper model
 
@@ -341,7 +347,7 @@ viewUserPage page model configured =
                             |> flexPageWrapper model
 
                     IndividualEncounterTypesPage ->
-                        Pages.IndividualEncounterTypes.View.view model.language currentDate model.indexedDb
+                        Pages.IndividualEncounterTypes.View.view model.language currentDate isChw model.indexedDb
                             |> flexPageWrapper model
 
                     PregnancyOutcomePage id ->
