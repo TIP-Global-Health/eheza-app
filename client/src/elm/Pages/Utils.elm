@@ -1,4 +1,4 @@
-module Pages.Utils exposing (backFromSessionPage, filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, taskCompleted, taskListCompleted, viewBoolInput, viewCheckBoxMultipleSelectInput, viewCheckBoxSelectInput, viewCheckBoxSelectInputItem, viewCustomLabel, viewLabel, viewMeasurementInput, viewNameFilter, viewPhotoThumb, viewPhotoThumbFromPhotoUrl, viewPreviousMeasurement, viewQuestionLabel)
+module Pages.Utils exposing (backFromSessionPage, filterDependentNoResultsMessage, isTaskCompleted, matchFilter, matchMotherAndHerChildren, normalizeFilter, taskCompleted, taskListCompleted, tasksBarId, viewBoolInput, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxSelectInputItem, viewCheckBoxValueInput, viewCheckBoxValueInputItem, viewCheckBoxValueInputNone, viewCustomLabel, viewEndEncounterDialog, viewLabel, viewMeasurementInput, viewNameFilter, viewPhotoThumb, viewPhotoThumbFromPhotoUrl, viewPreviousMeasurement, viewQuestionLabel)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PersonId)
