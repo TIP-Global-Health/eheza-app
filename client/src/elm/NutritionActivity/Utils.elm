@@ -89,6 +89,10 @@ getActivityIcon activity =
             "weight"
 
 
-getAllActivities : List NutritionActivity
-getAllActivities =
-    [ Height, Muac, Nutrition, Photo, Weight ]
+getAllActivities : Bool -> List NutritionActivity
+getAllActivities isChw =
+    if isChw then
+        [ Muac, Nutrition, Weight, Photo ]
+
+    else
+        [ Height, Muac, Nutrition, Weight, Photo ]

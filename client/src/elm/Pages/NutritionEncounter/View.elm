@@ -26,8 +26,8 @@ import Utils.NominalDate exposing (renderAgeMonthsDays)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> NutritionEncounterId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id db model =
+view : Language -> NominalDate -> NutritionEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate id isChw db model =
     let
         data =
             generateAssembledData id db
@@ -36,7 +36,7 @@ view language currentDate id db model =
             viewWebData language (viewHeader language) identity data
 
         content =
-            viewWebData language (viewContent language currentDate id model) identity data
+            viewWebData language (viewContent language currentDate id isChw model) identity data
     in
     div [ class "page-encounter nutrition" ] <|
         [ header
@@ -65,22 +65,22 @@ viewHeader language data =
         ]
 
 
-viewContent : Language -> NominalDate -> NutritionEncounterId -> Model -> AssembledData -> Html Msg
-viewContent language currentDate id model data =
+viewContent : Language -> NominalDate -> NutritionEncounterId -> Bool -> Model -> AssembledData -> Html Msg
+viewContent language currentDate id isChw model data =
     ((viewPersonDetails language currentDate data.person |> div [ class "item" ])
-        :: viewMainPageContent language currentDate id data model
+        :: viewMainPageContent language currentDate id isChw data model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewMainPageContent : Language -> NominalDate -> NutritionEncounterId -> AssembledData -> Model -> List (Html Msg)
-viewMainPageContent language currentDate id data model =
+viewMainPageContent : Language -> NominalDate -> NutritionEncounterId -> Bool -> AssembledData -> Model -> List (Html Msg)
+viewMainPageContent language currentDate id isChw data model =
     let
         measurements =
             data.measurements
 
         ( completedActivities, pendingActivities ) =
-            getAllActivities
+            getAllActivities isChw
                 |> List.partition
                     (\activity ->
                         case activity of
@@ -150,7 +150,15 @@ viewMainPageContent language currentDate id data model =
                 ]
 
         allowEndEcounter =
-            List.isEmpty pendingActivities
+            case pendingActivities of
+                [] ->
+                    True
+
+                [ Photo ] ->
+                    True
+
+                _ ->
+                    False
 
         endEcounterButtonAttributes =
             if allowEndEcounter then
