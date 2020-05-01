@@ -10,6 +10,9 @@ This is a starting base to create Drupal 7 websites using an install profile.
   cp .ddev/config.local.yaml.example .ddev/config.local.yaml
   ddev restart
 
+Migrate content with either `ddev migrate default` or `ddev migrate sample`
+depending on whether you want minimal development content or a full set of
+sample content (takes much longer).
 
 ### Native Install
 
