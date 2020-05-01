@@ -10,9 +10,8 @@ first or the installation and update scripts will not work.
 
 ### Install with DDEV
 
-(Re)Start DDEV
-
-    ddev restart
+  cp .ddev/config.local.yaml.example .ddev/config.local.yaml
+  ddev restart
 
 
 ### Native Install
