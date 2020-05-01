@@ -177,7 +177,15 @@ viewMainPageContent language currentDate id data model =
                 ]
 
         allowEndEcounter =
-            List.isEmpty pendingActivities
+            case pendingActivities of
+                [] ->
+                    True
+
+                [ Photo ] ->
+                    True
+
+                _ ->
+                    False
 
         endEcounterButtonAttributes =
             if allowEndEcounter then
