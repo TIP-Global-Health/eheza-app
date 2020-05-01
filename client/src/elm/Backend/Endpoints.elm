@@ -41,6 +41,8 @@ import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.SyncData.Decoder exposing (decodeSyncData)
 import Backend.SyncData.Encoder exposing (encodeSyncData)
 import Backend.SyncData.Model exposing (SyncData)
+import Backend.Village.Decoder exposing (decodeVillage)
+import Backend.Village.Model exposing (Village)
 import Http exposing (Error)
 import Json.Decode exposing (Decoder, field, succeed)
 import Json.Encode exposing (Value, object)
@@ -103,6 +105,11 @@ encodeRelationshipParams params =
 healthCenterEndpoint : ReadOnlyEndPoint Error HealthCenterId HealthCenter ()
 healthCenterEndpoint =
     swEndpoint "nodes/health_center" decodeHealthCenter
+
+
+villageEndpoint : ReadOnlyEndPoint Error VillageId Village ()
+villageEndpoint =
+    swEndpoint "nodes/village" decodeVillage
 
 
 syncDataEndpoint : ReadWriteEndPoint Error HealthCenterId SyncData SyncData ()

@@ -562,3 +562,11 @@ function hedley_update_7024() {
   module_enable(['smtp']);
   variable_set('smtp_on', TRUE);
 }
+
+/**
+ * Enable hedley_chw module.
+ */
+function hedley_update_7025() {
+  $modules = ['hedley_chw'];
+  module_enable($modules);
+}
