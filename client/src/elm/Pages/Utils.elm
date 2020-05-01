@@ -1,4 +1,4 @@
-module Pages.Utils exposing (backFromSessionPage, filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, taskCompleted, taskListCompleted, viewBoolInput, viewCustomLabel, viewLabel, viewNameFilter, viewPhotoThumb, viewPhotoThumbFromPhotoUrl, viewQuestionLabel)
+module Pages.Utils exposing (backFromSessionPage, filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, taskCompleted, taskListCompleted, viewBoolInput, viewCheckBoxMultipleSelectInput, viewCheckBoxSelectInput, viewCheckBoxSelectInputItem, viewCustomLabel, viewLabel, viewMeasurementInput, viewNameFilter, viewPhotoThumb, viewPhotoThumbFromPhotoUrl, viewPreviousMeasurement, viewQuestionLabel)
 
 import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model exposing (PhotoUrl(..))
