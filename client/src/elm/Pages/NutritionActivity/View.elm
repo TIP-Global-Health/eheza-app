@@ -271,6 +271,9 @@ viewNutritionContent language currentDate ( personId, measurements ) data =
 viewPhotoContent : Language -> NominalDate -> ( PersonId, NutritionMeasurements ) -> PhotoData -> List (Html Msg)
 viewPhotoContent language currentDate ( personId, measurements ) data =
     let
+        activity =
+            Photo
+
         photoId =
             Maybe.map Tuple.first measurements.photo
 
@@ -301,7 +304,7 @@ viewPhotoContent language currentDate ( personId, measurements ) data =
     , divKeyed [ class "ui full segment photo" ]
         [ keyedDivKeyed "content"
             [ class "content" ]
-            [ p [] [ text <| translate language Translate.PrenatalPhotoHelper ]
+            [ p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
                 |> keyed "help"
             , keyedDivKeyed "grid"
                 [ class "ui grid" ]
