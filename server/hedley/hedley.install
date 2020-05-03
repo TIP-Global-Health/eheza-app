@@ -570,3 +570,13 @@ function hedley_update_7025() {
   $modules = ['hedley_chw'];
   module_enable($modules);
 }
+
+/**
+ * Enable and configure mailsystem model.
+ */
+function hedley_update_7026() {
+  $modules = ['mailsystem'];
+  module_enable($modules);
+
+  variable_set('mail_system', array('default-system' => 'SmtpMailSystem'));
+}
