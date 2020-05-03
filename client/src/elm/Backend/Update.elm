@@ -1857,7 +1857,7 @@ handleRevision revision (( model, recalc ) as noChange) =
                 (\measurements -> { measurements | symptomsRespiratory = Just ( uuid, data ) })
                 model
             , recalc
-            )                
+            )
 
         VillageRevision uuid data ->
             let
