@@ -298,7 +298,7 @@ viewFetchedContent language currentDate maybeVillageGroupId isChw id1 id2 model 
             div
                 [ class "ui grid save-buttons" ]
                 [ div
-                    [ class "four wide column" ]
+                    [ class "six wide column" ]
                     [ button
                         [ class "ui button secondary fluid"
                         , onClick Reset
@@ -306,10 +306,10 @@ viewFetchedContent language currentDate maybeVillageGroupId isChw id1 id2 model 
                         [ text <| translate language Translate.Cancel ]
                     ]
                 , div
-                    [ class "eight wide column" ]
+                    [ class "four wide column" ]
                     []
                 , div
-                    [ class "four wide column" ]
+                    [ class "six wide column" ]
                     [ button
                         [ classList
                             [ ( "ui button primary fluid", True )
