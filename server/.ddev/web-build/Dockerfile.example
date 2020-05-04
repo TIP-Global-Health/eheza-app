@@ -1,6 +1,6 @@
 
 # You can copy this Dockerfile.example to Dockerfile to add configuration
 # or packages or anything else to your webimage
-ARG BASE_IMAGE=drud/ddev-webserver:v1.13.0
+ARG BASE_IMAGE
 FROM $BASE_IMAGE
 RUN npm install --global gulp-cli
