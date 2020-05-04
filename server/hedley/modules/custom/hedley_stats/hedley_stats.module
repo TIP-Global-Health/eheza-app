@@ -46,7 +46,7 @@ define('HEDLEY_STATS_CACHE_CLEAR', 'clear');
 function hedley_stats_node_presave($node) {
   $measurements_content_types = hedley_activity_get_measurements_content_types();
 
-  if (!in_array($node->type, array_keys($measurements_content_types))) {
+  if (!in_array($node->type, $measurements_content_types)) {
     // Reset cache only when a measurement is changed.
     return;
   }
