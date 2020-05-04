@@ -564,15 +564,26 @@ function hedley_update_7024() {
 }
 
 /**
- * Enable the Hedley Stats module.
+ * Enable hedley_chw module.
  */
 function hedley_update_7025() {
-  module_enable(['hedley_stats']);
+  $modules = ['hedley_chw'];
+  module_enable($modules);
 }
 
 /**
- * Enable the Hedley General module.
+ * Enable and configure mailsystem model.
  */
 function hedley_update_7026() {
-  module_enable(['hedley_general']);
+  $modules = ['mailsystem'];
+  module_enable($modules);
+
+  variable_set('mail_system', array('default-system' => 'SmtpMailSystem'));
+}
+
+/**
+ * Enable the Hedley Stats and Hedley General modules.
+ */
+function hedley_update_7027() {
+  module_enable(['hedley_stats', 'hedley_general']);
 }

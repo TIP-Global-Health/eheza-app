@@ -109,6 +109,17 @@ prenatalPantheon =
     }
 
 
+***REMOVED*** : Model
+***REMOVED*** =
+    { backendUrl = "https://***REMOVED***"
+    , name = "***REMOVED***"
+    , pusherKey = PusherAppKey "" UsEast1
+    , debug = False
+    , rollbarToken = Rollbar.token "***REMOVED***"
+    , sandbox = False
+    }
+
+
 configs : Dict String Model
 configs =
     Dict.fromList
@@ -119,6 +130,7 @@ configs =
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "prenatal-ihangane.pantheonsite.io", prenatalPantheon )
+        , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         ]

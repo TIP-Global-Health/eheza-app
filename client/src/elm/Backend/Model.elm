@@ -18,7 +18,7 @@ in the UI.
 -}
 
 import AssocList as Dict exposing (Dict)
-import Backend.Clinic.Model exposing (Clinic)
+import Backend.Clinic.Model exposing (Clinic, ClinicType)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic, EveryCounselingSchedule)
 import Backend.Dashboard.Model exposing (DashboardStats)
 import Backend.Entities exposing (..)
@@ -33,7 +33,7 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
 import Backend.SyncData.Model exposing (SyncData)
-import Http
+import Backend.Village.Model exposing (Village)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
@@ -49,6 +49,7 @@ type alias ModelIndexedDb =
     , computedDashboard : Dict HealthCenterId DashboardStats
     , everyCounselingSchedule : WebData EveryCounselingSchedule
     , healthCenters : WebData (Dict HealthCenterId HealthCenter)
+    , villages : WebData (Dict VillageId Village)
     , participantForms : WebData (Dict ParticipantFormId ParticipantForm)
 
     -- Data and requests relating to sync data
@@ -132,6 +133,7 @@ emptyModelIndexedDb =
     , expectedParticipants = Dict.empty
     , expectedSessions = Dict.empty
     , healthCenters = NotAsked
+    , villages = NotAsked
     , motherMeasurements = Dict.empty
     , participantForms = NotAsked
     , participantsByPerson = Dict.empty
@@ -192,6 +194,7 @@ type MsgIndexedDb
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
     | FetchSyncData
+    | FetchVillages
       -- Messages which handle responses to data
     | HandleFetchedChildMeasurements PersonId (WebData ChildMeasurementList)
     | HandleFetchedComputedDashboard HealthCenterId (WebData (Dict HealthCenterId DashboardStats))
@@ -217,6 +220,7 @@ type MsgIndexedDb
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (Dict SessionId Session))
     | HandleFetchedSyncData (WebData (Dict HealthCenterId SyncData))
+    | HandleFetchedVillages (WebData (Dict VillageId Village))
       -- Messages which mutate data
     | PostPerson (Maybe PersonId) RegistrationInitiator Person -- The first person is a person we ought to offer setting a relationship to.
     | PatchPerson PersonId Person
@@ -230,7 +234,7 @@ type MsgIndexedDb
     | HandlePatchedPerson PersonId (WebData Person)
     | HandlePostedRelationship PersonId (WebData MyRelationship)
     | HandlePostedPmtctParticipant PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
-    | HandlePostedSession (WebData SessionId)
+    | HandlePostedSession ClinicType (WebData SessionId)
     | HandlePostedIndividualSession PersonId (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
     | HandlePostedPrenatalEncounter IndividualEncounterParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))
       -- Process some revisions we've received from the backend. In some cases,
@@ -286,5 +290,6 @@ type Revision
     | ResourceRevision ResourceId Resource
     | SessionRevision SessionId Session
     | SocialHistoryRevision SocialHistoryId SocialHistory
+    | VillageRevision VillageId Village
     | VitalsRevision VitalsId Vitals
     | WeightRevision WeightId Weight

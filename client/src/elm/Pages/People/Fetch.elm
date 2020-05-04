@@ -27,4 +27,4 @@ fetch relation model =
                 |> Maybe.map FetchPerson
                 |> Maybe.Extra.toList
     in
-    fetchPeople ++ fetchRelation
+    fetchPeople ++ fetchRelation ++ [ FetchVillages ]

@@ -83,7 +83,7 @@ function hedley_health_center_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => -1,
+      'weight' => 1,
     ),
   );
 

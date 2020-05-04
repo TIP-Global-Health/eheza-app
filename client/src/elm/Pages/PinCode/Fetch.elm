@@ -5,4 +5,6 @@ import Backend.Model exposing (MsgIndexedDb(..))
 
 fetch : List MsgIndexedDb
 fetch =
-    [ FetchHealthCenters ]
+    [ FetchHealthCenters
+    , FetchVillages
+    ]

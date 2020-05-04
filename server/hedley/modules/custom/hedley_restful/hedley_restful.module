@@ -27,6 +27,7 @@ const HEDLEY_RESTFUL_ALL_DEVICES = [
   'prenatal_encounter' => 'prenatal-encounters',
   'relationship' => 'relationships',
   'session' => 'sessions',
+  'village' => 'villages',
 ];
 
 /**
