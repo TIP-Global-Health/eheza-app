@@ -7,6 +7,7 @@ This is a starting base to create Drupal 7 websites using an install profile.
 
 ### Install with DDEV
 
+  cp default.config.sh config.sh
   cp .ddev/config.local.yaml.example .ddev/config.local.yaml
   ddev restart
 
