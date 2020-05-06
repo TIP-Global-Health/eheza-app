@@ -138,9 +138,6 @@ viewNutritionActions language currentDate id db nutritionSessions =
                 |> App.Model.SetActivePage
                 |> onClick
             ]
-
-        buttonDisabled =
-            isJust maybeActiveEncounterId && encounterWasCompletedToday
     in
     div []
         [ p [ class "label-antenatal-visit" ]
@@ -152,7 +149,7 @@ viewNutritionActions language currentDate id db nutritionSessions =
         , button
             (classList
                 [ ( "ui primary button", True )
-                , ( "disabled", buttonDisabled )
+                , ( "disabled", encounterWasCompletedToday )
                 ]
                 :: action
             )
