@@ -115,6 +115,7 @@ type ChartPhrase
     = AgeCompletedMonthsYears
     | Birth
     | BirthToTwoYears
+    | TwoToFiveYears
     | FiveToNineteenYears
     | HeightCm
     | HeightForAgeBoys
@@ -4229,6 +4230,11 @@ translateChartPhrase phrase =
         BirthToTwoYears ->
             { english = "Birth to 2 years (z-scores)"
             , kinyarwanda = Just "kuvuka (Kuva avutse)  kugeza ku myaka 2 Z-score"
+            }
+
+        TwoToFiveYears ->
+            { english = "2 to 5 years (z-scores)"
+            , kinyarwanda = Nothing
             }
 
         FiveToNineteenYears ->

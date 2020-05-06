@@ -81,6 +81,27 @@ viewHeightForAgeBoys language model data =
         ]
 
 
+viewHeightForAgeGirls2To5 : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeightForAgeGirls2To5 language model data =
+    svg
+        [ class "z-score girls"
+        , x "0px"
+        , y "0px"
+        , viewBox "0 0 841.9 595.3"
+        ]
+        [ frame language "z-score-grey"
+        , labels language heightForAgeGirlsLabels2To5
+        , yAxisLinesAndText heightForAgeConfig2To5
+        , xAxisLinesAndText heightForAgeConfig2To5
+        , zScoreLabelsHeightForAgeBoys5To19
+        , model.lengthHeightForAge
+            |> RemoteData.map (.female >> .byDay >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData heightForAgeConfig2To5
+        , plotChildData heightForAgeConfig2To5 data
+        ]
+
+
 viewHeightForAgeBoys5To19 : Language -> Model -> List ( Months, Centimetres ) -> Html any
 viewHeightForAgeBoys5To19 language model data =
     svg
@@ -89,7 +110,7 @@ viewHeightForAgeBoys5To19 language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language "z-score-blue"
+        [ frame language "z-score-grey"
         , labels language heightForAgeBoysLabels5To19
         , yAxisLinesAndText heightForAgeConfig5To19
         , xAxisLinesAndText heightForAgeConfig5To19
@@ -102,27 +123,6 @@ viewHeightForAgeBoys5To19 language model data =
         ]
 
 
-viewHeightForAgeGirls2To5 : Language -> Model -> List ( Days, Centimetres ) -> Html any
-viewHeightForAgeGirls2To5 language model data =
-    svg
-        [ class "z-score girls"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
-        [ frame language "z-score-pink"
-        , labels language heightForAgeGirlsLabels5To19
-        , yAxisLinesAndText heightForAgeConfig2To5
-        , xAxisLinesAndText heightForAgeConfig2To5
-        , zScoreLabelsHeightForAgeBoys5To19
-        , model.lengthHeightForAge
-            |> RemoteData.map (.female >> .byDay >> AllDict.toList)
-            |> RemoteData.withDefault []
-            |> plotReferenceData heightForAgeConfig2To5
-        , plotChildData heightForAgeConfig2To5 data
-        ]
-
-
 viewHeightForAgeGirls5To19 : Language -> Model -> List ( Months, Centimetres ) -> Html any
 viewHeightForAgeGirls5To19 language model data =
     svg
@@ -131,7 +131,7 @@ viewHeightForAgeGirls5To19 language model data =
         , y "0px"
         , viewBox "0 0 841.9 595.3"
         ]
-        [ frame language "z-score-pink"
+        [ frame language "z-score-grey"
         , labels language heightForAgeGirlsLabels5To19
         , yAxisLinesAndText heightForAgeConfig5To19
         , xAxisLinesAndText heightForAgeConfig5To19
@@ -248,7 +248,7 @@ heightForAgeConfig2To5 =
     , input = { minY = 76, maxY = 125, minX = 365 * 2, maxX = 365 * 5 }
     , output = { minX = 111, maxX = 715.4, minY = 119.9, maxY = 506.7 }
     , drawSD1 = False
-    , paintLevels = False
+    , paintLevels = True
     , xAxis =
         { width = 806
         , minYear = 2
@@ -274,7 +274,7 @@ heightForAgeConfig5To19 =
     , input = { minY = 90, maxY = 200, minX = 61, maxX = 228 }
     , output = { minX = 111, maxX = 715.4, minY = 119.9, maxY = 506.7 }
     , drawSD1 = True
-    , paintLevels = False
+    , paintLevels = True
     , xAxis =
         { width = 647
         , minYear = 5
@@ -352,6 +352,26 @@ heightForAgeBoysLabels =
     , xAxis1 = Just Translate.Months
     , xAxis2 = Translate.AgeCompletedMonthsYears
     , yAxis = Translate.LengthCm
+    }
+
+
+heightForAgeBoysLabels2To5 : LabelConfig
+heightForAgeBoysLabels2To5 =
+    { title = Translate.HeightForAgeBoys
+    , subtitle = Translate.TwoToFiveYears
+    , xAxis1 = Just Translate.Months
+    , xAxis2 = Translate.AgeCompletedMonthsYears
+    , yAxis = Translate.HeightCm
+    }
+
+
+heightForAgeGirlsLabels2To5 : LabelConfig
+heightForAgeGirlsLabels2To5 =
+    { title = Translate.HeightForAgeGirls
+    , subtitle = Translate.TwoToFiveYears
+    , xAxis1 = Just Translate.Months
+    , xAxis2 = Translate.AgeCompletedMonthsYears
+    , yAxis = Translate.HeightCm
     }
 
 

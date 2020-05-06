@@ -13,7 +13,7 @@ import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements,
 import Date
 import EverySet
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate
+import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -33,8 +33,8 @@ import ZScore.Utils exposing (zScoreLengthHeightForAge, zScoreWeightForAge)
 import ZScore.View
 
 
-view : Language -> ZScore.Model.Model -> PersonId -> ( SessionId, EditableSession ) -> ModelIndexedDb -> Html Pages.Session.Model.Msg
-view language zscores childId ( sessionId, session ) db =
+view : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> ( SessionId, EditableSession ) -> ModelIndexedDb -> Html Pages.Session.Model.Msg
+view language currentDate zscores childId ( sessionId, session ) db =
     case getChild childId session.offlineSession of
         Just child ->
             let
@@ -47,7 +47,7 @@ view language zscores childId ( sessionId, session ) db =
                         |> Maybe.withDefault NotAsked
             in
             viewWebData language
-                (viewFoundChild language zscores ( childId, child ) ( sessionId, session ))
+                (viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, session ))
                 identity
                 (RemoteData.append expectedSessions childMeasurements)
 
@@ -67,8 +67,8 @@ view language zscores childId ( sessionId, session ) db =
 {-| This function is more complex than one would like ... when reviewing the
 data model in future, it might be nice to take this function into account.
 -}
-viewFoundChild : Language -> ZScore.Model.Model -> ( PersonId, Person ) -> ( SessionId, EditableSession ) -> ( Dict SessionId Session, ChildMeasurementList ) -> Html Pages.Session.Model.Msg
-viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expectedSessions, historical ) =
+viewFoundChild : Language -> NominalDate -> ZScore.Model.Model -> ( PersonId, Person ) -> ( SessionId, EditableSession ) -> ( Dict SessionId Session, ChildMeasurementList ) -> Html Pages.Session.Model.Msg
+viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, session ) ( expectedSessions, historical ) =
     let
         backIcon =
             a
@@ -517,13 +517,29 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
         weightForHeightData =
             List.filterMap (chartWeightForHeight heightValues) weightValues
 
+        birthDiff =
+            case child.birthDate of
+                Just birthDate ->
+                    Gizra.NominalDate.diffMonths birthDate currentDate
+
+                Nothing ->
+                    0
+
         charts =
             div
                 [ class "image-report" ]
                 [ ZScore.View.viewMarkers
                 , zScoreViewCharts.heightForAge language zscores heightForAgeData
-                , zScoreViewCharts.heightForAge2To5 language zscores heightForAgeData
-                , zScoreViewCharts.heightForAge5To19 language zscores heightForAgeDataMonths
+                , if birthDiff > 24 then
+                    zScoreViewCharts.heightForAge2To5 language zscores heightForAgeData
+
+                  else
+                    emptyNode
+                , if birthDiff > 60 then
+                    zScoreViewCharts.heightForAge5To19 language zscores heightForAgeDataMonths
+
+                  else
+                    emptyNode
                 , zScoreViewCharts.weightForAge language zscores weightForAgeData
                 , zScoreViewCharts.weightForHeight language zscores weightForHeightData
                 ]
@@ -607,7 +623,7 @@ chartHeightForAgeMonths child height =
     child.birthDate
         |> Maybe.map
             (\birthDate ->
-                ( diffMonths birthDate height.dateMeasured
+                ( Utils.NominalDate.diffMonths birthDate height.dateMeasured
                   -- I suppose one could avoid this little transformation
                   -- by unifiying the two tags.
                 , case height.value of
