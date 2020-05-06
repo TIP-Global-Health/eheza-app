@@ -41,6 +41,7 @@ import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Http
+import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
@@ -313,7 +314,6 @@ type TranslationId
     | FatherName
     | FatherNationalId
     | FilterByName
-    | FirstAntenatalVisit
     | FirstName
     | FiveVisits
     | ForIllustrativePurposesOnly
@@ -351,6 +351,10 @@ type TranslationId
     | HypertensionBeforePregnancy
     | IncompleteCervixPreviousPregnancy
     | IndividualEncounter
+    | IndividualEncounterFirstVisit IndividualEncounterType
+    | IndividualEncounterLabel IndividualEncounterType
+    | IndividualEncounterSelectVisit IndividualEncounterType
+    | IndividualEncounterSubsequentVisit IndividualEncounterType
     | IndividualEncounterType IndividualEncounterType
     | IndividualEncounterTypes
     | InitialResultsDisplay InitialResultsDisplay
@@ -428,6 +432,8 @@ type TranslationId
     | NumberOfLiveChildren
     | NumberOfStillbirthsAtTerm
     | NumberOfStillbirthsPreTerm
+    | NutritionActivityHelper NutritionActivity
+    | NutritionActivityTitle NutritionActivity
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
     | OK
@@ -468,7 +474,6 @@ type TranslationId
     | PreeclampsiaPreviousPregnancy
     | PregnancyTrimester PregnancyTrimester
     | PrenatalActivitiesTitle PrenatalActivity
-    | PrenatalEncounter
     | PrenatalPhotoHelper
     | PreTerm
     | PregnancyConcludedLabel
@@ -532,7 +537,7 @@ type TranslationId
     | SearchHelperFamilyMember
     | SecondName
     | Sector
-    | SelectAntenatalVisit
+    | SelectAllSigns
     | SelectDangerSigns
     | SelectEncounterType
     | SelectGroup
@@ -564,7 +569,6 @@ type TranslationId
     | SevereHemorrhagingPreviousDelivery
     | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
     | StillbornPreviousDelivery
-    | SubsequentAntenatalVisit
     | SuccessiveAbortions
     | SuccessivePrematureDeliveries
     | GroupEncounterClosed
@@ -770,7 +774,7 @@ translationSet trans =
 
                 ChildActivity Activity.Model.NutritionSigns ->
                     { english = "Explain to the mother how to check the malnutrition signs for their own child."
-                    , kinyarwanda = Just "Sobanurira umubyeyi gupima ibimenyetso by'imirire mibi ku giti cye"
+                    , kinyarwanda = Just "Sobanurira umubyeyi gupima ibimenyetso by'imirire mibi ku giti cye."
                     }
 
                 ChildActivity Activity.Model.ChildPicture ->
@@ -1885,11 +1889,6 @@ translationSet trans =
             , kinyarwanda = Just "Hitamo izina ryuwo ushaka"
             }
 
-        FirstAntenatalVisit ->
-            { english = "First Antenatal Visit"
-            , kinyarwanda = Nothing
-            }
-
         FirstName ->
             { english = "First Name"
             , kinyarwanda = Just "Izina ry'idini"
@@ -2157,6 +2156,74 @@ translationSet trans =
             , kinyarwanda = Just "Gukorera umuntu umwe"
             }
 
+        IndividualEncounterFirstVisit type_ ->
+            case type_ of
+                AntenatalEncounter ->
+                    { english = "First Antenatal Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                InmmunizationEncounter ->
+                    { english = "First Inmmunization Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounter ->
+                    { english = "First Nutrition Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+        IndividualEncounterLabel type_ ->
+            case type_ of
+                AntenatalEncounter ->
+                    { english = "Antenatal Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                InmmunizationEncounter ->
+                    { english = "Inmmunization Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounter ->
+                    { english = "Nutrition Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+        IndividualEncounterSelectVisit type_ ->
+            case type_ of
+                AntenatalEncounter ->
+                    { english = "Select Antenatal Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                InmmunizationEncounter ->
+                    { english = "Select Inmmunization Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounter ->
+                    { english = "Select Nutrition Visit"
+                    , kinyarwanda = Nothing
+                    }
+
+        IndividualEncounterSubsequentVisit type_ ->
+            case type_ of
+                AntenatalEncounter ->
+                    { english = "Subsequent Antenatal Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                InmmunizationEncounter ->
+                    { english = "Subsequent Inmmunization Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounter ->
+                    { english = "Subsequent Nutrition Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
         IndividualEncounterType type_ ->
             case type_ of
                 AntenatalEncounter ->
@@ -2170,7 +2237,7 @@ translationSet trans =
                     }
 
                 NutritionEncounter ->
-                    { english = "Nutrition"
+                    { english = "Child Nutrition"
                     , kinyarwanda = Nothing
                     }
 
@@ -2721,6 +2788,60 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        NutritionActivityHelper activity ->
+            case activity of
+                NutritionActivity.Model.Muac ->
+                    { english = "Make sure to measure at the center of the baby’s upper arm."
+                    , kinyarwanda = Just "Ibuka gupima icya kabiri cy'akaboko ko hejuru kugira bigufashe guoima ikizigira cy'akaboko"
+                    }
+
+                NutritionActivity.Model.Height ->
+                    { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight."
+                    , kinyarwanda = Just "Saba Umubyeyi guhagarara inyuma y’umwana we agaramye, afata umutwe ku gice cy’amatwi. Sunikira akabaho ku buryo gakora mu bworo by’ibirenge byombi."
+                    }
+
+                NutritionActivity.Model.Nutrition ->
+                    { english = "Explain to the mother how to check the malnutrition signs for their own child."
+                    , kinyarwanda = Just "Sobanurira umubyeyi gupima ibimenyetso by'imirire mibi ku giti cye."
+                    }
+
+                NutritionActivity.Model.Photo ->
+                    { english = "Take each baby’s photo at each health assessment. Photos should show the entire body of each child."
+                    , kinyarwanda = Just "Fata ifoto ya buri mwana kuri buri bikorwa by'ipimwa Ifoto igomba kwerekana ibice by'umubiri wose by'umwana"
+                    }
+
+                NutritionActivity.Model.Weight ->
+                    { english = "Calibrate the scale before taking the first baby's weight. Place baby in harness with no clothes on."
+                    , kinyarwanda = Just "Ibuka kuregera umunzani mbere yo gupima ibiro by'umwana wa mbere. Ambika umwana ikariso y'ibiro wabanje kumukuramo imyenda iremereye"
+                    }
+
+        NutritionActivityTitle activity ->
+            case activity of
+                NutritionActivity.Model.Muac ->
+                    { english = "MUAC"
+                    , kinyarwanda = Just "Ikizigira cy'akaboko"
+                    }
+
+                NutritionActivity.Model.Height ->
+                    { english = "Height"
+                    , kinyarwanda = Just "Uburebure"
+                    }
+
+                NutritionActivity.Model.Nutrition ->
+                    { english = "Nutrition"
+                    , kinyarwanda = Just "Imirire"
+                    }
+
+                NutritionActivity.Model.Photo ->
+                    { english = "Photo"
+                    , kinyarwanda = Just "Ifoto"
+                    }
+
+                NutritionActivity.Model.Weight ->
+                    { english = "Weight"
+                    , kinyarwanda = Just "Ibiro"
+                    }
+
         ObstetricalDiagnosis ->
             { english = "Obstetrical Diagnosis"
             , kinyarwanda = Nothing
@@ -3034,11 +3155,6 @@ translationSet trans =
                     { english = "Photo"
                     , kinyarwanda = Nothing
                     }
-
-        PrenatalEncounter ->
-            { english = "Antenatal Encounter"
-            , kinyarwanda = Nothing
-            }
 
         PrenatalPhotoHelper ->
             { english = "Take a picture of the mother's belly. Then you and the mother will see how the belly has grown!"
@@ -3479,9 +3595,9 @@ translationSet trans =
             , kinyarwanda = Just "Umurenge"
             }
 
-        SelectAntenatalVisit ->
-            { english = "Select an Antenatal Visit"
-            , kinyarwanda = Nothing
+        SelectAllSigns ->
+            { english = "Select all signs that are present"
+            , kinyarwanda = Just "Hitamo ibimenyetso by'imirire byose bishoboka umwana afite"
             }
 
         SelectDangerSigns ->
@@ -3653,11 +3769,6 @@ translationSet trans =
 
         StillbornPreviousDelivery ->
             { english = "Stillborn in previous delivery"
-            , kinyarwanda = Nothing
-            }
-
-        SubsequentAntenatalVisit ->
-            { english = "Subsequent Antenatal Visit"
             , kinyarwanda = Nothing
             }
 
@@ -4152,6 +4263,21 @@ translateActivePage page =
 
                 PregnancyOutcomePage _ ->
                     { english = "Pregnancy Outcome"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionParticipantPage _ ->
+                    { english = "Nutrition Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionEncounterPage _ ->
+                    { english = "Nutrition Encounter"
+                    , kinyarwanda = Nothing
+                    }
+
+                NutritionActivityPage _ _ ->
+                    { english = "Nutrition Activity"
                     , kinyarwanda = Nothing
                     }
 

@@ -1,7 +1,9 @@
-module Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString, encoudeIndividualEncounterTypeAsString)
+module Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString, encoudeIndividualEncounterTypeAsString, isDailyEncounterActive)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Gizra.NominalDate exposing (NominalDate)
+import Maybe.Extra exposing (isNothing)
 
 
 encoudeIndividualEncounterTypeAsString : IndividualEncounterType -> String
@@ -31,3 +33,8 @@ decodeIndividualEncounterTypeFromString string =
 
         _ ->
             Nothing
+
+
+isDailyEncounterActive : NominalDate -> { participant : a, startDate : NominalDate, endDate : Maybe NominalDate } -> Bool
+isDailyEncounterActive currentDate encounter =
+    encounter.startDate == currentDate && isNothing encounter.endDate
