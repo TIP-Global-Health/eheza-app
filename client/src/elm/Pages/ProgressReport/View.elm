@@ -440,7 +440,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
             case child.gender of
                 Male ->
                     { heightForAge = ZScore.View.viewHeightForAgeBoys
-                    , heightForAge2To5 = ZScore.View.viewHeightForAgeGirls2To5
+                    , heightForAge2To5 = ZScore.View.viewHeightForAgeBoys2To5
                     , heightForAge5To19 = ZScore.View.viewHeightForAgeBoys5To19
                     , weightForAge = ZScore.View.viewWeightForAgeBoys
                     , weightForHeight = ZScore.View.viewWeightForHeightBoys
@@ -530,16 +530,8 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                 [ class "image-report" ]
                 [ ZScore.View.viewMarkers
                 , zScoreViewCharts.heightForAge language zscores heightForAgeData
-                , if birthDiff > 24 then
-                    zScoreViewCharts.heightForAge2To5 language zscores heightForAgeData
-
-                  else
-                    emptyNode
-                , if birthDiff > 60 then
-                    zScoreViewCharts.heightForAge5To19 language zscores heightForAgeDataMonths
-
-                  else
-                    emptyNode
+                , zScoreViewCharts.heightForAge2To5 language zscores heightForAgeData
+                , zScoreViewCharts.heightForAge5To19 language zscores heightForAgeDataMonths
                 , zScoreViewCharts.weightForAge language zscores weightForAgeData
                 , zScoreViewCharts.weightForHeight language zscores weightForHeightData
                 ]

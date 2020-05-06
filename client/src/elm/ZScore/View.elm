@@ -1,4 +1,4 @@
-module ZScore.View exposing (Bounds, LabelConfig, PlotConfig, frame, heightForAgeBoysLabels, heightForAgeConfig, heightForAgeGirlsLabels, labels, plotChildData, plotData, plotReferenceData, viewHeightForAgeBoys, viewHeightForAgeBoys5To19, viewHeightForAgeGirls, viewHeightForAgeGirls2To5, viewHeightForAgeGirls5To19, viewMarkers, viewWeightForAgeBoys, viewWeightForAgeGirls, viewWeightForHeightBoys, viewWeightForHeightGirls, weightForAgeBoysLabels, weightForAgeConfig, weightForAgeGirlsLabels, weightForHeightBoysLabels, weightForHeightConfig, weightForHeightGirlsLabels, zScoreLabelsHeightForAgeBoys, zScoreLabelsHeightForAgeGirls, zScoreLabelsWeightForAgeBoys, zScoreLabelsWeightForAgeGirls, zScoreLabelsWeightForHeightBoys, zScoreLabelsWeightForHeightGirls)
+module ZScore.View exposing (Bounds, LabelConfig, PlotConfig, frame, heightForAgeBoysLabels, heightForAgeConfig, heightForAgeGirlsLabels, labels, plotChildData, plotData, plotReferenceData, viewHeightForAgeBoys, viewHeightForAgeBoys2To5, viewHeightForAgeBoys5To19, viewHeightForAgeGirls, viewHeightForAgeGirls2To5, viewHeightForAgeGirls5To19, viewMarkers, viewWeightForAgeBoys, viewWeightForAgeGirls, viewWeightForHeightBoys, viewWeightForHeightGirls, weightForAgeBoysLabels, weightForAgeConfig, weightForAgeGirlsLabels, weightForHeightBoysLabels, weightForHeightConfig, weightForHeightGirlsLabels, zScoreLabelsHeightForAgeBoys, zScoreLabelsHeightForAgeGirls, zScoreLabelsWeightForAgeBoys, zScoreLabelsWeightForAgeGirls, zScoreLabelsWeightForHeightBoys, zScoreLabelsWeightForHeightGirls)
 
 {-| Ultimately, the idea is that we've got information in the `Model` that we
 can use to draw the elements below more programmatically ... that is, we don't
@@ -14,12 +14,12 @@ far it doesn't seem to be a performance problem, so no premature optimization!
 
 -}
 
-import Debug exposing (toString)
 import Float.Extra
 import Gizra.Html exposing (emptyNode)
 import Html exposing (Html)
 import RemoteData
 import Round
+import String exposing (fromInt)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Translate exposing (ChartPhrase(..), Language, TranslationId(..), translate)
@@ -93,7 +93,7 @@ viewHeightForAgeGirls2To5 language model data =
         , labels language heightForAgeGirlsLabels2To5
         , yAxisLinesAndText heightForAgeConfig2To5
         , xAxisLinesAndText heightForAgeConfig2To5
-        , zScoreLabelsHeightForAgeBoys5To19
+        , zScoreLabelsHeightForAgeGirls2To5
         , model.lengthHeightForAge
             |> RemoteData.map (.female >> .byDay >> AllDict.toList)
             |> RemoteData.withDefault []
@@ -123,6 +123,27 @@ viewHeightForAgeBoys5To19 language model data =
         ]
 
 
+viewHeightForAgeBoys2To5 : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeightForAgeBoys2To5 language model data =
+    svg
+        [ class "z-score boys"
+        , x "0px"
+        , y "0px"
+        , viewBox "0 0 841.9 595.3"
+        ]
+        [ frame language "z-score-grey"
+        , labels language heightForAgeBoysLabels2To5
+        , yAxisLinesAndText heightForAgeConfig2To5
+        , xAxisLinesAndText heightForAgeConfig2To5
+        , zScoreLabelsHeightForAgeBoys2To5
+        , model.lengthHeightForAge
+            |> RemoteData.map (.male >> .byDay >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData heightForAgeConfig2To5
+        , plotChildData heightForAgeConfig2To5 data
+        ]
+
+
 viewHeightForAgeGirls5To19 : Language -> Model -> List ( Months, Centimetres ) -> Html any
 viewHeightForAgeGirls5To19 language model data =
     svg
@@ -135,7 +156,7 @@ viewHeightForAgeGirls5To19 language model data =
         , labels language heightForAgeGirlsLabels5To19
         , yAxisLinesAndText heightForAgeConfig5To19
         , xAxisLinesAndText heightForAgeConfig5To19
-        , zScoreLabelsHeightForAgeBoys5To19
+        , zScoreLabelsHeightForAgeGirls5To19
         , model.lengthHeightForAge
             |> RemoteData.map (.female >> .byMonth >> AllDict.toList)
             |> RemoteData.withDefault []
@@ -191,6 +212,7 @@ type alias YAxisConfig =
     { yAxisIntervals : Int
     , innerLinesNumber : Int
     , spaceType : YAxisSpaceType
+    , decimalPointsForText : Int
     }
 
 
@@ -237,6 +259,7 @@ heightForAgeConfig =
         { yAxisIntervals = 5
         , innerLinesNumber = 4
         , spaceType = SpaceAround
+        , decimalPointsForText = 0
         }
     }
 
@@ -263,6 +286,7 @@ heightForAgeConfig2To5 =
         { yAxisIntervals = 5
         , innerLinesNumber = 4
         , spaceType = SpaceBelow
+        , decimalPointsForText = 0
         }
     }
 
@@ -289,6 +313,7 @@ heightForAgeConfig5To19 =
         { yAxisIntervals = 10
         , innerLinesNumber = 1
         , spaceType = NoSpace
+        , decimalPointsForText = 0
         }
     }
 
@@ -315,6 +340,7 @@ weightForAgeConfig =
         { yAxisIntervals = 1
         , innerLinesNumber = 4
         , spaceType = SpaceAround
+        , decimalPointsForText = 2
         }
     }
 
@@ -341,6 +367,7 @@ weightForHeightConfig =
         { yAxisIntervals = 2
         , innerLinesNumber = 1
         , spaceType = SpaceAround
+        , decimalPointsForText = 0
         }
     }
 
@@ -788,17 +815,55 @@ zScoreLabelsHeightForAgeBoys =
         ]
 
 
+zScoreLabelsHeightForAgeBoys2To5 : Svg any
+zScoreLabelsHeightForAgeBoys2To5 =
+    g
+        []
+        [ text_ [ transform "matrix(1 0 0 1 722.0057 133.1564)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 722.0448 168.738)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 722.4686 243.241)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 720.9237 314.6482)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 720.7001 352.5353)", class "z-score-semibold st23" ] [ text "-3" ]
+        ]
+
+
 zScoreLabelsHeightForAgeBoys5To19 : Svg any
 zScoreLabelsHeightForAgeBoys5To19 =
     g
         []
-        [ text_ [ transform "matrix(1 0 0 1 722.0057 141.1564)", class "z-score-semibold st23" ] [ text "3" ]
-        , text_ [ transform "matrix(1 0 0 1 722.0448 161.738)", class "two-line z-score-semibold st23" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 722.0448 181.738)", class "two-line z-score-semibold st23" ] [ text "1" ]
-        , text_ [ transform "matrix(1 0 0 1 722.4686 200.841)", class "zero-line z-score-semibold st23" ] [ text "0" ]
-        , text_ [ transform "matrix(1 0 0 1 720.9237 220.2482)", class "two-line z-score-semibold st23" ] [ text "-1" ]
-        , text_ [ transform "matrix(1 0 0 1 720.9237 240.2482)", class "two-line z-score-semibold st23" ] [ text "-2" ]
-        , text_ [ transform "matrix(1 0 0 1 720.7001 260.0353)", class "z-score-semibold st23" ] [ text "-3" ]
+        [ text_ [ transform "matrix(1 0 0 1 722.0057 130.1564)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 722.0448 155.438)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 722.0448 180.738)", class "two-line z-score-semibold st23" ] [ text "1" ]
+        , text_ [ transform "matrix(1 0 0 1 722.4686 205.841)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 720.9237 230.6482)", class "two-line z-score-semibold st23" ] [ text "-1" ]
+        , text_ [ transform "matrix(1 0 0 1 720.9237 256.2482)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 720.7001 282.6353)", class "z-score-semibold st23" ] [ text "-3" ]
+        ]
+
+
+zScoreLabelsHeightForAgeGirls2To5 : Svg any
+zScoreLabelsHeightForAgeGirls2To5 =
+    g
+        []
+        [ text_ [ transform "matrix(1 0 0 1 722.0057 134.1564)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 722.0448 170.538)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 722.4686 247.241)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 720.9237 321.2482)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 720.7001 359.1353)", class "z-score-semibold st23" ] [ text "-3" ]
+        ]
+
+
+zScoreLabelsHeightForAgeGirls5To19 : Svg any
+zScoreLabelsHeightForAgeGirls5To19 =
+    g
+        []
+        [ text_ [ transform "matrix(1 0 0 1 722.0057 185.1564)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 722.0448 207.738)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 722.0448 229.738)", class "two-line z-score-semibold st23" ] [ text "1" ]
+        , text_ [ transform "matrix(1 0 0 1 722.4686 253.241)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 720.9237 275.8482)", class "two-line z-score-semibold st23" ] [ text "-1" ]
+        , text_ [ transform "matrix(1 0 0 1 720.9237 298.8482)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 720.7001 322.0353)", class "z-score-semibold st23" ] [ text "-3" ]
         ]
 
 
@@ -896,14 +961,15 @@ xAxisLinesAndText config =
                         lineTextPosition =
                             if year < 10 then
                                 (linesMargin - 2)
-                                    |> toString
+                                    |> Round.round 4
 
                             else
                                 (linesMargin - 5)
-                                    |> toString
+                                    |> Round.round 4
 
                         linePosition =
-                            toString linesMargin
+                            linesMargin
+                                |> Round.round 4
 
                         innerLinesAndText =
                             if monthList then
@@ -919,18 +985,18 @@ xAxisLinesAndText config =
                                             innerTextPosition =
                                                 if month < 10 then
                                                     (innerMargin - 2)
-                                                        |> toString
+                                                        |> Round.round 4
 
                                                 else
                                                     (innerMargin - 5)
-                                                        |> toString
+                                                        |> Round.round 4
 
                                             innerLinePosition =
-                                                toString innerMargin
+                                                Round.round 4 innerMargin
                                         in
                                         if year < config.xAxis.maxYear then
                                             [ line [ class "month-line", x1 innerLinePosition, y1 "506.5", x2 innerLinePosition, y2 "119.5" ] []
-                                            , text_ [ transform <| "matrix(1 0 0 1 " ++ innerTextPosition ++ " 516.5436)", class "z-score-white z-score-semibold st16" ] [ text <| toString month ]
+                                            , text_ [ transform <| "matrix(1 0 0 1 " ++ innerTextPosition ++ " 516.5436)", class "z-score-white z-score-semibold st16" ] [ text <| fromInt month ]
                                             ]
 
                                         else
@@ -948,7 +1014,9 @@ xAxisLinesAndText config =
                                                     toFloat innerLine
 
                                                 innerLinePosition =
-                                                    toString <| linesMargin + (spaceBetweenInnerLines * innerIndex)
+                                                    linesMargin
+                                                        + (spaceBetweenInnerLines * innerIndex)
+                                                        |> Round.round 4
                                             in
                                             if year < config.xAxis.maxLength then
                                                 [ line [ class "month-line", x1 innerLinePosition, y1 "506.5", x2 innerLinePosition, y2 "119.5" ] [] ]
@@ -966,7 +1034,7 @@ xAxisLinesAndText config =
                         [ transform <| "matrix(1 0 0 1 " ++ lineTextPosition ++ " 525.9767)"
                         , class "z-score-white z-score-semibold st20"
                         ]
-                        [ text <| toString year ]
+                        [ text <| fromInt year ]
                     ]
                         |> List.append innerLinesAndText
                 )
@@ -1021,10 +1089,11 @@ yAxisLinesAndText config =
 
                         lineTextPosition =
                             (linesMargin + 2)
-                                |> toString
+                                |> Round.round 2
 
                         linePosition =
-                            toString linesMargin
+                            linesMargin
+                                |> Round.round 4
 
                         innerLines =
                             if lineText /= config.input.maxY then
@@ -1036,7 +1105,9 @@ yAxisLinesAndText config =
                                                     toFloat innerLine
 
                                                 innerLinePosition =
-                                                    toString <| linesMargin - (spaceBetweenInnerLines * innerIndex)
+                                                    linesMargin
+                                                        - (spaceBetweenInnerLines * innerIndex)
+                                                        |> Round.round 4
                                             in
                                             [ line [ class "st19", x1 "110.8", y1 innerLinePosition, x2 "715.4", y2 innerLinePosition ] [] ]
                                         )
@@ -1045,9 +1116,16 @@ yAxisLinesAndText config =
                             else
                                 []
 
+                        leftTextVerticalPosition =
+                            if config.yAxis.decimalPointsForText > 0 then
+                                "88.4252"
+
+                            else
+                                "95.4252"
+
                         ( beginningText, endText ) =
-                            ( text_ [ transform <| "matrix(1 0 0 1 95.4252 " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| toString lineText ]
-                            , text_ [ transform <| "matrix(1 0 0 1 745.0155 " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| toString lineText ]
+                            ( text_ [ transform <| "matrix(1 0 0 1 " ++ leftTextVerticalPosition ++ " " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| Round.round config.yAxis.decimalPointsForText lineText ]
+                            , text_ [ transform <| "matrix(1 0 0 1 745.0155 " ++ lineTextPosition ++ ")", class "z-score-white z-score-semibold st16" ] [ text <| Round.round config.yAxis.decimalPointsForText lineText ]
                             )
 
                         ( beginningTextConditional, endTextConditional ) =
