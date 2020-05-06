@@ -21,6 +21,6 @@ emptyModel =
 type Msg
     = AssignToClinicId String
     | RelationshipSelected MyRelatedBy
-    | Save (Maybe MyRelatedBy)
+    | Save (Maybe MyRelatedBy) (Maybe ClinicId)
     | Reset
     | SetActivePage Page
