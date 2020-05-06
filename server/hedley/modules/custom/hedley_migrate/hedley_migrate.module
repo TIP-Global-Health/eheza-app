@@ -17,6 +17,9 @@ function hedley_migrate_migrate_api() {
       'missing' => [
         'title' => t('Missing Data'),
       ],
+      'villages' => [
+        'title' => t('Villages'),
+      ],
       'batch_2019_02' => [
         'title' => t('Batch data added 2019/02'),
       ],
@@ -167,6 +170,10 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateWeights' => [
         'class_name' => 'HedleyMigrateWeights',
       ],
+      'HedleyMigrateVillages' => [
+        'class_name' => 'HedleyMigrateVillages',
+        'group_name' => 'villages',
+      ],
       'HedleyMigrateMissingHeights' => [
         'class_name' => 'HedleyMigrateMissingHeights',
         'group_name' => 'missing',
@@ -284,7 +291,7 @@ function hedley_migrate_generate_geo_terms_vocabulary() {
 
   // Load input file.
   $migrate_dir = variable_get('hedley_migrate_directory', FALSE) ? variable_get('hedley_migrate_directory') : drupal_get_path('module', 'hedley_migrate');
-  $source_file = $migrate_dir . '/csv/geo_fields.csv';
+  $source_file = $migrate_dir . '/csv/geo_locations.csv';
 
   $column_mapping = ['province', 'district', 'sector', 'cell', 'village'];
 

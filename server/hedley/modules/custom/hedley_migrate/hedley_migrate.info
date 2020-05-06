@@ -30,6 +30,7 @@ files[] = handlers/node/HedleyMigrateIndividualParticipants.php
 files[] = handlers/node/HedleyMigrateRelationships.php
 files[] = handlers/node/HedleyMigrateSessions.php
 files[] = handlers/node/HedleyMigrateParticipantForms.php
+files[] = handlers/node/HedleyMigrateVillages.php
 files[] = handlers/node/HedleyMigrateAttendances.php
 files[] = handlers/node/HedleyMigrateFamilyPlannings.php
 files[] = handlers/node/HedleyMigrateHeights.php
