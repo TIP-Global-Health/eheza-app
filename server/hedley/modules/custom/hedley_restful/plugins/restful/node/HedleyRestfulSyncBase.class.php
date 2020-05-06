@@ -99,14 +99,12 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
    *   The query objected.
    *
    * @return array
-   *   A list of view node obejcts.
+   *   A list of view node objects.
    */
   protected function executeQueryForViewWithDbSelect(SelectQuery $query) {
-    $result = $query
+    return $query
       ->execute()
       ->fetchAllAssoc('nid');
-
-    return $result;
   }
 
   /**

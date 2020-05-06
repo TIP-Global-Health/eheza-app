@@ -7,6 +7,7 @@ import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Update
 import Browser
 import Browser.Navigation as Nav
@@ -19,6 +20,7 @@ import Http exposing (Error(..))
 import HttpBuilder
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
+import Maybe.Extra exposing (isJust)
 import Pages.Clinics.Update
 import Pages.Device.Model
 import Pages.Device.Update
@@ -165,9 +167,17 @@ update msg model =
         currentDate =
             fromLocalDateTime model.currentTime
 
-        nurseId =
+        loggedInData =
             getLoggedInData model
+
+        nurseId =
+            loggedInData
                 |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
+
+        isChw =
+            loggedInData
+                |> Maybe.map (Tuple.second >> .nurse >> Tuple.second >> isCommunityHealthWorker)
+                |> Maybe.withDefault False
     in
     case msg of
         MsgIndexedDb subMsg ->
@@ -207,7 +217,7 @@ update msg model =
                         MsgPageCreatePerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Person.Update.update currentDate subMsg model.indexedDb data.createPersonPage
+                                    Pages.Person.Update.update currentDate model.villageId isChw subMsg model.indexedDb data.createPersonPage
                             in
                             ( { data | createPersonPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageCreatePerson) subCmd
@@ -217,7 +227,7 @@ update msg model =
                         MsgPageEditPerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Person.Update.update currentDate subMsg model.indexedDb data.editPersonPage
+                                    Pages.Person.Update.update currentDate model.villageId isChw subMsg model.indexedDb data.editPersonPage
                             in
                             ( { data | editPersonPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageEditPerson) subCmd
@@ -392,15 +402,18 @@ update msg model =
                                                 ( [ TryPinCode code ], [] )
 
                                             Pages.PinCode.Model.Logout ->
-                                                ( [ SetLoggedIn NotAsked, SetHealthCenter Nothing ]
-                                                , [ cachePinCode "", cacheHealthCenter "" ]
+                                                ( [ SetLoggedIn NotAsked, SetHealthCenter Nothing, SetVillage Nothing ]
+                                                , [ cachePinCode "", cacheHealthCenter "", cacheVillage "" ]
                                                 )
 
                                             Pages.PinCode.Model.SetActivePage page ->
                                                 ( [ SetActivePage page ], [] )
 
-                                            Pages.PinCode.Model.SetHealthCenter healthCenterId ->
-                                                ( [ SetHealthCenter (Just healthCenterId) ], [] )
+                                            Pages.PinCode.Model.SetHealthCenter id ->
+                                                ( [ SetHealthCenter (Just id) ], [] )
+
+                                            Pages.PinCode.Model.SetVillage id ->
+                                                ( [ SetVillage (Just id) ], [] )
                                     )
                                 |> Maybe.withDefault ( [], [] )
                     in
@@ -500,13 +513,35 @@ update msg model =
             , Cmd.none
             )
 
-        SetHealthCenter healthCenterId ->
-            ( { model | healthCenterId = healthCenterId }
-            , healthCenterId
+        SetHealthCenter maybeHealthCenterId ->
+            ( { model | healthCenterId = maybeHealthCenterId }
+            , maybeHealthCenterId
                 |> Maybe.map fromEntityUuid
                 |> Maybe.withDefault ""
                 |> cacheHealthCenter
             )
+
+        SetVillage maybeVillageId ->
+            let
+                maybeHealthCenterId =
+                    maybeVillageId
+                        |> Maybe.andThen
+                            (\villageId ->
+                                RemoteData.toMaybe model.indexedDb.villages
+                                    |> Maybe.andThen (Dict.get villageId)
+                                    |> Maybe.andThen (.healthCenterId >> Just)
+                            )
+
+                extraMsgs =
+                    [ SetHealthCenter maybeHealthCenterId ]
+            in
+            ( { model | villageId = maybeVillageId }
+            , maybeVillageId
+                |> Maybe.map fromEntityUuid
+                |> Maybe.withDefault ""
+                |> cacheVillage
+            )
+                |> sequence update extraMsgs
 
         Tick time ->
             let
@@ -662,8 +697,9 @@ update msg model =
 
                 cmd =
                     case activePage of
-                        -- When at 'create / edit person' page, bind
-                        -- DropZone to be able to take pictures.
+                        UserPage (SessionPage _ (ChildPage _)) ->
+                            App.Ports.bindDropZone ()
+
                         UserPage (CreatePersonPage _ _) ->
                             App.Ports.bindDropZone ()
 

@@ -554,3 +554,29 @@ function hedley_update_7023() {
 
   user_role_grant_permissions(variable_get('user_admin_role'), ['hedley export views']);
 }
+
+/**
+ * Enable smtp.
+ */
+function hedley_update_7024() {
+  module_enable(['smtp']);
+  variable_set('smtp_on', TRUE);
+}
+
+/**
+ * Enable hedley_chw module.
+ */
+function hedley_update_7025() {
+  $modules = ['hedley_chw'];
+  module_enable($modules);
+}
+
+/**
+ * Enable and configure mailsystem model.
+ */
+function hedley_update_7026() {
+  $modules = ['mailsystem'];
+  module_enable($modules);
+
+  variable_set('mail_system', array('default-system' => 'SmtpMailSystem'));
+}
