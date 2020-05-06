@@ -544,6 +544,7 @@ type TranslationId
     | SelectLanguage
     | SelectYourGroup
     | SelectYourHealthCenter
+    | SelectYourVillage
     | SelectedHCDownloading
     | SelectedHCNotSynced
     | SelectedHCSyncing
@@ -1254,6 +1255,11 @@ translationSet trans =
 
         ClinicType clinicType ->
             case clinicType of
+                Chw ->
+                    { english = "CHW"
+                    , kinyarwanda = Nothing
+                    }
+
                 Fbf ->
                     { english = "Fbf"
                     , kinyarwanda = Nothing
@@ -3517,6 +3523,11 @@ translationSet trans =
             , kinyarwanda = Just "Hitamo ikigo nderabuzima"
             }
 
+        SelectYourVillage ->
+            { english = "Select your village"
+            , kinyarwanda = Just "Hitamo umudugudu wawe"
+            }
+
         SelectedHCDownloading ->
             { english = "Downloading data for selected Health Center. Please wait until completed."
             , kinyarwanda = Nothing
@@ -3539,7 +3550,7 @@ translationSet trans =
 
         ServiceWorkerActive ->
             { english = "The app is installed on this device."
-            , kinyarwanda = Just "Apulikasiyo  muri icyi cyuma cy'inkoranabuhanga yinjijwe."
+            , kinyarwanda = Just "Apulikasiyo muri icyi cyuma cy'inkoranabuhanga yinjijwe."
             }
 
         ServiceWorkerCurrent ->

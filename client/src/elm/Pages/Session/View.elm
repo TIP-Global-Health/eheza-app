@@ -5,7 +5,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
-import Backend.Nurse.Utils exposing (assignedToHealthCenter)
+import Backend.Nurse.Utils exposing (isAuthorithedNurse)
 import Backend.Session.Model exposing (EditableSession, Session)
 import Backend.Session.Utils exposing (isClosed)
 import Gizra.Html exposing (showMaybe)
@@ -71,15 +71,11 @@ viewFoundSession language currentDate zscores nurse ( sessionId, session ) page 
             Dict.get sessionId db.editableSessions
                 |> Maybe.withDefault NotAsked
 
-        healthCenterId =
+        authorized =
             db.clinics
                 |> RemoteData.toMaybe
                 |> Maybe.andThen (Dict.get session.clinicId)
-                |> Maybe.map .healthCenterId
-
-        authorized =
-            healthCenterId
-                |> Maybe.map (\id -> assignedToHealthCenter id nurse)
+                |> Maybe.map (\clinic -> isAuthorithedNurse clinic nurse)
                 |> Maybe.withDefault False
     in
     if isClosed currentDate session then
@@ -100,7 +96,7 @@ viewEditableSession language currentDate zscores nurse sessionId page model db s
     case page of
         ActivitiesPage ->
             model.activitiesPage
-                |> Pages.Activities.View.view language ( sessionId, session )
+                |> Pages.Activities.View.view language nurse ( sessionId, session )
                 |> Html.map MsgActivities
 
         ActivityPage activityType ->
@@ -118,12 +114,12 @@ viewEditableSession language currentDate zscores nurse sessionId page model db s
                         |> (\( html, maybeMotherId ) -> Html.map (MsgMotherActivity activity maybeMotherId) html)
 
         AttendancePage ->
-            Pages.Attendance.View.view language ( sessionId, session ) model.attendancePage
+            Pages.Attendance.View.view language nurse ( sessionId, session ) model.attendancePage
                 |> Html.map MsgAttendance
 
         ParticipantsPage ->
             model.participantsPage
-                |> Pages.Participants.View.view language ( sessionId, session )
+                |> Pages.Participants.View.view language nurse ( sessionId, session )
                 |> Html.map MsgParticipants
 
         ProgressReportPage childId ->

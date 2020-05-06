@@ -13,6 +13,7 @@ import Backend.PmtctParticipant.Decoder exposing (decodePmtctParticipant)
 import Backend.PrenatalEncounter.Decoder exposing (decodePrenatalEncounter)
 import Backend.Relationship.Decoder exposing (decodeRelationship)
 import Backend.Session.Decoder exposing (decodeSession)
+import Backend.Village.Decoder exposing (decodeVillage)
 import Json.Decode exposing (..)
 import Restful.Endpoint exposing (EntityUuid, decodeEntityUuid)
 
@@ -99,6 +100,9 @@ decodeRevision =
 
                     "photo" ->
                         decodeWithUuid PhotoRevision decodePhoto
+
+                    "village" ->
+                        decodeWithUuid VillageRevision decodeVillage
 
                     "pmtct_participant" ->
                         decodeWithUuid PmtctParticipantRevision decodePmtctParticipant
