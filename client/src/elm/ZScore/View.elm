@@ -1,4 +1,38 @@
-module ZScore.View exposing (Bounds, LabelConfig, PlotConfig, frame, heightForAgeBoysLabels, heightForAgeConfig, heightForAgeGirlsLabels, labels, plotChildData, plotData, plotReferenceData, viewHeightForAgeBoys, viewHeightForAgeBoys2To5, viewHeightForAgeBoys5To19, viewHeightForAgeGirls, viewHeightForAgeGirls2To5, viewHeightForAgeGirls5To19, viewMarkers, viewWeightForAgeBoys, viewWeightForAgeGirls, viewWeightForHeightBoys, viewWeightForHeightGirls, weightForAgeBoysLabels, weightForAgeConfig, weightForAgeGirlsLabels, weightForHeightBoysLabels, weightForHeightConfig, weightForHeightGirlsLabels, zScoreLabelsHeightForAgeBoys, zScoreLabelsHeightForAgeGirls, zScoreLabelsWeightForAgeBoys, zScoreLabelsWeightForAgeGirls, zScoreLabelsWeightForHeightBoys, zScoreLabelsWeightForHeightGirls)
+module ZScore.View exposing
+    ( Bounds
+    , LabelConfig
+    , PlotConfig
+    , frame
+    , heightForAgeConfig
+    , heightForAgeLabels
+    , labels
+    , plotChildData
+    , plotData
+    , plotReferenceData
+    , viewHeightForAgeBoys
+    , viewHeightForAgeBoys2To5
+    , viewHeightForAgeBoys5To19
+    , viewHeightForAgeGirls
+    , viewHeightForAgeGirls2To5
+    , viewHeightForAgeGirls5To19
+    , viewMarkers
+    , viewWeightForAgeBoys
+    , viewWeightForAgeBoys2To5
+    , viewWeightForAgeGirls
+    , viewWeightForAgeGirls2To5
+    , viewWeightForHeightBoys
+    , viewWeightForHeightGirls
+    , weightForAgeConfig
+    , weightForAgeLabels
+    , weightForHeightConfig
+    , weightForHeightLabels
+    , zScoreLabelsHeightForAgeBoys
+    , zScoreLabelsHeightForAgeGirls
+    , zScoreLabelsWeightForAgeBoys
+    , zScoreLabelsWeightForAgeGirls
+    , zScoreLabelsWeightForHeightBoys
+    , zScoreLabelsWeightForHeightGirls
+    )
 
 {-| Ultimately, the idea is that we've got information in the `Model` that we
 can use to draw the elements below more programmatically ... that is, we don't
@@ -14,6 +48,7 @@ far it doesn't seem to be a performance problem, so no premature optimization!
 
 -}
 
+import Backend.Person.Model exposing (Gender(..))
 import Float.Extra
 import Gizra.Html exposing (emptyNode)
 import Html exposing (Html)
@@ -57,111 +92,6 @@ viewMarkers =
                     []
                 ]
             ]
-        ]
-
-
-viewHeightForAgeBoys : Language -> Model -> List ( Days, Centimetres ) -> Html any
-viewHeightForAgeBoys language model data =
-    svg
-        [ class "z-score boys"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
-        [ frame language "z-score-grey"
-        , labels language heightForAgeBoysLabels
-        , yAxisLinesAndText heightForAgeConfig
-        , xAxisLinesAndText heightForAgeConfig
-        , zScoreLabelsHeightForAgeBoys
-        , model.lengthHeightForAge
-            |> RemoteData.map (.male >> .byDay >> AllDict.toList)
-            |> RemoteData.withDefault []
-            |> plotReferenceData heightForAgeConfig
-        , plotChildData heightForAgeConfig data
-        ]
-
-
-viewHeightForAgeGirls2To5 : Language -> Model -> List ( Days, Centimetres ) -> Html any
-viewHeightForAgeGirls2To5 language model data =
-    svg
-        [ class "z-score girls"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
-        [ frame language "z-score-grey"
-        , labels language heightForAgeGirlsLabels2To5
-        , yAxisLinesAndText heightForAgeConfig2To5
-        , xAxisLinesAndText heightForAgeConfig2To5
-        , zScoreLabelsHeightForAgeGirls2To5
-        , model.lengthHeightForAge
-            |> RemoteData.map (.female >> .byDay >> AllDict.toList)
-            |> RemoteData.withDefault []
-            |> plotReferenceData heightForAgeConfig2To5
-        , plotChildData heightForAgeConfig2To5 data
-        ]
-
-
-viewHeightForAgeBoys5To19 : Language -> Model -> List ( Months, Centimetres ) -> Html any
-viewHeightForAgeBoys5To19 language model data =
-    svg
-        [ class "z-score boys"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
-        [ frame language "z-score-grey"
-        , labels language heightForAgeBoysLabels5To19
-        , yAxisLinesAndText heightForAgeConfig5To19
-        , xAxisLinesAndText heightForAgeConfig5To19
-        , zScoreLabelsHeightForAgeBoys5To19
-        , model.lengthHeightForAge
-            |> RemoteData.map (.male >> .byMonth >> AllDict.toList)
-            |> RemoteData.withDefault []
-            |> plotReferenceData heightForAgeConfig5To19
-        , plotChildData heightForAgeConfig5To19 data
-        ]
-
-
-viewHeightForAgeBoys2To5 : Language -> Model -> List ( Days, Centimetres ) -> Html any
-viewHeightForAgeBoys2To5 language model data =
-    svg
-        [ class "z-score boys"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
-        [ frame language "z-score-grey"
-        , labels language heightForAgeBoysLabels2To5
-        , yAxisLinesAndText heightForAgeConfig2To5
-        , xAxisLinesAndText heightForAgeConfig2To5
-        , zScoreLabelsHeightForAgeBoys2To5
-        , model.lengthHeightForAge
-            |> RemoteData.map (.male >> .byDay >> AllDict.toList)
-            |> RemoteData.withDefault []
-            |> plotReferenceData heightForAgeConfig2To5
-        , plotChildData heightForAgeConfig2To5 data
-        ]
-
-
-viewHeightForAgeGirls5To19 : Language -> Model -> List ( Months, Centimetres ) -> Html any
-viewHeightForAgeGirls5To19 language model data =
-    svg
-        [ class "z-score girls"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
-        [ frame language "z-score-grey"
-        , labels language heightForAgeGirlsLabels5To19
-        , yAxisLinesAndText heightForAgeConfig5To19
-        , xAxisLinesAndText heightForAgeConfig5To19
-        , zScoreLabelsHeightForAgeGirls5To19
-        , model.lengthHeightForAge
-            |> RemoteData.map (.female >> .byMonth >> AllDict.toList)
-            |> RemoteData.withDefault []
-            |> plotReferenceData heightForAgeConfig5To19
-        , plotChildData heightForAgeConfig5To19 data
         ]
 
 
@@ -345,6 +275,33 @@ weightForAgeConfig =
     }
 
 
+weightForAge2to5Config : PlotConfig Days Kilograms
+weightForAge2to5Config =
+    { toFloatX = \(Utils.NominalDate.Days days) -> toFloat days
+    , toFloatY = \(Kilograms kg) -> kg
+    , input = { minY = 7, maxY = 30, minX = 365 * 2, maxX = 365 * 5 }
+    , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
+    , drawSD1 = False
+    , paintLevels = True
+    , xAxis =
+        { width = 806
+        , minYear = 2
+        , maxYear = 5
+        , monthsList = [ 2, 4, 6, 8, 10 ]
+        , innerLinesNumber = 1
+        , minLength = 0
+        , maxLength = 0
+        , xAxisType = Age
+        }
+    , yAxis =
+        { yAxisIntervals = 1
+        , innerLinesNumber = 4
+        , spaceType = NoSpace
+        , decimalPointsForText = 0
+        }
+    }
+
+
 weightForHeightConfig : PlotConfig Length Kilograms
 weightForHeightConfig =
     { toFloatX = \(Length cm) -> cm
@@ -372,103 +329,112 @@ weightForHeightConfig =
     }
 
 
-heightForAgeBoysLabels : LabelConfig
-heightForAgeBoysLabels =
-    { title = Translate.LengthForAgeBoys
-    , subtitle = Translate.BirthToTwoYears
+heightForAgeLabels : Gender -> ChartStartingAges -> LabelConfig
+heightForAgeLabels gender startAge =
+    let
+        ( labelsTitle, labelsSubTitle ) =
+            case startAge of
+                ZeroYears ->
+                    let
+                        title =
+                            case gender of
+                                Male ->
+                                    Translate.LengthForAgeBoys
+
+                                Female ->
+                                    Translate.LengthForAgeGirls
+                    in
+                    ( title, Translate.BirthToTwoYears )
+
+                TwoYears ->
+                    let
+                        title =
+                            case gender of
+                                Male ->
+                                    Translate.HeightForAgeBoys
+
+                                Female ->
+                                    Translate.HeightForAgeGirls
+                    in
+                    ( title, Translate.TwoToFiveYears )
+
+                FiveYears ->
+                    let
+                        title =
+                            case gender of
+                                Male ->
+                                    Translate.HeightForAgeBoys
+
+                                Female ->
+                                    Translate.HeightForAgeGirls
+                    in
+                    ( title, Translate.FiveToNineteenYears )
+    in
+    { title = labelsTitle
+    , subtitle = labelsSubTitle
     , xAxis1 = Just Translate.Months
     , xAxis2 = Translate.AgeCompletedMonthsYears
     , yAxis = Translate.LengthCm
     }
 
 
-heightForAgeBoysLabels2To5 : LabelConfig
-heightForAgeBoysLabels2To5 =
-    { title = Translate.HeightForAgeBoys
-    , subtitle = Translate.TwoToFiveYears
-    , xAxis1 = Just Translate.Months
-    , xAxis2 = Translate.AgeCompletedMonthsYears
-    , yAxis = Translate.HeightCm
-    }
+weightForAgeLabels : Gender -> ChartStartingAges -> LabelConfig
+weightForAgeLabels gender startAge =
+    let
+        labelsTitle =
+            case gender of
+                Male ->
+                    Translate.WeightForAgeBoys
 
+                Female ->
+                    Translate.WeightForAgeGirls
 
-heightForAgeGirlsLabels2To5 : LabelConfig
-heightForAgeGirlsLabels2To5 =
-    { title = Translate.HeightForAgeGirls
-    , subtitle = Translate.TwoToFiveYears
-    , xAxis1 = Just Translate.Months
-    , xAxis2 = Translate.AgeCompletedMonthsYears
-    , yAxis = Translate.HeightCm
-    }
+        labelsSubTitle =
+            case startAge of
+                ZeroYears ->
+                    Translate.BirthToTwoYears
 
+                TwoYears ->
+                    Translate.TwoToFiveYears
 
-heightForAgeBoysLabels5To19 : LabelConfig
-heightForAgeBoysLabels5To19 =
-    { title = Translate.HeightForAgeBoys
-    , subtitle = Translate.FiveToNineteenYears
-    , xAxis1 = Just Translate.Months
-    , xAxis2 = Translate.AgeCompletedMonthsYears
-    , yAxis = Translate.HeightCm
-    }
-
-
-heightForAgeGirlsLabels5To19 : LabelConfig
-heightForAgeGirlsLabels5To19 =
-    { title = Translate.HeightForAgeGirls
-    , subtitle = Translate.FiveToNineteenYears
-    , xAxis1 = Just Translate.Months
-    , xAxis2 = Translate.AgeCompletedMonthsYears
-    , yAxis = Translate.HeightCm
-    }
-
-
-weightForAgeBoysLabels : LabelConfig
-weightForAgeBoysLabels =
-    { title = Translate.WeightForAgeBoys
-    , subtitle = Translate.BirthToTwoYears
+                FiveYears ->
+                    Translate.FiveToNineteenYears
+    in
+    { title = labelsTitle
+    , subtitle = labelsSubTitle
     , xAxis1 = Just Translate.Months
     , xAxis2 = Translate.AgeCompletedMonthsYears
     , yAxis = Translate.WeightKg
     }
 
 
-weightForHeightBoysLabels : LabelConfig
-weightForHeightBoysLabels =
-    { title = Translate.WeightForLengthBoys
-    , subtitle = Translate.BirthToTwoYears
+weightForHeightLabels : Gender -> ChartStartingAges -> LabelConfig
+weightForHeightLabels gender startAge =
+    let
+        labelsTitle =
+            case gender of
+                Male ->
+                    Translate.WeightForLengthBoys
+
+                Female ->
+                    Translate.WeightForLengthGirls
+
+        labelsSubTitle =
+            case startAge of
+                ZeroYears ->
+                    Translate.BirthToTwoYears
+
+                TwoYears ->
+                    Translate.TwoToFiveYears
+
+                FiveYears ->
+                    Translate.FiveToNineteenYears
+    in
+    { title = labelsTitle
+    , subtitle = labelsSubTitle
     , xAxis1 = Nothing
     , xAxis2 = Translate.LengthCm
     , yAxis = Translate.WeightKg
-    }
-
-
-weightForHeightGirlsLabels : LabelConfig
-weightForHeightGirlsLabels =
-    { title = Translate.WeightForLengthGirls
-    , subtitle = Translate.BirthToTwoYears
-    , xAxis1 = Nothing
-    , xAxis2 = Translate.LengthCm
-    , yAxis = Translate.WeightKg
-    }
-
-
-weightForAgeGirlsLabels : LabelConfig
-weightForAgeGirlsLabels =
-    { title = Translate.WeightForAgeGirls
-    , subtitle = Translate.BirthToTwoYears
-    , xAxis1 = Just Translate.Months
-    , xAxis2 = Translate.AgeCompletedMonthsYears
-    , yAxis = Translate.WeightKg
-    }
-
-
-heightForAgeGirlsLabels : LabelConfig
-heightForAgeGirlsLabels =
-    { title = Translate.LengthForAgeGirls
-    , subtitle = Translate.BirthToTwoYears
-    , xAxis1 = Just Translate.Months
-    , xAxis2 = Translate.AgeCompletedMonthsYears
-    , yAxis = Translate.LengthCm
     }
 
 
@@ -657,6 +623,132 @@ plotChildData config data =
         []
 
 
+viewHeightForAgeBoys : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeightForAgeBoys language model data =
+    svg
+        [ class "z-score boys"
+        , x "0px"
+        , y "0px"
+        , viewBox "0 0 841.9 595.3"
+        ]
+        [ frame language "z-score-grey"
+        , labels language (heightForAgeLabels Male ZeroYears)
+        , yAxisLinesAndText heightForAgeConfig
+        , xAxisLinesAndText heightForAgeConfig
+        , zScoreLabelsHeightForAgeBoys
+        , model.lengthHeightForAge
+            |> RemoteData.map (.male >> .byDay >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData heightForAgeConfig
+        , plotChildData heightForAgeConfig data
+        ]
+
+
+viewHeightForAgeBoys2To5 : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeightForAgeBoys2To5 language model data =
+    svg
+        [ class "z-score boys"
+        , x "0px"
+        , y "0px"
+        , viewBox "0 0 841.9 595.3"
+        ]
+        [ frame language "z-score-grey"
+        , labels language (heightForAgeLabels Male TwoYears)
+        , yAxisLinesAndText heightForAgeConfig2To5
+        , xAxisLinesAndText heightForAgeConfig2To5
+        , zScoreLabelsHeightForAgeBoys2To5
+        , model.lengthHeightForAge
+            |> RemoteData.map (.male >> .byDay >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData heightForAgeConfig2To5
+        , plotChildData heightForAgeConfig2To5 data
+        ]
+
+
+viewHeightForAgeBoys5To19 : Language -> Model -> List ( Months, Centimetres ) -> Html any
+viewHeightForAgeBoys5To19 language model data =
+    svg
+        [ class "z-score boys"
+        , x "0px"
+        , y "0px"
+        , viewBox "0 0 841.9 595.3"
+        ]
+        [ frame language "z-score-grey"
+        , labels language (heightForAgeLabels Male FiveYears)
+        , yAxisLinesAndText heightForAgeConfig5To19
+        , xAxisLinesAndText heightForAgeConfig5To19
+        , zScoreLabelsHeightForAgeBoys5To19
+        , model.lengthHeightForAge
+            |> RemoteData.map (.male >> .byMonth >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData heightForAgeConfig5To19
+        , plotChildData heightForAgeConfig5To19 data
+        ]
+
+
+viewHeightForAgeGirls : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeightForAgeGirls language model data =
+    svg
+        [ class "z-score girls"
+        , x "0px"
+        , y "0px"
+        , viewBox "0 0 841.9 595.3"
+        ]
+        [ frame language "z-score-grey"
+        , labels language (heightForAgeLabels Female ZeroYears)
+        , yAxisLinesAndText heightForAgeConfig
+        , xAxisLinesAndText heightForAgeConfig
+        , zScoreLabelsHeightForAgeGirls
+        , model.lengthHeightForAge
+            |> RemoteData.map (.female >> .byDay >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData heightForAgeConfig
+        , plotChildData heightForAgeConfig data
+        ]
+
+
+viewHeightForAgeGirls2To5 : Language -> Model -> List ( Days, Centimetres ) -> Html any
+viewHeightForAgeGirls2To5 language model data =
+    svg
+        [ class "z-score girls"
+        , x "0px"
+        , y "0px"
+        , viewBox "0 0 841.9 595.3"
+        ]
+        [ frame language "z-score-grey"
+        , labels language (heightForAgeLabels Female TwoYears)
+        , yAxisLinesAndText heightForAgeConfig2To5
+        , xAxisLinesAndText heightForAgeConfig2To5
+        , zScoreLabelsHeightForAgeGirls2To5
+        , model.lengthHeightForAge
+            |> RemoteData.map (.female >> .byDay >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData heightForAgeConfig2To5
+        , plotChildData heightForAgeConfig2To5 data
+        ]
+
+
+viewHeightForAgeGirls5To19 : Language -> Model -> List ( Months, Centimetres ) -> Html any
+viewHeightForAgeGirls5To19 language model data =
+    svg
+        [ class "z-score girls"
+        , x "0px"
+        , y "0px"
+        , viewBox "0 0 841.9 595.3"
+        ]
+        [ frame language "z-score-grey"
+        , labels language (heightForAgeLabels Female FiveYears)
+        , yAxisLinesAndText heightForAgeConfig5To19
+        , xAxisLinesAndText heightForAgeConfig5To19
+        , zScoreLabelsHeightForAgeGirls5To19
+        , model.lengthHeightForAge
+            |> RemoteData.map (.female >> .byMonth >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData heightForAgeConfig5To19
+        , plotChildData heightForAgeConfig5To19 data
+        ]
+
+
 viewWeightForAgeBoys : Language -> Model -> List ( Days, Kilograms ) -> Html any
 viewWeightForAgeBoys language model data =
     svg
@@ -666,7 +758,7 @@ viewWeightForAgeBoys language model data =
         , viewBox "0 0 841.9 595.3"
         ]
         [ frame language "z-score-grey"
-        , labels language weightForAgeBoysLabels
+        , labels language (weightForAgeLabels Male ZeroYears)
         , yAxisLinesAndText weightForAgeConfig
         , xAxisLinesAndText weightForAgeConfig
         , zScoreLabelsWeightForAgeBoys
@@ -675,6 +767,69 @@ viewWeightForAgeBoys language model data =
             |> RemoteData.withDefault []
             |> plotReferenceData weightForAgeConfig
         , plotChildData weightForAgeConfig data
+        ]
+
+
+viewWeightForAgeBoys2To5 : Language -> Model -> List ( Days, Kilograms ) -> Html any
+viewWeightForAgeBoys2To5 language model data =
+    svg
+        [ class "z-score boys"
+        , x "0px"
+        , y "0px"
+        , viewBox "0 0 841.9 595.3"
+        ]
+        [ frame language "z-score-grey"
+        , labels language (weightForAgeLabels Male TwoYears)
+        , yAxisLinesAndText weightForAge2to5Config
+        , xAxisLinesAndText weightForAge2to5Config
+        , zScoreLabelsWeightForAge2to5Boys
+        , model.weightForAge
+            |> RemoteData.map (.male >> .byDay >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData weightForAge2to5Config
+        , plotChildData weightForAge2to5Config data
+        ]
+
+
+viewWeightForAgeGirls : Language -> Model -> List ( Days, Kilograms ) -> Html any
+viewWeightForAgeGirls language model data =
+    svg
+        [ class "z-score girls"
+        , x "0px"
+        , y "0px"
+        , viewBox "0 0 841.9 595.3"
+        ]
+        [ frame language "z-score-grey"
+        , labels language (weightForAgeLabels Female ZeroYears)
+        , yAxisLinesAndText weightForAgeConfig
+        , xAxisLinesAndText weightForAgeConfig
+        , zScoreLabelsWeightForAgeGirls
+        , model.weightForAge
+            |> RemoteData.map (.female >> .byDay >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData weightForAgeConfig
+        , plotChildData weightForAgeConfig data
+        ]
+
+
+viewWeightForAgeGirls2To5 : Language -> Model -> List ( Days, Kilograms ) -> Html any
+viewWeightForAgeGirls2To5 language model data =
+    svg
+        [ class "z-score girls"
+        , x "0px"
+        , y "0px"
+        , viewBox "0 0 841.9 595.3"
+        ]
+        [ frame language "z-score-grey"
+        , labels language (weightForAgeLabels Female TwoYears)
+        , yAxisLinesAndText weightForAge2to5Config
+        , xAxisLinesAndText weightForAge2to5Config
+        , zScoreLabelsWeightForAge2To5Girls
+        , model.weightForAge
+            |> RemoteData.map (.female >> .byDay >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData weightForAge2to5Config
+        , plotChildData weightForAge2to5Config data
         ]
 
 
@@ -687,7 +842,7 @@ viewWeightForHeightBoys language model data =
         , viewBox "0 0 841.9 595.3"
         ]
         [ frame language "z-score-grey"
-        , labels language weightForHeightBoysLabels
+        , labels language (weightForHeightLabels Male ZeroYears)
         , yAxisLinesAndText weightForHeightConfig
         , xAxisLinesAndText weightForHeightConfig
         , zScoreLabelsWeightForHeightBoys
@@ -708,7 +863,7 @@ viewWeightForHeightGirls language model data =
         , viewBox "0 0 841.9 595.3"
         ]
         [ frame language "z-score-grey"
-        , labels language weightForHeightGirlsLabels
+        , labels language (weightForHeightLabels Female ZeroYears)
         , yAxisLinesAndText weightForHeightConfig
         , xAxisLinesAndText weightForHeightConfig
         , zScoreLabelsWeightForHeightGirls
@@ -717,48 +872,6 @@ viewWeightForHeightGirls language model data =
             |> RemoteData.withDefault []
             |> plotReferenceData weightForHeightConfig
         , plotChildData weightForHeightConfig data
-        ]
-
-
-viewHeightForAgeGirls : Language -> Model -> List ( Days, Centimetres ) -> Html any
-viewHeightForAgeGirls language model data =
-    svg
-        [ class "z-score girls"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
-        [ frame language "z-score-grey"
-        , labels language heightForAgeGirlsLabels
-        , yAxisLinesAndText heightForAgeConfig
-        , xAxisLinesAndText heightForAgeConfig
-        , zScoreLabelsHeightForAgeGirls
-        , model.lengthHeightForAge
-            |> RemoteData.map (.female >> .byDay >> AllDict.toList)
-            |> RemoteData.withDefault []
-            |> plotReferenceData heightForAgeConfig
-        , plotChildData heightForAgeConfig data
-        ]
-
-
-viewWeightForAgeGirls : Language -> Model -> List ( Days, Kilograms ) -> Html any
-viewWeightForAgeGirls language model data =
-    svg
-        [ class "z-score girls"
-        , x "0px"
-        , y "0px"
-        , viewBox "0 0 841.9 595.3"
-        ]
-        [ frame language "z-score-grey"
-        , labels language weightForAgeGirlsLabels
-        , yAxisLinesAndText weightForAgeConfig
-        , xAxisLinesAndText weightForAgeConfig
-        , zScoreLabelsWeightForAgeGirls
-        , model.weightForAge
-            |> RemoteData.map (.female >> .byDay >> AllDict.toList)
-            |> RemoteData.withDefault []
-            |> plotReferenceData weightForAgeConfig
-        , plotChildData weightForAgeConfig data
         ]
 
 
@@ -878,6 +991,17 @@ zScoreLabelsWeightForAgeBoys =
         ]
 
 
+zScoreLabelsWeightForAge2to5Boys : Svg any
+zScoreLabelsWeightForAge2to5Boys =
+    g []
+        [ text_ [ transform "matrix(1 0 0 1 722.1398 160.3553)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 721.6105 221.8234)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 722.4973 319.3636)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 719.923 391.5098)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 719.6994 419.3469)", class "z-score-semibold st23" ] [ text "-3" ]
+        ]
+
+
 zScoreLabelsHeightForAgeGirls : Svg any
 zScoreLabelsHeightForAgeGirls =
     g
@@ -904,6 +1028,23 @@ zScoreLabelsWeightForAgeGirls =
         , text_ [ transform "matrix(1 0 0 1 723.707 141.6711)", class "z-score-semibold st23" ] [ text "3" ]
         , text_ [ transform "matrix(1 0 0 1 723.4619 190.8845)", class "two-line z-score-semibold st23" ] [ text "2" ]
         , text_ [ transform "matrix(1 0 0 1 723.498 272.1838)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        ]
+
+
+zScoreLabelsWeightForAge2To5Girls : Svg any
+zScoreLabelsWeightForAge2To5Girls =
+    g
+        []
+        [ circle [ class "z-score-white", cx "726.7", cy "186.8", r "7.5" ] []
+        , circle [ class "z-score-white", cx "726.7", cy "137.8", r "7.5" ] []
+        , circle [ class "z-score-white", cx "726.7", cy "325", r "7.5" ] []
+        , circle [ class "z-score-white", cx "726.7", cy "347.8", r "7.5" ] []
+        , circle [ class "z-score-white", cx "726.7", cy "268", r "7.5" ] []
+        , text_ [ transform "matrix(1 0 0 1 723.707 131.6711)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 723.4619 208.8845)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 723.498 322.1838)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 720.9238 397.1916)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 720.7002 425.9709)", class "z-score-semibold st23" ] [ text "-3" ]
         ]
 
 

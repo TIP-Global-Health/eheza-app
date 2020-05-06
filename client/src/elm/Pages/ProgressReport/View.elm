@@ -443,6 +443,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                     , heightForAge2To5 = ZScore.View.viewHeightForAgeBoys2To5
                     , heightForAge5To19 = ZScore.View.viewHeightForAgeBoys5To19
                     , weightForAge = ZScore.View.viewWeightForAgeBoys
+                    , weightForAge2To5 = ZScore.View.viewWeightForAgeBoys2To5
                     , weightForHeight = ZScore.View.viewWeightForHeightBoys
                     }
 
@@ -451,6 +452,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                     , heightForAge2To5 = ZScore.View.viewHeightForAgeGirls2To5
                     , heightForAge5To19 = ZScore.View.viewHeightForAgeGirls5To19
                     , weightForAge = ZScore.View.viewWeightForAgeGirls
+                    , weightForAge2To5 = ZScore.View.viewWeightForAgeGirls2To5
                     , weightForHeight = ZScore.View.viewWeightForHeightGirls
                     }
 
@@ -533,6 +535,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                 , zScoreViewCharts.heightForAge2To5 language zscores heightForAgeData
                 , zScoreViewCharts.heightForAge5To19 language zscores heightForAgeDataMonths
                 , zScoreViewCharts.weightForAge language zscores weightForAgeData
+                , zScoreViewCharts.weightForAge2To5 language zscores weightForAgeData
                 , zScoreViewCharts.weightForHeight language zscores weightForHeightData
                 ]
     in
