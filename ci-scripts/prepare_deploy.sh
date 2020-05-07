@@ -31,7 +31,7 @@ create_sites_default_files_directory
 ddev start
 
 # Install Robo.li.
-ddev . composer install
+ddev composer install
 
 # Authenticate with Terminus.
 ddev terminus auth:login --machine-token="$TERMINUS_TOKEN"
