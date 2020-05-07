@@ -533,7 +533,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                     0
 
         charts =
-            if childAgeInMonths < 24 then
+            if childAgeInMonths <= 24 then
                 div
                     [ class "image-report" ]
                     [ ZScore.View.viewMarkers
@@ -542,7 +542,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                     , zScoreViewCharts.weightForHeight language zscores weightForLengthData
                     ]
 
-            else if childAgeInMonths > 24 && childAgeInMonths < 60 then
+            else if childAgeInMonths > 24 && childAgeInMonths <= 60 then
                 div
                     [ class "image-report" ]
                     [ ZScore.View.viewMarkers
