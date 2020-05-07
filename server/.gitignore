@@ -14,3 +14,8 @@ www
 # Local Configuration
 config.sh
 prepare_db_for_dev.sh
+
+# DDEV
+.ddev/config.local.yaml
+.ddev/db_snapshots
+.ddev/commands/host/launch
