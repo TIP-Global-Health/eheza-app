@@ -10,8 +10,6 @@ use Symfony\Component\Yaml\Yaml;
  */
 class RoboFile extends Tasks {
 
-  const THEME_BASE = 'web/themes/custom/theme_server';
-
   /**
    * The Pantheon name.
    *

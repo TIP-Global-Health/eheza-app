@@ -19,3 +19,6 @@ prepare_db_for_dev.sh
 .ddev/config.local.yaml
 .ddev/db_snapshots
 .ddev/commands/host/launch
+
+# deployment
+pantheon

@@ -29,15 +29,17 @@ create_sites_default_files_directory
 # Start DDEV, deployment happens from inside the container.
 ddev start
 
-# Install Robo.ii
+# Install Robo.li.
 ddev . composer install
 
-# Authenticate with Terminus
+# Authenticate with Terminus.
 ddev terminus auth:login --machine-token="$TERMINUS_TOKEN"
 
 GIT_HOST="***REMOVED***"
 
 ssh-keyscan -p 2222 $GIT_HOST >> ~/.ssh/known_hosts
 
-# Make the DDEV container aware of your ssh
+git clone ***REMOVED*** .pantheon
+
+# Make the DDEV container aware of your ssh.
 ddev auth ssh
