@@ -6,6 +6,8 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString, encoudeIndividualEncounterTypeAsString)
 import Backend.Person.Model exposing (RegistrationInitiator(..))
 import Backend.Person.Utils exposing (decodeRegistrationInitiatorFromString)
+import NutritionActivity.Model exposing (NutritionActivity(..))
+import NutritionActivity.Utils
 import Pages.Page exposing (..)
 import PrenatalActivity.Model exposing (PrenatalActivity)
 import PrenatalActivity.Utils
@@ -107,6 +109,9 @@ pageToFragment current =
                 PrenatalParticipantPage id ->
                     Just <| "prenatal-participant/" ++ fromEntityUuid id
 
+                NutritionParticipantPage id ->
+                    Just <| "nutrition-participant/" ++ fromEntityUuid id
+
                 IndividualEncounterParticipantsPage encounterType ->
                     Just <| "individual-participants/" ++ encoudeIndividualEncounterTypeAsString encounterType
 
@@ -160,6 +165,12 @@ pageToFragment current =
                 PregnancyOutcomePage id ->
                     Just <| "pregnancy-outcome/" ++ fromEntityUuid id
 
+                NutritionEncounterPage id ->
+                    Just <| "nutrition-encounter/" ++ fromEntityUuid id
+
+                NutritionActivityPage id activity ->
+                    Just <| "nutrition-activity/" ++ fromEntityUuid id ++ "/" ++ NutritionActivity.Utils.encodeActivityAsString activity
+
 
 parser : Parser (Page -> c) c
 parser =
@@ -179,6 +190,7 @@ parser =
         , map (\id -> UserPage <| EditPersonPage id) (s "person" </> parseUuid </> s "edit")
         , map (\id -> UserPage <| PersonPage id) (s "person" </> parseUuid)
         , map (\id -> UserPage <| PrenatalParticipantPage id) (s "prenatal-participant" </> parseUuid)
+        , map (\id -> UserPage <| NutritionParticipantPage id) (s "nutrition-participant" </> parseUuid)
         , map (\id1 id2 -> UserPage <| RelationshipPage id1 id2) (s "relationship" </> parseUuid </> parseUuid)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
@@ -187,6 +199,8 @@ parser =
         , map (UserPage <| IndividualEncounterTypesPage) (s "individual-encounter-types")
         , map (\encounterType -> UserPage <| IndividualEncounterParticipantsPage encounterType) (s "individual-participants" </> parseIndividualEncounterType)
         , map (\id -> UserPage <| PregnancyOutcomePage id) (s "pregnancy-outcome" </> parseUuid)
+        , map (\id -> UserPage <| NutritionEncounterPage id) (s "nutrition-encounter" </> parseUuid)
+        , map (\id activity -> UserPage <| NutritionActivityPage id activity) (s "nutrition-activity" </> parseUuid </> parseNutritionActivity)
 
         -- `top` represents the page without any segements ... i.e. the
         -- root page.
@@ -220,6 +234,11 @@ parseActivity =
 parsePrenatalActivity : Parser (PrenatalActivity -> c) c
 parsePrenatalActivity =
     custom "PrenatalActivity" PrenatalActivity.Utils.decodeActivityFromString
+
+
+parseNutritionActivity : Parser (NutritionActivity -> c) c
+parseNutritionActivity =
+    custom "NutritionActivity" NutritionActivity.Utils.decodeActivityFromString
 
 
 parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c

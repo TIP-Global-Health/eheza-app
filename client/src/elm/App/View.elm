@@ -21,6 +21,11 @@ import Pages.Device.View
 import Pages.IndividualEncounterParticipants.View
 import Pages.IndividualEncounterTypes.View
 import Pages.MyAccount.View
+import Pages.NutritionActivity.Model
+import Pages.NutritionActivity.View
+import Pages.NutritionEncounter.Model
+import Pages.NutritionEncounter.View
+import Pages.NutritionParticipant.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.People.View
@@ -269,8 +274,18 @@ viewUserPage page model configured =
                         Pages.PrenatalParticipant.View.view model.language currentDate id model.indexedDb
                             |> flexPageWrapper model
 
+                    NutritionParticipantPage id ->
+                        Pages.NutritionParticipant.View.view model.language currentDate id model.indexedDb
+                            |> flexPageWrapper model
+
                     IndividualEncounterParticipantsPage encounterType ->
-                        Pages.IndividualEncounterParticipants.View.view model.language currentDate healthCenterId encounterType loggedInModel.individualEncounterParticipantsPage model.indexedDb
+                        Pages.IndividualEncounterParticipants.View.view model.language
+                            currentDate
+                            ( healthCenterId, model.villageId )
+                            isChw
+                            encounterType
+                            loggedInModel.individualEncounterParticipantsPage
+                            model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPageIndividualEncounterParticipants)
                             |> flexPageWrapper model
 
@@ -323,7 +338,7 @@ viewUserPage page model configured =
                             |> flexPageWrapper model
 
                     IndividualEncounterTypesPage ->
-                        Pages.IndividualEncounterTypes.View.view model.language currentDate model.indexedDb
+                        Pages.IndividualEncounterTypes.View.view model.language currentDate isChw model.indexedDb
                             |> flexPageWrapper model
 
                     PregnancyOutcomePage id ->
@@ -334,6 +349,26 @@ viewUserPage page model configured =
                         in
                         Pages.PregnancyOutcome.View.view model.language currentDate id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePregnancyOutcome id)
+                            |> flexPageWrapper model
+
+                    NutritionEncounterPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.nutritionEncounterPages
+                                    |> Maybe.withDefault Pages.NutritionEncounter.Model.emptyModel
+                        in
+                        Pages.NutritionEncounter.View.view model.language currentDate id isChw model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageNutritionEncounter id)
+                            |> flexPageWrapper model
+
+                    NutritionActivityPage id activity ->
+                        let
+                            page_ =
+                                Dict.get ( id, activity ) loggedInModel.nutritionActivityPages
+                                    |> Maybe.withDefault Pages.NutritionActivity.Model.emptyModel
+                        in
+                        Pages.NutritionActivity.View.view model.language currentDate model.zscores id activity isChw model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageNutritionActivity id activity)
                             |> flexPageWrapper model
 
             else
