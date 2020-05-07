@@ -66,19 +66,17 @@ jobs:
       name: "Deployment to Pantheon"
       if: branch = 1535-deploy
       env:
-        - PANTHEON_ENV=qa
-        - PANTHEON_DIR=/tmp/pantheon-ihangane
-        - PANTHEON_BRANCH=qa
-        - MAIN_REPO_BRANCH=develop
       script:
+        - "$TRAVIS_BUILD_DIR/ci-scripts/install_ddev.sh"
         - "$TRAVIS_BUILD_DIR/ci-scripts/prepare_deploy.sh"
-        - "$TRAVIS_BUILD_DIR/server/pantheon-update.sh"
+        - "ddev robo deploy:pantheon qa"
 
 cache:
   directories:
   - client/elm-stuff/packages
   - client/sysconfcpus
   - travis-cache
+  - vendor
 
 env:
   global:

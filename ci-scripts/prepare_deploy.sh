@@ -31,12 +31,21 @@ symlink_externals
 composer_install
 create_sites_default_files_directory
 
+# Install Robo.ii
+cd "$TRAVIS_BUILD_DIR" || exit 1
+composer install
+
+# Start DDEV, deployment happens from inside the container.
+ddev start
+
 # Authenticate with Terminus
-terminus auth:login --machine-token="$TERMINUS_TOKEN"
+ddev terminus auth:login --machine-token="$TERMINUS_TOKEN"
 
 cd "$TRAVIS_BUILD_DIR" || exit 1
 
 GIT_HOST="***REMOVED***"
 
 ssh-keyscan -p 2222 $GIT_HOST >> ~/.ssh/known_hosts
-git clone ***REMOVED*** /tmp/pantheon-ihangane
+
+# Make the DDEV container aware of your ssh
+ddev auth ssh
