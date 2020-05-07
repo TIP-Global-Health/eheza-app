@@ -11,6 +11,7 @@ module Pages.ProgressReport.View exposing
     , viewMuacCell
     , viewMuactWithIndication
     , viewNutritionSigns
+    , viewPhotos
     , viewWeightCell
     , viewWeightWithIndication
     , withDefaultTextInCell
@@ -270,31 +271,8 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                 |> List.singleton
                 |> table [ class "ui collapsing celled table" ]
 
-        viewPhotoUrl (PhotoUrl url) =
-            div
-                [ classList
-                    [ ( "image", True )
-                    , ( "cache-upload", String.contains "cache-upload/images" url )
-                    ]
-                ]
-                [ img [ src url, class "rotate-90" ] [] ]
-
         photos =
-            photoValues
-                |> List.map
-                    (\photo ->
-                        div
-                            [ class "report card" ]
-                            [ div
-                                [ class "content" ]
-                                [ child.birthDate
-                                    |> Maybe.map (\birthDate -> text <| renderAgeMonthsDays language birthDate photo.dateMeasured)
-                                    |> Maybe.withDefault emptyNode
-                                ]
-                            , viewPhotoUrl photo.value
-                            ]
-                    )
-                |> div [ class "ui five report cards" ]
+            viewPhotos language child photoValues
 
         ( heightForAge, weightForAge, weightForHeight ) =
             case child.gender of
@@ -577,6 +555,34 @@ viewWeightWithIndication language child zscores weight =
             Debug.toString kg ++ translate language Translate.KilogramShorthand
     in
     span indication [ text value ]
+
+
+viewPhotos language child photos =
+    let
+        viewPhotoUrl (PhotoUrl url) =
+            div
+                [ classList
+                    [ ( "image", True )
+                    , ( "cache-upload", String.contains "cache-upload/images" url )
+                    ]
+                ]
+                [ img [ src url, class "rotate-90" ] [] ]
+    in
+    photos
+        |> List.map
+            (\photo ->
+                div
+                    [ class "report card" ]
+                    [ div
+                        [ class "content" ]
+                        [ child.birthDate
+                            |> Maybe.map (\birthDate -> text <| renderAgeMonthsDays language birthDate photo.dateMeasured)
+                            |> Maybe.withDefault emptyNode
+                        ]
+                    , viewPhotoUrl photo.value
+                    ]
+            )
+        |> div [ class "ui five report cards" ]
 
 
 type Indication

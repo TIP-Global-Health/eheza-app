@@ -133,10 +133,12 @@ viewContent language currentDate zscores db data =
         nutritionSigns =
             viewNutritionSigns language child dateOfLastAssessment signs
 
-        heightWeightMuacTable =
-            (( currentDate, data.measurements )
+        allMeasurements =
+            ( currentDate, data.measurements )
                 :: data.previousMeasurementsWithDates
-            )
+
+        heightWeightMuacTable =
+            allMeasurements
                 |> greedyGroupsOf 6
                 |> List.map
                     (\groupOfSix ->
@@ -204,6 +206,12 @@ viewContent language currentDate zscores db data =
                 |> tbody []
                 |> List.singleton
                 |> table [ class "ui collapsing celled table" ]
+
+        photos =
+            allMeasurements
+                |> List.filterMap
+                    (\( _, measurements ) -> measurements.photo |> Maybe.map Tuple.second)
+                |> viewPhotos language child
     in
     div
         [ class "wrap-report" ]
@@ -213,4 +221,5 @@ viewContent language currentDate zscores db data =
         , childInfo
         , nutritionSigns
         , heightWeightMuacTable
+        , photos
         ]
