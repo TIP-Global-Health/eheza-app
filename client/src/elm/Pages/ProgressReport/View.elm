@@ -524,7 +524,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
         weightForHeightData =
             List.filterMap (chartWeightForHeight heightValues) weightValues
 
-        birthDiff =
+        childAgeInMonths =
             case child.birthDate of
                 Just birthDate ->
                     Gizra.NominalDate.diffMonths birthDate currentDate
@@ -533,17 +533,31 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                     0
 
         charts =
-            div
-                [ class "image-report" ]
-                [ ZScore.View.viewMarkers
-                , zScoreViewCharts.heightForAge language zscores heightForAgeData
-                , zScoreViewCharts.heightForAge2To5 language zscores heightForAgeData
-                , zScoreViewCharts.heightForAge5To19 language zscores heightForAgeDataMonths
-                , zScoreViewCharts.weightForAge language zscores weightForAgeData
-                , zScoreViewCharts.weightForAge2To5 language zscores weightForAgeData
-                , zScoreViewCharts.weightForHeight language zscores weightForLengthData
-                , zScoreViewCharts.weightForHeight2To5 language zscores weightForHeightData
-                ]
+            if childAgeInMonths < 24 then
+                div
+                    [ class "image-report" ]
+                    [ ZScore.View.viewMarkers
+                    , zScoreViewCharts.heightForAge language zscores heightForAgeData
+                    , zScoreViewCharts.weightForAge language zscores weightForAgeData
+                    , zScoreViewCharts.weightForHeight language zscores weightForLengthData
+                    ]
+
+            else if childAgeInMonths > 24 && childAgeInMonths < 60 then
+                div
+                    [ class "image-report" ]
+                    [ ZScore.View.viewMarkers
+                    , zScoreViewCharts.heightForAge2To5 language zscores heightForAgeData
+                    , zScoreViewCharts.weightForAge2To5 language zscores weightForAgeData
+                    , zScoreViewCharts.weightForHeight2To5 language zscores weightForHeightData
+                    ]
+
+            else
+                -- Child is older than 5 years.
+                div
+                    [ class "image-report" ]
+                    [ ZScore.View.viewMarkers
+                    , zScoreViewCharts.heightForAge5To19 language zscores heightForAgeDataMonths
+                    ]
     in
     div [ class "page-report" ]
         [ div
