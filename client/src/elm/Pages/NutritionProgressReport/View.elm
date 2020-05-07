@@ -37,6 +37,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -45,6 +46,7 @@ import Maybe.Extra exposing (isJust)
 import Pages.NutritionEncounter.Model exposing (AssembledData)
 import Pages.NutritionEncounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.ProgressReport.View exposing (viewChildInfo, viewNutritionSigns)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage)
@@ -80,9 +82,13 @@ viewContent language currentDate db data =
                 [ class "ui report header" ]
                 [ text <| translate language Translate.ParticipantSummary ]
 
-        -- Do we have any kind of measurement for the specified session?
+        -- Do we have any kind of measurement taken at the session?
         hasMeasurement measurements =
-            isJust measurements.height || isJust measurements.muac || isJust measurements.nutrition || isJust measurements.weight || isJust measurements.photo
+            isJust measurements.height
+                || isJust measurements.muac
+                || isJust measurements.nutrition
+                || isJust measurements.weight
+                || isJust measurements.photo
 
         dateOfLastAssessment =
             if hasMeasurement data.measurements then
@@ -127,64 +133,28 @@ viewContent language currentDate db data =
                             MyCaregiver ->
                                 Translate.TakenCareOfBy
 
+                            -- Other 2 options will never occur, as we deal with child here.
                             _ ->
                                 Translate.ChildOf
                     )
                 |> Maybe.withDefault Translate.ChildOf
 
-        child =
-            data.person
-
         childInfo =
-            div
-                [ class "ui report unstackable items" ]
-                [ div
-                    [ class "item" ]
-                    [ div
-                        [ class "ui image" ]
-                        [ thumbnailImage "child" child.avatarUrl child.name 152 152
-                        ]
-                    , div
-                        [ class "content" ]
-                        [ h2
-                            [ class "ui header" ]
-                            [ text child.name ]
-                        , p []
-                            [ child.birthDate
-                                |> Maybe.map
-                                    (\birthDate ->
-                                        [ text <| renderAgeMonthsDays language birthDate dateOfLastAssessment
-                                        , text " "
-                                        , text <| translate language Translate.Old
-                                        , text " "
-                                        ]
-                                    )
-                                |> Maybe.withDefault []
-                                |> span []
-                            , strong [] [ text <| translate language (Translate.Gender child.gender) ]
-                            ]
-                        , p []
-                            [ text <| translate language Translate.Born
-                            , text " "
-                            , strong []
-                                [ child.birthDate
-                                    |> Maybe.map (renderDate language)
-                                    |> Maybe.withDefault (translate language Translate.NotAvailable)
-                                    |> text
-                                ]
-                            , br [] []
-                            , text <| translate language relationText
-                            , text " "
-                            , strong []
-                                [ maybeMother
-                                    |> Maybe.map .name
-                                    |> Maybe.withDefault (translate language Translate.Unknown)
-                                    |> text
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
+            viewChildInfo language data.person maybeMother relationText dateOfLastAssessment
+
+        -- We're using nutrition value from the current session here, at
+        -- least for now. So, we're ignoring any later sessions, and we're just
+        -- leaving it blank if it wasn't entered in this session (rather than looking
+        -- back to a previous session when it was entered).
+        --
+        -- See <https://github.com/Gizra/ihangane/issues/382#issuecomment-353273873>
+        signs =
+            data.measurements.nutrition
+                |> Maybe.map (Tuple.second >> .value)
+                |> Maybe.withDefault EverySet.empty
+
+        nutritionSigns =
+            viewNutritionSigns language data.person dateOfLastAssessment signs
     in
     div
         [ class "wrap-report" ]
@@ -192,4 +162,5 @@ viewContent language currentDate db data =
         , title
         , subtitle
         , childInfo
+        , nutritionSigns
         ]
