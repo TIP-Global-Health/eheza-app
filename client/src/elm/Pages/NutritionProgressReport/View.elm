@@ -3,8 +3,6 @@ module Pages.NutritionProgressReport.View exposing (view)
 import App.Model exposing (Msg(..))
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (ChildNutritionSign(..), Height, HeightInCm(..), MuacInCm(..), MuacIndication(..), PhotoUrl(..), Weight, WeightInKg(..))
-import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import EverySet exposing (EverySet)
@@ -20,11 +18,9 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.ProgressReport.View exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate)
-import Utils.Html exposing (thumbnailImage)
-import Utils.NominalDate exposing (Days(..), Months(..), diffDays, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate)
+import Utils.NominalDate exposing (Days(..), Months(..), diffDays, renderAgeMonthsDaysHtml, renderDate)
 import Utils.WebData exposing (viewWebData)
-import ZScore.Model exposing (Centimetres(..), Kilograms(..), Length(..), ZScore)
-import ZScore.Utils exposing (zScoreLengthHeightForAge, zScoreWeightForAge)
+import ZScore.Model
 import ZScore.View
 
 
