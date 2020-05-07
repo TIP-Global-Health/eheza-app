@@ -66,8 +66,8 @@ jobs:
       name: "Deployment to Pantheon"
       if: branch = 1535-deploy
       script:
-        - "$TRAVIS_BUILD_DIR/ci-scripts/prepare_client.sh"
         - "$TRAVIS_BUILD_DIR/ci-scripts/install_client.sh"
+        - "$TRAVIS_BUILD_DIR/ci-scripts/prepare_client.sh"
         - "$TRAVIS_BUILD_DIR/ci-scripts/install_ddev.sh"
         - "$TRAVIS_BUILD_DIR/ci-scripts/prepare_deploy.sh"
         - "ddev robo deploy:pantheon qa"
