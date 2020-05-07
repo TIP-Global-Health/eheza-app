@@ -51,20 +51,17 @@ class RoboFile extends Tasks {
       throw new Exception('The Pantheon directory is dirty. Please commit any pending changes.');
     }
 
-    // Validate pantheon.yml has web_docroot: true
-    if (!file_exists($pantheonDirectory . '/pantheon.yml')) {
-      throw new Exception("pantheon.yml is missing from the Pantheon directory ($pantheonDirectory)");
+    // Validate pantheon.upstream.yml.
+    if (!file_exists($pantheonDirectory . '/pantheon.upstream.yml')) {
+      throw new Exception("pantheon.upstream.yml is missing from the Pantheon directory ($pantheonDirectory)");
     }
 
     $yaml = Yaml::parseFile($pantheonDirectory . '/pantheon.yml');
-    if (empty($yaml['web_docroot'])) {
-      throw new Exception("'web_docroot: true' is missing from pantheon.yml in Pantheon directory ($pantheonDirectory)");
+    if (empty($yaml['php_version'])) {
+      throw new Exception("'php_version:' directive is missing from pantheon.upstream.yml in Pantheon directory ($pantheonDirectory)");
     }
 
     $this->_exec("cd $pantheonDirectory && git checkout $branchName");
-
-    // Compile theme
-    $this->themeCompile();
 
     $rsyncExclude = [
       '.git',
