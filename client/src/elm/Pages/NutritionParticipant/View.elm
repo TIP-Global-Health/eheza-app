@@ -105,65 +105,13 @@ viewActions language currentDate id db sessions =
                     )
                 |> Maybe.withDefault ( Nothing, False )
 
-        -- Whether first nutrition encounter for person is in process.
-        -- This is True when there's only one encounter, and it's active.
-        firstEncounterInProcess =
-            maybeSessionId
-                |> Maybe.map
-                    (\sessionId ->
-                        Dict.get sessionId db.nutritionEncountersByParticipant
-                            |> Maybe.withDefault NotAsked
-                            |> RemoteData.map
-                                (Dict.values
-                                    >> (\encounters ->
-                                            let
-                                                activeEncounters =
-                                                    encounters
-                                                        |> List.filter (isDailyEncounterActive currentDate)
-                                            in
-                                            List.length encounters == 1 && List.length activeEncounters == 1
-                                       )
-                                )
-                            |> RemoteData.withDefault False
-                    )
-                |> Maybe.withDefault False
-
-        firstVisitAction =
-            -- If first encounter is in process, navigate to it.
-            if firstEncounterInProcess then
-                maybeActiveEncounterId
-                    |> Maybe.map navigateToEncounterAction
-                    |> Maybe.withDefault []
-
-            else
-                maybeSessionId
-                    |> Maybe.map
-                        -- If nutrition session exists, create new encounter for it.
-                        (\sessionId ->
-                            [ Backend.NutritionEncounter.Model.NutritionEncounter sessionId currentDate Nothing
-                                |> Backend.Model.PostNutritionEncounter
-                                |> App.Model.MsgIndexedDb
-                                |> onClick
-                            ]
-                        )
-                    -- If nutrition session does not exist, create it.
-                    |> Maybe.withDefault
-                        [ IndividualEncounterParticipant id
-                            Backend.IndividualEncounterParticipant.Model.NutritionEncounter
-                            currentDate
-                            Nothing
-                            Nothing
-                            |> Backend.Model.PostIndividualSession
-                            |> App.Model.MsgIndexedDb
-                            |> onClick
-                        ]
-
-        subsequentVisitAction =
+        action =
             maybeActiveEncounterId
-                |> unwrap
-                    -- When there's no encounter, we'll create new one.
+                |> Maybe.map navigateToEncounterAction
+                |> Maybe.withDefault
                     (maybeSessionId
                         |> Maybe.map
+                            -- If nutrition session exists, create new encounter for it.
                             (\sessionId ->
                                 [ Backend.NutritionEncounter.Model.NutritionEncounter sessionId currentDate Nothing
                                     |> Backend.Model.PostNutritionEncounter
@@ -171,10 +119,18 @@ viewActions language currentDate id db sessions =
                                     |> onClick
                                 ]
                             )
-                        |> Maybe.withDefault []
+                        -- If nutrition session does not exist, create it.
+                        |> Maybe.withDefault
+                            [ IndividualEncounterParticipant id
+                                Backend.IndividualEncounterParticipant.Model.NutritionEncounter
+                                currentDate
+                                Nothing
+                                Nothing
+                                |> Backend.Model.PostIndividualSession
+                                |> App.Model.MsgIndexedDb
+                                |> onClick
+                            ]
                     )
-                    -- When there's an encounrer, we'll view it.
-                    navigateToEncounterAction
 
         navigateToEncounterAction id_ =
             [ Pages.Page.NutritionEncounterPage id_
@@ -182,9 +138,6 @@ viewActions language currentDate id db sessions =
                 |> App.Model.SetActivePage
                 |> onClick
             ]
-
-        firstVisitButtonDisabled =
-            isJust maybeSessionId && not firstEncounterInProcess
     in
     div []
         [ p [ class "label-antenatal-visit" ]
@@ -196,29 +149,14 @@ viewActions language currentDate id db sessions =
         , button
             (classList
                 [ ( "ui primary button", True )
-                , ( "disabled", firstVisitButtonDisabled )
+                , ( "disabled", encounterWasCompletedToday )
                 ]
-                :: firstVisitAction
+                :: action
             )
             [ span [ class "text" ]
                 [ text <|
                     translate language <|
-                        Translate.IndividualEncounterFirstVisit
-                            Backend.IndividualEncounterParticipant.Model.NutritionEncounter
-                ]
-            , span [ class "icon-back" ] []
-            ]
-        , button
-            (classList
-                [ ( "ui primary button", True )
-                , ( "disabled", not firstVisitButtonDisabled || encounterWasCompletedToday )
-                ]
-                :: subsequentVisitAction
-            )
-            [ span [ class "text" ]
-                [ text <|
-                    translate language <|
-                        Translate.IndividualEncounterSubsequentVisit
+                        Translate.IndividualEncounterLabel
                             Backend.IndividualEncounterParticipant.Model.NutritionEncounter
                 ]
             , span [ class "icon-back" ] []

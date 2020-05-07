@@ -92,7 +92,7 @@ function hedley_schedule_strongarm() {
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_pattern_node_pmtct_participant';
-  $strongarm->value = '[node:field_clinic] - [node:field_person] - [node:field_adult]';
+  $strongarm->value = '[node:field-clinic:title] - [node:field-person:title] - [node:field-adult:title]';
   $export['auto_entitylabel_pattern_node_pmtct_participant'] = $strongarm;
 
   $strongarm = new stdClass();

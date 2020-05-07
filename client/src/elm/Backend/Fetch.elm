@@ -97,16 +97,9 @@ shouldFetch model msg =
             isNotAsked model.everyCounselingSchedule
 
         FetchExpectedParticipants sessionId ->
-            let
-                expectedNotSuccess =
-                    Dict.get sessionId model.expectedParticipants
-                        |> Maybe.withDefault NotAsked
-                        |> isNotAsked
-
-                hasPeoplesNotSuccess =
-                    hasNoSuccessValues model.people
-            in
-            expectedNotSuccess || hasPeoplesNotSuccess
+            Dict.get sessionId model.expectedParticipants
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
 
         FetchExpectedSessions childId ->
             Dict.get childId model.expectedSessions
