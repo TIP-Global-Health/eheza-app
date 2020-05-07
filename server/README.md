@@ -7,6 +7,13 @@ This is a starting base to create Drupal 7 websites using an install profile.
 
 ### Install with DDEV
 
+#### Requirements
+
+ - https://ddev.readthedocs.io/en/latest/#installation
+ - Drush 8 or earlier: https://docs.drush.org/en/master/install/#drupal-compatibility - that supports Drupal 7.
+
+#### Steps
+
   cp default.config.sh config.sh
   cp .ddev/config.local.yaml.example .ddev/config.local.yaml
   ddev restart
