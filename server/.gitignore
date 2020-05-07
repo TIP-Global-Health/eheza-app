@@ -21,4 +21,4 @@ prepare_db_for_dev.sh
 .ddev/commands/host/launch
 
 # deployment
-pantheon
+.pantheon
