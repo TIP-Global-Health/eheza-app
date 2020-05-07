@@ -445,6 +445,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                     , weightForAge = ZScore.View.viewWeightForAgeBoys
                     , weightForAge2To5 = ZScore.View.viewWeightForAgeBoys2To5
                     , weightForHeight = ZScore.View.viewWeightForHeightBoys
+                    , weightForHeight2To5 = ZScore.View.viewWeightForHeight2To5Boys
                     }
 
                 Female ->
@@ -454,6 +455,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                     , weightForAge = ZScore.View.viewWeightForAgeGirls
                     , weightForAge2To5 = ZScore.View.viewWeightForAgeGirls2To5
                     , weightForHeight = ZScore.View.viewWeightForHeightGirls
+                    , weightForHeight2To5 = ZScore.View.viewWeightForHeight2To5Girls
                     }
 
         current =
@@ -516,6 +518,9 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
         weightForAgeData =
             List.filterMap (chartWeightForAge child) weightValues
 
+        weightForLengthData =
+            List.filterMap (chartWeightForLength heightValues) weightValues
+
         weightForHeightData =
             List.filterMap (chartWeightForHeight heightValues) weightValues
 
@@ -536,7 +541,8 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                 , zScoreViewCharts.heightForAge5To19 language zscores heightForAgeDataMonths
                 , zScoreViewCharts.weightForAge language zscores weightForAgeData
                 , zScoreViewCharts.weightForAge2To5 language zscores weightForAgeData
-                , zScoreViewCharts.weightForHeight language zscores weightForHeightData
+                , zScoreViewCharts.weightForHeight language zscores weightForLengthData
+                , zScoreViewCharts.weightForHeight2To5 language zscores weightForHeightData
                 ]
     in
     div [ class "page-report" ]
@@ -643,8 +649,8 @@ chartWeightForAge child weight =
             )
 
 
-chartWeightForHeight : List Height -> Weight -> Maybe ( Length, Kilograms )
-chartWeightForHeight heights weight =
+chartWeightForLength : List Height -> Weight -> Maybe ( Length, Kilograms )
+chartWeightForLength heights weight =
     -- For each weight, we try to find a height with a matching sessionID.
     -- Eventually, we shouild take age into account to distingiush height
     -- and length.
@@ -655,6 +661,25 @@ chartWeightForHeight heights weight =
                 ( case height.value of
                     HeightInCm cm ->
                         Length cm
+                , case weight.value of
+                    WeightInKg kg ->
+                        Kilograms kg
+                )
+            )
+
+
+chartWeightForHeight : List Height -> Weight -> Maybe ( ZScore.Model.Height, Kilograms )
+chartWeightForHeight heights weight =
+    -- For each weight, we try to find a height with a matching sessionID.
+    -- Eventually, we shouild take age into account to distingiush height
+    -- and length.
+    heights
+        |> List.Extra.find (\height -> height.encounterId == weight.encounterId)
+        |> Maybe.map
+            (\height ->
+                ( case height.value of
+                    HeightInCm cm ->
+                        ZScore.Model.Height cm
                 , case weight.value of
                     WeightInKg kg ->
                         Kilograms kg
