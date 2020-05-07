@@ -133,10 +133,14 @@ viewMainPageContent language currentDate id isChw data model =
         completedTabTitle =
             translate language <| Translate.ActivitiesCompleted <| List.length completedActivities
 
+        reportsTabTitle =
+            translate language Translate.Reports
+
         tabs =
             div [ class "ui tabular menu" ]
                 [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
+                , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetSelectedTab Reports)
                 ]
 
         viewCard activity =
@@ -163,6 +167,9 @@ viewMainPageContent language currentDate id isChw data model =
 
                 Completed ->
                     ( completedActivities, translate language Translate.NoActivitiesCompleted )
+
+                Reports ->
+                    ( [], "" )
 
         innerContent =
             div [ class "full content" ]
