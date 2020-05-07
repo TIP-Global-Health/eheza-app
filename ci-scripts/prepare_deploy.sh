@@ -11,7 +11,8 @@ phpenv config-rm xdebug.ini
 cp deployment-robot-key ~/.ssh/id_rsa
 chmod 600 ~/.ssh/id_rsa
 
-# Make Drush available.
+# Make Drush 8 available.
+mkdir -p ~/vendor/bin
 cd ~/vendor/bin || exit 1
 wget --quiet https://github.com/drush-ops/drush/releases/download/8.3.0/drush.phar
 mv drush.phar drush
