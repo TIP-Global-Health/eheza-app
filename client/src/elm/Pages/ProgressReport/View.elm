@@ -1,4 +1,20 @@
-module Pages.ProgressReport.View exposing (view, viewChildInfo, viewNutritionSigns)
+module Pages.ProgressReport.View exposing
+    ( chartHeightForAge
+    , chartWeightForAge
+    , chartWeightForHeight
+    , classForIndication
+    , view
+    , viewAgeCell
+    , viewChildInfo
+    , viewHeightCell
+    , viewHeightWithIndication
+    , viewMuacCell
+    , viewMuactWithIndication
+    , viewNutritionSigns
+    , viewWeightCell
+    , viewWeightWithIndication
+    , withDefaultTextInCell
+    )
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -207,7 +223,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                                         ]
                                                     ]
                                         )
-                                    |> (::) ageCell
+                                    |> (::) (viewAgeCell language)
                                     |> tr []
 
                             heights =
@@ -215,12 +231,10 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                     |> List.map
                                         (\( id, _ ) ->
                                             Dict.get id heightValuesBySession
-                                                |> Maybe.map viewHeightWithIndication
-                                                |> Maybe.withDefault (text "--")
-                                                |> List.singleton
-                                                |> td [ class "center aligned" ]
+                                                |> Maybe.map (viewHeightWithIndication language child zscores)
+                                                |> withDefaultTextInCell
                                         )
-                                    |> (::) heightCell
+                                    |> (::) (viewHeightCell language)
                                     |> tr []
 
                             muacs =
@@ -228,79 +242,21 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                     |> List.map
                                         (\( id, _ ) ->
                                             Dict.get id muacValuesBySession
-                                                |> Maybe.map .value
-                                                |> Maybe.map
-                                                    (\((MuacInCm cm) as muac) ->
-                                                        span
-                                                            [ class <| classForIndication <| muacIndicationToIndication <| muacIndication muac ]
-                                                            [ text <| Debug.toString cm ++ translate language Translate.CentimeterShorthand ]
-                                                    )
-                                                |> Maybe.withDefault (text "--")
-                                                |> List.singleton
-                                                |> td [ class "center aligned" ]
+                                                |> Maybe.map (viewMuactWithIndication language)
+                                                |> withDefaultTextInCell
                                         )
-                                    |> (::) muacCell
+                                    |> (::) (viewMuacCell language)
                                     |> tr []
-
-                            viewHeightWithIndication height =
-                                let
-                                    cm =
-                                        case height.value of
-                                            HeightInCm cms ->
-                                                cms
-
-                                    maybeAgeInDays =
-                                        Maybe.map (\birthDate -> diffDays birthDate height.dateMeasured) child.birthDate
-
-                                    indication =
-                                        maybeAgeInDays
-                                            |> Maybe.andThen
-                                                (\ageInDays ->
-                                                    zScoreLengthHeightForAge zscores ageInDays child.gender (Centimetres cm)
-                                                        |> Maybe.map (class << classForIndication << zScoreToIndication)
-                                                )
-                                            |> Maybe.Extra.toList
-
-                                    value =
-                                        Debug.toString cm ++ translate language Translate.CentimeterShorthand
-                                in
-                                span indication [ text value ]
-
-                            viewWeightWithIndication weight =
-                                let
-                                    kg =
-                                        case weight.value of
-                                            WeightInKg kilos ->
-                                                kilos
-
-                                    maybeAgeInDays =
-                                        Maybe.map (\birthDate -> diffDays birthDate weight.dateMeasured) child.birthDate
-
-                                    indication =
-                                        maybeAgeInDays
-                                            |> Maybe.andThen
-                                                (\ageInDays ->
-                                                    zScoreWeightForAge zscores ageInDays child.gender (Kilograms kg)
-                                                        |> Maybe.map (class << classForIndication << zScoreToIndication)
-                                                )
-                                            |> Maybe.Extra.toList
-
-                                    value =
-                                        Debug.toString kg ++ translate language Translate.KilogramShorthand
-                                in
-                                span indication [ text value ]
 
                             weights =
                                 groupOfSix
                                     |> List.map
                                         (\( id, _ ) ->
                                             Dict.get id weightValuesBySession
-                                                |> Maybe.map viewWeightWithIndication
-                                                |> Maybe.withDefault (text "--")
-                                                |> List.singleton
-                                                |> td [ class "center aligned" ]
+                                                |> Maybe.map (viewWeightWithIndication language child zscores)
+                                                |> withDefaultTextInCell
                                         )
-                                    |> (::) weightCell
+                                    |> (::) (viewWeightCell language)
                                     |> tr []
                         in
                         [ ages
@@ -313,26 +269,6 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                 |> tbody []
                 |> List.singleton
                 |> table [ class "ui collapsing celled table" ]
-
-        ageCell =
-            th
-                [ class "uppercase" ]
-                [ text <| translate language Translate.AgeWord ]
-
-        heightCell =
-            td
-                [ class "first" ]
-                [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Height)) ]
-
-        weightCell =
-            td
-                [ class "first" ]
-                [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Weight)) ]
-
-        muacCell =
-            td
-                [ class "first" ]
-                [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Muac)) ]
 
         viewPhotoUrl (PhotoUrl url) =
             div
@@ -546,6 +482,101 @@ viewNutritionSigns language child dateOfLastAssessment signs =
                 ]
             ]
         ]
+
+
+viewAgeCell : Language -> Html any
+viewAgeCell language =
+    th
+        [ class "uppercase" ]
+        [ text <| translate language Translate.AgeWord ]
+
+
+viewHeightCell : Language -> Html any
+viewHeightCell language =
+    td
+        [ class "first" ]
+        [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Height)) ]
+
+
+viewWeightCell : Language -> Html any
+viewWeightCell language =
+    td
+        [ class "first" ]
+        [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Weight)) ]
+
+
+viewMuacCell : Language -> Html any
+viewMuacCell language =
+    td
+        [ class "first" ]
+        [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Muac)) ]
+
+
+withDefaultTextInCell : Maybe (Html any) -> Html any
+withDefaultTextInCell maybeHtml =
+    maybeHtml
+        |> Maybe.withDefault (text "--")
+        |> List.singleton
+        |> td [ class "center aligned" ]
+
+
+viewHeightWithIndication language child zscores height =
+    let
+        cm =
+            case height.value of
+                HeightInCm cms ->
+                    cms
+
+        maybeAgeInDays =
+            Maybe.map (\birthDate -> diffDays birthDate height.dateMeasured) child.birthDate
+
+        indication =
+            maybeAgeInDays
+                |> Maybe.andThen
+                    (\ageInDays ->
+                        zScoreLengthHeightForAge zscores ageInDays child.gender (Centimetres cm)
+                            |> Maybe.map (class << classForIndication << zScoreToIndication)
+                    )
+                |> Maybe.Extra.toList
+
+        value =
+            Debug.toString cm ++ translate language Translate.CentimeterShorthand
+    in
+    span indication [ text value ]
+
+
+viewMuactWithIndication language muac =
+    muac.value
+        |> (\((MuacInCm cm) as muac_) ->
+                span
+                    [ class <| classForIndication <| muacIndicationToIndication <| muacIndication muac_ ]
+                    [ text <| Debug.toString cm ++ translate language Translate.CentimeterShorthand ]
+           )
+
+
+viewWeightWithIndication language child zscores weight =
+    let
+        kg =
+            case weight.value of
+                WeightInKg kilos ->
+                    kilos
+
+        maybeAgeInDays =
+            Maybe.map (\birthDate -> diffDays birthDate weight.dateMeasured) child.birthDate
+
+        indication =
+            maybeAgeInDays
+                |> Maybe.andThen
+                    (\ageInDays ->
+                        zScoreWeightForAge zscores ageInDays child.gender (Kilograms kg)
+                            |> Maybe.map (class << classForIndication << zScoreToIndication)
+                    )
+                |> Maybe.Extra.toList
+
+        value =
+            Debug.toString kg ++ translate language Translate.KilogramShorthand
+    in
+    span indication [ text value ]
 
 
 type Indication

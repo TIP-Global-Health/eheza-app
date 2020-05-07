@@ -373,7 +373,7 @@ viewUserPage page model configured =
                             |> flexPageWrapper model
 
                     NutritionProgressReportPage encounterId ->
-                        Pages.NutritionProgressReport.View.view model.language currentDate encounterId model.indexedDb
+                        Pages.NutritionProgressReport.View.view model.language currentDate model.zscores encounterId model.indexedDb
                             |> flexPageWrapper model
 
             else

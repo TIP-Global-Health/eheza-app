@@ -1,40 +1,10 @@
 module Pages.NutritionProgressReport.View exposing (view)
 
--- import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
--- import Backend.Measurement.Model exposing (PrenatalMeasurements)
--- import Backend.Person.Model exposing (Person)
--- import Backend.Person.Utils exposing (ageInYears)
--- import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
--- import Date exposing (Interval(..))
--- import Gizra.Html exposing (emptyNode, showMaybe)
--- import List.Extra exposing (greedyGroupsOf)
--- import Pages.ClinicalProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
--- import Pages.DemographicsReport.View exposing (viewHeader, viewItemHeading)
--- import Pages.PrenatalActivity.Utils exposing (calculateBmi)
--- import Pages.PrenatalEncounter.Model exposing (AssembledData)
--- import Pages.PrenatalEncounter.Utils exposing (..)
--- import Pages.Utils exposing (viewPhotoThumbFromPhotoUrl)
--- import PrenatalActivity.Model
---     exposing
---         ( PregnancyTrimester(..)
---         , allMedicalDiagnosis
---         , allObstetricalDiagnosis
---         , allRiskFactors
---         , allTrimesters
---         )
--- import PrenatalActivity.Utils
---     exposing
---         ( generateMedicalDiagnosisAlertData
---         , generateObstetricalDiagnosisAlertData
---         , generateRiskFactorAlertData
---         , getEncounterTrimesterData
---         )
--- import RemoteData exposing (RemoteData(..), WebData)
--- import Round
-
 import App.Model exposing (Msg(..))
 import AssocList as Dict
 import Backend.Entities exposing (..)
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), Height, HeightInCm(..), MuacInCm(..), MuacIndication(..), PhotoUrl(..), Weight, WeightInKg(..))
+import Backend.Measurement.Utils exposing (muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import EverySet exposing (EverySet)
@@ -42,31 +12,38 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust)
 import Pages.NutritionEncounter.Model exposing (AssembledData)
 import Pages.NutritionEncounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.ProgressReport.View exposing (viewChildInfo, viewNutritionSigns)
+import Pages.ProgressReport.View exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (Days(..), Months(..), diffDays, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate)
 import Utils.WebData exposing (viewWebData)
+import ZScore.Model exposing (Centimetres(..), Kilograms(..), Length(..), ZScore)
+import ZScore.Utils exposing (zScoreLengthHeightForAge, zScoreWeightForAge)
+import ZScore.View
 
 
-view : Language -> NominalDate -> NutritionEncounterId -> ModelIndexedDb -> Html Msg
-view language currentDate id db =
+view : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> ModelIndexedDb -> Html Msg
+view language currentDate zscores id db =
     let
         data =
             generateAssembledData id db
     in
     div [ class "page-report nutrition" ] <|
-        [ viewWebData language (viewContent language currentDate db) identity data ]
+        [ viewWebData language (viewContent language currentDate zscores db) identity data ]
 
 
-viewContent : Language -> NominalDate -> ModelIndexedDb -> AssembledData -> Html Msg
-viewContent language currentDate db data =
+viewContent : Language -> NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> AssembledData -> Html Msg
+viewContent language currentDate zscores db data =
     let
+        child =
+            data.person
+
         backIcon =
             a
                 [ class "icon-back"
@@ -140,7 +117,7 @@ viewContent language currentDate db data =
                 |> Maybe.withDefault Translate.ChildOf
 
         childInfo =
-            viewChildInfo language data.person maybeMother relationText dateOfLastAssessment
+            viewChildInfo language child maybeMother relationText dateOfLastAssessment
 
         -- We're using nutrition value from the current session here, at
         -- least for now. So, we're ignoring any later sessions, and we're just
@@ -154,7 +131,79 @@ viewContent language currentDate db data =
                 |> Maybe.withDefault EverySet.empty
 
         nutritionSigns =
-            viewNutritionSigns language data.person dateOfLastAssessment signs
+            viewNutritionSigns language child dateOfLastAssessment signs
+
+        heightWeightMuacTable =
+            (( currentDate, data.measurements )
+                :: data.previousMeasurementsWithDates
+            )
+                |> greedyGroupsOf 6
+                |> List.map
+                    (\groupOfSix ->
+                        let
+                            ages =
+                                groupOfSix
+                                    |> List.map
+                                        (\( date, _ ) ->
+                                            child.birthDate
+                                                |> Maybe.map (\birthDate -> renderAgeMonthsDaysHtml language birthDate date)
+                                                |> Maybe.withDefault []
+                                                |> th
+                                                    [ classList
+                                                        [ ( "center", True )
+                                                        , ( "bottom", True )
+                                                        , ( "aligned", True )
+                                                        , ( "last", date == dateOfLastAssessment )
+                                                        , ( "date-header", True )
+                                                        ]
+                                                    ]
+                                        )
+                                    |> (::) (viewAgeCell language)
+                                    |> tr []
+
+                            heights =
+                                groupOfSix
+                                    |> List.map
+                                        (\( _, measurements ) ->
+                                            measurements.height
+                                                |> Maybe.map (Tuple.second >> viewHeightWithIndication language child zscores)
+                                                |> withDefaultTextInCell
+                                        )
+                                    |> (::) (viewHeightCell language)
+                                    |> tr []
+
+                            muacs =
+                                groupOfSix
+                                    |> List.map
+                                        (\( _, measurements ) ->
+                                            measurements.muac
+                                                |> Maybe.map (Tuple.second >> viewMuactWithIndication language)
+                                                |> withDefaultTextInCell
+                                        )
+                                    |> (::) (viewMuacCell language)
+                                    |> tr []
+
+                            weights =
+                                groupOfSix
+                                    |> List.map
+                                        (\( _, measurements ) ->
+                                            measurements.weight
+                                                |> Maybe.map (Tuple.second >> viewWeightWithIndication language child zscores)
+                                                |> withDefaultTextInCell
+                                        )
+                                    |> (::) (viewWeightCell language)
+                                    |> tr []
+                        in
+                        [ ages
+                        , heights
+                        , weights
+                        , muacs
+                        ]
+                    )
+                |> List.concat
+                |> tbody []
+                |> List.singleton
+                |> table [ class "ui collapsing celled table" ]
     in
     div
         [ class "wrap-report" ]
@@ -163,4 +212,5 @@ viewContent language currentDate db data =
         , subtitle
         , childInfo
         , nutritionSigns
+        , heightWeightMuacTable
         ]
