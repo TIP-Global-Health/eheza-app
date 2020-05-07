@@ -58,7 +58,7 @@ view language currentDate id db =
         data =
             generateAssembledData id db
     in
-    div [ class "page-nutrition-progress-report" ] <|
+    div [ class "page-report nutrition" ] <|
         [ viewWebData language (viewContent language currentDate db) identity data ]
 
 

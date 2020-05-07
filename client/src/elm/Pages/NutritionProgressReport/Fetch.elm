@@ -22,7 +22,10 @@ fetch id db =
                         Dict.get encounter_.participant db.individualParticipants
                             |> Maybe.withDefault NotAsked
                     )
-                |> RemoteData.map (\participant -> fetchFamilyMembers participant.person db)
+                |> RemoteData.map
+                    (\participant ->
+                        Backend.Model.FetchRelationshipsForPerson participant.person :: fetchFamilyMembers participant.person db
+                    )
                 |> RemoteData.withDefault []
     in
     Pages.NutritionEncounter.Fetch.fetch id db ++ fetchFamilyMembersCmd
