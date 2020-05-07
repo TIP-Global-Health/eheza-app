@@ -15,6 +15,7 @@ import Pages.IndividualEncounterTypes.Fetch
 import Pages.NutritionActivity.Fetch
 import Pages.NutritionEncounter.Fetch
 import Pages.NutritionParticipant.Fetch
+import Pages.NutritionProgressReport.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.People.Fetch
 import Pages.Person.Fetch
@@ -159,6 +160,10 @@ fetch model =
 
         UserPage (NutritionActivityPage nutritionEncounterId _) ->
             Pages.NutritionActivity.Fetch.fetch nutritionEncounterId model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (NutritionProgressReportPage nutritionEncounterId) ->
+            Pages.NutritionProgressReport.Fetch.fetch nutritionEncounterId model.indexedDb
                 |> List.map MsgIndexedDb
 
 

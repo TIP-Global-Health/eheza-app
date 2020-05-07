@@ -147,6 +147,7 @@ type UserPage
     | NutritionParticipantPage PersonId
     | NutritionEncounterPage NutritionEncounterId -- nutrition activities index
     | NutritionActivityPage NutritionEncounterId NutritionActivity -- record nutrition activity
+    | NutritionProgressReportPage NutritionEncounterId
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it

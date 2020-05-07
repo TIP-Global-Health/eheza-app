@@ -4281,6 +4281,11 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     }
 
+                NutritionProgressReportPage _ ->
+                    { english = "Nutrition Progress Report"
+                    , kinyarwanda = Nothing
+                    }
+
 
 translateAdherence : Adherence -> TranslationSet String
 translateAdherence adherence =

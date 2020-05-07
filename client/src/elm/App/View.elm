@@ -26,6 +26,7 @@ import Pages.NutritionActivity.View
 import Pages.NutritionEncounter.Model
 import Pages.NutritionEncounter.View
 import Pages.NutritionParticipant.View
+import Pages.NutritionProgressReport.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.People.View
@@ -369,6 +370,10 @@ viewUserPage page model configured =
                         in
                         Pages.NutritionActivity.View.view model.language currentDate model.zscores id activity isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNutritionActivity id activity)
+                            |> flexPageWrapper model
+
+                    NutritionProgressReportPage encounterId ->
+                        Pages.NutritionProgressReport.View.view model.language currentDate encounterId model.indexedDb
                             |> flexPageWrapper model
 
             else
