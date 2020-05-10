@@ -444,6 +444,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                     , heightForAge5To19 = ZScore.View.viewHeightForAgeBoys5To19
                     , weightForAge = ZScore.View.viewWeightForAgeBoys
                     , weightForAge2To5 = ZScore.View.viewWeightForAgeBoys2To5
+                    , weightForAge5To10 = ZScore.View.viewWeightForAgeBoys5To10
                     , weightForHeight = ZScore.View.viewWeightForHeightBoys
                     , weightForHeight2To5 = ZScore.View.viewWeightForHeight2To5Boys
                     }
@@ -454,6 +455,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                     , heightForAge5To19 = ZScore.View.viewHeightForAgeGirls5To19
                     , weightForAge = ZScore.View.viewWeightForAgeGirls
                     , weightForAge2To5 = ZScore.View.viewWeightForAgeGirls2To5
+                    , weightForAge5To10 = ZScore.View.viewWeightForAgeGirls5To10
                     , weightForHeight = ZScore.View.viewWeightForHeightGirls
                     , weightForHeight2To5 = ZScore.View.viewWeightForHeight2To5Girls
                     }
@@ -518,6 +520,9 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
         weightForAgeData =
             List.filterMap (chartWeightForAge child) weightValues
 
+        weightForAgeDataMonths =
+            List.filterMap (chartWeightForAgeMonths child) weightValues
+
         weightForLengthData =
             List.filterMap (chartWeightForLength heightValues) weightValues
 
@@ -557,6 +562,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                     [ class "image-report" ]
                     [ ZScore.View.viewMarkers
                     , zScoreViewCharts.heightForAge5To19 language zscores heightForAgeDataMonths
+                    , zScoreViewCharts.weightForAge5To10 language zscores weightForAgeDataMonths
                     ]
     in
     div [ class "page-report" ]
@@ -654,6 +660,21 @@ chartWeightForAge child weight =
         |> Maybe.map
             (\birthDate ->
                 ( diffDays birthDate weight.dateMeasured
+                  -- I suppose one could avoid this little transformation
+                  -- by unifiying the two tags.
+                , case weight.value of
+                    WeightInKg cm ->
+                        Kilograms cm
+                )
+            )
+
+
+chartWeightForAgeMonths : Person -> Weight -> Maybe ( Months, Kilograms )
+chartWeightForAgeMonths child weight =
+    child.birthDate
+        |> Maybe.map
+            (\birthDate ->
+                ( Utils.NominalDate.diffMonths birthDate weight.dateMeasured
                   -- I suppose one could avoid this little transformation
                   -- by unifiying the two tags.
                 , case weight.value of

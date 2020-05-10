@@ -18,8 +18,10 @@ module ZScore.View exposing
     , viewMarkers
     , viewWeightForAgeBoys
     , viewWeightForAgeBoys2To5
+    , viewWeightForAgeBoys5To10
     , viewWeightForAgeGirls
     , viewWeightForAgeGirls2To5
+    , viewWeightForAgeGirls5To10
     , viewWeightForHeight2To5Boys
     , viewWeightForHeight2To5Girls
     , viewWeightForHeightBoys
@@ -304,6 +306,33 @@ weightForAge2to5Config =
     }
 
 
+weightForAge5to10Config : PlotConfig Months Kilograms
+weightForAge5to10Config =
+    { toFloatX = \(Utils.NominalDate.Months months) -> toFloat months
+    , toFloatY = \(Kilograms kg) -> kg
+    , input = { minY = 10, maxY = 60, minX = 61, maxX = 120 }
+    , output = { minX = 110.9, maxX = 715.4, minY = 119.9, maxY = 506.7 }
+    , drawSD1 = True
+    , paintLevels = True
+    , xAxis =
+        { width = 725
+        , minYear = 5
+        , maxYear = 10
+        , monthsList = [ 3, 6, 9 ]
+        , innerLinesNumber = 2
+        , minLength = 0
+        , maxLength = 0
+        , xAxisType = Age
+        }
+    , yAxis =
+        { yAxisIntervals = 5
+        , innerLinesNumber = 4
+        , spaceType = NoSpace
+        , decimalPointsForText = 0
+        }
+    }
+
+
 weightForHeightConfig : PlotConfig Length Kilograms
 weightForHeightConfig =
     { toFloatX = \(Length cm) -> cm
@@ -427,7 +456,7 @@ weightForAgeLabels gender startAge =
                     Translate.TwoToFiveYears
 
                 FiveYears ->
-                    Translate.FiveToNineteenYears
+                    Translate.FiveToTenYears
     in
     { title = labelsTitle
     , subtitle = labelsSubTitle
@@ -811,12 +840,33 @@ viewWeightForAgeBoys2To5 language model data =
         , labels language (weightForAgeLabels Male TwoYears)
         , yAxisLinesAndText weightForAge2to5Config
         , xAxisLinesAndText weightForAge2to5Config
-        , zScoreLabelsWeightForAge2to5Boys
+        , zScoreLabelsWeightForAge2To5Boys
         , model.weightForAge
             |> RemoteData.map (.male >> .byDay >> AllDict.toList)
             |> RemoteData.withDefault []
             |> plotReferenceData weightForAge2to5Config
         , plotChildData weightForAge2to5Config data
+        ]
+
+
+viewWeightForAgeBoys5To10 : Language -> Model -> List ( Months, Kilograms ) -> Html any
+viewWeightForAgeBoys5To10 language model data =
+    svg
+        [ class "z-score boys"
+        , x "0px"
+        , y "0px"
+        , viewBox "0 0 841.9 595.3"
+        ]
+        [ frame language "z-score-grey"
+        , labels language (weightForAgeLabels Male FiveYears)
+        , yAxisLinesAndText weightForAge5to10Config
+        , xAxisLinesAndText weightForAge5to10Config
+        , zScoreLabelsWeightForAge5To10Boys
+        , model.weightForAge
+            |> RemoteData.map (.male >> .byMonth >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData weightForAge5to10Config
+        , plotChildData weightForAge5to10Config data
         ]
 
 
@@ -859,6 +909,27 @@ viewWeightForAgeGirls2To5 language model data =
             |> RemoteData.withDefault []
             |> plotReferenceData weightForAge2to5Config
         , plotChildData weightForAge2to5Config data
+        ]
+
+
+viewWeightForAgeGirls5To10 : Language -> Model -> List ( Months, Kilograms ) -> Html any
+viewWeightForAgeGirls5To10 language model data =
+    svg
+        [ class "z-score girls"
+        , x "0px"
+        , y "0px"
+        , viewBox "0 0 841.9 595.3"
+        ]
+        [ frame language "z-score-grey"
+        , labels language (weightForAgeLabels Female FiveYears)
+        , yAxisLinesAndText weightForAge5to10Config
+        , xAxisLinesAndText weightForAge5to10Config
+        , zScoreLabelsWeightForAge5To10Girls
+        , model.weightForAge
+            |> RemoteData.map (.female >> .byMonth >> AllDict.toList)
+            |> RemoteData.withDefault []
+            |> plotReferenceData weightForAge5to10Config
+        , plotChildData weightForAge5to10Config data
         ]
 
 
@@ -1043,9 +1114,9 @@ zScoreLabelsHeightForAgeBoys5To19 =
         []
         [ text_ [ transform "matrix(1 0 0 1 722.0057 130.1564)", class "z-score-semibold st23" ] [ text "3" ]
         , text_ [ transform "matrix(1 0 0 1 722.0448 155.438)", class "two-line z-score-semibold st23" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 722.0448 180.738)", class "two-line z-score-semibold st23" ] [ text "1" ]
+        , text_ [ transform "matrix(1 0 0 1 722.0448 180.738)", class "one-line z-score-semibold st23" ] [ text "1" ]
         , text_ [ transform "matrix(1 0 0 1 722.4686 205.841)", class "zero-line z-score-semibold st23" ] [ text "0" ]
-        , text_ [ transform "matrix(1 0 0 1 720.9237 230.6482)", class "two-line z-score-semibold st23" ] [ text "-1" ]
+        , text_ [ transform "matrix(1 0 0 1 720.9237 230.6482)", class "one-line z-score-semibold st23" ] [ text "-1" ]
         , text_ [ transform "matrix(1 0 0 1 720.9237 256.2482)", class "two-line z-score-semibold st23" ] [ text "-2" ]
         , text_ [ transform "matrix(1 0 0 1 720.7001 282.6353)", class "z-score-semibold st23" ] [ text "-3" ]
         ]
@@ -1069,9 +1140,9 @@ zScoreLabelsHeightForAgeGirls5To19 =
         []
         [ text_ [ transform "matrix(1 0 0 1 722.0057 185.1564)", class "z-score-semibold st23" ] [ text "3" ]
         , text_ [ transform "matrix(1 0 0 1 722.0448 207.738)", class "two-line z-score-semibold st23" ] [ text "2" ]
-        , text_ [ transform "matrix(1 0 0 1 722.0448 229.738)", class "two-line z-score-semibold st23" ] [ text "1" ]
+        , text_ [ transform "matrix(1 0 0 1 722.0448 229.738)", class "one-line z-score-semibold st23" ] [ text "1" ]
         , text_ [ transform "matrix(1 0 0 1 722.4686 253.241)", class "zero-line z-score-semibold st23" ] [ text "0" ]
-        , text_ [ transform "matrix(1 0 0 1 720.9237 275.8482)", class "two-line z-score-semibold st23" ] [ text "-1" ]
+        , text_ [ transform "matrix(1 0 0 1 720.9237 275.8482)", class "one-line z-score-semibold st23" ] [ text "-1" ]
         , text_ [ transform "matrix(1 0 0 1 720.9237 298.8482)", class "two-line z-score-semibold st23" ] [ text "-2" ]
         , text_ [ transform "matrix(1 0 0 1 720.7001 322.0353)", class "z-score-semibold st23" ] [ text "-3" ]
         ]
@@ -1088,14 +1159,27 @@ zScoreLabelsWeightForAgeBoys =
         ]
 
 
-zScoreLabelsWeightForAge2to5Boys : Svg any
-zScoreLabelsWeightForAge2to5Boys =
+zScoreLabelsWeightForAge2To5Boys : Svg any
+zScoreLabelsWeightForAge2To5Boys =
     g []
         [ text_ [ transform "matrix(1 0 0 1 722.1398 160.3553)", class "z-score-semibold st23" ] [ text "3" ]
         , text_ [ transform "matrix(1 0 0 1 721.6105 221.8234)", class "two-line z-score-semibold st23" ] [ text "2" ]
         , text_ [ transform "matrix(1 0 0 1 722.4973 319.3636)", class "zero-line z-score-semibold st23" ] [ text "0" ]
         , text_ [ transform "matrix(1 0 0 1 719.923 391.5098)", class "two-line z-score-semibold st23" ] [ text "-2" ]
         , text_ [ transform "matrix(1 0 0 1 719.6994 419.3469)", class "z-score-semibold st23" ] [ text "-3" ]
+        ]
+
+
+zScoreLabelsWeightForAge5To10Boys : Svg any
+zScoreLabelsWeightForAge5To10Boys =
+    g []
+        [ text_ [ transform "matrix(1 0 0 1 723.707 150.6711)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 723.4619 238.8845)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 723.4619 299.8845)", class "one-line z-score-semibold st23" ] [ text "1" ]
+        , text_ [ transform "matrix(1 0 0 1 723.498 346.1838)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 720.9238 380.1916)", class "one-line z-score-semibold st23" ] [ text "-1" ]
+        , text_ [ transform "matrix(1 0 0 1 720.9238 407.1916)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 720.7002 428.9709)", class "z-score-semibold st23" ] [ text "-3" ]
         ]
 
 
@@ -1115,12 +1199,7 @@ zScoreLabelsWeightForAgeGirls : Svg any
 zScoreLabelsWeightForAgeGirls =
     g
         []
-        [ circle [ class "z-score-white", cx "726.7", cy "186.8", r "7.5" ] []
-        , circle [ class "z-score-white", cx "726.7", cy "137.8", r "7.5" ] []
-        , circle [ class "z-score-white", cx "726.7", cy "325", r "7.5" ] []
-        , circle [ class "z-score-white", cx "726.7", cy "347.8", r "7.5" ] []
-        , circle [ class "z-score-white", cx "726.7", cy "268", r "7.5" ] []
-        , text_ [ transform "matrix(1 0 0 1 720.9238 329.1916)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        [ text_ [ transform "matrix(1 0 0 1 720.9238 329.1916)", class "two-line z-score-semibold st23" ] [ text "-2" ]
         , text_ [ transform "matrix(1 0 0 1 720.7002 351.9709)", class "z-score-semibold st23" ] [ text "-3" ]
         , text_ [ transform "matrix(1 0 0 1 723.707 141.6711)", class "z-score-semibold st23" ] [ text "3" ]
         , text_ [ transform "matrix(1 0 0 1 723.4619 190.8845)", class "two-line z-score-semibold st23" ] [ text "2" ]
@@ -1132,16 +1211,25 @@ zScoreLabelsWeightForAge2To5Girls : Svg any
 zScoreLabelsWeightForAge2To5Girls =
     g
         []
-        [ circle [ class "z-score-white", cx "726.7", cy "186.8", r "7.5" ] []
-        , circle [ class "z-score-white", cx "726.7", cy "137.8", r "7.5" ] []
-        , circle [ class "z-score-white", cx "726.7", cy "325", r "7.5" ] []
-        , circle [ class "z-score-white", cx "726.7", cy "347.8", r "7.5" ] []
-        , circle [ class "z-score-white", cx "726.7", cy "268", r "7.5" ] []
-        , text_ [ transform "matrix(1 0 0 1 723.707 131.6711)", class "z-score-semibold st23" ] [ text "3" ]
+        [ text_ [ transform "matrix(1 0 0 1 723.707 131.6711)", class "z-score-semibold st23" ] [ text "3" ]
         , text_ [ transform "matrix(1 0 0 1 723.4619 208.8845)", class "two-line z-score-semibold st23" ] [ text "2" ]
         , text_ [ transform "matrix(1 0 0 1 723.498 322.1838)", class "zero-line z-score-semibold st23" ] [ text "0" ]
         , text_ [ transform "matrix(1 0 0 1 720.9238 397.1916)", class "two-line z-score-semibold st23" ] [ text "-2" ]
         , text_ [ transform "matrix(1 0 0 1 720.7002 425.9709)", class "z-score-semibold st23" ] [ text "-3" ]
+        ]
+
+
+zScoreLabelsWeightForAge5To10Girls : Svg any
+zScoreLabelsWeightForAge5To10Girls =
+    g
+        []
+        [ text_ [ transform "matrix(1 0 0 1 723.707 131.6711)", class "z-score-semibold st23" ] [ text "3" ]
+        , text_ [ transform "matrix(1 0 0 1 723.4619 224.8845)", class "two-line z-score-semibold st23" ] [ text "2" ]
+        , text_ [ transform "matrix(1 0 0 1 723.4619 290.8845)", class "one-line z-score-semibold st23" ] [ text "1" ]
+        , text_ [ transform "matrix(1 0 0 1 723.498 340.1838)", class "zero-line z-score-semibold st23" ] [ text "0" ]
+        , text_ [ transform "matrix(1 0 0 1 720.9238 378.1916)", class "one-line z-score-semibold st23" ] [ text "-1" ]
+        , text_ [ transform "matrix(1 0 0 1 720.9238 406.1916)", class "two-line z-score-semibold st23" ] [ text "-2" ]
+        , text_ [ transform "matrix(1 0 0 1 720.7002 429.9709)", class "z-score-semibold st23" ] [ text "-3" ]
         ]
 
 

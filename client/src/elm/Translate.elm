@@ -117,6 +117,7 @@ type ChartPhrase
     | BirthToTwoYears
     | TwoToFiveYears
     | FiveToNineteenYears
+    | FiveToTenYears
     | HeightCm
     | HeightForAgeBoys
     | HeightForAgeGirls
@@ -4239,6 +4240,11 @@ translateChartPhrase phrase =
 
         FiveToNineteenYears ->
             { english = "5 to 19 years (z-scores)"
+            , kinyarwanda = Nothing
+            }
+
+        FiveToTenYears ->
+            { english = "5 to 10 years (z-scores)"
             , kinyarwanda = Nothing
             }
 
