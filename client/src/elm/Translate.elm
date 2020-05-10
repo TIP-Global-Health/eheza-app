@@ -3611,6 +3611,7 @@ translationSet trans =
         SelectAntenatalVisit ->
             { english = "Select an Antenatal Visit"
             , kinyarwanda = Just "Hitamo inshuro aje kwipimishaho inda"
+            }
 
         SelectAllSigns ->
             { english = "Select all signs that are present"
