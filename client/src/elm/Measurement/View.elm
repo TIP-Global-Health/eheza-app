@@ -1,4 +1,4 @@
-module Measurement.View exposing (viewChild, viewMother, viewMuacIndication)
+module Measurement.View exposing (viewChild, viewMeasurementFloatDiff, viewMother, viewMuacIndication, zScoreForHeightOrLength)
 
 {-| This module provides a form for entering measurements.
 -}
@@ -385,10 +385,16 @@ viewFloatDiff config language previousValue currentValue =
     let
         previousFloatValue =
             config.storedValue previousValue
+    in
+    viewMeasurementFloatDiff language config.unit currentValue previousFloatValue
 
+
+viewMeasurementFloatDiff : Language -> TranslationId -> Float -> Float -> Html any
+viewMeasurementFloatDiff language unit currentValue previousValue =
+    let
         diff =
             Round.round 2 <|
-                abs (currentValue - previousFloatValue)
+                abs (currentValue - previousValue)
 
         viewMessage isGain =
             let
@@ -402,14 +408,14 @@ viewFloatDiff config language previousValue currentValue =
             p
                 [ class <| "label-with-icon label-form" ]
                 [ span [ class <| "icon-" ++ classSuffix ] []
-                , text <| diff ++ " " ++ translate language config.unit
+                , text <| diff ++ " " ++ translate language unit
                 ]
     in
-    if currentValue == previousFloatValue then
+    if currentValue == previousValue then
         -- No change in the values.
         emptyNode
 
-    else if currentValue > previousFloatValue then
+    else if currentValue > previousValue then
         viewMessage True
 
     else

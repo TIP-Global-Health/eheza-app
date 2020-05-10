@@ -7,6 +7,7 @@ import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividual
 import Backend.Measurement.Decoder exposing (..)
 import Backend.Model exposing (..)
 import Backend.Nurse.Decoder exposing (decodeNurse)
+import Backend.NutritionEncounter.Decoder exposing (decodeNutritionEncounter)
 import Backend.ParticipantConsent.Decoder exposing (decodeParticipantForm)
 import Backend.Person.Decoder exposing (decodePerson)
 import Backend.PmtctParticipant.Decoder exposing (decodePmtctParticipant)
@@ -79,6 +80,24 @@ decodeRevision =
 
                     "nutrition" ->
                         decodeWithUuid ChildNutritionRevision decodeNutrition
+
+                    "nutrition_encounter" ->
+                        decodeWithUuid NutritionEncounterRevision decodeNutritionEncounter
+
+                    "nutrition_height" ->
+                        decodeWithUuid NutritionHeightRevision decodeNutritionHeight
+
+                    "nutrition_muac" ->
+                        decodeWithUuid NutritionMuacRevision decodeNutritionMuac
+
+                    "nutrition_nutrition" ->
+                        decodeWithUuid NutritionNutritionRevision decodeNutritionNutrition
+
+                    "nutrition_photo" ->
+                        decodeWithUuid NutritionPhotoRevision decodeNutritionPhoto
+
+                    "nutrition_weight" ->
+                        decodeWithUuid NutritionWeightRevision decodeNutritionWeight
 
                     "obstetric_history" ->
                         decodeWithUuid ObstetricHistoryRevision decodeObstetricHistory

@@ -26,7 +26,7 @@ update currentDate id msg model =
                     ( model
                     , Cmd.none
                     , [ Backend.IndividualEncounterParticipant.Model.ClosePrenatalSession dateConcluded outcome isFacilityDelivery
-                            |> Backend.Model.MsgPrenatalSession id
+                            |> Backend.Model.MsgIndividualSession id
                             |> App.Model.MsgIndexedDb
                       , App.Model.SetActivePage PinCodePage
                       ]
