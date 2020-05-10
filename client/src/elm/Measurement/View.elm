@@ -39,17 +39,17 @@ import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeight
 {-| We need the current date in order to immediately construct a ZScore for the
 child when we enter something.
 -}
-viewChild : Language -> NominalDate -> Person -> ChildActivity -> MeasurementData ChildMeasurements -> ZScore.Model.Model -> EditableSession -> ModelChild -> Html MsgChild
-viewChild language currentDate child activity measurements zscores session model =
+viewChild : Language -> NominalDate -> Bool -> Person -> ChildActivity -> MeasurementData ChildMeasurements -> ZScore.Model.Model -> EditableSession -> ModelChild -> Html MsgChild
+viewChild language currentDate isChw child activity measurements zscores session model =
     case activity of
         ChildPicture ->
             viewPhoto language (mapMeasurementData .photo measurements) model.photo
 
         Height ->
-            viewHeight language currentDate child (mapMeasurementData .height measurements) zscores model
+            viewHeight language currentDate isChw child (mapMeasurementData .height measurements) zscores model
 
         Muac ->
-            viewMuac language currentDate child (mapMeasurementData .muac measurements) zscores model
+            viewMuac language currentDate isChw child (mapMeasurementData .muac measurements) zscores model
 
         NutritionSigns ->
             viewNutritionSigns language (mapMeasurementData .nutrition measurements) model.nutritionSigns
@@ -57,7 +57,7 @@ viewChild language currentDate child activity measurements zscores session model
         -- Counseling ->
         --    viewCounselingSession language (mapMeasurementData .counselingSession measurements) session model.counseling
         Weight ->
-            viewWeight language currentDate child (mapMeasurementData .weight measurements) zscores model
+            viewWeight language currentDate isChw child (mapMeasurementData .weight measurements) zscores model
 
 
 {-| Some configuration for the `viewFloatForm` function, which handles several
@@ -147,23 +147,23 @@ zScoreForHeightOrLength model (Days days) (Centimetres cm) gender weight =
         zScoreWeightForHeight model (ZScore.Model.Height cm) gender (Kilograms weight)
 
 
-viewHeight : Language -> NominalDate -> Person -> MeasurementData (Maybe ( HeightId, Height )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewHeight : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( HeightId, Height )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewHeight =
     viewFloatForm heightFormConfig
 
 
-viewWeight : Language -> NominalDate -> Person -> MeasurementData (Maybe ( WeightId, Weight )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewWeight : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( WeightId, Weight )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewWeight =
     viewFloatForm weightFormConfig
 
 
-viewMuac : Language -> NominalDate -> Person -> MeasurementData (Maybe ( MuacId, Muac )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewMuac : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( MuacId, Muac )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewMuac =
     viewFloatForm muacFormConfig
 
 
-viewFloatForm : FloatFormConfig id value -> Language -> NominalDate -> Person -> MeasurementData (Maybe ( id, value )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
-viewFloatForm config language currentDate child measurements zscores model =
+viewFloatForm : FloatFormConfig id value -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( id, value )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewFloatForm config language currentDate isChw child measurements zscores model =
     let
         -- What is the string input value from the form?
         inputValue =
@@ -252,43 +252,47 @@ viewFloatForm config language currentDate child measurements zscores model =
         -- In some cases (weight) we also calculate a ZScore based on the
         -- height (rather than age). In order to do that, we need both the height and the weight.
         renderedZScoreForHeight =
-            config.zScoreForHeightOrLength
-                |> Maybe.map
-                    (\func ->
-                        let
-                            -- We get the height from the model, so we'll use
-                            -- the height only if it has been entered in this
-                            -- session. (The previous height will have been at
-                            -- a previous date). So, I suppose we should ask
-                            -- the nurse to measure height before weight, so we
-                            -- can see the ZScore when entering the weight.
-                            zScoreText =
-                                model.height
-                                    |> String.toFloat
-                                    |> Maybe.andThen
-                                        (\height ->
-                                            Maybe.andThen
-                                                (\weight ->
-                                                    Maybe.andThen
-                                                        (\ageInDays ->
-                                                            func zscores ageInDays (Centimetres height) child.gender weight
-                                                        )
-                                                        maybeAgeInDays
-                                                )
-                                                floatValue
-                                        )
-                                    |> Maybe.map viewZScore
-                                    |> Maybe.withDefault (translate language Trans.NotAvailable)
-                        in
-                        div
-                            [ class "ui large header z-score height" ]
-                            [ text <| translate language Trans.ZScoreWeightForHeight
-                            , span
-                                [ class "sub header" ]
-                                [ text zScoreText
+            if isChw then
+                Nothing
+
+            else
+                config.zScoreForHeightOrLength
+                    |> Maybe.map
+                        (\func ->
+                            let
+                                -- We get the height from the model, so we'll use
+                                -- the height only if it has been entered in this
+                                -- session. (The previous height will have been at
+                                -- a previous date). So, I suppose we should ask
+                                -- the nurse to measure height before weight, so we
+                                -- can see the ZScore when entering the weight.
+                                zScoreText =
+                                    model.height
+                                        |> String.toFloat
+                                        |> Maybe.andThen
+                                            (\height ->
+                                                Maybe.andThen
+                                                    (\weight ->
+                                                        Maybe.andThen
+                                                            (\ageInDays ->
+                                                                func zscores ageInDays (Centimetres height) child.gender weight
+                                                            )
+                                                            maybeAgeInDays
+                                                    )
+                                                    floatValue
+                                            )
+                                        |> Maybe.map viewZScore
+                                        |> Maybe.withDefault (translate language Trans.NotAvailable)
+                            in
+                            div
+                                [ class "ui large header z-score height" ]
+                                [ text <| translate language Trans.ZScoreWeightForHeight
+                                , span
+                                    [ class "sub header" ]
+                                    [ text zScoreText
+                                    ]
                                 ]
-                            ]
-                    )
+                        )
     in
     div
         [ class <| "ui full segment " ++ config.blockName ]
