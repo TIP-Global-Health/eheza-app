@@ -653,8 +653,8 @@ chartWeightForAge child weight =
                   -- I suppose one could avoid this little transformation
                   -- by unifiying the two tags.
                 , case weight.value of
-                    WeightInKg cm ->
-                        Kilograms cm
+                    WeightInKg kg ->
+                        Kilograms kg
                 )
             )
 

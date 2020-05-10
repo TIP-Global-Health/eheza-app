@@ -374,7 +374,7 @@ viewUserPage page model configured =
 
                     NutritionProgressReportPage encounterId ->
                         Pages.NutritionProgressReport.View.view model.language currentDate model.zscores encounterId model.indexedDb
-                            |> flexPageWrapper model
+                            |> oldPageWrapper model
 
             else
                 Pages.PinCode.View.view model.language model.activePage (Success loggedInModel.nurse) ( model.healthCenterId, model.villageId ) configured.pinCodePage model.indexedDb
