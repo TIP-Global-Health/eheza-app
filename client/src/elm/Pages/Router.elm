@@ -171,6 +171,9 @@ pageToFragment current =
                 NutritionActivityPage id activity ->
                     Just <| "nutrition-activity/" ++ fromEntityUuid id ++ "/" ++ NutritionActivity.Utils.encodeActivityAsString activity
 
+                NutritionProgressReportPage encounterId ->
+                    Just <| "nutrition-progress-report/" ++ fromEntityUuid encounterId
+
 
 parser : Parser (Page -> c) c
 parser =
@@ -201,6 +204,7 @@ parser =
         , map (\id -> UserPage <| PregnancyOutcomePage id) (s "pregnancy-outcome" </> parseUuid)
         , map (\id -> UserPage <| NutritionEncounterPage id) (s "nutrition-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| NutritionActivityPage id activity) (s "nutrition-activity" </> parseUuid </> parseNutritionActivity)
+        , map (\id -> UserPage <| NutritionProgressReportPage id) (s "nutrition-progress-report" </> parseUuid)
 
         -- `top` represents the page without any segements ... i.e. the
         -- root page.
