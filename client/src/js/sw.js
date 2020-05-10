@@ -134,6 +134,20 @@ dbSync.version(7).stores({
     }).delete();
 });
 
+dbSync.version(8).upgrade(function (tx) {
+    return tx.nodes.where({
+        type: 'clinic'
+    }).delete().then(function () {
+        return tx.nodes.where({
+            type: 'nurse'
+        }).delete();
+    });
+});
+
+dbSync.version(9).stores({
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter',
+});
+
 function gatherWords (text) {
     // Split on spaces, and remove blanks from result.
     return (text || '').split(/\s+/).flatMap(function (word) {

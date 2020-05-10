@@ -5,7 +5,7 @@
  * Code for the RESTful integration.
  */
 
-define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 7);
+define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 8);
 
 /**
  * Nodes synced to all devices.
@@ -25,8 +25,10 @@ const HEDLEY_RESTFUL_ALL_DEVICES = [
   'pmtct_participant' => 'pmtct-participants',
   'individual_participant' => 'individual-participants',
   'prenatal_encounter' => 'prenatal-encounters',
+  'nutrition_encounter' => 'nutrition-encounters',
   'relationship' => 'relationships',
   'session' => 'sessions',
+  'village' => 'villages',
 ];
 
 /**
@@ -48,6 +50,11 @@ const HEDLEY_RESTFUL_SHARDED = [
   'medication' => 'medications',
   'muac' => 'muacs',
   'nutrition' => 'nutritions',
+  'nutrition_height' => 'nutrition-heights',
+  'nutrition_muac' => 'nutrition-muacs',
+  'nutrition_nutrition' => 'nutrition-nutritions',
+  'nutrition_photo' => 'nutrition-photos',
+  'nutrition_weight' => 'nutrition-weights',
   'obstetrical_exam' => 'obstetrical-exams',
   'obstetric_history' => 'obstetric-histories',
   'obstetric_history_step2' => 'obstetric-histories-step2',

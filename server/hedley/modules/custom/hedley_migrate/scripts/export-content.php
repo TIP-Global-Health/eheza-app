@@ -20,9 +20,6 @@ $faker = hedley_faker_create();
 // For sample db: Rukura, Rwankuba, Test.
 $health_centers_ids = [7091, 7092, 28589];
 
-// For default installation: Nyange and Muhondo.
-$health_centers_ids = [6, 7];
-
 $catchment_areas = [
   [
     'id',
@@ -34,6 +31,17 @@ $health_centers = [
     'id',
     'title',
     'field_catchment_area',
+  ],
+];
+$villages = [
+  [
+    'id',
+    'field_province',
+    'field_district',
+    'field_sector',
+    'field_cell',
+    'field_village',
+    'field_health_center',
   ],
 ];
 $groups = [
@@ -169,6 +177,20 @@ foreach ($health_centers_ids as $health_center_id) {
       str_replace(',', ' ', $wrapper->label()),
     ];
     $catchment_area_ids[] = $catchment_area_id;
+  }
+
+  $villages_ids = hedley_migrate_resolve_for_export('village', 'field_health_center', [$health_center_id]);
+  foreach ($villages_ids as $village_id) {
+    $wrapper = entity_metadata_wrapper('node', $village_id);
+    $villages[] = [
+      $wrapper->getIdentifier(),
+      $wrapper->field_province->value(),
+      $wrapper->field_district->value(),
+      $wrapper->field_sector->value(),
+      $wrapper->field_cell->value(),
+      $wrapper->field_village->value(),
+      $wrapper->field_health_center->getIdentifier(),
+    ];
   }
 
   $groups_ids = hedley_migrate_resolve_for_export('clinic', 'field_health_center', [$health_center_id]);
@@ -347,6 +369,7 @@ foreach ($health_centers_ids as $health_center_id) {
 $mapping = [
   'catchment_area' => $catchment_areas,
   'health_center' => $health_centers,
+  'village' => $villages,
   'clinic' => $groups,
   'nurse' => array_values($nurses),
   'session' => $group_encounters,
@@ -368,7 +391,7 @@ foreach ($mapping as $name => $rows) {
     $content[] = implode(',', $row);
   }
 
-  $path = drupal_get_path('module', 'hedley_migrate') . '/csv/exported';
+  $path = drupal_get_path('module', 'hedley_migrate') . '/csv';
   $fp = fopen("$path/$name.csv", 'w');
   fwrite($fp, implode(PHP_EOL, $content));
 

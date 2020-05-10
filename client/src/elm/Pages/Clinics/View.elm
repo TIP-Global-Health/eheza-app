@@ -11,7 +11,7 @@ import Backend.Clinic.Model exposing (Clinic, ClinicType(..), allClinicTypes)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse)
-import Backend.Nurse.Utils exposing (assignedToHealthCenter)
+import Backend.Nurse.Utils exposing (isAuthorithedNurse)
 import Backend.Session.Model exposing (Session)
 import Backend.Session.Utils exposing (isClosed)
 import Backend.SyncData.Model exposing (SyncData)
@@ -189,10 +189,10 @@ viewLoadedClinicList language user selectedHealthCenterId model ( clinics, sync 
 
 
 viewClinicButton : Nurse -> ( ClinicId, Clinic ) -> Html Msg
-viewClinicButton user ( clinicId, clinic ) =
+viewClinicButton nurse ( clinicId, clinic ) =
     let
         classAttr =
-            if assignedToHealthCenter clinic.healthCenterId user then
+            if isAuthorithedNurse clinic nurse then
                 class "ui fluid primary button"
 
             else
@@ -335,7 +335,7 @@ viewFoundClinic language currentDate nurse postSession clinicId clinic sessions 
                 [ text <| translate language Translate.CreateGroupEncounter ]
 
         content =
-            if assignedToHealthCenter clinic.healthCenterId nurse then
+            if isAuthorithedNurse clinic nurse then
                 [ h1 [] [ text <| translate language Translate.RecentAndUpcomingGroupEncounters ]
                 , table
                     [ class "ui table session-list" ]

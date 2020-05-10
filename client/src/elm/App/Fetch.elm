@@ -12,6 +12,10 @@ import Pages.DemographicsReport.Fetch
 import Pages.Device.Fetch
 import Pages.IndividualEncounterParticipants.Fetch
 import Pages.IndividualEncounterTypes.Fetch
+import Pages.NutritionActivity.Fetch
+import Pages.NutritionEncounter.Fetch
+import Pages.NutritionParticipant.Fetch
+import Pages.NutritionProgressReport.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.People.Fetch
 import Pages.Person.Fetch
@@ -63,7 +67,7 @@ fetch model =
             []
 
         UserPage ClinicalPage ->
-            Pages.Clinical.Fetch.fetch
+            Pages.Clinical.Fetch.fetch model.villageId model.indexedDb
                 |> List.map MsgIndexedDb
 
         UserPage (ClinicsPage clinicId) ->
@@ -108,6 +112,15 @@ fetch model =
                     )
                 |> Maybe.withDefault []
 
+        UserPage (NutritionParticipantPage personId) ->
+            getLoggedInData model
+                |> Maybe.map
+                    (\( _, loggedIn ) ->
+                        Pages.NutritionParticipant.Fetch.fetch personId model.indexedDb
+                            |> List.map MsgIndexedDb
+                    )
+                |> Maybe.withDefault []
+
         UserPage (IndividualEncounterParticipantsPage encounterType) ->
             getLoggedInData model
                 |> Maybe.map
@@ -139,6 +152,18 @@ fetch model =
 
         UserPage (PregnancyOutcomePage id) ->
             Pages.PregnancyOutcome.Fetch.fetch id model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (NutritionEncounterPage id) ->
+            Pages.NutritionEncounter.Fetch.fetch id model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (NutritionActivityPage nutritionEncounterId _) ->
+            Pages.NutritionActivity.Fetch.fetch nutritionEncounterId model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (NutritionProgressReportPage nutritionEncounterId) ->
+            Pages.NutritionProgressReport.Fetch.fetch nutritionEncounterId model.indexedDb
                 |> List.map MsgIndexedDb
 
 
