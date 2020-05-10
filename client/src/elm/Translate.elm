@@ -1889,14 +1889,11 @@ translationSet trans =
             , kinyarwanda = Just "Hitamo izina ryuwo ushaka"
             }
 
-<<<<<<< HEAD
         FirstAntenatalVisit ->
             { english = "First Antenatal Visit"
             , kinyarwanda = Just "Kwipimisha inda bwa mbere"
             }
 
-=======
->>>>>>> origin/develop
         FirstName ->
             { english = "First Name"
             , kinyarwanda = Just "Izina ry'idini"
