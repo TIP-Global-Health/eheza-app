@@ -310,6 +310,7 @@ viewUserPage page model configured =
                             model.language
                             currentDate
                             model.zscores
+                            isChw
                             (Tuple.second loggedInModel.nurse)
                             sessionId
                             subPage

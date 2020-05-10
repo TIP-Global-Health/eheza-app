@@ -34,14 +34,14 @@ thumbnailDimensions =
     }
 
 
-viewChild : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model ChildActivity -> Html (Msg ChildActivity Measurement.Model.MsgChild)
-viewChild language currentDate zscores childId ( sessionId, session ) pages model =
+viewChild : Language -> NominalDate -> ZScore.Model.Model -> Bool -> PersonId -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model ChildActivity -> Html (Msg ChildActivity Measurement.Model.MsgChild)
+viewChild language currentDate zscores isChw childId ( sessionId, session ) pages model =
     -- It's nice to just pass in the childId. If the session is consistent, we
     -- should always be able to get the child.  But it would be hard to
     -- convince the compiler of that, so we put in a pro-forma error message.
     case getChild childId session.offlineSession of
         Just child ->
-            viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, session ) pages model
+            viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId, session ) pages model
 
         Nothing ->
             -- TODO: Make this error a little nicer, and translatable ... it
@@ -56,8 +56,8 @@ viewChild language currentDate zscores childId ( sessionId, session ) pages mode
 
 {-| This one needs the `currentDate` in order to calculate ages from dates of birth.
 -}
-viewFoundChild : Language -> NominalDate -> ZScore.Model.Model -> ( PersonId, Person ) -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model ChildActivity -> Html (Msg ChildActivity Measurement.Model.MsgChild)
-viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, session ) pages model =
+viewFoundChild : Language -> NominalDate -> ZScore.Model.Model -> Bool -> ( PersonId, Person ) -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model ChildActivity -> Html (Msg ChildActivity Measurement.Model.MsgChild)
+viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId, session ) pages model =
     let
         maybeMother =
             getMyMother childId session.offlineSession
@@ -97,7 +97,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
             childParticipant
 
         activities =
-            summarizeChildParticipant currentDate childId session.offlineSession
+            summarizeChildParticipant currentDate childId session.offlineSession isChw
 
         selectedActivity =
             case model.selectedTab of
@@ -160,7 +160,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                             |> LocalData.unwrap
                                 []
                                 (\measurements ->
-                                    [ Measurement.View.viewChild language currentDate child activity measurements zscores session form
+                                    [ Measurement.View.viewChild language currentDate isChw child activity measurements zscores session form
                                         |> Html.map MsgMeasurement
                                         |> keyed "content"
                                     ]
@@ -197,14 +197,14 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
             ]
 
 
-viewMother : Language -> NominalDate -> PersonId -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model MotherActivity -> Html (Msg MotherActivity Measurement.Model.MsgMother)
-viewMother language currentDate motherId ( sessionId, session ) pages model =
+viewMother : Language -> NominalDate -> Bool -> PersonId -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model MotherActivity -> Html (Msg MotherActivity Measurement.Model.MsgMother)
+viewMother language currentDate isChw motherId ( sessionId, session ) pages model =
     -- It's nice to just pass in the motherId. If the session is consistent, we
     -- should always be able to get the mother.  But it would be hard to
     -- convince the compiler of that, so we put in a pro-forma error message.
     case getMother motherId session.offlineSession of
         Just mother ->
-            viewFoundMother language currentDate ( motherId, mother ) ( sessionId, session ) pages model
+            viewFoundMother language currentDate isChw ( motherId, mother ) ( sessionId, session ) pages model
 
         Nothing ->
             -- TODO: Make this error a little nicer, and translatable ... it
@@ -217,8 +217,8 @@ viewMother language currentDate motherId ( sessionId, session ) pages model =
                 ]
 
 
-viewFoundMother : Language -> NominalDate -> ( PersonId, Person ) -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model MotherActivity -> Html (Msg MotherActivity Measurement.Model.MsgMother)
-viewFoundMother language currentDate ( motherId, mother ) ( sessionId, session ) pages model =
+viewFoundMother : Language -> NominalDate -> Bool -> ( PersonId, Person ) -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model MotherActivity -> Html (Msg MotherActivity Measurement.Model.MsgMother)
+viewFoundMother language currentDate isChw ( motherId, mother ) ( sessionId, session ) pages model =
     let
         break =
             br [] []
@@ -232,7 +232,7 @@ viewFoundMother language currentDate ( motherId, mother ) ( sessionId, session )
                 |> List.intersperse break
 
         activities =
-            summarizeMotherParticipant currentDate motherId session.offlineSession
+            summarizeMotherParticipant currentDate motherId session.offlineSession isChw
 
         selectedActivity =
             case model.selectedTab of
