@@ -195,13 +195,14 @@ foreach ($health_centers_ids as $health_center_id) {
   }
 
   $groups_ids = hedley_migrate_resolve_for_export('clinic', 'field_health_center', [$health_center_id]);
-  foreach ($groups_ids as $group_id) {
+  foreach ($groups_ids as $index => $group_id) {
     $wrapper = entity_metadata_wrapper('node', $group_id);
     $group_type = $wrapper->field_group_type->value();
 
     if ($group_type == 'chw') {
       // Chw groups automatically created during villages migration.
       // Therefore, we skip them here.
+      unset($groups_ids[$index]);
       continue;
     }
 
@@ -212,6 +213,7 @@ foreach ($health_centers_ids as $health_center_id) {
       $wrapper->field_health_center->getIdentifier(),
     ];
   }
+  $groups_ids = array_values($groups_ids);
 
   $nurses_ids = hedley_migrate_resolve_for_export('nurse', 'field_health_centers', [$health_center_id]);
   foreach ($nurses_ids as $nurse_id) {
