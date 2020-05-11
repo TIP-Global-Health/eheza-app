@@ -314,6 +314,7 @@ type TranslationId
     | FatherName
     | FatherNationalId
     | FilterByName
+    | FirstAntenatalVisit
     | FirstName
     | FiveVisits
     | ForIllustrativePurposesOnly
@@ -537,6 +538,7 @@ type TranslationId
     | SearchHelperFamilyMember
     | SecondName
     | Sector
+    | SelectAntenatalVisit
     | SelectAllSigns
     | SelectDangerSigns
     | SelectEncounterType
@@ -569,6 +571,7 @@ type TranslationId
     | SevereHemorrhagingPreviousDelivery
     | SocialHistoryHivTestingResult SocialHistoryHivTestingResult
     | StillbornPreviousDelivery
+    | SubsequentAntenatalVisit
     | SuccessiveAbortions
     | SuccessivePrematureDeliveries
     | GroupEncounterClosed
