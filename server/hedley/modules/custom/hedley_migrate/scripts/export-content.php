@@ -58,6 +58,7 @@ $nurses = [
     'title',
     'field_role',
     'field_health_centers',
+    'field_villages',
     'field_pin_code',
   ],
 ];
@@ -215,11 +216,22 @@ foreach ($health_centers_ids as $health_center_id) {
       }
     }
 
+    $villages_ids = $wrapper->field_villages->value(['identifier' => TRUE]);
+    foreach ($villages_ids as $key => $village_id) {
+      $village_wrapper = entity_metadata_wrapper('node', $village_id);
+      $hc_id = $village_wrapper->field_health_center->getIdentifier();
+
+      if (!in_array($hc_id, $health_centers_ids)) {
+        unset($villages_ids[$key]);
+      }
+    }
+
     $nurses[$nurse_id] = [
       $nurse_id,
       str_replace(',', ' ', $wrapper->label()),
       implode('|', $wrapper->field_role->value()),
       implode('|', array_values($hc_ids)),
+      implode('|', array_values($villages_ids)),
       $wrapper->field_pin_code->value(),
     ];
   }
