@@ -30,7 +30,7 @@ import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getMyM
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffMonths)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -382,7 +382,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                     , zScoreViewCharts.weightForHeight language zscores weightForLengthData
                     ]
 
-            else if childAgeInMonths > 24 && childAgeInMonths <= 60 then
+            else if childAgeInMonths <= 60 then
                 div
                     [ class "image-report" ]
                     [ ZScore.View.viewMarkers

@@ -1379,11 +1379,7 @@ yAxisLinesAndText config =
                 -- We only display the successive numbers of the intervals defined in the config.
                 |> List.filter
                     (\yInput ->
-                        if (yInput == config.input.minY) || (yInput == config.input.maxY) || (remainderBy config.yAxis.yAxisIntervals (round yInput) == 0) then
-                            True
-
-                        else
-                            False
+                        (yInput == config.input.minY) || (yInput == config.input.maxY) || (remainderBy config.yAxis.yAxisIntervals (round yInput) == 0)
                     )
 
         height =
