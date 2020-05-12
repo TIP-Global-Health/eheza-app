@@ -22,6 +22,7 @@ type Msg
 type Tab
     = Completed
     | Pending
+    | Reports
 
 
 emptyModel : Model

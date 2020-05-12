@@ -46,8 +46,8 @@ import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoin
 import Task
 
 
-updateIndexedDb : NominalDate -> Maybe NurseId -> Maybe HealthCenterId -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
-updateIndexedDb currentDate nurseId healthCenterId msg model =
+updateIndexedDb : NominalDate -> Maybe NurseId -> Maybe HealthCenterId -> Bool -> MsgIndexedDb -> ModelIndexedDb -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
+updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
     let
         sw =
             applyBackendUrl "/sw"
@@ -131,7 +131,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate nurseId healthCenterId) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate nurseId healthCenterId isChw) extraMsgs
 
         FetchEditableSessionCheckedIn id ->
             Dict.get id model.editableSessions
@@ -182,7 +182,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                     (\editable ->
                         let
                             summaryByActivity =
-                                summarizeByActivity currentDate editable.offlineSession editable.checkedIn
+                                summarizeByActivity currentDate editable.offlineSession editable.checkedIn isChw
 
                             updatedEditable =
                                 { editable | summaryByActivity = summaryByActivity }
@@ -201,7 +201,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
                     (\editable ->
                         let
                             summaryByParticipant =
-                                summarizeByParticipant currentDate editable.offlineSession editable.checkedIn
+                                summarizeByParticipant currentDate editable.offlineSession editable.checkedIn isChw
 
                             updatedEditable =
                                 { editable | summaryByParticipant = summaryByParticipant }
@@ -1155,7 +1155,7 @@ updateIndexedDb currentDate nurseId healthCenterId msg model =
             , relationshipCmd
             , []
             )
-                |> sequenceExtra (updateIndexedDb currentDate nurseId healthCenterId) extraMsgs
+                |> sequenceExtra (updateIndexedDb currentDate nurseId healthCenterId isChw) extraMsgs
 
         HandlePostedRelationship personId data ->
             let
@@ -2061,19 +2061,19 @@ makeEditableSession sessionId db =
 for our UI, when we're focused on participants. This only considers children &
 mothers who are checked in to the session.
 -}
-summarizeByParticipant : NominalDate -> OfflineSession -> LocalData CheckedIn -> LocalData SummaryByParticipant
-summarizeByParticipant currentDate session checkedIn_ =
+summarizeByParticipant : NominalDate -> OfflineSession -> LocalData CheckedIn -> Bool -> LocalData SummaryByParticipant
+summarizeByParticipant currentDate session checkedIn_ isChw =
     LocalData.map
         (\checkedIn ->
             let
                 children =
                     Dict.map
-                        (\childId _ -> summarizeChildParticipant currentDate childId session)
+                        (\childId _ -> summarizeChildParticipant currentDate childId session isChw)
                         checkedIn.children
 
                 mothers =
                     Dict.map
-                        (\motherId _ -> summarizeMotherParticipant currentDate motherId session)
+                        (\motherId _ -> summarizeMotherParticipant currentDate motherId session isChw)
                         checkedIn.mothers
             in
             { children = children
@@ -2087,8 +2087,8 @@ summarizeByParticipant currentDate session checkedIn_ =
 for our UI, when we're focused on activities. This only considers children &
 mothers who are checked in to the session.
 -}
-summarizeByActivity : NominalDate -> OfflineSession -> LocalData CheckedIn -> LocalData SummaryByActivity
-summarizeByActivity currentDate session checkedIn_ =
+summarizeByActivity : NominalDate -> OfflineSession -> LocalData CheckedIn -> Bool -> LocalData SummaryByActivity
+summarizeByActivity currentDate session checkedIn_ isChw =
     LocalData.map
         (\checkedIn ->
             let
@@ -2097,7 +2097,7 @@ summarizeByActivity currentDate session checkedIn_ =
                         |> List.map
                             (\activity ->
                                 ( activity
-                                , summarizeChildActivity currentDate activity session checkedIn
+                                , summarizeChildActivity currentDate activity session isChw checkedIn
                                 )
                             )
                         |> Dict.fromList
@@ -2107,7 +2107,7 @@ summarizeByActivity currentDate session checkedIn_ =
                         |> List.map
                             (\activity ->
                                 ( activity
-                                , summarizeMotherActivity currentDate activity session checkedIn
+                                , summarizeMotherActivity currentDate activity session isChw checkedIn
                                 )
                             )
                         |> Dict.fromList

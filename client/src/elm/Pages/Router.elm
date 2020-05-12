@@ -179,6 +179,9 @@ pageToFragment current =
                 NutritionActivityPage id activity ->
                     Just <| "nutrition-activity/" ++ fromEntityUuid id ++ "/" ++ NutritionActivity.Utils.encodeActivityAsString activity
 
+                NutritionProgressReportPage encounterId ->
+                    Just <| "nutrition-progress-report/" ++ fromEntityUuid encounterId
+
                 AcuteIllnessEncounterPage id ->
                     Just <| "acute-illness-encounter/" ++ fromEntityUuid id
 
@@ -216,11 +219,10 @@ parser =
         , map (\id -> UserPage <| PregnancyOutcomePage id) (s "pregnancy-outcome" </> parseUuid)
         , map (\id -> UserPage <| NutritionEncounterPage id) (s "nutrition-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| NutritionActivityPage id activity) (s "nutrition-activity" </> parseUuid </> parseNutritionActivity)
+        , map (\id -> UserPage <| NutritionProgressReportPage id) (s "nutrition-progress-report" </> parseUuid)
         , map (\id -> UserPage <| AcuteIllnessEncounterPage id) (s "acute-illness-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| AcuteIllnessActivityPage id activity) (s "acute-illness-activity" </> parseUuid </> parseAcuteIllnessActivity)
-
-        -- `top` represents the page without any segements ... i.e. the
-        -- root page.
+        -- `top` represents the page without any segements ... i.e. the root page.
         , map PinCodePage top
         ]
 

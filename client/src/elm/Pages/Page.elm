@@ -148,6 +148,7 @@ type UserPage
     | NutritionParticipantPage PersonId
     | NutritionEncounterPage NutritionEncounterId -- nutrition activities index
     | NutritionActivityPage NutritionEncounterId NutritionActivity -- record nutrition activity
+    | NutritionProgressReportPage NutritionEncounterId    
     | AcuteIllnessParticipantPage PersonId
     | AcuteIllnessEncounterPage AcuteIllnessEncounterId -- acute illness activities index
     | AcuteIllnessActivityPage AcuteIllnessEncounterId AcuteIllnessActivity -- record acute illness activity

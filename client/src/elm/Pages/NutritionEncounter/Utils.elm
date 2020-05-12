@@ -35,8 +35,9 @@ generatePreviousMeasurements currentEncounterId participantId db =
                                 _ ->
                                     Nothing
                     )
+                -- Most recent date to least recent date.
                 >> List.sortWith
-                    (\( date1, _ ) ( date2, _ ) -> compareDates date1 date2)
+                    (\( date1, _ ) ( date2, _ ) -> compareDates date2 date1)
             )
 
 

@@ -37,8 +37,8 @@ Another option would be to return the caller's `Html msg` type ... then we
 could do our own mapping. The caller would have to pass in a tag for us to
 map with, which wouldn't be a problem.
 -}
-view : Participant id value activity msg NominalDate -> Language -> NominalDate -> ZScore.Model.Model -> activity -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model id -> ( Html (Msg id msg), Maybe id )
-view config language currentDate zscores selectedActivity ( sessionId, session ) pages model =
+view : Participant id value activity msg NominalDate -> Language -> NominalDate -> ZScore.Model.Model -> Bool -> activity -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model id -> ( Html (Msg id msg), Maybe id )
+view config language currentDate zscores isChw selectedActivity ( sessionId, session ) pages model =
     let
         participants =
             session.checkedIn
@@ -46,7 +46,7 @@ view config language currentDate zscores selectedActivity ( sessionId, session )
                     { completed = Dict.empty
                     , pending = Dict.empty
                     }
-                    (config.summarizeParticipantsForActivity currentDate selectedActivity session.offlineSession
+                    (config.summarizeParticipantsForActivity currentDate selectedActivity session.offlineSession isChw
                         >> applyNameFilter
                     )
 
@@ -177,7 +177,7 @@ view config language currentDate zscores selectedActivity ( sessionId, session )
                     -- This is a convenience for the way the code was structured ... ideally,
                     -- we'd build a `viewMeasurements` on top of smaller capabilities of the
                     -- `Participant` config, but this is faster for now.
-                    config.viewMeasurements language currentDate zscores id selectedActivity pages session
+                    config.viewMeasurements language currentDate zscores isChw id selectedActivity pages session
 
                 Nothing ->
                     emptyNode

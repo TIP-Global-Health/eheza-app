@@ -21,8 +21,8 @@ import ZScore.Model
 Ideally, we'd have smaller capabilities in `Participant` that
 this could be built on more generically, but this will do for now.
 -}
-viewChildMeasurements : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> ChildActivity -> Pages.Session.Model.Model -> EditableSession -> Html (Msg PersonId Measurement.Model.MsgChild)
-viewChildMeasurements language currentDate zscores childId activity pages session =
+viewChildMeasurements : Language -> NominalDate -> ZScore.Model.Model -> Bool -> PersonId -> ChildActivity -> Pages.Session.Model.Model -> EditableSession -> Html (Msg PersonId Measurement.Model.MsgChild)
+viewChildMeasurements language currentDate zscores isChw childId activity pages session =
     let
         form =
             getChildForm childId pages session
@@ -34,7 +34,7 @@ viewChildMeasurements language currentDate zscores childId activity pages sessio
                 getChild childId session.offlineSession
                     |> Maybe.map
                         (\child ->
-                            Measurement.View.viewChild language currentDate child activity measurements zscores session form
+                            Measurement.View.viewChild language currentDate isChw child activity measurements zscores session form
                                 |> Html.map MsgMeasurement
                         )
                     |> Maybe.withDefault emptyNode

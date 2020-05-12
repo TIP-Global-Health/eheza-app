@@ -106,10 +106,14 @@ viewMainPageContent language currentDate id isChw data model =
         completedTabTitle =
             translate language <| Translate.ActivitiesCompleted <| List.length completedActivities
 
+        reportsTabTitle =
+            translate language Translate.ProgressReport
+
         tabs =
             div [ class "ui tabular menu" ]
                 [ tabItem pendingTabTitle (model.selectedTab == Pending) "pending" (SetSelectedTab Pending)
                 , tabItem completedTabTitle (model.selectedTab == Completed) "completed" (SetSelectedTab Completed)
+                , tabItem reportsTabTitle (model.selectedTab == Reports) "reports" (SetSelectedTab Reports)
                 ]
 
         viewCard activity =
@@ -137,17 +141,38 @@ viewMainPageContent language currentDate id isChw data model =
                 Completed ->
                     ( completedActivities, translate language Translate.NoActivitiesCompleted )
 
-        innerContent =
-            div [ class "full content" ]
-                [ div [ class "wrap-cards" ]
-                    [ div [ class "ui four cards" ] <|
-                        if List.isEmpty selectedActivities then
-                            [ span [] [ text emptySectionMessage ] ]
+                Reports ->
+                    ( [], "" )
 
-                        else
-                            List.map viewCard selectedActivities
+        viewReportLink labelTransId redirectPage =
+            div
+                [ class "report-wrapper"
+                , onClick <| SetActivePage redirectPage
+                ]
+                [ div [ class "icon-progress-report" ] []
+                , div [ class "report-text" ]
+                    [ div [ class "report-label" ] [ text <| translate language labelTransId ]
+                    , div [ class "report-link" ] [ text <| translate language Translate.View ]
                     ]
                 ]
+
+        innerContent =
+            if model.selectedTab == Reports then
+                div [ class "reports-wrapper" ]
+                    [ viewReportLink Translate.ProgressReport (UserPage <| NutritionProgressReportPage data.id)
+                    ]
+
+            else
+                div [ class "full content" ]
+                    [ div [ class "wrap-cards" ]
+                        [ div [ class "ui four cards" ] <|
+                            if List.isEmpty selectedActivities then
+                                [ span [] [ text emptySectionMessage ] ]
+
+                            else
+                                List.map viewCard selectedActivities
+                        ]
+                    ]
 
         allowEndEcounter =
             case pendingActivities of

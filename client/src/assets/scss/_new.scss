@@ -332,7 +332,7 @@ div.page-person {
   }
 }
 
-//Common for Encounter, Activity and Pregnancy outcome pages
+// Common for Prenatal Encounter and Prenatal Activity pages
 div.page-encounter,
 div.page-activity,
 div.page-pregnancy-outcome {
@@ -443,7 +443,8 @@ div.page-activity {
     }
 }
 
-// Prenatal Encounter page
+// Prenatal Encounter and Nutrition Encounter pages
+div.page-encounter.nutrition,
 div.page-encounter.prenatal {
 
     .ui.full.segment {
