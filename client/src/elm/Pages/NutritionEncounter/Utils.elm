@@ -13,7 +13,6 @@ import NutritionActivity.Model exposing (..)
 import Pages.NutritionEncounter.Model exposing (AssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
-import Utils.NominalDate exposing (compareDates)
 
 
 generatePreviousMeasurements : NutritionEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, NutritionMeasurements ))
@@ -38,7 +37,7 @@ generatePreviousMeasurements currentEncounterId participantId db =
                     )
                 -- Most recent date to least recent date.
                 >> List.sortWith
-                    (\( date1, _ ) ( date2, _ ) -> compareDates date2 date1)
+                    (\( date1, _ ) ( date2, _ ) -> Gizra.NominalDate.compare date2 date1)
             )
 
 
@@ -126,7 +125,7 @@ generatePreviousValuesForChild childId db =
                                         )
                                     -- Most recent date to least recent date.
                                     >> List.sortWith
-                                        (\( date1, _ ) ( date2, _ ) -> compareDates date2 date1)
+                                        (\( date1, _ ) ( date2, _ ) -> Gizra.NominalDate.compare date2 date1)
                                 )
                             |> RemoteData.withDefault []
 
