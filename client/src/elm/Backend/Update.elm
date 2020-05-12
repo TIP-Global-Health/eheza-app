@@ -8,6 +8,7 @@ import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
+import Backend.Fetch
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Update
 import Backend.Measurement.Model exposing (HistoricalMeasurements, Measurements)
@@ -839,12 +840,14 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     Dict.get sessionId model.sessionRequests
                         |> Maybe.withDefault Backend.Session.Model.emptyModel
 
-                ( subModel, subCmd ) =
-                    Backend.Session.Update.update nurseId sessionId session currentDate subMsg requests
+                ( subModel, subCmd, fetchMsgs ) =
+                    Backend.Session.Update.update nurseId sessionId session currentDate model subMsg requests
             in
             ( { model | sessionRequests = Dict.insert sessionId subModel model.sessionRequests }
             , Cmd.map (MsgSession sessionId) subCmd
-            , []
+            , fetchMsgs
+                |> List.filter (Backend.Fetch.shouldFetch model)
+                |> List.map App.Model.MsgIndexedDb
             )
 
         PostPmtctParticipant data ->
