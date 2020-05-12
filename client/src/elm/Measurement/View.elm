@@ -39,8 +39,19 @@ import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeight
 {-| We need the current date in order to immediately construct a ZScore for the
 child when we enter something.
 -}
-viewChild : Language -> NominalDate -> Bool -> Person -> ChildActivity -> MeasurementData ChildMeasurements -> ZScore.Model.Model -> EditableSession -> ModelChild -> Html MsgChild
-viewChild language currentDate isChw child activity measurements zscores session model =
+viewChild :
+    Language
+    -> NominalDate
+    -> Bool
+    -> Person
+    -> ChildActivity
+    -> MeasurementData ChildMeasurements
+    -> ZScore.Model.Model
+    -> EditableSession
+    -> ModelChild
+    -> PreviousMeasurementsValue
+    -> Html MsgChild
+viewChild language currentDate isChw child activity measurements zscores session model previousIndividualMeasurements =
     case activity of
         ChildPicture ->
             viewPhoto language (mapMeasurementData .photo measurements) model.photo

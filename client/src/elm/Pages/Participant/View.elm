@@ -3,6 +3,7 @@ module Pages.Participant.View exposing (viewChild, viewMother, viewUbudehe)
 import Activity.Model exposing (Activity(..), ChildActivity, CompletedAndPending, MotherActivity(..))
 import Activity.Utils exposing (getActivityIcon, summarizeChildParticipant, summarizeMotherParticipant)
 import Backend.Entities exposing (..)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Gender(..), Person, Ubudehe(..))
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getChildren, getMother, getMotherMeasurementData, getMyMother)
@@ -16,6 +17,7 @@ import Maybe.Extra
 import Measurement.Model
 import Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getMotherForm)
 import Measurement.View
+import Pages.NutritionEncounter.Utils exposing (generatePreviousValuesForChild)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Session.Model
@@ -34,14 +36,24 @@ thumbnailDimensions =
     }
 
 
-viewChild : Language -> NominalDate -> ZScore.Model.Model -> Bool -> PersonId -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model ChildActivity -> Html (Msg ChildActivity Measurement.Model.MsgChild)
-viewChild language currentDate zscores isChw childId ( sessionId, session ) pages model =
+viewChild :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Bool
+    -> PersonId
+    -> ( SessionId, EditableSession )
+    -> Pages.Session.Model.Model
+    -> ModelIndexedDb
+    -> Model ChildActivity
+    -> Html (Msg ChildActivity Measurement.Model.MsgChild)
+viewChild language currentDate zscores isChw childId ( sessionId, session ) pages db model =
     -- It's nice to just pass in the childId. If the session is consistent, we
     -- should always be able to get the child.  But it would be hard to
     -- convince the compiler of that, so we put in a pro-forma error message.
     case getChild childId session.offlineSession of
         Just child ->
-            viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId, session ) pages model
+            viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId, session ) pages db model
 
         Nothing ->
             -- TODO: Make this error a little nicer, and translatable ... it
@@ -56,8 +68,8 @@ viewChild language currentDate zscores isChw childId ( sessionId, session ) page
 
 {-| This one needs the `currentDate` in order to calculate ages from dates of birth.
 -}
-viewFoundChild : Language -> NominalDate -> ZScore.Model.Model -> Bool -> ( PersonId, Person ) -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model ChildActivity -> Html (Msg ChildActivity Measurement.Model.MsgChild)
-viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId, session ) pages model =
+viewFoundChild : Language -> NominalDate -> ZScore.Model.Model -> Bool -> ( PersonId, Person ) -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> ModelIndexedDb -> Model ChildActivity -> Html (Msg ChildActivity Measurement.Model.MsgChild)
+viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId, session ) pages db model =
     let
         maybeMother =
             getMyMother childId session.offlineSession
@@ -160,7 +172,8 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
                             |> LocalData.unwrap
                                 []
                                 (\measurements ->
-                                    [ Measurement.View.viewChild language currentDate isChw child activity measurements zscores session form
+                                    [ generatePreviousValuesForChild childId db
+                                        |> Measurement.View.viewChild language currentDate isChw child activity measurements zscores session form
                                         |> Html.map MsgMeasurement
                                         |> keyed "content"
                                     ]

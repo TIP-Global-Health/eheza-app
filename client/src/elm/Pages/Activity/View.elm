@@ -3,6 +3,7 @@ module Pages.Activity.View exposing (view)
 import Activity.Utils exposing (getActivityIcon)
 import AssocList as Dict
 import Backend.Entities exposing (..)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.Session.Model exposing (EditableSession)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed)
 import Gizra.NominalDate exposing (NominalDate)
@@ -37,8 +38,19 @@ Another option would be to return the caller's `Html msg` type ... then we
 could do our own mapping. The caller would have to pass in a tag for us to
 map with, which wouldn't be a problem.
 -}
-view : Participant id value activity msg NominalDate -> Language -> NominalDate -> ZScore.Model.Model -> Bool -> activity -> ( SessionId, EditableSession ) -> Pages.Session.Model.Model -> Model id -> ( Html (Msg id msg), Maybe id )
-view config language currentDate zscores isChw selectedActivity ( sessionId, session ) pages model =
+view :
+    Participant id value activity msg NominalDate
+    -> Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Bool
+    -> activity
+    -> ( SessionId, EditableSession )
+    -> Pages.Session.Model.Model
+    -> ModelIndexedDb
+    -> Model id
+    -> ( Html (Msg id msg), Maybe id )
+view config language currentDate zscores isChw selectedActivity ( sessionId, session ) pages db model =
     let
         participants =
             session.checkedIn
@@ -177,7 +189,7 @@ view config language currentDate zscores isChw selectedActivity ( sessionId, ses
                     -- This is a convenience for the way the code was structured ... ideally,
                     -- we'd build a `viewMeasurements` on top of smaller capabilities of the
                     -- `Participant` config, but this is faster for now.
-                    config.viewMeasurements language currentDate zscores isChw id selectedActivity pages session
+                    config.viewMeasurements language currentDate zscores isChw db id selectedActivity pages session
 
                 Nothing ->
                     emptyNode

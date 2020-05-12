@@ -4,6 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Pages.NutritionEncounter.Utils exposing (resolveNutritionParticipantForChild)
 import RemoteData exposing (RemoteData(..))
 
 
@@ -54,18 +55,7 @@ fetchForChild : PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetchForChild id db =
     let
         participantId =
-            Dict.get id db.individualParticipantsByPerson
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
-                |> Maybe.andThen
-                    (Dict.toList
-                        >> List.filter
-                            (\( _, participant ) ->
-                                participant.encounterType == Backend.IndividualEncounterParticipant.Model.NutritionEncounter
-                            )
-                        >> List.head
-                        >> Maybe.map Tuple.first
-                    )
+            resolveNutritionParticipantForChild id db
 
         encountersIds =
             participantId
