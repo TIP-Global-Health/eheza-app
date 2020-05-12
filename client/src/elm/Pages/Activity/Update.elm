@@ -1,6 +1,6 @@
 module Pages.Activity.Update exposing (updateChild, updateMother)
 
-import Activity.Model exposing (ChildActivity, CompletedAndPending)
+import Activity.Model exposing (ChildActivity(..), CompletedAndPending)
 import Activity.Utils
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -64,18 +64,22 @@ updateChild currentDate msg model session activity childForm =
                     calculateChildrenParticipants currentDate session activity updatedModel
 
                 outMsg =
-                    case model.selectedTab of
-                        Pending ->
-                            participants.pending
-                                |> Dict.toList
-                                |> List.head
-                                |> Maybe.map (Tuple.first >> Measurement.Model.FetchIndividualNutritionData)
+                    if List.member activity [ Height, Muac, Weight ] |> not then
+                        Nothing
 
-                        Completed ->
-                            participants.completed
-                                |> Dict.toList
-                                |> List.head
-                                |> Maybe.map (Tuple.first >> Measurement.Model.FetchIndividualNutritionData)
+                    else
+                        case model.selectedTab of
+                            Pending ->
+                                participants.pending
+                                    |> Dict.toList
+                                    |> List.head
+                                    |> Maybe.map (Tuple.first >> Measurement.Model.FetchIndividualNutritionData)
+
+                            Completed ->
+                                participants.completed
+                                    |> Dict.toList
+                                    |> List.head
+                                    |> Maybe.map (Tuple.first >> Measurement.Model.FetchIndividualNutritionData)
             in
             ChildUpdateReturns
                 updatedModel
@@ -95,16 +99,20 @@ updateChild currentDate msg model session activity childForm =
         SetSelectedTab val ->
             let
                 outMsg =
-                    case val of
-                        Pending ->
-                            Nothing
+                    if List.member activity [ Height, Muac, Weight ] |> not then
+                        Nothing
 
-                        Completed ->
-                            calculateChildrenParticipants currentDate session activity model
-                                |> .completed
-                                |> Dict.toList
-                                |> List.head
-                                |> Maybe.map (Tuple.first >> Measurement.Model.FetchIndividualNutritionData)
+                    else
+                        case val of
+                            Pending ->
+                                Nothing
+
+                            Completed ->
+                                calculateChildrenParticipants currentDate session activity model
+                                    |> .completed
+                                    |> Dict.toList
+                                    |> List.head
+                                    |> Maybe.map (Tuple.first >> Measurement.Model.FetchIndividualNutritionData)
             in
             ChildUpdateReturns
                 { model | selectedTab = val }
