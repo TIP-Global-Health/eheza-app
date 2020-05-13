@@ -1,4 +1,4 @@
-module Pages.NutritionEncounter.Utils exposing (generateAssembledData, generatePreviousMeasurements, generatePreviousValuesForChild, resolveNutritionParticipantForChild)
+module Pages.NutritionEncounter.Utils exposing (generateAssembledData, generatePreviousMeasurements, generatePreviousMeasurementsForChild, generatePreviousValuesForChild, resolveNutritionParticipantForChild)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
@@ -39,6 +39,33 @@ generatePreviousMeasurements currentEncounterId participantId db =
                 >> List.sortWith
                     (\( date1, _ ) ( date2, _ ) -> Gizra.NominalDate.compare date2 date1)
             )
+
+
+generatePreviousMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
+generatePreviousMeasurementsForChild childId db =
+    resolveNutritionParticipantForChild childId db
+        |> Maybe.map
+            (\participantId ->
+                Dict.get participantId db.nutritionEncountersByParticipant
+                    |> Maybe.withDefault NotAsked
+                    |> RemoteData.map
+                        (Dict.toList
+                            >> List.filterMap
+                                (\( encounterId, encounter ) ->
+                                    case Dict.get encounterId db.nutritionMeasurements of
+                                        Just (Success data) ->
+                                            Just ( encounter.startDate, ( encounterId, data ) )
+
+                                        _ ->
+                                            Nothing
+                                )
+                            -- Most recent date to least recent date.
+                            >> List.sortWith
+                                (\m1 m2 -> Gizra.NominalDate.compare (Tuple.first m2) (Tuple.first m1))
+                        )
+                    |> RemoteData.withDefault []
+            )
+        |> Maybe.withDefault []
 
 
 generateAssembledData : NutritionEncounterId -> ModelIndexedDb -> WebData AssembledData

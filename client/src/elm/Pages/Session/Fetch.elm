@@ -92,7 +92,7 @@ fetch currentDate sessionId sessionPage db =
                     Pages.Participants.Fetch.fetch sessionId
 
                 ProgressReportPage childId ->
-                    Pages.ProgressReport.Fetch.fetch childId
+                    Pages.ProgressReport.Fetch.fetch childId db
 
         -- We gather all the msgs needed to construct an editable session, and
         -- also the message that indicates that we want the EditableSession
