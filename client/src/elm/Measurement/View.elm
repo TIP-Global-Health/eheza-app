@@ -368,7 +368,7 @@ viewFloatForm config language currentDate isChw child measurements previousIndiv
                         [ class "five wide column" ]
                         [ showMaybe <|
                             Maybe.map2 (viewFloatDiff config language)
-                                (Maybe.map Tuple.second measurements.previous)
+                                previousMeasurement
                                 floatValue
                         , showMaybe <|
                             Maybe.map2 (\func value -> func language value)
@@ -431,13 +431,9 @@ viewPreviousMeasurement config language previousValue =
 
 {-| Show a diff of values, if they were gained or lost.
 -}
-viewFloatDiff : FloatFormConfig id value -> Language -> value -> Float -> Html any
+viewFloatDiff : FloatFormConfig id value -> Language -> Float -> Float -> Html any
 viewFloatDiff config language previousValue currentValue =
-    let
-        previousFloatValue =
-            config.storedValue previousValue
-    in
-    viewMeasurementFloatDiff language config.unit currentValue previousFloatValue
+    viewMeasurementFloatDiff language config.unit currentValue previousValue
 
 
 viewMeasurementFloatDiff : Language -> TranslationId -> Float -> Float -> Html any
