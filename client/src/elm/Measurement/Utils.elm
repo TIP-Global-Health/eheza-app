@@ -1,4 +1,4 @@
-module Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getMotherForm)
+module Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getMotherForm, resolvePreviousValueInCommonContext)
 
 import Activity.Utils exposing (expectCounselingActivity, expectParticipantConsent)
 import AssocList as Dict exposing (Dict)
@@ -8,6 +8,7 @@ import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasu
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData)
 import EverySet
+import Gizra.NominalDate exposing (NominalDate)
 import LocalData
 import Measurement.Model exposing (..)
 import Pages.Session.Model
@@ -163,3 +164,23 @@ getChildForm childId pages session =
                                         }
                            )
                     )
+
+
+resolvePreviousValueInCommonContext : Maybe ( NominalDate, Float ) -> Maybe ( NominalDate, Float ) -> Maybe Float
+resolvePreviousValueInCommonContext previousGroupMeasurement previousIndividualMeasurement =
+    case previousGroupMeasurement of
+        Just ( pgmDate, pgmValue ) ->
+            case previousIndividualMeasurement of
+                Just ( pimDate, pimValue ) ->
+                    case Gizra.NominalDate.compare pgmDate pimDate of
+                        GT ->
+                            Just pgmValue
+
+                        _ ->
+                            Just pimValue
+
+                Nothing ->
+                    Just pgmValue
+
+        Nothing ->
+            Maybe.map Tuple.second previousIndividualMeasurement

@@ -60,7 +60,7 @@ viewChild language currentDate isChw child activity measurements zscores session
             let
                 previousIndividualHeight =
                     previousIndividualMeasurements.height
-                        |> Maybe.map (\( date, HeightInCm cm ) -> ( date, cm ))
+                        |> Maybe.map (\( date, HeightInCm val ) -> ( date, val ))
             in
             viewHeight language currentDate isChw child (mapMeasurementData .height measurements) previousIndividualHeight zscores model
 
@@ -68,7 +68,7 @@ viewChild language currentDate isChw child activity measurements zscores session
             let
                 previousIndividualMuac =
                     previousIndividualMeasurements.muac
-                        |> Maybe.map (\( date, MuacInCm cm ) -> ( date, cm ))
+                        |> Maybe.map (\( date, MuacInCm val ) -> ( date, val ))
             in
             viewMuac language currentDate isChw child (mapMeasurementData .muac measurements) previousIndividualMuac zscores model
 
@@ -81,7 +81,7 @@ viewChild language currentDate isChw child activity measurements zscores session
             let
                 previousIndividualWeight =
                     previousIndividualMeasurements.weight
-                        |> Maybe.map (\( date, WeightInKg kg ) -> ( date, kg ))
+                        |> Maybe.map (\( date, WeightInKg val ) -> ( date, val ))
             in
             viewWeight language currentDate isChw child (mapMeasurementData .weight measurements) previousIndividualWeight zscores model
 
@@ -189,7 +189,7 @@ viewMuac =
 
 
 viewFloatForm : FloatFormConfig id value -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( id, value )) -> Maybe ( NominalDate, Float ) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
-viewFloatForm config language currentDate isChw child measurements previousIndividualMeasurement zscores model =
+viewFloatForm config language currentDate isChw child measurements previousIndividualValue zscores model =
     let
         -- What is the string input value from the form?
         inputValue =
@@ -222,7 +222,7 @@ viewFloatForm config language currentDate isChw child measurements previousIndiv
         savedMeasurement =
             measurements.current
 
-        previousGroupMeasurement =
+        previousGroupValue =
             measurements.previous
                 |> Maybe.map
                     (\( _, measurement ) ->
@@ -231,23 +231,8 @@ viewFloatForm config language currentDate isChw child measurements previousIndiv
                         )
                     )
 
-        previousMeasurement =
-            case previousGroupMeasurement of
-                Just ( pgmDate, pgmValue ) ->
-                    case previousIndividualMeasurement of
-                        Just ( pimDate, pimValue ) ->
-                            case Gizra.NominalDate.compare pgmDate pimDate of
-                                GT ->
-                                    Just pgmValue
-
-                                _ ->
-                                    Just pimValue
-
-                        Nothing ->
-                            Just pgmValue
-
-                Nothing ->
-                    Maybe.map Tuple.second previousIndividualMeasurement
+        previousValue =
+            resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
 
         -- For calculating ZScores, we need to know how old the child was at
         -- the time of the **measurement**. If we have an existing value that
@@ -368,7 +353,7 @@ viewFloatForm config language currentDate isChw child measurements previousIndiv
                         [ class "five wide column" ]
                         [ showMaybe <|
                             Maybe.map2 (viewFloatDiff config language)
-                                previousMeasurement
+                                previousValue
                                 floatValue
                         , showMaybe <|
                             Maybe.map2 (\func value -> func language value)
@@ -376,7 +361,7 @@ viewFloatForm config language currentDate isChw child measurements previousIndiv
                                 floatValue
                         ]
                     ]
-                , previousMeasurement
+                , previousValue
                     |> Maybe.map (viewPreviousMeasurement config language)
                     |> showMaybe
                 ]
