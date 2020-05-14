@@ -1,9 +1,26 @@
-module Pages.ProgressReport.View exposing (view)
+module Pages.ProgressReport.View exposing
+    ( chartHeightForAge
+    , chartWeightForAge
+    , chartWeightForHeight
+    , classForIndication
+    , view
+    , viewAgeCell
+    , viewChildInfo
+    , viewHeightCell
+    , viewHeightWithIndication
+    , viewMuacCell
+    , viewMuactWithIndication
+    , viewNutritionSigns
+    , viewPhotos
+    , viewWeightCell
+    , viewWeightWithIndication
+    , withDefaultTextInCell
+    )
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (ChildMeasurementList, Height, HeightInCm(..), MuacInCm(..), MuacIndication(..), PhotoUrl(..), Weight, WeightInKg(..))
+import Backend.Measurement.Model exposing (ChildMeasurementList, ChildNutritionSign(..), Height, HeightInCm(..), MuacInCm(..), MuacIndication(..), PhotoUrl(..), Weight, WeightInKg(..))
 import Backend.Measurement.Utils exposing (currentValue, currentValueWithId, mapMeasurementData, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Gender(..), Person)
@@ -11,9 +28,9 @@ import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (EditableSession, Session)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother, getMyMother)
 import Date
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -24,7 +41,7 @@ import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.Session.Model
 import RemoteData exposing (RemoteData(..))
-import Translate exposing (Language, translate)
+import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (Days(..), Months(..), diffDays, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate)
 import Utils.WebData exposing (viewWebData)
@@ -122,55 +139,10 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                 |> Maybe.withDefault Translate.ChildOf
 
         childInfo =
-            div
-                [ class "ui report unstackable items" ]
-                [ div
-                    [ class "item" ]
-                    [ div
-                        [ class "ui image" ]
-                        [ thumbnailImage "child" child.avatarUrl child.name 152 152
-                        ]
-                    , div
-                        [ class "content" ]
-                        [ h2
-                            [ class "ui header" ]
-                            [ text child.name ]
-                        , p []
-                            [ child.birthDate
-                                |> Maybe.map
-                                    (\birthDate ->
-                                        [ text <| renderAgeMonthsDays language birthDate dateOfLastAssessment
-                                        , text " "
-                                        , text <| translate language Translate.Old
-                                        , text " "
-                                        ]
-                                    )
-                                |> Maybe.withDefault []
-                                |> span []
-                            , strong [] [ text <| translate language (Translate.Gender child.gender) ]
-                            ]
-                        , p []
-                            [ text <| translate language Translate.Born
-                            , text " "
-                            , strong []
-                                [ child.birthDate
-                                    |> Maybe.map (renderDate language)
-                                    |> Maybe.withDefault (translate language Translate.NotAvailable)
-                                    |> text
-                                ]
-                            , br [] []
-                            , text <| translate language relationText
-                            , text " "
-                            , strong []
-                                [ maybeMother
-                                    |> Maybe.map .name
-                                    |> Maybe.withDefault (translate language Translate.Unknown)
-                                    |> text
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
+            viewChildInfo language child maybeMother relationText dateOfLastAssessment
+
+        current =
+            getChildMeasurementData childId session
 
         -- We're using the current value from the current session here, at
         -- least for now. So, we're ignoring any later sessions (normally,
@@ -179,49 +151,18 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
         -- session when it was entered).
         --
         -- See <https://github.com/Gizra/ihangane/issues/382#issuecomment-353273873>
+        signs =
+            current
+                |> LocalData.map
+                    (mapMeasurementData .nutrition
+                        >> currentValue
+                        >> Maybe.map .value
+                        >> Maybe.withDefault EverySet.empty
+                    )
+                |> LocalData.withDefault EverySet.empty
+
         nutritionSigns =
-            table
-                [ class "ui celled table" ]
-                [ thead []
-                    [ tr []
-                        [ th
-                            [ class "uppercase" ]
-                            [ text <| translate language Translate.AgeWord ]
-                        , th
-                            [ class "last" ]
-                            [ child.birthDate
-                                |> Maybe.map (\birthDate -> renderAgeMonthsDaysAbbrev language birthDate dateOfLastAssessment)
-                                |> Maybe.withDefault ""
-                                |> text
-                            ]
-                        ]
-                    ]
-                , tbody []
-                    [ tr []
-                        [ td
-                            [ class "first" ]
-                            [ ChildActivity NutritionSigns
-                                |> Translate.ActivityProgressReport
-                                |> translate language
-                                |> text
-                            ]
-                        , current
-                            |> LocalData.unwrap
-                                []
-                                (mapMeasurementData .nutrition
-                                    >> currentValue
-                                    >> Maybe.map .value
-                                    >> Maybe.withDefault EverySet.empty
-                                    >> EverySet.toList
-                                    >> List.map (translate language << Translate.ChildNutritionSignReport)
-                                    >> String.join ", "
-                                    >> text
-                                    >> List.singleton
-                                )
-                            |> td []
-                        ]
-                    ]
-                ]
+            viewNutritionSigns language child dateOfLastAssessment signs
 
         -- Do we have any kind of measurement for the child for the specified session?
         hasMeasurement ( id, _ ) =
@@ -283,7 +224,7 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                                         ]
                                                     ]
                                         )
-                                    |> (::) ageCell
+                                    |> (::) (viewAgeCell language)
                                     |> tr []
 
                             heights =
@@ -291,12 +232,10 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                     |> List.map
                                         (\( id, _ ) ->
                                             Dict.get id heightValuesBySession
-                                                |> Maybe.map viewHeightWithIndication
-                                                |> Maybe.withDefault (text "--")
-                                                |> List.singleton
-                                                |> td [ class "center aligned" ]
+                                                |> Maybe.map (viewHeightWithIndication language child zscores)
+                                                |> withDefaultTextInCell
                                         )
-                                    |> (::) heightCell
+                                    |> (::) (viewHeightCell language)
                                     |> tr []
 
                             muacs =
@@ -304,79 +243,21 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                                     |> List.map
                                         (\( id, _ ) ->
                                             Dict.get id muacValuesBySession
-                                                |> Maybe.map .value
-                                                |> Maybe.map
-                                                    (\((MuacInCm cm) as muac) ->
-                                                        span
-                                                            [ class <| classForIndication <| muacIndicationToIndication <| muacIndication muac ]
-                                                            [ text <| Debug.toString cm ++ translate language Translate.CentimeterShorthand ]
-                                                    )
-                                                |> Maybe.withDefault (text "--")
-                                                |> List.singleton
-                                                |> td [ class "center aligned" ]
+                                                |> Maybe.map (viewMuactWithIndication language)
+                                                |> withDefaultTextInCell
                                         )
-                                    |> (::) muacCell
+                                    |> (::) (viewMuacCell language)
                                     |> tr []
-
-                            viewHeightWithIndication height =
-                                let
-                                    cm =
-                                        case height.value of
-                                            HeightInCm cms ->
-                                                cms
-
-                                    maybeAgeInDays =
-                                        Maybe.map (\birthDate -> diffDays birthDate height.dateMeasured) child.birthDate
-
-                                    indication =
-                                        maybeAgeInDays
-                                            |> Maybe.andThen
-                                                (\ageInDays ->
-                                                    zScoreLengthHeightForAge zscores ageInDays child.gender (Centimetres cm)
-                                                        |> Maybe.map (class << classForIndication << zScoreToIndication)
-                                                )
-                                            |> Maybe.Extra.toList
-
-                                    value =
-                                        Debug.toString cm ++ translate language Translate.CentimeterShorthand
-                                in
-                                span indication [ text value ]
-
-                            viewWeightWithIndication weight =
-                                let
-                                    kg =
-                                        case weight.value of
-                                            WeightInKg kilos ->
-                                                kilos
-
-                                    maybeAgeInDays =
-                                        Maybe.map (\birthDate -> diffDays birthDate weight.dateMeasured) child.birthDate
-
-                                    indication =
-                                        maybeAgeInDays
-                                            |> Maybe.andThen
-                                                (\ageInDays ->
-                                                    zScoreWeightForAge zscores ageInDays child.gender (Kilograms kg)
-                                                        |> Maybe.map (class << classForIndication << zScoreToIndication)
-                                                )
-                                            |> Maybe.Extra.toList
-
-                                    value =
-                                        Debug.toString kg ++ translate language Translate.KilogramShorthand
-                                in
-                                span indication [ text value ]
 
                             weights =
                                 groupOfSix
                                     |> List.map
                                         (\( id, _ ) ->
                                             Dict.get id weightValuesBySession
-                                                |> Maybe.map viewWeightWithIndication
-                                                |> Maybe.withDefault (text "--")
-                                                |> List.singleton
-                                                |> td [ class "center aligned" ]
+                                                |> Maybe.map (viewWeightWithIndication language child zscores)
+                                                |> withDefaultTextInCell
                                         )
-                                    |> (::) weightCell
+                                    |> (::) (viewWeightCell language)
                                     |> tr []
                         in
                         [ ages
@@ -390,51 +271,8 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                 |> List.singleton
                 |> table [ class "ui collapsing celled table" ]
 
-        ageCell =
-            th
-                [ class "uppercase" ]
-                [ text <| translate language Translate.AgeWord ]
-
-        heightCell =
-            td
-                [ class "first" ]
-                [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Height)) ]
-
-        weightCell =
-            td
-                [ class "first" ]
-                [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Weight)) ]
-
-        muacCell =
-            td
-                [ class "first" ]
-                [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Muac)) ]
-
-        viewPhotoUrl (PhotoUrl url) =
-            div
-                [ classList
-                    [ ( "image", True )
-                    , ( "cache-upload", String.contains "cache-upload/images" url )
-                    ]
-                ]
-                [ img [ src url, class "rotate-90" ] [] ]
-
         photos =
-            photoValues
-                |> List.map
-                    (\photo ->
-                        div
-                            [ class "report card" ]
-                            [ div
-                                [ class "content" ]
-                                [ child.birthDate
-                                    |> Maybe.map (\birthDate -> text <| renderAgeMonthsDays language birthDate photo.dateMeasured)
-                                    |> Maybe.withDefault emptyNode
-                                ]
-                            , viewPhotoUrl photo.value
-                            ]
-                    )
-                |> div [ class "ui five report cards" ]
+            viewPhotos language child photoValues
 
         ( heightForAge, weightForAge, weightForHeight ) =
             case child.gender of
@@ -449,9 +287,6 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
                     , ZScore.View.viewWeightForAgeGirls
                     , ZScore.View.viewWeightForHeightGirls
                     )
-
-        current =
-            getChildMeasurementData childId session
 
         -- This includes any edits that have been saved locally, but not as-you-type
         -- in the UI before you hit "Save" or "Update".
@@ -534,6 +369,222 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) ( expe
         ]
 
 
+viewChildInfo : Language -> Person -> Maybe Person -> TranslationId -> NominalDate -> Html any
+viewChildInfo language child maybeMother relationText dateOfLastAssessment =
+    div
+        [ class "ui report unstackable items" ]
+        [ div
+            [ class "item" ]
+            [ div
+                [ class "ui image" ]
+                [ thumbnailImage "child" child.avatarUrl child.name 152 152
+                ]
+            , div
+                [ class "content" ]
+                [ h2
+                    [ class "ui header" ]
+                    [ text child.name ]
+                , p []
+                    [ child.birthDate
+                        |> Maybe.map
+                            (\birthDate ->
+                                [ text <| renderAgeMonthsDays language birthDate dateOfLastAssessment
+                                , text " "
+                                , text <| translate language Translate.Old
+                                , text " "
+                                ]
+                            )
+                        |> Maybe.withDefault []
+                        |> span []
+                    , strong [] [ text <| translate language (Translate.Gender child.gender) ]
+                    ]
+                , p []
+                    [ text <| translate language Translate.Born
+                    , text " "
+                    , strong []
+                        [ child.birthDate
+                            |> Maybe.map (renderDate language)
+                            |> Maybe.withDefault (translate language Translate.NotAvailable)
+                            |> text
+                        ]
+                    , br [] []
+                    , text <| translate language relationText
+                    , text " "
+                    , strong []
+                        [ maybeMother
+                            |> Maybe.map .name
+                            |> Maybe.withDefault (translate language Translate.Unknown)
+                            |> text
+                        ]
+                    ]
+                ]
+            ]
+        ]
+
+
+viewNutritionSigns : Language -> Person -> NominalDate -> EverySet ChildNutritionSign -> Html any
+viewNutritionSigns language child dateOfLastAssessment signs =
+    table
+        [ class "ui celled table" ]
+        [ thead []
+            [ tr []
+                [ th
+                    [ class "uppercase" ]
+                    [ text <| translate language Translate.AgeWord ]
+                , th
+                    [ class "last" ]
+                    [ child.birthDate
+                        |> Maybe.map (\birthDate -> renderAgeMonthsDaysAbbrev language birthDate dateOfLastAssessment)
+                        |> Maybe.withDefault ""
+                        |> text
+                    ]
+                ]
+            ]
+        , tbody []
+            [ tr []
+                [ td
+                    [ class "first" ]
+                    [ ChildActivity NutritionSigns
+                        |> Translate.ActivityProgressReport
+                        |> translate language
+                        |> text
+                    ]
+                , (signs
+                    |> EverySet.toList
+                    |> List.map (translate language << Translate.ChildNutritionSignReport)
+                    |> String.join ", "
+                    |> text
+                    |> List.singleton
+                  )
+                    |> td []
+                ]
+            ]
+        ]
+
+
+viewAgeCell : Language -> Html any
+viewAgeCell language =
+    th
+        [ class "uppercase" ]
+        [ text <| translate language Translate.AgeWord ]
+
+
+viewHeightCell : Language -> Html any
+viewHeightCell language =
+    td
+        [ class "first" ]
+        [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Height)) ]
+
+
+viewWeightCell : Language -> Html any
+viewWeightCell language =
+    td
+        [ class "first" ]
+        [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Weight)) ]
+
+
+viewMuacCell : Language -> Html any
+viewMuacCell language =
+    td
+        [ class "first" ]
+        [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Muac)) ]
+
+
+withDefaultTextInCell : Maybe (Html any) -> Html any
+withDefaultTextInCell maybeHtml =
+    maybeHtml
+        |> Maybe.withDefault (text "--")
+        |> List.singleton
+        |> td [ class "center aligned" ]
+
+
+viewHeightWithIndication language child zscores height =
+    let
+        cm =
+            case height.value of
+                HeightInCm cms ->
+                    cms
+
+        maybeAgeInDays =
+            Maybe.map (\birthDate -> diffDays birthDate height.dateMeasured) child.birthDate
+
+        indication =
+            maybeAgeInDays
+                |> Maybe.andThen
+                    (\ageInDays ->
+                        zScoreLengthHeightForAge zscores ageInDays child.gender (Centimetres cm)
+                            |> Maybe.map (class << classForIndication << zScoreToIndication)
+                    )
+                |> Maybe.Extra.toList
+
+        value =
+            Debug.toString cm ++ translate language Translate.CentimeterShorthand
+    in
+    span indication [ text value ]
+
+
+viewMuactWithIndication language muac =
+    muac.value
+        |> (\((MuacInCm cm) as muac_) ->
+                span
+                    [ class <| classForIndication <| muacIndicationToIndication <| muacIndication muac_ ]
+                    [ text <| Debug.toString cm ++ translate language Translate.CentimeterShorthand ]
+           )
+
+
+viewWeightWithIndication language child zscores weight =
+    let
+        kg =
+            case weight.value of
+                WeightInKg kilos ->
+                    kilos
+
+        maybeAgeInDays =
+            Maybe.map (\birthDate -> diffDays birthDate weight.dateMeasured) child.birthDate
+
+        indication =
+            maybeAgeInDays
+                |> Maybe.andThen
+                    (\ageInDays ->
+                        zScoreWeightForAge zscores ageInDays child.gender (Kilograms kg)
+                            |> Maybe.map (class << classForIndication << zScoreToIndication)
+                    )
+                |> Maybe.Extra.toList
+
+        value =
+            Debug.toString kg ++ translate language Translate.KilogramShorthand
+    in
+    span indication [ text value ]
+
+
+viewPhotos language child photos =
+    let
+        viewPhotoUrl (PhotoUrl url) =
+            div
+                [ classList
+                    [ ( "image", True )
+                    , ( "cache-upload", String.contains "cache-upload/images" url )
+                    ]
+                ]
+                [ img [ src url, class "rotate-90" ] [] ]
+    in
+    photos
+        |> List.map
+            (\photo ->
+                div
+                    [ class "report card" ]
+                    [ div
+                        [ class "content" ]
+                        [ child.birthDate
+                            |> Maybe.map (\birthDate -> text <| renderAgeMonthsDays language birthDate photo.dateMeasured)
+                            |> Maybe.withDefault emptyNode
+                        ]
+                    , viewPhotoUrl photo.value
+                    ]
+            )
+        |> div [ class "ui five report cards" ]
+
+
 type Indication
     = Negative
     | Warning
@@ -602,8 +653,8 @@ chartWeightForAge child weight =
                   -- I suppose one could avoid this little transformation
                   -- by unifiying the two tags.
                 , case weight.value of
-                    WeightInKg cm ->
-                        Kilograms cm
+                    WeightInKg kg ->
+                        Kilograms kg
                 )
             )
 

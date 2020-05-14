@@ -99,19 +99,14 @@ viewContent language currentDate maybeVillageId isChw db =
                 ]
 
         individualEncounterButton =
-            if isChw then
-                -- Hide individual encounters option, until we develop it's CHW flow.
-                emptyNode
-
-            else
-                button
-                    [ class "ui primary button individual-assessment"
-                    , onClick <| SetActivePage <| UserPage IndividualEncounterTypesPage
-                    ]
-                    [ span [ class "icon" ] []
-                    , span [ class "text" ] [ text <| translate language Translate.IndividualEncounter ]
-                    , span [ class "icon-back" ] []
-                    ]
+            button
+                [ class "ui primary button individual-assessment"
+                , onClick <| SetActivePage <| UserPage IndividualEncounterTypesPage
+                ]
+                [ span [ class "icon" ] []
+                , span [ class "text" ] [ text <| translate language Translate.IndividualEncounter ]
+                , span [ class "icon-back" ] []
+                ]
     in
     [ p [] [ text <| translate language Translate.WhatDoYouWantToDo ]
     , individualEncounterButton

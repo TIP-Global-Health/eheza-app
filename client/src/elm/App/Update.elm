@@ -21,10 +21,15 @@ import HttpBuilder
 import Json.Decode exposing (bool, decodeValue, oneOf)
 import Json.Encode
 import Maybe.Extra exposing (isJust)
+import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.Clinics.Update
 import Pages.Device.Model
 import Pages.Device.Update
 import Pages.IndividualEncounterParticipants.Update
+import Pages.NutritionActivity.Model
+import Pages.NutritionActivity.Update
+import Pages.NutritionEncounter.Model
+import Pages.NutritionEncounter.Update
 import Pages.Page exposing (..)
 import Pages.People.Update
 import Pages.Person.Update
@@ -303,6 +308,19 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageNutritionEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.nutritionEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.NutritionEncounter.Model.emptyModel
+                                        |> Pages.NutritionEncounter.Update.update subMsg
+                            in
+                            ( { data | nutritionEncounterPages = Dict.insert id subModel data.nutritionEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageNutritionEncounter id) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPagePrenatalActivity id activity subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
@@ -313,6 +331,19 @@ update msg model =
                             in
                             ( { data | prenatalActivityPages = Dict.insert ( id, activity ) subModel data.prenatalActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageNutritionActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.nutritionActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.NutritionActivity.Model.emptyModel
+                                        |> Pages.NutritionActivity.Update.update currentDate id model.indexedDb subMsg
+                            in
+                            ( { data | nutritionActivityPages = Dict.insert ( id, activity ) subModel data.nutritionActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageNutritionActivity id activity) subCmd
                             , extraMsgs
                             )
 
@@ -707,6 +738,9 @@ update msg model =
                             App.Ports.bindDropZone ()
 
                         UserPage (PrenatalActivityPage _ PrenatalPhoto) ->
+                            App.Ports.bindDropZone ()
+
+                        UserPage (NutritionActivityPage _ Photo) ->
                             App.Ports.bindDropZone ()
 
                         _ ->

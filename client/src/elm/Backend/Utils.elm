@@ -1,8 +1,8 @@
-module Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements, mapPrenatalMeasurements)
+module Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (ChildMeasurementList, MotherMeasurementList, PrenatalMeasurements)
+import Backend.Measurement.Model exposing (ChildMeasurementList, MotherMeasurementList, NutritionMeasurements, PrenatalMeasurements)
 import Backend.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 
@@ -34,6 +34,16 @@ mapPrenatalMeasurements id func model =
     case id of
         Just encounterId ->
             { model | prenatalMeasurements = Dict.update encounterId (Maybe.map (RemoteData.map func)) model.prenatalMeasurements }
+
+        Nothing ->
+            model
+
+
+mapNutritionMeasurements : Maybe NutritionEncounterId -> (NutritionMeasurements -> NutritionMeasurements) -> ModelIndexedDb -> ModelIndexedDb
+mapNutritionMeasurements id func model =
+    case id of
+        Just encounterId ->
+            { model | nutritionMeasurements = Dict.update encounterId (Maybe.map (RemoteData.map func)) model.nutritionMeasurements }
 
         Nothing ->
             model

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+## Description: Run drush migrate inside the web container
+## Usage: migrate [args]
+## Example: "ddev migrate default" or "ddev migrate sample"
+
+drush en -y migrate migrate_ui migrate_extras hedley_migrate &&
+drush mi --group=$@ --user=1 &&
+drush mi --group=counseling --user=1 &&
+drush mi --group=forms --user=1

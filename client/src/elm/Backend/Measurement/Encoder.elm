@@ -1,55 +1,4 @@
-module Backend.Measurement.Encoder exposing
-    ( encodeAttendance
-    , encodeAttendanceValue
-    , encodeBreastExam
-    , encodeBreastExamValue
-    , encodeCorePhysicalExam
-    , encodeCorePhysicalExamValue
-    , encodeCounselingSession
-    , encodeCounselingSessionValue
-    , encodeDangerSigns
-    , encodeDangerSignsValue
-    , encodeFamilyPlanning
-    , encodeFamilyPlanningSignAsString
-    , encodeFamilyPlanningValue
-    , encodeHeight
-    , encodeHeightValue
-    , encodeLastMenstrualPeriod
-    , encodeLastMenstrualPeriodValue
-    , encodeMedicalHistory
-    , encodeMedicalHistoryValue
-    , encodeMedication
-    , encodeMedicationValue
-    , encodeMuac
-    , encodeMuacValue
-    , encodeNutrition
-    , encodeNutritionSignAsString
-    , encodeNutritionValue
-    , encodeObstetricHistory
-    , encodeObstetricHistoryStep2
-    , encodeObstetricHistoryStep2Value
-    , encodeObstetricHistoryValue
-    , encodeObstetricalExam
-    , encodeObstetricalExamValue
-    , encodeParticipantConsent
-    , encodeParticipantConsentValue
-    , encodePhoto
-    , encodePhotoUrl
-    , encodePrenatalFamilyPlanning
-    , encodePrenatalNutrition
-    , encodePrenatalNutritionValue
-    , encodePrenatalPhoto
-    , encodeResource
-    , encodeResourceValue
-    , encodeSocialHistory
-    , encodeSocialHistoryHivTestingResult
-    , encodeSocialHistoryValue
-    , encodeVitals
-    , encodeVitalsValue
-    , encodeWeight
-    , encodeWeightValue
-    , socialHistoryHivTestingResultToString
-    )
+module Backend.Measurement.Encoder exposing (encodeAbdomenCPESign, encodeAttendance, encodeAttendanceValue, encodeBreastExam, encodeBreastExamSign, encodeBreastExamValue, encodeCSectionReason, encodeCSectionScar, encodeCorePhysicalExam, encodeCorePhysicalExamValue, encodeCounselingSession, encodeCounselingSessionValue, encodeDangerSign, encodeDangerSigns, encodeDangerSignsValue, encodeEverySet, encodeEyesCPESign, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeFetalPresentation, encodeGroupMeasurement, encodeHairHeadCPESign, encodeHandsCPESign, encodeHeartCPESign, encodeHeight, encodeHeightInCm, encodeHeightValue, encodeLastMenstrualPeriod, encodeLastMenstrualPeriodValue, encodeLegsCPESign, encodeLungsCPESign, encodeMeasurement, encodeMedicalHistory, encodeMedicalHistorySign, encodeMedicalHistoryValue, encodeMedication, encodeMedicationSign, encodeMedicationValue, encodeMuac, encodeMuacInCm, encodeMuacValue, encodeNeckCPESign, encodeNutrition, encodeNutritionHeight, encodeNutritionMeasurement, encodeNutritionMuac, encodeNutritionNutrition, encodeNutritionPhoto, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeNutritionWeight, encodeObstetricHistory, encodeObstetricHistorySign, encodeObstetricHistoryStep2, encodeObstetricHistoryStep2Value, encodeObstetricHistoryValue, encodeObstetricalExam, encodeObstetricalExamValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodePrenatalFamilyPlanning, encodePrenatalMeasurement, encodePrenatalNutrition, encodePrenatalNutritionValue, encodePrenatalPhoto, encodePreviousDeliveryPeriod, encodePreviousDeliverySign, encodeResource, encodeResourceSign, encodeResourceValue, encodeSocialHistory, encodeSocialHistoryHivTestingResult, encodeSocialHistorySign, encodeSocialHistoryValue, encodeVitals, encodeVitalsValue, encodeWeight, encodeWeightInKg, encodeWeightValue, socialHistoryHivTestingResultToString)
 
 import AssocList as Dict
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
@@ -75,6 +24,11 @@ encodeHeight =
     encodeGroupMeasurement encodeHeightValue
 
 
+encodeNutritionHeight : NutritionHeight -> List ( String, Value )
+encodeNutritionHeight =
+    encodeNutritionMeasurement encodeHeightValue
+
+
 encodeHeightValue : HeightInCm -> List ( String, Value )
 encodeHeightValue (HeightInCm height) =
     [ ( "height", float height ) ]
@@ -83,6 +37,11 @@ encodeHeightValue (HeightInCm height) =
 encodeMuac : Muac -> List ( String, Value )
 encodeMuac =
     encodeGroupMeasurement encodeMuacValue
+
+
+encodeNutritionMuac : NutritionMuac -> List ( String, Value )
+encodeNutritionMuac =
+    encodeNutritionMeasurement encodeMuacValue
 
 
 encodeMuacValue : MuacInCm -> List ( String, Value )
@@ -95,6 +54,11 @@ encodeWeight =
     encodeGroupMeasurement encodeWeightValue
 
 
+encodeNutritionWeight : NutritionWeight -> List ( String, Value )
+encodeNutritionWeight =
+    encodeNutritionMeasurement encodeWeightValue
+
+
 encodeWeightValue : WeightInKg -> List ( String, Value )
 encodeWeightValue (WeightInKg weight) =
     [ ( "weight", float weight ) ]
@@ -103,6 +67,11 @@ encodeWeightValue (WeightInKg weight) =
 encodePhoto : Photo -> List ( String, Value )
 encodePhoto =
     encodeGroupMeasurement encodePhotoUrl
+
+
+encodeNutritionPhoto : NutritionPhoto -> List ( String, Value )
+encodeNutritionPhoto =
+    encodeNutritionMeasurement encodePhotoUrl
 
 
 encodePrenatalPhoto : PrenatalPhoto -> List ( String, Value )
@@ -126,6 +95,11 @@ encodeNutritionValue nutritions =
       , encodeEverySet encodeNutritionSign nutritions
       )
     ]
+
+
+encodeNutritionNutrition : NutritionNutrition -> List ( String, Value )
+encodeNutritionNutrition =
+    encodeNutritionMeasurement encodeNutritionValue
 
 
 encodeParticipantConsentValue : ParticipantConsentValue -> List ( String, Value )
@@ -182,6 +156,11 @@ encodeFamilyPlanning =
 encodeGroupMeasurement : (value -> List ( String, Value )) -> GroupMeasurement value -> List ( String, Value )
 encodeGroupMeasurement =
     encodeMeasurement "session"
+
+
+encodeNutritionMeasurement : (value -> List ( String, Value )) -> NutritionMeasurement value -> List ( String, Value )
+encodeNutritionMeasurement =
+    encodeMeasurement "nutrition_encounter"
 
 
 encodePrenatalMeasurement : (value -> List ( String, Value )) -> PrenatalMeasurement value -> List ( String, Value )

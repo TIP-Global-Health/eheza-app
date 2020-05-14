@@ -1,4 +1,4 @@
-module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), attendanceEndpoint, breastExamEndpoint, childMeasurementListEndpoint, clinicEndpoint, corePhysicalExamEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, dangerSignsEndpoint, encodeIndividualEncounterParticipantParams, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodePrenatalEncounterParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, individualEncounterParticipantEndpoint, lastMenstrualPeriodEndpoint, medicalHistoryEndpoint, medicationEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEndpoint, obstetricHistoryEndpoint, obstetricHistoryStep2Endpoint, obstetricalExamEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, prenatalEncounterEndpoint, prenatalFamilyPlanningEndpoint, prenatalMeasurementsEndpoint, prenatalNutritionEndpoint, prenatalPhotoEndpoint, relationshipEndpoint, resourceEndpoint, sessionEndpoint, socialHistoryEndpoint, swEndpoint, syncDataEndpoint, villageEndpoint, vitalsEndpoint, weightEndpoint)
+module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), attendanceEndpoint, breastExamEndpoint, childMeasurementListEndpoint, clinicEndpoint, corePhysicalExamEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, dangerSignsEndpoint, encodeIndividualEncounterParams, encodeIndividualEncounterParticipantParams, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, individualEncounterParticipantEndpoint, lastMenstrualPeriodEndpoint, medicalHistoryEndpoint, medicationEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEncounterEndpoint, nutritionEndpoint, nutritionHeightEndpoint, nutritionMeasurementsEndpoint, nutritionMuacEndpoint, nutritionNutritionEndpoint, nutritionPhotoEndpoint, nutritionWeightEndpoint, obstetricHistoryEndpoint, obstetricHistoryStep2Endpoint, obstetricalExamEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, prenatalEncounterEndpoint, prenatalFamilyPlanningEndpoint, prenatalMeasurementsEndpoint, prenatalNutritionEndpoint, prenatalPhotoEndpoint, relationshipEndpoint, resourceEndpoint, sessionEndpoint, socialHistoryEndpoint, swEndpoint, syncDataEndpoint, villageEndpoint, vitalsEndpoint, weightEndpoint)
 
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
@@ -17,6 +17,9 @@ import Backend.Measurement.Encoder exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Nurse.Decoder exposing (decodeNurse)
 import Backend.Nurse.Model exposing (Nurse)
+import Backend.NutritionEncounter.Decoder exposing (decodeNutritionEncounter)
+import Backend.NutritionEncounter.Encoder exposing (encodeNutritionEncounter)
+import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.ParticipantConsent.Decoder exposing (decodeParticipantForm)
 import Backend.ParticipantConsent.Encoder exposing (encodeParticipantForm)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
@@ -232,6 +235,11 @@ prenatalMeasurementsEndpoint =
     swEndpoint "nodes/prenatal-measurements" decodePrenatalMeasurements
 
 
+nutritionMeasurementsEndpoint : ReadOnlyEndPoint Error NutritionEncounterId NutritionMeasurements ()
+nutritionMeasurementsEndpoint =
+    swEndpoint "nodes/nutrition-measurements" decodeNutritionMeasurements
+
+
 {-| Type-safe params ... how nice!
 -}
 type SessionParams
@@ -290,11 +298,18 @@ prenatalEncounterEndpoint : ReadWriteEndPoint Error PrenatalEncounterId Prenatal
 prenatalEncounterEndpoint =
     swEndpoint "nodes/prenatal_encounter" decodePrenatalEncounter
         |> withValueEncoder (object << encodePrenatalEncounter)
-        |> withParamsEncoder encodePrenatalEncounterParams
+        |> withParamsEncoder encodeIndividualEncounterParams
 
 
-encodePrenatalEncounterParams : Maybe IndividualEncounterParticipantId -> List ( String, String )
-encodePrenatalEncounterParams params =
+nutritionEncounterEndpoint : ReadWriteEndPoint Error NutritionEncounterId NutritionEncounter NutritionEncounter (Maybe IndividualEncounterParticipantId)
+nutritionEncounterEndpoint =
+    swEndpoint "nodes/nutrition_encounter" decodeNutritionEncounter
+        |> withValueEncoder (object << encodeNutritionEncounter)
+        |> withParamsEncoder encodeIndividualEncounterParams
+
+
+encodeIndividualEncounterParams : Maybe IndividualEncounterParticipantId -> List ( String, String )
+encodeIndividualEncounterParams params =
     case params of
         Just id ->
             [ ( "individual_participant", fromEntityUuid id ) ]
@@ -402,3 +417,33 @@ vitalsEndpoint : ReadWriteEndPoint Error VitalsId Vitals Vitals ()
 vitalsEndpoint =
     swEndpoint "nodes/vitals" decodeVitals
         |> withValueEncoder (object << encodeVitals)
+
+
+nutritionMuacEndpoint : ReadWriteEndPoint Error NutritionMuacId NutritionMuac NutritionMuac ()
+nutritionMuacEndpoint =
+    swEndpoint "nodes/nutrition_muac" decodeNutritionMuac
+        |> withValueEncoder (object << encodeNutritionMuac)
+
+
+nutritionHeightEndpoint : ReadWriteEndPoint Error NutritionHeightId NutritionHeight NutritionHeight ()
+nutritionHeightEndpoint =
+    swEndpoint "nodes/nutrition_height" decodeNutritionHeight
+        |> withValueEncoder (object << encodeNutritionHeight)
+
+
+nutritionNutritionEndpoint : ReadWriteEndPoint Error NutritionNutritionId NutritionNutrition NutritionNutrition ()
+nutritionNutritionEndpoint =
+    swEndpoint "nodes/nutrition_nutrition" decodeNutritionNutrition
+        |> withValueEncoder (object << encodeNutritionNutrition)
+
+
+nutritionPhotoEndpoint : ReadWriteEndPoint Error NutritionPhotoId NutritionPhoto NutritionPhoto ()
+nutritionPhotoEndpoint =
+    swEndpoint "nodes/nutrition_photo" decodeNutritionPhoto
+        |> withValueEncoder (object << encodeNutritionPhoto)
+
+
+nutritionWeightEndpoint : ReadWriteEndPoint Error NutritionWeightId NutritionWeight NutritionWeight ()
+nutritionWeightEndpoint =
+    swEndpoint "nodes/nutrition_weight" decodeNutritionWeight
+        |> withValueEncoder (object << encodeNutritionWeight)
