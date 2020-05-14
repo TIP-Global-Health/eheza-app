@@ -62,9 +62,9 @@ function trySyncing() {
 // Do it on launch.
 trySyncing();
 
-// And try a sync every 5 minutes. In future, we may react to Pusher messages
+// And try a sync every 60 minutes. In future, we may react to Pusher messages
 // instead of polling.
-setInterval(trySyncing, minutesToMillis(5));
+setInterval(trySyncing, minutesToMillis(60));
 
 // And allow a manual attempt.
 elmApp.ports.trySyncing.subscribe(trySyncing);
