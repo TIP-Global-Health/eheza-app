@@ -15,7 +15,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
 
 
-generatePreviousMeasurements : NutritionEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, NutritionMeasurements ))
+generatePreviousMeasurements : NutritionEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) ))
 generatePreviousMeasurements currentEncounterId participantId db =
     Dict.get participantId db.nutritionEncountersByParticipant
         |> Maybe.withDefault NotAsked
@@ -30,7 +30,7 @@ generatePreviousMeasurements currentEncounterId participantId db =
                         else
                             case Dict.get encounterId db.nutritionMeasurements of
                                 Just (Success data) ->
-                                    Just ( encounter.startDate, data )
+                                    Just ( encounter.startDate, ( encounterId, data ) )
 
                                 _ ->
                                     Nothing

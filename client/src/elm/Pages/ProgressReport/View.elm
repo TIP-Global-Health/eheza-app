@@ -1,21 +1,4 @@
-module Pages.ProgressReport.View exposing
-    ( chartHeightForAge
-    , chartWeightForAge
-    , chartWeightForHeight
-    , classForIndication
-    , view
-    , viewAgeCell
-    , viewChildInfo
-    , viewHeightCell
-    , viewHeightWithIndication
-    , viewMuacCell
-    , viewMuactWithIndication
-    , viewNutritionSigns
-    , viewPhotos
-    , viewWeightCell
-    , viewWeightWithIndication
-    , withDefaultTextInCell
-    )
+module Pages.ProgressReport.View exposing (view, viewFoundChild)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import AssocList as Dict exposing (Dict)

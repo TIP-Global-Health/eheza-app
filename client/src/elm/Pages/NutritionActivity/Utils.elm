@@ -22,7 +22,7 @@ resolvePreviousIndividualValue : AssembledData -> (NutritionMeasurements -> Mayb
 resolvePreviousIndividualValue assembled measurementFunc valueFunc =
     assembled.previousMeasurementsWithDates
         |> List.filterMap
-            (\( date, measurements ) ->
+            (\( date, ( _, measurements ) ) ->
                 measurementFunc measurements
                     |> Maybe.map
                         (\measurement ->
