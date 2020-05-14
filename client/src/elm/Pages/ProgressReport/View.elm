@@ -67,9 +67,54 @@ view language zscores childId ( sessionId, session ) db =
 
                 individualChildMeasurements =
                     generatePreviousMeasurementsForChild childId db
+
+                mother =
+                    getMyMother childId session.offlineSession
+                        |> Maybe.map Tuple.second
+
+                relation =
+                    Dict.get childId session.offlineSession.participants.byChildId
+                        |> Maybe.withDefault []
+                        |> List.head
+                        |> Maybe.map
+                            (\participant ->
+                                case participant.adultActivities of
+                                    MotherActivities ->
+                                        Translate.ChildOf
+
+                                    CaregiverActivities ->
+                                        Translate.TakenCareOfBy
+                            )
+                        |> Maybe.withDefault Translate.ChildOf
+
+                -- We're using the current value from the current session here, at
+                -- least for now. So, we're ignoring any later sessions (normally,
+                -- there wouldn't be any), and we're just leaving it blank if it wasn't
+                -- entered in this session (rather than looking back to a previous
+                -- session when it was entered).
+                --
+                -- See <https://github.com/Gizra/ihangane/issues/382#issuecomment-353273873>
+                currentNutritionSigns =
+                    getChildMeasurementData childId session
+                        |> LocalData.map
+                            (mapMeasurementData .nutrition
+                                >> currentValue
+                                >> Maybe.map .value
+                                >> Maybe.withDefault EverySet.empty
+                            )
+                        |> LocalData.withDefault EverySet.empty
+
+                defaultLastAssessmentDate =
+                    session.offlineSession.session.startDate
+
+                goBackAction =
+                    ChildPage childId
+                        |> SessionPage sessionId
+                        |> UserPage
+                        |> Pages.Session.Model.SetActivePage
             in
             viewWebData language
-                (viewFoundChild language zscores ( childId, child ) ( sessionId, session ) individualChildMeasurements)
+                (viewFoundChild language zscores ( childId, child ) individualChildMeasurements mother relation currentNutritionSigns defaultLastAssessmentDate goBackAction)
                 identity
                 (RemoteData.append expectedSessions childMeasurements)
 
@@ -86,24 +131,25 @@ view language zscores childId ( sessionId, session ) db =
                 |> Pages.PageNotFound.View.viewPage language (Pages.Session.Model.SetActivePage participantsPage)
 
 
-{-| This function is more complex than one would like ... when reviewing the
-data model in future, it might be nice to take this function into account.
--}
 viewFoundChild :
     Language
     -> ZScore.Model.Model
     -> ( PersonId, Person )
-    -> ( SessionId, EditableSession )
     -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
+    -> Maybe Person
+    -> TranslationId
+    -> EverySet ChildNutritionSign
+    -> NominalDate
+    -> msg
     -> ( Dict SessionId Session, ChildMeasurementList )
-    -> Html Pages.Session.Model.Msg
-viewFoundChild language zscores ( childId, child ) ( sessionId, session ) individualChildMeasurements ( expected, historical ) =
+    -> Html msg
+viewFoundChild language zscores ( childId, child ) individualChildMeasurements maybeMother relation signs defaultLastAssessmentDate goBackAction ( expected, historical ) =
     let
         -- GROUP CONTEXT.
         expectedSessions =
             expected
                 |> Dict.toList
-                |> List.map (\( uuid, session_ ) -> ( fromEntityUuid uuid, session_.startDate ))
+                |> List.map (\( uuid, expectedSession ) -> ( fromEntityUuid uuid, expectedSession.startDate ))
                 |> List.filter hasGroupMeasurement
 
         -- Do we have any kind of measurement for the child for the specified session?
@@ -234,16 +280,12 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) indivi
         dateOfLastAssessment =
             List.head sessionsAndEncounters
                 |> Maybe.map Tuple.second
-                |> Maybe.withDefault session.offlineSession.session.startDate
+                |> Maybe.withDefault defaultLastAssessmentDate
 
         backIcon =
             a
                 [ class "icon-back"
-                , ChildPage childId
-                    |> SessionPage sessionId
-                    |> UserPage
-                    |> Pages.Session.Model.SetActivePage
-                    |> onClick
+                , onClick goBackAction
                 ]
                 []
 
@@ -260,47 +302,8 @@ viewFoundChild language zscores ( childId, child ) ( sessionId, session ) indivi
                 , text <| renderDate language dateOfLastAssessment
                 ]
 
-        maybeMother =
-            getMyMother childId session.offlineSession
-                |> Maybe.map Tuple.second
-
-        relationText =
-            Dict.get childId session.offlineSession.participants.byChildId
-                |> Maybe.withDefault []
-                |> List.head
-                |> Maybe.map
-                    (\participant ->
-                        case participant.adultActivities of
-                            MotherActivities ->
-                                Translate.ChildOf
-
-                            CaregiverActivities ->
-                                Translate.TakenCareOfBy
-                    )
-                |> Maybe.withDefault Translate.ChildOf
-
         childInfo =
-            viewChildInfo language child maybeMother relationText dateOfLastAssessment
-
-        current =
-            getChildMeasurementData childId session
-
-        -- We're using the current value from the current session here, at
-        -- least for now. So, we're ignoring any later sessions (normally,
-        -- there wouldn't be any), and we're just leaving it blank if it wasn't
-        -- entered in this session (rather than looking back to a previous
-        -- session when it was entered).
-        --
-        -- See <https://github.com/Gizra/ihangane/issues/382#issuecomment-353273873>
-        signs =
-            current
-                |> LocalData.map
-                    (mapMeasurementData .nutrition
-                        >> currentValue
-                        >> Maybe.map .value
-                        >> Maybe.withDefault EverySet.empty
-                    )
-                |> LocalData.withDefault EverySet.empty
+            viewChildInfo language child maybeMother relation dateOfLastAssessment
 
         nutritionSigns =
             viewNutritionSigns language child dateOfLastAssessment signs
