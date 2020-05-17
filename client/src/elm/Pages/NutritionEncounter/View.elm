@@ -14,7 +14,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
 import NutritionActivity.Model exposing (NutritionActivity(..))
-import NutritionActivity.Utils exposing (getActivityIcon, getAllActivities)
+import NutritionActivity.Utils exposing (expectActivity, getActivityIcon, getAllActivities)
 import Pages.NutritionEncounter.Model exposing (..)
 import Pages.NutritionEncounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -107,7 +107,8 @@ viewMainPageContent language currentDate id isChw data model =
             data.measurements
 
         ( completedActivities, pendingActivities ) =
-            getAllActivities isChw
+            getAllActivities
+                |> List.filter (expectActivity currentDate data.person isChw)
                 |> List.partition
                     (\activity ->
                         case activity of
