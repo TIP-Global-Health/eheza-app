@@ -1,26 +1,18 @@
-module Pages.NutritionEncounter.Fetch exposing (fetch)
+module Backend.NutritionEncounter.Fetch exposing (fetchForChild)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
+import Backend.IndividualEncounterParticipant.Model
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.NutritionEncounter.Utils exposing (resolveNutritionParticipantForChild)
 import RemoteData exposing (RemoteData(..))
 
 
-fetch : NutritionEncounterId -> ModelIndexedDb -> List MsgIndexedDb
-fetch id db =
+fetchForChild : PersonId -> ModelIndexedDb -> List MsgIndexedDb
+fetchForChild id db =
     let
         participantId =
-            Dict.get id db.nutritionEncounters
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
-                |> Maybe.map .participant
-
-        personId =
-            participantId
-                |> Maybe.andThen (\id_ -> Dict.get id_ db.individualParticipants)
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
-                |> Maybe.map .person
+            resolveNutritionParticipantForChild id db
 
         encountersIds =
             participantId
@@ -40,10 +32,10 @@ fetch id db =
     in
     List.filterMap identity
         [ Maybe.map FetchIndividualEncounterParticipant participantId
-        , Maybe.map FetchPerson personId
         , Maybe.map FetchNutritionEncountersForParticipant participantId
+        , Just <| FetchPerson id
 
-        -- We need this, so we can resolve the participant from the encounter.
-        , Just <| FetchNutritionEncounter id
+        -- We need this, so we can resolve the nutrition participant for child.
+        , Just <| FetchIndividualEncounterParticipantsForPerson id
         ]
         ++ fetchMeasurements

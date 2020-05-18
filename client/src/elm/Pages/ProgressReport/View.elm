@@ -6,6 +6,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (currentValue, currentValueWithId, mapMeasurementData, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (generatePreviousMeasurementsForChild)
 import Backend.Person.Model exposing (Gender(..), Person)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (EditableSession, Session)
@@ -20,7 +21,6 @@ import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import LocalData
 import Maybe.Extra
-import Pages.NutritionEncounter.Utils exposing (generatePreviousMeasurementsForChild)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.Session.Model

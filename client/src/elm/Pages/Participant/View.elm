@@ -4,6 +4,7 @@ import Activity.Model exposing (Activity(..), ChildActivity, CompletedAndPending
 import Activity.Utils exposing (getActivityIcon, summarizeChildParticipant, summarizeMotherParticipant)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (generatePreviousValuesForChild)
 import Backend.Person.Model exposing (Gender(..), Person, Ubudehe(..))
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getChildren, getMother, getMotherMeasurementData, getMyMother)
@@ -17,7 +18,6 @@ import Maybe.Extra
 import Measurement.Model
 import Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getMotherForm)
 import Measurement.View
-import Pages.NutritionEncounter.Utils exposing (generatePreviousValuesForChild)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
 import Pages.Session.Model

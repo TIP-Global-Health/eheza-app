@@ -5,13 +5,13 @@ import Activity.Utils
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.NutritionEncounter.Fetch
 import Backend.Session.Fetch exposing (fetchEditableSession)
 import Gizra.NominalDate exposing (NominalDate)
 import LocalData
 import Pages.Activities.Fetch
 import Pages.Activity.Fetch
 import Pages.Attendance.Fetch
-import Pages.NutritionEncounter.Fetch
 import Pages.Page exposing (SessionPage(..))
 import Pages.Participant.Fetch
 import Pages.Participants.Fetch
@@ -64,7 +64,7 @@ fetch currentDate sessionId sessionPage db =
 
                         fetchIndividualDataMsgs =
                             firstPendingParticipant
-                                |> Maybe.map (\childId -> Pages.NutritionEncounter.Fetch.fetchForChild childId db)
+                                |> Maybe.map (\childId -> Backend.NutritionEncounter.Fetch.fetchForChild childId db)
                                 |> Maybe.withDefault []
 
                         ( forActivityPage, activityPageCalculations ) =
@@ -83,7 +83,7 @@ fetch currentDate sessionId sessionPage db =
                         ( forChildPage, childPageCalculations ) =
                             Pages.Participant.Fetch.fetch sessionId
                     in
-                    ( forChildPage ++ Pages.NutritionEncounter.Fetch.fetchForChild childId db, childPageCalculations )
+                    ( forChildPage ++ Backend.NutritionEncounter.Fetch.fetchForChild childId db, childPageCalculations )
 
                 MotherPage _ ->
                     Pages.Participant.Fetch.fetch sessionId

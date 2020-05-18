@@ -3,6 +3,7 @@ module Pages.Activity.Utils exposing (viewChildMeasurements, viewMotherMeasureme
 import Activity.Model exposing (ChildActivity(..), MotherActivity(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (generatePreviousValuesForChild)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getMother, getMotherMeasurementData)
 import Gizra.Html exposing (emptyNode)
@@ -13,7 +14,6 @@ import Measurement.Model
 import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Measurement.View
 import Pages.Activity.Model exposing (..)
-import Pages.NutritionEncounter.Utils exposing (generatePreviousValuesForChild)
 import Pages.Session.Model
 import Translate exposing (Language)
 import ZScore.Model

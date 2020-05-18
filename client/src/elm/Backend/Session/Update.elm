@@ -6,13 +6,13 @@ import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.NutritionEncounter.Fetch
 import Backend.Session.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
 import Json.Encode exposing (object)
 import Json.Encode.Extra
 import Maybe.Extra exposing (unwrap)
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
-import Pages.NutritionEncounter.Fetch
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (applyBackendUrl, encodeEntityUuid, toCmd, withoutDecoder)
 
@@ -54,7 +54,7 @@ update nurseId sessionId maybeSession currentDate db msg model =
         MeasurementOutMsgChild childId subMsg ->
             case subMsg of
                 FetchIndividualNutritionData id ->
-                    ( model, Cmd.none, Pages.NutritionEncounter.Fetch.fetchForChild id db )
+                    ( model, Cmd.none, Backend.NutritionEncounter.Fetch.fetchForChild id db )
 
                 SaveHeight maybeId height ->
                     let
