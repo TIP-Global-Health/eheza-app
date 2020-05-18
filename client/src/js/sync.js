@@ -179,7 +179,6 @@
             .then(function () {
                 return nodeShardToSync()
                 .then(function (shard) {
-
                     return processSingleShard (shard, credentials).catch(function (err) {
                         // When authentication token is invalid, besides standard 401 response,
                         // we may get 403 from file-upload resource.
@@ -225,11 +224,21 @@
             // Oterwise, we get parallel processes syncing a shard, which
             // causes data corruption during initial sync.
             if (item.attempt.tag === 'Loading') {
-              return Promise.resolve();
+              if (typeof item.attempt.timestamp === 'undefined') {
+                // When there's no timestamp (should not happen), we block the request.
+                return Promise.resolve();
+              }
+
+              if (Date.now() - item.attempt.timestamp <  6 * 60 * 1000) {
+                // We block the request, if last status was updated less than 6 minutes ago.
+                // If more than 6 minutes have passed, it's safe to assume that sync process has
+                // stopped for some reason, and we should not prevent new sync request.
+                return Promise.resolve();
+              }
             }
-            // Probably makes sense to upload and then download ...
-            // that way, we'll get the server's interpretation of
-            // our changes immediately.
+
+            // We upload and then download. This way, we get the server's
+            // interpretation of our changes immediately.
             return uploadSingleShard(shard, credentials).then(function () {
                 return downloadSingleShard(shard, credentials);
             });
