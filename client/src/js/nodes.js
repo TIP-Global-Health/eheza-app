@@ -138,6 +138,18 @@
         unpublished: 0
     };
 
+    var groupMeasurementTypes = [
+      'attendance',
+      'counseling_session',
+      'family_planning',
+      'height',
+      'muac',
+      'nutrition',
+      'participant_consent',
+      'photo',
+      'weight'
+    ]
+
     function expectedOnDate (participation, sessionDate) {
         var joinedGroupBeforeSession = participation.expected.value <= sessionDate;
         var notLeftGroup = !participation.expected.value2 || (participation.expected.value === participation.expected.value2);
@@ -433,15 +445,20 @@
         });
 
         return query.toArray().catch(databaseError).then(function (nodes) {
-            // We could also check that the type is the expected type.
             if (nodes) {
                 nodes.forEach(function (node) {
                     var target = node.person;
-                    if (key === 'prenatal_encounter') {
-                      target = node.prenatal_encounter;
+                    if (key === 'person') {
+                        // Check that node type for group encounter is as expected.
+                        if (!groupMeasurementTypes.includes(node.type)) {
+                          return;
+                        }
+                    }
+                    else if (key === 'prenatal_encounter') {
+                        target = node.prenatal_encounter;
                     }
                     else if (key === 'nutrition_encounter') {
-                      target = node.nutrition_encounter;
+                        target = node.nutrition_encounter;
                     }
 
                     data[target] = data[target] || {};
