@@ -2,7 +2,6 @@ module Backend.NutritionEncounter.Fetch exposing (fetchForChild)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.NutritionEncounter.Utils exposing (resolveNutritionParticipantForChild)
 import RemoteData exposing (RemoteData(..))

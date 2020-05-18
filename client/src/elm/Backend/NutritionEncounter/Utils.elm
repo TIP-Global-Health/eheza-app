@@ -5,11 +5,10 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import NutritionActivity.Model exposing (..)
-import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language, translate)
+import RemoteData exposing (RemoteData(..))
+import Translate exposing (Language)
 
 
 generatePreviousMeasurementsForChild : PersonId -> ModelIndexedDb -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
