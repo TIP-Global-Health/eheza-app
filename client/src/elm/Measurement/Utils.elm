@@ -166,6 +166,9 @@ getChildForm childId pages session =
                     )
 
 
+{-| Here we get a Float measurement value with it's date\_measured, from group and individual contexts.
+We return the most recent value, or Nothing, if both provided parameters were Nothing.
+-}
 resolvePreviousValueInCommonContext : Maybe ( NominalDate, Float ) -> Maybe ( NominalDate, Float ) -> Maybe Float
 resolvePreviousValueInCommonContext previousGroupMeasurement previousIndividualMeasurement =
     case previousGroupMeasurement of

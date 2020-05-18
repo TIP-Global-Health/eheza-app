@@ -122,6 +122,10 @@ updateChild currentDate msg model session activity childForm =
                 Nothing
 
 
+{-| Given child activity, this function calculates which children should be presented at Todo tab (yet to complete the activity),
+and which should be presented at Completed tab (the ones that have already completed the activity).
+It also takes into consideration the 'name' filter that exists on activity page.
+-}
 calculateChildrenParticipants : NominalDate -> EditableSession -> ChildActivity -> Model PersonId -> CompletedAndPending (Dict PersonId Person)
 calculateChildrenParticipants currentDate session activity model =
     let
