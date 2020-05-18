@@ -84,16 +84,7 @@
     // receive one event here, once we're online again.
     self.addEventListener('sync', function (event) {
         if (event.tag === syncTag) {
-            var action = syncAllShards().catch(function (attempt) {
-                // Always indicate to the browser's sync mechanism that we
-                // succeeded. Otherwise, it seems that retries are disabled
-                // for a while, which isn't really suitable. And we'll retry
-                // in a few minutes anyway, or manually, so we don't really
-                // need the automatic retries.
-                return Promise.resolve();
-            });
-
-            return event.waitUntil(action);
+            processSyncEvent(event);
         }
     });
 
@@ -102,19 +93,29 @@
     // so it by-passes the browser's notion of whether we're online or not.
     self.addEventListener('message', function(event) {
         if (event.data === syncTag) {
-            var action = syncAllShards();
-
-            // Consider how to handle errors?
-            return event.waitUntil(action);
+            processSyncEvent(event);
         }
     });
+
+    function processSyncEvent(event) {
+        var action = syncAllShards().catch(function (attempt) {
+            // Always indicate to the browser's sync mechanism that we
+            // succeeded. Otherwise, it seems that retries are disabled
+            // for a while, which isn't really suitable. And we'll retry
+            // in a few minutes anyway, or manually, so we don't really
+            // need the automatic retries.
+            return Promise.resolve();
+        });
+
+        // Consider how to handle errors?
+        return event.waitUntil(action);
+    }
 
     // Returns node (`nodesUuid`) shard which we ought to sync.  Will
     // creates the metadata for our it, if it doesn't exist yet.
     function nodeShardToSync () {
         return dbSync.transaction(rw, dbSync.syncMetadata, function () {
-            return dbSync.syncMetadata.get(nodesUuid)
-            .then(function (item) {
+            return dbSync.syncMetadata.get(nodesUuid).then(function (item) {
                 // If we don't have metadata for nodesUuid yet, create it.
                 if (item) {
                     return Promise.resolve(item.uuid);
@@ -217,11 +218,30 @@
 
     // Uploads and then Downloads data for single shard.
     function processSingleShard (shard, credentials) {
-        // Probably makes sense to upload and then download ...
-        // that way, we'll get the server's interpretation of
-        // our changes immediately.
-        return uploadSingleShard(shard, credentials).then(function () {
-            return downloadSingleShard(shard, credentials);
+        return dbSync.syncMetadata.get(shard.uuid).then(function (item) {
+            // When we get a request to sync a shard, we have to verify that that
+            // shard is not being synced already.
+            // Oterwise, we get parallel processes syncing a shard, which
+            // causes data corruption during initial sync.
+            if (item.attempt.tag === 'Loading') {
+              if (typeof item.attempt.timestamp === 'undefined') {
+                // When there's no timestamp (should not happen), we block the request.
+                return Promise.resolve();
+              }
+
+              if (Date.now() - item.attempt.timestamp <  6 * 60 * 1000) {
+                // We block the request, if last status was updated less than 6 minutes ago.
+                // If more than 6 minutes have passed, it's safe to assume that sync process has
+                // stopped for some reason, and we should not prevent new sync request.
+                return Promise.resolve();
+              }
+            }
+
+            // We upload and then download. This way, we get the server's
+            // interpretation of our changes immediately.
+            return uploadSingleShard(shard, credentials).then(function () {
+                return downloadSingleShard(shard, credentials);
+            });
         });
     }
 
@@ -597,7 +617,7 @@
                         // partial progress. Now, we'll note that we have some
                         // remaining things to get, so we'll try again. But,
                         // then, the thing we failed on will be first. So, if
-                        // we fail agaim, we won't have saved anything, and
+                        // we fail again, we won't have saved anything, and
                         // we'll return the error then.  That seems like a
                         // reasonable sequence of events.
                         if (saved.length > 0) {

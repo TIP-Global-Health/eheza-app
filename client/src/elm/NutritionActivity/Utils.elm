@@ -1,4 +1,4 @@
-module NutritionActivity.Utils exposing (decodeActivityFromString, encodeActivityAsString, getActivityIcon, getAllActivities)
+module NutritionActivity.Utils exposing (decodeActivityFromString, encodeActivityAsString, expectActivity, getActivityIcon, getAllActivities)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
@@ -10,6 +10,8 @@ expected (and not completed).
 
 -}
 
+import Backend.Person.Model exposing (Person)
+import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import NutritionActivity.Model exposing (..)
 import Translate exposing (Language, translate)
 
@@ -89,10 +91,24 @@ getActivityIcon activity =
             "weight"
 
 
-getAllActivities : Bool -> List NutritionActivity
-getAllActivities isChw =
-    if isChw then
-        [ Muac, Nutrition, Weight, Photo ]
+getAllActivities : List NutritionActivity
+getAllActivities =
+    [ Height, Muac, Nutrition, Weight, Photo ]
 
-    else
-        [ Height, Muac, Nutrition, Weight, Photo ]
+
+expectActivity : NominalDate -> Person -> Bool -> NutritionActivity -> Bool
+expectActivity currentDate child isChw activity =
+    case activity of
+        -- Do not show for community health workers.
+        Height ->
+            isChw |> not
+
+        -- Show for children that are 6 month old, or older than that.
+        Muac ->
+            child.birthDate
+                |> Maybe.map
+                    (\birthDate -> diffMonths birthDate currentDate > 5)
+                |> Maybe.withDefault False
+
+        _ ->
+            True
