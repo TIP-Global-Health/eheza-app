@@ -411,6 +411,20 @@
         }).catch(sendErrorResponses);
     }
 
+    // A list of all types of measuremnts that can be
+    // taken during groups encounter.
+    var groupMeasurementTypes = [
+      'attendance',
+      'counseling_session',
+      'family_planning',
+      'height',
+      'muac',
+      'nutrition',
+      'participant_consent',
+      'photo',
+      'weight'
+    ];
+
     // This is a kind of special-case for now, at least. We're wanting to get
     // back all of measuremnts for whom the key is equal to the value.
     //
@@ -433,15 +447,22 @@
         });
 
         return query.toArray().catch(databaseError).then(function (nodes) {
-            // We could also check that the type is the expected type.
             if (nodes) {
                 nodes.forEach(function (node) {
                     var target = node.person;
-                    if (key === 'prenatal_encounter') {
-                      target = node.prenatal_encounter;
+                    if (key === 'person') {
+                        // Check that node type for group encounter is one
+                        // of mother / child measurements. See full list at
+                        // groupMeasurementTypes array.
+                        if (!groupMeasurementTypes.includes(node.type)) {
+                          return;
+                        }
+                    }
+                    else if (key === 'prenatal_encounter') {
+                        target = node.prenatal_encounter;
                     }
                     else if (key === 'nutrition_encounter') {
-                      target = node.nutrition_encounter;
+                        target = node.nutrition_encounter;
                     }
 
                     data[target] = data[target] || {};

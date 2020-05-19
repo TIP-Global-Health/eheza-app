@@ -10,23 +10,33 @@ import RemoteData exposing (RemoteData(..))
 mapChildMeasurements : PersonId -> (ChildMeasurementList -> ChildMeasurementList) -> ModelIndexedDb -> ModelIndexedDb
 mapChildMeasurements childId func model =
     let
-        childMeasurements =
+        mapped =
             Dict.get childId model.childMeasurements
                 |> Maybe.withDefault NotAsked
-                |> RemoteData.map func
+                |> RemoteData.toMaybe
+                |> Maybe.map
+                    (\measurements ->
+                        Dict.insert childId (func measurements |> Success) model.childMeasurements
+                    )
+                |> Maybe.withDefault model.childMeasurements
     in
-    { model | childMeasurements = Dict.insert childId childMeasurements model.childMeasurements }
+    { model | childMeasurements = mapped }
 
 
 mapMotherMeasurements : PersonId -> (MotherMeasurementList -> MotherMeasurementList) -> ModelIndexedDb -> ModelIndexedDb
 mapMotherMeasurements motherId func model =
     let
-        motherMeasurements =
+        mapped =
             Dict.get motherId model.motherMeasurements
                 |> Maybe.withDefault NotAsked
-                |> RemoteData.map func
+                |> RemoteData.toMaybe
+                |> Maybe.map
+                    (\measurements ->
+                        Dict.insert motherId (func measurements |> Success) model.motherMeasurements
+                    )
+                |> Maybe.withDefault model.motherMeasurements
     in
-    { model | motherMeasurements = Dict.insert motherId motherMeasurements model.motherMeasurements }
+    { model | motherMeasurements = mapped }
 
 
 mapPrenatalMeasurements : Maybe PrenatalEncounterId -> (PrenatalMeasurements -> PrenatalMeasurements) -> ModelIndexedDb -> ModelIndexedDb
