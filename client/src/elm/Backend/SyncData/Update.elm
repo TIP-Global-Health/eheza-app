@@ -30,7 +30,7 @@ update currentDate device msg model =
         BackendGeneralFetchHandle lastFetchedRevisionId webData ->
             noChange
 
-        SetbackendGeneralLastFetchedRevisionId lastFetchedRevisionId ->
+        SetBackendGeneralLastFetchedRevisionId lastFetchedRevisionId ->
             ( { model | backendGeneralLastFetchedRevisionId = lastFetchedRevisionId }
             , Cmd.none
             )

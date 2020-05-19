@@ -37,6 +37,7 @@ type alias Model =
     { backendGeneralEntities : WebData (List BackendGeneralEntity)
     , lastFetchedRevisionIdGeneral : Int
     , lastTryBackendGeneralDownloadTime : Time.Posix
+    , syncData : SyncData
     }
 
 
@@ -45,6 +46,7 @@ emptyModel lastFetchedRevisionIdGeneral =
     { backendGeneralEntities = RemoteData.NotAsked
     , lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
+    , syncData = emptySyncData
     }
 
 
@@ -105,4 +107,4 @@ type SyncError
 type Msg
     = BackendGeneralFetch LastFetchedRevisionIdGeneral
     | BackendGeneralFetchHandle LastFetchedRevisionIdGeneral (WebData (List BackendGeneralEntity))
-    | SetbackendGeneralLastFetchedRevisionId LastFetchedRevisionIdGeneral
+    | SetBackendGeneralLastFetchedRevisionId LastFetchedRevisionIdGeneral
