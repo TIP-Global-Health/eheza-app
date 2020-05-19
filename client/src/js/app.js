@@ -147,7 +147,7 @@ navigator.storage.persist().then(function(granted) {
   (async () => {
     console.log('calling');
     const result = await dbSync.nodes.add({
-      uuid: 'Camilla',
+      uuid: 'Camilla' + Date().toString(),
       type: 'person',
       vid: 123,
     });
