@@ -28,6 +28,7 @@ class HedleyMigrateNurses extends HedleyMigrateBase {
     'title',
     'field_role',
     'field_health_centers',
+    'field_villages',
     'field_pin_code',
   ];
 
@@ -55,12 +56,19 @@ class HedleyMigrateNurses extends HedleyMigrateBase {
 
     $this->dependencies = [
       'HedleyMigrateClinics',
+      'HedleyMigrateHealthCenters',
+      'HedleyMigrateVillages',
     ];
 
     $this
       ->addFieldMapping('field_health_centers', 'field_health_centers')
       ->separator('|')
       ->sourceMigration('HedleyMigrateHealthCenters');
+
+    $this
+      ->addFieldMapping('field_villages', 'field_villages')
+      ->separator('|')
+      ->sourceMigration('HedleyMigrateVillages');
   }
 
 }

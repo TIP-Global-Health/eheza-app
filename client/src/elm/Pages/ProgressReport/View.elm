@@ -1,28 +1,12 @@
-module Pages.ProgressReport.View exposing
-    ( chartHeightForAge
-    , chartWeightForAge
-    , chartWeightForHeight
-    , classForIndication
-    , view
-    , viewAgeCell
-    , viewChildInfo
-    , viewHeightCell
-    , viewHeightWithIndication
-    , viewMuacCell
-    , viewMuactWithIndication
-    , viewNutritionSigns
-    , viewPhotos
-    , viewWeightCell
-    , viewWeightWithIndication
-    , withDefaultTextInCell
-    )
+module Pages.ProgressReport.View exposing (view, viewFoundChild)
 
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (ChildMeasurementList, ChildNutritionSign(..), Height, HeightInCm(..), MuacInCm(..), MuacIndication(..), PhotoUrl(..), Weight, WeightInKg(..))
-import Backend.Measurement.Utils exposing (currentValue, mapMeasurementData, muacIndication)
+import Backend.Measurement.Model exposing (..)
+import Backend.Measurement.Utils exposing (currentValue, currentValueWithId, mapMeasurementData, muacIndication)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionEncounter.Utils exposing (generatePreviousMeasurementsForChild)
 import Backend.Person.Model exposing (Gender(..), Person)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (EditableSession, Session)
@@ -41,6 +25,7 @@ import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.Session.Model
 import RemoteData exposing (RemoteData(..))
+import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (Days(..), Months(..), diffDays, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate)
@@ -62,9 +47,57 @@ view language currentDate zscores childId ( sessionId, session ) db =
                 expectedSessions =
                     Dict.get childId db.expectedSessions
                         |> Maybe.withDefault NotAsked
+
+                individualChildMeasurements =
+                    generatePreviousMeasurementsForChild childId db
+
+                mother =
+                    getMyMother childId session.offlineSession
+                        |> Maybe.map Tuple.second
+
+                relation =
+                    Dict.get childId session.offlineSession.participants.byChildId
+                        |> Maybe.withDefault []
+                        |> List.head
+                        |> Maybe.map
+                            (\participant ->
+                                case participant.adultActivities of
+                                    MotherActivities ->
+                                        Translate.ChildOf
+
+                                    CaregiverActivities ->
+                                        Translate.TakenCareOfBy
+                            )
+                        |> Maybe.withDefault Translate.ChildOf
+
+                -- We're using the current value from the current session here, at
+                -- least for now. So, we're ignoring any later sessions (normally,
+                -- there wouldn't be any), and we're just leaving it blank if it wasn't
+                -- entered in this session (rather than looking back to a previous
+                -- session when it was entered).
+                --
+                -- See <https://github.com/Gizra/ihangane/issues/382#issuecomment-353273873>
+                currentNutritionSigns =
+                    getChildMeasurementData childId session
+                        |> LocalData.map
+                            (mapMeasurementData .nutrition
+                                >> currentValue
+                                >> Maybe.map .value
+                                >> Maybe.withDefault EverySet.empty
+                            )
+                        |> LocalData.withDefault EverySet.empty
+
+                defaultLastAssessmentDate =
+                    session.offlineSession.session.startDate
+
+                goBackAction =
+                    ChildPage childId
+                        |> SessionPage sessionId
+                        |> UserPage
+                        |> Pages.Session.Model.SetActivePage
             in
             viewWebData language
-                (viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, session ))
+                (viewFoundChild language zscores ( childId, child ) individualChildMeasurements mother relation currentNutritionSigns defaultLastAssessmentDate goBackAction)
                 identity
                 (RemoteData.append expectedSessions childMeasurements)
 
@@ -81,20 +114,161 @@ view language currentDate zscores childId ( sessionId, session ) db =
                 |> Pages.PageNotFound.View.viewPage language (Pages.Session.Model.SetActivePage participantsPage)
 
 
-{-| This function is more complex than one would like ... when reviewing the
-data model in future, it might be nice to take this function into account.
--}
-viewFoundChild : Language -> NominalDate -> ZScore.Model.Model -> ( PersonId, Person ) -> ( SessionId, EditableSession ) -> ( Dict SessionId Session, ChildMeasurementList ) -> Html Pages.Session.Model.Msg
-viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, session ) ( expectedSessions, historical ) =
+viewFoundChild :
+    Language
+    -> ZScore.Model.Model
+    -> ( PersonId, Person )
+    -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
+    -> Maybe Person
+    -> TranslationId
+    -> EverySet ChildNutritionSign
+    -> NominalDate
+    -> msg
+    -> ( Dict SessionId Session, ChildMeasurementList )
+    -> Html msg
+viewFoundChild language zscores ( childId, child ) individualChildMeasurements maybeMother relation signs defaultLastAssessmentDate goBackAction ( expected, historical ) =
     let
+        -- GROUP CONTEXT.
+        expectedSessions =
+            expected
+                |> Dict.toList
+                |> List.map (\( uuid, expectedSession ) -> ( fromEntityUuid uuid, expectedSession.startDate ))
+                |> List.filter hasGroupMeasurement
+
+        -- Do we have any kind of measurement for the child for the specified session?
+        hasGroupMeasurement ( id, _ ) =
+            Dict.member id heightValuesBySession
+                || Dict.member id muacValuesBySession
+                || Dict.member id weightValuesBySession
+                || Dict.member id nutritionValuesBySession
+                || Dict.member id photoValuesBySession
+
+        -- This includes any edits that have been saved locally, but not as-you-type
+        -- in the UI before you hit "Save" or "Update".
+        valuesIndexedBySession func =
+            Dict.values (func historical)
+                |> List.filterMap
+                    (\measurement ->
+                        measurement.encounterId
+                            |> Maybe.map
+                                (\encounterId ->
+                                    ( fromEntityUuid encounterId
+                                    , { dateMeasured = measurement.dateMeasured
+                                      , encounterId = fromEntityUuid encounterId
+                                      , value = measurement.value
+                                      }
+                                    )
+                                )
+                    )
+                |> Dict.fromList
+
+        heightValuesBySession =
+            valuesIndexedBySession .heights
+
+        weightValuesBySession =
+            valuesIndexedBySession .weights
+
+        muacValuesBySession =
+            valuesIndexedBySession .muacs
+
+        photoValuesBySession =
+            valuesIndexedBySession .photos
+
+        nutritionValuesBySession =
+            valuesIndexedBySession .nutritions
+
+        -- INDIVIDUAL CONTEXT.
+        expectedlEncounters =
+            individualChildMeasurements
+                |> List.map (\( startDate, ( uuid, _ ) ) -> ( fromEntityUuid uuid, startDate ))
+                |> List.filter hasEncounterMeasurement
+
+        -- Do we have any kind of measurement for the child for the specified encounter?
+        hasEncounterMeasurement ( id, _ ) =
+            Dict.member id heightValuesByEncounter
+                || Dict.member id muacValuesByEncounter
+                || Dict.member id weightValuesByEncounter
+                || Dict.member id nutritionValuesByEncounter
+                || Dict.member id photoValuesByEncounter
+
+        valuesIndexedByEncounter func =
+            individualChildMeasurements
+                |> List.filterMap
+                    (\( startDate, ( uuid, measurements ) ) ->
+                        func measurements
+                            |> Maybe.andThen
+                                (Tuple.second
+                                    >> (\measurement ->
+                                            measurement.encounterId
+                                                |> Maybe.map
+                                                    (\encounterId ->
+                                                        ( fromEntityUuid encounterId
+                                                        , { dateMeasured = measurement.dateMeasured
+                                                          , encounterId = fromEntityUuid encounterId
+                                                          , value = measurement.value
+                                                          }
+                                                        )
+                                                    )
+                                       )
+                                )
+                    )
+                |> Dict.fromList
+
+        heightValuesByEncounter =
+            valuesIndexedByEncounter .height
+
+        weightValuesByEncounter =
+            valuesIndexedByEncounter .weight
+
+        muacValuesByEncounter =
+            valuesIndexedByEncounter .muac
+
+        photoValuesByEncounter =
+            valuesIndexedByEncounter .photo
+
+        nutritionValuesByEncounter =
+            valuesIndexedByEncounter .nutrition
+
+        -- COMMON CONTEXT --
+        sessionsAndEncounters =
+            expectedSessions
+                ++ expectedlEncounters
+                |> List.sortWith (\s1 s2 -> Gizra.NominalDate.compare (Tuple.second s1) (Tuple.second s2))
+                |> List.reverse
+
+        heightValuesIndexed =
+            Dict.union heightValuesBySession heightValuesByEncounter
+
+        muacValuesIndexed =
+            Dict.union muacValuesBySession muacValuesByEncounter
+
+        weightValuesIndexed =
+            Dict.union weightValuesBySession weightValuesByEncounter
+
+        heightValues =
+            Dict.values heightValuesIndexed
+
+        muacValues =
+            Dict.values muacValuesIndexed
+
+        weightValues =
+            Dict.values weightValuesIndexed
+
+        photoValues =
+            Dict.values photoValuesBySession ++ Dict.values photoValuesByEncounter
+
+        -- We use the date of the last session that actually had a measurement.
+        -- If there are no measurements, we use the date for the current
+        -- session.
+        dateOfLastAssessment =
+            List.head sessionsAndEncounters
+                |> Maybe.map Tuple.second
+                |> Maybe.withDefault defaultLastAssessmentDate
+
         backIcon =
             a
                 [ class "icon-back"
-                , ChildPage childId
-                    |> SessionPage sessionId
-                    |> UserPage
-                    |> Pages.Session.Model.SetActivePage
-                    |> onClick
+                , onClick goBackAction
                 ]
                 []
 
@@ -102,14 +276,6 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
             h1
                 [ class "ui report header" ]
                 [ text <| translate language Translate.ParticipantSummary ]
-
-        -- We use the date of the last session that actually had a measurement.
-        -- If there are no measurements, we use the date for the current
-        -- session.
-        dateOfLastAssessment =
-            lastSessionWithMeasurement
-                |> Maybe.map (\( _, last ) -> last.startDate)
-                |> Maybe.withDefault session.offlineSession.session.startDate
 
         subtitle =
             p
@@ -119,90 +285,14 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                 , text <| renderDate language dateOfLastAssessment
                 ]
 
-        maybeMother =
-            getMyMother childId session.offlineSession
-                |> Maybe.map Tuple.second
-
-        relationText =
-            Dict.get childId session.offlineSession.participants.byChildId
-                |> Maybe.withDefault []
-                |> List.head
-                |> Maybe.map
-                    (\participant ->
-                        case participant.adultActivities of
-                            MotherActivities ->
-                                Translate.ChildOf
-
-                            CaregiverActivities ->
-                                Translate.TakenCareOfBy
-                    )
-                |> Maybe.withDefault Translate.ChildOf
-
         childInfo =
-            viewChildInfo language child maybeMother relationText dateOfLastAssessment
-
-        current =
-            getChildMeasurementData childId session
-
-        -- We're using the current value from the current session here, at
-        -- least for now. So, we're ignoring any later sessions (normally,
-        -- there wouldn't be any), and we're just leaving it blank if it wasn't
-        -- entered in this session (rather than looking back to a previous
-        -- session when it was entered).
-        --
-        -- See <https://github.com/Gizra/ihangane/issues/382#issuecomment-353273873>
-        signs =
-            current
-                |> LocalData.map
-                    (mapMeasurementData .nutrition
-                        >> currentValue
-                        >> Maybe.map .value
-                        >> Maybe.withDefault EverySet.empty
-                    )
-                |> LocalData.withDefault EverySet.empty
+            viewChildInfo language child maybeMother relation dateOfLastAssessment
 
         nutritionSigns =
             viewNutritionSigns language child dateOfLastAssessment signs
 
-        -- Do we have any kind of measurement for the child for the specified session?
-        hasMeasurement ( id, _ ) =
-            Dict.member id heightValuesBySession
-                || Dict.member id muacValuesBySession
-                || Dict.member id weightValuesBySession
-                || Dict.member id nutritionValuesBySession
-                || Dict.member id photoValuesBySession
-
-        -- What's the last session for which we have some measurement?
-        lastSessionWithMeasurement =
-            expectedSessions
-                |> Dict.toList
-                |> List.sortWith sessionsSortFunc
-                |> List.reverse
-                |> List.Extra.find hasMeasurement
-
-        sessionsSortFunc ( k1, v1 ) ( k2, v2 ) =
-            Date.compare v1.startDate v2.startDate
-
         heightWeightMuacTable =
-            expectedSessions
-                |> Dict.toList
-                |> List.sortWith sessionsSortFunc
-                |> List.reverse
-                -- Filter out sessions that occured before child was born.
-                |> List.filter
-                    (\( id, columnSession ) ->
-                        child.birthDate
-                            |> Maybe.map
-                                (\birthDate ->
-                                    case Gizra.NominalDate.compare birthDate columnSession.startDate of
-                                        LT ->
-                                            True
-
-                                        _ ->
-                                            False
-                                )
-                            |> Maybe.withDefault False
-                    )
+            sessionsAndEncounters
                 |> greedyGroupsOf 6
                 |> List.map
                     (\groupOfSix ->
@@ -210,16 +300,16 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                             ages =
                                 groupOfSix
                                     |> List.map
-                                        (\( id, columnSession ) ->
+                                        (\( id, startDate ) ->
                                             child.birthDate
-                                                |> Maybe.map (\birthDate -> renderAgeMonthsDaysHtml language birthDate columnSession.startDate)
+                                                |> Maybe.map (\birthDate -> renderAgeMonthsDaysHtml language birthDate startDate)
                                                 |> Maybe.withDefault []
                                                 |> th
                                                     [ classList
                                                         [ ( "center", True )
                                                         , ( "bottom", True )
                                                         , ( "aligned", True )
-                                                        , ( "last", columnSession.startDate == dateOfLastAssessment )
+                                                        , ( "last", startDate == dateOfLastAssessment )
                                                         , ( "date-header", True )
                                                         ]
                                                     ]
@@ -231,7 +321,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                                 groupOfSix
                                     |> List.map
                                         (\( id, _ ) ->
-                                            Dict.get id heightValuesBySession
+                                            Dict.get id heightValuesIndexed
                                                 |> Maybe.map (viewHeightWithIndication language child zscores)
                                                 |> withDefaultTextInCell
                                         )
@@ -242,7 +332,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                                 groupOfSix
                                     |> List.map
                                         (\( id, _ ) ->
-                                            Dict.get id muacValuesBySession
+                                            Dict.get id muacValuesIndexed
                                                 |> Maybe.map (viewMuactWithIndication language)
                                                 |> withDefaultTextInCell
                                         )
@@ -253,7 +343,7 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                                 groupOfSix
                                     |> List.map
                                         (\( id, _ ) ->
-                                            Dict.get id weightValuesBySession
+                                            Dict.get id weightValuesIndexed
                                                 |> Maybe.map (viewWeightWithIndication language child zscores)
                                                 |> withDefaultTextInCell
                                         )
@@ -297,54 +387,6 @@ viewFoundChild language currentDate zscores ( childId, child ) ( sessionId, sess
                     , weightForHeight = ZScore.View.viewWeightForHeightGirls
                     , weightForHeight2To5 = ZScore.View.viewWeightForHeight2To5Girls
                     }
-
-        -- This includes any edits that have been saved locally, but not as-you-type
-        -- in the UI before you hit "Save" or "Update".
-        getValues func =
-            Dict.values (func historical)
-
-        heightValues =
-            getValues .heights
-
-        weightValues =
-            getValues .weights
-
-        muacValues =
-            getValues .muacs
-
-        photoValues =
-            getValues .photos
-
-        nutritionValues =
-            getValues .nutritions
-
-        indexBySession values =
-            values
-                |> List.filterMap
-                    (\value ->
-                        case value.encounterId of
-                            Just id ->
-                                Just ( id, value )
-
-                            Nothing ->
-                                Nothing
-                    )
-                |> Dict.fromList
-
-        heightValuesBySession =
-            indexBySession heightValues
-
-        muacValuesBySession =
-            indexBySession muacValues
-
-        weightValuesBySession =
-            indexBySession weightValues
-
-        nutritionValuesBySession =
-            indexBySession nutritionValues
-
-        photoValuesBySession =
-            indexBySession photoValues
 
         heightForAgeData =
             List.filterMap (chartHeightForAge child) heightValues
@@ -615,6 +657,7 @@ viewPhotos language child photos =
                 [ img [ src url, class "rotate-90" ] [] ]
     in
     photos
+        |> List.sortWith (\m1 m2 -> Gizra.NominalDate.compare m1.dateMeasured m2.dateMeasured)
         |> List.map
             (\photo ->
                 div
@@ -675,7 +718,7 @@ zScoreToIndication zScore =
         Positive
 
 
-chartHeightForAge : Person -> Height -> Maybe ( Days, Centimetres )
+chartHeightForAge : Person -> { dateMeasured : NominalDate, encounterId : String, value : HeightInCm } -> Maybe ( Days, Centimetres )
 chartHeightForAge child height =
     child.birthDate
         |> Maybe.map
@@ -690,7 +733,7 @@ chartHeightForAge child height =
             )
 
 
-chartHeightForAgeMonths : Person -> Height -> Maybe ( Months, Centimetres )
+chartHeightForAgeMonths : Person -> { dateMeasured : NominalDate, encounterId : String, value : HeightInCm } -> Maybe ( Months, Centimetres )
 chartHeightForAgeMonths child height =
     child.birthDate
         |> Maybe.map
@@ -705,7 +748,7 @@ chartHeightForAgeMonths child height =
             )
 
 
-chartWeightForAge : Person -> Weight -> Maybe ( Days, Kilograms )
+chartWeightForAge : Person -> { dateMeasured : NominalDate, encounterId : String, value : WeightInKg } -> Maybe ( Days, Kilograms )
 chartWeightForAge child weight =
     child.birthDate
         |> Maybe.map
@@ -720,7 +763,7 @@ chartWeightForAge child weight =
             )
 
 
-chartWeightForAgeMonths : Person -> Weight -> Maybe ( Months, Kilograms )
+chartWeightForAgeMonths : Person -> { dateMeasured : NominalDate, encounterId : String, value : WeightInKg } -> Maybe ( Months, Kilograms )
 chartWeightForAgeMonths child weight =
     child.birthDate
         |> Maybe.map
@@ -735,8 +778,11 @@ chartWeightForAgeMonths child weight =
             )
 
 
-chartWeightForLength : List Height -> Weight -> Maybe ( Length, Kilograms )
-chartWeightForLength heights weight =
+chartWeightForHeight :
+    List { dateMeasured : NominalDate, encounterId : String, value : HeightInCm }
+    -> { dateMeasured : NominalDate, encounterId : String, value : WeightInKg }
+    -> Maybe ( Length, Kilograms )
+chartWeightForHeight heights weight =
     -- For each weight, we try to find a height with a matching sessionID.
     -- Eventually, we shouild take age into account to distingiush height
     -- and length.
@@ -753,21 +799,3 @@ chartWeightForLength heights weight =
                 )
             )
 
-
-chartWeightForHeight : List Height -> Weight -> Maybe ( ZScore.Model.Height, Kilograms )
-chartWeightForHeight heights weight =
-    -- For each weight, we try to find a height with a matching sessionID.
-    -- Eventually, we shouild take age into account to distingiush height
-    -- and length.
-    heights
-        |> List.Extra.find (\height -> height.encounterId == weight.encounterId)
-        |> Maybe.map
-            (\height ->
-                ( case height.value of
-                    HeightInCm cm ->
-                        ZScore.Model.Height cm
-                , case weight.value of
-                    WeightInKg kg ->
-                        Kilograms kg
-                )
-            )
