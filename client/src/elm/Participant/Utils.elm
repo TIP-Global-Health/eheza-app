@@ -51,5 +51,5 @@ motherParticipant =
     , toChildId = always Nothing
     , toMotherId = Just
     , toParticipantId = ParticipantMother
-    , viewMeasurements = \language date zscores isChw -> viewMotherMeasurements language date
+    , viewMeasurements = \language date zscores isChw db -> viewMotherMeasurements language date
     }

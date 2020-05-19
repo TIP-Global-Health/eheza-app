@@ -31,7 +31,6 @@ import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import PrenatalActivity.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
-import Utils.NominalDate exposing (compareDates)
 
 
 calculateEDD : NominalDate -> NominalDate
@@ -174,7 +173,7 @@ generatePreviousMeasurements currentEncounterId participantId db =
                                     Nothing
                     )
                 >> List.sortWith
-                    (\( date1, _ ) ( date2, _ ) -> compareDates date1 date2)
+                    (\( date1, _ ) ( date2, _ ) -> Gizra.NominalDate.compare date1 date2)
             )
 
 
