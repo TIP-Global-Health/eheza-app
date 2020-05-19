@@ -1,8 +1,9 @@
-module Pages.NutritionActivity.Utils exposing (fromHeightValue, fromMuacValue, fromNutritionValue, fromWeightValue, heightFormWithDefault, ifEmpty, muacFormWithDefault, nutritionFormWithDefault, resolvePreviousValue, toHeightValue, toHeightValueWithDefault, toMuacValue, toMuacValueWithDefault, toNutritionValue, toNutritionValueWithDefault, toWeightValue, toWeightValueWithDefault, weightFormWithDefault)
+module Pages.NutritionActivity.Utils exposing (fromHeightValue, fromMuacValue, fromNutritionValue, fromWeightValue, heightFormWithDefault, ifEmpty, muacFormWithDefault, nutritionFormWithDefault, resolvePreviousIndividualValue, toHeightValue, toHeightValueWithDefault, toMuacValue, toMuacValueWithDefault, toNutritionValue, toNutritionValueWithDefault, toWeightValue, toWeightValueWithDefault, weightFormWithDefault)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (ChildNutritionSign(..), HeightInCm(..), MuacInCm(..), NutritionMeasurement, NutritionMeasurements, WeightInKg(..))
 import EverySet exposing (EverySet)
+import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (or, unwrap)
 import Pages.NutritionActivity.Model exposing (..)
 import Pages.NutritionEncounter.Model exposing (AssembledData)
@@ -17,13 +18,16 @@ ifEmpty value set =
         set
 
 
-resolvePreviousValue : AssembledData -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a )) -> (a -> b) -> Maybe b
-resolvePreviousValue assembled measurementFunc valueFunc =
+resolvePreviousIndividualValue : AssembledData -> (NutritionMeasurements -> Maybe ( id, NutritionMeasurement a )) -> (a -> b) -> Maybe ( NominalDate, b )
+resolvePreviousIndividualValue assembled measurementFunc valueFunc =
     assembled.previousMeasurementsWithDates
         |> List.filterMap
-            (\( _, measurements ) ->
+            (\( date, ( _, measurements ) ) ->
                 measurementFunc measurements
-                    |> Maybe.map (Tuple.second >> .value >> valueFunc)
+                    |> Maybe.map
+                        (\measurement ->
+                            ( date, Tuple.second measurement |> .value |> valueFunc )
+                        )
             )
         |> List.reverse
         |> List.head

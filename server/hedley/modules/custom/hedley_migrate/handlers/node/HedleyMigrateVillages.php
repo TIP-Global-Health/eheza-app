@@ -54,6 +54,7 @@ class HedleyMigrateVillages extends HedleyMigrateBase {
 
     $this->dependencies = [
       'HedleyMigrateHealthCenters',
+      'HedleyMigrateRelationships',
     ];
 
     $this

@@ -812,3 +812,10 @@ type alias MeasurementData data =
     , current : data
     , update : WebData ()
     }
+
+
+type alias PreviousMeasurementsValue =
+    { height : Maybe ( NominalDate, HeightInCm )
+    , muac : Maybe ( NominalDate, MuacInCm )
+    , weight : Maybe ( NominalDate, WeightInKg )
+    }

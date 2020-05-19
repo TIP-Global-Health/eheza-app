@@ -15,7 +15,7 @@ fetch id db =
             Dict.get id db.nutritionEncounters
                 |> Maybe.withDefault NotAsked
 
-        fetchFamilyMembersCmd =
+        fetchCmds =
             encounter
                 |> RemoteData.andThen
                     (\encounter_ ->
@@ -24,8 +24,14 @@ fetch id db =
                     )
                 |> RemoteData.map
                     (\participant ->
-                        Backend.Model.FetchRelationshipsForPerson participant.person :: fetchFamilyMembers participant.person db
+                        [ Backend.Model.FetchRelationshipsForPerson participant.person
+
+                        -- These 2 commands load data for Group context.
+                        , Backend.Model.FetchChildMeasurements participant.person
+                        , Backend.Model.FetchExpectedSessions participant.person
+                        ]
+                            ++ fetchFamilyMembers participant.person db
                     )
                 |> RemoteData.withDefault []
     in
-    Pages.NutritionEncounter.Fetch.fetch id db ++ fetchFamilyMembersCmd
+    Pages.NutritionEncounter.Fetch.fetch id db ++ fetchCmds
