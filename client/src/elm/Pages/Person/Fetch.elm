@@ -42,10 +42,11 @@ fetch id db =
 
 fetchForCreateOrEdit : Maybe PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetchForCreateOrEdit related db =
-    FetchHealthCenters
-        :: (related
-                |> Maybe.map
-                    (\id -> FetchPerson id :: fetchFamilyMembers id db)
+    [ FetchHealthCenters
+    , FetchVillages
+    ]
+        ++ (related
+                |> Maybe.map (\id -> FetchPerson id :: fetchFamilyMembers id db)
                 |> Maybe.withDefault []
            )
 
