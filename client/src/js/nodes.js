@@ -138,18 +138,6 @@
         unpublished: 0
     };
 
-    var groupMeasurementTypes = [
-      'attendance',
-      'counseling_session',
-      'family_planning',
-      'height',
-      'muac',
-      'nutrition',
-      'participant_consent',
-      'photo',
-      'weight'
-    ]
-
     function expectedOnDate (participation, sessionDate) {
         var joinedGroupBeforeSession = participation.expected.value <= sessionDate;
         var notLeftGroup = !participation.expected.value2 || (participation.expected.value === participation.expected.value2);
@@ -422,6 +410,20 @@
           });
         }).catch(sendErrorResponses);
     }
+
+    // A list of all types of measuremnts that can be
+    // taken during groups encounter.
+    var groupMeasurementTypes = [
+      'attendance',
+      'counseling_session',
+      'family_planning',
+      'height',
+      'muac',
+      'nutrition',
+      'participant_consent',
+      'photo',
+      'weight'
+    ];
 
     // This is a kind of special-case for now, at least. We're wanting to get
     // back all of measuremnts for whom the key is equal to the value.
