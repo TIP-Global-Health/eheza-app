@@ -36,6 +36,7 @@ type alias LastFetchedRevisionIdGeneral =
 type alias Model =
     { backendGeneralEntities : WebData (List BackendGeneralEntity)
     , lastFetchedRevisionIdGeneral : Int
+    , lastTryBackendGeneralDownloadTime : Time.Posix
     }
 
 
@@ -43,6 +44,7 @@ emptyModel : LastFetchedRevisionIdGeneral -> Model
 emptyModel lastFetchedRevisionIdGeneral =
     { backendGeneralEntities = RemoteData.NotAsked
     , lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral
+    , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
     }
 
 
