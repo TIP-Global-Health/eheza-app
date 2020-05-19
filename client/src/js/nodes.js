@@ -449,7 +449,9 @@
                 nodes.forEach(function (node) {
                     var target = node.person;
                     if (key === 'person') {
-                        // Check that node type for group encounter is as expected.
+                        // Check that node type for group encounter is one
+                        // of mother / child measurements. See full list at
+                        // groupMeasurementTypes array.
                         if (!groupMeasurementTypes.includes(node.type)) {
                           return;
                         }
