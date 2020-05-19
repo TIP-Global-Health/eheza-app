@@ -97,7 +97,7 @@ view language currentDate zscores childId ( sessionId, session ) db =
                         |> Pages.Session.Model.SetActivePage
             in
             viewWebData language
-                (viewFoundChild language zscores ( childId, child ) individualChildMeasurements mother relation currentNutritionSigns defaultLastAssessmentDate goBackAction)
+                (viewFoundChild language currentDate zscores ( childId, child ) individualChildMeasurements mother relation currentNutritionSigns defaultLastAssessmentDate goBackAction)
                 identity
                 (RemoteData.append expectedSessions childMeasurements)
 
@@ -116,6 +116,7 @@ view language currentDate zscores childId ( sessionId, session ) db =
 
 viewFoundChild :
     Language
+    -> NominalDate
     -> ZScore.Model.Model
     -> ( PersonId, Person )
     -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
@@ -126,7 +127,7 @@ viewFoundChild :
     -> msg
     -> ( Dict SessionId Session, ChildMeasurementList )
     -> Html msg
-viewFoundChild language zscores ( childId, child ) individualChildMeasurements maybeMother relation signs defaultLastAssessmentDate goBackAction ( expected, historical ) =
+viewFoundChild language currentDate zscores ( childId, child ) individualChildMeasurements maybeMother relation signs defaultLastAssessmentDate goBackAction ( expected, historical ) =
     let
         -- GROUP CONTEXT.
         expectedSessions =
@@ -778,14 +779,12 @@ chartWeightForAgeMonths child weight =
             )
 
 
-chartWeightForHeight :
+chartWeightForLength :
     List { dateMeasured : NominalDate, encounterId : String, value : HeightInCm }
     -> { dateMeasured : NominalDate, encounterId : String, value : WeightInKg }
     -> Maybe ( Length, Kilograms )
-chartWeightForHeight heights weight =
+chartWeightForLength heights weight =
     -- For each weight, we try to find a height with a matching sessionID.
-    -- Eventually, we shouild take age into account to distingiush height
-    -- and length.
     heights
         |> List.Extra.find (\height -> height.encounterId == weight.encounterId)
         |> Maybe.map
@@ -799,3 +798,22 @@ chartWeightForHeight heights weight =
                 )
             )
 
+
+chartWeightForHeight :
+    List { dateMeasured : NominalDate, encounterId : String, value : HeightInCm }
+    -> { dateMeasured : NominalDate, encounterId : String, value : WeightInKg }
+    -> Maybe ( ZScore.Model.Height, Kilograms )
+chartWeightForHeight heights weight =
+    -- For each weight, we try to find a height with a matching sessionID.
+    heights
+        |> List.Extra.find (\height -> height.encounterId == weight.encounterId)
+        |> Maybe.map
+            (\height ->
+                ( case height.value of
+                    HeightInCm cm ->
+                        ZScore.Model.Height cm
+                , case weight.value of
+                    WeightInKg kg ->
+                        Kilograms kg
+                )
+            )

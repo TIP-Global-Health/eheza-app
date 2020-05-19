@@ -108,6 +108,6 @@ viewContent language currentDate zscores db data =
                 |> App.Model.SetActivePage
     in
     viewWebData language
-        (viewFoundChild language zscores ( childId, child ) individualChildMeasurements mother relation currentNutritionSigns defaultLastAssessmentDate goBackAction)
+        (viewFoundChild language currentDate zscores ( childId, child ) individualChildMeasurements mother relation currentNutritionSigns defaultLastAssessmentDate goBackAction)
         identity
         (RemoteData.append expectedSessions childMeasurements)
