@@ -7,48 +7,6 @@ if ((location.hostname.endsWith('pantheonsite.io') || (location.hostname ===
   location.protocol = 'https:';
 }
 
-
-// Start up our Elm app.
-var elmApp = Elm.Main.init({
-  flags: {
-    pinCode: localStorage.getItem('pinCode') || '',
-    activeServiceWorker: !!navigator.serviceWorker.controller,
-    hostname: window.location.hostname,
-    activeLanguage: localStorage.getItem('language') || '',
-    healthCenterId: localStorage.getItem('healthCenterId') || '',
-    villageId: localStorage.getItem('villageId') || '',
-    lastFetchedRevisionIdGeneral: localStorage.getItem('lastFetchedRevisionIdGeneral') || 0,
-  }
-});
-
-// Request persistent storage, and report whether it was granted.
-navigator.storage.persist().then(function(granted) {
-  elmApp.ports.persistentStorage.send(granted);
-});
-
-
-// Milliseconds for the specified minutes
-function minutesToMillis(minutes) {
-  return minutes * 60 * 1000;
-}
-
-
-// Report our quota status.
-function reportQuota() {
-  navigator.storage.estimate().then(function(quota) {
-    elmApp.ports.storageQuota.send(quota);
-  });
-
-  elmApp.ports.memoryQuota.send(performance.memory);
-}
-
-// Do it right away.
-reportQuota();
-
-// And, then every minute.
-setInterval(reportQuota, minutesToMillis(1));
-
-
 var dbSync = new Dexie('sync');
 
 dbSync.version(1).stores({
@@ -167,11 +125,60 @@ dbSync.version(9).stores({
   shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter',
 });
 
-dbSync.open();
-console.log(dbSync.tables);
-dbSync.tables.forEach(function (table) {
-  console.log(table);
+
+
+// Start up our Elm app.
+var elmApp = Elm.Main.init({
+  flags: {
+    pinCode: localStorage.getItem('pinCode') || '',
+    activeServiceWorker: !!navigator.serviceWorker.controller,
+    hostname: window.location.hostname,
+    activeLanguage: localStorage.getItem('language') || '',
+    healthCenterId: localStorage.getItem('healthCenterId') || '',
+    villageId: localStorage.getItem('villageId') || '',
+    lastFetchedRevisionIdGeneral: localStorage.getItem('lastFetchedRevisionIdGeneral') || 0,
+  }
 });
+
+// Request persistent storage, and report whether it was granted.
+navigator.storage.persist().then(function(granted) {
+  elmApp.ports.persistentStorage.send(granted);
+
+  (async () => {
+    console.log('calling');
+    const result = await dbSync.nodes.add({
+      uuid: 'Camilla',
+      type: 'person',
+      vid: 123,
+    });
+
+    console.log(result);
+  })();
+
+});
+
+
+// Milliseconds for the specified minutes
+function minutesToMillis(minutes) {
+  return minutes * 60 * 1000;
+}
+
+
+// Report our quota status.
+function reportQuota() {
+  navigator.storage.estimate().then(function(quota) {
+    elmApp.ports.storageQuota.send(quota);
+  });
+
+  elmApp.ports.memoryQuota.send(performance.memory);
+}
+
+// Do it right away.
+reportQuota();
+
+// And, then every minute.
+setInterval(reportQuota, minutesToMillis(1));
+
 
 
 // Kick off a sync. If we're offline, the browser's sync mechanism will wait
