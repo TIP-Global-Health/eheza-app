@@ -381,10 +381,10 @@ viewUserPage page model configured =
                         Pages.NutritionActivity.View.view model.language currentDate model.zscores id activity isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageNutritionActivity id activity)
                             |> flexPageWrapper model
-                            
+
                     NutritionProgressReportPage encounterId ->
                         Pages.NutritionProgressReport.View.view model.language currentDate model.zscores encounterId model.indexedDb
-                            |> oldPageWrapper model                            
+                            |> oldPageWrapper model
 
                     AcuteIllnessEncounterPage id ->
                         let
