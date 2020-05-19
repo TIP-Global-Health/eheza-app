@@ -27,7 +27,6 @@ import Maybe.Extra exposing (isJust)
 import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..))
 import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
-import Utils.NominalDate exposing (compareDates)
 
 
 suspectedCovid19Case : AcuteIllnessMeasurements -> Bool
@@ -172,7 +171,7 @@ generatePreviousMeasurements currentEncounterId participantId db =
                                     Nothing
                     )
                 >> List.sortWith
-                    (\( date1, _ ) ( date2, _ ) -> compareDates date1 date2)
+                    (\( date1, _ ) ( date2, _ ) -> Gizra.NominalDate.compare date1 date2)
             )
 
 
