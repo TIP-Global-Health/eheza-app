@@ -1,6 +1,6 @@
 module Backend.SyncData.Update exposing (update)
 
-import Backend.SyncData.Decoder exposing (decodeBackendGeneralEntity)
+import Backend.SyncData.Decoder exposing (decodeBackendGeneralEntityList)
 import Backend.SyncData.Model exposing (Model, Msg(..))
 import Device.Model exposing (Device)
 import Gizra.NominalDate exposing (NominalDate)
@@ -20,11 +20,12 @@ update currentDate device msg model =
                 cmd =
                     HttpBuilder.get (device.backendUrl ++ "/api/sync")
                         |> withQueryParams [ ( "access_token", device.accessToken ) ]
-                        |> HttpBuilder.toTask
-                        |> withExpectJson decodeBackendGeneralEntity
+                        |> withExpectJson decodeBackendGeneralEntityList
                         |> HttpBuilder.send (RemoteData.fromResult >> BackendGeneralFetchHandle lastFetchedRevisionId)
             in
-            noChange
+            ( { model | backendGeneralEntities = RemoteData.Loading }
+            , cmd
+            )
 
         BackendGeneralFetchHandle lastFetchedRevisionId webData ->
             noChange

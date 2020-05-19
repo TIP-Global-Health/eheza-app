@@ -1,4 +1,4 @@
-module Backend.SyncData.Decoder exposing (decodeBackendGeneralEntity, decodeSyncData)
+module Backend.SyncData.Decoder exposing (decodeBackendGeneralEntityList, decodeSyncData)
 
 import Backend.Person.Decoder exposing (decodePerson)
 import Backend.SyncData.Model exposing (BackendGeneralEntity(..), DownloadStatus, SyncAttempt(..), SyncData, SyncError(..), UploadStatus)
@@ -6,6 +6,11 @@ import Gizra.Json exposing (decodeFloat, decodeInt)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Time
+
+
+decodeBackendGeneralEntityList : Decoder (List BackendGeneralEntity)
+decodeBackendGeneralEntityList =
+    list decodeBackendGeneralEntity
 
 
 decodeBackendGeneralEntity : Decoder BackendGeneralEntity

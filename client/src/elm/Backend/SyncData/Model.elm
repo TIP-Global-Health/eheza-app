@@ -7,6 +7,7 @@ module Backend.SyncData.Model exposing
     , SyncData
     , SyncError(..)
     , UploadStatus
+    , emptyModel
     , emptySyncData
     )
 
@@ -28,22 +29,20 @@ type BackendGeneralEntity
     | BackendGeneralEntityUnknown
 
 
-type alias LastFetchedRevisionId =
+type alias LastFetchedRevisionIdGeneral =
     Int
 
 
 type alias Model =
     { backendGeneralEntities : WebData (List BackendGeneralEntity)
-
-    -- @todo: Get this value from flags.
-    , backendGeneralLastFetchedRevisionId : Int
+    , lastFetchedRevisionIdGeneral : Int
     }
 
 
-emptyModel : Model
-emptyModel =
+emptyModel : LastFetchedRevisionIdGeneral -> Model
+emptyModel lastFetchedRevisionIdGeneral =
     { backendGeneralEntities = RemoteData.NotAsked
-    , backendGeneralLastFetchedRevisionId = 0
+    , lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral
     }
 
 
@@ -102,6 +101,6 @@ type SyncError
 
 
 type Msg
-    = BackendGeneralFetch LastFetchedRevisionId
-    | BackendGeneralFetchHandle LastFetchedRevisionId (WebData (List BackendGeneralEntity))
-    | SetbackendGeneralLastFetchedRevisionId LastFetchedRevisionId
+    = BackendGeneralFetch LastFetchedRevisionIdGeneral
+    | BackendGeneralFetchHandle LastFetchedRevisionIdGeneral (WebData (List BackendGeneralEntity))
+    | SetbackendGeneralLastFetchedRevisionId LastFetchedRevisionIdGeneral

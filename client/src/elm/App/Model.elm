@@ -4,6 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model
 import Backend.Nurse.Model exposing (Nurse)
+import Backend.SyncData.Model
 import Browser
 import Browser.Navigation as Nav
 import Config.Model
@@ -95,6 +96,11 @@ type alias Model =
 
     -- Which health center a nurse is working at.
     , villageId : Maybe VillageId
+
+    -- This is outside of ModelIndexedDb, as it's a related system, which other
+    -- pages/ backends shouldn't look into. It's data being synced (download or
+    -- uploaded), and if some code needs it, they should access it via `ModelIndexedDb`.
+    , syncData : Backend.SyncData.Model.Model
     }
 
 
@@ -248,6 +254,7 @@ type alias Flags =
     , pinCode : String
     , healthCenterId : String
     , villageId : String
+    , lastFetchedRevisionIdGeneral : Int
     }
 
 
@@ -284,4 +291,5 @@ emptyModel key url flags =
     , zscores = ZScore.Model.emptyModel
     , healthCenterId = healthCenterId
     , villageId = villageId
+    , syncData = Backend.SyncData.Model.emptyModel flags.lastFetchedRevisionIdGeneral
     }

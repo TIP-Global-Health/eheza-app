@@ -16,7 +16,8 @@ var elmApp = Elm.Main.init({
     hostname: window.location.hostname,
     activeLanguage: localStorage.getItem('language') || '',
     healthCenterId: localStorage.getItem('healthCenterId') || '',
-    villageId: localStorage.getItem('villageId') || ''
+    villageId: localStorage.getItem('villageId') || '',
+    lastFetchedRevisionIdGeneral: localStorage.getItem('lastFetchedRevisionIdGeneral') || 0,
   }
 });
 
