@@ -600,7 +600,7 @@
                     // our progress in downloading images.
                     //
                     // So, that's why we don't use `Promise.all` here ... it
-                    // would execute in parrallel rather than sequentially.
+                    // would execute in parallel rather than sequentially.
                     return json.data.batch.reduce(function (previous, item) {
                         return previous.then(function () {
                             return formatNode(table, item, shardUuid).then(function (formatted) {

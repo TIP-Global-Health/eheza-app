@@ -1,6 +1,50 @@
-module Backend.SyncData.Model exposing (DownloadStatus, SyncAttempt(..), SyncData, SyncError(..), UploadStatus, emptySyncData)
+module Backend.SyncData.Model exposing
+    ( BackendGeneralEntity(..)
+    , DownloadStatus
+    , Model
+    , Msg(..)
+    , SyncAttempt(..)
+    , SyncData
+    , SyncError(..)
+    , UploadStatus
+    , emptySyncData
+    )
 
+import Backend.Person.Model exposing (Person)
+import RemoteData exposing (WebData)
 import Time
+
+
+
+{- The "general" entities are ones that currently don't belong to a specific
+   authority (e.g. Health center). For example, a person is a "general" entity,
+   but a child's measurements is per authority.
+-}
+
+
+type BackendGeneralEntity
+    = BackendGeneralEntityPerson Person
+      -- Don't fail on unknown types.
+    | BackendGeneralEntityUnknown
+
+
+type alias LastFetchedRevisionId =
+    Int
+
+
+type alias Model =
+    { backendGeneralEntities : WebData (List BackendGeneralEntity)
+
+    -- @todo: Get this value from flags.
+    , backendGeneralLastFetchedRevisionId : Int
+    }
+
+
+emptyModel : Model
+emptyModel =
+    { backendGeneralEntities = RemoteData.NotAsked
+    , backendGeneralLastFetchedRevisionId = 0
+    }
 
 
 type alias SyncData =
@@ -55,3 +99,9 @@ type SyncError
     | BadResponse Int String
     | BadJson
     | ImageNotFound String
+
+
+type Msg
+    = BackendGeneralFetch LastFetchedRevisionId
+    | BackendGeneralFetchHandle LastFetchedRevisionId (WebData (List BackendGeneralEntity))
+    | SetbackendGeneralLastFetchedRevisionId LastFetchedRevisionId

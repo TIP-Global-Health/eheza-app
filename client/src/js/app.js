@@ -48,15 +48,140 @@ reportQuota();
 setInterval(reportQuota, minutesToMillis(1));
 
 
+var dbSync = new Dexie('sync');
+
+dbSync.version(1).stores({
+  // It's not entirely clear whether it will be more convenient to split
+  // up the content-types into their own stores, or keep them together.
+  // Intuitively, it seems as though it will be more convenient to keep
+  // them together, but we can revisit that if necessary. IndexedDB is
+  // fundamentally a NoSQL-type database, so each item need not have
+  // the same shape. And, there are no SQL-type joins, so using many
+  // stores is inconvenient.
+  //
+  // (It turns out that you can only use one IndexedDB index at a time.
+  // This will make for a lot of indexes -- it may be nicer to split up
+  // the types into different tables. However, that will make it harder
+  // to calculate the maximum `vid`. So, we'll see).
+  //
+  // What we're specifying here is a comma-separate list of the fields to
+  // index. The first field is the primary key, and the `&` indicates
+  // that it should be unique.
+  nodes: '&uuid,type,vid,status,[type+pin_code],[type+clinic],[type+mother]',
+
+  // We'll write local changes here and eventually upload them.
+  nodeChanges: '++localId',
+
+  // Metadata that tracks information about the sync process. The uuid is the
+  // UUID of the shard we are syncing. So, for things we sync by health
+  // center, it's the UUID of the health center. For things in the nodes
+  // table, which every device gets, we use a static UUID here (`nodesUuid`).
+  syncMetadata: '&uuid',
+
+  // This is like the `nodes` table, but for the things that we don't
+  // download onto all devices -- that is, for the things for which we are
+  // "sharding" the database by health center.
+  //
+  // The `uuid` is the UUID of the node. The `shard` is the UUID of the
+  // health center which is the reason we're downloading this node to this
+  // device. We need a compound key with shard and vid, because IndexedDb
+  // is a bit weird about using indexes -- you can only use one at a time.
+  shards: '&uuid,type,vid,status,child,mother,[shard+vid]',
+
+  // Write local changes here and eventually upload.
+  shardChanges: '++localId,shard'
+});
+
+dbSync.version(2).stores({
+  nodes: '&uuid,type,vid,status,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to]',
+  shards: '&uuid,type,vid,status,person,[shard+vid]',
+}).upgrade(function (tx) {
+  // On upgrading to version 2, clear nodes and shards.
+  return tx.nodes.clear().then(function () {
+    return tx.shards.clear();
+  }).then(function () {
+    // And reset sync metadata.
+    return tx.syncMetadata.toCollection().modify(function (data) {
+      delete data.download;
+      delete data.upload;
+
+      data.attempt = {
+        tag: 'NotAsked',
+        timestamp: Date.now()
+      };
+    });
+  });
+});
+
+dbSync.version(3).stores({
+  nodes: '&uuid,type,vid,status,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+adult]',
+});
+
+dbSync.version(4).stores({
+  nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+adult]',
+}).upgrade(function (tx) {
+  return tx.nodes.where({
+    type: 'person'
+  }).modify(function (person) {
+    person.name_search = gatherWords(person.label);
+  });
+});
+
+dbSync.version(5).stores({
+  nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+adult]',
+}).upgrade(function (tx) {
+  return tx.nodes.where({
+    type: 'clinic'
+  }).delete();
+});
+
+dbSync.version(6).stores({
+  nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+adult]',
+}).upgrade(function (tx) {
+  return tx.nodes.where({
+    type: 'participant_form'
+  }).delete();
+});
+
+dbSync.version(7).stores({
+  nodes: '&uuid,type,vid,status,*name_search,[type+pin_code],[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
+  shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter',
+}).upgrade(function (tx) {
+  return tx.nodes.where({
+    type: 'session'
+  }).delete();
+});
+
+dbSync.version(8).upgrade(function (tx) {
+  return tx.nodes.where({
+    type: 'clinic'
+  }).delete().then(function () {
+    return tx.nodes.where({
+      type: 'nurse'
+    }).delete();
+  });
+});
+
+dbSync.version(9).stores({
+  shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter',
+});
+
+dbSync.open();
+console.log(dbSync.tables);
+dbSync.tables.forEach(function (table) {
+  console.log(table);
+});
+
+
 // Kick off a sync. If we're offline, the browser's sync mechanism will wait
 // until we're online.
 function trySyncing() {
-  navigator.serviceWorker.ready.then(function(reg) {
-    return reg.sync.register('sync').catch(function() {
-      // Try a message instead.
-      reg.active.postMessage('sync');
-    });
-  });
+  // navigator.serviceWorker.ready.then(function(reg) {
+  //   return reg.sync.register('sync').catch(function() {
+  //     // Try a message instead.
+  //     reg.active.postMessage('sync');
+  //   });
+  // });
 }
 
 // Do it on launch.
@@ -190,7 +315,7 @@ function makeCustomEvent(eventName, detail) {
 
 // Pass along messages from the service worker
 navigator.serviceWorker.addEventListener('message', function(event) {
-  elmApp.ports.serviceWorkerIn.send(event.data);
+  // elmApp.ports.serviceWorkerIn.send(event.data);
 });
 
 navigator.serviceWorker.addEventListener('controllerchange', function() {

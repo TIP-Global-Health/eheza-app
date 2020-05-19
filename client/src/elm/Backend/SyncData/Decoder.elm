@@ -1,10 +1,26 @@
-module Backend.SyncData.Decoder exposing (decodeSyncData)
+module Backend.SyncData.Decoder exposing (decodeBackendGeneralEntity, decodeSyncData)
 
-import Backend.SyncData.Model exposing (..)
+import Backend.Person.Decoder exposing (decodePerson)
+import Backend.SyncData.Model exposing (BackendGeneralEntity(..), DownloadStatus, SyncAttempt(..), SyncData, SyncError(..), UploadStatus)
 import Gizra.Json exposing (decodeFloat, decodeInt)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Time
+
+
+decodeBackendGeneralEntity : Decoder BackendGeneralEntity
+decodeBackendGeneralEntity =
+    field "type" string
+        |> andThen
+            (\type_ ->
+                case type_ of
+                    "person" ->
+                        decodePerson
+                            |> andThen (\person -> succeed (BackendGeneralEntityPerson person))
+
+                    _ ->
+                        succeed BackendGeneralEntityUnknown
+            )
 
 
 decodeSyncData : Decoder SyncData
