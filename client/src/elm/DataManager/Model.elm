@@ -2,6 +2,7 @@ module DataManager.Model exposing
     ( BackendGeneralEntity(..)
     , DownloadStatus
     , DownloadSyncResponse
+    , FetchFromIndexDbQueryType(..)
     , Model
     , Msg(..)
     , RevisionIdPerAuthority
@@ -161,9 +162,16 @@ type SyncError
     | ImageNotFound String
 
 
+{-| Indicate what content, or query we'd like to get from IndexDB.
+-}
+type FetchFromIndexDbQueryType
+    = IndexDbQueryHealthCenters
+
+
 type Msg
     = BackendAuthorityFetch
     | BackendAuthorityFetchHandle (WebData DownloadSyncResponse)
     | BackendGeneralFetch
     | BackendGeneralFetchHandle (WebData DownloadSyncResponse)
     | SetLastFetchedRevisionIdGeneral Int
+    | FetchFromIndexDb FetchFromIndexDbQueryType

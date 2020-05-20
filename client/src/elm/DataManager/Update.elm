@@ -149,6 +149,13 @@ update currentDate device msg model =
                 noError
                 []
 
+        FetchFromIndexDb indexDbQueryType ->
+            SubModelReturn
+                model
+                Cmd.none
+                noError
+                []
+
 
 {-| Send to JS data we have synced (e.g. `person`, `health center`, etc.
 -}
@@ -164,3 +171,17 @@ port sendLastFetchedRevisionIdGeneral : Int -> Cmd msg
 along with their UUID.
 -}
 port sendRevisionIdPerAuthority : List ( String, Int ) -> Cmd msg
+
+
+{-| Ask JS to send us data from IndexDB. We send the query type.
+-}
+port askFromIndexDb : String -> Cmd msg
+
+
+{-| Get data requested from IndexDB.
+
+For now we don't care who asked for the data, we just fill it in where
+needed.
+
+-}
+port getFromIndexDb : (String -> msg) -> Sub msg

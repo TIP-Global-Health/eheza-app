@@ -255,17 +255,26 @@ elmApp.ports.sendLastFetchedRevisionIdGeneral.subscribe(function(lastFetchedRevi
   localStorage.setItem('lastFetchedRevisionIdGeneral', lastFetchedRevisionIdGeneral);
 });
 
-
 /**
- * https://codeburst.io/javascript-async-await-with-foreach-b6ba62bbf404
+ * Fetch data from IndexDB, and send to Elm.
  */
-async function asyncForEach(obj, callback) {
-  const array = Object.values(obj);
-  console.log(array[100]);
-  for (let index = 0; index < array.length; index++) {
-    await callback(array[index], index, array);
+elmApp.ports.askFromIndexDb.subscribe(function(queryType) {
+  switch (queryType) {
+    case 'IndexDbQueryHealthCenters':
+      (async () => {
+        const result = await dbSync.nodes.where('type').equals('health_center');
+        console.log(result);
+
+        elmApp.ports.getFromIndexDb.send(result);
+
+      })();
+      break;
+
+    default:
+      throw queryType + ' is not a known Query type for `askFromIndexDb`';
+
   }
-}
+});
 
 
 // Dropzone.

@@ -26,6 +26,7 @@ import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSessio
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getMyMother)
 import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements)
+import DataManager.Model exposing (FetchFromIndexDbQueryType(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -476,7 +477,9 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             ( { model | healthCenters = Loading }
             , sw.select healthCenterEndpoint ()
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedHealthCenters)
-            , []
+            , [ DataManager.Model.FetchFromIndexDb DataManager.Model.IndexDbQueryHealthCenters
+                    |> App.Model.MsgSyncData
+              ]
             )
 
         HandleFetchedHealthCenters data ->
