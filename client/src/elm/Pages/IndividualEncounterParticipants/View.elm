@@ -6,8 +6,8 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (ExpectedAge(..), Person, RegistrationInitiator(..))
 import Backend.Person.Utils exposing (ageInYears, isPersonAFertileWoman, isPersonAnAdult)
-import Backend.SyncData.Model
 import Backend.Village.Utils exposing (personLivesInVillage)
+import DataManager.Model
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -85,7 +85,7 @@ viewBody language currentDate ( healthCenterId, maybeVillageId ) isChw encounter
                 let
                     isDownloading =
                         case selectedHealthCenterSyncData.attempt of
-                            Backend.SyncData.Model.Downloading _ _ ->
+                            DataManager.Model.Downloading _ _ ->
                                 True
 
                             _ ->
@@ -93,7 +93,7 @@ viewBody language currentDate ( healthCenterId, maybeVillageId ) isChw encounter
 
                     isUploading =
                         case selectedHealthCenterSyncData.attempt of
-                            Backend.SyncData.Model.Uploading _ ->
+                            DataManager.Model.Uploading _ ->
                                 True
 
                             _ ->

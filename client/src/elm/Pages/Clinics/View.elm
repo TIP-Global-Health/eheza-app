@@ -14,7 +14,7 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isAuthorithedNurse)
 import Backend.Session.Model exposing (Session)
 import Backend.Session.Utils exposing (isClosed)
-import Backend.SyncData.Model exposing (SyncData)
+import DataManager.Model exposing (SyncData)
 import Date exposing (Unit(..))
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
@@ -107,7 +107,7 @@ viewLoadedClinicList language user selectedHealthCenterId model ( clinics, sync 
                 let
                     isDownloading =
                         case selectedHealthCenterSyncData.attempt of
-                            Backend.SyncData.Model.Downloading _ _ ->
+                            DataManager.Model.Downloading _ _ ->
                                 True
 
                             _ ->
@@ -115,7 +115,7 @@ viewLoadedClinicList language user selectedHealthCenterId model ( clinics, sync 
 
                     isUploading =
                         case selectedHealthCenterSyncData.attempt of
-                            Backend.SyncData.Model.Uploading _ ->
+                            DataManager.Model.Uploading _ ->
                                 True
 
                             _ ->

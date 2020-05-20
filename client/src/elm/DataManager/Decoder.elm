@@ -1,8 +1,8 @@
-module Backend.SyncData.Decoder exposing (decodeDownloadSyncResponse, decodeSyncData)
+module DataManager.Decoder exposing (decodeDownloadSyncResponse, decodeSyncData)
 
 import Backend.Person.Decoder exposing (decodePerson)
 import Backend.PmtctParticipant.Decoder
-import Backend.SyncData.Model exposing (BackendGeneralEntity(..), DownloadStatus, DownloadSyncResponse, SyncAttempt(..), SyncData, SyncError(..), UploadStatus)
+import DataManager.Model exposing (BackendGeneralEntity(..), DownloadStatus, DownloadSyncResponse, SyncAttempt(..), SyncData, SyncError(..), UploadStatus)
 import Gizra.Date exposing (decodeDate)
 import Gizra.Json exposing (decodeFloat, decodeInt)
 import Json.Decode exposing (..)
@@ -126,7 +126,7 @@ decodeSyncAttempt =
 
 decodeFailure : Decoder SyncError -> Decoder SyncAttempt
 decodeFailure =
-    map2 Backend.SyncData.Model.Failure (decodeTimeField "timestamp")
+    map2 DataManager.Model.Failure (decodeTimeField "timestamp")
 
 
 decodeTimeField : String -> Decoder Time.Posix

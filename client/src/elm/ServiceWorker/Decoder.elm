@@ -2,7 +2,7 @@ module ServiceWorker.Decoder exposing (decodeIncomingMsg)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Decoder exposing (decodeRevision)
-import Backend.SyncData.Decoder exposing (decodeSyncData)
+import DataManager.Decoder exposing (decodeSyncData)
 import Json.Decode exposing (..)
 import Restful.Endpoint exposing (decodeEntityUuid)
 import ServiceWorker.Model exposing (..)
@@ -29,7 +29,7 @@ decodeIncomingMsg =
                         field "state" decodeNewWorker
                             |> map SetNewWorker
 
-                    "SyncData" ->
+                    "DataManager" ->
                         field "data" (decodeArray2 (field "uuid" decodeEntityUuid) decodeSyncData)
                             |> map SetSyncData
 

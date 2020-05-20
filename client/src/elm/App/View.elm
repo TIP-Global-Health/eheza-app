@@ -5,9 +5,9 @@ import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (ParticipantDirectoryOperation(..), RegistrationInitiator(..))
-import Backend.SyncData.View
 import Browser
 import Config.View
+import DataManager.View
 import Date
 import EverySet
 import Gizra.NominalDate exposing (fromLocalDateTime)
@@ -78,7 +78,7 @@ flexPageWrapper model html =
         [ viewLanguageSwitcherAndVersion model
 
         -- @todo: Debug only
-        , Html.map MsgSyncData (Backend.SyncData.View.viewDebugSync model.syncData)
+        , Html.map MsgSyncData (DataManager.View.viewDebugSync model.syncData)
         , div
             [ class "page-content" ]
             [ html ]

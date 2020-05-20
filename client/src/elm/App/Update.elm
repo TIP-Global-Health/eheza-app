@@ -8,12 +8,12 @@ import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
-import Backend.SyncData.Model
-import Backend.SyncData.Update
 import Backend.Update
 import Browser
 import Browser.Navigation as Nav
 import Config
+import DataManager.Model
+import DataManager.Update
 import Device.Decoder
 import Device.Encoder
 import Dict as LegacyDict
@@ -618,7 +618,7 @@ update msg model =
                         updateSubModel
                             subMsg
                             model.syncData
-                            (\subMsg_ subModel -> Backend.SyncData.Update.update currentDate device subMsg_ subModel)
+                            (\subMsg_ subModel -> DataManager.Update.update currentDate device subMsg_ subModel)
                             (\subModel model_ -> { model_ | syncData = subModel })
                             (\subCmds -> MsgSyncData subCmds)
                             model
@@ -857,7 +857,7 @@ subscriptions model =
          , memoryQuota SetMemoryQuota
 
          -- @todo: Change to Try to sync every 1 minute.
-         , Time.every 1000 (\_ -> App.Model.MsgSyncData Backend.SyncData.Model.BackendGeneralFetch)
+         , Time.every 1000 (\_ -> App.Model.MsgSyncData DataManager.Model.BackendGeneralFetch)
          ]
             ++ checkDataWanted
         )

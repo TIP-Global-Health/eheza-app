@@ -1,4 +1,4 @@
-module Backend.SyncData.Model exposing
+module DataManager.Model exposing
     ( BackendGeneralEntity(..)
     , DownloadStatus
     , DownloadSyncResponse

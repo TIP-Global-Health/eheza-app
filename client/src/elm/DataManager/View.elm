@@ -1,6 +1,6 @@
-module Backend.SyncData.View exposing (viewDebugSync)
+module DataManager.View exposing (viewDebugSync)
 
-import Backend.SyncData.Model exposing (BackendGeneralEntity(..), DownloadSyncResponse, Model, Msg, SyncStatus(..))
+import DataManager.Model exposing (BackendGeneralEntity(..), DownloadSyncResponse, Model, Msg, SyncStatus(..))
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -36,7 +36,7 @@ viewSyncDownloadGeneral : Model -> WebData DownloadSyncResponse -> Html Msg
 viewSyncDownloadGeneral model webData =
     div []
         [ div [] [ text <| "Trying to fetch `General` from revision ID " ++ String.fromInt model.lastFetchedRevisionIdGeneral ]
-        , button [ onClick <| Backend.SyncData.Model.SetLastFetchedRevisionIdGeneral 0 ] [ text "Reset revision ID to 0" ]
+        , button [ onClick <| DataManager.Model.SetLastFetchedRevisionIdGeneral 0 ] [ text "Reset revision ID to 0" ]
         , case webData of
             RemoteData.Success data ->
                 div []

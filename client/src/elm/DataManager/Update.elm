@@ -1,10 +1,10 @@
-port module Backend.SyncData.Update exposing (update)
+port module DataManager.Update exposing (update)
 
 import App.Model exposing (SubModelReturn)
 import Backend.Person.Encoder
 import Backend.PmtctParticipant.Encoder
-import Backend.SyncData.Decoder exposing (decodeDownloadSyncResponse)
-import Backend.SyncData.Model exposing (BackendGeneralEntity(..), Model, Msg(..), SyncStatus(..))
+import DataManager.Decoder exposing (decodeDownloadSyncResponse)
+import DataManager.Model exposing (BackendGeneralEntity(..), Model, Msg(..), SyncStatus(..))
 import Device.Model exposing (Device)
 import Error.Utils exposing (maybeHttpError, noError)
 import Gizra.NominalDate exposing (NominalDate)
@@ -120,7 +120,7 @@ update currentDate device msg model =
                     , lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral
                 }
                 (sendLastFetchedRevisionIdGeneral lastFetchedRevisionIdGeneral)
-                (maybeHttpError webData "Backend.SyncData.Update" "BackendGeneralFetchHandle")
+                (maybeHttpError webData "Backend.DataManager.Update" "BackendGeneralFetchHandle")
                 []
 
         SetLastFetchedRevisionIdGeneral revisionId ->

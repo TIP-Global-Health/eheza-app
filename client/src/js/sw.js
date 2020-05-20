@@ -192,7 +192,7 @@ dbSync.nodes.hook("updating", function (mods, primKey, obj, trans) {
 function sendSyncData () {
     return dbSync.syncMetadata.toArray().then (function (syncData) {
         var message = {
-            tag: 'SyncData',
+            tag: 'DataManager',
             data: syncData
         };
 

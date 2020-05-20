@@ -32,8 +32,8 @@ import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, OfflineSession, Session)
-import Backend.SyncData.Model exposing (SyncData)
 import Backend.Village.Model exposing (Village)
+import DataManager.Model exposing (SyncData)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
@@ -255,7 +255,7 @@ type MsgIndexedDb
       -- we can update our in-memory structures appropriately. In other cases, we
       -- can set them to `NotAsked` and let the "fetch" mechanism re-fetch them.
     | HandleRevisions (List Revision)
-      -- Updating SyncData
+      -- Updating DataManager
     | SaveSyncData HealthCenterId SyncData
     | DeleteSyncData HealthCenterId
     | HandleSavedSyncData HealthCenterId (WebData ())

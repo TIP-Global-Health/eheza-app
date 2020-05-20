@@ -4,10 +4,10 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model
 import Backend.Nurse.Model exposing (Nurse)
-import Backend.SyncData.Model
 import Browser
 import Browser.Navigation as Nav
 import Config.Model
+import DataManager.Model
 import Device.Model exposing (Device)
 import Error.Model exposing (Error)
 import Http
@@ -101,7 +101,7 @@ type alias Model =
     -- This is outside of ModelIndexedDb, as it's a related system, which other
     -- pages/ backends shouldn't look into. It's data being synced (download or
     -- uploaded), and if some code needs it, they should access it via `ModelIndexedDb`.
-    , syncData : Backend.SyncData.Model.Model
+    , syncData : DataManager.Model.Model
 
     -- List of errors we'll send to console.log
     , errors : List Error
@@ -204,7 +204,7 @@ type Msg
       MsgIndexedDb Backend.Model.MsgIndexedDb
     | MsgServiceWorker ServiceWorker.Model.Msg
     | TrySyncing
-    | MsgSyncData Backend.SyncData.Model.Msg
+    | MsgSyncData DataManager.Model.Msg
       -- Messages that require login, or manage the login process
     | MsgLoggedIn MsgLoggedIn
     | MsgPagePinCode Pages.PinCode.Model.Msg
@@ -297,7 +297,7 @@ emptyModel key url flags =
     , zscores = ZScore.Model.emptyModel
     , healthCenterId = healthCenterId
     , villageId = villageId
-    , syncData = Backend.SyncData.Model.emptyModel flags.lastFetchedRevisionIdGeneral flags.lastFetchedRevisionIdAuthority
+    , syncData = DataManager.Model.emptyModel flags.lastFetchedRevisionIdGeneral flags.lastFetchedRevisionIdAuthority
     , errors = []
     }
 

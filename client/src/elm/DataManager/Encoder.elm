@@ -1,6 +1,6 @@
-module Backend.SyncData.Encoder exposing (encodeSyncData)
+module DataManager.Encoder exposing (encodeSyncData)
 
-import Backend.SyncData.Model exposing (..)
+import DataManager.Model exposing (..)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Time

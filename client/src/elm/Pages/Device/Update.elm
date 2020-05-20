@@ -2,7 +2,7 @@ module Pages.Device.Update exposing (update)
 
 import App.Model
 import Backend.Model
-import Backend.SyncData.Model exposing (emptySyncData)
+import DataManager.Model exposing (emptySyncData)
 import Pages.Device.Model exposing (..)
 
 

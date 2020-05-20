@@ -5,7 +5,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.SyncData.Model exposing (SyncData)
+import DataManager.Model exposing (SyncData)
 import Date
 import Device.Model exposing (..)
 import Gizra.Html exposing (emptyNode, showMaybe)
@@ -22,7 +22,7 @@ import Utils.Html exposing (spinner)
 import Utils.WebData exposing (viewError)
 
 
-{-| We organize our SyncData by health center. However, there is also a bunch
+{-| We organize our DataManager by health center. However, there is also a bunch
 of nodes that we get no matter which health center we're interesting in. So,
 this is the "magic" UUID that represents "all the health centers" (or, "no
 health center", depending on how you look at it).
@@ -161,19 +161,19 @@ viewSyncData language data =
 
         viewAttempt attempt =
             case attempt of
-                Backend.SyncData.Model.NotAsked ->
+                DataManager.Model.NotAsked ->
                     "NotAsked"
 
-                Backend.SyncData.Model.Downloading _ _ ->
+                DataManager.Model.Downloading _ _ ->
                     "Downloading"
 
-                Backend.SyncData.Model.Uploading _ ->
+                DataManager.Model.Uploading _ ->
                     "Uploading"
 
-                Backend.SyncData.Model.Failure time error ->
+                DataManager.Model.Failure time error ->
                     "Failure " ++ viewDateTime time ++ " " ++ Debug.toString error
 
-                Backend.SyncData.Model.Success ->
+                DataManager.Model.Success ->
                     "Success"
 
         ( lastSuccessfulContact, remainingForDownload ) =
