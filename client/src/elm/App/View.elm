@@ -5,6 +5,7 @@ import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (ParticipantDirectoryOperation(..), RegistrationInitiator(..))
+import Backend.SyncData.View
 import Browser
 import Config.View
 import Date
@@ -77,7 +78,7 @@ flexPageWrapper model html =
         [ viewLanguageSwitcherAndVersion model
 
         -- @todo: Debug only
-        , div [ class "ui segment" ] [ text <| Debug.toString model.syncData ]
+        , Backend.SyncData.View.viewDebugSync model.syncData
         , div
             [ class "page-content" ]
             [ html ]

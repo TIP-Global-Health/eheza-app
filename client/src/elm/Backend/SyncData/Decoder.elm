@@ -30,7 +30,7 @@ decodeBackendGeneralEntity =
                             |> andThen (\person -> succeed (BackendGeneralEntityPerson person))
 
                     _ ->
-                        succeed BackendGeneralEntityUnknown
+                        succeed (BackendGeneralEntityUnknown type_)
             )
 
 

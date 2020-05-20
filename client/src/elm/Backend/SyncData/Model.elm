@@ -13,6 +13,7 @@ module Backend.SyncData.Model exposing
     )
 
 import Backend.Person.Model exposing (Person)
+import Html exposing (Html)
 import RemoteData exposing (WebData)
 import Time
 
@@ -24,7 +25,7 @@ but a child's measurements is per authority.
 type BackendGeneralEntity
     = BackendGeneralEntityPerson Person
       -- Don't fail on unknown types.
-    | BackendGeneralEntityUnknown
+    | BackendGeneralEntityUnknown String
 
 
 type alias LastFetchedRevisionIdGeneral =
