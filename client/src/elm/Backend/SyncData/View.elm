@@ -1,10 +1,11 @@
 module Backend.SyncData.View exposing (viewDebugSync)
 
-import Backend.SyncData.Model exposing (BackendGeneralEntity(..), Model)
+import Backend.SyncData.Model exposing (BackendGeneralEntity(..), DownloadSyncResponse, Model, SyncStatus(..))
+import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Json.Encode
-import RemoteData
+import RemoteData exposing (WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Utils.Html exposing (spinner)
 
@@ -17,21 +18,34 @@ viewDebugSync : Model -> Html msg
 viewDebugSync model =
     let
         htmlContent =
-            case model.downloadSyncResponse of
-                RemoteData.Success data ->
-                    details [ property "open" (Json.Encode.bool True) ]
-                        [ div [] [ text <| "We still have " ++ String.fromInt data.revisionCount ++ " items left to download" ]
-                        , div [] [ text <| "Here is the content we've fetched from revision ID " ++ String.fromInt model.lastFetchedRevisionIdGeneral ++ ":" ]
-                        , ol [] (List.map viewGeneralEntity data.backendGeneralEntities)
-                        ]
+            details [ property "open" (Json.Encode.bool True) ]
+                [ div [] [ text <| "Sync status: " ++ Debug.toString model.syncStatus ]
+                , case model.syncStatus of
+                    SyncDownloadGeneral webData ->
+                        viewSyncDownloadGeneral model webData
 
-                RemoteData.Failure error ->
-                    text <| Debug.toString error
-
-                _ ->
-                    details [ property "open" (Json.Encode.bool True) ] [ spinner ]
+                    _ ->
+                        emptyNode
+                ]
     in
     pre [ class "ui segment" ] [ htmlContent ]
+
+
+viewSyncDownloadGeneral : Model -> WebData DownloadSyncResponse -> Html msg
+viewSyncDownloadGeneral model webData =
+    case webData of
+        RemoteData.Success data ->
+            div []
+                [ div [] [ text <| "We still have " ++ String.fromInt data.revisionCount ++ " items left to download" ]
+                , div [] [ text <| "Here is the content we've fetched from revision ID " ++ String.fromInt model.lastFetchedRevisionIdGeneral ++ ":" ]
+                , ol [] (List.map viewGeneralEntity data.backendGeneralEntities)
+                ]
+
+        RemoteData.Failure error ->
+            text <| Debug.toString error
+
+        _ ->
+            spinner
 
 
 viewGeneralEntity : BackendGeneralEntity -> Html msg

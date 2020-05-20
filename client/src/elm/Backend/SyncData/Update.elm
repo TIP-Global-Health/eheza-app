@@ -26,27 +26,32 @@ update currentDate device msg model =
     in
     case msg of
         BackendGeneralFetch ->
-            if RemoteData.isLoading model.downloadSyncResponse || model.syncStatus /= SyncDownloadGeneral then
-                -- We are already loading, or not in correct sync status.
-                noChange
+            case model.syncStatus of
+                SyncDownloadGeneral webData ->
+                    if RemoteData.isLoading webData then
+                        -- We are already loading, or not in correct sync status.
+                        noChange
 
-            else
-                let
-                    cmd =
-                        HttpBuilder.get (device.backendUrl ++ "/api/sync")
-                            |> withQueryParams
-                                [ ( "access_token", device.accessToken )
-                                , ( "db_version", String.fromInt dbVersion )
-                                , ( "base_revision", String.fromInt model.lastFetchedRevisionIdGeneral )
-                                ]
-                            |> withExpectJson decodeDownloadSyncResponse
-                            |> HttpBuilder.send (RemoteData.fromResult >> BackendGeneralFetchHandle)
-                in
-                SubModelReturn
-                    { model | downloadSyncResponse = RemoteData.Loading }
-                    cmd
-                    noError
-                    []
+                    else
+                        let
+                            cmd =
+                                HttpBuilder.get (device.backendUrl ++ "/api/sync")
+                                    |> withQueryParams
+                                        [ ( "access_token", device.accessToken )
+                                        , ( "db_version", String.fromInt dbVersion )
+                                        , ( "base_revision", String.fromInt model.lastFetchedRevisionIdGeneral )
+                                        ]
+                                    |> withExpectJson decodeDownloadSyncResponse
+                                    |> HttpBuilder.send (RemoteData.fromResult >> BackendGeneralFetchHandle)
+                        in
+                        SubModelReturn
+                            { model | syncStatus = SyncDownloadGeneral RemoteData.Loading }
+                            cmd
+                            noError
+                            []
+
+                _ ->
+                    noChange
 
         BackendGeneralFetchHandle webData ->
             let
@@ -111,7 +116,7 @@ update currentDate device msg model =
             in
             SubModelReturn
                 { model
-                    | downloadSyncResponse = webData
+                    | syncStatus = SyncDownloadGeneral webData
                     , lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral
                 }
                 cmd

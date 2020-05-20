@@ -42,7 +42,6 @@ type alias LastFetchedRevisionIdGeneral =
 
 type alias Model =
     { syncStatus : SyncStatus
-    , downloadSyncResponse : WebData DownloadSyncResponse
 
     -- @todo: Remove?
     , lastFetchedRevisionIdGeneral : Int
@@ -53,8 +52,7 @@ type alias Model =
 
 emptyModel : LastFetchedRevisionIdGeneral -> Model
 emptyModel lastFetchedRevisionIdGeneral =
-    { syncStatus = SyncDownloadGeneral
-    , downloadSyncResponse = RemoteData.NotAsked
+    { syncStatus = SyncDownloadGeneral RemoteData.NotAsked
     , lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
     , syncData = emptySyncData
@@ -109,7 +107,7 @@ type alias DownloadSyncResponse =
 
 type SyncStatus
     = SyncIdle
-    | SyncDownloadGeneral
+    | SyncDownloadGeneral (WebData DownloadSyncResponse)
       -- The UUID of the authority.
     | SyncDownloadAuthority String
     | SyncUpload
