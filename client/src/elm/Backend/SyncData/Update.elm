@@ -4,7 +4,7 @@ import App.Model exposing (SubModelReturn)
 import Backend.Person.Encoder
 import Backend.PmtctParticipant.Encoder
 import Backend.SyncData.Decoder exposing (decodeDownloadSyncResponse)
-import Backend.SyncData.Model exposing (BackendGeneralEntity(..), Model, Msg(..))
+import Backend.SyncData.Model exposing (BackendGeneralEntity(..), Model, Msg(..), SyncStatus(..))
 import Device.Model exposing (Device)
 import Error.Utils exposing (maybeHttpError, noError)
 import Gizra.NominalDate exposing (NominalDate)
@@ -26,7 +26,11 @@ update currentDate device msg model =
     in
     case msg of
         BackendGeneralFetch ->
-            if RemoteData.isNotAsked model.downloadSyncResponse || RemoteData.isSuccess model.downloadSyncResponse then
+            if RemoteData.isLoading model.downloadSyncResponse || model.syncStatus /= SyncDownloadGeneral then
+                -- We are already loading, or not in correct sync status.
+                noChange
+
+            else
                 let
                     cmd =
                         HttpBuilder.get (device.backendUrl ++ "/api/sync")
@@ -43,10 +47,6 @@ update currentDate device msg model =
                     cmd
                     noError
                     []
-
-            else
-                -- @todo: Handle other cases.
-                noChange
 
         BackendGeneralFetchHandle webData ->
             let

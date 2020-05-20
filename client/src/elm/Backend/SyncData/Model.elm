@@ -7,15 +7,14 @@ module Backend.SyncData.Model exposing
     , SyncAttempt(..)
     , SyncData
     , SyncError(..)
+    , SyncStatus(..)
     , UploadStatus
     , emptyModel
     , emptySyncData
     )
 
-import Backend.Entities exposing (PersonId, PmtctParticipantId)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
-import Html exposing (Html)
 import RemoteData exposing (WebData)
 import Time
 
@@ -42,7 +41,8 @@ type alias LastFetchedRevisionIdGeneral =
 
 
 type alias Model =
-    { downloadSyncResponse : WebData DownloadSyncResponse
+    { syncStatus : SyncStatus
+    , downloadSyncResponse : WebData DownloadSyncResponse
 
     -- @todo: Remove?
     , lastFetchedRevisionIdGeneral : Int
@@ -53,7 +53,8 @@ type alias Model =
 
 emptyModel : LastFetchedRevisionIdGeneral -> Model
 emptyModel lastFetchedRevisionIdGeneral =
-    { downloadSyncResponse = RemoteData.NotAsked
+    { syncStatus = SyncDownloadGeneral
+    , downloadSyncResponse = RemoteData.NotAsked
     , lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
     , syncData = emptySyncData
@@ -104,6 +105,14 @@ type alias DownloadSyncResponse =
     , lastTimestampOfLastRevision : Time.Posix
     , revisionCount : Int
     }
+
+
+type SyncStatus
+    = SyncIdle
+    | SyncDownloadGeneral
+      -- The UUID of the authority.
+    | SyncDownloadAuthority String
+    | SyncUpload
 
 
 type SyncAttempt
