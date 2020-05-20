@@ -25,7 +25,7 @@ update currentDate device msg model =
     in
     case msg of
         BackendGeneralFetch ->
-            if RemoteData.isNotAsked model.downloadSyncResponse then
+            if RemoteData.isNotAsked model.downloadSyncResponse || RemoteData.isSuccess model.downloadSyncResponse then
                 let
                     cmd =
                         HttpBuilder.get (device.backendUrl ++ "/api/sync")

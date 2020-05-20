@@ -3,6 +3,7 @@ module Backend.SyncData.View exposing (viewDebugSync)
 import Backend.SyncData.Model exposing (BackendGeneralEntity(..), Model)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Json.Encode
 import RemoteData
 import Utils.Html exposing (spinner)
 
@@ -17,9 +18,9 @@ viewDebugSync model =
         htmlContent =
             case model.downloadSyncResponse of
                 RemoteData.Success data ->
-                    details []
-                        [ div [] [ text <| "We still have " ++ String.fromInt data.revisionCount ++ " items to download" ]
-                        , div [] [ text "Here is the content we've fetched:" ]
+                    details [ property "open" (Json.Encode.bool True) ]
+                        [ div [] [ text <| "We still have " ++ String.fromInt data.revisionCount ++ " items left to download" ]
+                        , div [] [ text <| "Here is the content we've fetched from revision ID " ++ String.fromInt model.lastFetchedRevisionIdGeneral ++ ":" ]
                         , ol [] (List.map viewGeneralEntity data.backendGeneralEntities)
                         ]
 
