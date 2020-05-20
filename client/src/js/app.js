@@ -228,8 +228,7 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(data) {
       let entity = rowObject.entity;
       entity.uuid = rowObject.uuid;
 
-      const result = await dbSync.nodes.add(entity);
-      console.log(result);
+      await dbSync.nodes.add(entity);
     })();
   })
 
