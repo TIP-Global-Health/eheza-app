@@ -4,6 +4,7 @@ module DataManager.Model exposing
     , DownloadSyncResponse
     , Model
     , Msg(..)
+    , RevisionIdPerAuthority
     , SyncAttempt(..)
     , SyncData
     , SyncError(..)
@@ -15,6 +16,7 @@ module DataManager.Model exposing
 
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
+import List.Zipper exposing (Zipper)
 import RemoteData exposing (WebData)
 import Time
 
@@ -40,26 +42,33 @@ type alias LastFetchedRevisionIdGeneral =
     Int
 
 
-type alias LastFetchedRevisionIdAuthority =
-    Int
+type alias RevisionIdPerAuthority =
+    { uuid : String
+    , revisionId : Int
+    }
+
+
+type alias RevisionIdPerAuthorityZipper =
+    Maybe (Zipper RevisionIdPerAuthority)
 
 
 type alias Model =
     { syncStatus : SyncStatus
-
-    -- @todo: Remove?
     , lastFetchedRevisionIdGeneral : LastFetchedRevisionIdGeneral
-    , lastFetchedRevisionIdAuthority : LastFetchedRevisionIdAuthority
+
+    -- We may have multiple authorities, and each one has its own revision ID to
+    -- fetch from.
+    , revisionIdPerAuthorityZipper : RevisionIdPerAuthorityZipper
     , lastTryBackendGeneralDownloadTime : Time.Posix
     , syncData : SyncData
     }
 
 
-emptyModel : LastFetchedRevisionIdGeneral -> LastFetchedRevisionIdAuthority -> Model
-emptyModel lastFetchedRevisionIdGeneral lastFetchedRevisionIdAuthority =
+emptyModel : LastFetchedRevisionIdGeneral -> RevisionIdPerAuthorityZipper -> Model
+emptyModel lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper =
     { syncStatus = SyncDownloadGeneral RemoteData.NotAsked
     , lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral
-    , lastFetchedRevisionIdAuthority = lastFetchedRevisionIdAuthority
+    , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
     , syncData = emptySyncData
     }
@@ -111,12 +120,13 @@ type alias DownloadSyncResponse =
     }
 
 
+{-| The Sync (download or upload), by its order.
+-}
 type SyncStatus
     = SyncIdle
-    | SyncDownloadGeneral (WebData DownloadSyncResponse)
-      -- The UUID of the authority.
-    | SyncDownloadAuthority String
     | SyncUpload
+    | SyncDownloadGeneral (WebData DownloadSyncResponse)
+    | SyncDownloadAuthority RevisionIdPerAuthorityZipper (WebData DownloadSyncResponse)
 
 
 type SyncAttempt

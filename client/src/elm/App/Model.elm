@@ -7,11 +7,12 @@ import Backend.Nurse.Model exposing (Nurse)
 import Browser
 import Browser.Navigation as Nav
 import Config.Model
-import DataManager.Model
+import DataManager.Model exposing (RevisionIdPerAuthority)
 import Device.Model exposing (Device)
 import Error.Model exposing (Error)
 import Http
 import Json.Encode exposing (Value)
+import List.Zipper as Zipper
 import NutritionActivity.Model exposing (NutritionActivity)
 import Pages.Clinics.Model
 import Pages.Device.Model
@@ -260,7 +261,10 @@ type alias Flags =
     , healthCenterId : String
     , villageId : String
     , lastFetchedRevisionIdGeneral : Int
-    , lastFetchedRevisionIdAuthority : Int
+
+    -- We may have multiple authorities, and each one has its own revision ID to
+    -- fetch from.
+    , revisionIdPerAuthority : List RevisionIdPerAuthority
     }
 
 
@@ -268,18 +272,21 @@ emptyModel : Nav.Key -> Url -> Flags -> Model
 emptyModel key url flags =
     let
         healthCenterId =
-            if flags.healthCenterId == "" then
+            if String.isEmpty flags.healthCenterId then
                 Nothing
 
             else
                 Just (toEntityUuid flags.healthCenterId)
 
         villageId =
-            if flags.villageId == "" then
+            if String.isEmpty flags.villageId then
                 Nothing
 
             else
                 Just (toEntityUuid flags.villageId)
+
+        revisionIdPerAuthorityZipper =
+            Zipper.fromList flags.revisionIdPerAuthority
     in
     { activePage = PinCodePage
     , navigationKey = key
@@ -297,7 +304,7 @@ emptyModel key url flags =
     , zscores = ZScore.Model.emptyModel
     , healthCenterId = healthCenterId
     , villageId = villageId
-    , syncData = DataManager.Model.emptyModel flags.lastFetchedRevisionIdGeneral flags.lastFetchedRevisionIdAuthority
+    , syncData = DataManager.Model.emptyModel flags.lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper
     , errors = []
     }
 
