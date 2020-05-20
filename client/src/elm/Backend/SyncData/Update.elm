@@ -1,7 +1,7 @@
 module Backend.SyncData.Update exposing (update)
 
 import App.Model exposing (SubModelReturn)
-import Backend.SyncData.Decoder exposing (decodeBackendGeneralEntityList)
+import Backend.SyncData.Decoder exposing (decodeDownloadSyncResponse)
 import Backend.SyncData.Model exposing (Model, Msg(..))
 import Device.Model exposing (Device)
 import Error.Utils exposing (maybeHttpError, noError)
@@ -18,23 +18,24 @@ update currentDate device msg model =
 
         -- @todo: Move has hardcoded in flags, or keep here?
         dbVersion =
-            7
+            9
     in
     case msg of
         BackendGeneralFetch ->
-            if RemoteData.isNotAsked model.backendGeneralEntities then
+            if RemoteData.isNotAsked model.downloadSyncResponse then
                 let
                     cmd =
                         HttpBuilder.get (device.backendUrl ++ "/api/sync")
                             |> withQueryParams
                                 [ ( "access_token", device.accessToken )
                                 , ( "db_version", String.fromInt dbVersion )
+                                , ( "base_revision", String.fromInt model.lastFetchedRevisionIdGeneral )
                                 ]
-                            |> withExpectJson decodeBackendGeneralEntityList
+                            |> withExpectJson decodeDownloadSyncResponse
                             |> HttpBuilder.send (RemoteData.fromResult >> BackendGeneralFetchHandle)
                 in
                 SubModelReturn
-                    { model | backendGeneralEntities = RemoteData.Loading }
+                    { model | downloadSyncResponse = RemoteData.Loading }
                     cmd
                     noError
                     []
@@ -44,20 +45,8 @@ update currentDate device msg model =
                 noChange
 
         BackendGeneralFetchHandle webData ->
-            let
-                modelUpdated =
-                    case webData of
-                        RemoteData.Success data ->
-                            -- @todo: Iterate and get the highest
-                            -- lastFetchedRevisionIdGeneral
-                            -- { model | lastFetchedRevisionIdGeneral = lastFetchedRevisionId }
-                            model
-
-                        _ ->
-                            model
-            in
             SubModelReturn
-                { modelUpdated | backendGeneralEntities = webData }
+                { model | downloadSyncResponse = webData }
                 Cmd.none
                 (maybeHttpError webData "Backend.SyncData.Update" "BackendGeneralFetchHandle")
                 []

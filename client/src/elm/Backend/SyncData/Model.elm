@@ -1,6 +1,7 @@
 module Backend.SyncData.Model exposing
     ( BackendGeneralEntity(..)
     , DownloadStatus
+    , DownloadSyncResponse
     , Model
     , Msg(..)
     , SyncAttempt(..)
@@ -16,13 +17,10 @@ import RemoteData exposing (WebData)
 import Time
 
 
-
-{- The "general" entities are ones that currently don't belong to a specific
-   authority (e.g. Health center). For example, a person is a "general" entity,
-   but a child's measurements is per authority.
+{-| The "general" entities are ones that currently don't belong to a specific
+authority (e.g. Health center). For example, a person is a "general" entity,
+but a child's measurements is per authority.
 -}
-
-
 type BackendGeneralEntity
     = BackendGeneralEntityPerson Person
       -- Don't fail on unknown types.
@@ -34,7 +32,9 @@ type alias LastFetchedRevisionIdGeneral =
 
 
 type alias Model =
-    { backendGeneralEntities : WebData (List BackendGeneralEntity)
+    { downloadSyncResponse : WebData DownloadSyncResponse
+
+    -- @todo: Remove?
     , lastFetchedRevisionIdGeneral : Int
     , lastTryBackendGeneralDownloadTime : Time.Posix
     , syncData : SyncData
@@ -43,7 +43,7 @@ type alias Model =
 
 emptyModel : LastFetchedRevisionIdGeneral -> Model
 emptyModel lastFetchedRevisionIdGeneral =
-    { backendGeneralEntities = RemoteData.NotAsked
+    { downloadSyncResponse = RemoteData.NotAsked
     , lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
     , syncData = emptySyncData
@@ -87,6 +87,15 @@ type alias UploadStatus =
     }
 
 
+{-| Hold the info we're going to decode from a GET call to /api/sync.
+-}
+type alias DownloadSyncResponse =
+    { backendGeneralEntities : List BackendGeneralEntity
+    , lastTimestampOfLastRevision : Time.Posix
+    , revisionCount : Int
+    }
+
+
 type SyncAttempt
     = NotAsked
     | Downloading Time.Posix Int -- in progress, from base revision
@@ -106,4 +115,4 @@ type SyncError
 
 type Msg
     = BackendGeneralFetch
-    | BackendGeneralFetchHandle (WebData (List BackendGeneralEntity))
+    | BackendGeneralFetchHandle (WebData DownloadSyncResponse)

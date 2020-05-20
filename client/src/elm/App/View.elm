@@ -77,7 +77,7 @@ flexPageWrapper model html =
         [ viewLanguageSwitcherAndVersion model
 
         -- @todo: Debug only
-        , div [] [ text <| Debug.toString model.syncData ]
+        , div [ class "ui segment" ] [ text <| Debug.toString model.syncData ]
         , div
             [ class "page-content" ]
             [ html ]

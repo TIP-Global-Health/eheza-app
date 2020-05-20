@@ -1,16 +1,22 @@
-module Backend.SyncData.Decoder exposing (decodeBackendGeneralEntityList, decodeSyncData)
+module Backend.SyncData.Decoder exposing (decodeDownloadSyncResponse, decodeSyncData)
 
 import Backend.Person.Decoder exposing (decodePerson)
-import Backend.SyncData.Model exposing (BackendGeneralEntity(..), DownloadStatus, SyncAttempt(..), SyncData, SyncError(..), UploadStatus)
+import Backend.SyncData.Model exposing (BackendGeneralEntity(..), DownloadStatus, DownloadSyncResponse, SyncAttempt(..), SyncData, SyncError(..), UploadStatus)
+import Gizra.Date exposing (decodeDate)
 import Gizra.Json exposing (decodeFloat, decodeInt)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Time
 
 
-decodeBackendGeneralEntityList : Decoder (List BackendGeneralEntity)
-decodeBackendGeneralEntityList =
-    list decodeBackendGeneralEntity
+decodeDownloadSyncResponse : Decoder DownloadSyncResponse
+decodeDownloadSyncResponse =
+    field "data"
+        (succeed DownloadSyncResponse
+            |> required "batch" (list decodeBackendGeneralEntity)
+            |> required "last_timestamp" decodeDate
+            |> required "revision_count" decodeInt
+        )
 
 
 decodeBackendGeneralEntity : Decoder BackendGeneralEntity
