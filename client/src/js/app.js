@@ -152,6 +152,12 @@ navigator.storage.persist().then(function(granted) {
       vid: 123,
     });
 
+    await dbSync
+        .nodes
+        .where('uuid')
+        .equals('00726ed9-32ce-5008-b69a-538d6bc2f00e')
+        .toArray(function(data) {console.log(data)});
+
     console.log(result);
   })();
 

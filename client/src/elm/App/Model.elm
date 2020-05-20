@@ -9,6 +9,7 @@ import Browser
 import Browser.Navigation as Nav
 import Config.Model
 import Device.Model exposing (Device)
+import Error.Model exposing (Error)
 import Http
 import Json.Encode exposing (Value)
 import NutritionActivity.Model exposing (NutritionActivity)
@@ -101,6 +102,9 @@ type alias Model =
     -- pages/ backends shouldn't look into. It's data being synced (download or
     -- uploaded), and if some code needs it, they should access it via `ModelIndexedDb`.
     , syncData : Backend.SyncData.Model.Model
+
+    -- List of errors we'll send to console.log
+    , errors : List Error
     }
 
 
@@ -200,6 +204,7 @@ type Msg
       MsgIndexedDb Backend.Model.MsgIndexedDb
     | MsgServiceWorker ServiceWorker.Model.Msg
     | TrySyncing
+    | MsgSyncData Backend.SyncData.Model.Msg
       -- Messages that require login, or manage the login process
     | MsgLoggedIn MsgLoggedIn
     | MsgPagePinCode Pages.PinCode.Model.Msg
@@ -292,4 +297,22 @@ emptyModel key url flags =
     , healthCenterId = healthCenterId
     , villageId = villageId
     , syncData = Backend.SyncData.Model.emptyModel flags.lastFetchedRevisionIdGeneral
+    , errors = []
+    }
+
+
+{-| This is what Pages and Backend should return. Currently we're adding it
+gradually, as code base was written without it.
+
+Along with the Model and Cmd, we return:
+
+  - error: a Maybe error to indicate for example a Failure in HTTP request.
+  - appMsgs - that allow sub models to call MSGs of other submodules.
+
+-}
+type alias SubModelsReturn subModel subMsg =
+    { model : subModel
+    , cmd : Cmd subMsg
+    , error : Maybe Error
+    , appMsgs : List Msg
     }

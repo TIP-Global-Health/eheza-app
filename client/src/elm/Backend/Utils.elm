@@ -1,4 +1,4 @@
-module Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements)
+module Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, updateSubModel)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)

@@ -8,7 +8,9 @@ import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
+import Backend.SyncData.Update
 import Backend.Update
+import Backend.Utils exposing (updateSubModel)
 import Browser
 import Browser.Navigation as Nav
 import Config
@@ -169,6 +171,9 @@ updateAndThenFetch msg model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
+        noChange =
+            ( model, Cmd.none )
+
         currentDate =
             fromLocalDateTime model.currentTime
 
@@ -604,6 +609,23 @@ update msg model =
         TrySyncing ->
             -- Normally handled automatically, but sometimes nice to trigger manually
             ( model, trySyncing () )
+
+        MsgSyncData subMsg ->
+            model.configuration
+                |> RemoteData.toMaybe
+                |> Maybe.andThen (\config -> RemoteData.toMaybe config.device)
+                |> Maybe.map
+                    (\device ->
+                        noChange
+                     --updateSubModel
+                     --    subMsg
+                     --    model.syncData
+                     --    (\subMsg_ subModel -> Backend.SyncData.Update.update currentDate device subMsg_ subModel)
+                     --    (\subModel model_ -> { model_ | syncData = subModel })
+                     --    (\subCmds -> MsgSyncData subCmds)
+                     --    model
+                    )
+                |> Maybe.withDefault noChange
 
         TryPinCode code ->
             updateConfigured
