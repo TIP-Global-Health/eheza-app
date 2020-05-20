@@ -1601,13 +1601,10 @@ makeEditableSession sessionId db =
 
         hasChildrenMeasurementsNotSuccess =
             hasNoSuccessValues db.childMeasurements
-
-        hasPeoplesNotSuccess =
-            hasNoSuccessValues db.people
     in
-    -- Make sure we don't still have people and measurements being lazy loaded.
+    -- Make sure we don't still have measurements being lazy loaded.
     -- If we do, allow rebuilding the `EditableSession`.
-    if hasMothersMeasurementsNotSuccess || hasChildrenMeasurementsNotSuccess || hasPeoplesNotSuccess then
+    if hasMothersMeasurementsNotSuccess || hasChildrenMeasurementsNotSuccess then
         Loading
 
     else
@@ -1630,11 +1627,12 @@ makeEditableSession sessionId db =
                 RemoteData.andThen
                     (\participants ->
                         Dict.keys participants.byMotherId
-                            |> List.map
+                            |> List.filterMap
                                 (\id ->
                                     Dict.get id db.people
                                         |> Maybe.withDefault NotAsked
-                                        |> RemoteData.map (\data -> ( id, data ))
+                                        |> RemoteData.toMaybe
+                                        |> Maybe.map (\data -> Success ( id, data ))
                                 )
                             |> RemoteData.fromList
                             |> RemoteData.map (List.sortBy (Tuple.second >> .name) >> Dict.fromList)
@@ -1645,11 +1643,12 @@ makeEditableSession sessionId db =
                 RemoteData.andThen
                     (\participants ->
                         Dict.keys participants.byChildId
-                            |> List.map
+                            |> List.filterMap
                                 (\id ->
                                     Dict.get id db.people
                                         |> Maybe.withDefault NotAsked
-                                        |> RemoteData.map (\data -> ( id, data ))
+                                        |> RemoteData.toMaybe
+                                        |> Maybe.map (\data -> Success ( id, data ))
                                 )
                             |> RemoteData.fromList
                             |> RemoteData.map Dict.fromList
