@@ -40,20 +40,26 @@ type alias LastFetchedRevisionIdGeneral =
     Int
 
 
+type alias LastFetchedRevisionIdAuthority =
+    Int
+
+
 type alias Model =
     { syncStatus : SyncStatus
 
     -- @todo: Remove?
-    , lastFetchedRevisionIdGeneral : Int
+    , lastFetchedRevisionIdGeneral : LastFetchedRevisionIdGeneral
+    , lastFetchedRevisionIdAuthority : LastFetchedRevisionIdAuthority
     , lastTryBackendGeneralDownloadTime : Time.Posix
     , syncData : SyncData
     }
 
 
-emptyModel : LastFetchedRevisionIdGeneral -> Model
-emptyModel lastFetchedRevisionIdGeneral =
+emptyModel : LastFetchedRevisionIdGeneral -> LastFetchedRevisionIdAuthority -> Model
+emptyModel lastFetchedRevisionIdGeneral lastFetchedRevisionIdAuthority =
     { syncStatus = SyncDownloadGeneral RemoteData.NotAsked
     , lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral
+    , lastFetchedRevisionIdAuthority = lastFetchedRevisionIdAuthority
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
     , syncData = emptySyncData
     }
@@ -133,3 +139,4 @@ type SyncError
 type Msg
     = BackendGeneralFetch
     | BackendGeneralFetchHandle (WebData DownloadSyncResponse)
+    | SetLastFetchedRevisionIdGeneral Int

@@ -123,6 +123,13 @@ update currentDate device msg model =
                 (maybeHttpError webData "Backend.SyncData.Update" "BackendGeneralFetchHandle")
                 []
 
+        SetLastFetchedRevisionIdGeneral revisionId ->
+            SubModelReturn
+                { model | lastFetchedRevisionIdGeneral = revisionId }
+                Cmd.none
+                noError
+                []
+
 
 {-| Send to JS data we have synced (e.g. `person`, `health center`, etc.
 -}

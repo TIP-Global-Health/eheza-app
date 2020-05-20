@@ -1,9 +1,10 @@
 module Backend.SyncData.View exposing (viewDebugSync)
 
-import Backend.SyncData.Model exposing (BackendGeneralEntity(..), DownloadSyncResponse, Model, SyncStatus(..))
+import Backend.SyncData.Model exposing (BackendGeneralEntity(..), DownloadSyncResponse, Model, Msg, SyncStatus(..))
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
 import Json.Encode
 import RemoteData exposing (WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -14,7 +15,7 @@ import Utils.Html exposing (spinner)
 -- @todo: Debug for now
 
 
-viewDebugSync : Model -> Html msg
+viewDebugSync : Model -> Html Msg
 viewDebugSync model =
     let
         htmlContent =
@@ -31,10 +32,11 @@ viewDebugSync model =
     pre [ class "ui segment" ] [ htmlContent ]
 
 
-viewSyncDownloadGeneral : Model -> WebData DownloadSyncResponse -> Html msg
+viewSyncDownloadGeneral : Model -> WebData DownloadSyncResponse -> Html Msg
 viewSyncDownloadGeneral model webData =
     div []
         [ div [] [ text <| "Trying to fetch `General` from revision ID " ++ String.fromInt model.lastFetchedRevisionIdGeneral ]
+        , button [ onClick <| Backend.SyncData.Model.SetLastFetchedRevisionIdGeneral 0 ] [ text "Reset revision ID to 0" ]
         , case webData of
             RemoteData.Success data ->
                 div []

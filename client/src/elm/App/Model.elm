@@ -260,6 +260,7 @@ type alias Flags =
     , healthCenterId : String
     , villageId : String
     , lastFetchedRevisionIdGeneral : Int
+    , lastFetchedRevisionIdAuthority : Int
     }
 
 
@@ -296,7 +297,7 @@ emptyModel key url flags =
     , zscores = ZScore.Model.emptyModel
     , healthCenterId = healthCenterId
     , villageId = villageId
-    , syncData = Backend.SyncData.Model.emptyModel flags.lastFetchedRevisionIdGeneral
+    , syncData = Backend.SyncData.Model.emptyModel flags.lastFetchedRevisionIdGeneral flags.lastFetchedRevisionIdAuthority
     , errors = []
     }
 
