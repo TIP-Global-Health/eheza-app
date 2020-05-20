@@ -10,4 +10,7 @@ encodeHealthCenter healthCenter =
     object
         [ ( "catchment_area", encodeEntityUuid healthCenter.catchmentAreaId )
         , ( "name", string healthCenter.name )
+
+        -- @todo: Is there a problem with adding type?
+        , ( "type", string "health_center" )
         ]

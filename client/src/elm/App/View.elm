@@ -78,7 +78,7 @@ flexPageWrapper model html =
         [ viewLanguageSwitcherAndVersion model
 
         -- @todo: Debug only
-        , Html.map MsgSyncData (DataManager.View.viewDebugSync model.syncData)
+        , Html.map MsgDataManager (DataManager.View.viewDebugSync model.dataManager)
         , div
             [ class "page-content" ]
             [ html ]

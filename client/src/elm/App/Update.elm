@@ -609,7 +609,9 @@ update msg model =
             -- Normally handled automatically, but sometimes nice to trigger manually
             ( model, trySyncing () )
 
-        MsgSyncData subMsg ->
+        MsgDataManager subMsg ->
+            -- @todo: On Device status page, model.configuration might not be
+            -- Success.
             model.configuration
                 |> RemoteData.toMaybe
                 |> Maybe.andThen (\config -> RemoteData.toMaybe config.device)
@@ -617,10 +619,10 @@ update msg model =
                     (\device ->
                         updateSubModel
                             subMsg
-                            model.syncData
+                            model.dataManager
                             (\subMsg_ subModel -> DataManager.Update.update currentDate device subMsg_ subModel)
-                            (\subModel model_ -> { model_ | syncData = subModel })
-                            (\subCmds -> MsgSyncData subCmds)
+                            (\subModel model_ -> { model_ | dataManager = subModel })
+                            (\subCmds -> MsgDataManager subCmds)
                             model
                     )
                 |> Maybe.withDefault noChange
@@ -855,7 +857,7 @@ subscriptions model =
          , persistentStorage SetPersistentStorage
          , storageQuota SetStorageQuota
          , memoryQuota SetMemoryQuota
-         , Sub.map App.Model.MsgSyncData DataManager.Update.subscriptions
+         , Sub.map App.Model.MsgDataManager DataManager.Update.subscriptions
          ]
             ++ checkDataWanted
         )

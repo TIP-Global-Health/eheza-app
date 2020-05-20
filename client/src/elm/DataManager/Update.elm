@@ -5,7 +5,7 @@ import Backend.HealthCenter.Encoder
 import Backend.Person.Encoder
 import Backend.PmtctParticipant.Encoder
 import DataManager.Decoder exposing (decodeDownloadSyncResponse)
-import DataManager.Model exposing (BackendGeneralEntity(..), Model, Msg(..), SyncStatus(..))
+import DataManager.Model exposing (BackendGeneralEntity(..), FetchFromIndexDbQueryType(..), Model, Msg(..), SyncStatus(..))
 import DataManager.Utils
 import Device.Model exposing (Device)
 import Error.Utils exposing (maybeHttpError, noError)
@@ -158,7 +158,7 @@ update currentDate device msg model =
 
                 indexDbQueryTypeAsString =
                     case indexDbQueryType of
-                        DataManager.Model.IndexDbQueryHealthCenters ->
+                        IndexDbQueryHealthCenters ->
                             "IndexDbQueryHealthCenters"
             in
             SubModelReturn
@@ -167,14 +167,15 @@ update currentDate device msg model =
                 noError
                 []
 
-        FetchFromIndexDbHandle indexDbQueryType val ->
+        FetchFromIndexDbHandle val ->
             noChange
 
 
 subscriptions : Sub Msg
 subscriptions =
     Sub.batch
-        [ Time.every 1000 (\_ -> DataManager.Model.BackendGeneralFetch)
+        [ Time.every 1000 (\_ -> BackendGeneralFetch)
+        , getFromIndexDb FetchFromIndexDbHandle
         ]
 
 

@@ -20,6 +20,9 @@ encodePmtctParticipant data =
                 ]
           )
         , ( "clinic", encodeEntityUuid data.clinic )
+
+        -- @todo: Is there a problem with adding type?
+        , ( "type", string "pmtct_participant" )
         ]
 
 

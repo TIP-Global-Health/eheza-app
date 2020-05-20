@@ -102,7 +102,7 @@ type alias Model =
     -- This is outside of ModelIndexedDb, as it's a related system, which other
     -- pages/ backends shouldn't look into. It's data being synced (download or
     -- uploaded), and if some code needs it, they should access it via `ModelIndexedDb`.
-    , syncData : DataManager.Model.Model
+    , dataManager : DataManager.Model.Model
 
     -- List of errors we'll send to console.log
     , errors : List Error
@@ -205,7 +205,7 @@ type Msg
       MsgIndexedDb Backend.Model.MsgIndexedDb
     | MsgServiceWorker ServiceWorker.Model.Msg
     | TrySyncing
-    | MsgSyncData DataManager.Model.Msg
+    | MsgDataManager DataManager.Model.Msg
       -- Messages that require login, or manage the login process
     | MsgLoggedIn MsgLoggedIn
     | MsgPagePinCode Pages.PinCode.Model.Msg
@@ -304,7 +304,7 @@ emptyModel key url flags =
     , zscores = ZScore.Model.emptyModel
     , healthCenterId = healthCenterId
     , villageId = villageId
-    , syncData = DataManager.Model.emptyModel flags.lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper
+    , dataManager = DataManager.Model.emptyModel flags.lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper
     , errors = []
     }
 

@@ -20,7 +20,8 @@ viewDebugSync model =
     let
         htmlContent =
             details [ property "open" (Json.Encode.bool True) ]
-                [ div [] [ text <| "Sync status: " ++ Debug.toString model.syncStatus ]
+                [ button [ onClick <| DataManager.Model.FetchFromIndexDb DataManager.Model.IndexDbQueryHealthCenters ] [ text "Fetch Health Centers" ]
+                , div [] [ text <| "Sync status: " ++ Debug.toString model.syncStatus ]
                 , case model.syncStatus of
                     SyncDownloadGeneral webData ->
                         viewSyncDownloadGeneral model webData
@@ -74,7 +75,4 @@ viewGeneralEntity backendGeneralEntity =
 
             BackendGeneralEntityUnknown type_ _ ->
                 text <| type_ ++ " (we still don't decode it)"
-
-
-
-                        ]
+        ]

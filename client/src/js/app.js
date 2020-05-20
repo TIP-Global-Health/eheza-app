@@ -259,10 +259,11 @@ elmApp.ports.sendLastFetchedRevisionIdGeneral.subscribe(function(lastFetchedRevi
  * Fetch data from IndexDB, and send to Elm.
  */
 elmApp.ports.askFromIndexDb.subscribe(function(queryType) {
+  console.log(queryType);
   switch (queryType) {
     case 'IndexDbQueryHealthCenters':
       (async () => {
-        const result = await dbSync.nodes.where('type').equals('health_center');
+        const result = await dbSync.nodes.where('type').equals('health_center').toArray()
         console.log(result);
 
         elmApp.ports.getFromIndexDb.send(result);

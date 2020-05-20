@@ -176,4 +176,4 @@ type Msg
     | BackendGeneralFetchHandle (WebData DownloadSyncResponse)
     | SetLastFetchedRevisionIdGeneral Int
     | FetchFromIndexDb FetchFromIndexDbQueryType
-    | FetchFromIndexDbHandle FetchFromIndexDbQueryType Value
+    | FetchFromIndexDbHandle Value
