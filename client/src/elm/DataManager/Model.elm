@@ -14,6 +14,7 @@ module DataManager.Model exposing
     , emptySyncData
     )
 
+import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Measurement.Model exposing (Measurement, Weight)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
@@ -31,7 +32,8 @@ type
     -- UUID is not part of the entities, so we'd keep it along with the entity
     -- itself. We keep the UUID is regular string to keep decoder code easier to
     -- manage.
-    = BackendGeneralEntityPerson String Int Person
+    = BackendGeneralHealthCenter String Int HealthCenter
+    | BackendGeneralPerson String Int Person
     | BackendGeneralPmtctParticipant String Int PmtctParticipant
       -- Don't fail on unknown types. We'd like to keep the type name along with
       -- the `vid`. The reason we keep the vid, is that we fetched some content

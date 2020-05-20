@@ -1,5 +1,6 @@
 module DataManager.Decoder exposing (decodeDownloadSyncResponse, decodeSyncData)
 
+import Backend.HealthCenter.Decoder
 import Backend.Person.Decoder exposing (decodePerson)
 import Backend.PmtctParticipant.Decoder
 import DataManager.Model exposing (BackendGeneralEntity(..), DownloadStatus, DownloadSyncResponse, SyncAttempt(..), SyncData, SyncError(..), UploadStatus)
@@ -31,9 +32,13 @@ decodeBackendGeneralEntity =
         |> andThen
             (\( type_, uuid, vid ) ->
                 case type_ of
+                    "health_center" ->
+                        Backend.HealthCenter.Decoder.decodeHealthCenter
+                            |> andThen (\entity -> succeed (BackendGeneralHealthCenter uuid vid entity))
+
                     "person" ->
                         Backend.Person.Decoder.decodePerson
-                            |> andThen (\entity -> succeed (BackendGeneralEntityPerson uuid vid entity))
+                            |> andThen (\entity -> succeed (BackendGeneralPerson uuid vid entity))
 
                     "pmtct_participant" ->
                         Backend.PmtctParticipant.Decoder.decodePmtctParticipant

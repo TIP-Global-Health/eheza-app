@@ -243,7 +243,7 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(data) {
       .catch(Dexie.BulkError, function (e) {
         // Explicitly catching the bulkAdd() operation makes those successful
         // additions commit despite that there were errors.
-        console.error (e);
+        // console.error (e);
       });
 
 });

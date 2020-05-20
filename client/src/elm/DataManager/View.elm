@@ -63,7 +63,10 @@ viewGeneralEntity : BackendGeneralEntity -> Html msg
 viewGeneralEntity backendGeneralEntity =
     li []
         [ case backendGeneralEntity of
-            BackendGeneralEntityPerson _ _ entity ->
+            BackendGeneralHealthCenter _ _ healthCenter ->
+                text <| "Health Center (" ++ healthCenter.name ++ ")"
+
+            BackendGeneralPerson _ _ entity ->
                 text <| "Person (" ++ entity.name ++ ")"
 
             BackendGeneralPmtctParticipant _ _ entity ->
@@ -71,4 +74,7 @@ viewGeneralEntity backendGeneralEntity =
 
             BackendGeneralEntityUnknown type_ _ ->
                 text <| type_ ++ " (we still don't decode it)"
-        ]
+
+
+
+                        ]

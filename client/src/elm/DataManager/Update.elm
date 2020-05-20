@@ -1,6 +1,7 @@
 port module DataManager.Update exposing (update)
 
 import App.Model exposing (SubModelReturn)
+import Backend.HealthCenter.Encoder
 import Backend.Person.Encoder
 import Backend.PmtctParticipant.Encoder
 import DataManager.Decoder exposing (decodeDownloadSyncResponse)
@@ -82,7 +83,11 @@ update currentDate device msg model =
                                                     |> Json.Encode.encode 0
                                         in
                                         case entity of
-                                            BackendGeneralEntityPerson uuid vid entity_ ->
+                                            BackendGeneralHealthCenter uuid vid entity_ ->
+                                                doEncode uuid vid (Backend.HealthCenter.Encoder.encodeHealthCenter entity_)
+                                                    :: accum
+
+                                            BackendGeneralPerson uuid vid entity_ ->
                                                 doEncode uuid vid (Backend.Person.Encoder.encodePerson entity_)
                                                     :: accum
 
@@ -111,7 +116,10 @@ update currentDate device msg model =
                                 |> Maybe.map
                                     (\entity ->
                                         case entity of
-                                            BackendGeneralEntityPerson _ vid _ ->
+                                            BackendGeneralHealthCenter _ vid _ ->
+                                                vid
+
+                                            BackendGeneralPerson _ vid _ ->
                                                 vid
 
                                             BackendGeneralPmtctParticipant _ vid _ ->
