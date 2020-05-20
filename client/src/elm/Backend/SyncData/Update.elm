@@ -119,7 +119,7 @@ update currentDate device msg model =
                     | syncStatus = SyncDownloadGeneral webData
                     , lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral
                 }
-                cmd
+                (sendLastFetchedRevisionIdGeneral lastFetchedRevisionIdGeneral)
                 (maybeHttpError webData "Backend.SyncData.Update" "BackendGeneralFetchHandle")
                 []
 
@@ -127,3 +127,14 @@ update currentDate device msg model =
 {-| Send to JS data we have synced (e.g. `person`, `health center`, etc.
 -}
 port sendSyncedDataToIndexDb : List String -> Cmd msg
+
+
+{-| Send to JS the last revision ID used to download General.
+-}
+port sendLastFetchedRevisionIdGeneral : Int -> Cmd msg
+
+
+{-| Send to JS the last revision ID used to download Authority, along with its
+UUID.
+-}
+port sendLastFetchedRevisionIdAuthority : ( String, Int ) -> Cmd msg

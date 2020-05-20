@@ -136,7 +136,10 @@ var elmApp = Elm.Main.init({
     activeLanguage: localStorage.getItem('language') || '',
     healthCenterId: localStorage.getItem('healthCenterId') || '',
     villageId: localStorage.getItem('villageId') || '',
+
+    // @todo: Instead of 0, we can check IndexDB for latest vid.
     lastFetchedRevisionIdGeneral: localStorage.getItem('lastFetchedRevisionIdGeneral') || 0,
+    lastFetchedRevisionIdAuthority: localStorage.getItem('lastFetchedRevisionIdAuthority') || 0,
   }
 });
 
@@ -242,6 +245,14 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(data) {
       });
 
 });
+
+/**
+ * Set the last revision ID used to download General.
+ */
+elmApp.ports.sendLastFetchedRevisionIdGeneral.subscribe(function(lastFetchedRevisionIdGeneral) {
+  localStorage.setItem('lastFetchedRevisionIdGeneral', lastFetchedRevisionIdGeneral);
+});
+
 
 /**
  * https://codeburst.io/javascript-async-await-with-foreach-b6ba62bbf404
