@@ -29,7 +29,7 @@ viewDebugSync model =
                     text <| Debug.toString error
 
                 _ ->
-                    spinner
+                    details [ property "open" (Json.Encode.bool True) ] [ spinner ]
     in
     pre [ class "ui segment" ] [ htmlContent ]
 
