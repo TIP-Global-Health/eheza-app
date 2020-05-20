@@ -116,9 +116,6 @@ viewNodes language db =
                 |> showMaybe
 
         Failure err ->
-            -- @todo: Uncomment, when health centers are loaded properly
-            -- in the device page.
-            -- viewError language err
             emptyNode
 
         Loading ->
@@ -274,17 +271,6 @@ viewPairingForm language device model =
 
                 Success _ ->
                     "success"
-
-        error =
-            -- @todo: Uncomment, when health centers are loaded properly
-            -- in the device page.
-            --case device of
-            --    Failure err ->
-            --        div [ class "ui message error" ]
-            --            [ viewError language err ]
-            --
-            --    _ ->
-            emptyNode
     in
     Html.form
         (action "javascript:void(0);" :: formAttr)
@@ -323,6 +309,5 @@ viewPairingForm language device model =
                     [ text <| translate language Translate.SubmitPairingCode ]
                 ]
             , p [] []
-            , error
             ]
         ]
