@@ -612,16 +612,12 @@
                                   clinics.push(['session', participation.clinic]);
                                 })
 
-                                if (clinics.length > 0) {
-                                    query = table.where('[type+clinic]').anyOf(clinics);
+                                query = table.where('[type+clinic]').anyOf(clinics);
 
-                                    // Cloning doesn't seem to work for this one.
-                                    countQuery = table.where('[type+clinic]').anyOf(clinics);
+                                // Cloning doesn't seem to work for this one.
+                                countQuery = table.where('[type+clinic]').anyOf(clinics);
 
-                                    return Promise.resolve();
-                                } else {
-                                    return Promise.reject('Could not find participation for child: ' + childId);
-                                }
+                                return Promise.resolve();
                             });
                         });
                     }
