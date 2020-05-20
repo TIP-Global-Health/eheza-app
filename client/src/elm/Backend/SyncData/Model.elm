@@ -27,9 +27,11 @@ type
     BackendGeneralEntity
     -- UUID is not part of the entities, so we'd keep it along with the entity
     -- itself.
-    = BackendGeneralEntityPerson PersonId Person
-      -- Don't fail on unknown types.
-    | BackendGeneralEntityUnknown String
+    = BackendGeneralEntityPerson PersonId Person Int
+      -- Don't fail on unknown types. We'd like to keep the type name along with
+      -- the `vid`. The reason we keep the vid, is that we fetched some content
+      -- which we don't recognize, but we want to keep fetching later content.
+    | BackendGeneralEntityUnknown String Int
 
 
 type alias LastFetchedRevisionIdGeneral =

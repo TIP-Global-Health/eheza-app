@@ -56,19 +56,20 @@ update currentDate device msg model =
                                 |> List.foldl
                                     (\entity accum ->
                                         let
-                                            doEncode uuid val =
+                                            doEncode uuid val vid =
                                                 Json.Encode.object
                                                     [ ( "uuid", encodeEntityUuid uuid )
                                                     , ( "entity", val )
+                                                    , ( "vid", Json.Encode.int vid )
                                                     ]
                                                     |> Json.Encode.encode 0
                                         in
                                         case entity of
-                                            BackendGeneralEntityPerson uuid person ->
-                                                doEncode uuid (Backend.Person.Encoder.encodePerson person)
+                                            BackendGeneralEntityPerson uuid person vid ->
+                                                doEncode uuid (Backend.Person.Encoder.encodePerson person) vid
                                                     :: accum
 
-                                            BackendGeneralEntityUnknown type_ ->
+                                            BackendGeneralEntityUnknown type_ _ ->
                                                 -- Filter out the unknown entities.
                                                 accum
                                     )
@@ -78,9 +79,33 @@ update currentDate device msg model =
 
                         Nothing ->
                             Cmd.none
+
+                lastFetchedRevisionIdGeneral =
+                    case RemoteData.toMaybe webData of
+                        Just data ->
+                            -- Get the last item.
+                            data.backendGeneralEntities
+                                |> List.reverse
+                                |> List.head
+                                |> Maybe.map
+                                    (\entity ->
+                                        case entity of
+                                            BackendGeneralEntityPerson _ _ vid ->
+                                                vid
+
+                                            BackendGeneralEntityUnknown _ vid ->
+                                                vid
+                                    )
+                                |> Maybe.withDefault model.lastFetchedRevisionIdGeneral
+
+                        Nothing ->
+                            model.lastFetchedRevisionIdGeneral
             in
             SubModelReturn
-                { model | downloadSyncResponse = webData }
+                { model
+                    | downloadSyncResponse = webData
+                    , lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral
+                }
                 cmd
                 (maybeHttpError webData "Backend.SyncData.Update" "BackendGeneralFetchHandle")
                 []

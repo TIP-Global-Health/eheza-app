@@ -228,6 +228,7 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(data) {
 
     let entity = rowObject.entity;
     entity.uuid = rowObject.uuid;
+    entity.vid = rowObject.vid;
 
     entities.push(entity);
   })

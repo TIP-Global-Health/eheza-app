@@ -22,19 +22,20 @@ decodeDownloadSyncResponse =
 
 decodeBackendGeneralEntity : Decoder BackendGeneralEntity
 decodeBackendGeneralEntity =
-    (succeed (\a b -> ( a, b ))
+    (succeed (\a b c -> ( a, b, c ))
         |> required "type" string
         |> required "uuid" decodeEntityUuid
+        |> required "vid" decodeInt
     )
         |> andThen
-            (\( type_, uuid ) ->
+            (\( type_, uuid, vid ) ->
                 case type_ of
                     "person" ->
                         decodePerson
-                            |> andThen (\person -> succeed (BackendGeneralEntityPerson uuid person))
+                            |> andThen (\person -> succeed (BackendGeneralEntityPerson uuid person vid))
 
                     _ ->
-                        succeed (BackendGeneralEntityUnknown type_)
+                        succeed (BackendGeneralEntityUnknown type_ vid)
             )
 
 

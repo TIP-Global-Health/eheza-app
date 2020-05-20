@@ -36,9 +36,9 @@ viewGeneralEntity : BackendGeneralEntity -> Html msg
 viewGeneralEntity backendGeneralEntity =
     li []
         [ case backendGeneralEntity of
-            BackendGeneralEntityPerson _ person ->
+            BackendGeneralEntityPerson _ person _ ->
                 text <| "Person (" ++ person.name ++ ")"
 
-            BackendGeneralEntityUnknown type_ ->
+            BackendGeneralEntityUnknown type_ _ ->
                 text <| type_ ++ " (we still don't decode it)"
         ]
