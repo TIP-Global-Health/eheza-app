@@ -33,19 +33,28 @@ viewDebugSync model =
 
 viewSyncDownloadGeneral : Model -> WebData DownloadSyncResponse -> Html msg
 viewSyncDownloadGeneral model webData =
-    case webData of
-        RemoteData.Success data ->
-            div []
-                [ div [] [ text <| "We still have " ++ String.fromInt data.revisionCount ++ " items left to download" ]
-                , div [] [ text <| "Here is the content we've fetched from revision ID " ++ String.fromInt model.lastFetchedRevisionIdGeneral ++ ":" ]
-                , ol [] (List.map viewGeneralEntity data.backendGeneralEntities)
-                ]
+    div []
+        [ div [] [ text <| "Trying to fetch `General` from revision ID " ++ String.fromInt model.lastFetchedRevisionIdGeneral ]
+        , case webData of
+            RemoteData.Success data ->
+                div []
+                    [ div [] [ text <| String.fromInt data.revisionCount ++ " items left to download" ]
+                    , if List.isEmpty data.backendGeneralEntities then
+                        div [] [ text "No content fetched in last HTTP request" ]
 
-        RemoteData.Failure error ->
-            text <| Debug.toString error
+                      else
+                        div []
+                            [ div [] [ text <| "Here is the content we've fetched in the last HTTP request:" ]
+                            , ol [] (List.map viewGeneralEntity data.backendGeneralEntities)
+                            ]
+                    ]
 
-        _ ->
-            spinner
+            RemoteData.Failure error ->
+                text <| Debug.toString error
+
+            _ ->
+                spinner
+        ]
 
 
 viewGeneralEntity : BackendGeneralEntity -> Html msg

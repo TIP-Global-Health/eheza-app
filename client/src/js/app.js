@@ -138,7 +138,7 @@ var elmApp = Elm.Main.init({
     villageId: localStorage.getItem('villageId') || '',
 
     // @todo: Instead of 0, we can check IndexDB for latest vid.
-    lastFetchedRevisionIdGeneral: localStorage.getItem('lastFetchedRevisionIdGeneral') || 0,
+    lastFetchedRevisionIdGeneral: parseInt(localStorage.getItem('lastFetchedRevisionIdGeneral')) || 0,
     lastFetchedRevisionIdAuthority: localStorage.getItem('lastFetchedRevisionIdAuthority') || 0,
   }
 });
