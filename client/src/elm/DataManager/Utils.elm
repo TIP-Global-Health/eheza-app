@@ -1,6 +1,6 @@
-module DataManager.Utils exposing (setSyncStatus)
+module DataManager.Utils exposing (determineSyncStatus)
 
-import DataManager.Model exposing (SyncStatus(..))
+import DataManager.Model exposing (Model, SyncStatus(..))
 import List.Zipper as Zipper
 import RemoteData
 
@@ -8,51 +8,58 @@ import RemoteData
 {-| Decide on the Sync status. Either keep the exiting one, or set the next one,
 according to the order `SyncStatus` is defined.
 -}
-setSyncStatus : SyncStatus -> SyncStatus
-setSyncStatus syncStatus =
-    case syncStatus of
-        SyncIdle ->
-            SyncUpload
+determineSyncStatus : Model -> Model
+determineSyncStatus model =
+    let
+        syncStatus =
+            model.syncStatus
 
-        SyncUpload ->
-            -- @todo: add logic
-            SyncDownloadGeneral RemoteData.NotAsked
+        syncStatusUpdated =
+            case syncStatus of
+                SyncIdle ->
+                    SyncUpload
 
-        SyncDownloadGeneral webData ->
-            case webData of
-                RemoteData.Success data ->
-                    if List.isEmpty data.backendGeneralEntities then
-                        -- We tried to fetch, but there was no more data.
-                        -- @todo
-                        SyncDownloadAuthority "" RemoteData.NotAsked
+                SyncUpload ->
+                    -- @todo: add logic
+                    SyncDownloadGeneral RemoteData.NotAsked
 
-                    else
-                        -- Still have data to download.
-                        syncStatus
+                SyncDownloadGeneral webData ->
+                    case webData of
+                        RemoteData.Success data ->
+                            if List.isEmpty data.backendGeneralEntities then
+                                -- We tried to fetch, but there was no more data.
+                                -- Next we try authorities.
+                                SyncDownloadAuthority model.revisionIdPerAuthorityZipper RemoteData.NotAsked
 
-                _ ->
-                    syncStatus
+                            else
+                                -- Still have data to download.
+                                syncStatus
 
-        SyncDownloadAuthority maybeZipper webData ->
-            case ( maybeZipper, webData ) of
-                ( Nothing, _ ) ->
-                    -- There are no authorities, so we can set the next status.
-                    SyncIdle
+                        _ ->
+                            syncStatus
 
-                ( Just zipper, RemoteData.Success data ) ->
-                    if List.isEmpty data.backendGeneralEntities then
-                        -- We tried to fetch, but there was no more data.
-                        -- Check if this is the last element
-                        if Zipper.isLast zipper then
+                SyncDownloadAuthority maybeZipper webData ->
+                    case ( maybeZipper, webData ) of
+                        ( Nothing, _ ) ->
+                            -- There are no authorities, so we can set the next status.
                             SyncIdle
 
-                        else
-                            -- Go to the next authority.
-                            SyncDownloadAuthority (Zipper.next zipper) RemoteData.NotAsked
+                        ( Just zipper, RemoteData.Success data ) ->
+                            if List.isEmpty data.backendGeneralEntities then
+                                -- We tried to fetch, but there was no more data.
+                                -- Check if this is the last element
+                                if Zipper.isLast zipper then
+                                    SyncIdle
 
-                    else
-                        -- Still have data to download.
-                        syncStatus
+                                else
+                                    -- Go to the next authority.
+                                    SyncDownloadAuthority (Zipper.next zipper) RemoteData.NotAsked
 
-                _ ->
-                    syncStatus
+                            else
+                                -- Still have data to download.
+                                syncStatus
+
+                        _ ->
+                            syncStatus
+    in
+    { model | syncStatus = syncStatusUpdated }

@@ -5,6 +5,7 @@ import Backend.Person.Encoder
 import Backend.PmtctParticipant.Encoder
 import DataManager.Decoder exposing (decodeDownloadSyncResponse)
 import DataManager.Model exposing (BackendGeneralEntity(..), Model, Msg(..), SyncStatus(..))
+import DataManager.Utils
 import Device.Model exposing (Device)
 import Error.Utils exposing (maybeHttpError, noError)
 import Gizra.NominalDate exposing (NominalDate)
@@ -113,13 +114,13 @@ update currentDate device msg model =
 
                         Nothing ->
                             model.lastFetchedRevisionIdGeneral
+
+                modelWithSyncStatus =
+                    DataManager.Utils.determineSyncStatus { model | syncStatus = SyncDownloadGeneral webData }
             in
             SubModelReturn
-                { model
-                    | syncStatus = SyncDownloadGeneral webData
-                    , lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral
-                }
-                (sendLastFetchedRevisionIdGeneral lastFetchedRevisionIdGeneral)
+                { modelWithSyncStatus | lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral }
+                (Cmd.batch [ cmd, sendLastFetchedRevisionIdGeneral lastFetchedRevisionIdGeneral ])
                 (maybeHttpError webData "Backend.DataManager.Update" "BackendGeneralFetchHandle")
                 []
 

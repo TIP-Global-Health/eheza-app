@@ -127,6 +127,8 @@ dbSync.version(9).stores({
 
 
 
+
+
 // Start up our Elm app.
 var elmApp = Elm.Main.init({
   flags: {
@@ -139,7 +141,7 @@ var elmApp = Elm.Main.init({
 
     // @todo: Instead of 0, we can check IndexDB for latest vid.
     lastFetchedRevisionIdGeneral: parseInt(localStorage.getItem('lastFetchedRevisionIdGeneral')) || 0,
-    lastFetchedRevisionIdAuthority: parseInt(localStorage.getItem('lastFetchedRevisionIdAuthority')) || 0,
+    revisionIdPerAuthority: parseInt(localStorage.getItem('revisionIdPerAuthority')) || [],
   }
 });
 
