@@ -2,16 +2,25 @@ port module DataManager.Update exposing (subscriptions, update)
 
 import App.Model exposing (SubModelReturn)
 import Backend.HealthCenter.Encoder
+import Backend.Model
 import Backend.Person.Encoder
 import Backend.PmtctParticipant.Encoder
 import DataManager.Decoder exposing (decodeDownloadSyncResponse)
-import DataManager.Model exposing (BackendGeneralEntity(..), FetchFromIndexDbQueryType(..), Model, Msg(..), SyncStatus(..))
+import DataManager.Model
+    exposing
+        ( BackendGeneralEntity(..)
+        , FetchFromIndexDbQueryType(..)
+        , IndexDbQueryTypeResult(..)
+        , Model
+        , Msg(..)
+        , SyncStatus(..)
+        )
 import DataManager.Utils
 import Device.Model exposing (Device)
-import Error.Utils exposing (maybeHttpError, noError)
+import Error.Utils exposing (decodeError, maybeHttpError, noError)
 import Gizra.NominalDate exposing (NominalDate)
 import HttpBuilder exposing (withExpectJson, withQueryParams)
-import Json.Decode exposing (Value)
+import Json.Decode exposing (Value, decodeString, decodeValue)
 import Json.Encode
 import RemoteData
 import Time
@@ -153,9 +162,6 @@ update currentDate device msg model =
 
         FetchFromIndexDb indexDbQueryType ->
             let
-                _ =
-                    Debug.log "FetchFromIndexDb" True
-
                 indexDbQueryTypeAsString =
                     case indexDbQueryType of
                         IndexDbQueryHealthCenters ->
@@ -168,7 +174,25 @@ update currentDate device msg model =
                 []
 
         FetchFromIndexDbHandle val ->
-            noChange
+            case decodeValue DataManager.Decoder.decodeIndexDbQueryTypeResult val of
+                Ok indexDbQueryTypeResult ->
+                    case indexDbQueryTypeResult of
+                        IndexDbQueryHealthCentersResult dict ->
+                            -- Send info back
+                            SubModelReturn
+                                model
+                                Cmd.none
+                                noError
+                                [ Backend.Model.HandleFetchedHealthCenters (RemoteData.Success dict)
+                                    |> App.Model.MsgIndexedDb
+                                ]
+
+                Err error ->
+                    SubModelReturn
+                        model
+                        Cmd.none
+                        (decodeError "Backend.DataManager.Update" "BackendGeneralFetchHandle" error)
+                        []
 
 
 subscriptions : Sub Msg

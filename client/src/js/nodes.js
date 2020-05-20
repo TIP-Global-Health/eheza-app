@@ -14,6 +14,7 @@
 // become more comprehensive.
 
 (function () {
+    return;
     // This defines our URL scheme. A URL will look like
     //
     // /sw/nodes/health_center

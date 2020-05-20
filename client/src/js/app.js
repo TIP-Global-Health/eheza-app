@@ -264,9 +264,14 @@ elmApp.ports.askFromIndexDb.subscribe(function(queryType) {
     case 'IndexDbQueryHealthCenters':
       (async () => {
         const result = await dbSync.nodes.where('type').equals('health_center').toArray()
-        console.log(result);
 
-        elmApp.ports.getFromIndexDb.send(result);
+        const dataForSend = {
+          // Query type should match DataManager.Model.IndexDbQueryTypeResult
+          'queryType': queryType + 'Result',
+          'data': result
+        }
+
+        elmApp.ports.getFromIndexDb.send(dataForSend);
 
       })();
       break;

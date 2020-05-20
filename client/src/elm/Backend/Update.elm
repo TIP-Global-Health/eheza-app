@@ -474,10 +474,6 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             )
 
         FetchHealthCenters ->
-            let
-                _ =
-                    Debug.log "Will ask FetchHealthCenters" True
-            in
             ( { model | healthCenters = Loading }
             , sw.select healthCenterEndpoint ()
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedHealthCenters)

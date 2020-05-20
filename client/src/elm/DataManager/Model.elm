@@ -3,6 +3,7 @@ module DataManager.Model exposing
     , DownloadStatus
     , DownloadSyncResponse
     , FetchFromIndexDbQueryType(..)
+    , IndexDbQueryTypeResult(..)
     , Model
     , Msg(..)
     , RevisionIdPerAuthority
@@ -15,6 +16,8 @@ module DataManager.Model exposing
     , emptySyncData
     )
 
+import AssocList exposing (Dict)
+import Backend.Entities exposing (HealthCenterId)
 import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Measurement.Model exposing (Measurement, Weight)
 import Backend.Person.Model exposing (Person)
@@ -167,6 +170,10 @@ type SyncError
 -}
 type FetchFromIndexDbQueryType
     = IndexDbQueryHealthCenters
+
+
+type IndexDbQueryTypeResult
+    = IndexDbQueryHealthCentersResult (Dict HealthCenterId HealthCenter)
 
 
 type Msg

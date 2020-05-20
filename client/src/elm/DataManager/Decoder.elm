@@ -1,15 +1,51 @@
-module DataManager.Decoder exposing (decodeDownloadSyncResponse, decodeSyncData)
+module DataManager.Decoder exposing
+    ( decodeDownloadSyncResponse
+    , decodeIndexDbQueryTypeResult
+    , decodeSyncData
+    )
 
+import AssocList as Dict
 import Backend.HealthCenter.Decoder
-import Backend.Person.Decoder exposing (decodePerson)
+import Backend.Person.Decoder
 import Backend.PmtctParticipant.Decoder
-import DataManager.Model exposing (BackendGeneralEntity(..), DownloadStatus, DownloadSyncResponse, SyncAttempt(..), SyncData, SyncError(..), UploadStatus)
+import DataManager.Model
+    exposing
+        ( BackendGeneralEntity(..)
+        , DownloadStatus
+        , DownloadSyncResponse
+        , IndexDbQueryTypeResult(..)
+        , SyncAttempt(..)
+        , SyncData
+        , SyncError(..)
+        , UploadStatus
+        )
 import Gizra.Date exposing (decodeDate)
-import Gizra.Json exposing (decodeFloat, decodeInt)
+import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import Restful.Endpoint exposing (decodeEntityUuid)
 import Time
+
+
+decodeIndexDbQueryTypeResult : Decoder IndexDbQueryTypeResult
+decodeIndexDbQueryTypeResult =
+    field "queryType" string
+        |> andThen
+            (\queryType ->
+                case queryType of
+                    "IndexDbQueryHealthCentersResult" ->
+                        field "data"
+                            (list
+                                (succeed (\a b -> ( a, b ))
+                                    |> required "uuid" decodeEntityUuid
+                                    |> custom Backend.HealthCenter.Decoder.decodeHealthCenter
+                                )
+                            )
+                            |> andThen (\list_ -> succeed (IndexDbQueryHealthCentersResult (Dict.fromList list_)))
+
+                    _ ->
+                        fail <| queryType ++ " is not a recognized IndexDbQueryTypeResult"
+            )
 
 
 decodeDownloadSyncResponse : Decoder DownloadSyncResponse
