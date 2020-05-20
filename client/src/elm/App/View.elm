@@ -75,6 +75,9 @@ flexPageWrapper : Model -> Html Msg -> Html Msg
 flexPageWrapper model html =
     div [ class "page container" ]
         [ viewLanguageSwitcherAndVersion model
+
+        -- @todo: Debug only
+        , div [] [ text <| Debug.toString model.syncData ]
         , div
             [ class "page-content" ]
             [ html ]

@@ -21,7 +21,7 @@ update currentDate device msg model =
             7
     in
     case msg of
-        BackendGeneralFetch lastFetchedRevisionId ->
+        BackendGeneralFetch ->
             if RemoteData.isNotAsked model.backendGeneralEntities then
                 let
                     cmd =
@@ -31,7 +31,7 @@ update currentDate device msg model =
                                 , ( "db_version", String.fromInt dbVersion )
                                 ]
                             |> withExpectJson decodeBackendGeneralEntityList
-                            |> HttpBuilder.send (RemoteData.fromResult >> BackendGeneralFetchHandle lastFetchedRevisionId)
+                            |> HttpBuilder.send (RemoteData.fromResult >> BackendGeneralFetchHandle)
                 in
                 SubModelReturn
                     { model | backendGeneralEntities = RemoteData.Loading }
@@ -43,14 +43,18 @@ update currentDate device msg model =
                 -- @todo: Handle other cases.
                 noChange
 
-        BackendGeneralFetchHandle lastFetchedRevisionId webData ->
+        BackendGeneralFetchHandle webData ->
             let
                 modelUpdated =
-                    if RemoteData.isSuccess webData then
-                        { model | lastFetchedRevisionIdGeneral = lastFetchedRevisionId }
+                    case webData of
+                        RemoteData.Success data ->
+                            -- @todo: Iterate and get the highest
+                            -- lastFetchedRevisionIdGeneral
+                            -- { model | lastFetchedRevisionIdGeneral = lastFetchedRevisionId }
+                            model
 
-                    else
-                        model
+                        _ ->
+                            model
             in
             SubModelReturn
                 { modelUpdated | backendGeneralEntities = webData }

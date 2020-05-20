@@ -105,5 +105,5 @@ type SyncError
 
 
 type Msg
-    = BackendGeneralFetch LastFetchedRevisionIdGeneral
-    | BackendGeneralFetchHandle LastFetchedRevisionIdGeneral (WebData (List BackendGeneralEntity))
+    = BackendGeneralFetch
+    | BackendGeneralFetchHandle (WebData (List BackendGeneralEntity))

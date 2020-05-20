@@ -8,6 +8,7 @@ import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
+import Backend.SyncData.Model
 import Backend.SyncData.Update
 import Backend.Update
 import Browser
@@ -854,6 +855,9 @@ subscriptions model =
          , persistentStorage SetPersistentStorage
          , storageQuota SetStorageQuota
          , memoryQuota SetMemoryQuota
+
+         -- @todo: Change to Try to sync every 1 minute.
+         , Time.every 1000 (\_ -> App.Model.MsgSyncData Backend.SyncData.Model.BackendGeneralFetch)
          ]
             ++ checkDataWanted
         )
