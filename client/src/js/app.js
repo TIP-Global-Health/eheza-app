@@ -143,24 +143,6 @@ var elmApp = Elm.Main.init({
 // Request persistent storage, and report whether it was granted.
 navigator.storage.persist().then(function(granted) {
   elmApp.ports.persistentStorage.send(granted);
-
-  (async () => {
-    console.log('calling');
-    const result = await dbSync.nodes.add({
-      uuid: 'Camilla' + Date().toString(),
-      type: 'person',
-      vid: 123,
-    });
-
-    await dbSync
-        .nodes
-        .where('uuid')
-        .equals('00726ed9-32ce-5008-b69a-538d6bc2f00e')
-        .toArray(function(data) {console.log(data)});
-
-    console.log(result);
-  })();
-
 });
 
 
@@ -233,6 +215,27 @@ elmApp.ports.scrollToElement.subscribe(function(elementId) {
     element.scrollIntoView(true);
   }
 });
+
+/**
+ * Save Synced data to IndexDB.
+ */
+elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(data) {
+  console.log('ok');
+
+  data.forEach(function (row) {
+    (async () => {
+      console.log(row.uuid);
+
+      let entity = row.entity;
+      entity.uuid = row.uuid;
+
+      const result = await dbSync.nodes.add(entity);
+      console.log(result);
+    })();
+  })
+
+});
+
 
 // Dropzone.
 

@@ -6,6 +6,7 @@ import Gizra.Date exposing (decodeDate)
 import Gizra.Json exposing (decodeFloat, decodeInt)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
+import Restful.Endpoint exposing (decodeEntityUuid)
 import Time
 
 
@@ -21,13 +22,16 @@ decodeDownloadSyncResponse =
 
 decodeBackendGeneralEntity : Decoder BackendGeneralEntity
 decodeBackendGeneralEntity =
-    field "type" string
+    (succeed (\a b -> ( a, b ))
+        |> required "type" string
+        |> required "uuid" decodeEntityUuid
+    )
         |> andThen
-            (\type_ ->
+            (\( type_, uuid ) ->
                 case type_ of
                     "person" ->
                         decodePerson
-                            |> andThen (\person -> succeed (BackendGeneralEntityPerson person))
+                            |> andThen (\person -> succeed (BackendGeneralEntityPerson uuid person))
 
                     _ ->
                         succeed (BackendGeneralEntityUnknown type_)

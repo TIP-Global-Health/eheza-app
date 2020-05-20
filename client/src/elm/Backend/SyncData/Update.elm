@@ -10,6 +10,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import HttpBuilder exposing (withExpectJson, withQueryParams)
 import Json.Encode
 import RemoteData
+import Restful.Endpoint exposing (encodeEntityUuid)
 
 
 update : NominalDate -> Device -> Msg -> Model -> SubModelReturn Model Msg
@@ -55,12 +56,16 @@ update currentDate device msg model =
                                 |> List.foldl
                                     (\entity accum ->
                                         let
-                                            doEncode val =
-                                                Json.Encode.encode 0 val
+                                            doEncode uuid val =
+                                                Json.Encode.object
+                                                    [ ( "uuid", encodeEntityUuid uuid )
+                                                    , ( "entity", val )
+                                                    ]
+                                                    |> Json.Encode.encode 0
                                         in
                                         case entity of
-                                            BackendGeneralEntityPerson person ->
-                                                doEncode (Backend.Person.Encoder.encodePerson person)
+                                            BackendGeneralEntityPerson uuid person ->
+                                                doEncode uuid (Backend.Person.Encoder.encodePerson person)
                                                     :: accum
 
                                             BackendGeneralEntityUnknown type_ ->
@@ -76,7 +81,7 @@ update currentDate device msg model =
             in
             SubModelReturn
                 { model | downloadSyncResponse = webData }
-                Cmd.none
+                cmd
                 (maybeHttpError webData "Backend.SyncData.Update" "BackendGeneralFetchHandle")
                 []
 

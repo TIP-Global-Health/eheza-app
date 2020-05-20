@@ -12,6 +12,7 @@ module Backend.SyncData.Model exposing
     , emptySyncData
     )
 
+import Backend.Entities exposing (PersonId)
 import Backend.Person.Model exposing (Person)
 import Html exposing (Html)
 import RemoteData exposing (WebData)
@@ -22,8 +23,11 @@ import Time
 authority (e.g. Health center). For example, a person is a "general" entity,
 but a child's measurements is per authority.
 -}
-type BackendGeneralEntity
-    = BackendGeneralEntityPerson Person
+type
+    BackendGeneralEntity
+    -- UUID is not part of the entities, so we'd keep it along with the entity
+    -- itself.
+    = BackendGeneralEntityPerson PersonId Person
       -- Don't fail on unknown types.
     | BackendGeneralEntityUnknown String
 
