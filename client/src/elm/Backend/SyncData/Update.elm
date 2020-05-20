@@ -1,8 +1,8 @@
 module Backend.SyncData.Update exposing (update)
 
+import App.Model exposing (SubModelReturn)
 import Backend.SyncData.Decoder exposing (decodeBackendGeneralEntityList)
 import Backend.SyncData.Model exposing (Model, Msg(..))
-import Backend.SyncData.Types exposing (SyncDataReturn)
 import Device.Model exposing (Device)
 import Error.Utils exposing (maybeHttpError, noError)
 import Gizra.NominalDate exposing (NominalDate)
@@ -10,11 +10,11 @@ import HttpBuilder exposing (withExpectJson, withQueryParams)
 import RemoteData
 
 
-update : NominalDate -> Device -> Msg -> Model -> SyncDataReturn Msg
+update : NominalDate -> Device -> Msg -> Model -> SubModelReturn Model Msg
 update currentDate device msg model =
     let
         noChange =
-            SyncDataReturn model Cmd.none noError []
+            SubModelReturn model Cmd.none noError []
 
         -- @todo: Move has hardcoded in flags, or keep here?
         dbVersion =
@@ -33,7 +33,7 @@ update currentDate device msg model =
                             |> withExpectJson decodeBackendGeneralEntityList
                             |> HttpBuilder.send (RemoteData.fromResult >> BackendGeneralFetchHandle lastFetchedRevisionId)
                 in
-                SyncDataReturn
+                SubModelReturn
                     { model | backendGeneralEntities = RemoteData.Loading }
                     cmd
                     noError
@@ -52,7 +52,7 @@ update currentDate device msg model =
                     else
                         model
             in
-            SyncDataReturn
+            SubModelReturn
                 { modelUpdated | backendGeneralEntities = webData }
                 Cmd.none
                 (maybeHttpError webData "Backend.SyncData.Update" "BackendGeneralFetchHandle")

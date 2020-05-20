@@ -1,4 +1,4 @@
-module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, MemoryQuota, Model, Msg(..), MsgLoggedIn(..), StorageQuota, Version, emptyLoggedInModel, emptyModel)
+module App.Model exposing (ConfiguredModel, Flags, LoggedInModel, MemoryQuota, Model, Msg(..), MsgLoggedIn(..), StorageQuota, SubModelReturn, Version, emptyLoggedInModel, emptyModel)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -310,7 +310,7 @@ Along with the Model and Cmd, we return:
   - appMsgs - that allow sub models to call MSGs of other submodules.
 
 -}
-type alias SubModelsReturn subModel subMsg =
+type alias SubModelReturn subModel subMsg =
     { model : subModel
     , cmd : Cmd subMsg
     , error : Maybe Error

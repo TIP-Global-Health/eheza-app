@@ -1,8 +1,7 @@
-module App.Utils exposing (getLoggedInData)
+module App.Utils exposing (getLoggedInData, updateSubModel)
 
 import App.Model exposing (..)
 import Backend.Entities exposing (HealthCenterId)
-import Backend.Types exposing (BackendReturn)
 import Error.Model exposing (Error)
 import Maybe.Extra exposing (unwrap)
 import RemoteData
@@ -40,7 +39,7 @@ handleErrors maybeError model =
 updateSubModel :
     subMsg
     -> subModel
-    -> (subMsg -> subModel -> BackendReturn subModel subMsg)
+    -> (subMsg -> subModel -> SubModelReturn subModel subMsg)
     -> (subModel -> Model -> Model)
     -> (subMsg -> Msg)
     -> Model

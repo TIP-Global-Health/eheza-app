@@ -3,14 +3,13 @@ module App.Update exposing (init, subscriptions, updateAndThenFetch)
 import App.Fetch
 import App.Model exposing (..)
 import App.Ports exposing (..)
-import App.Utils exposing (getLoggedInData)
+import App.Utils exposing (getLoggedInData, updateSubModel)
 import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.SyncData.Update
 import Backend.Update
-import Backend.Utils exposing (updateSubModel)
 import Browser
 import Browser.Navigation as Nav
 import Config
@@ -20,9 +19,8 @@ import Dict as LegacyDict
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Http exposing (Error(..))
 import HttpBuilder
-import Json.Decode exposing (bool, decodeValue, oneOf)
+import Json.Decode
 import Json.Encode
-import Maybe.Extra exposing (isJust)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.Clinics.Update
 import Pages.Device.Model
@@ -616,14 +614,13 @@ update msg model =
                 |> Maybe.andThen (\config -> RemoteData.toMaybe config.device)
                 |> Maybe.map
                     (\device ->
-                        noChange
-                     --updateSubModel
-                     --    subMsg
-                     --    model.syncData
-                     --    (\subMsg_ subModel -> Backend.SyncData.Update.update currentDate device subMsg_ subModel)
-                     --    (\subModel model_ -> { model_ | syncData = subModel })
-                     --    (\subCmds -> MsgSyncData subCmds)
-                     --    model
+                        updateSubModel
+                            subMsg
+                            model.syncData
+                            (\subMsg_ subModel -> Backend.SyncData.Update.update currentDate device subMsg_ subModel)
+                            (\subModel model_ -> { model_ | syncData = subModel })
+                            (\subCmds -> MsgSyncData subCmds)
+                            model
                     )
                 |> Maybe.withDefault noChange
 
