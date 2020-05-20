@@ -12,7 +12,6 @@ import Gizra.NominalDate exposing (NominalDate)
 import HttpBuilder exposing (withExpectJson, withQueryParams)
 import Json.Encode
 import RemoteData
-import Restful.Endpoint exposing (encodeEntityUuid)
 
 
 update : NominalDate -> Device -> Msg -> Model -> SubModelReturn Model Msg
@@ -26,6 +25,12 @@ update currentDate device msg model =
             9
     in
     case msg of
+        BackendAuthorityFetch ->
+            noChange
+
+        BackendAuthorityFetchHandle webData ->
+            noChange
+
         BackendGeneralFetch ->
             case model.syncStatus of
                 SyncDownloadGeneral webData ->
@@ -85,7 +90,7 @@ update currentDate device msg model =
                                                 doEncode uuid vid (Backend.PmtctParticipant.Encoder.encodePmtctParticipant entity_)
                                                     :: accum
 
-                                            BackendGeneralEntityUnknown type_ _ ->
+                                            BackendGeneralEntityUnknown _ _ ->
                                                 -- Filter out the unknown entities.
                                                 accum
                                     )
@@ -147,7 +152,7 @@ port sendSyncedDataToIndexDb : List String -> Cmd msg
 port sendLastFetchedRevisionIdGeneral : Int -> Cmd msg
 
 
-{-| Send to JS the last revision ID used to download Authority, along with its
-UUID.
+{-| Send to JS a list with the last revision ID used to download Authority,
+along with their UUID.
 -}
-port sendLastFetchedRevisionIdAuthority : ( String, Int ) -> Cmd msg
+port sendRevisionIdPerAuthority : List ( String, Int ) -> Cmd msg

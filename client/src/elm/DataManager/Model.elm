@@ -14,6 +14,7 @@ module DataManager.Model exposing
     , emptySyncData
     )
 
+import Backend.Measurement.Model exposing (Measurement, Weight)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import List.Zipper exposing (Zipper)
@@ -36,6 +37,18 @@ type
       -- the `vid`. The reason we keep the vid, is that we fetched some content
       -- which we don't recognize, but we want to keep fetching later content.
     | BackendGeneralEntityUnknown String Int
+
+
+{-| The "Authority" entities are ones that belong to a specific
+authority (e.g. Health center). For example, a child's measurements is per
+authority.
+-}
+type BackendAuthorityEntity
+    = BackendAuthorityEntityMeasurementWeight String Int Weight
+      -- Don't fail on unknown types. We'd like to keep the type name along with
+      -- the `vid`. The reason we keep the vid, is that we fetched some content
+      -- which we don't recognize, but we want to keep fetching later content.
+    | BackendAuthorityEntityUnknown String Int
 
 
 type alias LastFetchedRevisionIdGeneral =
@@ -147,6 +160,8 @@ type SyncError
 
 
 type Msg
-    = BackendGeneralFetch
+    = BackendAuthorityFetch
+    | BackendAuthorityFetchHandle (WebData DownloadSyncResponse)
+    | BackendGeneralFetch
     | BackendGeneralFetchHandle (WebData DownloadSyncResponse)
     | SetLastFetchedRevisionIdGeneral Int
