@@ -5,6 +5,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Json.Encode
 import RemoteData
+import Restful.Endpoint exposing (fromEntityUuid)
 import Utils.Html exposing (spinner)
 
 
@@ -37,8 +38,11 @@ viewGeneralEntity : BackendGeneralEntity -> Html msg
 viewGeneralEntity backendGeneralEntity =
     li []
         [ case backendGeneralEntity of
-            BackendGeneralEntityPerson _ person _ ->
-                text <| "Person (" ++ person.name ++ ")"
+            BackendGeneralEntityPerson _ _ entity ->
+                text <| "Person (" ++ entity.name ++ ")"
+
+            BackendGeneralPmtctParticipant _ _ entity ->
+                text <| "Pmtct Participant for child ID (" ++ fromEntityUuid entity.child ++ ")"
 
             BackendGeneralEntityUnknown type_ _ ->
                 text <| type_ ++ " (we still don't decode it)"

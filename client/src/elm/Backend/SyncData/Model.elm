@@ -12,8 +12,9 @@ module Backend.SyncData.Model exposing
     , emptySyncData
     )
 
-import Backend.Entities exposing (PersonId)
+import Backend.Entities exposing (PersonId, PmtctParticipantId)
 import Backend.Person.Model exposing (Person)
+import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Html exposing (Html)
 import RemoteData exposing (WebData)
 import Time
@@ -26,8 +27,10 @@ but a child's measurements is per authority.
 type
     BackendGeneralEntity
     -- UUID is not part of the entities, so we'd keep it along with the entity
-    -- itself.
-    = BackendGeneralEntityPerson PersonId Person Int
+    -- itself. We keep the UUID is regular string to keep decoder code easier to
+    -- manage.
+    = BackendGeneralEntityPerson String Int Person
+    | BackendGeneralPmtctParticipant String Int PmtctParticipant
       -- Don't fail on unknown types. We'd like to keep the type name along with
       -- the `vid`. The reason we keep the vid, is that we fetched some content
       -- which we don't recognize, but we want to keep fetching later content.

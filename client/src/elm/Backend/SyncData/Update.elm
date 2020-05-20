@@ -2,6 +2,7 @@ port module Backend.SyncData.Update exposing (update)
 
 import App.Model exposing (SubModelReturn)
 import Backend.Person.Encoder
+import Backend.PmtctParticipant.Encoder
 import Backend.SyncData.Decoder exposing (decodeDownloadSyncResponse)
 import Backend.SyncData.Model exposing (BackendGeneralEntity(..), Model, Msg(..))
 import Device.Model exposing (Device)
@@ -56,17 +57,21 @@ update currentDate device msg model =
                                 |> List.foldl
                                     (\entity accum ->
                                         let
-                                            doEncode uuid val vid =
+                                            doEncode uuid vid val =
                                                 Json.Encode.object
-                                                    [ ( "uuid", encodeEntityUuid uuid )
+                                                    [ ( "uuid", Json.Encode.string uuid )
                                                     , ( "entity", val )
                                                     , ( "vid", Json.Encode.int vid )
                                                     ]
                                                     |> Json.Encode.encode 0
                                         in
                                         case entity of
-                                            BackendGeneralEntityPerson uuid person vid ->
-                                                doEncode uuid (Backend.Person.Encoder.encodePerson person) vid
+                                            BackendGeneralEntityPerson uuid vid entity_ ->
+                                                doEncode uuid vid (Backend.Person.Encoder.encodePerson entity_)
+                                                    :: accum
+
+                                            BackendGeneralPmtctParticipant uuid vid entity_ ->
+                                                doEncode uuid vid (Backend.PmtctParticipant.Encoder.encodePmtctParticipant entity_)
                                                     :: accum
 
                                             BackendGeneralEntityUnknown type_ _ ->
@@ -90,7 +95,10 @@ update currentDate device msg model =
                                 |> Maybe.map
                                     (\entity ->
                                         case entity of
-                                            BackendGeneralEntityPerson _ _ vid ->
+                                            BackendGeneralEntityPerson _ vid _ ->
+                                                vid
+
+                                            BackendGeneralPmtctParticipant _ vid _ ->
                                                 vid
 
                                             BackendGeneralEntityUnknown _ vid ->

@@ -1,6 +1,7 @@
 module Backend.SyncData.Decoder exposing (decodeDownloadSyncResponse, decodeSyncData)
 
 import Backend.Person.Decoder exposing (decodePerson)
+import Backend.PmtctParticipant.Decoder
 import Backend.SyncData.Model exposing (BackendGeneralEntity(..), DownloadStatus, DownloadSyncResponse, SyncAttempt(..), SyncData, SyncError(..), UploadStatus)
 import Gizra.Date exposing (decodeDate)
 import Gizra.Json exposing (decodeFloat, decodeInt)
@@ -24,15 +25,19 @@ decodeBackendGeneralEntity : Decoder BackendGeneralEntity
 decodeBackendGeneralEntity =
     (succeed (\a b c -> ( a, b, c ))
         |> required "type" string
-        |> required "uuid" decodeEntityUuid
+        |> required "uuid" string
         |> required "vid" decodeInt
     )
         |> andThen
             (\( type_, uuid, vid ) ->
                 case type_ of
                     "person" ->
-                        decodePerson
-                            |> andThen (\person -> succeed (BackendGeneralEntityPerson uuid person vid))
+                        Backend.Person.Decoder.decodePerson
+                            |> andThen (\entity -> succeed (BackendGeneralEntityPerson uuid vid entity))
+
+                    "pmtct_participant" ->
+                        Backend.PmtctParticipant.Decoder.decodePmtctParticipant
+                            |> andThen (\entity -> succeed (BackendGeneralPmtctParticipant uuid vid entity))
 
                     _ ->
                         succeed (BackendGeneralEntityUnknown type_ vid)
