@@ -52,7 +52,12 @@ update currentDate device msg model =
                             []
 
                 _ ->
-                    noChange
+                    -- @todo: Probably needs to be `noChange`?
+                    SubModelReturn
+                        (DataManager.Utils.determineSyncStatus model)
+                        Cmd.none
+                        noError
+                        []
 
         BackendGeneralFetchHandle webData ->
             let
