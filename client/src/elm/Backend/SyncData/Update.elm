@@ -1,12 +1,14 @@
-module Backend.SyncData.Update exposing (update)
+port module Backend.SyncData.Update exposing (update)
 
 import App.Model exposing (SubModelReturn)
+import Backend.Person.Encoder
 import Backend.SyncData.Decoder exposing (decodeDownloadSyncResponse)
-import Backend.SyncData.Model exposing (Model, Msg(..))
+import Backend.SyncData.Model exposing (BackendGeneralEntity(..), Model, Msg(..))
 import Device.Model exposing (Device)
 import Error.Utils exposing (maybeHttpError, noError)
 import Gizra.NominalDate exposing (NominalDate)
 import HttpBuilder exposing (withExpectJson, withQueryParams)
+import Json.Encode
 import RemoteData
 
 
@@ -45,8 +47,40 @@ update currentDate device msg model =
                 noChange
 
         BackendGeneralFetchHandle webData ->
+            let
+                cmd =
+                    case RemoteData.toMaybe webData of
+                        Just data ->
+                            data.backendGeneralEntities
+                                |> List.foldl
+                                    (\entity accum ->
+                                        let
+                                            doEncode val =
+                                                Json.Encode.encode 0 val
+                                        in
+                                        case entity of
+                                            BackendGeneralEntityPerson person ->
+                                                doEncode (Backend.Person.Encoder.encodePerson person)
+                                                    :: accum
+
+                                            BackendGeneralEntityUnknown type_ ->
+                                                -- Filter out the unknown entities.
+                                                accum
+                                    )
+                                    []
+                                |> List.reverse
+                                |> sendSyncedDataToIndexDb
+
+                        Nothing ->
+                            Cmd.none
+            in
             SubModelReturn
                 { model | downloadSyncResponse = webData }
                 Cmd.none
                 (maybeHttpError webData "Backend.SyncData.Update" "BackendGeneralFetchHandle")
                 []
+
+
+{-| Send to JS data we have synced (e.g. `person`, `health center`, etc.
+-}
+port sendSyncedDataToIndexDb : List String -> Cmd msg

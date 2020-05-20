@@ -17,8 +17,9 @@ viewDebugSync model =
         htmlContent =
             case model.downloadSyncResponse of
                 RemoteData.Success data ->
-                    div []
-                        [ div [] [ text "Here is the content we've fetch:" ]
+                    details []
+                        [ div [] [ text <| "We still have " ++ String.fromInt data.revisionCount ++ " items to download" ]
+                        , div [] [ text "Here is the content we've fetched:" ]
                         , ol [] (List.map viewGeneralEntity data.backendGeneralEntities)
                         ]
 

@@ -1,4 +1,16 @@
-port module App.Ports exposing (bindDropZone, cacheHealthCenter, cachePinCode, cacheVillage, memoryQuota, persistentStorage, pusherKey, scrollToElement, setLanguage, storageQuota, trySyncing)
+port module App.Ports exposing
+    ( bindDropZone
+    , cacheHealthCenter
+    , cachePinCode
+    , cacheVillage
+    , memoryQuota
+    , persistentStorage
+    , pusherKey
+    , scrollToElement
+    , setLanguage
+    , storageQuota
+    , trySyncing
+    )
 
 import App.Model exposing (MemoryQuota, StorageQuota)
 
