@@ -855,9 +855,7 @@ subscriptions model =
          , persistentStorage SetPersistentStorage
          , storageQuota SetStorageQuota
          , memoryQuota SetMemoryQuota
-
-         -- @todo: Change to Try to sync every 1 minute.
-         , Time.every 1000 (\_ -> App.Model.MsgSyncData DataManager.Model.BackendGeneralFetch)
+         , Sub.map App.Model.MsgSyncData DataManager.Update.subscriptions
          ]
             ++ checkDataWanted
         )

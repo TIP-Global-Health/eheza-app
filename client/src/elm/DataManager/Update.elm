@@ -1,4 +1,4 @@
-port module DataManager.Update exposing (update)
+port module DataManager.Update exposing (subscriptions, update)
 
 import App.Model exposing (SubModelReturn)
 import Backend.HealthCenter.Encoder
@@ -11,8 +11,10 @@ import Device.Model exposing (Device)
 import Error.Utils exposing (maybeHttpError, noError)
 import Gizra.NominalDate exposing (NominalDate)
 import HttpBuilder exposing (withExpectJson, withQueryParams)
+import Json.Decode exposing (Value)
 import Json.Encode
 import RemoteData
+import Time
 
 
 update : NominalDate -> Device -> Msg -> Model -> SubModelReturn Model Msg
@@ -150,11 +152,30 @@ update currentDate device msg model =
                 []
 
         FetchFromIndexDb indexDbQueryType ->
+            let
+                _ =
+                    Debug.log "FetchFromIndexDb" True
+
+                indexDbQueryTypeAsString =
+                    case indexDbQueryType of
+                        DataManager.Model.IndexDbQueryHealthCenters ->
+                            "IndexDbQueryHealthCenters"
+            in
             SubModelReturn
                 model
-                Cmd.none
+                (askFromIndexDb indexDbQueryTypeAsString)
                 noError
                 []
+
+        FetchFromIndexDbHandle indexDbQueryType val ->
+            noChange
+
+
+subscriptions : Sub Msg
+subscriptions =
+    Sub.batch
+        [ Time.every 1000 (\_ -> DataManager.Model.BackendGeneralFetch)
+        ]
 
 
 {-| Send to JS data we have synced (e.g. `person`, `health center`, etc.
@@ -184,4 +205,4 @@ For now we don't care who asked for the data, we just fill it in where
 needed.
 
 -}
-port getFromIndexDb : (String -> msg) -> Sub msg
+port getFromIndexDb : (Value -> msg) -> Sub msg

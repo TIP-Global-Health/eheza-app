@@ -19,6 +19,7 @@ import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Measurement.Model exposing (Measurement, Weight)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
+import Json.Decode exposing (Value)
 import List.Zipper exposing (Zipper)
 import RemoteData exposing (WebData)
 import Time
@@ -175,3 +176,4 @@ type Msg
     | BackendGeneralFetchHandle (WebData DownloadSyncResponse)
     | SetLastFetchedRevisionIdGeneral Int
     | FetchFromIndexDb FetchFromIndexDbQueryType
+    | FetchFromIndexDbHandle FetchFromIndexDbQueryType Value
