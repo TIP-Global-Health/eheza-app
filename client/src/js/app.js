@@ -220,14 +220,13 @@ elmApp.ports.scrollToElement.subscribe(function(elementId) {
  * Save Synced data to IndexDB.
  */
 elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(data) {
-  console.log('ok');
 
   data.forEach(function (row) {
     (async () => {
-      console.log(row.uuid);
+      const rowObject = JSON.parse(row);
 
-      let entity = row.entity;
-      entity.uuid = row.uuid;
+      let entity = rowObject.entity;
+      entity.uuid = rowObject.uuid;
 
       const result = await dbSync.nodes.add(entity);
       console.log(result);
