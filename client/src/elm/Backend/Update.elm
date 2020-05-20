@@ -1624,11 +1624,12 @@ makeEditableSession sessionId db =
                 RemoteData.andThen
                     (\participants ->
                         Dict.keys participants.byMotherId
-                            |> List.map
+                            |> List.filterMap
                                 (\id ->
                                     Dict.get id db.people
                                         |> Maybe.withDefault NotAsked
-                                        |> RemoteData.map (\data -> ( id, data ))
+                                        |> RemoteData.toMaybe
+                                        |> Maybe.map (\data -> Success ( id, data ))
                                 )
                             |> RemoteData.fromList
                             |> RemoteData.map (List.sortBy (Tuple.second >> .name) >> Dict.fromList)
@@ -1639,11 +1640,12 @@ makeEditableSession sessionId db =
                 RemoteData.andThen
                     (\participants ->
                         Dict.keys participants.byChildId
-                            |> List.map
+                            |> List.filterMap
                                 (\id ->
                                     Dict.get id db.people
                                         |> Maybe.withDefault NotAsked
-                                        |> RemoteData.map (\data -> ( id, data ))
+                                        |> RemoteData.toMaybe
+                                        |> Maybe.map (\data -> Success ( id, data ))
                                 )
                             |> RemoteData.fromList
                             |> RemoteData.map Dict.fromList
