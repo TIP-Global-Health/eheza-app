@@ -69,7 +69,7 @@ thumbnailImage subClass maybeAvatarUrl label height width =
                 , attribute "alt" label
                 , style "height" (Debug.toString height ++ "px")
                 , style "width" (Debug.toString width ++ "px")
-                , class <| "photo-participant " ++ subClass ++ " rotate-90"
+                , class <| "photo-participant " ++ subClass ++ " orientation"
                 ]
                 []
 

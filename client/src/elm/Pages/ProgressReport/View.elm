@@ -608,7 +608,7 @@ viewPhotos language child photos =
                     , ( "cache-upload", String.contains "cache-upload/images" url )
                     ]
                 ]
-                [ img [ src url, class "rotate-90" ] [] ]
+                [ img [ src url, class "orientation" ] [] ]
     in
     photos
         |> List.sortWith (\m1 m2 -> Gizra.NominalDate.compare m1.dateMeasured m2.dateMeasured)
