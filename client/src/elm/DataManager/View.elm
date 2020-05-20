@@ -30,7 +30,7 @@ viewDebugSync model =
                         emptyNode
                 ]
     in
-    pre [ class "ui segment" ] [ htmlContent ]
+    pre [ class "ui segment", style "min-height" "240px" ] [ htmlContent ]
 
 
 viewSyncDownloadGeneral : Model -> WebData DownloadSyncResponse -> Html Msg
