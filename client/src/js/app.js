@@ -221,18 +221,37 @@ elmApp.ports.scrollToElement.subscribe(function(elementId) {
  */
 elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(data) {
 
+  // Prepare entities for bulk add.
+  let entities = [];
   data.forEach(function (row) {
-    (async () => {
-      const rowObject = JSON.parse(row);
+    const rowObject = JSON.parse(row);
 
-      let entity = rowObject.entity;
-      entity.uuid = rowObject.uuid;
+    let entity = rowObject.entity;
+    entity.uuid = rowObject.uuid;
 
-      await dbSync.nodes.add(entity);
-    })();
+    entities.push(entity);
   })
 
+  dbSync.nodes.bulkAdd(entities)
+      .then(function(lastKey) {})
+      .catch(Dexie.BulkError, function (e) {
+        // Explicitly catching the bulkAdd() operation makes those successful
+        // additions commit despite that there were errors.
+        console.error (e);
+      });
+
 });
+
+/**
+ * https://codeburst.io/javascript-async-await-with-foreach-b6ba62bbf404
+ */
+async function asyncForEach(obj, callback) {
+  const array = Object.values(obj);
+  console.log(array[100]);
+  for (let index = 0; index < array.length; index++) {
+    await callback(array[index], index, array);
+  }
+}
 
 
 // Dropzone.
