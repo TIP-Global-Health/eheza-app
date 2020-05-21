@@ -68,6 +68,7 @@ features[field_instance][] = node-person-field_village
 features[field_instance][] = node-relationship-field_person
 features[field_instance][] = node-relationship-field_related_by
 features[field_instance][] = node-relationship-field_related_to
+features[field_instance][] = node-relationship-field_shards
 features[field_instance][] = node-relationship-field_uuid
 features[image][] = patient-photo
 features[node][] = person

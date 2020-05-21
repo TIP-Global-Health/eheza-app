@@ -1065,6 +1065,50 @@ Used to track location where pregnancies were completed.',
     ),
   );
 
+  // Exported field_instance: 'node-individual_participant-field_shards'.
+  $field_instances['node-individual_participant-field_shards'] = array(
+    'bundle' => 'individual_participant',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_shards',
+    'label' => 'Shards',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 10,
+    ),
+  );
+
   // Exported field_instance: 'node-individual_participant-field_uuid'.
   $field_instances['node-individual_participant-field_uuid'] = array(
     'bundle' => 'individual_participant',
@@ -1203,6 +1247,50 @@ Used to track location where pregnancies were completed.',
       ),
       'type' => 'date_select',
       'weight' => -3,
+    ),
+  );
+
+  // Exported field_instance: 'node-nutrition_encounter-field_shards'.
+  $field_instances['node-nutrition_encounter-field_shards'] = array(
+    'bundle' => 'nutrition_encounter',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 3,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_shards',
+    'label' => 'Shards',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 3,
     ),
   );
 
@@ -1471,6 +1559,50 @@ Used to track location where pregnancies were completed.',
     ),
   );
 
+  // Exported field_instance: 'node-pmtct_participant-field_shards'.
+  $field_instances['node-pmtct_participant-field_shards'] = array(
+    'bundle' => 'pmtct_participant',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_shards',
+    'label' => 'Shards',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 8,
+    ),
+  );
+
   // Exported field_instance: 'node-pmtct_participant-field_uuid'.
   $field_instances['node-pmtct_participant-field_uuid'] = array(
     'bundle' => 'pmtct_participant',
@@ -1609,6 +1741,50 @@ Used to track location where pregnancies were completed.',
       ),
       'type' => 'date_select',
       'weight' => 1,
+    ),
+  );
+
+  // Exported field_instance: 'node-prenatal_encounter-field_shards'.
+  $field_instances['node-prenatal_encounter-field_shards'] = array(
+    'bundle' => 'prenatal_encounter',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 4,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_shards',
+    'label' => 'Shards',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 4,
     ),
   );
 
@@ -1788,6 +1964,50 @@ Used to track location where pregnancies were completed.',
       ),
       'type' => 'date_select',
       'weight' => -4,
+    ),
+  );
+
+  // Exported field_instance: 'node-session-field_shards'.
+  $field_instances['node-session-field_shards'] = array(
+    'bundle' => 'session',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 5,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_shards',
+    'label' => 'Shards',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 4,
     ),
   );
 
