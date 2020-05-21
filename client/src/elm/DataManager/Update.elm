@@ -125,6 +125,40 @@ update currentDate device msg model =
                         Nothing ->
                             Cmd.none
 
+                deferredPhotosCmd =
+                    -- Prepare a list of the photos, so we could grab them in a later
+                    -- time.
+                    case RemoteData.toMaybe webData of
+                        Just data ->
+                            let
+                                dataToSend =
+                                    data.entities
+                                        |> List.foldl
+                                            (\entity accum ->
+                                                case entity of
+                                                    BackendAuthorityPhoto uuid vid entity_ ->
+                                                        -- We don't need all the info, so we just keep what we need.
+                                                        (Json.Encode.object
+                                                            [ ( "uuid", Json.Encode.string uuid )
+                                                            , ( "entity", Json.Encode.object <| Backend.Measurement.Encoder.encodePhotoUrl entity_.value )
+                                                            , ( "vid", Json.Encode.int vid )
+                                                            ]
+                                                            |> Json.Encode.encode 0
+                                                        )
+                                                            :: accum
+
+                                                    _ ->
+                                                        -- Not a photo.
+                                                        accum
+                                            )
+                                            []
+                                        |> List.reverse
+                            in
+                            sendSyncedDataToIndexDb { table = "DeferredPhotos", data = dataToSend }
+
+                        Nothing ->
+                            Cmd.none
+
                 lastFetchedRevisionId =
                     case RemoteData.toMaybe webData of
                         Just data ->
@@ -156,13 +190,14 @@ update currentDate device msg model =
                 { modelWithSyncStatus | revisionIdPerAuthorityZipper = Just zipperUpdated }
                 (Cmd.batch
                     [ cmd
+                    , deferredPhotosCmd
 
                     -- Send to JS the updated revision ID. We send the entire
                     -- list.
                     , sendRevisionIdPerAuthority (Zipper.toList zipperUpdated)
                     ]
                 )
-                (maybeHttpError webData "Backend.DataManager.Update" "BackendGeneralFetchHandle")
+                (maybeHttpError webData "Backend.DataManager.Update" "BackendAuthorityFetchHandle")
                 []
 
         BackendFetchMain ->

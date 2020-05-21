@@ -125,6 +125,11 @@ dbSync.version(9).stores({
   shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter',
 });
 
+dbSync.version(10).stores({
+  // Hold table with photos which have not been downloaded yet.
+  deferredPhotos: '&uuid,type,vid,photo',
+});
+
 
 const getRevisionIdPerAuthority = function() {
   const storage = localStorage.getItem('revisionIdPerAuthority');
@@ -230,14 +235,22 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
     entities.push(entity);
   })
 
-  if (info.table === 'Authority') {
-    var table = dbSync.shards;
-  }
-  else if (info.table === 'General') {
-    var table = dbSync.nodes;
-  }
-  else {
-    throw "Unknown table type.";
+  var table;
+  switch (info.table) {
+    case 'Authority':
+      table = dbSync.shards;
+      break;
+
+    case 'General':
+      table = dbSync.nodes;
+      break;
+
+    case 'DeferredPhotos':
+      table = dbSync.deferredPhotos;
+      break;
+
+    default:
+      throw info.table +" is an unknown table type.";
   }
 
   table.bulkAdd(entities)
