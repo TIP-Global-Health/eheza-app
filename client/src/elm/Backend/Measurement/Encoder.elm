@@ -81,7 +81,9 @@ encodePrenatalPhoto =
 
 encodePhotoUrl : PhotoUrl -> List ( String, Value )
 encodePhotoUrl (PhotoUrl url) =
-    [ ( "photo", string url ) ]
+    [ ( "photo", string url )
+    , ( "type", string "photo" )
+    ]
 
 
 encodeNutrition : ChildNutrition -> List ( String, Value )
