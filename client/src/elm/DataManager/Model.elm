@@ -203,6 +203,9 @@ type IndexDbQueryTypeResult
 type Msg
     = BackendAuthorityFetch
     | BackendAuthorityFetchHandle (WebData DownloadSyncResponse)
+      -- This is the main entry point for the Sync loop. This will dispatch a call
+      -- according to the `syncStatus`.
+    | BackendFetchMain
     | BackendGeneralFetch
     | BackendGeneralFetchHandle (WebData DownloadSyncResponse)
     | FetchFromIndexDb FetchFromIndexDbQueryType

@@ -47,39 +47,40 @@ update currentDate device msg model =
     case msg of
         BackendAuthorityFetch ->
             case model.syncStatus of
-                SyncDownloadAuthority maybeZipper webData ->
+                SyncDownloadAuthority Nothing _ ->
+                    -- No zipper, means not subscribed yet to any
+                    -- authority. `determineSyncStatus` will take care of
+                    -- rotating if we're not on automatic sync.
+                    returnDetermineSyncStatus
+
+                SyncDownloadAuthority (Just zipper) webData ->
                     if RemoteData.isLoading webData then
                         -- We are already loading.
                         noChange
 
                     else
-                        case maybeZipper of
-                            Just zipper ->
-                                let
-                                    currentZipper =
-                                        Zipper.current zipper
+                        let
+                            currentZipper =
+                                Zipper.current zipper
 
-                                    cmd =
-                                        HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
-                                            |> withQueryParams
-                                                [ ( "access_token", device.accessToken )
-                                                , ( "db_version", String.fromInt dbVersion )
-                                                , ( "base_revision", String.fromInt currentZipper.revisionId )
-                                                ]
-                                            |> withExpectJson decodeDownloadSyncResponse
-                                            |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle)
-                                in
-                                SubModelReturn
-                                    { model | syncStatus = SyncDownloadAuthority maybeZipper RemoteData.Loading }
-                                    cmd
-                                    noError
-                                    []
+                            _ =
+                                Debug.log "currentZipper" currentZipper
 
-                            Nothing ->
-                                -- No zipper, means not subscribed yet to any
-                                -- authority. `determineSyncStatus` will take care of
-                                -- rotating if we're not on automatic sync.
-                                returnDetermineSyncStatus
+                            cmd =
+                                HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
+                                    |> withQueryParams
+                                        [ ( "access_token", device.accessToken )
+                                        , ( "db_version", String.fromInt dbVersion )
+                                        , ( "base_revision", String.fromInt currentZipper.revisionId )
+                                        ]
+                                    |> withExpectJson decodeDownloadSyncResponse
+                                    |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle)
+                        in
+                        SubModelReturn
+                            { model | syncStatus = SyncDownloadAuthority (Just zipper) RemoteData.Loading }
+                            cmd
+                            noError
+                            []
 
                 _ ->
                     returnDetermineSyncStatus
@@ -94,6 +95,31 @@ update currentDate device msg model =
                 Cmd.none
                 noError
                 []
+
+        BackendFetchMain ->
+            case model.syncStatus of
+                SyncIdle ->
+                    returnDetermineSyncStatus
+
+                SyncUpload ->
+                    returnDetermineSyncStatus
+
+                SyncDownloadGeneral _ ->
+                    update
+                        currentDate
+                        device
+                        BackendGeneralFetch
+                        model
+
+                SyncDownloadAuthority _ _ ->
+                    update
+                        currentDate
+                        device
+                        BackendAuthorityFetch
+                        model
+
+                SyncDownloadPhotos _ ->
+                    returnDetermineSyncStatus
 
         BackendGeneralFetch ->
             case model.syncStatus of
@@ -257,7 +283,7 @@ update currentDate device msg model =
 subscriptions : Sub Msg
 subscriptions =
     Sub.batch
-        [ Time.every 1000 (\_ -> BackendGeneralFetch)
+        [ Time.every 1000 (\_ -> BackendFetchMain)
         , getFromIndexDb FetchFromIndexDbHandle
         ]
 
