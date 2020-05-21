@@ -41,15 +41,16 @@ determineSyncStatus model =
                 SyncDownloadAuthority maybeZipper webData ->
                     case ( maybeZipper, webData ) of
                         ( Nothing, _ ) ->
-                            -- There are no authorities, so we can set the next status.
-                            SyncIdle
+                            -- There are no authorities, so we can set the next
+                            -- status.
+                            SyncDownloadPhotos model.downloadPhotos
 
                         ( Just zipper, RemoteData.Success data ) ->
                             if List.isEmpty data.backendGeneralEntities then
                                 -- We tried to fetch, but there was no more data.
-                                -- Check if this is the last element
+                                -- Check if this is the last element.
                                 if Zipper.isLast zipper then
-                                    SyncIdle
+                                    SyncDownloadPhotos model.downloadPhotos
 
                                 else
                                     -- Go to the next authority.

@@ -82,6 +82,9 @@ type alias Model =
     , revisionIdPerAuthorityZipper : RevisionIdPerAuthorityZipper
     , lastTryBackendGeneralDownloadTime : Time.Posix
     , syncData : SyncData
+
+    -- Determine how we're going to download photos.
+    , downloadPhotos : DownloadPhotos
     }
 
 
@@ -92,6 +95,7 @@ emptyModel lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper =
     , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
     , syncData = emptySyncData
+    , downloadPhotos = DownloadPhotosBatch 100 RemoteData.NotAsked
     }
 
 
