@@ -396,10 +396,12 @@ update currentDate device msg model =
         BackendDeferredPhotoFetch val ->
             let
                 cmd =
-                    HttpBuilder.get val.photo
-                        |> withQueryParams
-                            [ ( "access_token", device.accessToken )
-                            ]
+                    -- As the image is captured with the image token (`itok`), we
+                    -- don't use `withQueryParams` to add the access token, as it will
+                    -- result with something like this:
+                    -- image-1234.jpg?itok=[image-token]?access_token=[access-token]
+                    -- Instead, we manually add the access token with a `&`.
+                    HttpBuilder.get (val.photo ++ "&" ++ "access_token=" ++ device.accessToken)
                         |> withExpectJson (Json.Decode.succeed ())
                         |> HttpBuilder.send (RemoteData.fromResult >> BackendDeferredPhotoFetchHandle)
             in
