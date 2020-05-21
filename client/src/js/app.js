@@ -236,6 +236,9 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
   else if (info.table === 'General') {
     var table = dbSync.nodes;
   }
+  else {
+    throw "Unknown table type.";
+  }
 
   table.bulkAdd(entities)
       .then(function(lastKey) {})
