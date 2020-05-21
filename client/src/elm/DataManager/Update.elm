@@ -49,40 +49,39 @@ update currentDate device msg model =
     case msg of
         BackendAuthorityFetch ->
             case model.syncStatus of
-                SyncDownloadAuthority Nothing _ ->
-                    -- No zipper, means not subscribed yet to any
-                    -- authority. `determineSyncStatus` will take care of
-                    -- rotating if we're not on automatic sync.
-                    returnDetermineSyncStatus
+                SyncDownloadAuthority webData ->
+                    case model.revisionIdPerAuthorityZipper of
+                        Nothing ->
+                            -- No zipper, means not subscribed yet to any
+                            -- authority. `determineSyncStatus` will take care of
+                            -- rotating if we're not on automatic sync.
+                            returnDetermineSyncStatus
 
-                SyncDownloadAuthority (Just zipper) webData ->
-                    if RemoteData.isLoading webData then
-                        -- We are already loading.
-                        noChange
+                        Just zipper ->
+                            if RemoteData.isLoading webData then
+                                -- We are already loading.
+                                noChange
 
-                    else
-                        let
-                            currentZipper =
-                                Zipper.current zipper
+                            else
+                                let
+                                    currentZipper =
+                                        Zipper.current zipper
 
-                            _ =
-                                Debug.log "currentZipper" currentZipper
-
-                            cmd =
-                                HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
-                                    |> withQueryParams
-                                        [ ( "access_token", device.accessToken )
-                                        , ( "db_version", String.fromInt dbVersion )
-                                        , ( "base_revision", String.fromInt currentZipper.revisionId )
-                                        ]
-                                    |> withExpectJson decodeDownloadSyncResponseAuthority
-                                    |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle zipper)
-                        in
-                        SubModelReturn
-                            { model | syncStatus = SyncDownloadAuthority (Just zipper) RemoteData.Loading }
-                            cmd
-                            noError
-                            []
+                                    cmd =
+                                        HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
+                                            |> withQueryParams
+                                                [ ( "access_token", device.accessToken )
+                                                , ( "db_version", String.fromInt dbVersion )
+                                                , ( "base_revision", String.fromInt currentZipper.revisionId )
+                                                ]
+                                            |> withExpectJson decodeDownloadSyncResponseAuthority
+                                            |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle zipper)
+                                in
+                                SubModelReturn
+                                    { model | syncStatus = SyncDownloadAuthority RemoteData.Loading }
+                                    cmd
+                                    noError
+                                    []
 
                 _ ->
                     returnDetermineSyncStatus
@@ -150,7 +149,7 @@ update currentDate device msg model =
                     Zipper.mapCurrent (\old -> { old | revisionId = lastFetchedRevisionId }) zipper
 
                 modelWithSyncStatus =
-                    DataManager.Utils.determineSyncStatus { model | syncStatus = SyncDownloadAuthority (Just zipperUpdated) webData }
+                    DataManager.Utils.determineSyncStatus { model | syncStatus = SyncDownloadAuthority webData }
             in
             SubModelReturn
                 { modelWithSyncStatus | revisionIdPerAuthorityZipper = Just zipperUpdated }
@@ -180,7 +179,7 @@ update currentDate device msg model =
                         BackendGeneralFetch
                         model
 
-                SyncDownloadAuthority _ _ ->
+                SyncDownloadAuthority _ ->
                     update
                         currentDate
                         device
@@ -298,6 +297,17 @@ update currentDate device msg model =
                 { modelWithSyncStatus | lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral }
                 (Cmd.batch [ cmd, sendLastFetchedRevisionIdGeneral lastFetchedRevisionIdGeneral ])
                 (maybeHttpError webData "Backend.DataManager.Update" "BackendGeneralFetchHandle")
+                []
+
+        SetLastFetchedRevisionIdAuthority zipper revisionId ->
+            let
+                zipperUpdated =
+                    Zipper.mapCurrent (\old -> { old | revisionId = revisionId }) zipper
+            in
+            SubModelReturn
+                { model | revisionIdPerAuthorityZipper = Just zipperUpdated }
+                Cmd.none
+                noError
                 []
 
         SetLastFetchedRevisionIdGeneral revisionId ->

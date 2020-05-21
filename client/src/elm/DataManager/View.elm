@@ -28,8 +28,8 @@ viewDebugSync model =
                     SyncDownloadGeneral webData ->
                         viewSyncDownloadGeneral model webData
 
-                    SyncDownloadAuthority revisionIdPerAuthorityZipper webData ->
-                        viewSyncDownloadAuthority model revisionIdPerAuthorityZipper webData
+                    SyncDownloadAuthority webData ->
+                        viewSyncDownloadAuthority model webData
 
                     _ ->
                         emptyNode
@@ -96,8 +96,8 @@ viewGeneralEntity backendGeneralEntity =
         ]
 
 
-viewSyncDownloadAuthority : Model -> RevisionIdPerAuthorityZipper -> WebData (DownloadSyncResponse BackendAuthorityEntity) -> Html Msg
-viewSyncDownloadAuthority model revisionIdPerAuthorityZipper webData =
+viewSyncDownloadAuthority : Model -> WebData (DownloadSyncResponse BackendAuthorityEntity) -> Html Msg
+viewSyncDownloadAuthority model webData =
     div [] []
 
 

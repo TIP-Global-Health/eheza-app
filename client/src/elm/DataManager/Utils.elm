@@ -15,14 +15,20 @@ determineSyncStatus model =
             syncStatus =
                 model.syncStatus
 
-            syncStatusUpdated =
+            revisionIdPerAuthorityZipper =
+                model.revisionIdPerAuthorityZipper
+
+            noChange =
+                ( syncStatus, revisionIdPerAuthorityZipper )
+
+            ( syncStatusUpdated, revisionIdPerAuthorityZipperUpdated ) =
                 case syncStatus of
                     SyncIdle ->
-                        SyncUpload
+                        ( SyncUpload, revisionIdPerAuthorityZipper )
 
                     SyncUpload ->
                         -- @todo: add logic
-                        SyncDownloadGeneral RemoteData.NotAsked
+                        ( SyncDownloadGeneral RemoteData.NotAsked, revisionIdPerAuthorityZipper )
 
                     SyncDownloadGeneral webData ->
                         case webData of
@@ -30,39 +36,58 @@ determineSyncStatus model =
                                 if List.isEmpty data.entities then
                                     -- We tried to fetch, but there was no more data.
                                     -- Next we try authorities.
-                                    SyncDownloadAuthority model.revisionIdPerAuthorityZipper RemoteData.NotAsked
+                                    ( SyncDownloadAuthority RemoteData.NotAsked
+                                    , revisionIdPerAuthorityZipper
+                                    )
 
                                 else
                                     -- Still have data to download.
-                                    syncStatus
+                                    noChange
 
                             _ ->
-                                syncStatus
+                                noChange
 
-                    SyncDownloadAuthority maybeZipper webData ->
-                        case ( maybeZipper, webData ) of
+                    SyncDownloadAuthority webData ->
+                        case ( model.revisionIdPerAuthorityZipper, webData ) of
                             ( Nothing, _ ) ->
                                 -- There are no authorities, so we can set the next
                                 -- status.
-                                SyncDownloadPhotos model.downloadPhotos
+                                ( SyncDownloadPhotos model.downloadPhotos
+                                , revisionIdPerAuthorityZipper
+                                )
 
                             ( Just zipper, RemoteData.Success data ) ->
                                 if List.isEmpty data.entities then
                                     -- We tried to fetch, but there was no more data.
                                     -- Check if this is the last element.
                                     if Zipper.isLast zipper then
-                                        SyncDownloadPhotos model.downloadPhotos
+                                        ( SyncDownloadPhotos model.downloadPhotos
+                                        , revisionIdPerAuthorityZipper
+                                        )
 
                                     else
-                                        -- Go to the next authority.
-                                        SyncDownloadAuthority (Zipper.next zipper) RemoteData.NotAsked
+                                        -- Go to the next authority if there is
+                                        -- otherwise, to the next status
+                                        case Zipper.next zipper of
+                                            Just nextZipper ->
+                                                ( SyncDownloadAuthority RemoteData.NotAsked
+                                                , Just nextZipper
+                                                )
+
+                                            Nothing ->
+                                                -- We've reached the last element
+                                                -- so reset it back, and rotate
+                                                -- to the next status.
+                                                ( SyncDownloadPhotos model.downloadPhotos
+                                                , Just (Zipper.first zipper)
+                                                )
 
                                 else
                                     -- Still have data to download.
-                                    syncStatus
+                                    noChange
 
                             _ ->
-                                syncStatus
+                                noChange
 
                     SyncDownloadPhotos downloadPhotos ->
                         --let
@@ -82,19 +107,22 @@ determineSyncStatus model =
                         --in
                         case downloadPhotos of
                             DownloadPhotosNone ->
-                                SyncIdle
+                                ( SyncIdle, revisionIdPerAuthorityZipper )
 
                             DownloadPhotosBatch _ webData ->
                                 -- @todo:
                                 -- check webData
-                                SyncIdle
+                                ( SyncIdle, revisionIdPerAuthorityZipper )
 
                             DownloadPhotosAll webData ->
                                 -- @todo:
                                 -- check webData
-                                SyncIdle
+                                ( SyncIdle, revisionIdPerAuthorityZipper )
         in
-        { model | syncStatus = syncStatusUpdated }
+        { model
+            | syncStatus = syncStatusUpdated
+            , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipperUpdated
+        }
 
     else
         -- No change.

@@ -84,7 +84,6 @@ type alias Model =
     -- fetch from.
     , revisionIdPerAuthorityZipper : RevisionIdPerAuthorityZipper
     , lastTryBackendGeneralDownloadTime : Time.Posix
-    , syncData : SyncData
 
     -- Determine how we're going to download photos.
     , downloadPhotos : DownloadPhotos
@@ -92,6 +91,9 @@ type alias Model =
     -- Determine is Sync status should be rotated automatically, or manually for debug
     -- purposes.
     , syncStatusRotateAutomatic : Bool
+
+    -- @todo: Remove
+    , syncData : SyncData
     }
 
 
@@ -138,23 +140,8 @@ type SyncStatus
     = SyncIdle
     | SyncUpload
     | SyncDownloadGeneral (WebData (DownloadSyncResponse BackendGeneralEntity))
-    | SyncDownloadAuthority RevisionIdPerAuthorityZipper (WebData (DownloadSyncResponse BackendAuthorityEntity))
+    | SyncDownloadAuthority (WebData (DownloadSyncResponse BackendAuthorityEntity))
     | SyncDownloadPhotos DownloadPhotos
-
-
-type alias SyncData =
-    { downloadStatus : Maybe DownloadStatus
-    , uploadStatus : Maybe UploadStatus
-    , attempt : SyncAttempt
-    }
-
-
-emptySyncData : SyncData
-emptySyncData =
-    { downloadStatus = Nothing
-    , uploadStatus = Nothing
-    , attempt = NotAsked
-    }
 
 
 {-| Indicate what content, or query we'd like to get from IndexDB.
@@ -177,12 +164,28 @@ type Msg
     | BackendGeneralFetchHandle (WebData (DownloadSyncResponse BackendGeneralEntity))
     | FetchFromIndexDb FetchFromIndexDbQueryType
     | FetchFromIndexDbHandle Value
+    | SetLastFetchedRevisionIdAuthority (Zipper RevisionIdPerAuthority) Int
     | SetLastFetchedRevisionIdGeneral Int
     | SetSyncStatusRotateAutomatic Bool
 
 
 
--- @todo: Cleanup/ remove.
+-- @todo: Remove.
+
+
+type alias SyncData =
+    { downloadStatus : Maybe DownloadStatus
+    , uploadStatus : Maybe UploadStatus
+    , attempt : SyncAttempt
+    }
+
+
+emptySyncData : SyncData
+emptySyncData =
+    { downloadStatus = Nothing
+    , uploadStatus = Nothing
+    , attempt = NotAsked
+    }
 
 
 type alias DownloadStatus =
