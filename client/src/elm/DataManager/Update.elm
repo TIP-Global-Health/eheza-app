@@ -11,6 +11,7 @@ import DataManager.Model
     exposing
         ( BackendAuthorityEntity(..)
         , BackendGeneralEntity(..)
+        , DownloadPhotos(..)
         , FetchFromIndexDbQueryType(..)
         , IndexDbQueryTypeResult(..)
         , Model
@@ -367,7 +368,26 @@ update currentDate device msg model =
             -- Get a deferred photo from IndexDB.
             -- Get via HTTP.
             -- If it was a success, delete it from the deferred photos table.
-            noChange
+            case model.syncStatus of
+                SyncDownloadPhotos DownloadPhotosNone ->
+                    noChange
+
+                SyncDownloadPhotos (DownloadPhotosBatch batch _) ->
+                    update
+                        currentDate
+                        device
+                        (FetchFromIndexDb IndexDbQueryDeferredPhoto)
+                        { model | syncStatus = SyncDownloadPhotos (DownloadPhotosBatch batch RemoteData.NotAsked) }
+
+                SyncDownloadPhotos (DownloadPhotosAll _) ->
+                    update
+                        currentDate
+                        device
+                        (FetchFromIndexDb IndexDbQueryDeferredPhoto)
+                        { model | syncStatus = SyncDownloadPhotos (DownloadPhotosAll RemoteData.NotAsked) }
+
+                _ ->
+                    noChange
 
         FetchFromIndexDb indexDbQueryType ->
             let
