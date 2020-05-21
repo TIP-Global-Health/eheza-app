@@ -227,7 +227,7 @@ update currentDate device msg model =
                     update
                         currentDate
                         device
-                        BackendPhotoFetch
+                        FetchFromIndexDbDeferredPhoto
                         model
 
         BackendGeneralFetch ->
@@ -368,7 +368,7 @@ update currentDate device msg model =
                 noError
                 []
 
-        BackendPhotoFetch ->
+        FetchFromIndexDbDeferredPhoto ->
             -- Get a deferred photo from IndexDB.
             -- Get via HTTP.
             -- If it was a success, delete it from the deferred photos table.
@@ -392,6 +392,31 @@ update currentDate device msg model =
 
                 _ ->
                     noChange
+
+        BackendDeferredPhotoFetch val ->
+            let
+                cmd =
+                    HttpBuilder.get val.photo
+                        |> withQueryParams
+                            [ ( "access_token", device.accessToken )
+                            ]
+                        |> withExpectJson (Json.Decode.succeed ())
+                        |> HttpBuilder.send (RemoteData.fromResult >> BackendDeferredPhotoFetchHandle)
+            in
+            SubModelReturn
+                -- No change in the model, as we've already indicated with are
+                -- RemoteData.Loading in `FetchFromIndexDbDeferredPhoto`.
+                model
+                cmd
+                noError
+                []
+
+        BackendDeferredPhotoFetchHandle webData ->
+            let
+                _ =
+                    Debug.log "BackendDeferredPhotoFetchHandle" webData
+            in
+            noChange
 
         FetchFromIndexDb indexDbQueryType ->
             let
@@ -423,19 +448,14 @@ update currentDate device msg model =
                                     |> App.Model.MsgIndexedDb
                                 ]
 
-                        IndexDbQueryDeferredPhotoResult record ->
-                            let
-                                _ =
-                                    Debug.log "IndexDbQueryDeferredPhotoResult" record
-                            in
-                            -- todo
-                            noChange
+                        IndexDbQueryDeferredPhotoResult val_ ->
+                            update
+                                currentDate
+                                device
+                                (BackendDeferredPhotoFetch val_)
+                                model
 
                 Err error ->
-                    let
-                        _ =
-                            Debug.log "Err" error
-                    in
                     SubModelReturn
                         model
                         Cmd.none

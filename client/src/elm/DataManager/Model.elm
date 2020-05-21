@@ -173,9 +173,12 @@ type Msg
     | BackendFetchMain
     | BackendGeneralFetch
     | BackendGeneralFetchHandle (WebData (DownloadSyncResponse BackendGeneralEntity))
-    | BackendPhotoFetch
+      -- Fetch a deferred photo from the server.
+    | BackendDeferredPhotoFetch IndexDbQueryDeferredPhotoResultRecord
+    | BackendDeferredPhotoFetchHandle (WebData ())
     | FetchFromIndexDb FetchFromIndexDbQueryType
     | FetchFromIndexDbHandle Value
+    | FetchFromIndexDbDeferredPhoto
     | SetLastFetchedRevisionIdAuthority (Zipper RevisionIdPerAuthority) Int
     | SetLastFetchedRevisionIdGeneral Int
     | SetSyncStatusRotateAutomatic Bool
