@@ -216,11 +216,11 @@ elmApp.ports.scrollToElement.subscribe(function(elementId) {
 /**
  * Save Synced data to IndexDB.
  */
-elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(data) {
+elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
 
   // Prepare entities for bulk add.
   let entities = [];
-  data.forEach(function (row) {
+  info.data.forEach(function (row) {
     const rowObject = JSON.parse(row);
 
     let entity = rowObject.entity;
@@ -230,7 +230,14 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(data) {
     entities.push(entity);
   })
 
-  dbSync.nodes.bulkAdd(entities)
+  if (info.table === 'Authority') {
+    var table = dbSync.shards;
+  }
+  else if (info.table === 'General') {
+    var table = dbSync.nodes;
+  }
+
+  table.bulkAdd(entities)
       .then(function(lastKey) {})
       .catch(Dexie.BulkError, function (e) {
         // Explicitly catching the bulkAdd() operation makes those successful

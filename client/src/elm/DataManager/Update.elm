@@ -264,7 +264,7 @@ update currentDate device msg model =
                                             []
                                         |> List.reverse
                             in
-                            sendSyncedDataToIndexDb { table = "Authority", data = dataToSend }
+                            sendSyncedDataToIndexDb { table = "General", data = dataToSend }
 
                         Nothing ->
                             Cmd.none
