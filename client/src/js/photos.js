@@ -8,14 +8,14 @@
  */
 'use strict';
 
-// TODO: Check if `await` is supported on the browsers we'll support ... could
-// simplify some of the nested promises below in that case, I believe.
-
 (function () {
     self.addEventListener('fetch', function (event) {
 
         // Handle avatars and photos we've cached from the backend.
         if ((event.request.method === 'GET') && photosDownloadUrlRegex.test(event.request.url)) {
+
+            console.log('We are inside SW!');
+
             var response = caches.open(photosDownloadCache).then(function (cache) {
                 return cache.match(event.request.url).then(function(response) {
                     if (response) {
