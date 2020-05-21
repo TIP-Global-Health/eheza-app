@@ -15,19 +15,11 @@ define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 9);
  */
 const HEDLEY_RESTFUL_ALL_DEVICES = [
   'catchment_area' => 'catchment_areas',
-  'clinic' => 'clinics',
   'counseling_schedule' => 'counseling-schedule',
   'counseling_topic' => 'counseling-topics',
   'health_center' => 'health_centers',
   'nurse' => 'nurses',
   'participant_form' => 'participants-form',
-  'person' => 'people',
-  'pmtct_participant' => 'pmtct-participants',
-  'individual_participant' => 'individual-participants',
-  'prenatal_encounter' => 'prenatal-encounters',
-  'nutrition_encounter' => 'nutrition-encounters',
-  'relationship' => 'relationships',
-  'session' => 'sessions',
   'village' => 'villages',
 ];
 
@@ -38,6 +30,17 @@ const HEDLEY_RESTFUL_ALL_DEVICES = [
  * we sync to just some devices.
  */
 const HEDLEY_RESTFUL_SHARDED = [
+  // Get synced into 'nodes' table at IndexedDB:
+  'clinic' => 'clinics',
+  'person' => 'people',
+//  'pmtct_participant' => 'pmtct-participants',
+//  'individual_participant' => 'individual-participants',
+//  'prenatal_encounter' => 'prenatal-encounters',
+//  'nutrition_encounter' => 'nutrition-encounters',
+//  'relationship' => 'relationships',
+//  'session' => 'sessions',
+
+  // Get synced into 'shards' table at IndexedDB:
   'attendance' => 'attendances',
   'breast_exam' => 'breast-exams',
   'counseling_session' => 'counseling-sessions',
