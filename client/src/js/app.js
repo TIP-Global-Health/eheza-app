@@ -127,14 +127,17 @@ dbSync.version(9).stores({
 
 
 const getRevisionIdPerAuthority = function() {
-  let storage = localStorage.getItem('revisionIdPerAuthority');
-  if (!!storage) {
-    // Convert values to int.
-    storage.forEach(function(value, index) {
-      this[index] = parseInt(value);
-    }, storage);
+  const storage = localStorage.getItem('revisionIdPerAuthority');
 
-    return storage;
+  if (!!storage) {
+    let storageArr = JSON.parse(storage);
+    // Convert values to int.
+    storageArr.forEach(function(value, index) {
+      value.revisionId = parseInt(value.revisionId);
+      this[index] = value;
+    }, storageArr);
+
+    return storageArr;
   }
 
   return [];
@@ -183,28 +186,6 @@ reportQuota();
 // And, then every minute.
 setInterval(reportQuota, minutesToMillis(1));
 
-
-
-// Kick off a sync. If we're offline, the browser's sync mechanism will wait
-// until we're online.
-function trySyncing() {
-  // navigator.serviceWorker.ready.then(function(reg) {
-  //   return reg.sync.register('sync').catch(function() {
-  //     // Try a message instead.
-  //     reg.active.postMessage('sync');
-  //   });
-  // });
-}
-
-// Do it on launch.
-trySyncing();
-
-// And try a sync every 5 minutes. In future, we may react to Pusher messages
-// instead of polling.
-setInterval(trySyncing, minutesToMillis(5));
-
-// And allow a manual attempt.
-elmApp.ports.trySyncing.subscribe(trySyncing);
 
 
 elmApp.ports.cachePinCode.subscribe(function(pinCode) {
@@ -271,7 +252,7 @@ elmApp.ports.sendLastFetchedRevisionIdGeneral.subscribe(function(lastFetchedRevi
  * their UUID.
  */
 elmApp.ports.sendRevisionIdPerAuthority.subscribe(function(revisionIdPerAuthority) {
-  localStorage.setItem('revisionIdPerAuthority', revisionIdPerAuthority);
+  localStorage.setItem('revisionIdPerAuthority', JSON.stringify(revisionIdPerAuthority));
 });
 
 /**

@@ -85,9 +85,13 @@ update currentDate device msg model =
                     returnDetermineSyncStatus
 
         BackendAuthorityFetchHandle webData ->
+            let
+                cmd =
+                    sendRevisionIdPerAuthority []
+            in
             SubModelReturn
                 model
-                (sendRevisionIdPerAuthority [])
+                Cmd.none
                 noError
                 []
 
