@@ -138,10 +138,17 @@ update currentDate device msg model =
                                             (\entity accum ->
                                                 case entity of
                                                     BackendAuthorityPhoto uuid vid entity_ ->
+                                                        let
+                                                            encodedEntity =
+                                                                Backend.Measurement.Encoder.encodePhotoUrl entity_.value
+
+                                                            encodedEntityWithAttempt =
+                                                                ( "attempts", Json.Encode.int 0 ) :: encodedEntity
+                                                        in
                                                         -- We don't need all the info, so we just keep what we need.
                                                         (Json.Encode.object
                                                             [ ( "uuid", Json.Encode.string uuid )
-                                                            , ( "entity", Json.Encode.object <| Backend.Measurement.Encoder.encodePhotoUrl entity_.value )
+                                                            , ( "entity", Json.Encode.object encodedEntityWithAttempt )
                                                             , ( "vid", Json.Encode.int vid )
                                                             ]
                                                             |> Json.Encode.encode 0

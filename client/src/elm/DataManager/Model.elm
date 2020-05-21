@@ -162,7 +162,12 @@ type IndexDbQueryTypeResult
 
 
 type alias IndexDbQueryDeferredPhotoResultRecord =
-    { uuid : String, photo : String }
+    { uuid : String
+    , photo : String
+
+    -- The number of attempts we've tried to get the image.
+    , attempts : Int
+    }
 
 
 type Msg

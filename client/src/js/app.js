@@ -127,7 +127,8 @@ dbSync.version(9).stores({
 
 dbSync.version(10).stores({
   // Hold table with photos which have not been downloaded yet.
-  deferredPhotos: '&uuid,type,vid,photo',
+  // `attempts` holds the number of attempts we've tried to get the image.
+  deferredPhotos: '&uuid,type,vid,photo,attempts',
 });
 
 
