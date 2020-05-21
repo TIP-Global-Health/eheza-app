@@ -410,7 +410,8 @@ update currentDate device msg model =
                     -- image-1234.jpg?itok=[image-token]?access_token=[access-token]
                     -- Instead, we manually add the access token with a `&`.
                     HttpBuilder.get (result.photo ++ "&" ++ "access_token=" ++ device.accessToken)
-                        |> withExpectJson (Json.Decode.succeed ())
+                        -- @todo: Remove?
+                        -- |> withExpectJson (Json.Decode.succeed ())
                         |> HttpBuilder.send (RemoteData.fromResult >> BackendDeferredPhotoFetchHandle result)
             in
             SubModelReturn
@@ -422,10 +423,6 @@ update currentDate device msg model =
                 []
 
         BackendDeferredPhotoFetchHandle result webData ->
-            let
-                _ =
-                    Debug.log "BackendDeferredPhotoFetchHandle" webData
-            in
             case webData of
                 RemoteData.Failure error ->
                     if Utils.WebData.isNetworkError error then
@@ -448,15 +445,29 @@ update currentDate device msg model =
                         update
                             currentDate
                             device
-                            (FetchFromIndexDb IndexDbQueryDeferredPhoto)
+                            (FetchFromIndexDb <| IndexDbQueryUpdateDeferredPhotoAttempts result)
                             { model | syncStatus = syncStatus }
 
-                -- Mark this photo
                 RemoteData.Success _ ->
+                    let
+                        syncStatus =
+                            case model.syncStatus of
+                                SyncDownloadPhotos (DownloadPhotosBatch batchSize _) ->
+                                    SyncDownloadPhotos (DownloadPhotosBatch batchSize (RemoteData.Success ()))
+
+                                SyncDownloadPhotos (DownloadPhotosAll _) ->
+                                    SyncDownloadPhotos (DownloadPhotosAll (RemoteData.Success ()))
+
+                                _ ->
+                                    model.syncStatus
+                    in
                     -- We've fetched the image, so we can remove the record from
                     -- `deferredPhotos` table.
-                    -- @todo
-                    noChange
+                    update
+                        currentDate
+                        device
+                        (FetchFromIndexDb <| IndexDbQueryRemoveDeferredPhotoAttempts result.uuid)
+                        { model | syncStatus = syncStatus }
 
                 _ ->
                     -- Satisfy the compiler.
@@ -474,6 +485,11 @@ update currentDate device msg model =
                         IndexDbQueryDeferredPhoto ->
                             { queryType = "IndexDbQueryDeferredPhoto"
                             , data = Nothing
+                            }
+
+                        IndexDbQueryRemoveDeferredPhotoAttempts uuid ->
+                            { queryType = "IndexDbQueryRemoveDeferredPhotoAttempts"
+                            , data = Just uuid
                             }
 
                         IndexDbQueryUpdateDeferredPhotoAttempts record_ ->

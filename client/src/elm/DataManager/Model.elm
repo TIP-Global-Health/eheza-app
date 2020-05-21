@@ -100,16 +100,17 @@ type alias Model =
 
 emptyModel : LastFetchedRevisionIdGeneral -> RevisionIdPerAuthorityZipper -> Model
 emptyModel lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper =
-    { -- syncStatus = SyncDownloadGeneral RemoteData.NotAsked
-      syncStatus = SyncDownloadPhotos (DownloadPhotosAll RemoteData.NotAsked)
+    { syncStatus = SyncDownloadGeneral RemoteData.NotAsked
+
+    -- syncStatus = SyncDownloadPhotos (DownloadPhotosAll RemoteData.NotAsked)
     , lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral
     , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
     , syncData = emptySyncData
     , downloadPhotos = DownloadPhotosBatch 100 RemoteData.NotAsked
+    , syncStatusRotateAutomatic = True
 
-    -- , syncStatusRotateAutomatic = True
-    , syncStatusRotateAutomatic = False
+    --, syncStatusRotateAutomatic = False
     }
 
 
@@ -154,6 +155,11 @@ type FetchFromIndexDbQueryType
     = -- Get a single deferred photo.
       IndexDbQueryDeferredPhoto
     | IndexDbQueryHealthCenters
+      -- When we successfully download a photo, we remove it from the `deferredPhotos` table.
+      -- We just need the UUID.
+    | IndexDbQueryRemoveDeferredPhotoAttempts String
+      -- Update the number of attempts, a deferred photos was un-successfully downloaded.
+      -- We don't count cases where we were offline.
     | IndexDbQueryUpdateDeferredPhotoAttempts IndexDbQueryDeferredPhotoResultRecord
 
 

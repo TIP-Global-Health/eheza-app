@@ -14,8 +14,6 @@
         // Handle avatars and photos we've cached from the backend.
         if ((event.request.method === 'GET') && photosDownloadUrlRegex.test(event.request.url)) {
 
-            console.log('We are inside SW!');
-
             var response = caches.open(photosDownloadCache).then(function (cache) {
                 return cache.match(event.request.url).then(function(response) {
                     if (response) {

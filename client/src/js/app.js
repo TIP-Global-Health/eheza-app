@@ -293,7 +293,16 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
     case 'IndexDbQueryDeferredPhoto':
       (async () => {
-        const result = await dbSync.deferredPhotos.limit(1).toArray();
+
+        const result = await dbSync
+            .deferredPhotos
+            .where('attempts')
+            .belowOrEqual(3)
+            .limit(1)
+            // Get attempts sorted, so we won't always grab the same one.
+            .reverse()
+            .sortBy('attempts');
+
         sendResultToElm(queryType, result);
 
       })();
@@ -303,6 +312,18 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       (async () => {
         const result = await dbSync.nodes.where('type').equals('health_center').toArray();
         sendResultToElm(queryType, result);
+
+      })();
+      break;
+
+    case 'IndexDbQueryRemoveDeferredPhotoAttempts':
+      (async () => {
+
+        // We have nothing to send back. At this point we assume the record
+        // was deleted properly. Even if not, and we tried to download it again,
+        // eventually the number of attempts will make sure it's never picked
+        // up again.
+        await dbSync.deferredPhotos.delete(data);
 
       })();
       break;
