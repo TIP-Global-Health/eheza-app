@@ -9,26 +9,29 @@
 'use strict';
 
 (function () {
-    self.addEventListener('fetch', function (event) {
+    self.addEventListener('fetch', function ( event) {
 
         // Handle avatars and photos we've cached from the backend.
         if ((event.request.method === 'GET') && photosDownloadUrlRegex.test(event.request.url)) {
 
-            (async () => {
 
-                const cache = await caches.open(photosDownloadCache);
-                const responseCached = await cache.match(event.request.url);
+            event.respondWith(
+                (async () => {
+                    const cache = await caches.open(cacheName);
+                    const cachedFiles = await cache.match(event.request);
+                    if (!!cachedFiles) {
+                       return cachedFiles;
+                    }
+                    else {
+                      return fetch(event.request);
+                    }
+                })()
+            );
+                // let url = new URL(event.request.url);
+                // const cache = await caches.open(photosDownloadCache);
+                // let response = await fetch(event.request);
+                // event.respondWith(response);
 
-                if (!!responseCached) {
-                    // Return cached photo.
-                    return event.respondWith(response);
-                }
-
-                // Try to get from the server.
-                const responseRemote = await fetch(event.request);
-                return event.respondWith(responseRemote);
-
-            })();
 
             // var response = caches.open(photosDownloadCache).then(function (cache) {
             //     return cache.match(event.request.url).then(function(response) {
@@ -36,7 +39,7 @@
             //             console.log(response);
             //             return response;
             //         } else {
-            //             console.log('test');
+            //             return fetch(event.request);
             //             throw Error('Image was not cached.');
             //         }
             //     });
@@ -50,9 +53,9 @@
             //     return fetch(event.request);
             // });
             //
-            //
             // event.respondWith(response);
         }
+
 
         // Handle GET for images which we've uploaded to the cache, but which
         // have not yet reached the backend.
