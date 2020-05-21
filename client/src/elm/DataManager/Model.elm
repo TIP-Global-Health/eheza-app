@@ -1,5 +1,6 @@
 module DataManager.Model exposing
     ( BackendGeneralEntity(..)
+    , DownloadPhotos(..)
     , DownloadStatus
     , DownloadSyncResponse
     , FetchFromIndexDbQueryType(..)
@@ -140,6 +141,19 @@ type alias DownloadSyncResponse =
     }
 
 
+{-| Determine how photos are going to be downloaded.
+-}
+type DownloadPhotos
+    = -- Don't download any photos at all.
+      DownloadPhotosNone
+      -- Download up to a number of photos, and then skip to the next Sync status,
+      -- which is `SyncIdle`. This is used to grab photos, but without blocking
+      -- completely the rest of the syncing of data.
+    | DownloadPhotosBatch Int
+      -- Download all photos.
+    | DownloadPhotosAll
+
+
 {-| The Sync (download or upload), by its order.
 -}
 type SyncStatus
@@ -147,6 +161,7 @@ type SyncStatus
     | SyncUpload
     | SyncDownloadGeneral (WebData DownloadSyncResponse)
     | SyncDownloadAuthority RevisionIdPerAuthorityZipper (WebData DownloadSyncResponse)
+    | SyncDownloadPhotos DownloadPhotos
 
 
 type SyncAttempt
