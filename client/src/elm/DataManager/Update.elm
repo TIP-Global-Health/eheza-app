@@ -110,8 +110,6 @@ update currentDate device msg model =
                                                 in
                                                 case entity of
                                                     BackendAuthorityPhoto uuid vid entity_ ->
-                                                        -- @todo: Encoder is probably wrong.
-                                                        -- need to have `type=photo`.
                                                         doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodePhoto entity_)
                                                             :: accum
 
