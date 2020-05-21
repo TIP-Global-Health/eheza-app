@@ -240,6 +240,10 @@ function hedley_device_verify_unique_uuid($node, $wrapper) {
  * Fill in field_shards with the shards this node should be sent to.
  */
 function hedley_device_assign_shards($node, $wrapper) {
+  if (!empty($wrapper->field_shards->value())) {
+    return;
+  }
+
   switch ($node->type) {
     case 'pmtct_participant':
     case 'session':
@@ -261,7 +265,7 @@ function hedley_device_assign_shards($node, $wrapper) {
       break;
 
     case 'prenatal_encounter':
-    case 'nutrition_encounter' :
+    case 'nutrition_encounter':
       $person_id = $wrapper->field_individual_participant->field_person->getIdentifier();
       $shard = hedley_device_shard_by_health_center($person_id);
       if (!$shard) {
@@ -306,7 +310,6 @@ function hedley_device_shard_by_health_center($nid) {
 
   $wrapper = entity_metadata_wrapper('node', $nid);
   $shard = $wrapper->field_health_center->getIdentifier();
-
 
   return $shard ? $shard : FALSE;
 }
@@ -355,8 +358,6 @@ function hedley_device_shards_for_person($nid) {
 
   return $shards;
 }
-
-
 
 /**
  * Recalculate and potentially update shard assignments.
