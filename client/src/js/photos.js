@@ -12,25 +12,31 @@
     self.addEventListener('fetch', function ( event) {
 
         // Handle avatars and photos we've cached from the backend.
-        if ((event.request.method === 'GET') && photosDownloadUrlRegex.test(event.request.url)) {
-
+        if (event.request.method === 'GET' && photosDownloadUrlRegex.test(event.request.url)) {
 
             event.respondWith(
-                (async () => {
-                    const cache = await caches.open(cacheName);
-                    const cachedFiles = await cache.match(event.request);
-                    if (!!cachedFiles) {
-                       return cachedFiles;
-                    }
-                    else {
-                      return fetch(event.request);
-                    }
-                })()
+                caches.open(photosDownloadCache).then(function(cache) {
+                    return cache.match(event.request).then(function (response) {
+                        return response || fetch(event.request).then(function(response) {
+                            cache.put(event.request, response.clone());
+                            return response;
+                        });
+                    });
+                })
             );
-                // let url = new URL(event.request.url);
-                // const cache = await caches.open(photosDownloadCache);
-                // let response = await fetch(event.request);
-                // event.respondWith(response);
+
+            // event.respondWith(
+            //     (async () => {
+            //         const cache = await caches.open(cacheName);
+            //         const cachedFiles = await cache.match(event.request);
+            //         if (!!cachedFiles) {
+            //            return cachedFiles;
+            //         }
+            //         else {
+            //           return fetch(event.request);
+            //         }
+            //     })()
+            // );
 
 
             // var response = caches.open(photosDownloadCache).then(function (cache) {

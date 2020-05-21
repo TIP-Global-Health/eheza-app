@@ -22,6 +22,7 @@ import DataManager.Utils
 import Device.Model exposing (Device)
 import Error.Utils exposing (decodeError, maybeHttpError, noError)
 import Gizra.NominalDate exposing (NominalDate)
+import Http
 import HttpBuilder exposing (withExpectJson, withQueryParams)
 import Json.Decode exposing (Value, decodeString, decodeValue)
 import Json.Encode
@@ -389,14 +390,14 @@ update currentDate device msg model =
                         currentDate
                         device
                         (FetchFromIndexDb IndexDbQueryDeferredPhoto)
-                        { model | syncStatus = SyncDownloadPhotos (DownloadPhotosBatch batch RemoteData.NotAsked) }
+                        { model | syncStatus = SyncDownloadPhotos (DownloadPhotosBatch batch RemoteData.Loading) }
 
                 SyncDownloadPhotos (DownloadPhotosAll _) ->
                     update
                         currentDate
                         device
                         (FetchFromIndexDb IndexDbQueryDeferredPhoto)
-                        { model | syncStatus = SyncDownloadPhotos (DownloadPhotosAll RemoteData.NotAsked) }
+                        { model | syncStatus = SyncDownloadPhotos (DownloadPhotosAll RemoteData.Loading) }
 
                 _ ->
                     noChange
@@ -410,12 +411,12 @@ update currentDate device msg model =
                     -- image-1234.jpg?itok=[image-token]?access_token=[access-token]
                     -- Instead, we manually add the access token with a `&`.
                     HttpBuilder.get (result.photo ++ "&" ++ "access_token=" ++ device.accessToken)
-                        -- @todo: Remove?
-                        -- |> withExpectJson (Json.Decode.succeed ())
+                        -- We don't need to decode anything, as we just want to have
+                        -- the browser download it.
                         |> HttpBuilder.send (RemoteData.fromResult >> BackendDeferredPhotoFetchHandle result)
             in
             SubModelReturn
-                -- No change in the model, as we've already indicated with are
+                -- No change in the model, as we've already indicated we are
                 -- RemoteData.Loading in `FetchFromIndexDbDeferredPhoto`.
                 model
                 cmd
@@ -425,7 +426,7 @@ update currentDate device msg model =
         BackendDeferredPhotoFetchHandle result webData ->
             let
                 _ =
-                    Debug.log "webData?" webData
+                    Debug.log "BackendDeferredPhotoFetchHandle" webData
             in
             case webData of
                 RemoteData.Failure error ->
