@@ -240,12 +240,92 @@ function hedley_device_verify_unique_uuid($node, $wrapper) {
  * Fill in field_shards with the shards this node should be sent to.
  */
 function hedley_device_assign_shards($node, $wrapper) {
-  if (!$person_id = $wrapper->field_person->getIdentifier()) {
-    return;
+  switch ($node->type) {
+    case 'pmtct_participant':
+    case 'session':
+      $clinic_id = $wrapper->field_clinic->getIdentifier();
+      $shard = hedley_device_shard_by_clinic($clinic_id);
+      if (!$shard) {
+        return;
+      }
+      $shards = [$shard];
+      break;
+
+    case 'individual_participant':
+      $person_id = $wrapper->field_person->getIdentifier();
+      $shard = hedley_device_shard_by_person($person_id);
+      if (!$shard) {
+        return;
+      }
+      $shards = [$shard];
+      break;
+
+    case 'prenatal_encounter':
+    case 'nutrition_encounter' :
+      $person_id = $wrapper->field_individual_participant->field_person->getIdentifier();
+      $shard = hedley_device_shard_by_person($person_id);
+      if (!$shard) {
+        return;
+      }
+      $shards = [$shard];
+      break;
+
+    case 'relationship':
+      $adult_id = $wrapper->field_person->getIdentifier();
+      $child_id = $wrapper->field_related_to->getIdentifier();
+
+      $shard_adult = hedley_device_shard_by_person($adult_id);
+      if (!$shard_adult) {
+        return;
+      }
+
+      $shard_child = hedley_device_shard_by_person($child_id);
+      if ($shard_adult !== $shard_child) {
+        return;
+      }
+      $shards = [$shard_adult];
+      break;
+
+    // Handling all kinds of measurements
+    default:
+      $person_id = $wrapper->field_person->getIdentifier();
+      if (!$person_id) {
+        return;
+      }
+      $shards = hedley_device_shards_for_person($person_id);
+      break;
   }
 
-  $shards = hedley_device_shards_for_person($person_id);
   $wrapper->field_shards->set($shards);
+}
+
+function hedley_device_shard_by_person($person_id) {
+  if (!$person_id) {
+    return FALSE;
+  }
+
+  $person = entity_metadata_wrapper('node', $person_id);
+
+  if (!$shard = $person->field_health_center->getIdentifier()) {
+    return FALSE;
+  }
+
+  return $shard;
+}
+
+function hedley_device_shard_by_clinic($clinic_id) {
+  if (!$clinic_id) {
+    return FALSE;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $clinic_id);
+  $shard = $wrapper->field_health_center->getIdentifier();
+
+  if (!$shard) {
+    return FALSE;
+  }
+
+  return $shard;
 }
 
 /**
@@ -284,16 +364,16 @@ function hedley_device_shards_for_person($nid) {
 
   $shards = $query->execute()->fetchCol();
 
-  $person = entity_metadata_wrapper('node', $nid);
-
-  if ($shard = $person->field_health_center->getIdentifier()) {
-    if (!in_array($shard, $shards)) {
+  if ($shard = hedley_device_shard_by_person($nid)) {
+    if ($shard && !in_array($shard, $shards)) {
       $shards[] = $shard;
     }
   }
 
   return $shards;
 }
+
+
 
 /**
  * Recalculate and potentially update shard assignments.
