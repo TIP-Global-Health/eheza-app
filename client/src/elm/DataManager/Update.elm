@@ -28,6 +28,7 @@ import Json.Encode
 import List.Zipper as Zipper
 import RemoteData
 import Time
+import Utils.WebData
 
 
 update : NominalDate -> Device -> Msg -> Model -> SubModelReturn Model Msg
@@ -400,7 +401,7 @@ update currentDate device msg model =
                 _ ->
                     noChange
 
-        BackendDeferredPhotoFetch val ->
+        BackendDeferredPhotoFetch result ->
             let
                 cmd =
                     -- As the image is captured with the image token (`itok`), we
@@ -408,9 +409,9 @@ update currentDate device msg model =
                     -- result with something like this:
                     -- image-1234.jpg?itok=[image-token]?access_token=[access-token]
                     -- Instead, we manually add the access token with a `&`.
-                    HttpBuilder.get (val.photo ++ "&" ++ "access_token=" ++ device.accessToken)
+                    HttpBuilder.get (result.photo ++ "&" ++ "access_token=" ++ device.accessToken)
                         |> withExpectJson (Json.Decode.succeed ())
-                        |> HttpBuilder.send (RemoteData.fromResult >> BackendDeferredPhotoFetchHandle)
+                        |> HttpBuilder.send (RemoteData.fromResult >> BackendDeferredPhotoFetchHandle result)
             in
             SubModelReturn
                 -- No change in the model, as we've already indicated with are
@@ -420,26 +421,78 @@ update currentDate device msg model =
                 noError
                 []
 
-        BackendDeferredPhotoFetchHandle webData ->
+        BackendDeferredPhotoFetchHandle result webData ->
             let
                 _ =
                     Debug.log "BackendDeferredPhotoFetchHandle" webData
             in
-            noChange
+            case webData of
+                RemoteData.Failure error ->
+                    if Utils.WebData.isNetworkError error then
+                        -- We're offline, so this doesn't qualify as an attempt.
+                        noChange
+
+                    else
+                        let
+                            syncStatus =
+                                case model.syncStatus of
+                                    SyncDownloadPhotos (DownloadPhotosBatch batchSize _) ->
+                                        SyncDownloadPhotos (DownloadPhotosBatch batchSize (RemoteData.Failure error))
+
+                                    SyncDownloadPhotos (DownloadPhotosAll _) ->
+                                        SyncDownloadPhotos (DownloadPhotosAll (RemoteData.Failure error))
+
+                                    _ ->
+                                        model.syncStatus
+                        in
+                        update
+                            currentDate
+                            device
+                            (FetchFromIndexDb IndexDbQueryDeferredPhoto)
+                            { model | syncStatus = syncStatus }
+
+                -- Mark this photo
+                RemoteData.Success _ ->
+                    -- We've fetched the image, so we can remove the record from
+                    -- `deferredPhotos` table.
+                    -- @todo
+                    noChange
+
+                _ ->
+                    -- Satisfy the compiler.
+                    noChange
 
         FetchFromIndexDb indexDbQueryType ->
             let
-                indexDbQueryTypeAsString =
+                record =
                     case indexDbQueryType of
                         IndexDbQueryHealthCenters ->
-                            "IndexDbQueryHealthCenters"
+                            { queryType = "IndexDbQueryHealthCenters"
+                            , data = Nothing
+                            }
 
                         IndexDbQueryDeferredPhoto ->
-                            "IndexDbQueryDeferredPhoto"
+                            { queryType = "IndexDbQueryDeferredPhoto"
+                            , data = Nothing
+                            }
+
+                        IndexDbQueryUpdateDeferredPhotoAttempts record_ ->
+                            let
+                                -- Increment the number of attempts.
+                                encodedData =
+                                    Json.Encode.object
+                                        [ ( "uuid", Json.Encode.string record_.uuid )
+                                        , ( "attempts", Json.Encode.int (record_.attempts + 1) )
+                                        ]
+                                        |> Json.Encode.encode 0
+                            in
+                            { queryType = "IndexDbQueryUpdateDeferredPhotoAttempts"
+                            , data = Just encodedData
+                            }
             in
             SubModelReturn
                 model
-                (askFromIndexDb indexDbQueryTypeAsString)
+                (askFromIndexDb record)
                 noError
                 []
 
@@ -496,9 +549,10 @@ along with their UUID.
 port sendRevisionIdPerAuthority : List { uuid : String, revisionId : Int } -> Cmd msg
 
 
-{-| Ask JS to send us data from IndexDB. We send the query type.
+{-| Ask JS to send us data from IndexDB. We send the query type, and in case
+we have some related data (e.g. the child ID to query), we send it as-well.
 -}
-port askFromIndexDb : String -> Cmd msg
+port askFromIndexDb : { queryType : String, data : Maybe String } -> Cmd msg
 
 
 {-| Get data requested from IndexDB.

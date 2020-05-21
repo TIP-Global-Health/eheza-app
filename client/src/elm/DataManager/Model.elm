@@ -151,9 +151,10 @@ type SyncStatus
 {-| Indicate what content, or query we'd like to get from IndexDB.
 -}
 type FetchFromIndexDbQueryType
-    = IndexDbQueryHealthCenters
-      -- Get a single deferred photo.
-    | IndexDbQueryDeferredPhoto
+    = -- Get a single deferred photo.
+      IndexDbQueryDeferredPhoto
+    | IndexDbQueryHealthCenters
+    | IndexDbQueryUpdateDeferredPhotoAttempts IndexDbQueryDeferredPhotoResultRecord
 
 
 type IndexDbQueryTypeResult
@@ -180,7 +181,7 @@ type Msg
     | BackendGeneralFetchHandle (WebData (DownloadSyncResponse BackendGeneralEntity))
       -- Fetch a deferred photo from the server.
     | BackendDeferredPhotoFetch IndexDbQueryDeferredPhotoResultRecord
-    | BackendDeferredPhotoFetchHandle (WebData ())
+    | BackendDeferredPhotoFetchHandle IndexDbQueryDeferredPhotoResultRecord (WebData ())
     | FetchFromIndexDb FetchFromIndexDbQueryType
     | FetchFromIndexDbHandle Value
     | FetchFromIndexDbDeferredPhoto

@@ -281,36 +281,40 @@ elmApp.ports.sendRevisionIdPerAuthority.subscribe(function(revisionIdPerAuthorit
 
 /**
  * Fetch data from IndexDB, and send to Elm.
+ *
+ * See DataManager.Model.FetchFromIndexDbQueryType to see possible values.
  */
-elmApp.ports.askFromIndexDb.subscribe(function(queryType) {
+elmApp.ports.askFromIndexDb.subscribe(function(info) {
+  const queryType = info.queryType;
+
+  // Some queries pass may pass us data.
+  const data = info.data;
   switch (queryType) {
-    case 'IndexDbQueryHealthCenters':
-      (async () => {
-        const result = await dbSync.nodes.where('type').equals('health_center').toArray()
-
-        const dataForSend = {
-          // Query type should match DataManager.Model.IndexDbQueryTypeResult
-          'queryType': queryType + 'Result',
-          'data': result
-        }
-
-        elmApp.ports.getFromIndexDb.send(dataForSend);
-      })();
-      break;
 
     case 'IndexDbQueryDeferredPhoto':
       (async () => {
-        // @todo: If one image fails, we don't want to keep grabbing it.
-        // so mark attempts.
-        const result = await dbSync.deferredPhotos.limit(1).toArray()
+        const result = await dbSync.deferredPhotos.limit(1).toArray();
+        sendResultToElm(queryType, result);
 
-        const dataForSend = {
-          // Query type should match DataManager.Model.IndexDbQueryTypeResult
-          'queryType': queryType + 'Result',
-          'data': result
-        }
+      })();
+      break;
 
-        elmApp.ports.getFromIndexDb.send(dataForSend);
+    case 'IndexDbQueryHealthCenters':
+      (async () => {
+        const result = await dbSync.nodes.where('type').equals('health_center').toArray();
+        sendResultToElm(queryType, result);
+
+      })();
+      break;
+
+    case 'IndexDbQueryUpdateDeferredPhotoAttempts':
+      (async () => {
+
+        const dataArr = JSON.parse(data);
+
+        const result = await dbSync.deferredPhotos.update(dataArr.uuid, {'attempts': dataArr.attempts});
+        sendResultToElm(queryType, result);
+
       })();
       break;
 
@@ -318,6 +322,21 @@ elmApp.ports.askFromIndexDb.subscribe(function(queryType) {
       throw queryType + ' is not a known Query type for `askFromIndexDb`';
 
   }
+
+
+  /**
+   * Prepare and send the result.
+   */
+  function sendResultToElm(queryType, result) {
+    const dataForSend = {
+      // Query type should match DataManager.Model.IndexDbQueryTypeResult
+      'queryType': queryType + 'Result',
+      'data': result
+    }
+
+    elmApp.ports.getFromIndexDb.send(dataForSend);
+  }
+
 });
 
 
