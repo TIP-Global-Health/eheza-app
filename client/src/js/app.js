@@ -126,8 +126,19 @@ dbSync.version(9).stores({
 });
 
 
+const getRevisionIdPerAuthority = function() {
+  let storage = localStorage.getItem('revisionIdPerAuthority');
+  if (!!storage) {
+    // Convert values to int.
+    storage.forEach(function(value, index) {
+      this[index] = parseInt(value);
+    }, storage);
 
+    return storage;
+  }
 
+  return [];
+};
 
 // Start up our Elm app.
 var elmApp = Elm.Main.init({
@@ -141,7 +152,7 @@ var elmApp = Elm.Main.init({
 
     // @todo: Instead of 0, we can check IndexDB for latest vid.
     lastFetchedRevisionIdGeneral: parseInt(localStorage.getItem('lastFetchedRevisionIdGeneral')) || 0,
-    revisionIdPerAuthority: parseInt(localStorage.getItem('revisionIdPerAuthority')) || [],
+    revisionIdPerAuthority: getRevisionIdPerAuthority(),
   }
 });
 
@@ -253,6 +264,14 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(data) {
  */
 elmApp.ports.sendLastFetchedRevisionIdGeneral.subscribe(function(lastFetchedRevisionIdGeneral) {
   localStorage.setItem('lastFetchedRevisionIdGeneral', lastFetchedRevisionIdGeneral);
+});
+
+/**
+ * Set a list with the last revision ID used to download Authority, along with
+ * their UUID.
+ */
+elmApp.ports.sendRevisionIdPerAuthority.subscribe(function(revisionIdPerAuthority) {
+  localStorage.setItem('revisionIdPerAuthority', revisionIdPerAuthority);
 });
 
 /**

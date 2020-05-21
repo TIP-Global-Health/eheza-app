@@ -22,6 +22,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import HttpBuilder exposing (withExpectJson, withQueryParams)
 import Json.Decode exposing (Value, decodeString, decodeValue)
 import Json.Encode
+import List.Zipper as Zipper
 import RemoteData
 import Time
 
@@ -32,22 +33,69 @@ update currentDate device msg model =
         noChange =
             SubModelReturn model Cmd.none noError []
 
+        returnDetermineSyncStatus =
+            SubModelReturn
+                (DataManager.Utils.determineSyncStatus model)
+                Cmd.none
+                noError
+                []
+
         -- @todo: Move has hardcoded in flags, or keep here?
         dbVersion =
             9
     in
     case msg of
         BackendAuthorityFetch ->
-            noChange
+            case model.syncStatus of
+                SyncDownloadAuthority maybeZipper webData ->
+                    if RemoteData.isLoading webData then
+                        -- We are already loading.
+                        noChange
+
+                    else
+                        case maybeZipper of
+                            Just zipper ->
+                                let
+                                    currentZipper =
+                                        Zipper.current zipper
+
+                                    cmd =
+                                        HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
+                                            |> withQueryParams
+                                                [ ( "access_token", device.accessToken )
+                                                , ( "db_version", String.fromInt dbVersion )
+                                                , ( "base_revision", String.fromInt currentZipper.revisionId )
+                                                ]
+                                            |> withExpectJson decodeDownloadSyncResponse
+                                            |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle)
+                                in
+                                SubModelReturn
+                                    { model | syncStatus = SyncDownloadAuthority maybeZipper RemoteData.Loading }
+                                    cmd
+                                    noError
+                                    []
+
+                            Nothing ->
+                                -- No zipper, means not subscribed yet to any
+                                -- authority. `determineSyncStatus` will take care of
+                                -- rotating if we're not on automatic sync.
+                                returnDetermineSyncStatus
+
+                _ ->
+                    returnDetermineSyncStatus
 
         BackendAuthorityFetchHandle webData ->
-            noChange
+            SubModelReturn
+                model
+                (sendRevisionIdPerAuthority [])
+                noError
+                []
 
         BackendGeneralFetch ->
             case model.syncStatus of
                 SyncDownloadGeneral webData ->
                     if RemoteData.isLoading webData then
-                        -- We are already loading, or not in correct sync status.
+                        -- We are already loading.
                         noChange
 
                     else
