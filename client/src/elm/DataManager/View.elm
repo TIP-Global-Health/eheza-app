@@ -1,11 +1,21 @@
 module DataManager.View exposing (viewDebugSync)
 
-import DataManager.Model exposing (BackendAuthorityEntity, BackendGeneralEntity(..), DownloadSyncResponse, Model, Msg(..), RevisionIdPerAuthorityZipper, SyncStatus(..))
+import DataManager.Model
+    exposing
+        ( BackendAuthorityEntity(..)
+        , BackendGeneralEntity(..)
+        , DownloadSyncResponse
+        , Model
+        , Msg(..)
+        , RevisionIdPerAuthorityZipper
+        , SyncStatus(..)
+        )
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onCheck, onClick)
 import Json.Encode
+import List.Zipper as Zipper
 import RemoteData exposing (WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Utils.Html exposing (spinner)
@@ -98,9 +108,48 @@ viewGeneralEntity backendGeneralEntity =
 
 viewSyncDownloadAuthority : Model -> WebData (DownloadSyncResponse BackendAuthorityEntity) -> Html Msg
 viewSyncDownloadAuthority model webData =
-    div [] []
+    case model.revisionIdPerAuthorityZipper of
+        Nothing ->
+            emptyNode
+
+        Just zipper ->
+            let
+                currentZipper =
+                    Zipper.current zipper
+            in
+            div []
+                [ div [] [ text <| "Trying to fetch `Authority` from UUID " ++ currentZipper.uuid ++ " revision ID " ++ String.fromInt currentZipper.revisionId ]
+
+                -- , button [ onClick <| DataManager.Model.SetLastFetchedRevisionIdGeneral 0 ] [ text "Reset revision ID to 0" ]
+                , case webData of
+                    RemoteData.Success data ->
+                        div []
+                            [ div [] [ text <| String.fromInt data.revisionCount ++ " items left to download" ]
+                            , if List.isEmpty data.entities then
+                                div [] [ text "No content fetched in last HTTP request" ]
+
+                              else
+                                div []
+                                    [ div [] [ text <| "Here is the content we've fetched in the last HTTP request:" ]
+                                    , ol [] (List.map viewAuthorityEntity data.entities)
+                                    ]
+                            ]
+
+                    RemoteData.Failure error ->
+                        text <| Debug.toString error
+
+                    _ ->
+                        spinner
+                ]
 
 
 viewAuthorityEntity : BackendAuthorityEntity -> Html msg
 viewAuthorityEntity backendAuthorityEntity =
-    li [] []
+    li []
+        [ case backendAuthorityEntity of
+            BackendAuthorityPhoto _ _ photo ->
+                text <| "Photo " ++ Debug.toString photo
+
+            BackendAuthorityEntityUnknown type_ _ ->
+                text <| type_ ++ " (we still don't decode it)"
+        ]
