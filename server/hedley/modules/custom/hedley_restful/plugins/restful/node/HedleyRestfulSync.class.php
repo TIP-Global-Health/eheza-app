@@ -244,14 +244,24 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $query = db_select('node', 'node');
 
     // Filter by Health center.
-    hedley_restful_join_field_to_query($query, 'node', 'field_shards');
+    hedley_restful_join_field_to_query($query, 'node', 'field_health_center', FALSE);
 
     // And the table which will give us the UUID of the shard.
-    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_shards.field_shards_target_id");
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_health_center.field_health_center_target_id", 'field_uuid_hc');
+
+    // Filter by Health center.
+    hedley_restful_join_field_to_query($query, 'node', 'field_shards', FALSE);
+
+    // And the table which will give us the UUID of the shard.
+    hedley_restful_join_field_to_query($query, 'node', 'field_uuid', FALSE, "field_shards.field_shards_target_id", 'field_uuid_shards');
+
+    $or = db_or();
+    $or->condition('field_uuid_hc.field_uuid_value', $uuid);
+    $or->condition('field_uuid_shards.field_uuid_value', $uuid);
 
     $query
       ->fields('node', ['type', 'nid', 'vid', 'created', 'changed'])
-      ->condition('field_uuid.field_uuid_value', $uuid)
+      ->condition($or)
       ->condition('node.type', array_keys($handlers_by_types), 'IN');
 
     // Get the timestamp of the last revision. We'll also get a count of
