@@ -107,7 +107,7 @@ emptyModel lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper =
     , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
     , syncData = emptySyncData
-    , downloadPhotos = DownloadPhotosBatch 10 10 RemoteData.NotAsked
+    , downloadPhotos = DownloadPhotosBatch 3 3 RemoteData.NotAsked
     , syncStatusRotateAutomatic = True
 
     --, syncStatusRotateAutomatic = False

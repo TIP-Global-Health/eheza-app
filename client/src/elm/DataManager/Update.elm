@@ -418,7 +418,7 @@ update currentDate device msg model =
             SubModelReturn
                 -- No change in the model, as we've already indicated we are
                 -- RemoteData.Loading in `FetchFromIndexDbDeferredPhoto`.
-                model
+                (DataManager.Utils.determineSyncStatus model)
                 cmd
                 noError
                 []
