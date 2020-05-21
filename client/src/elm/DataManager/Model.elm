@@ -100,13 +100,16 @@ type alias Model =
 
 emptyModel : LastFetchedRevisionIdGeneral -> RevisionIdPerAuthorityZipper -> Model
 emptyModel lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper =
-    { syncStatus = SyncDownloadGeneral RemoteData.NotAsked
+    { -- syncStatus = SyncDownloadGeneral RemoteData.NotAsked
+      syncStatus = SyncDownloadPhotos (DownloadPhotosAll RemoteData.NotAsked)
     , lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral
     , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
     , syncData = emptySyncData
     , downloadPhotos = DownloadPhotosBatch 100 RemoteData.NotAsked
-    , syncStatusRotateAutomatic = True
+
+    -- , syncStatusRotateAutomatic = True
+    , syncStatusRotateAutomatic = False
     }
 
 

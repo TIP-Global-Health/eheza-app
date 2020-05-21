@@ -400,6 +400,10 @@ update currentDate device msg model =
                                 ]
 
                         IndexDbQueryDeferredPhotoResult record ->
+                            let
+                                _ =
+                                    Debug.log "IndexDbQueryDeferredPhotoResult" record
+                            in
                             -- todo
                             noChange
 
