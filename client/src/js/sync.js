@@ -579,9 +579,6 @@
                 }).then (function (json) {
                     var remaining = parseInt(json.data.revision_count);
 
-                    var table = shardUuid === nodesUuid ? dbSync.nodes : dbSync.shards;
-
-
                     // We keep a list of those nodes successfully saved.
                     var saved = [];
 
@@ -603,6 +600,8 @@
                     // would execute in parrallel rather than sequentially.
                     return json.data.batch.reduce(function (previous, item) {
                         return previous.then(function () {
+                            var table = tableForType[item.type] == 'nodes' ? dbSync.nodes : dbSync.shards;
+
                             return formatNode(table, item, shardUuid).then(function (formatted) {
                                 return table.put(formatted).then(function () {
                                     saved.push(formatted);

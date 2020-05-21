@@ -27,6 +27,54 @@ var backendUploadUrlRegex = /\/backend-upload\/images/;
 // all devices get. (That is, unsharded data).
 var nodesUuid = '78cf21d1-b3f4-496a-b312-d8ae73041f09';
 
+var tableForType = {
+    attendance: 'shards',
+    breast_exam: 'shards',
+    catchment_area: 'nodes',
+    clinic: 'nodes',
+    counseling_schedule: 'nodes',
+    counseling_session: 'shards',
+    counseling_topic: 'nodes',
+    core_physical_exam: 'shards',
+    danger_signs: 'shards',
+    family_planning: 'shards',
+    health_center: 'nodes',
+    height: 'shards',
+    last_menstrual_period: 'shards',
+    medical_history: 'shards',
+    medication: 'shards',
+    muac: 'shards',
+    nurse: 'nodes',
+    nutrition: 'shards',
+    nutrition_encounter: 'nodes',
+    nutrition_height: 'shards',
+    nutrition_muac: 'shards',
+    nutrition_nutrition: 'shards',
+    nutrition_photo: 'shards',
+    nutrition_weight: 'shards',
+    obstetric_history: 'shards',
+    obstetric_history_step2: 'shards',
+    obstetrical_exam: 'shards',
+    participant_consent: 'shards',
+    participant_form: 'nodes',
+    person: 'nodes',
+    photo: 'shards',
+    prenatal_photo: 'shards',
+    pmtct_participant: 'nodes',
+    prenatal_family_planning: 'shards',
+    prenatal_nutrition: 'shards',
+    individual_participant: 'nodes',
+    prenatal_encounter: 'nodes',
+    relationship: 'nodes',
+    resource: 'shards',
+    session: 'nodes',
+    social_history: 'shards',
+    syncmetadata: 'syncMetadata',
+    village: 'nodes',
+    vitals: 'shards',
+    weight: 'shards'
+};
+
 var dbSync = new Dexie('sync');
 
 // Note that this code only configures ... the actual database upgrade will
