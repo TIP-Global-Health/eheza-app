@@ -10,7 +10,7 @@ import Backend.HealthCenter.Decoder
 import Backend.Measurement.Decoder
 import Backend.Person.Decoder
 import Backend.PmtctParticipant.Decoder
-import DataManager.Model exposing (BackendAuthorityEntity(..), BackendGeneralEntity(..), DownloadStatus, DownloadSyncResponse, IndexDbQueryTypeResult(..), SyncAttempt(..), SyncData, SyncError(..), UploadStatus)
+import DataManager.Model exposing (BackendAuthorityEntity(..), BackendGeneralEntity(..), DownloadStatus, DownloadSyncResponse, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryTypeResult(..), SyncAttempt(..), SyncData, SyncError(..), UploadStatus)
 import Gizra.Date exposing (decodeDate)
 import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (..)
@@ -26,18 +26,31 @@ decodeIndexDbQueryTypeResult =
             (\queryType ->
                 case queryType of
                     "IndexDbQueryHealthCentersResult" ->
-                        field "data"
-                            (list
-                                (succeed (\a b -> ( a, b ))
-                                    |> required "uuid" decodeEntityUuid
-                                    |> custom Backend.HealthCenter.Decoder.decodeHealthCenter
-                                )
-                            )
+                        field "data" decodeIndexDbQueryHealthCentersResult
                             |> andThen (\list_ -> succeed (IndexDbQueryHealthCentersResult (Dict.fromList list_)))
+
+                    "IndexDbQueryDeferredPhotoResult" ->
+                        field "data" decodeIndexDbQueryDeferredPhotoResult
+                            |> andThen (\record -> succeed (IndexDbQueryDeferredPhotoResult record))
 
                     _ ->
                         fail <| queryType ++ " is not a recognized IndexDbQueryTypeResult"
             )
+
+
+decodeIndexDbQueryHealthCentersResult =
+    (succeed (\a b -> ( a, b ))
+        |> required "uuid" decodeEntityUuid
+        |> custom Backend.HealthCenter.Decoder.decodeHealthCenter
+    )
+        |> list
+
+
+decodeIndexDbQueryDeferredPhotoResult : Decoder IndexDbQueryDeferredPhotoResultRecord
+decodeIndexDbQueryDeferredPhotoResult =
+    succeed IndexDbQueryDeferredPhotoResultRecord
+        |> required "uuid" string
+        |> required "photo" string
 
 
 decodeDownloadSyncResponseGeneral : Decoder (DownloadSyncResponse BackendGeneralEntity)

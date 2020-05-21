@@ -363,12 +363,21 @@ update currentDate device msg model =
                 noError
                 []
 
+        BackendPhotoFetch ->
+            -- Get a deferred photo from IndexDB.
+            -- Get via HTTP.
+            -- If it was a success, delete it from the deferred photos table.
+            noChange
+
         FetchFromIndexDb indexDbQueryType ->
             let
                 indexDbQueryTypeAsString =
                     case indexDbQueryType of
                         IndexDbQueryHealthCenters ->
                             "IndexDbQueryHealthCenters"
+
+                        IndexDbQueryDeferredPhoto ->
+                            "IndexDbQueryDeferredPhoto"
             in
             SubModelReturn
                 model
@@ -389,6 +398,10 @@ update currentDate device msg model =
                                 [ Backend.Model.HandleFetchedHealthCenters (RemoteData.Success dict)
                                     |> App.Model.MsgIndexedDb
                                 ]
+
+                        IndexDbQueryDeferredPhotoResult record ->
+                            -- todo
+                            noChange
 
                 Err error ->
                     SubModelReturn

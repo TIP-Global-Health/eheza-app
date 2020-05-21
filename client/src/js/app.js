@@ -282,11 +282,27 @@ elmApp.ports.sendRevisionIdPerAuthority.subscribe(function(revisionIdPerAuthorit
  * Fetch data from IndexDB, and send to Elm.
  */
 elmApp.ports.askFromIndexDb.subscribe(function(queryType) {
-  console.log(queryType);
   switch (queryType) {
     case 'IndexDbQueryHealthCenters':
       (async () => {
         const result = await dbSync.nodes.where('type').equals('health_center').toArray()
+
+        const dataForSend = {
+          // Query type should match DataManager.Model.IndexDbQueryTypeResult
+          'queryType': queryType + 'Result',
+          'data': result
+        }
+
+        elmApp.ports.getFromIndexDb.send(dataForSend);
+
+      })();
+      break;
+
+    case 'IndexDbQueryDeferredPhoto':
+      (async () => {
+        // @todo: If one image fails, we don't want to keep grabbing it.
+        // so mark attempts.
+        const result = await dbSync.deferredPhotos.limit(1).toArray()
 
         const dataForSend = {
           // Query type should match DataManager.Model.IndexDbQueryTypeResult

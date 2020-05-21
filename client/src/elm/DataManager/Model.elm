@@ -5,6 +5,7 @@ module DataManager.Model exposing
     , DownloadStatus
     , DownloadSyncResponse
     , FetchFromIndexDbQueryType(..)
+    , IndexDbQueryDeferredPhotoResultRecord
     , IndexDbQueryTypeResult(..)
     , Model
     , Msg(..)
@@ -148,10 +149,17 @@ type SyncStatus
 -}
 type FetchFromIndexDbQueryType
     = IndexDbQueryHealthCenters
+      -- Get a single deferred photo.
+    | IndexDbQueryDeferredPhoto
 
 
 type IndexDbQueryTypeResult
     = IndexDbQueryHealthCentersResult (Dict HealthCenterId HealthCenter)
+    | IndexDbQueryDeferredPhotoResult IndexDbQueryDeferredPhotoResultRecord
+
+
+type alias IndexDbQueryDeferredPhotoResultRecord =
+    { uuid : String, photo : String }
 
 
 type Msg
@@ -162,6 +170,7 @@ type Msg
     | BackendFetchMain
     | BackendGeneralFetch
     | BackendGeneralFetchHandle (WebData (DownloadSyncResponse BackendGeneralEntity))
+    | BackendPhotoFetch
     | FetchFromIndexDb FetchFromIndexDbQueryType
     | FetchFromIndexDbHandle Value
     | SetLastFetchedRevisionIdAuthority (Zipper RevisionIdPerAuthority) Int
