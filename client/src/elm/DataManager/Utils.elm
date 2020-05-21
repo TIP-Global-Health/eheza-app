@@ -1,6 +1,6 @@
 module DataManager.Utils exposing (determineSyncStatus)
 
-import DataManager.Model exposing (Model, SyncStatus(..))
+import DataManager.Model exposing (DownloadPhotos(..), Model, SyncStatus(..))
 import List.Zipper as Zipper
 import RemoteData
 
@@ -61,5 +61,31 @@ determineSyncStatus model =
 
                         _ ->
                             syncStatus
+
+                SyncDownloadPhotos downloadPhotos ->
+                    let
+                        check webData_ =
+                            case webData_ of
+                                RemoteData.Success data ->
+                                    if List.isEmpty data.backendGeneralEntities then
+                                        -- We tried to fetch, but there was no more data.
+                                        SyncIdle
+
+                                    else
+                                        -- Still have data to download.
+                                        syncStatus
+
+                                _ ->
+                                    syncStatus
+                    in
+                    case downloadPhotos of
+                        DownloadPhotosNone ->
+                            SyncIdle
+
+                        DownloadPhotosBatch _ webData ->
+                            check webData
+
+                        DownloadPhotosAll webData ->
+                            check webData
     in
     { model | syncStatus = syncStatusUpdated }

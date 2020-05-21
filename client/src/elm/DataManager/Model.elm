@@ -149,9 +149,9 @@ type DownloadPhotos
       -- Download up to a number of photos, and then skip to the next Sync status,
       -- which is `SyncIdle`. This is used to grab photos, but without blocking
       -- completely the rest of the syncing of data.
-    | DownloadPhotosBatch Int
+    | DownloadPhotosBatch Int (WebData DownloadSyncResponse)
       -- Download all photos.
-    | DownloadPhotosAll
+    | DownloadPhotosAll (WebData DownloadSyncResponse)
 
 
 {-| The Sync (download or upload), by its order.
