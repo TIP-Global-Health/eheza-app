@@ -57,11 +57,15 @@ determineSyncStatus model =
                                 )
 
                             ( Just zipper, RemoteData.Success data ) ->
+                                let
+                                    syncDownloadPhotos =
+                                        resetDownloadPhotosBatchCounter model
+                                in
                                 if List.isEmpty data.entities then
                                     -- We tried to fetch, but there was no more data.
                                     -- Check if this is the last element.
                                     if Zipper.isLast zipper then
-                                        ( SyncDownloadPhotos model.downloadPhotos
+                                        ( syncDownloadPhotos
                                         , revisionIdPerAuthorityZipper
                                         )
 
@@ -78,7 +82,7 @@ determineSyncStatus model =
                                                 -- We've reached the last element
                                                 -- so reset it back, and rotate
                                                 -- to the next status.
-                                                ( SyncDownloadPhotos model.downloadPhotos
+                                                ( syncDownloadPhotos
                                                 , Just (Zipper.first zipper)
                                                 )
 
@@ -90,34 +94,23 @@ determineSyncStatus model =
                                 noChange
 
                     SyncDownloadPhotos downloadPhotos ->
-                        --let
-                        --    check webData_ =
-                        --        case webData_ of
-                        --            RemoteData.Success data ->
-                        --                if List.isEmpty data.entities then
-                        --                    -- We tried to fetch, but there was no more data.
-                        --                    SyncIdle
-                        --
-                        --                else
-                        --                    -- Still have data to download.
-                        --                    syncStatus
-                        --
-                        --            _ ->
-                        --                syncStatus
-                        --in
                         case downloadPhotos of
                             DownloadPhotosNone ->
                                 ( SyncIdle, revisionIdPerAuthorityZipper )
 
-                            DownloadPhotosBatch _ webData ->
-                                -- @todo:
-                                -- check webData
-                                ( SyncIdle, revisionIdPerAuthorityZipper )
+                            DownloadPhotosBatch _ batchCounter _ ->
+                                if batchCounter <= 0 then
+                                    -- We've reached the end of the batch, so we
+                                    -- need to rotate.
+                                    ( SyncIdle, revisionIdPerAuthorityZipper )
+
+                                else
+                                    noChange
 
                             DownloadPhotosAll webData ->
-                                -- @todo:
-                                -- check webData
-                                ( SyncIdle, revisionIdPerAuthorityZipper )
+                                -- @todo: We'd need to get from IndexDB that
+                                -- there are no more deferred photos.
+                                noChange
         in
         { model
             | syncStatus = syncStatusUpdated
@@ -127,3 +120,13 @@ determineSyncStatus model =
     else
         -- No change.
         model
+
+
+resetDownloadPhotosBatchCounter : Model -> SyncStatus
+resetDownloadPhotosBatchCounter model =
+    case model.downloadPhotos of
+        DownloadPhotosBatch batchSize _ webData ->
+            SyncDownloadPhotos (DownloadPhotosBatch batchSize batchSize webData)
+
+        _ ->
+            SyncDownloadPhotos model.downloadPhotos

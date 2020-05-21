@@ -107,7 +107,7 @@ emptyModel lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper =
     , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
     , syncData = emptySyncData
-    , downloadPhotos = DownloadPhotosBatch 100 RemoteData.NotAsked
+    , downloadPhotos = DownloadPhotosBatch 10 10 RemoteData.NotAsked
     , syncStatusRotateAutomatic = True
 
     --, syncStatusRotateAutomatic = False
@@ -134,7 +134,9 @@ type DownloadPhotos
       -- Download up to a number of photos, and then skip to the next Sync status,
       -- which is `SyncIdle`. This is used to grab photos, but without blocking
       -- completely the rest of the syncing of data.
-    | DownloadPhotosBatch Int (WebData ())
+      -- So the first Int, is the default batch size, and the second is used as
+      -- a counter.
+    | DownloadPhotosBatch Int Int (WebData ())
       -- Download all photos.
     | DownloadPhotosAll (WebData ())
 

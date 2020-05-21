@@ -385,12 +385,12 @@ update currentDate device msg model =
                 SyncDownloadPhotos DownloadPhotosNone ->
                     noChange
 
-                SyncDownloadPhotos (DownloadPhotosBatch batch _) ->
+                SyncDownloadPhotos (DownloadPhotosBatch batchSize batchCount _) ->
                     update
                         currentDate
                         device
                         (FetchFromIndexDb IndexDbQueryDeferredPhoto)
-                        { model | syncStatus = SyncDownloadPhotos (DownloadPhotosBatch batch RemoteData.Loading) }
+                        { model | syncStatus = SyncDownloadPhotos (DownloadPhotosBatch batchSize batchCount RemoteData.Loading) }
 
                 SyncDownloadPhotos (DownloadPhotosAll _) ->
                     update
@@ -438,17 +438,15 @@ update currentDate device msg model =
                         let
                             syncStatus =
                                 case model.syncStatus of
-                                    SyncDownloadPhotos (DownloadPhotosBatch batchSize _) ->
-                                        SyncDownloadPhotos (DownloadPhotosBatch batchSize (RemoteData.Failure error))
+                                    SyncDownloadPhotos (DownloadPhotosBatch batchSize batchCount _) ->
+                                        -- Reduce the batch batchCount.
+                                        SyncDownloadPhotos (DownloadPhotosBatch batchSize (batchCount - 1) (RemoteData.Failure error))
 
                                     SyncDownloadPhotos (DownloadPhotosAll _) ->
                                         SyncDownloadPhotos (DownloadPhotosAll (RemoteData.Failure error))
 
                                     _ ->
                                         model.syncStatus
-
-                            _ =
-                                Debug.log "Failure" True
                         in
                         update
                             currentDate
@@ -460,8 +458,9 @@ update currentDate device msg model =
                     let
                         syncStatus =
                             case model.syncStatus of
-                                SyncDownloadPhotos (DownloadPhotosBatch batchSize _) ->
-                                    SyncDownloadPhotos (DownloadPhotosBatch batchSize (RemoteData.Success ()))
+                                SyncDownloadPhotos (DownloadPhotosBatch batchSize batchCount _) ->
+                                    -- Reduce the batch batchCount.
+                                    SyncDownloadPhotos (DownloadPhotosBatch batchSize (batchCount - 1) (RemoteData.Success ()))
 
                                 SyncDownloadPhotos (DownloadPhotosAll _) ->
                                     SyncDownloadPhotos (DownloadPhotosAll (RemoteData.Success ()))
