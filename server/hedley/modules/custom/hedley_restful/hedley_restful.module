@@ -33,12 +33,12 @@ const HEDLEY_RESTFUL_SHARDED = [
   // Get synced into 'nodes' table at IndexedDB:
   'clinic' => 'clinics',
   'person' => 'people',
-//  'pmtct_participant' => 'pmtct-participants',
-//  'individual_participant' => 'individual-participants',
-//  'prenatal_encounter' => 'prenatal-encounters',
-//  'nutrition_encounter' => 'nutrition-encounters',
-//  'relationship' => 'relationships',
-//  'session' => 'sessions',
+  'pmtct_participant' => 'pmtct-participants',
+  'individual_participant' => 'individual-participants',
+  'prenatal_encounter' => 'prenatal-encounters',
+  'nutrition_encounter' => 'nutrition-encounters',
+  'relationship' => 'relationships',
+  'session' => 'sessions',
 
   // Get synced into 'shards' table at IndexedDB:
   'attendance' => 'attendances',
