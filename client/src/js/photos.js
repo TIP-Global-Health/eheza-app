@@ -17,8 +17,22 @@
             event.respondWith(
                 caches.open(photosDownloadCache).then(function(cache) {
                     return cache.match(event.request).then(function (response) {
-                        return response || fetch(event.request).then(function(response) {
-                            cache.put(event.request, response.clone());
+                        return fetch(event.request).then(function(response) {
+                            if (!!response.ok) {
+                                cache.put(event.request, response.clone());
+                            }
+                            else {
+                                // If an image style of Drupal is missing from the
+                                // file system, but it still exists on the DB
+                                // then Drupal sends a corrupted page. If we try
+                                // to return the response, it causes Elm to ignore
+                                // it (probably a bug in elm/http package), and
+                                // `BackendDeferredPhotoFetchHandle` is never called.
+                                // So instead, in case of an error, we build our
+                                // own response.
+                                response = new Response(null,  {"status" : response.status});
+                            }
+
                             return response;
                         });
                     });
