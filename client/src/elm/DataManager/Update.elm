@@ -94,32 +94,35 @@ update currentDate device msg model =
                 cmd =
                     case RemoteData.toMaybe webData of
                         Just data ->
-                            data.entities
-                                |> List.foldl
-                                    (\entity accum ->
-                                        let
-                                            doEncode uuid vid val =
-                                                Json.Encode.object
-                                                    [ ( "uuid", Json.Encode.string uuid )
-                                                    , ( "entity", val )
-                                                    , ( "vid", Json.Encode.int vid )
-                                                    ]
-                                                    |> Json.Encode.encode 0
-                                        in
-                                        case entity of
-                                            BackendAuthorityPhoto uuid vid entity_ ->
-                                                -- @todo: Encoder is probably wrong.
-                                                -- need to have `type=photo`.
-                                                doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodePhoto entity_)
-                                                    :: accum
+                            let
+                                dataToSend =
+                                    data.entities
+                                        |> List.foldl
+                                            (\entity accum ->
+                                                let
+                                                    doEncode uuid vid val =
+                                                        Json.Encode.object
+                                                            [ ( "uuid", Json.Encode.string uuid )
+                                                            , ( "entity", val )
+                                                            , ( "vid", Json.Encode.int vid )
+                                                            ]
+                                                            |> Json.Encode.encode 0
+                                                in
+                                                case entity of
+                                                    BackendAuthorityPhoto uuid vid entity_ ->
+                                                        -- @todo: Encoder is probably wrong.
+                                                        -- need to have `type=photo`.
+                                                        doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodePhoto entity_)
+                                                            :: accum
 
-                                            BackendAuthorityEntityUnknown _ _ ->
-                                                -- Filter out the unknown entities.
-                                                accum
-                                    )
-                                    []
-                                |> List.reverse
-                                |> sendSyncedDataToIndexDb
+                                                    BackendAuthorityEntityUnknown _ _ ->
+                                                        -- Filter out the unknown entities.
+                                                        accum
+                                            )
+                                            []
+                                        |> List.reverse
+                            in
+                            sendSyncedDataToIndexDb { table = "Authority", data = dataToSend }
 
                         Nothing ->
                             Cmd.none
@@ -227,38 +230,41 @@ update currentDate device msg model =
                 cmd =
                     case RemoteData.toMaybe webData of
                         Just data ->
-                            data.entities
-                                |> List.foldl
-                                    (\entity accum ->
-                                        let
-                                            doEncode uuid vid val =
-                                                Json.Encode.object
-                                                    [ ( "uuid", Json.Encode.string uuid )
-                                                    , ( "entity", val )
-                                                    , ( "vid", Json.Encode.int vid )
-                                                    ]
-                                                    |> Json.Encode.encode 0
-                                        in
-                                        case entity of
-                                            BackendGeneralHealthCenter uuid vid entity_ ->
-                                                doEncode uuid vid (Backend.HealthCenter.Encoder.encodeHealthCenter entity_)
-                                                    :: accum
+                            let
+                                dataToSend =
+                                    data.entities
+                                        |> List.foldl
+                                            (\entity accum ->
+                                                let
+                                                    doEncode uuid vid val =
+                                                        Json.Encode.object
+                                                            [ ( "uuid", Json.Encode.string uuid )
+                                                            , ( "entity", val )
+                                                            , ( "vid", Json.Encode.int vid )
+                                                            ]
+                                                            |> Json.Encode.encode 0
+                                                in
+                                                case entity of
+                                                    BackendGeneralHealthCenter uuid vid entity_ ->
+                                                        doEncode uuid vid (Backend.HealthCenter.Encoder.encodeHealthCenter entity_)
+                                                            :: accum
 
-                                            BackendGeneralPerson uuid vid entity_ ->
-                                                doEncode uuid vid (Backend.Person.Encoder.encodePerson entity_)
-                                                    :: accum
+                                                    BackendGeneralPerson uuid vid entity_ ->
+                                                        doEncode uuid vid (Backend.Person.Encoder.encodePerson entity_)
+                                                            :: accum
 
-                                            BackendGeneralPmtctParticipant uuid vid entity_ ->
-                                                doEncode uuid vid (Backend.PmtctParticipant.Encoder.encodePmtctParticipant entity_)
-                                                    :: accum
+                                                    BackendGeneralPmtctParticipant uuid vid entity_ ->
+                                                        doEncode uuid vid (Backend.PmtctParticipant.Encoder.encodePmtctParticipant entity_)
+                                                            :: accum
 
-                                            BackendGeneralEntityUnknown _ _ ->
-                                                -- Filter out the unknown entities.
-                                                accum
-                                    )
-                                    []
-                                |> List.reverse
-                                |> sendSyncedDataToIndexDb
+                                                    BackendGeneralEntityUnknown _ _ ->
+                                                        -- Filter out the unknown entities.
+                                                        accum
+                                            )
+                                            []
+                                        |> List.reverse
+                            in
+                            sendSyncedDataToIndexDb { table = "Authority", data = dataToSend }
 
                         Nothing ->
                             Cmd.none
@@ -367,9 +373,9 @@ subscriptions =
         ]
 
 
-{-| Send to JS data we have synced (e.g. `person`, `health center`, etc.
+{-| Send to JS data we have synced, e.g. `person`, `health center`, etc.
 -}
-port sendSyncedDataToIndexDb : List String -> Cmd msg
+port sendSyncedDataToIndexDb : { table : String, data : List String } -> Cmd msg
 
 
 {-| Send to JS the last revision ID used to download General.
