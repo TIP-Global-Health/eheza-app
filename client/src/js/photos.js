@@ -14,24 +14,44 @@
         // Handle avatars and photos we've cached from the backend.
         if ((event.request.method === 'GET') && photosDownloadUrlRegex.test(event.request.url)) {
 
-            var response = caches.open(photosDownloadCache).then(function (cache) {
-                return cache.match(event.request.url).then(function(response) {
-                    if (response) {
-                        return response;
-                    } else {
-                        throw Error('Image was not cached.');
-                    }
-                });
-            }).catch(function(e) {
-                // As a fallback, we will try to get the file from the backend.
-                // This will only work if we're online, of course. We don't
-                // cache files fetched in this way, because we don't
-                // necessarily want to cache all images -- we'll choose which
-                // ones to cache.
-                return fetch(event.request);
-            });
+            (async () => {
 
-            event.respondWith(response);
+                const cache = await caches.open(photosDownloadCache);
+                const responseCached = await cache.match(event.request.url);
+
+                if (!!responseCached) {
+                    // Return cached photo.
+                    return event.respondWith(response);
+                }
+
+                // Try to get from the server.
+                const responseRemote = await fetch(event.request);
+                return event.respondWith(responseRemote);
+
+            })();
+
+            // var response = caches.open(photosDownloadCache).then(function (cache) {
+            //     return cache.match(event.request.url).then(function(response) {
+            //         if (response) {
+            //             console.log(response);
+            //             return response;
+            //         } else {
+            //             console.log('test');
+            //             throw Error('Image was not cached.');
+            //         }
+            //     });
+            // }).catch(function(e) {
+            //     // As a fallback, we will try to get the file from the backend.
+            //     // This will only work if we're online, of course. We don't
+            //     // cache files fetched in this way, because we don't
+            //     // necessarily want to cache all images -- we'll choose which
+            //     // ones to cache.
+            //     console.log('trying to fetch?');
+            //     return fetch(event.request);
+            // });
+            //
+            //
+            // event.respondWith(response);
         }
 
         // Handle GET for images which we've uploaded to the cache, but which

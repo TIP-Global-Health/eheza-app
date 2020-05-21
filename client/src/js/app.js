@@ -334,6 +334,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         const dataArr = JSON.parse(data);
 
         const result = await dbSync.deferredPhotos.update(dataArr.uuid, {'attempts': dataArr.attempts});
+        console.log(result);
         sendResultToElm(queryType, result);
 
       })();
