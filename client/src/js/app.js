@@ -294,7 +294,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(queryType) {
         }
 
         elmApp.ports.getFromIndexDb.send(dataForSend);
-
       })();
       break;
 
@@ -311,7 +310,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(queryType) {
         }
 
         elmApp.ports.getFromIndexDb.send(dataForSend);
-
       })();
       break;
 

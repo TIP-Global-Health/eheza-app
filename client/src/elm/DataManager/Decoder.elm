@@ -49,8 +49,8 @@ decodeIndexDbQueryHealthCentersResult =
 decodeIndexDbQueryDeferredPhotoResult : Decoder IndexDbQueryDeferredPhotoResultRecord
 decodeIndexDbQueryDeferredPhotoResult =
     succeed IndexDbQueryDeferredPhotoResultRecord
-        |> required "uuid" string
-        |> required "photo" string
+        |> requiredAt [ "0", "uuid" ] string
+        |> requiredAt [ "0", "photo" ] string
 
 
 decodeDownloadSyncResponseGeneral : Decoder (DownloadSyncResponse BackendGeneralEntity)

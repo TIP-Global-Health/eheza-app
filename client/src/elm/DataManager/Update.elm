@@ -224,7 +224,11 @@ update currentDate device msg model =
                         model
 
                 SyncDownloadPhotos _ ->
-                    returnDetermineSyncStatus
+                    update
+                        currentDate
+                        device
+                        BackendPhotoFetch
+                        model
 
         BackendGeneralFetch ->
             case model.syncStatus of
@@ -428,6 +432,10 @@ update currentDate device msg model =
                             noChange
 
                 Err error ->
+                    let
+                        _ =
+                            Debug.log "Err" error
+                    in
                     SubModelReturn
                         model
                         Cmd.none
