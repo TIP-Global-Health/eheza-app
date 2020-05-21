@@ -1,10 +1,17 @@
 module DataManager.View exposing (viewDebugSync)
 
-import DataManager.Model exposing (BackendGeneralEntity(..), DownloadSyncResponse, Model, Msg, SyncStatus(..))
+import DataManager.Model
+    exposing
+        ( BackendGeneralEntity(..)
+        , DownloadSyncResponse
+        , Model
+        , Msg(..)
+        , SyncStatus(..)
+        )
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
+import Html.Events exposing (onCheck, onClick)
 import Json.Encode
 import RemoteData exposing (WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -20,7 +27,9 @@ viewDebugSync model =
     let
         htmlContent =
             details [ property "open" (Json.Encode.bool True) ]
-                [ button [ onClick <| DataManager.Model.FetchFromIndexDb DataManager.Model.IndexDbQueryHealthCenters ] [ text "Fetch Health Centers" ]
+                [ viewSyncStatusControl model
+
+                -- button [ onClick <| DataManager.Model.FetchFromIndexDb DataManager.Model.IndexDbQueryHealthCenters ] [ text "Fetch Health Centers" ]
                 , div [] [ text <| "Sync status: " ++ Debug.toString model.syncStatus ]
                 , case model.syncStatus of
                     SyncDownloadGeneral webData ->
@@ -31,6 +40,19 @@ viewDebugSync model =
                 ]
     in
     pre [ class "ui segment", style "min-height" "240px" ] [ htmlContent ]
+
+
+viewSyncStatusControl : Model -> Html Msg
+viewSyncStatusControl model =
+    div []
+        [ input
+            [ type_ "checkbox"
+            , checked model.syncStatusRotateAutomatic
+            , onCheck SetSyncStatusRotateAutomatic
+            ]
+            []
+        , label [] [ text "Automatic Sync status control" ]
+        ]
 
 
 viewSyncDownloadGeneral : Model -> WebData DownloadSyncResponse -> Html Msg

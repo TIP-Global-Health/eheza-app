@@ -13,6 +13,7 @@
 
 (function () {
     self.addEventListener('fetch', function (event) {
+
         // Handle avatars and photos we've cached from the backend.
         if ((event.request.method === 'GET') && photosDownloadUrlRegex.test(event.request.url)) {
             var response = caches.open(photosDownloadCache).then(function (cache) {

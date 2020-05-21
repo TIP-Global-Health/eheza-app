@@ -85,6 +85,10 @@ type alias Model =
 
     -- Determine how we're going to download photos.
     , downloadPhotos : DownloadPhotos
+
+    -- Determine is Sync status should be rotated automatically, or manually for debug
+    -- purposes.
+    , syncStatusRotateAutomatic : Bool
     }
 
 
@@ -96,6 +100,7 @@ emptyModel lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper =
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
     , syncData = emptySyncData
     , downloadPhotos = DownloadPhotosBatch 100 RemoteData.NotAsked
+    , syncStatusRotateAutomatic = True
     }
 
 
@@ -200,6 +205,7 @@ type Msg
     | BackendAuthorityFetchHandle (WebData DownloadSyncResponse)
     | BackendGeneralFetch
     | BackendGeneralFetchHandle (WebData DownloadSyncResponse)
-    | SetLastFetchedRevisionIdGeneral Int
     | FetchFromIndexDb FetchFromIndexDbQueryType
     | FetchFromIndexDbHandle Value
+    | SetLastFetchedRevisionIdGeneral Int
+    | SetSyncStatusRotateAutomatic Bool

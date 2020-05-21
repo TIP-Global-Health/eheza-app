@@ -160,6 +160,13 @@ update currentDate device msg model =
                 noError
                 []
 
+        SetSyncStatusRotateAutomatic status ->
+            SubModelReturn
+                { model | syncStatusRotateAutomatic = status }
+                Cmd.none
+                noError
+                []
+
         FetchFromIndexDb indexDbQueryType ->
             let
                 indexDbQueryTypeAsString =

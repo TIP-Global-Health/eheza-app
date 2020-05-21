@@ -20,7 +20,6 @@ var photosUploadCache = "photos-upload";
 
 var photosDownloadUrlRegex = /\/system\/files\//;
 var photosUploadUrlRegex = /\/cache-upload\/images/;
-var backendUploadUrlRegex = /\/backend-upload\/images/;
 
 
 // A UUID which represents the "shard" which is our general data that
