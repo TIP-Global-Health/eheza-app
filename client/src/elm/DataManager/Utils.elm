@@ -27,7 +27,7 @@ determineSyncStatus model =
                     SyncDownloadGeneral webData ->
                         case webData of
                             RemoteData.Success data ->
-                                if List.isEmpty data.backendGeneralEntities then
+                                if List.isEmpty data.entities then
                                     -- We tried to fetch, but there was no more data.
                                     -- Next we try authorities.
                                     SyncDownloadAuthority model.revisionIdPerAuthorityZipper RemoteData.NotAsked
@@ -47,7 +47,7 @@ determineSyncStatus model =
                                 SyncDownloadPhotos model.downloadPhotos
 
                             ( Just zipper, RemoteData.Success data ) ->
-                                if List.isEmpty data.backendGeneralEntities then
+                                if List.isEmpty data.entities then
                                     -- We tried to fetch, but there was no more data.
                                     -- Check if this is the last element.
                                     if Zipper.isLast zipper then
@@ -65,30 +65,34 @@ determineSyncStatus model =
                                 syncStatus
 
                     SyncDownloadPhotos downloadPhotos ->
-                        let
-                            check webData_ =
-                                case webData_ of
-                                    RemoteData.Success data ->
-                                        if List.isEmpty data.backendGeneralEntities then
-                                            -- We tried to fetch, but there was no more data.
-                                            SyncIdle
-
-                                        else
-                                            -- Still have data to download.
-                                            syncStatus
-
-                                    _ ->
-                                        syncStatus
-                        in
+                        --let
+                        --    check webData_ =
+                        --        case webData_ of
+                        --            RemoteData.Success data ->
+                        --                if List.isEmpty data.entities then
+                        --                    -- We tried to fetch, but there was no more data.
+                        --                    SyncIdle
+                        --
+                        --                else
+                        --                    -- Still have data to download.
+                        --                    syncStatus
+                        --
+                        --            _ ->
+                        --                syncStatus
+                        --in
                         case downloadPhotos of
                             DownloadPhotosNone ->
                                 SyncIdle
 
                             DownloadPhotosBatch _ webData ->
-                                check webData
+                                -- @todo:
+                                -- check webData
+                                SyncIdle
 
                             DownloadPhotosAll webData ->
-                                check webData
+                                -- @todo:
+                                -- check webData
+                                SyncIdle
         in
         { model | syncStatus = syncStatusUpdated }
 

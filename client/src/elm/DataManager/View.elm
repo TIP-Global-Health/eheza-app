@@ -1,13 +1,6 @@
 module DataManager.View exposing (viewDebugSync)
 
-import DataManager.Model
-    exposing
-        ( BackendGeneralEntity(..)
-        , DownloadSyncResponse
-        , Model
-        , Msg(..)
-        , SyncStatus(..)
-        )
+import DataManager.Model exposing (BackendAuthorityEntity, BackendGeneralEntity(..), DownloadSyncResponse, Model, Msg(..), RevisionIdPerAuthorityZipper, SyncStatus(..))
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -35,6 +28,9 @@ viewDebugSync model =
                     SyncDownloadGeneral webData ->
                         viewSyncDownloadGeneral model webData
 
+                    SyncDownloadAuthority revisionIdPerAuthorityZipper webData ->
+                        viewSyncDownloadAuthority model revisionIdPerAuthorityZipper webData
+
                     _ ->
                         emptyNode
                 ]
@@ -55,7 +51,7 @@ viewSyncStatusControl model =
         ]
 
 
-viewSyncDownloadGeneral : Model -> WebData DownloadSyncResponse -> Html Msg
+viewSyncDownloadGeneral : Model -> WebData (DownloadSyncResponse BackendGeneralEntity) -> Html Msg
 viewSyncDownloadGeneral model webData =
     div []
         [ div [] [ text <| "Trying to fetch `General` from revision ID " ++ String.fromInt model.lastFetchedRevisionIdGeneral ]
@@ -64,13 +60,13 @@ viewSyncDownloadGeneral model webData =
             RemoteData.Success data ->
                 div []
                     [ div [] [ text <| String.fromInt data.revisionCount ++ " items left to download" ]
-                    , if List.isEmpty data.backendGeneralEntities then
+                    , if List.isEmpty data.entities then
                         div [] [ text "No content fetched in last HTTP request" ]
 
                       else
                         div []
                             [ div [] [ text <| "Here is the content we've fetched in the last HTTP request:" ]
-                            , ol [] (List.map viewGeneralEntity data.backendGeneralEntities)
+                            , ol [] (List.map viewGeneralEntity data.entities)
                             ]
                     ]
 
@@ -98,3 +94,13 @@ viewGeneralEntity backendGeneralEntity =
             BackendGeneralEntityUnknown type_ _ ->
                 text <| type_ ++ " (we still don't decode it)"
         ]
+
+
+viewSyncDownloadAuthority : Model -> RevisionIdPerAuthorityZipper -> WebData (DownloadSyncResponse BackendAuthorityEntity) -> Html Msg
+viewSyncDownloadAuthority model revisionIdPerAuthorityZipper webData =
+    div [] []
+
+
+viewAuthorityEntity : BackendAuthorityEntity -> Html msg
+viewAuthorityEntity backendAuthorityEntity =
+    li [] []

@@ -1,24 +1,16 @@
 module DataManager.Decoder exposing
-    ( decodeDownloadSyncResponse
+    ( decodeDownloadSyncResponseAuthority
+    , decodeDownloadSyncResponseGeneral
     , decodeIndexDbQueryTypeResult
     , decodeSyncData
     )
 
 import AssocList as Dict
 import Backend.HealthCenter.Decoder
+import Backend.Measurement.Decoder
 import Backend.Person.Decoder
 import Backend.PmtctParticipant.Decoder
-import DataManager.Model
-    exposing
-        ( BackendGeneralEntity(..)
-        , DownloadStatus
-        , DownloadSyncResponse
-        , IndexDbQueryTypeResult(..)
-        , SyncAttempt(..)
-        , SyncData
-        , SyncError(..)
-        , UploadStatus
-        )
+import DataManager.Model exposing (BackendAuthorityEntity(..), BackendGeneralEntity(..), DownloadStatus, DownloadSyncResponse, IndexDbQueryTypeResult(..), SyncAttempt(..), SyncData, SyncError(..), UploadStatus)
 import Gizra.Date exposing (decodeDate)
 import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (..)
@@ -48,8 +40,8 @@ decodeIndexDbQueryTypeResult =
             )
 
 
-decodeDownloadSyncResponse : Decoder DownloadSyncResponse
-decodeDownloadSyncResponse =
+decodeDownloadSyncResponseGeneral : Decoder (DownloadSyncResponse BackendGeneralEntity)
+decodeDownloadSyncResponseGeneral =
     field "data"
         (succeed DownloadSyncResponse
             |> required "batch" (list decodeBackendGeneralEntity)
@@ -82,6 +74,35 @@ decodeBackendGeneralEntity =
 
                     _ ->
                         succeed (BackendGeneralEntityUnknown type_ vid)
+            )
+
+
+decodeDownloadSyncResponseAuthority : Decoder (DownloadSyncResponse BackendAuthorityEntity)
+decodeDownloadSyncResponseAuthority =
+    field "data"
+        (succeed DownloadSyncResponse
+            |> required "batch" (list decodeBackendAuthorityEntity)
+            |> required "last_timestamp" decodeDate
+            |> required "revision_count" decodeInt
+        )
+
+
+decodeBackendAuthorityEntity : Decoder BackendAuthorityEntity
+decodeBackendAuthorityEntity =
+    (succeed (\a b c -> ( a, b, c ))
+        |> required "type" string
+        |> required "uuid" string
+        |> required "vid" decodeInt
+    )
+        |> andThen
+            (\( type_, uuid, vid ) ->
+                case type_ of
+                    "photo" ->
+                        Backend.Measurement.Decoder.decodePhoto
+                            |> andThen (\entity -> succeed (BackendAuthorityPhoto uuid vid entity))
+
+                    _ ->
+                        succeed (BackendAuthorityEntityUnknown type_ vid)
             )
 
 

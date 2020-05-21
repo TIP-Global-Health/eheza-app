@@ -1,5 +1,6 @@
 module DataManager.Model exposing
-    ( BackendGeneralEntity(..)
+    ( BackendAuthorityEntity(..)
+    , BackendGeneralEntity(..)
     , DownloadPhotos(..)
     , DownloadStatus
     , DownloadSyncResponse
@@ -8,6 +9,7 @@ module DataManager.Model exposing
     , Model
     , Msg(..)
     , RevisionIdPerAuthority
+    , RevisionIdPerAuthorityZipper
     , SyncAttempt(..)
     , SyncData
     , SyncError(..)
@@ -20,7 +22,7 @@ module DataManager.Model exposing
 import AssocList exposing (Dict)
 import Backend.Entities exposing (HealthCenterId)
 import Backend.HealthCenter.Model exposing (HealthCenter)
-import Backend.Measurement.Model exposing (Measurement, Weight)
+import Backend.Measurement.Model exposing (Measurement, Photo, Weight)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Json.Decode exposing (Value)
@@ -52,7 +54,8 @@ authority (e.g. Health center). For example, a child's measurements is per
 authority.
 -}
 type BackendAuthorityEntity
-    = BackendAuthorityEntityMeasurementWeight String Int Weight
+    = -- BackendAuthorityMeasurementWeight String Int Weight
+      BackendAuthorityPhoto String Int Photo
       -- Don't fail on unknown types. We'd like to keep the type name along with
       -- the `vid`. The reason we keep the vid, is that we fetched some content
       -- which we don't recognize, but we want to keep fetching later content.
@@ -104,6 +107,41 @@ emptyModel lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper =
     }
 
 
+{-| Hold the info we're going to decode from a GET call to /api/sync.
+
+We can have the `a` replaced with BackendGeneralEntity or BackendAuthorityEntity
+
+-}
+type alias DownloadSyncResponse a =
+    { entities : List a
+    , lastTimestampOfLastRevision : Time.Posix
+    , revisionCount : Int
+    }
+
+
+{-| Determine how photos are going to be downloaded.
+-}
+type DownloadPhotos
+    = -- Don't download any photos at all.
+      DownloadPhotosNone
+      -- Download up to a number of photos, and then skip to the next Sync status,
+      -- which is `SyncIdle`. This is used to grab photos, but without blocking
+      -- completely the rest of the syncing of data.
+    | DownloadPhotosBatch Int (WebData ())
+      -- Download all photos.
+    | DownloadPhotosAll (WebData ())
+
+
+{-| The Sync (download or upload), by its order.
+-}
+type SyncStatus
+    = SyncIdle
+    | SyncUpload
+    | SyncDownloadGeneral (WebData (DownloadSyncResponse BackendGeneralEntity))
+    | SyncDownloadAuthority RevisionIdPerAuthorityZipper (WebData (DownloadSyncResponse BackendAuthorityEntity))
+    | SyncDownloadPhotos DownloadPhotos
+
+
 type alias SyncData =
     { downloadStatus : Maybe DownloadStatus
     , uploadStatus : Maybe UploadStatus
@@ -117,6 +155,34 @@ emptySyncData =
     , uploadStatus = Nothing
     , attempt = NotAsked
     }
+
+
+{-| Indicate what content, or query we'd like to get from IndexDB.
+-}
+type FetchFromIndexDbQueryType
+    = IndexDbQueryHealthCenters
+
+
+type IndexDbQueryTypeResult
+    = IndexDbQueryHealthCentersResult (Dict HealthCenterId HealthCenter)
+
+
+type Msg
+    = BackendAuthorityFetch
+    | BackendAuthorityFetchHandle (Zipper RevisionIdPerAuthority) (WebData (DownloadSyncResponse BackendAuthorityEntity))
+      -- This is the main entry point for the Sync loop. This will dispatch a call
+      -- according to the `syncStatus`.
+    | BackendFetchMain
+    | BackendGeneralFetch
+    | BackendGeneralFetchHandle (WebData (DownloadSyncResponse BackendGeneralEntity))
+    | FetchFromIndexDb FetchFromIndexDbQueryType
+    | FetchFromIndexDbHandle Value
+    | SetLastFetchedRevisionIdGeneral Int
+    | SetSyncStatusRotateAutomatic Bool
+
+
+
+-- @todo: Cleanup/ remove.
 
 
 type alias DownloadStatus =
@@ -141,38 +207,6 @@ type alias UploadStatus =
     }
 
 
-{-| Hold the info we're going to decode from a GET call to /api/sync.
--}
-type alias DownloadSyncResponse =
-    { backendGeneralEntities : List BackendGeneralEntity
-    , lastTimestampOfLastRevision : Time.Posix
-    , revisionCount : Int
-    }
-
-
-{-| Determine how photos are going to be downloaded.
--}
-type DownloadPhotos
-    = -- Don't download any photos at all.
-      DownloadPhotosNone
-      -- Download up to a number of photos, and then skip to the next Sync status,
-      -- which is `SyncIdle`. This is used to grab photos, but without blocking
-      -- completely the rest of the syncing of data.
-    | DownloadPhotosBatch Int (WebData DownloadSyncResponse)
-      -- Download all photos.
-    | DownloadPhotosAll (WebData DownloadSyncResponse)
-
-
-{-| The Sync (download or upload), by its order.
--}
-type SyncStatus
-    = SyncIdle
-    | SyncUpload
-    | SyncDownloadGeneral (WebData DownloadSyncResponse)
-    | SyncDownloadAuthority RevisionIdPerAuthorityZipper (WebData DownloadSyncResponse)
-    | SyncDownloadPhotos DownloadPhotos
-
-
 type SyncAttempt
     = NotAsked
     | Downloading Time.Posix Int -- in progress, from base revision
@@ -188,27 +222,3 @@ type SyncError
     | BadResponse Int String
     | BadJson
     | ImageNotFound String
-
-
-{-| Indicate what content, or query we'd like to get from IndexDB.
--}
-type FetchFromIndexDbQueryType
-    = IndexDbQueryHealthCenters
-
-
-type IndexDbQueryTypeResult
-    = IndexDbQueryHealthCentersResult (Dict HealthCenterId HealthCenter)
-
-
-type Msg
-    = BackendAuthorityFetch
-    | BackendAuthorityFetchHandle (WebData DownloadSyncResponse)
-      -- This is the main entry point for the Sync loop. This will dispatch a call
-      -- according to the `syncStatus`.
-    | BackendFetchMain
-    | BackendGeneralFetch
-    | BackendGeneralFetchHandle (WebData DownloadSyncResponse)
-    | FetchFromIndexDb FetchFromIndexDbQueryType
-    | FetchFromIndexDbHandle Value
-    | SetLastFetchedRevisionIdGeneral Int
-    | SetSyncStatusRotateAutomatic Bool

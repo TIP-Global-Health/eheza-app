@@ -2,13 +2,15 @@ port module DataManager.Update exposing (subscriptions, update)
 
 import App.Model exposing (SubModelReturn)
 import Backend.HealthCenter.Encoder
+import Backend.Measurement.Encoder
 import Backend.Model
 import Backend.Person.Encoder
 import Backend.PmtctParticipant.Encoder
-import DataManager.Decoder exposing (decodeDownloadSyncResponse)
+import DataManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseGeneral)
 import DataManager.Model
     exposing
-        ( BackendGeneralEntity(..)
+        ( BackendAuthorityEntity(..)
+        , BackendGeneralEntity(..)
         , FetchFromIndexDbQueryType(..)
         , IndexDbQueryTypeResult(..)
         , Model
@@ -73,8 +75,8 @@ update currentDate device msg model =
                                         , ( "db_version", String.fromInt dbVersion )
                                         , ( "base_revision", String.fromInt currentZipper.revisionId )
                                         ]
-                                    |> withExpectJson decodeDownloadSyncResponse
-                                    |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle)
+                                    |> withExpectJson decodeDownloadSyncResponseAuthority
+                                    |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle zipper)
                         in
                         SubModelReturn
                             { model | syncStatus = SyncDownloadAuthority (Just zipper) RemoteData.Loading }
@@ -85,15 +87,82 @@ update currentDate device msg model =
                 _ ->
                     returnDetermineSyncStatus
 
-        BackendAuthorityFetchHandle webData ->
+        BackendAuthorityFetchHandle zipper webData ->
             let
+                currentZipper =
+                    Zipper.current zipper
+
                 cmd =
-                    sendRevisionIdPerAuthority []
+                    case RemoteData.toMaybe webData of
+                        Just data ->
+                            data.entities
+                                |> List.foldl
+                                    (\entity accum ->
+                                        let
+                                            doEncode uuid vid val =
+                                                Json.Encode.object
+                                                    [ ( "uuid", Json.Encode.string uuid )
+                                                    , ( "entity", val )
+                                                    , ( "vid", Json.Encode.int vid )
+                                                    ]
+                                                    |> Json.Encode.encode 0
+                                        in
+                                        case entity of
+                                            BackendAuthorityPhoto uuid vid entity_ ->
+                                                -- @todo: Encoder is probably wrong.
+                                                -- need to have `type=photo`.
+                                                doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodePhoto entity_)
+                                                    :: accum
+
+                                            BackendAuthorityEntityUnknown _ _ ->
+                                                -- Filter out the unknown entities.
+                                                accum
+                                    )
+                                    []
+                                |> List.reverse
+                                |> sendSyncedDataToIndexDb
+
+                        Nothing ->
+                            Cmd.none
+
+                lastFetchedRevisionId =
+                    case RemoteData.toMaybe webData of
+                        Just data ->
+                            -- Get the last item.
+                            data.entities
+                                |> List.reverse
+                                |> List.head
+                                |> Maybe.map
+                                    (\entity ->
+                                        case entity of
+                                            BackendAuthorityPhoto _ vid _ ->
+                                                vid
+
+                                            BackendAuthorityEntityUnknown _ vid ->
+                                                vid
+                                    )
+                                |> Maybe.withDefault currentZipper.revisionId
+
+                        Nothing ->
+                            currentZipper.revisionId
+
+                zipperUpdated =
+                    Zipper.mapCurrent (\old -> { old | revisionId = lastFetchedRevisionId }) zipper
+
+                modelWithSyncStatus =
+                    DataManager.Utils.determineSyncStatus { model | syncStatus = SyncDownloadAuthority (Just zipperUpdated) webData }
             in
             SubModelReturn
-                model
-                Cmd.none
-                noError
+                { modelWithSyncStatus | revisionIdPerAuthorityZipper = Just zipperUpdated }
+                (Cmd.batch
+                    [ cmd
+
+                    -- Send to JS the updated revision ID. We send the entire
+                    -- list.
+                    , sendRevisionIdPerAuthority (Zipper.toList zipperUpdated)
+                    ]
+                )
+                (maybeHttpError webData "Backend.DataManager.Update" "BackendGeneralFetchHandle")
                 []
 
         BackendFetchMain ->
@@ -137,7 +206,7 @@ update currentDate device msg model =
                                         , ( "db_version", String.fromInt dbVersion )
                                         , ( "base_revision", String.fromInt model.lastFetchedRevisionIdGeneral )
                                         ]
-                                    |> withExpectJson decodeDownloadSyncResponse
+                                    |> withExpectJson decodeDownloadSyncResponseGeneral
                                     |> HttpBuilder.send (RemoteData.fromResult >> BackendGeneralFetchHandle)
                         in
                         SubModelReturn
@@ -159,7 +228,7 @@ update currentDate device msg model =
                 cmd =
                     case RemoteData.toMaybe webData of
                         Just data ->
-                            data.backendGeneralEntities
+                            data.entities
                                 |> List.foldl
                                     (\entity accum ->
                                         let
@@ -199,7 +268,7 @@ update currentDate device msg model =
                     case RemoteData.toMaybe webData of
                         Just data ->
                             -- Get the last item.
-                            data.backendGeneralEntities
+                            data.entities
                                 |> List.reverse
                                 |> List.head
                                 |> Maybe.map
@@ -301,7 +370,7 @@ port sendLastFetchedRevisionIdGeneral : Int -> Cmd msg
 {-| Send to JS a list with the last revision ID used to download Authority,
 along with their UUID.
 -}
-port sendRevisionIdPerAuthority : List ( String, Int ) -> Cmd msg
+port sendRevisionIdPerAuthority : List { uuid : String, revisionId : Int } -> Cmd msg
 
 
 {-| Ask JS to send us data from IndexDB. We send the query type.
