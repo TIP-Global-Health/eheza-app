@@ -16,6 +16,7 @@ module DataManager.Model exposing
     , SyncError(..)
     , SyncStatus(..)
     , UploadStatus
+    , emptyDownloadPhotosBatchRec
     , emptyModel
     , emptySyncData
     )
@@ -89,6 +90,10 @@ type alias Model =
     -- Determine how we're going to download photos.
     , downloadPhotos : DownloadPhotos
 
+    -- If `DownloadPhotosBatch` is selected as download mechanism, indicate what's
+    -- the batch size.
+    , downloadPhotosBatchSize : Int
+
     -- Determine is Sync status should be rotated automatically, or manually for debug
     -- purposes.
     , syncStatusRotateAutomatic : Bool
@@ -98,8 +103,8 @@ type alias Model =
     }
 
 
-emptyModel : LastFetchedRevisionIdGeneral -> RevisionIdPerAuthorityZipper -> Model
-emptyModel lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper =
+emptyModel : LastFetchedRevisionIdGeneral -> RevisionIdPerAuthorityZipper -> Int -> Model
+emptyModel lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper batchSize =
     { syncStatus = SyncDownloadGeneral RemoteData.NotAsked
 
     -- syncStatus = SyncDownloadPhotos (DownloadPhotosAll RemoteData.NotAsked)
@@ -107,7 +112,8 @@ emptyModel lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper =
     , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
     , syncData = emptySyncData
-    , downloadPhotos = DownloadPhotosBatch defaultDownloadPhotosBatchRec
+    , downloadPhotos = DownloadPhotosBatch (emptyDownloadPhotosBatchRec batchSize)
+    , downloadPhotosBatchSize = batchSize
     , syncStatusRotateAutomatic = True
 
     --, syncStatusRotateAutomatic = False
@@ -149,10 +155,10 @@ type alias DownloadPhotosBatchRec =
     }
 
 
-defaultDownloadPhotosBatchRec : DownloadPhotosBatchRec
-defaultDownloadPhotosBatchRec =
-    { batchSize = 100
-    , batchCounter = 100
+emptyDownloadPhotosBatchRec : Int -> DownloadPhotosBatchRec
+emptyDownloadPhotosBatchRec batchSize =
+    { batchSize = batchSize
+    , batchCounter = batchSize
     , indexDbRemoteData = RemoteData.NotAsked
     , backendRemoteData = RemoteData.NotAsked
     }

@@ -304,7 +304,9 @@ emptyModel key url flags =
     , zscores = ZScore.Model.emptyModel
     , healthCenterId = healthCenterId
     , villageId = villageId
-    , dataManager = DataManager.Model.emptyModel flags.lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper
+
+    -- @todo: Get the batch size from flag.downloadPhotosBatchSize
+    , dataManager = DataManager.Model.emptyModel flags.lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper 10
     , errors = []
     }
 

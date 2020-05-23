@@ -1,6 +1,6 @@
-module DataManager.Utils exposing (determineSyncStatus)
+module DataManager.Utils exposing (determineSyncStatus, setPhotosBatch)
 
-import DataManager.Model exposing (DownloadPhotos(..), Model, SyncStatus(..))
+import DataManager.Model exposing (DownloadPhotos(..), Model, SyncStatus(..), emptyDownloadPhotosBatchRec)
 import List.Zipper as Zipper
 import RemoteData
 
@@ -145,3 +145,8 @@ resetDownloadPhotosBatchCounter model =
 
         _ ->
             SyncDownloadPhotos model.downloadPhotos
+
+
+setPhotosBatch : Model -> Model
+setPhotosBatch model =
+    { model | syncStatus = SyncDownloadPhotos (DownloadPhotosBatch (emptyDownloadPhotosBatchRec model.downloadPhotosBatchSize)) }
