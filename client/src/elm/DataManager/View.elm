@@ -163,7 +163,7 @@ viewDownloadPhotosBatch : Model -> DownloadPhotosBatchRec -> Html Msg
 viewDownloadPhotosBatch model deferredPhoto =
     case deferredPhoto.indexDbRemoteData of
         RemoteData.Success (Just result) ->
-            div [] [ text <| "Attempt " ++ String.fromInt result.attempts ++ " to download photo: " ++ result.photo ]
+            div [] [ text <| "Attempt " ++ String.fromInt (result.attempts + 1) ++ " to download photo: " ++ result.photo ]
 
         _ ->
             emptyNode
