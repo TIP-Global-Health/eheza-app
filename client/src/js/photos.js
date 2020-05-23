@@ -21,7 +21,6 @@
                             if (response.ok) {
                                 // We got the image, so cache it but without
                                 // the `access_token`, and `itok` params.
-
                                 let url = new URL(event.request.url);
                                 let params = new URLSearchParams(url.search.slice(1));
 
@@ -29,8 +28,6 @@
                                 params.delete('itok');
 
                                 url.search = params.toString();
-
-                                console.log(url);
 
                                 cache.put(url, response.clone());
                             }

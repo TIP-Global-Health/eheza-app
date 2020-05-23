@@ -151,8 +151,8 @@ type alias DownloadPhotosBatchRec =
 
 defaultDownloadPhotosBatchRec : DownloadPhotosBatchRec
 defaultDownloadPhotosBatchRec =
-    { batchSize = 3
-    , batchCounter = 3
+    { batchSize = 100
+    , batchCounter = 100
     , indexDbRemoteData = RemoteData.NotAsked
     , backendRemoteData = RemoteData.NotAsked
     }

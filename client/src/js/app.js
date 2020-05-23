@@ -287,8 +287,6 @@ elmApp.ports.sendRevisionIdPerAuthority.subscribe(function(revisionIdPerAuthorit
 elmApp.ports.askFromIndexDb.subscribe(function(info) {
   const queryType = info.queryType;
 
-  console.log(info);
-
   // Some queries pass may pass us data.
   const data = info.data;
   switch (queryType) {
@@ -335,9 +333,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         const dataArr = JSON.parse(data);
 
-        const result = await dbSync.deferredPhotos.update(dataArr.uuid, {'attempts': dataArr.attempts});
-        console.log(result);
-        sendResultToElm(queryType, result);
+        // We don't need to send back the result, as it's an update operation.
+        await dbSync.deferredPhotos.update(dataArr.uuid, {'attempts': dataArr.attempts});
 
       })();
       break;
