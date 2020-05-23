@@ -617,8 +617,7 @@ update currentDate device msg model =
                         IndexDbQueryDeferredPhotoResult Nothing ->
                             let
                                 syncStatus =
-                                    -- There are no deferred photos matching the query,
-                                    -- so we can rotate to the next sync status.
+                                    -- There are no deferred photos matching the query.
                                     case model.syncStatus of
                                         SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
                                             SyncDownloadPhotos (DownloadPhotosBatch { deferredPhoto | indexDbRemoteData = RemoteData.Success Nothing })
@@ -638,8 +637,7 @@ update currentDate device msg model =
                         IndexDbQueryDeferredPhotoResult (Just val_) ->
                             let
                                 syncStatus =
-                                    -- There are no deferred photos matching the query,
-                                    -- so we can rotate to the next sync status.
+                                    -- There is a deferred photos matching the query.
                                     case model.syncStatus of
                                         SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
                                             let
