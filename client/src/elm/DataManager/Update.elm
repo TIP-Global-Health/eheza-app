@@ -53,38 +53,43 @@ update currentDate device msg model =
         BackendAuthorityFetch ->
             case model.syncStatus of
                 SyncDownloadAuthority webData ->
-                    case model.revisionIdPerAuthorityZipper of
-                        Nothing ->
-                            -- No zipper, means not subscribed yet to any
-                            -- authority. `determineSyncStatus` will take care of
-                            -- rotating if we're not on automatic sync.
-                            returnDetermineSyncStatus
+                    if RemoteData.isLoading webData then
+                        -- We are already loading.
+                        noChange
 
-                        Just zipper ->
-                            if RemoteData.isLoading webData then
-                                -- We are already loading.
-                                noChange
+                    else
+                        case model.revisionIdPerAuthorityZipper of
+                            Nothing ->
+                                -- No zipper, means not subscribed yet to any
+                                -- authority. `determineSyncStatus` will take care of
+                                -- rotating if we're not on automatic sync.
+                                returnDetermineSyncStatus
 
-                            else
-                                let
-                                    currentZipper =
-                                        Zipper.current zipper
+                            Just zipper ->
+                                if RemoteData.isLoading webData then
+                                    -- We are already loading.
+                                    noChange
 
-                                    cmd =
-                                        HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
-                                            |> withQueryParams
-                                                [ ( "access_token", device.accessToken )
-                                                , ( "db_version", String.fromInt dbVersion )
-                                                , ( "base_revision", String.fromInt currentZipper.revisionId )
-                                                ]
-                                            |> withExpectJson decodeDownloadSyncResponseAuthority
-                                            |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle zipper)
-                                in
-                                SubModelReturn
-                                    { model | syncStatus = SyncDownloadAuthority RemoteData.Loading }
-                                    cmd
-                                    noError
-                                    []
+                                else
+                                    let
+                                        currentZipper =
+                                            Zipper.current zipper
+
+                                        cmd =
+                                            HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
+                                                |> withQueryParams
+                                                    [ ( "access_token", device.accessToken )
+                                                    , ( "db_version", String.fromInt dbVersion )
+                                                    , ( "base_revision", String.fromInt currentZipper.revisionId )
+                                                    ]
+                                                |> withExpectJson decodeDownloadSyncResponseAuthority
+                                                |> HttpBuilder.send (RemoteData.fromResult >> BackendAuthorityFetchHandle zipper)
+                                    in
+                                    SubModelReturn
+                                        { model | syncStatus = SyncDownloadAuthority RemoteData.Loading }
+                                        cmd
+                                        noError
+                                        []
 
                 _ ->
                     returnDetermineSyncStatus
@@ -384,76 +389,102 @@ update currentDate device msg model =
                     noChange
 
                 SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
-                    let
-                        deferredPhotoUpdated =
-                            { deferredPhoto
-                                | indexDbRemoteData = RemoteData.Loading
-                                , backendRemoteData = RemoteData.NotAsked
-                            }
-                    in
-                    update
-                        currentDate
-                        device
-                        (FetchFromIndexDb IndexDbQueryDeferredPhoto)
-                        { model | syncStatus = SyncDownloadPhotos (DownloadPhotosBatch deferredPhotoUpdated) }
+                    if RemoteData.isLoading deferredPhoto.indexDbRemoteData || RemoteData.isLoading deferredPhoto.backendRemoteData then
+                        -- We are already loading.
+                        noChange
+
+                    else
+                        let
+                            deferredPhotoUpdated =
+                                { deferredPhoto
+                                    | indexDbRemoteData = RemoteData.Loading
+                                    , backendRemoteData = RemoteData.NotAsked
+                                }
+                        in
+                        update
+                            currentDate
+                            device
+                            (FetchFromIndexDb IndexDbQueryDeferredPhoto)
+                            { model | syncStatus = SyncDownloadPhotos (DownloadPhotosBatch deferredPhotoUpdated) }
 
                 SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
-                    let
-                        deferredPhotoUpdated =
-                            { deferredPhoto
-                                | indexDbRemoteData = RemoteData.Loading
-                                , backendRemoteData = RemoteData.NotAsked
-                            }
-                    in
-                    update
-                        currentDate
-                        device
-                        (FetchFromIndexDb IndexDbQueryDeferredPhoto)
-                        { model | syncStatus = SyncDownloadPhotos (DownloadPhotosAll deferredPhotoUpdated) }
+                    if RemoteData.isLoading deferredPhoto.indexDbRemoteData || RemoteData.isLoading deferredPhoto.backendRemoteData then
+                        -- We are already loading.
+                        noChange
+
+                    else
+                        let
+                            deferredPhotoUpdated =
+                                { deferredPhoto
+                                    | indexDbRemoteData = RemoteData.Loading
+                                    , backendRemoteData = RemoteData.NotAsked
+                                }
+                        in
+                        update
+                            currentDate
+                            device
+                            (FetchFromIndexDb IndexDbQueryDeferredPhoto)
+                            { model | syncStatus = SyncDownloadPhotos (DownloadPhotosAll deferredPhotoUpdated) }
 
                 _ ->
                     noChange
 
         BackendDeferredPhotoFetch result ->
             let
-                syncStatus =
+                isLoading =
                     case model.syncStatus of
                         SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
-                            let
-                                deferredPhotoUpdated =
-                                    { deferredPhoto | backendRemoteData = RemoteData.Loading }
-                            in
-                            SyncDownloadPhotos (DownloadPhotosBatch deferredPhotoUpdated)
+                            RemoteData.isLoading deferredPhoto.indexDbRemoteData || RemoteData.isLoading deferredPhoto.backendRemoteData
 
                         SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
-                            let
-                                deferredPhotoUpdated =
-                                    { deferredPhoto | backendRemoteData = RemoteData.Loading }
-                            in
-                            SyncDownloadPhotos (DownloadPhotosAll deferredPhotoUpdated)
+                            RemoteData.isLoading deferredPhoto.indexDbRemoteData || RemoteData.isLoading deferredPhoto.backendRemoteData
 
                         _ ->
-                            model.syncStatus
-
-                modelUpdated =
-                    { model | syncStatus = syncStatus }
-
-                cmd =
-                    -- As the image is captured with the image token (`itok`), we
-                    -- don't use `withQueryParams` to add the access token, as it will
-                    -- result with something like this:
-                    -- image-1234.jpg?itok=[image-token]?access_token=[access-token]
-                    -- Instead, we manually add the access token with a `&`.
-                    HttpBuilder.get (result.photo ++ "&" ++ "access_token=" ++ device.accessToken)
-                        -- We don't need to decode anything, as we just want to have
-                        -- the browser download it.
-                        |> HttpBuilder.send (RemoteData.fromResult >> BackendDeferredPhotoFetchHandle result)
+                            False
             in
-            SubModelReturn
-                (DataManager.Utils.determineSyncStatus modelUpdated)
-                cmd
-                noError
-                []
+            if isLoading then
+                noChange
+
+            else
+                let
+                    syncStatus =
+                        case model.syncStatus of
+                            SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
+                                let
+                                    deferredPhotoUpdated =
+                                        { deferredPhoto | backendRemoteData = RemoteData.Loading }
+                                in
+                                SyncDownloadPhotos (DownloadPhotosBatch deferredPhotoUpdated)
+
+                            SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
+                                let
+                                    deferredPhotoUpdated =
+                                        { deferredPhoto | backendRemoteData = RemoteData.Loading }
+                                in
+                                SyncDownloadPhotos (DownloadPhotosAll deferredPhotoUpdated)
+
+                            _ ->
+                                model.syncStatus
+
+                    modelUpdated =
+                        { model | syncStatus = syncStatus }
+
+                    cmd =
+                        -- As the image is captured with the image token (`itok`), we
+                        -- don't use `withQueryParams` to add the access token, as it will
+                        -- result with something like this:
+                        -- image-1234.jpg?itok=[image-token]?access_token=[access-token]
+                        -- Instead, we manually add the access token with a `&`.
+                        HttpBuilder.get (result.photo ++ "&" ++ "access_token=" ++ device.accessToken)
+                            -- We don't need to decode anything, as we just want to have
+                            -- the browser download it.
+                            |> HttpBuilder.send (RemoteData.fromResult >> BackendDeferredPhotoFetchHandle result)
+                in
+                SubModelReturn
+                    (DataManager.Utils.determineSyncStatus modelUpdated)
+                    cmd
+                    noError
+                    []
 
         BackendDeferredPhotoFetchHandle result webData ->
             case webData of
