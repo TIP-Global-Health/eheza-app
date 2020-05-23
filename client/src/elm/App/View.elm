@@ -9,6 +9,7 @@ import Browser
 import Config.View
 import DataManager.View
 import Date
+import Error.View
 import EverySet
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
@@ -77,7 +78,8 @@ flexPageWrapper model html =
     div [ class "page container" ]
         [ viewLanguageSwitcherAndVersion model
 
-        -- @todo: Debug only
+        -- @todo: Move to sync page only.
+        , Error.View.view model.language model.errors
         , Html.map MsgDataManager (DataManager.View.viewDebugSync model.dataManager)
         , div
             [ class "page-content" ]

@@ -18,8 +18,21 @@
                 caches.open(photosDownloadCache).then(function(cache) {
                     return cache.match(event.request).then(function (response) {
                         return fetch(event.request).then(function(response) {
-                            if (!!response.ok) {
-                                cache.put(event.request, response.clone());
+                            if (response.ok) {
+                                // We got the image, so cache it but without
+                                // the `access_token`, and `itok` params.
+
+                                let url = new URL(event.request.url);
+                                let params = new URLSearchParams(url.search.slice(1));
+
+                                params.delete('access_token');
+                                params.delete('itok');
+
+                                url.search = params.toString();
+
+                                console.log(url);
+
+                                cache.put(url, response.clone());
                             }
                             else {
                                 // If an image style of Drupal is missing from the

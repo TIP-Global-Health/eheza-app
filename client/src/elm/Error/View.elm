@@ -15,7 +15,7 @@ view language errors =
         emptyNode
 
     else
-        div [ class "elm-errors alert debug-errors" ]
+        div [ class "ui segment elm-errors alert debug-errors" ]
             [ ul [] (List.map (viewError language) errors)
             ]
 

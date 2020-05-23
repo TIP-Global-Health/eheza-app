@@ -28,7 +28,7 @@ import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Json.Decode exposing (Value)
 import List.Zipper exposing (Zipper)
-import RemoteData exposing (WebData)
+import RemoteData exposing (RemoteData, WebData)
 import Time
 
 
@@ -107,7 +107,7 @@ emptyModel lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper =
     , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
     , syncData = emptySyncData
-    , downloadPhotos = DownloadPhotosBatch 3 3 RemoteData.NotAsked
+    , downloadPhotos = DownloadPhotosBatch defaultDownloadPhotosBatchRec
     , syncStatusRotateAutomatic = True
 
     --, syncStatusRotateAutomatic = False
@@ -136,9 +136,38 @@ type DownloadPhotos
       -- completely the rest of the syncing of data.
       -- So the first Int, is the default batch size, and the second is used as
       -- a counter.
-    | DownloadPhotosBatch Int Int (WebData ())
+    | DownloadPhotosBatch DownloadPhotosBatchRec
       -- Download all photos.
-    | DownloadPhotosAll (WebData ())
+    | DownloadPhotosAll DownloadPhotosAllRec
+
+
+type alias DownloadPhotosBatchRec =
+    { batchSize : Int
+    , batchCounter : Int
+    , indexDbRemoteData : DeferredPhotoIndexDbRemoteData
+    , backendRemoteData : WebData ()
+    }
+
+
+defaultDownloadPhotosBatchRec : DownloadPhotosBatchRec
+defaultDownloadPhotosBatchRec =
+    { batchSize = 3
+    , batchCounter = 3
+    , indexDbRemoteData = RemoteData.NotAsked
+    , backendRemoteData = RemoteData.NotAsked
+    }
+
+
+type alias DownloadPhotosAllRec =
+    { indexDbRemoteData : DeferredPhotoIndexDbRemoteData
+    , backendRemoteData : WebData ()
+    }
+
+
+{-| RemoteData to indicate fetching deferred photos info from IndexDB.
+-}
+type alias DeferredPhotoIndexDbRemoteData =
+    RemoteData String (Maybe IndexDbQueryDeferredPhotoResultRecord)
 
 
 {-| The Sync (download or upload), by its order.
@@ -167,7 +196,8 @@ type FetchFromIndexDbQueryType
 
 type IndexDbQueryTypeResult
     = IndexDbQueryHealthCentersResult (Dict HealthCenterId HealthCenter)
-    | IndexDbQueryDeferredPhotoResult IndexDbQueryDeferredPhotoResultRecord
+      -- A single deferred photo, if exists.
+    | IndexDbQueryDeferredPhotoResult (Maybe IndexDbQueryDeferredPhotoResultRecord)
 
 
 type alias IndexDbQueryDeferredPhotoResultRecord =

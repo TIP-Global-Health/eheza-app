@@ -378,32 +378,72 @@ update currentDate device msg model =
                 []
 
         FetchFromIndexDbDeferredPhoto ->
-            -- Get a deferred photo from IndexDB.
-            -- Get via HTTP.
-            -- If it was a success, delete it from the deferred photos table.
+            -- Get a deferred photo from IndexDB..
             case model.syncStatus of
                 SyncDownloadPhotos DownloadPhotosNone ->
                     noChange
 
-                SyncDownloadPhotos (DownloadPhotosBatch batchSize batchCount _) ->
+                SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
+                    let
+                        deferredPhotoUpdated =
+                            { deferredPhoto
+                                | indexDbRemoteData = RemoteData.Loading
+                                , backendRemoteData = RemoteData.NotAsked
+                            }
+                    in
                     update
                         currentDate
                         device
                         (FetchFromIndexDb IndexDbQueryDeferredPhoto)
-                        { model | syncStatus = SyncDownloadPhotos (DownloadPhotosBatch batchSize batchCount RemoteData.Loading) }
+                        { model | syncStatus = SyncDownloadPhotos (DownloadPhotosBatch deferredPhotoUpdated) }
 
-                SyncDownloadPhotos (DownloadPhotosAll _) ->
+                SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
+                    let
+                        deferredPhotoUpdated =
+                            { deferredPhoto
+                                | indexDbRemoteData = RemoteData.Loading
+                                , backendRemoteData = RemoteData.NotAsked
+                            }
+                    in
                     update
                         currentDate
                         device
                         (FetchFromIndexDb IndexDbQueryDeferredPhoto)
-                        { model | syncStatus = SyncDownloadPhotos (DownloadPhotosAll RemoteData.Loading) }
+                        { model | syncStatus = SyncDownloadPhotos (DownloadPhotosAll deferredPhotoUpdated) }
 
                 _ ->
                     noChange
 
         BackendDeferredPhotoFetch result ->
             let
+                syncStatus =
+                    case model.syncStatus of
+                        SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
+                            let
+                                deferredPhotoUpdated =
+                                    { deferredPhoto
+                                        | indexDbRemoteData = RemoteData.NotAsked
+                                        , backendRemoteData = RemoteData.Loading
+                                    }
+                            in
+                            SyncDownloadPhotos (DownloadPhotosBatch deferredPhotoUpdated)
+
+                        SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
+                            let
+                                deferredPhotoUpdated =
+                                    { deferredPhoto
+                                        | indexDbRemoteData = RemoteData.NotAsked
+                                        , backendRemoteData = RemoteData.Loading
+                                    }
+                            in
+                            SyncDownloadPhotos (DownloadPhotosAll deferredPhotoUpdated)
+
+                        _ ->
+                            model.syncStatus
+
+                modelUpdated =
+                    { model | syncStatus = syncStatus }
+
                 cmd =
                     -- As the image is captured with the image token (`itok`), we
                     -- don't use `withQueryParams` to add the access token, as it will
@@ -416,9 +456,7 @@ update currentDate device msg model =
                         |> HttpBuilder.send (RemoteData.fromResult >> BackendDeferredPhotoFetchHandle result)
             in
             SubModelReturn
-                -- No change in the model, as we've already indicated we are
-                -- RemoteData.Loading in `FetchFromIndexDbDeferredPhoto`.
-                (DataManager.Utils.determineSyncStatus model)
+                (DataManager.Utils.determineSyncStatus modelUpdated)
                 cmd
                 noError
                 []
@@ -438,12 +476,23 @@ update currentDate device msg model =
                         let
                             syncStatus =
                                 case model.syncStatus of
-                                    SyncDownloadPhotos (DownloadPhotosBatch batchSize batchCount _) ->
-                                        -- Reduce the batch batchCount.
-                                        SyncDownloadPhotos (DownloadPhotosBatch batchSize (batchCount - 1) (RemoteData.Failure error))
+                                    SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
+                                        let
+                                            deferredPhotoUpdated =
+                                                { deferredPhoto
+                                                  -- Reduce the batch counter.
+                                                    | batchCounter = deferredPhoto.batchCounter - 1
+                                                    , backendRemoteData = RemoteData.Failure error
+                                                }
+                                        in
+                                        SyncDownloadPhotos (DownloadPhotosBatch deferredPhotoUpdated)
 
-                                    SyncDownloadPhotos (DownloadPhotosAll _) ->
-                                        SyncDownloadPhotos (DownloadPhotosAll (RemoteData.Failure error))
+                                    SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
+                                        let
+                                            deferredPhotoUpdated =
+                                                { deferredPhoto | backendRemoteData = RemoteData.Failure error }
+                                        in
+                                        SyncDownloadPhotos (DownloadPhotosAll deferredPhotoUpdated)
 
                                     _ ->
                                         model.syncStatus
@@ -454,16 +503,27 @@ update currentDate device msg model =
                             (FetchFromIndexDb <| IndexDbQueryUpdateDeferredPhotoAttempts result)
                             { model | syncStatus = syncStatus }
 
-                RemoteData.Success _ ->
+                RemoteData.Success queryResult ->
                     let
                         syncStatus =
                             case model.syncStatus of
-                                SyncDownloadPhotos (DownloadPhotosBatch batchSize batchCount _) ->
-                                    -- Reduce the batch batchCount.
-                                    SyncDownloadPhotos (DownloadPhotosBatch batchSize (batchCount - 1) (RemoteData.Success ()))
+                                SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
+                                    let
+                                        deferredPhotoUpdated =
+                                            { deferredPhoto
+                                              -- Reduce the batch counter.
+                                                | batchCounter = deferredPhoto.batchCounter - 1
+                                                , backendRemoteData = RemoteData.Success queryResult
+                                            }
+                                    in
+                                    SyncDownloadPhotos (DownloadPhotosBatch deferredPhotoUpdated)
 
-                                SyncDownloadPhotos (DownloadPhotosAll _) ->
-                                    SyncDownloadPhotos (DownloadPhotosAll (RemoteData.Success ()))
+                                SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
+                                    let
+                                        deferredPhotoUpdated =
+                                            { deferredPhoto | backendRemoteData = RemoteData.Success queryResult }
+                                    in
+                                    SyncDownloadPhotos (DownloadPhotosAll deferredPhotoUpdated)
 
                                 _ ->
                                     model.syncStatus
@@ -533,18 +593,61 @@ update currentDate device msg model =
                                     |> App.Model.MsgIndexedDb
                                 ]
 
-                        IndexDbQueryDeferredPhotoResult val_ ->
+                        IndexDbQueryDeferredPhotoResult Nothing ->
+                            let
+                                syncStatus =
+                                    -- There are no deferred photos matching the query,
+                                    -- so we can rotate to the next sync status.
+                                    case model.syncStatus of
+                                        SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
+                                            SyncDownloadPhotos (DownloadPhotosBatch { deferredPhoto | indexDbRemoteData = RemoteData.Success Nothing })
+
+                                        SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
+                                            SyncDownloadPhotos (DownloadPhotosAll { deferredPhoto | indexDbRemoteData = RemoteData.Success Nothing })
+
+                                        _ ->
+                                            model.syncStatus
+                            in
+                            SubModelReturn
+                                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                                Cmd.none
+                                noError
+                                []
+
+                        IndexDbQueryDeferredPhotoResult (Just val_) ->
+                            let
+                                syncStatus =
+                                    -- There are no deferred photos matching the query,
+                                    -- so we can rotate to the next sync status.
+                                    case model.syncStatus of
+                                        SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
+                                            let
+                                                deferredPhotoUpdated =
+                                                    { deferredPhoto | indexDbRemoteData = RemoteData.Success (Just val_) }
+                                            in
+                                            SyncDownloadPhotos (DownloadPhotosBatch deferredPhotoUpdated)
+
+                                        SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
+                                            let
+                                                deferredPhotoUpdated =
+                                                    { deferredPhoto | indexDbRemoteData = RemoteData.Success (Just val_) }
+                                            in
+                                            SyncDownloadPhotos (DownloadPhotosAll deferredPhotoUpdated)
+
+                                        _ ->
+                                            model.syncStatus
+                            in
                             update
                                 currentDate
                                 device
                                 (BackendDeferredPhotoFetch val_)
-                                model
+                                { model | syncStatus = syncStatus }
 
                 Err error ->
                     SubModelReturn
                         model
                         Cmd.none
-                        (decodeError "Backend.DataManager.Update" "BackendGeneralFetchHandle" error)
+                        (decodeError "Backend.DataManager.Update" "FetchFromIndexDbHandle" error)
                         []
 
 

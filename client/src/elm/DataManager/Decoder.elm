@@ -30,8 +30,13 @@ decodeIndexDbQueryTypeResult =
                             |> andThen (\list_ -> succeed (IndexDbQueryHealthCentersResult (Dict.fromList list_)))
 
                     "IndexDbQueryDeferredPhotoResult" ->
-                        field "data" decodeIndexDbQueryDeferredPhotoResult
-                            |> andThen (\record -> succeed (IndexDbQueryDeferredPhotoResult record))
+                        oneOf
+                            [ field "data" decodeIndexDbQueryDeferredPhotoResult
+                                |> andThen (\record -> succeed (IndexDbQueryDeferredPhotoResult (Just record)))
+
+                            -- In case we have no deferred photo.
+                            , succeed (IndexDbQueryDeferredPhotoResult Nothing)
+                            ]
 
                     _ ->
                         fail <| queryType ++ " is not a recognized IndexDbQueryTypeResult"

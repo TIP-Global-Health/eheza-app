@@ -98,8 +98,13 @@ determineSyncStatus model =
                             DownloadPhotosNone ->
                                 ( SyncIdle, revisionIdPerAuthorityZipper )
 
-                            DownloadPhotosBatch _ batchCounter _ ->
-                                if batchCounter <= 0 then
+                            DownloadPhotosBatch deferredPhoto ->
+                                if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
+                                    -- We tried to fetch deferred photos from IndexDB,
+                                    -- but there we non matching the query.
+                                    ( SyncIdle, revisionIdPerAuthorityZipper )
+
+                                else if deferredPhoto.batchCounter <= 0 then
                                     -- We've reached the end of the batch, so we
                                     -- need to rotate.
                                     ( SyncIdle, revisionIdPerAuthorityZipper )
@@ -107,10 +112,16 @@ determineSyncStatus model =
                                 else
                                     noChange
 
-                            DownloadPhotosAll webData ->
-                                -- @todo: We'd need to get from IndexDB that
-                                -- there are no more deferred photos.
-                                noChange
+                            DownloadPhotosAll deferredPhoto ->
+                                if deferredPhoto.indexDbRemoteData == RemoteData.Success Nothing then
+                                    -- We tried to fetch deferred photos from IndexDB,
+                                    -- but there we non matching the query.
+                                    ( SyncIdle, revisionIdPerAuthorityZipper )
+
+                                else
+                                    -- There are still deferred photos in IndexDB
+                                    -- that match out query.
+                                    noChange
         in
         { model
             | syncStatus = syncStatusUpdated
@@ -125,8 +136,12 @@ determineSyncStatus model =
 resetDownloadPhotosBatchCounter : Model -> SyncStatus
 resetDownloadPhotosBatchCounter model =
     case model.downloadPhotos of
-        DownloadPhotosBatch batchSize _ webData ->
-            SyncDownloadPhotos (DownloadPhotosBatch batchSize batchSize webData)
+        DownloadPhotosBatch deferredPhoto ->
+            let
+                deferredPhotoUpdated =
+                    { deferredPhoto | batchCounter = deferredPhoto.batchSize }
+            in
+            SyncDownloadPhotos (DownloadPhotosBatch deferredPhotoUpdated)
 
         _ ->
             SyncDownloadPhotos model.downloadPhotos

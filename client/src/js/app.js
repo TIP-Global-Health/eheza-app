@@ -287,6 +287,8 @@ elmApp.ports.sendRevisionIdPerAuthority.subscribe(function(revisionIdPerAuthorit
 elmApp.ports.askFromIndexDb.subscribe(function(info) {
   const queryType = info.queryType;
 
+  console.log(info);
+
   // Some queries pass may pass us data.
   const data = info.data;
   switch (queryType) {
@@ -294,7 +296,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
     case 'IndexDbQueryDeferredPhoto':
       (async () => {
 
-        const result = await dbSync
+        let result = await dbSync
             .deferredPhotos
             .where('attempts')
             .belowOrEqual(3)
