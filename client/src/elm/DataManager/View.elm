@@ -90,8 +90,11 @@ viewSyncDownloadGeneral model webData =
             RemoteData.Failure error ->
                 text <| Debug.toString error
 
-            _ ->
+            RemoteData.Loading ->
                 spinner
+
+            RemoteData.NotAsked ->
+                emptyNode
         ]
 
 
@@ -144,8 +147,11 @@ viewSyncDownloadAuthority model webData =
                     RemoteData.Failure error ->
                         text <| Debug.toString error
 
-                    _ ->
+                    RemoteData.Loading ->
                         spinner
+
+                    RemoteData.NotAsked ->
+                        emptyNode
                 ]
 
 

@@ -670,10 +670,23 @@ update currentDate device msg model =
                         []
 
 
-subscriptions : Sub Msg
-subscriptions =
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    let
+        backendFetchMainTime =
+            case model.syncStatus of
+                SyncIdle ->
+                    -- Rest until the next sync loop.
+                    5000
+
+                _ ->
+                    -- Trigger often.
+                    -- @todo: Chagne to 500 (half a second)? Need to check on
+                    -- devices, and while operating other pages.
+                    50
+    in
     Sub.batch
-        [ Time.every 1000 (\_ -> BackendFetchMain)
+        [ Time.every backendFetchMainTime (\_ -> BackendFetchMain)
         , getFromIndexDb FetchFromIndexDbHandle
         ]
 

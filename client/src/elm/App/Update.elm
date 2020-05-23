@@ -857,7 +857,7 @@ subscriptions model =
          , persistentStorage SetPersistentStorage
          , storageQuota SetStorageQuota
          , memoryQuota SetMemoryQuota
-         , Sub.map App.Model.MsgDataManager DataManager.Update.subscriptions
+         , Sub.map App.Model.MsgDataManager (DataManager.Update.subscriptions model.dataManager)
          ]
             ++ checkDataWanted
         )
