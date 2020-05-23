@@ -300,7 +300,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .belowOrEqual(3)
             .limit(1)
             // Get attempts sorted, so we won't always grab the same one.
-            .reverse()
             .sortBy('attempts');
 
         sendResultToElm(queryType, result);
