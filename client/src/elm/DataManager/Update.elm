@@ -462,10 +462,6 @@ update currentDate device msg model =
                 []
 
         BackendDeferredPhotoFetchHandle result webData ->
-            let
-                _ =
-                    Debug.log "BackendDeferredPhotoFetchHandle" webData
-            in
             case webData of
                 RemoteData.Failure error ->
                     if Utils.WebData.isNetworkError error then
