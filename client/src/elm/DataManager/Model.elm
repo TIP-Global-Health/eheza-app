@@ -174,7 +174,7 @@ type alias DownloadPhotosAllRec =
 {-| RemoteData to indicate fetching deferred photos info from IndexDB.
 -}
 type alias DeferredPhotoIndexDbRemoteData =
-    RemoteData String (Maybe IndexDbQueryDeferredPhotoResultRecord)
+    RemoteData () (Maybe IndexDbQueryDeferredPhotoResultRecord)
 
 
 {-| The Sync (download or upload), by its order.
