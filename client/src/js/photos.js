@@ -20,15 +20,13 @@
                         return fetch(event.request).then(function(response) {
                             if (response.ok) {
                                 // We got the image, so cache it but without
-                                // the `access_token`, and `itok` params.
+                                // the `access_token` param.
                                 let url = new URL(event.request.url);
                                 let params = new URLSearchParams(url.search.slice(1));
 
                                 params.delete('access_token');
-                                params.delete('itok');
 
                                 url.search = params.toString();
-
                                 cache.put(url, response.clone());
                             }
                             else {
