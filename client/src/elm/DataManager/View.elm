@@ -17,9 +17,11 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onCheck, onClick)
 import Json.Encode
+import List.Extra
 import List.Zipper as Zipper
 import RemoteData exposing (WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
+import Url
 import Utils.Html exposing (spinner)
 
 
@@ -163,7 +165,22 @@ viewDownloadPhotosBatch : Model -> DownloadPhotosBatchRec -> Html Msg
 viewDownloadPhotosBatch model deferredPhoto =
     case deferredPhoto.indexDbRemoteData of
         RemoteData.Success (Just result) ->
-            div [] [ text <| "Attempt " ++ String.fromInt (result.attempts + 1) ++ " to download photo: " ++ result.photo ]
+            let
+                fileName =
+                    result.photo
+                        |> Url.fromString
+                        |> Maybe.andThen
+                            (\url ->
+                                url.path
+                                    |> String.split "/"
+                                    |> List.Extra.last
+                            )
+                        |> Maybe.withDefault ""
+            in
+            div []
+                [ text <| "Attempt " ++ String.fromInt (result.attempts + 1) ++ " to download "
+                , a [ href result.photo, target "_blank" ] [ text fileName ]
+                ]
 
         _ ->
             emptyNode
