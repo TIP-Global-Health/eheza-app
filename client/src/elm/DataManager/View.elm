@@ -4,6 +4,8 @@ import DataManager.Model
     exposing
         ( BackendAuthorityEntity(..)
         , BackendGeneralEntity(..)
+        , DownloadPhotos(..)
+        , DownloadPhotosBatchRec
         , DownloadSyncResponse
         , Model
         , Msg(..)
@@ -40,6 +42,9 @@ viewDebugSync model =
 
                     SyncDownloadAuthority webData ->
                         viewSyncDownloadAuthority model webData
+
+                    SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
+                        viewDownloadPhotosBatch model deferredPhoto
 
                     _ ->
                         emptyNode
@@ -152,3 +157,13 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityEntityUnknown type_ _ ->
                 text <| type_ ++ " (we still don't decode it)"
         ]
+
+
+viewDownloadPhotosBatch : Model -> DownloadPhotosBatchRec -> Html Msg
+viewDownloadPhotosBatch model deferredPhoto =
+    case deferredPhoto.indexDbRemoteData of
+        RemoteData.Success (Just result) ->
+            div [] [ text <| "Attempt " ++ String.fromInt result.attempts ++ " to download photo: " ++ result.photo ]
+
+        _ ->
+            emptyNode

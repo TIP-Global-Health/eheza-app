@@ -2,6 +2,7 @@ module DataManager.Model exposing
     ( BackendAuthorityEntity(..)
     , BackendGeneralEntity(..)
     , DownloadPhotos(..)
+    , DownloadPhotosBatchRec
     , DownloadStatus
     , DownloadSyncResponse
     , FetchFromIndexDbQueryType(..)

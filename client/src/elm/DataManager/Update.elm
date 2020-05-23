@@ -378,7 +378,7 @@ update currentDate device msg model =
                 []
 
         FetchFromIndexDbDeferredPhoto ->
-            -- Get a deferred photo from IndexDB..
+            -- Get a deferred photo from IndexDB.
             case model.syncStatus of
                 SyncDownloadPhotos DownloadPhotosNone ->
                     noChange
@@ -421,20 +421,14 @@ update currentDate device msg model =
                         SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
                             let
                                 deferredPhotoUpdated =
-                                    { deferredPhoto
-                                        | indexDbRemoteData = RemoteData.NotAsked
-                                        , backendRemoteData = RemoteData.Loading
-                                    }
+                                    { deferredPhoto | backendRemoteData = RemoteData.Loading }
                             in
                             SyncDownloadPhotos (DownloadPhotosBatch deferredPhotoUpdated)
 
                         SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
                             let
                                 deferredPhotoUpdated =
-                                    { deferredPhoto
-                                        | indexDbRemoteData = RemoteData.NotAsked
-                                        , backendRemoteData = RemoteData.Loading
-                                    }
+                                    { deferredPhoto | backendRemoteData = RemoteData.Loading }
                             in
                             SyncDownloadPhotos (DownloadPhotosAll deferredPhotoUpdated)
 
