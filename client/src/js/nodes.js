@@ -419,8 +419,11 @@
     var groupMeasurementTypes = [
       'attendance',
       'counseling_session',
+      'child_fbf',
       'family_planning',
       'height',
+      'lactation',
+      'mother_fbf',
       'muac',
       'nutrition',
       'participant_consent',
