@@ -79,28 +79,28 @@ viewSyncDownloadGeneral model webData =
     div []
         [ div [] [ text <| "Trying to fetch `General` from revision ID " ++ String.fromInt model.lastFetchedRevisionIdGeneral ]
         , button [ onClick <| DataManager.Model.SetLastFetchedRevisionIdGeneral 0 ] [ text "Reset revision ID to 0" ]
-        , case webData of
-            RemoteData.Success data ->
-                div []
-                    [ div [] [ text <| String.fromInt data.revisionCount ++ " items left to download" ]
-                    , if List.isEmpty data.entities then
-                        div [] [ text "No content fetched in last HTTP request" ]
+        , details [ property "open" (Json.Encode.bool True) ]
+            [ summary [] [ text "HTTP requests" ]
+            , case webData of
+                RemoteData.Success data ->
+                    div []
+                        [ div [] [ text <| String.fromInt data.revisionCount ++ " items left to download" ]
+                        , if List.isEmpty data.entities then
+                            div [] [ text "No content fetched in last HTTP request" ]
 
-                      else
-                        div []
-                            [ div [] [ text <| "Here is the content we've fetched in the last HTTP request:" ]
-                            , ol [] (List.map viewGeneralEntity data.entities)
-                            ]
-                    ]
+                          else
+                            ol [] (List.map viewGeneralEntity data.entities)
+                        ]
 
-            RemoteData.Failure error ->
-                text <| Debug.toString error
+                RemoteData.Failure error ->
+                    text <| Debug.toString error
 
-            RemoteData.Loading ->
-                spinner
+                RemoteData.Loading ->
+                    spinner
 
-            RemoteData.NotAsked ->
-                emptyNode
+                RemoteData.NotAsked ->
+                    emptyNode
+            ]
         ]
 
 
@@ -274,35 +274,3 @@ viewHealthCenter language ( healthCenterId, healthCenter ) isSynced =
         [ text <| healthCenter.name
         , button [ onClick syncMsg ] [ text syncLabel ]
         ]
-
-
-
---    sync =
---        db.syncData
---            |> RemoteData.map
---                (\syncData ->
---                    case Dict.get uuid syncData of
---                        Just data ->
---                            div [ class "health-center-info" ]
---                                [ viewSyncData language data
---                                , button
---                                    [ class "ui button"
---                                    , onClick (SetSyncing uuid False)
---                                    ]
---                                    [ text <| translate language Translate.StopSyncing ]
---                                ]
---
---                        Nothing ->
---                            button
---                                [ class "ui button"
---                                , onClick (SetSyncing uuid True)
---                                ]
---                                [ text <| translate language Translate.StartSyncing ]
---                )
---            |> RemoteData.toMaybe
---            |> showMaybe
---in
---div [ class "health-center" ]
---    [ h2 [] [ text <| model.name ]
---    , sync
---    ]
