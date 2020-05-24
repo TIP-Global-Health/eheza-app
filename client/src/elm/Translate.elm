@@ -116,6 +116,12 @@ type ChartPhrase
     = AgeCompletedMonthsYears
     | Birth
     | BirthToTwoYears
+    | TwoToFiveYears
+    | FiveToNineteenYears
+    | FiveToTenYears
+    | HeightCm
+    | HeightForAgeBoys
+    | HeightForAgeGirls
     | LengthCm
     | LengthForAgeBoys
     | LengthForAgeGirls
@@ -4382,6 +4388,36 @@ translateChartPhrase phrase =
         BirthToTwoYears ->
             { english = "Birth to 2 years (z-scores)"
             , kinyarwanda = Just "kuvuka (Kuva avutse)  kugeza ku myaka 2 Z-score"
+            }
+
+        TwoToFiveYears ->
+            { english = "2 to 5 years (z-scores)"
+            , kinyarwanda = Nothing
+            }
+
+        FiveToNineteenYears ->
+            { english = "5 to 19 years (z-scores)"
+            , kinyarwanda = Nothing
+            }
+
+        FiveToTenYears ->
+            { english = "5 to 10 years (z-scores)"
+            , kinyarwanda = Nothing
+            }
+
+        HeightCm ->
+            { english = "Height (cm)"
+            , kinyarwanda = Just "Uburere cm"
+            }
+
+        HeightForAgeBoys ->
+            { english = "Height-for-age BOYS"
+            , kinyarwanda = Just "Uburere ku myaka/ umuhungu"
+            }
+
+        HeightForAgeGirls ->
+            { english = "Height-for-age GIRLS"
+            , kinyarwanda = Just "Uburere ku myaka/ umukobwa"
             }
 
         LengthCm ->
