@@ -17,6 +17,7 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
+import Measurement.Utils exposing (resolvePreviousValueInCommonContext)
 import Measurement.View exposing (viewMeasurementFloatDiff, viewMuacIndication, zScoreForHeightOrLength)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.NutritionActivity.Model exposing (..)
@@ -42,7 +43,7 @@ view language currentDate zscores id activity isChw db model =
     in
     div [ class "page-nutrition-activity" ] <|
         [ viewHeader language id activity
-        , viewWebData language (viewContent language currentDate zscores id activity isChw model) identity data
+        , viewWebData language (viewContent language currentDate zscores id activity isChw db model) identity data
         ]
 
 
@@ -63,22 +64,51 @@ viewHeader language id activity =
         ]
 
 
-viewContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Bool -> Model -> AssembledData -> Html Msg
-viewContent language currentDate zscores id activity isChw model assembled =
+viewContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate zscores id activity isChw db model assembled =
     (viewChildDetails language currentDate assembled.person
-        :: viewActivity language currentDate zscores id activity isChw assembled model
+        :: viewActivity language currentDate zscores id activity isChw assembled db model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewActivity : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Bool -> AssembledData -> Model -> List (Html Msg)
-viewActivity language currentDate zscores id activity isChw assembled model =
+viewActivity : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Bool -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity language currentDate zscores id activity isChw assembled db model =
+    let
+        childMeasurements =
+            Dict.get assembled.participant.person db.childMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+
+        resolvePreviousGroupValue getChildMeasurementFunc =
+            childMeasurements
+                |> Maybe.andThen
+                    (getChildMeasurementFunc
+                        >> Dict.values
+                        >> List.map (\measurement -> ( measurement.dateMeasured, measurement.value ))
+                        -- Most recent date to least recent date.
+                        >> List.sortWith (\m1 m2 -> Gizra.NominalDate.compare (Tuple.first m2) (Tuple.first m1))
+                        >> List.head
+                    )
+
+        previousGroupHeight =
+            resolvePreviousGroupValue .heights
+                |> Maybe.map (\( date, HeightInCm val ) -> ( date, val ))
+
+        previousGroupMuac =
+            resolvePreviousGroupValue .muacs
+                |> Maybe.map (\( date, MuacInCm val ) -> ( date, val ))
+
+        previousGroupWeight =
+            resolvePreviousGroupValue .weights
+                |> Maybe.map (\( date, WeightInKg val ) -> ( date, val ))
+    in
     case activity of
         Height ->
-            viewHeightContent language currentDate zscores assembled model.heightData
+            viewHeightContent language currentDate zscores assembled model.heightData previousGroupHeight
 
         Muac ->
-            viewMuacContent language currentDate assembled model.muacData
+            viewMuacContent language currentDate assembled model.muacData previousGroupMuac
 
         Nutrition ->
             viewNutritionContent language currentDate ( assembled.participant.person, assembled.measurements ) model.nutritionData
@@ -87,11 +117,11 @@ viewActivity language currentDate zscores id activity isChw assembled model =
             viewPhotoContent language currentDate ( assembled.participant.person, assembled.measurements ) model.photoData
 
         Weight ->
-            viewWeightContent language currentDate zscores isChw assembled model.weightData
+            viewWeightContent language currentDate zscores isChw assembled model.weightData previousGroupWeight
 
 
-viewHeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> HeightData -> List (Html Msg)
-viewHeightContent language currentDate zscores assembled data =
+viewHeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> HeightData -> Maybe ( NominalDate, Float ) -> List (Html Msg)
+viewHeightContent language currentDate zscores assembled data previousGroupValue =
     let
         activity =
             Height
@@ -112,8 +142,11 @@ viewHeightContent language currentDate zscores assembled data =
                 (\birthDate -> diffDays birthDate currentDate)
                 assembled.person.birthDate
 
+        previousIndividualValue =
+            resolvePreviousIndividualValue assembled .height (\(HeightInCm cm) -> cm)
+
         previousValue =
-            resolvePreviousValue assembled .height (\(HeightInCm cm) -> cm)
+            resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
 
         zScoreText =
             form.height
@@ -170,8 +203,8 @@ viewHeightContent language currentDate zscores assembled data =
     ]
 
 
-viewMuacContent : Language -> NominalDate -> AssembledData -> MuacData -> List (Html Msg)
-viewMuacContent language currentDate assembled data =
+viewMuacContent : Language -> NominalDate -> AssembledData -> MuacData -> Maybe ( NominalDate, Float ) -> List (Html Msg)
+viewMuacContent language currentDate assembled data previousGroupValue =
     let
         activity =
             Muac
@@ -187,8 +220,11 @@ viewMuacContent language currentDate assembled data =
         tasksCompleted =
             taskCompleted form.muac
 
+        previousIndividualValue =
+            resolvePreviousIndividualValue assembled .muac (\(MuacInCm cm) -> cm)
+
         previousValue =
-            resolvePreviousValue assembled .muac (\(MuacInCm cm) -> cm)
+            resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -346,8 +382,8 @@ viewPhotoContent language currentDate ( personId, measurements ) data =
     ]
 
 
-viewWeightContent : Language -> NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> WeightData -> List (Html Msg)
-viewWeightContent language currentDate zscores isChw assembled data =
+viewWeightContent : Language -> NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> WeightData -> Maybe ( NominalDate, Float ) -> List (Html Msg)
+viewWeightContent language currentDate zscores isChw assembled data previousGroupValue =
     let
         activity =
             Weight
@@ -368,8 +404,11 @@ viewWeightContent language currentDate zscores isChw assembled data =
                 (\birthDate -> diffDays birthDate currentDate)
                 assembled.person.birthDate
 
+        previousIndividualValue =
+            resolvePreviousIndividualValue assembled .weight (\(WeightInKg kg) -> kg)
+
         previousValue =
-            resolvePreviousValue assembled .weight (\(WeightInKg kg) -> kg)
+            resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
 
         zScoreForAgeText =
             form.weight
