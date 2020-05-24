@@ -36,6 +36,9 @@ decodeRevision =
                     "catchment_area" ->
                         decodeWithUuid CatchmentAreaRevision decodeCatchmentArea
 
+                    "child_fbf" ->
+                        decodeWithUuid ChildFbfRevision decodeFbf
+
                     "clinic" ->
                         decodeWithUuid ClinicRevision decodeClinic
 
@@ -63,6 +66,9 @@ decodeRevision =
                     "height" ->
                         decodeWithUuid HeightRevision decodeHeight
 
+                    "lactation" ->
+                        decodeWithUuid LactationRevision decodeLactation
+
                     "last_menstrual_period" ->
                         decodeWithUuid LastMenstrualPeriodRevision decodeLastMenstrualPeriod
 
@@ -71,6 +77,9 @@ decodeRevision =
 
                     "medication" ->
                         decodeWithUuid MedicationRevision decodeMedication
+
+                    "mother_fbf" ->
+                        decodeWithUuid MotherFbfRevision decodeFbf
 
                     "muac" ->
                         decodeWithUuid MuacRevision decodeMuac

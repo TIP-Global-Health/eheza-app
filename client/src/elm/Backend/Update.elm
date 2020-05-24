@@ -1216,6 +1216,14 @@ handleRevision revision (( model, recalc ) as noChange) =
         CatchmentAreaRevision uuid data ->
             noChange
 
+        ChildFbfRevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | fbfs = Dict.insert uuid data measurements.fbfs })
+                model
+            , True
+            )
+
         ChildNutritionRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
@@ -1276,6 +1284,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             , True
             )
 
+        LactationRevision uuid data ->
+            ( mapMotherMeasurements
+                data.participantId
+                (\measurements -> { measurements | lactations = Dict.insert uuid data measurements.lactations })
+                model
+            , True
+            )
+
         HealthCenterRevision uuid data ->
             let
                 healthCenters =
@@ -1315,6 +1331,14 @@ handleRevision revision (( model, recalc ) as noChange) =
                 (\measurements -> { measurements | medication = Just ( uuid, data ) })
                 model
             , recalc
+            )
+
+        MotherFbfRevision uuid data ->
+            ( mapMotherMeasurements
+                data.participantId
+                (\measurements -> { measurements | fbfs = Dict.insert uuid data measurements.fbfs })
+                model
+            , True
             )
 
         MuacRevision uuid data ->
@@ -1727,7 +1751,7 @@ summarizeByActivity currentDate session checkedIn_ isChw =
         (\checkedIn ->
             let
                 children =
-                    getAllChildActivities
+                    getAllChildActivities session
                         |> List.map
                             (\activity ->
                                 ( activity
@@ -1737,7 +1761,7 @@ summarizeByActivity currentDate session checkedIn_ isChw =
                         |> Dict.fromList
 
                 mothers =
-                    getAllMotherActivities
+                    getAllMotherActivities session
                         |> List.map
                             (\activity ->
                                 ( activity
