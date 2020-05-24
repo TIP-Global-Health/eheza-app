@@ -6,6 +6,7 @@ import Backend.Measurement.Encoder
 import Backend.Model
 import Backend.Person.Encoder
 import Backend.PmtctParticipant.Encoder
+import Backend.Relationship.Encoder
 import DataManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseGeneral)
 import DataManager.Model
     exposing
@@ -309,6 +310,10 @@ update currentDate device msg model =
                                                         doEncode uuid vid (Backend.PmtctParticipant.Encoder.encodePmtctParticipant entity_)
                                                             :: accum
 
+                                                    BackendGeneralRelationship uuid vid entity_ ->
+                                                        doEncode uuid vid (Backend.Relationship.Encoder.encodeRelationship entity_)
+                                                            :: accum
+
                                                     BackendGeneralEntityUnknown _ _ ->
                                                         -- Filter out the unknown entities.
                                                         accum
@@ -338,6 +343,9 @@ update currentDate device msg model =
                                                 vid
 
                                             BackendGeneralPmtctParticipant _ vid _ ->
+                                                vid
+
+                                            BackendGeneralRelationship _ vid _ ->
                                                 vid
 
                                             BackendGeneralEntityUnknown _ vid ->
@@ -677,13 +685,16 @@ subscriptions model =
             case model.syncStatus of
                 SyncIdle ->
                     -- Rest until the next sync loop.
-                    5000
+                    -- 5000
+                    3000
 
                 _ ->
                     -- Trigger often.
-                    -- @todo: Chagne to 500 (half a second)? Need to check on
+                    -- @todo: Change to 500 (half a second)? Need to check on
                     -- devices, and while operating other pages.
-                    50
+                    -- 50
+                    -- For easier debug we wait 1 sec.
+                    1000
     in
     Sub.batch
         [ Time.every backendFetchMainTime (\_ -> BackendFetchMain)

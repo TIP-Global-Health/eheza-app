@@ -111,6 +111,9 @@ viewGeneralEntity backendGeneralEntity =
             BackendGeneralPmtctParticipant _ _ entity ->
                 text <| "Pmtct Participant for child ID (" ++ fromEntityUuid entity.child ++ ")"
 
+            BackendGeneralRelationship _ _ entity ->
+                text <| "Relationship for person ID (" ++ fromEntityUuid entity.person ++ ")"
+
             BackendGeneralEntityUnknown type_ _ ->
                 text <| type_ ++ " (we still don't decode it)"
         ]

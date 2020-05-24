@@ -27,7 +27,10 @@ handleErrors maybeError model =
         errors =
             unwrap model.errors
                 (\error ->
-                    error :: model.errors
+                    error
+                        :: model.errors
+                        -- Make sure list doesn't grow too much.
+                        |> List.take 50
                 )
                 maybeError
     in

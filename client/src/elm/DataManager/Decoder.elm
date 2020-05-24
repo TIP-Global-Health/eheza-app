@@ -10,6 +10,7 @@ import Backend.HealthCenter.Decoder
 import Backend.Measurement.Decoder
 import Backend.Person.Decoder
 import Backend.PmtctParticipant.Decoder
+import Backend.Relationship.Decoder
 import DataManager.Model exposing (BackendAuthorityEntity(..), BackendGeneralEntity(..), DownloadStatus, DownloadSyncResponse, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryTypeResult(..), SyncAttempt(..), SyncData, SyncError(..), UploadStatus)
 import Gizra.Date exposing (decodeDate)
 import Gizra.Json exposing (decodeInt)
@@ -90,6 +91,10 @@ decodeBackendGeneralEntity =
                     "pmtct_participant" ->
                         Backend.PmtctParticipant.Decoder.decodePmtctParticipant
                             |> andThen (\entity -> succeed (BackendGeneralPmtctParticipant uuid vid entity))
+
+                    "relationship" ->
+                        Backend.Relationship.Decoder.decodeRelationship
+                            |> andThen (\entity -> succeed (BackendGeneralRelationship uuid vid entity))
 
                     _ ->
                         succeed (BackendGeneralEntityUnknown type_ vid)

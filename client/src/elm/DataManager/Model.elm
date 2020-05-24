@@ -28,6 +28,7 @@ import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Measurement.Model exposing (Measurement, Photo, Weight)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
+import Backend.Relationship.Model exposing (Relationship)
 import Json.Decode exposing (Value)
 import List.Zipper exposing (Zipper)
 import RemoteData exposing (RemoteData, WebData)
@@ -46,6 +47,7 @@ type
     = BackendGeneralHealthCenter String Int HealthCenter
     | BackendGeneralPerson String Int Person
     | BackendGeneralPmtctParticipant String Int PmtctParticipant
+    | BackendGeneralRelationship String Int Relationship
       -- Don't fail on unknown types. We'd like to keep the type name along with
       -- the `vid`. The reason we keep the vid, is that we fetched some content
       -- which we don't recognize, but we want to keep fetching later content.
