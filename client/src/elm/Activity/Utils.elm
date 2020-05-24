@@ -1,21 +1,4 @@
-module Activity.Utils exposing
-    ( decodeActivityFromString
-    , defaultActivity
-    , encodeActivityAsString
-    , expectCounselingActivity
-    , expectParticipantConsent
-    , getActivityCountForMother
-    , getActivityIcon
-    , getAllActivities
-    , getAllChildActivities
-    , getAllMotherActivities
-    , getParticipantCountForActivity
-    , motherIsCheckedIn
-    , summarizeChildActivity
-    , summarizeChildParticipant
-    , summarizeMotherActivity
-    , summarizeMotherParticipant
-    )
+module Activity.Utils exposing (childHasAnyCompletedActivity, childHasCompletedActivity, childIsCheckedIn, decodeActivityFromString, defaultActivity, encodeActivityAsString, expectChildActivity, expectCounselingActivity, expectMotherActivity, expectParticipantConsent, getActivityCountForMother, getActivityIcon, getAllActivities, getAllChildActivities, getAllMotherActivities, getParticipantCountForActivity, hasAnyCompletedChildActivity, hasAnyCompletedMotherActivity, hasCompletedChildActivity, hasCompletedMotherActivity, isCompleted, motherHasAnyCompletedActivity, motherHasCompletedActivity, motherIsCheckedIn, motherOrAnyChildHasAnyCompletedActivity, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
@@ -40,7 +23,7 @@ import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (..)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
 import EverySet
-import Gizra.NominalDate exposing (NominalDate, diffCalendarMonths, diffDays)
+import Gizra.NominalDate exposing (NominalDate, diffDays, diffMonths)
 import LocalData
 import Maybe.Extra exposing (isJust, isNothing)
 
@@ -237,7 +220,7 @@ expectChildActivity currentDate offlineSession childId isChw activity =
                 |> Maybe.andThen .birthDate
                 |> Maybe.map
                     (\birthDate ->
-                        if diffCalendarMonths birthDate currentDate < 6 then
+                        if diffMonths birthDate currentDate < 6 then
                             False
 
                         else
@@ -629,7 +612,7 @@ activities may not be expected for this child).
 -}
 summarizeChildParticipant : NominalDate -> PersonId -> OfflineSession -> Bool -> CompletedAndPending (List ChildActivity)
 summarizeChildParticipant currentDate id session isChw =
-    getAllChildActivities
+    getAllChildActivities session
         |> List.filter (expectChildActivity currentDate session id isChw)
         |> List.partition (\activity -> childHasCompletedActivity id activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })

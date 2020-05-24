@@ -6,7 +6,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Person.Model exposing (Person, Ubudehe(..))
 import Backend.Person.Utils exposing (isAdult)
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate, compare, diffCalendarMonths)
+import Gizra.NominalDate exposing (NominalDate, compare, diffMonths)
 import Restful.Endpoint exposing (EntityUuid)
 
 
@@ -298,16 +298,16 @@ fbfAmountForPerson currentDate person =
 
                             else
                                 let
-                                    diffMonths =
-                                        diffCalendarMonths birthDate currentDate
+                                    diff =
+                                        diffMonths birthDate currentDate
                                 in
-                                if diffMonths > 5 && diffMonths < 9 then
+                                if diff > 5 && diff < 9 then
                                     Just 3
 
-                                else if diffMonths > 8 && diffMonths < 12 then
+                                else if diff > 8 && diff < 12 then
                                     Just 6
 
-                                else if diffMonths > 11 && diffMonths < 24 then
+                                else if diff > 11 && diff < 24 then
                                     Just 7.5
 
                                 else

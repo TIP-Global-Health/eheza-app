@@ -1,4 +1,4 @@
-module Pages.Utils exposing (filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, taskCompleted, taskListCompleted, viewBoolInput, viewCheckBoxMultipleSelectInput, viewCheckBoxSelectInput, viewCheckBoxSelectInputItem, viewCustomLabel, viewLabel, viewMeasurementInput, viewNameFilter, viewPhotoThumb, viewPhotoThumbFromPhotoUrl, viewQuestionLabel)
+module Pages.Utils exposing (backFromSessionPage, filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, taskCompleted, taskListCompleted, viewBoolInput, viewCheckBoxMultipleSelectInput, viewCheckBoxSelectInput, viewCheckBoxSelectInputItem, viewCustomLabel, viewLabel, viewMeasurementInput, viewNameFilter, viewPhotoThumb, viewPhotoThumbFromPhotoUrl, viewPreviousMeasurement, viewQuestionLabel)
 
 import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model exposing (PhotoUrl(..))
@@ -100,82 +100,6 @@ viewLabel language translationId =
 viewQuestionLabel : Language -> TranslationId -> Html any
 viewQuestionLabel language translationId =
     viewCustomLabel language translationId "?" "label"
-
-
-viewMeasurementInput : Language -> Maybe Float -> (String -> msg) -> String -> TranslationId -> Html msg
-viewMeasurementInput language maybeCurrentValue setMsg inputClass unitTranslationId =
-    let
-        currentValue =
-            maybeCurrentValue
-                |> Maybe.map Debug.toString
-                |> Maybe.withDefault ""
-
-        inputAttrs =
-            [ type_ "number"
-            , onInput setMsg
-            , value currentValue
-            ]
-    in
-    div [ class <| "form-input measurement " ++ inputClass ]
-        [ input inputAttrs []
-        , div [ class "unit" ]
-            [ text <| translate language unitTranslationId ]
-        ]
-
-
-viewCheckBoxSelectInput : Language -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> TranslationId) -> Html msg
-viewCheckBoxSelectInput language leftOptions rightOptions currentValue setMsg translateFunc =
-    let
-        checkedOptions =
-            currentValue |> Maybe.map List.singleton |> Maybe.withDefault []
-    in
-    viewCheckBoxMultipleSelectInput language leftOptions rightOptions checkedOptions Nothing setMsg translateFunc
-
-
-viewCheckBoxMultipleSelectInput : Language -> List a -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> TranslationId) -> Html msg
-viewCheckBoxMultipleSelectInput language leftOptions rightOptions checkedOptions noneOption setMsg translateFunc =
-    let
-        noneSection =
-            noneOption
-                |> unwrap
-                    []
-                    (\option ->
-                        [ div [ class "ui divider" ] []
-                        , viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc option
-                        ]
-                    )
-    in
-    div [ class "checkbox-select-input" ] <|
-        div [ class "ui grid" ]
-            [ leftOptions
-                |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc)
-                |> div [ class "eight wide column" ]
-            , rightOptions
-                |> List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc)
-                |> div [ class "eight wide column" ]
-            ]
-            :: noneSection
-
-
-viewCheckBoxSelectInputItem : Language -> List a -> (a -> msg) -> (a -> TranslationId) -> a -> Html msg
-viewCheckBoxSelectInputItem language checkedOptions setMsg translateFunc option =
-    let
-        isChecked =
-            List.member option checkedOptions
-    in
-    div
-        [ class "ui checkbox activity"
-        , onClick <| setMsg option
-        ]
-        [ input
-            [ type_ "checkbox"
-            , checked isChecked
-            , classList [ ( "checked", isChecked ) ]
-            ]
-            []
-        , label []
-            [ text <| translate language (translateFunc option) ]
-        ]
 
 
 viewCustomLabel : Language -> TranslationId -> String -> String -> Html any

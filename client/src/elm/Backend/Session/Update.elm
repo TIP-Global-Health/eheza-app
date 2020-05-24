@@ -257,6 +257,7 @@ update nurseId sessionId maybeSession currentDate db msg model =
                     in
                     ( { model | saveFbfRequest = Dict.insert childId Loading model.saveLactationRequest }
                     , cmd
+                    , []
                     )
 
         -- We're handling responses in order to pick up error conditions.
@@ -349,6 +350,7 @@ update nurseId sessionId maybeSession currentDate db msg model =
                     in
                     ( { model | saveLactationRequest = Dict.insert motherId Loading model.saveLactationRequest }
                     , cmd
+                    , []
                     )
 
                 SaveMotherFbf maybeId value ->
@@ -377,6 +379,7 @@ update nurseId sessionId maybeSession currentDate db msg model =
                     in
                     ( { model | saveFbfRequest = Dict.insert motherId Loading model.saveLactationRequest }
                     , cmd
+                    , []
                     )
 
                 SaveCompletedForm maybeId formId language ->
@@ -441,11 +444,13 @@ update nurseId sessionId maybeSession currentDate db msg model =
         HandleSaveLactation motherId data ->
             ( { model | saveLactationRequest = Dict.insert motherId data model.saveLactationRequest }
             , Cmd.none
+            , []
             )
 
         HandleSaveFbf personId data ->
             ( { model | saveFbfRequest = Dict.insert personId data model.saveFbfRequest }
             , Cmd.none
+            , []
             )
 
         HandleSaveHeight childId data ->

@@ -1,4 +1,4 @@
-module Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, endField, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate, startField)
+module Utils.NominalDate exposing (Days(..), Months(..), diffDays, endField, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate, startField)
 
 {-| An extra utility for elm-community/elm-time ... should integrate with
 Gizra.NominalDate.
@@ -41,12 +41,6 @@ diffDays low high =
     -- }
     Gizra.NominalDate.diffDays low high
         |> Days
-
-
-diffMonths : NominalDate -> NominalDate -> Months
-diffMonths low high =
-    Gizra.NominalDate.diffCalendarMonths low high
-        |> Months
 
 
 {-| Shows the difference between the first date (the birthdate)
