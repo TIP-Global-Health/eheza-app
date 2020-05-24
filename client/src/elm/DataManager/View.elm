@@ -102,8 +102,11 @@ viewGeneralEntity : BackendGeneralEntity -> Html msg
 viewGeneralEntity backendGeneralEntity =
     li []
         [ case backendGeneralEntity of
-            BackendGeneralHealthCenter _ _ healthCenter ->
-                text <| "Health Center (" ++ healthCenter.name ++ ")"
+            BackendGeneralCatchmentArea _ _ entity ->
+                text <| "Catchment area (" ++ entity.name ++ ")"
+
+            BackendGeneralHealthCenter _ _ entity ->
+                text <| "Health Center (" ++ entity.name ++ ")"
 
             BackendGeneralPerson _ _ entity ->
                 text <| "Person (" ++ entity.name ++ ")"

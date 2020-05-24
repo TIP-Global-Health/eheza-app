@@ -80,6 +80,10 @@ decodeBackendGeneralEntity =
         |> andThen
             (\( type_, uuid, vid ) ->
                 case type_ of
+                    "catchment_area" ->
+                        Backend.HealthCenter.Decoder.decodeCatchmentArea
+                            |> andThen (\entity -> succeed (BackendGeneralCatchmentArea uuid vid entity))
+
                     "health_center" ->
                         Backend.HealthCenter.Decoder.decodeHealthCenter
                             |> andThen (\entity -> succeed (BackendGeneralHealthCenter uuid vid entity))
