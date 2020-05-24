@@ -44,6 +44,9 @@ function hedley_migrate_migrate_api() {
       'batch_2019_05_3' => [
         'title' => t('Third batch data added 2019/05'),
       ],
+      'chw_deploy' => [
+        'title' => t('CHW deploy'),
+      ],
     ],
     'migrations' => [
       'HedleyMigrateClinics_2019_02' => [
@@ -167,6 +170,9 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateWeights' => [
         'class_name' => 'HedleyMigrateWeights',
       ],
+      'HedleyMigrateVillages' => [
+        'class_name' => 'HedleyMigrateVillages',
+      ],
       'HedleyMigrateMissingHeights' => [
         'class_name' => 'HedleyMigrateMissingHeights',
         'group_name' => 'missing',
@@ -194,6 +200,10 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateParticipantForms' => [
         'class_name' => 'HedleyMigrateParticipantForms',
         'group_name' => 'forms',
+      ],
+      'HedleyMigrateVillagesChwDeploy' => [
+        'class_name' => 'HedleyMigrateVillagesChwDeploy',
+        'group_name' => 'chw_deploy',
       ],
     ],
   ];
@@ -284,7 +294,7 @@ function hedley_migrate_generate_geo_terms_vocabulary() {
 
   // Load input file.
   $migrate_dir = variable_get('hedley_migrate_directory', FALSE) ? variable_get('hedley_migrate_directory') : drupal_get_path('module', 'hedley_migrate');
-  $source_file = $migrate_dir . '/csv/geo_fields.csv';
+  $source_file = $migrate_dir . '/csv/geo_locations.csv';
 
   $column_mapping = ['province', 'district', 'sector', 'cell', 'village'];
 

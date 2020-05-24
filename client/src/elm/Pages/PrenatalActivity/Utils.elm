@@ -1,4 +1,4 @@
-module Pages.PrenatalActivity.Utils exposing (breastExamFormWithDefault, calculateBmi, corePhysicalExamFormWithDefault, dangerSignsFormWithDefault, examinationTasksCompletedFromTotal, familyPlanningFormWithDefault, fromBreastExamValue, fromCorePhysicalExamValue, fromDangerSignsValue, fromFamilyPlanningValue, fromLastMenstrualPeriodValue, fromMedicalHistoryValue, fromMedicationValue, fromObstetricHistoryValue, fromObstetricalExamValue, fromPrenatalNutritionValue, fromResourceValue, fromSocialHistoryValue, fromVitalsValue, historyTasksCompletedFromTotal, ifEmpty, ifNullableTrue, ifTrue, isTaskCompleted, lastMenstrualPeriodFormWithDefault, medicalHistoryFormWithDefault, medicationFormWithDefault, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, patientProvisionsTasksCompletedFromTotal, prenatalNutritionFormWithDefault, resourceFormWithDefault, socialHistoryFormWithDefault, toBreastExamValue, toBreastExamValueWithDefault, toCorePhysicalExamValue, toCorePhysicalExamValueWithDefault, toDangerSignsValue, toDangerSignsValueWithDefault, toEverySet, toFamilyPlanningValue, toFamilyPlanningValueWithDefault, toLastMenstrualPeriodValue, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValue, toMedicalHistoryValueWithDefault, toMedicationValue, toMedicationValueWithDefault, toObstetricHistoryStep2Value, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValue, toObstetricalExamValueWithDefault, toPrenatalNutritionValue, toPrenatalNutritionValueWithDefault, toResourceValue, toResourceValueWithDefault, toSocialHistoryValue, toSocialHistoryValueWithDefault, toVitalsValue, toVitalsValueWithDefault, vitalsFormWithDefault)
+module Pages.PrenatalActivity.Utils exposing (breastExamFormWithDefault, calculateBmi, corePhysicalExamFormWithDefault, dangerSignsFormWithDefault, examinationTasksCompletedFromTotal, familyPlanningFormWithDefault, fromBreastExamValue, fromCorePhysicalExamValue, fromDangerSignsValue, fromFamilyPlanningValue, fromLastMenstrualPeriodValue, fromMedicalHistoryValue, fromMedicationValue, fromObstetricHistoryValue, fromObstetricalExamValue, fromPrenatalNutritionValue, fromResourceValue, fromSocialHistoryValue, fromVitalsValue, historyTasksCompletedFromTotal, ifEmpty, ifNullableTrue, ifTrue, isTaskCompleted, lastMenstrualPeriodFormWithDefault, medicalHistoryFormWithDefault, medicationFormWithDefault, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, patientProvisionsTasksCompletedFromTotal, prenatalNutritionFormWithDefault, resolvePreviousValue, resourceFormWithDefault, socialHistoryFormWithDefault, toBreastExamValue, toBreastExamValueWithDefault, toCorePhysicalExamValue, toCorePhysicalExamValueWithDefault, toDangerSignsValue, toDangerSignsValueWithDefault, toEverySet, toFamilyPlanningValue, toFamilyPlanningValueWithDefault, toLastMenstrualPeriodValue, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValue, toMedicalHistoryValueWithDefault, toMedicationValue, toMedicationValueWithDefault, toObstetricHistoryStep2Value, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValue, toObstetricalExamValueWithDefault, toPrenatalNutritionValue, toPrenatalNutritionValueWithDefault, toResourceValue, toResourceValueWithDefault, toSocialHistoryValue, toSocialHistoryValueWithDefault, toVitalsValue, toVitalsValueWithDefault, vitalsFormWithDefault)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
@@ -45,6 +45,18 @@ ifEmpty value set =
 
     else
         set
+
+
+resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
+resolvePreviousValue assembled measurementFunc valueFunc =
+    assembled.previousMeasurementsWithDates
+        |> List.filterMap
+            (\( _, measurements ) ->
+                measurementFunc measurements
+                    |> Maybe.map (Tuple.second >> .value >> valueFunc)
+            )
+        |> List.reverse
+        |> List.head
 
 
 fromBreastExamValue : Maybe BreastExamValue -> BreastExamForm

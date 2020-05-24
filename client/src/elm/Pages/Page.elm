@@ -44,6 +44,7 @@ import Activity.Model exposing (Activity(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
 import Backend.Person.Model exposing (RegistrationInitiator)
+import NutritionActivity.Model exposing (NutritionActivity(..))
 import PrenatalActivity.Model exposing (PrenatalActivity(..))
 
 
@@ -143,6 +144,10 @@ type UserPage
     | PrenatalActivityPage PrenatalEncounterId PrenatalActivity -- record prenatal activity
     | IndividualEncounterTypesPage -- this is where we select the type of encounter we're interested in.
     | PregnancyOutcomePage IndividualEncounterParticipantId -- this is where pregnancy outcome is recorded.
+    | NutritionParticipantPage PersonId
+    | NutritionEncounterPage NutritionEncounterId -- nutrition activities index
+    | NutritionActivityPage NutritionEncounterId NutritionActivity -- record nutrition activity
+    | NutritionProgressReportPage NutritionEncounterId
 
 
 {-| We group together the pages that can only be viewed with an EditableSession ... it

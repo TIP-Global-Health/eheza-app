@@ -1,5 +1,6 @@
 module Backend.Measurement.Model exposing (AbdomenCPESign(..), Attendance, BreastExam, BreastExamSign(..), BreastExamValue, CSectionReason(..), CSectionScar(..), ChildMeasurementList, ChildMeasurements, ChildNutrition, ChildNutritionSign(..), CorePhysicalExam, CorePhysicalExamValue, CounselingSession, DangerSign(..), DangerSigns, DistributionNotice(..), EyesCPESign(..), FamilyPlanning, FamilyPlanningSign(..), Fbf, FbfForm, FbfValue, FetalPresentation(..), GroupMeasurement, HairHeadCPESign(..), HandsCPESign(..), HeartCPESign(..), Height, HeightInCm(..), HistoricalMeasurements, Lactation, LactationForm, LactationSign(..), LastMenstrualPeriod, LastMenstrualPeriodValue, LegsCPESign(..), LungsCPESign(..), Measurement, MeasurementData, Measurements, MedicalHistory, MedicalHistorySign(..), Medication, MedicationSign(..), MotherMeasurementList, MotherMeasurements, Muac, MuacInCm(..), MuacIndication(..), NeckCPESign(..), ObstetricHistory, ObstetricHistorySign(..), ObstetricHistoryStep2, ObstetricHistoryStep2Value, ObstetricHistoryValue, ObstetricalExam, ObstetricalExamValue, ParticipantConsent, ParticipantConsentValue, Photo, PhotoUrl(..), PrenatalFamilyPlanning, PrenatalMeasurement, PrenatalMeasurements, PrenatalNutrition, PrenatalNutritionValue, PrenatalPhoto, PreviousDeliveryPeriod(..), PreviousDeliverySign(..), Resource, ResourceSign(..), SocialHistory, SocialHistoryHivTestingResult(..), SocialHistorySign(..), SocialHistoryValue, Vitals, VitalsValue, Weight, WeightInKg(..), emptyChildMeasurementList, emptyChildMeasurements, emptyHistoricalMeasurements, emptyMeasurements, emptyMotherMeasurementList, emptyMotherMeasurements)
 
+
 {-| This module represents various measurements to be stored on the backend,
 and cached in local storage.
 -}
@@ -37,6 +38,10 @@ type alias Measurement encounter value =
 
 type alias GroupMeasurement value =
     Measurement SessionId value
+
+
+type alias NutritionMeasurement value =
+    Measurement NutritionEncounterId value
 
 
 type alias PrenatalMeasurement value =
@@ -182,6 +187,30 @@ type alias ChildNutrition =
 
 type alias CounselingSession =
     GroupMeasurement ( CounselingTiming, EverySet CounselingTopicId )
+
+
+
+-- NUTRITION MEASUREMENTS
+
+
+type alias NutritionMuac =
+    NutritionMeasurement MuacInCm
+
+
+type alias NutritionHeight =
+    NutritionMeasurement HeightInCm
+
+
+type alias NutritionNutrition =
+    NutritionMeasurement (EverySet ChildNutritionSign)
+
+
+type alias NutritionPhoto =
+    NutritionMeasurement PhotoUrl
+
+
+type alias NutritionWeight =
+    NutritionMeasurement WeightInKg
 
 
 
@@ -577,6 +606,18 @@ type alias PrenatalMeasurements =
     }
 
 
+{-| A set of Nutrition measurements that correspond to the same Nutrition
+encounter.
+-}
+type alias NutritionMeasurements =
+    { muac : Maybe ( NutritionMuacId, NutritionMuac )
+    , height : Maybe ( NutritionHeightId, NutritionHeight )
+    , nutrition : Maybe ( NutritionNutritionId, NutritionNutrition )
+    , photo : Maybe ( NutritionPhotoId, NutritionPhoto )
+    , weight : Maybe ( NutritionWeightId, NutritionWeight )
+    }
+
+
 {-| This is like `ChildMeasurementList`, except that it just covers one
 of each kind of measurements (rather than a list of each kind).
 
@@ -661,4 +702,11 @@ type alias MeasurementData data =
     { previous : data
     , current : data
     , update : WebData ()
+    }
+
+
+type alias PreviousMeasurementsValue =
+    { height : Maybe ( NominalDate, HeightInCm )
+    , muac : Maybe ( NominalDate, MuacInCm )
+    , weight : Maybe ( NominalDate, WeightInKg )
     }

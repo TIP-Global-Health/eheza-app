@@ -226,9 +226,12 @@ getAllMotherActivities offlineSession =
 Note that we don't consider whether the child is checked in here -- just
 whether we would expect to perform this action if checked in.
 -}
-expectChildActivity : NominalDate -> OfflineSession -> PersonId -> ChildActivity -> Bool
-expectChildActivity currentDate offlineSession childId activity =
+expectChildActivity : NominalDate -> OfflineSession -> PersonId -> Bool -> ChildActivity -> Bool
+expectChildActivity currentDate offlineSession childId isChw activity =
     case activity of
+        Height ->
+            isChw |> not
+
         Muac ->
             Dict.get childId offlineSession.children
                 |> Maybe.andThen .birthDate
@@ -562,10 +565,10 @@ the activity and have the activity pending. (This may not add up to all the
 children, because we only consider a child "pending" if they are checked in and
 the activity is expected.
 -}
-summarizeChildActivity : NominalDate -> ChildActivity -> OfflineSession -> CheckedIn -> CompletedAndPending (Dict PersonId Person)
-summarizeChildActivity currentDate activity session checkedIn =
+summarizeChildActivity : NominalDate -> ChildActivity -> OfflineSession -> Bool -> CheckedIn -> CompletedAndPending (Dict PersonId Person)
+summarizeChildActivity currentDate activity session isChw checkedIn =
     checkedIn.children
-        |> Dict.filter (\childId _ -> expectChildActivity currentDate session childId activity)
+        |> Dict.filter (\childId _ -> expectChildActivity currentDate session childId isChw activity)
         |> Dict.partition (\childId _ -> childHasCompletedActivity childId activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
@@ -575,8 +578,8 @@ the activity and have the activity pending. (This may not add up to all the
 mothers, because we only consider a mother "pending" if they are checked in and
 the activity is expected.
 -}
-summarizeMotherActivity : NominalDate -> MotherActivity -> OfflineSession -> CheckedIn -> CompletedAndPending (Dict PersonId Person)
-summarizeMotherActivity currentDate activity session checkedIn =
+summarizeMotherActivity : NominalDate -> MotherActivity -> OfflineSession -> Bool -> CheckedIn -> CompletedAndPending (Dict PersonId Person)
+summarizeMotherActivity currentDate activity session isChw checkedIn =
     -- For participant consent, we only consider the activity to be completed once
     -- all expected consents have been saved.
     checkedIn.mothers
@@ -624,10 +627,10 @@ getParticipantCountForActivity summary activity =
 and which are pending. (This may not add up to all the activities, because some
 activities may not be expected for this child).
 -}
-summarizeChildParticipant : NominalDate -> PersonId -> OfflineSession -> CompletedAndPending (List ChildActivity)
-summarizeChildParticipant currentDate id session =
-    getAllChildActivities session
-        |> List.filter (expectChildActivity currentDate session id)
+summarizeChildParticipant : NominalDate -> PersonId -> OfflineSession -> Bool -> CompletedAndPending (List ChildActivity)
+summarizeChildParticipant currentDate id session isChw =
+    getAllChildActivities
+        |> List.filter (expectChildActivity currentDate session id isChw)
         |> List.partition (\activity -> childHasCompletedActivity id activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
@@ -636,8 +639,8 @@ summarizeChildParticipant currentDate id session =
 and which are pending. (This may not add up to all the activities, because some
 activities may not be expected for this mother).
 -}
-summarizeMotherParticipant : NominalDate -> PersonId -> OfflineSession -> CompletedAndPending (List MotherActivity)
-summarizeMotherParticipant currentDate id session =
+summarizeMotherParticipant : NominalDate -> PersonId -> OfflineSession -> Bool -> CompletedAndPending (List MotherActivity)
+summarizeMotherParticipant currentDate id session isChw =
     getAllMotherActivities session
         |> List.filter (expectMotherActivity session id)
         |> List.partition (\activity -> motherHasCompletedActivity id activity session)

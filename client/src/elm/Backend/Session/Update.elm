@@ -5,6 +5,8 @@ import AssocList as Dict
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Encoder exposing (..)
+import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.NutritionEncounter.Fetch
 import Backend.Session.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
 import Json.Encode exposing (object)
@@ -15,8 +17,8 @@ import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (applyBackendUrl, encodeEntityUuid, toCmd, withoutDecoder)
 
 
-update : Maybe NurseId -> SessionId -> Maybe Session -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg )
-update nurseId sessionId maybeSession currentDate msg model =
+update : Maybe NurseId -> SessionId -> Maybe Session -> NominalDate -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List MsgIndexedDb )
+update nurseId sessionId maybeSession currentDate db msg model =
     let
         sw =
             applyBackendUrl "/sw"
@@ -24,7 +26,7 @@ update nurseId sessionId maybeSession currentDate msg model =
     case msg of
         CloseSession ->
             unwrap
-                ( model, Cmd.none )
+                ( model, Cmd.none, [] )
                 (\session ->
                     ( { model | closeSessionRequest = Loading }
                     , object
@@ -38,6 +40,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                         |> sw.patchAny sessionEndpoint sessionId
                         |> withoutDecoder
                         |> toCmd (RemoteData.fromResult >> HandleClosedSession)
+                    , []
                     )
                 )
                 maybeSession
@@ -45,10 +48,14 @@ update nurseId sessionId maybeSession currentDate msg model =
         HandleClosedSession data ->
             ( { model | closeSessionRequest = data }
             , Cmd.none
+            , []
             )
 
         MeasurementOutMsgChild childId subMsg ->
             case subMsg of
+                FetchIndividualNutritionData id ->
+                    ( model, Cmd.none, Backend.NutritionEncounter.Fetch.fetchForChild id db )
+
                 SaveHeight maybeId height ->
                     let
                         cmd =
@@ -75,6 +82,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                     in
                     ( { model | saveHeightRequest = Dict.insert childId Loading model.saveHeightRequest }
                     , cmd
+                    , []
                     )
 
                 SaveWeight maybeId weight ->
@@ -103,6 +111,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                     in
                     ( { model | saveWeightRequest = Dict.insert childId Loading model.saveWeightRequest }
                     , cmd
+                    , []
                     )
 
                 SaveMuac maybeId muac ->
@@ -131,6 +140,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                     in
                     ( { model | saveMuacRequest = Dict.insert childId Loading model.saveMuacRequest }
                     , cmd
+                    , []
                     )
 
                 SaveCounselingSession maybeId timing topics ->
@@ -160,6 +170,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                     in
                     ( { model | saveCounselingSessionRequest = Dict.insert childId Loading model.saveCounselingSessionRequest }
                     , cmd
+                    , []
                     )
 
                 SaveChildNutritionSigns maybeId signs ->
@@ -188,6 +199,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                     in
                     ( { model | saveNutritionRequest = Dict.insert childId Loading model.saveNutritionRequest }
                     , cmd
+                    , []
                     )
 
                 SavePhoto maybeId photo ->
@@ -216,6 +228,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                     in
                     ( { model | savePhotoRequest = Dict.insert childId Loading model.savePhotoRequest }
                     , cmd
+                    , []
                     )
 
                 SaveChildFbf maybeId value ->
@@ -278,6 +291,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                     in
                     ( { model | saveAttendanceRequest = Dict.insert motherId Loading model.saveAttendanceRequest }
                     , cmd
+                    , []
                     )
 
                 SaveFamilyPlanningSigns maybeId signs ->
@@ -306,6 +320,7 @@ update nurseId sessionId maybeSession currentDate msg model =
                     in
                     ( { model | saveFamilyPlanningRequest = Dict.insert motherId Loading model.saveFamilyPlanningRequest }
                     , cmd
+                    , []
                     )
 
                 SaveLactation maybeId signs ->
@@ -396,26 +411,31 @@ update nurseId sessionId maybeSession currentDate msg model =
                     in
                     ( { model | saveParticipantConsentRequest = Dict.insert motherId Loading model.saveParticipantConsentRequest }
                     , cmd
+                    , []
                     )
 
         HandleSaveAttendance motherId data ->
             ( { model | saveAttendanceRequest = Dict.insert motherId data model.saveAttendanceRequest }
             , Cmd.none
+            , []
             )
 
         HandleSaveCounselingSession childId data ->
             ( { model | saveCounselingSessionRequest = Dict.insert childId data model.saveCounselingSessionRequest }
             , Cmd.none
+            , []
             )
 
         HandleSaveParticipantConsent motherId data ->
             ( { model | saveParticipantConsentRequest = Dict.insert motherId data model.saveParticipantConsentRequest }
             , Cmd.none
+            , []
             )
 
         HandleSaveFamilyPlanning motherId data ->
             ( { model | saveFamilyPlanningRequest = Dict.insert motherId data model.saveFamilyPlanningRequest }
             , Cmd.none
+            , []
             )
 
         HandleSaveLactation motherId data ->
@@ -431,24 +451,29 @@ update nurseId sessionId maybeSession currentDate msg model =
         HandleSaveHeight childId data ->
             ( { model | saveHeightRequest = Dict.insert childId data model.saveHeightRequest }
             , bindDropZone ()
+            , []
             )
 
         HandleSaveWeight childId data ->
             ( { model | saveWeightRequest = Dict.insert childId data model.saveWeightRequest }
             , bindDropZone ()
+            , []
             )
 
         HandleSaveMuac childId data ->
             ( { model | saveMuacRequest = Dict.insert childId data model.saveMuacRequest }
             , bindDropZone ()
+            , []
             )
 
         HandleSavePhoto childId data ->
             ( { model | savePhotoRequest = Dict.insert childId data model.savePhotoRequest }
             , bindDropZone ()
+            , []
             )
 
         HandleSaveNutrition childId data ->
             ( { model | saveNutritionRequest = Dict.insert childId data model.saveNutritionRequest }
             , bindDropZone ()
+            , []
             )

@@ -1,4 +1,4 @@
-module Utils.NominalDate exposing (Days(..), Months(..), compareDates, diffDays, diffMonths, endField, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate, startField)
+module Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, endField, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate, startField)
 
 {-| An extra utility for elm-community/elm-time ... should integrate with
 Gizra.NominalDate.
@@ -212,19 +212,3 @@ startField =
 endField : String
 endField =
     "end"
-
-
-compareDates : NominalDate -> NominalDate -> Order
-compareDates date1 date2 =
-    let
-        diff =
-            Gizra.NominalDate.diffDays date1 date2
-    in
-    if diff < 0 then
-        GT
-
-    else if diff == 0 then
-        EQ
-
-    else
-        LT

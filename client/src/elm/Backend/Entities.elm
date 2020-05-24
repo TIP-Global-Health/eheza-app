@@ -399,9 +399,65 @@ type SessionUuidType
     = SessionUuidType
 
 
+type alias VillageId =
+    EntityUuid VillageUuidType
+
+
+type VillageUuidType
+    = VillageUuidType
+
+
 type alias WeightId =
     EntityUuid WeightUuidType
 
 
 type WeightUuidType
     = WeightUuidType
+
+
+type alias NutritionEncounterId =
+    EntityUuid NutritionEncounterUuidType
+
+
+type NutritionEncounterUuidType
+    = NutritionEncounterUuidType
+
+
+type alias NutritionMuacId =
+    EntityUuid NutritionMuacUuidType
+
+
+type NutritionMuacUuidType
+    = NutritionMuacUuidType
+
+
+type alias NutritionHeightId =
+    EntityUuid NutritionHeightUuidType
+
+
+type NutritionHeightUuidType
+    = NutritionHeightUuidType
+
+
+type alias NutritionNutritionId =
+    EntityUuid NutritionNutritionUuidType
+
+
+type NutritionNutritionUuidType
+    = NutritionNutritionUuidType
+
+
+type alias NutritionPhotoId =
+    EntityUuid NutritionPhotoUuidType
+
+
+type NutritionPhotoUuidType
+    = NutritionPhotoUuidType
+
+
+type alias NutritionWeightId =
+    EntityUuid NutritionWeightUuidType
+
+
+type NutritionWeightUuidType
+    = NutritionWeightUuidType

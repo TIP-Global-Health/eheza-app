@@ -18,6 +18,11 @@ decodeGroupMeasurement =
     decodeMeasurement "session"
 
 
+decodeNutritionMeasurement : Decoder value -> Decoder (Measurement NutritionEncounterId value)
+decodeNutritionMeasurement =
+    decodeMeasurement "nutrition_encounter"
+
+
 decodePrenatalMeasurement : Decoder value -> Decoder (Measurement PrenatalEncounterId value)
 decodePrenatalMeasurement =
     decodeMeasurement "prenatal_encounter"
@@ -65,10 +70,6 @@ decodeChildMeasurementList =
 
 decodePrenatalMeasurements : Decoder PrenatalMeasurements
 decodePrenatalMeasurements =
-    let
-        decodeHead =
-            map List.head << list << decodeWithEntityUuid
-    in
     succeed PrenatalMeasurements
         |> optional "breast_exam" (decodeHead decodeBreastExam) Nothing
         |> optional "core_physical_exam" (decodeHead decodeCorePhysicalExam) Nothing
@@ -85,6 +86,21 @@ decodePrenatalMeasurements =
         |> optional "social_history" (decodeHead decodeSocialHistory) Nothing
         |> optional "vitals" (decodeHead decodeVitals) Nothing
         |> optional "prenatal_photo" (decodeHead decodePrenatalPhoto) Nothing
+
+
+decodeNutritionMeasurements : Decoder NutritionMeasurements
+decodeNutritionMeasurements =
+    succeed NutritionMeasurements
+        |> optional "nutrition_muac" (decodeHead decodeNutritionMuac) Nothing
+        |> optional "nutrition_height" (decodeHead decodeNutritionHeight) Nothing
+        |> optional "nutrition_nutrition" (decodeHead decodeNutritionNutrition) Nothing
+        |> optional "nutrition_photo" (decodeHead decodeNutritionPhoto) Nothing
+        |> optional "nutrition_weight" (decodeHead decodeNutritionWeight) Nothing
+
+
+decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
+decodeHead =
+    map List.head << list << decodeWithEntityUuid
 
 
 decodePhoto : Decoder Photo
@@ -971,3 +987,38 @@ decodeObstetricHistoryStep2 =
         |> required "previous_delivery_period" (decodeEverySet decodePreviousDeliveryPeriod)
         |> required "obstetric_history" (decodeEverySet decodeObstetricHistorySign)
         |> decodePrenatalMeasurement
+
+
+decodeNutritionMuac : Decoder NutritionMuac
+decodeNutritionMuac =
+    field "muac" decodeFloat
+        |> map MuacInCm
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionHeight : Decoder NutritionHeight
+decodeNutritionHeight =
+    field "height" decodeFloat
+        |> map HeightInCm
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionNutrition : Decoder NutritionNutrition
+decodeNutritionNutrition =
+    decodeEverySet decodeChildNutritionSign
+        |> field "nutrition_signs"
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionPhoto : Decoder NutritionPhoto
+decodeNutritionPhoto =
+    field "photo" string
+        |> map PhotoUrl
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionWeight : Decoder NutritionWeight
+decodeNutritionWeight =
+    field "weight" decodeFloat
+        |> map WeightInKg
+        |> decodeNutritionMeasurement

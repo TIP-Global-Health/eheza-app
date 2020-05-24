@@ -1,4 +1,4 @@
-module Measurement.View exposing (viewChild, viewMother, viewMuacIndication)
+module Measurement.View exposing (viewChild, viewMeasurementFloatDiff, viewMother, viewMuacIndication, zScoreForHeightOrLength)
 
 {-| This module provides a form for entering measurements.
 -}
@@ -39,8 +39,19 @@ import ZScore.Utils exposing (viewZScore, zScoreLengthHeightForAge, zScoreWeight
 {-| We need the current date in order to immediately construct a ZScore for the
 child when we enter something.
 -}
-viewChild : Language -> NominalDate -> Person -> ChildActivity -> MeasurementData ChildMeasurements -> ZScore.Model.Model -> EditableSession -> ModelChild -> Html MsgChild
-viewChild language currentDate child activity measurements zscores session model =
+viewChild :
+    Language
+    -> NominalDate
+    -> Bool
+    -> Person
+    -> ChildActivity
+    -> MeasurementData ChildMeasurements
+    -> ZScore.Model.Model
+    -> EditableSession
+    -> ModelChild
+    -> PreviousMeasurementsValue
+    -> Html MsgChild
+viewChild language currentDate isChw child activity measurements zscores session model previousIndividualMeasurements =
     case activity of
         ChildFbf ->
             viewChildFbf language currentDate child (mapMeasurementData .fbf measurements) model.fbfForm
@@ -49,10 +60,20 @@ viewChild language currentDate child activity measurements zscores session model
             viewPhoto language (mapMeasurementData .photo measurements) model.photo
 
         Height ->
-            viewHeight language currentDate child (mapMeasurementData .height measurements) zscores model
+            let
+                previousIndividualHeight =
+                    previousIndividualMeasurements.height
+                        |> Maybe.map (\( date, HeightInCm val ) -> ( date, val ))
+            in
+            viewHeight language currentDate isChw child (mapMeasurementData .height measurements) previousIndividualHeight zscores model
 
         Muac ->
-            viewMuac language currentDate child (mapMeasurementData .muac measurements) zscores model
+            let
+                previousIndividualMuac =
+                    previousIndividualMeasurements.muac
+                        |> Maybe.map (\( date, MuacInCm val ) -> ( date, val ))
+            in
+            viewMuac language currentDate isChw child (mapMeasurementData .muac measurements) previousIndividualMuac zscores model
 
         NutritionSigns ->
             viewNutritionSigns language (mapMeasurementData .nutrition measurements) model.nutritionSigns
@@ -60,7 +81,12 @@ viewChild language currentDate child activity measurements zscores session model
         -- Counseling ->
         --    viewCounselingSession language (mapMeasurementData .counselingSession measurements) session model.counseling
         Weight ->
-            viewWeight language currentDate child (mapMeasurementData .weight measurements) zscores model
+            let
+                previousIndividualWeight =
+                    previousIndividualMeasurements.weight
+                        |> Maybe.map (\( date, WeightInKg val ) -> ( date, val ))
+            in
+            viewWeight language currentDate isChw child (mapMeasurementData .weight measurements) previousIndividualWeight zscores model
 
 
 {-| Some configuration for the `viewFloatForm` function, which handles several
@@ -150,23 +176,23 @@ zScoreForHeightOrLength model (Days days) (Centimetres cm) gender weight =
         zScoreWeightForHeight model (ZScore.Model.Height cm) gender (Kilograms weight)
 
 
-viewHeight : Language -> NominalDate -> Person -> MeasurementData (Maybe ( HeightId, Height )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewHeight : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( HeightId, Height )) -> Maybe ( NominalDate, Float ) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewHeight =
     viewFloatForm heightFormConfig
 
 
-viewWeight : Language -> NominalDate -> Person -> MeasurementData (Maybe ( WeightId, Weight )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewWeight : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( WeightId, Weight )) -> Maybe ( NominalDate, Float ) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewWeight =
     viewFloatForm weightFormConfig
 
 
-viewMuac : Language -> NominalDate -> Person -> MeasurementData (Maybe ( MuacId, Muac )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewMuac : Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( MuacId, Muac )) -> Maybe ( NominalDate, Float ) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
 viewMuac =
     viewFloatForm muacFormConfig
 
 
-viewFloatForm : FloatFormConfig id value -> Language -> NominalDate -> Person -> MeasurementData (Maybe ( id, value )) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
-viewFloatForm config language currentDate child measurements zscores model =
+viewFloatForm : FloatFormConfig id value -> Language -> NominalDate -> Bool -> Person -> MeasurementData (Maybe ( id, value )) -> Maybe ( NominalDate, Float ) -> ZScore.Model.Model -> ModelChild -> Html MsgChild
+viewFloatForm config language currentDate isChw child measurements previousIndividualValue zscores model =
     let
         -- What is the string input value from the form?
         inputValue =
@@ -199,10 +225,17 @@ viewFloatForm config language currentDate child measurements zscores model =
         savedMeasurement =
             measurements.current
 
-        -- What measurement should we be comparing to? That is, what's the most
-        -- recent measurement of this kind that we're **not** editing?
-        previousMeasurement =
+        previousGroupValue =
             measurements.previous
+                |> Maybe.map
+                    (\( _, measurement ) ->
+                        ( measurement |> config.dateMeasured
+                        , measurement |> config.storedValue
+                        )
+                    )
+
+        previousValue =
+            resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
 
         -- For calculating ZScores, we need to know how old the child was at
         -- the time of the **measurement**. If we have an existing value that
@@ -255,43 +288,47 @@ viewFloatForm config language currentDate child measurements zscores model =
         -- In some cases (weight) we also calculate a ZScore based on the
         -- height (rather than age). In order to do that, we need both the height and the weight.
         renderedZScoreForHeight =
-            config.zScoreForHeightOrLength
-                |> Maybe.map
-                    (\func ->
-                        let
-                            -- We get the height from the model, so we'll use
-                            -- the height only if it has been entered in this
-                            -- session. (The previous height will have been at
-                            -- a previous date). So, I suppose we should ask
-                            -- the nurse to measure height before weight, so we
-                            -- can see the ZScore when entering the weight.
-                            zScoreText =
-                                model.height
-                                    |> String.toFloat
-                                    |> Maybe.andThen
-                                        (\height ->
-                                            Maybe.andThen
-                                                (\weight ->
-                                                    Maybe.andThen
-                                                        (\ageInDays ->
-                                                            func zscores ageInDays (Centimetres height) child.gender weight
-                                                        )
-                                                        maybeAgeInDays
-                                                )
-                                                floatValue
-                                        )
-                                    |> Maybe.map viewZScore
-                                    |> Maybe.withDefault (translate language Trans.NotAvailable)
-                        in
-                        div
-                            [ class "ui large header z-score height" ]
-                            [ text <| translate language Trans.ZScoreWeightForHeight
-                            , span
-                                [ class "sub header" ]
-                                [ text zScoreText
+            if isChw then
+                Nothing
+
+            else
+                config.zScoreForHeightOrLength
+                    |> Maybe.map
+                        (\func ->
+                            let
+                                -- We get the height from the model, so we'll use
+                                -- the height only if it has been entered in this
+                                -- session. (The previous height will have been at
+                                -- a previous date). So, I suppose we should ask
+                                -- the nurse to measure height before weight, so we
+                                -- can see the ZScore when entering the weight.
+                                zScoreText =
+                                    model.height
+                                        |> String.toFloat
+                                        |> Maybe.andThen
+                                            (\height ->
+                                                Maybe.andThen
+                                                    (\weight ->
+                                                        Maybe.andThen
+                                                            (\ageInDays ->
+                                                                func zscores ageInDays (Centimetres height) child.gender weight
+                                                            )
+                                                            maybeAgeInDays
+                                                    )
+                                                    floatValue
+                                            )
+                                        |> Maybe.map viewZScore
+                                        |> Maybe.withDefault (translate language Trans.NotAvailable)
+                            in
+                            div
+                                [ class "ui large header z-score height" ]
+                                [ text <| translate language Trans.ZScoreWeightForHeight
+                                , span
+                                    [ class "sub header" ]
+                                    [ text zScoreText
+                                    ]
                                 ]
-                            ]
-                    )
+                        )
     in
     div
         [ class <| "ui full segment " ++ config.blockName ]
@@ -319,7 +356,7 @@ viewFloatForm config language currentDate child measurements zscores model =
                         [ class "five wide column" ]
                         [ showMaybe <|
                             Maybe.map2 (viewFloatDiff config language)
-                                (Maybe.map Tuple.second measurements.previous)
+                                previousValue
                                 floatValue
                         , showMaybe <|
                             Maybe.map2 (\func value -> func language value)
@@ -327,8 +364,8 @@ viewFloatForm config language currentDate child measurements zscores model =
                                 floatValue
                         ]
                     ]
-                , previousMeasurement
-                    |> Maybe.map (Tuple.second >> viewPreviousMeasurement config language)
+                , previousValue
+                    |> Maybe.map (viewPreviousMeasurement config language)
                     |> showMaybe
                 ]
             , showMaybe renderedZScoreForAge
@@ -368,10 +405,9 @@ viewMuacIndication language muac =
         ]
 
 
-viewPreviousMeasurement : FloatFormConfig id value -> Language -> value -> Html any
+viewPreviousMeasurement : FloatFormConfig id value -> Language -> Float -> Html any
 viewPreviousMeasurement config language previousValue =
     [ previousValue
-        |> config.storedValue
         |> Trans.PreviousFloatMeasurement
         |> translate language
     , " "
@@ -383,15 +419,17 @@ viewPreviousMeasurement config language previousValue =
 
 {-| Show a diff of values, if they were gained or lost.
 -}
-viewFloatDiff : FloatFormConfig id value -> Language -> value -> Float -> Html any
+viewFloatDiff : FloatFormConfig id value -> Language -> Float -> Float -> Html any
 viewFloatDiff config language previousValue currentValue =
-    let
-        previousFloatValue =
-            config.storedValue previousValue
+    viewMeasurementFloatDiff language config.unit currentValue previousValue
 
+
+viewMeasurementFloatDiff : Language -> TranslationId -> Float -> Float -> Html any
+viewMeasurementFloatDiff language unit currentValue previousValue =
+    let
         diff =
             Round.round 2 <|
-                abs (currentValue - previousFloatValue)
+                abs (currentValue - previousValue)
 
         viewMessage isGain =
             let
@@ -405,14 +443,14 @@ viewFloatDiff config language previousValue currentValue =
             p
                 [ class <| "label-with-icon label-form" ]
                 [ span [ class <| "icon-" ++ classSuffix ] []
-                , text <| diff ++ " " ++ translate language config.unit
+                , text <| diff ++ " " ++ translate language unit
                 ]
     in
-    if currentValue == previousFloatValue then
+    if currentValue == previousValue then
         -- No change in the values.
         emptyNode
 
-    else if currentValue > previousFloatValue then
+    else if currentValue > previousValue then
         viewMessage True
 
     else

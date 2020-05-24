@@ -24,6 +24,11 @@ encodeHeight =
     encodeGroupMeasurement encodeHeightValue
 
 
+encodeNutritionHeight : NutritionHeight -> List ( String, Value )
+encodeNutritionHeight =
+    encodeNutritionMeasurement encodeHeightValue
+
+
 encodeHeightValue : HeightInCm -> List ( String, Value )
 encodeHeightValue (HeightInCm height) =
     [ ( "height", float height ) ]
@@ -32,6 +37,11 @@ encodeHeightValue (HeightInCm height) =
 encodeMuac : Muac -> List ( String, Value )
 encodeMuac =
     encodeGroupMeasurement encodeMuacValue
+
+
+encodeNutritionMuac : NutritionMuac -> List ( String, Value )
+encodeNutritionMuac =
+    encodeNutritionMeasurement encodeMuacValue
 
 
 encodeMuacValue : MuacInCm -> List ( String, Value )
@@ -44,6 +54,11 @@ encodeWeight =
     encodeGroupMeasurement encodeWeightValue
 
 
+encodeNutritionWeight : NutritionWeight -> List ( String, Value )
+encodeNutritionWeight =
+    encodeNutritionMeasurement encodeWeightValue
+
+
 encodeWeightValue : WeightInKg -> List ( String, Value )
 encodeWeightValue (WeightInKg weight) =
     [ ( "weight", float weight ) ]
@@ -52,6 +67,11 @@ encodeWeightValue (WeightInKg weight) =
 encodePhoto : Photo -> List ( String, Value )
 encodePhoto =
     encodeGroupMeasurement encodePhotoUrl
+
+
+encodeNutritionPhoto : NutritionPhoto -> List ( String, Value )
+encodeNutritionPhoto =
+    encodeNutritionMeasurement encodePhotoUrl
 
 
 encodePrenatalPhoto : PrenatalPhoto -> List ( String, Value )
@@ -75,6 +95,11 @@ encodeNutritionValue nutritions =
       , encodeEverySet encodeNutritionSign nutritions
       )
     ]
+
+
+encodeNutritionNutrition : NutritionNutrition -> List ( String, Value )
+encodeNutritionNutrition =
+    encodeNutritionMeasurement encodeNutritionValue
 
 
 encodeParticipantConsentValue : ParticipantConsentValue -> List ( String, Value )
@@ -145,6 +170,11 @@ encodeLactationValue signs =
 encodeLactation : Lactation -> List ( String, Value )
 encodeLactation =
     encodeGroupMeasurement encodeLactationValue
+
+
+encodeNutritionMeasurement : (value -> List ( String, Value )) -> NutritionMeasurement value -> List ( String, Value )
+encodeNutritionMeasurement =
+    encodeMeasurement "nutrition_encounter"
 
 
 encodePrenatalMeasurement : (value -> List ( String, Value )) -> PrenatalMeasurement value -> List ( String, Value )
