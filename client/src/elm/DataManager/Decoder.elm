@@ -130,6 +130,10 @@ decodeBackendAuthorityEntity =
         |> andThen
             (\( type_, uuid, vid ) ->
                 case type_ of
+                    "attendance" ->
+                        Backend.Measurement.Decoder.decodeAttendance
+                            |> andThen (\entity -> succeed (BackendAuthorityAttendance uuid vid entity))
+
                     "photo" ->
                         Backend.Measurement.Decoder.decodePhoto
                             |> andThen (\entity -> succeed (BackendAuthorityPhoto uuid vid entity))

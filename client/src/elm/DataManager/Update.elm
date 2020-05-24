@@ -119,6 +119,10 @@ update currentDate device msg model =
                                                             |> Json.Encode.encode 0
                                                 in
                                                 case entity of
+                                                    BackendAuthorityAttendance uuid vid entity_ ->
+                                                        doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodeAttendance entity_)
+                                                            :: accum
+
                                                     BackendAuthorityPhoto uuid vid entity_ ->
                                                         doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodePhoto entity_)
                                                             :: accum
@@ -190,6 +194,9 @@ update currentDate device msg model =
                                 |> Maybe.map
                                     (\entity ->
                                         case entity of
+                                            BackendAuthorityAttendance _ vid _ ->
+                                                vid
+
                                             BackendAuthorityPhoto _ vid _ ->
                                                 vid
 
