@@ -36,18 +36,18 @@ $base_query
 
 $count_query = clone $base_query;
 $count_query->propertyCondition('nid', $nid, '>');
-$count = $count_query->count()->execute();
+$total = $count_query->count()->execute();
 
-if ($count == 0) {
+if ($total == 0) {
   drush_print("There are no nodes of type $type in DB.");
   exit;
 }
 
-drush_print("$count nodes of type $type located.");
+drush_print("$total nodes of type $type located.");
 
 $processed = 0;
 $graduated = 0;
-while ($processed < $count) {
+while ($processed < $total) {
   // Free up memory.
   drupal_static_reset();
 
