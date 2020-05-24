@@ -602,11 +602,6 @@ update currentDate device msg model =
             let
                 record =
                     case indexDbQueryType of
-                        IndexDbQueryHealthCenters ->
-                            { queryType = "IndexDbQueryHealthCenters"
-                            , data = Nothing
-                            }
-
                         IndexDbQueryDeferredPhoto ->
                             { queryType = "IndexDbQueryDeferredPhoto"
                             , data = Nothing
@@ -641,16 +636,6 @@ update currentDate device msg model =
             case decodeValue DataManager.Decoder.decodeIndexDbQueryTypeResult val of
                 Ok indexDbQueryTypeResult ->
                     case indexDbQueryTypeResult of
-                        IndexDbQueryHealthCentersResult dict ->
-                            -- Send info back
-                            SubModelReturn
-                                model
-                                Cmd.none
-                                noError
-                                [ Backend.Model.HandleFetchedHealthCenters (RemoteData.Success dict)
-                                    |> App.Model.MsgIndexedDb
-                                ]
-
                         IndexDbQueryDeferredPhotoResult Nothing ->
                             let
                                 syncStatus =

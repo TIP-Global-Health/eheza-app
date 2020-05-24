@@ -12,7 +12,6 @@ import Backend.Update
 import Browser
 import Browser.Navigation as Nav
 import Config
-import DataManager.Model
 import DataManager.Update
 import Device.Decoder
 import Device.Encoder
@@ -610,8 +609,6 @@ update msg model =
             ( model, trySyncing () )
 
         MsgDataManager subMsg ->
-            -- @todo: On Device status page, model.configuration might not be
-            -- Success.
             model.configuration
                 |> RemoteData.toMaybe
                 |> Maybe.andThen (\config -> RemoteData.toMaybe config.device)

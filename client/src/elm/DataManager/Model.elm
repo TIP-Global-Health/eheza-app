@@ -198,7 +198,6 @@ type SyncStatus
 type FetchFromIndexDbQueryType
     = -- Get a single deferred photo.
       IndexDbQueryDeferredPhoto
-    | IndexDbQueryHealthCenters
       -- When we successfully download a photo, we remove it from the `deferredPhotos` table.
       -- We just need the UUID.
     | IndexDbQueryRemoveDeferredPhotoAttempts String
@@ -208,9 +207,8 @@ type FetchFromIndexDbQueryType
 
 
 type IndexDbQueryTypeResult
-    = IndexDbQueryHealthCentersResult (Dict HealthCenterId HealthCenter)
-      -- A single deferred photo, if exists.
-    | IndexDbQueryDeferredPhotoResult (Maybe IndexDbQueryDeferredPhotoResultRecord)
+    = -- A single deferred photo, if exists.
+      IndexDbQueryDeferredPhotoResult (Maybe IndexDbQueryDeferredPhotoResultRecord)
 
 
 type alias IndexDbQueryDeferredPhotoResultRecord =

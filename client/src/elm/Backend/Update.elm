@@ -476,10 +476,9 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
         FetchHealthCenters ->
             ( { model | healthCenters = Loading }
-            , Cmd.none
-            , [ DataManager.Model.FetchFromIndexDb DataManager.Model.IndexDbQueryHealthCenters
-                    |> App.Model.MsgDataManager
-              ]
+            , sw.select healthCenterEndpoint ()
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedHealthCenters)
+            , []
             )
 
         HandleFetchedHealthCenters data ->

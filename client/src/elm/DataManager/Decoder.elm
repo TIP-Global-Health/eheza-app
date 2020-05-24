@@ -27,10 +27,6 @@ decodeIndexDbQueryTypeResult =
         |> andThen
             (\queryType ->
                 case queryType of
-                    "IndexDbQueryHealthCentersResult" ->
-                        field "data" decodeIndexDbQueryHealthCentersResult
-                            |> andThen (\list_ -> succeed (IndexDbQueryHealthCentersResult (Dict.fromList list_)))
-
                     "IndexDbQueryDeferredPhotoResult" ->
                         oneOf
                             [ field "data" decodeIndexDbQueryDeferredPhotoResult

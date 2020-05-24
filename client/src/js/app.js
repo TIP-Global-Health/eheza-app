@@ -306,14 +306,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       })();
       break;
 
-    case 'IndexDbQueryHealthCenters':
-      (async () => {
-        const result = await dbSync.nodes.where('type').equals('health_center').toArray();
-        sendResultToElm(queryType, result);
-
-      })();
-      break;
-
     case 'IndexDbQueryRemoveDeferredPhotoAttempts':
       (async () => {
 
