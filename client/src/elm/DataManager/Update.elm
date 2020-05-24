@@ -119,10 +119,6 @@ update currentDate device msg model =
                                                             |> Json.Encode.encode 0
                                                 in
                                                 case entity of
-                                                    BackendAuthorityNurse uuid vid entity_ ->
-                                                        doEncode uuid vid (Json.Encode.object <| Backend.Nurse.Encoder.encodeNurse entity_)
-                                                            :: accum
-
                                                     BackendAuthorityPhoto uuid vid entity_ ->
                                                         doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodePhoto entity_)
                                                             :: accum
@@ -194,9 +190,6 @@ update currentDate device msg model =
                                 |> Maybe.map
                                     (\entity ->
                                         case entity of
-                                            BackendAuthorityNurse _ vid _ ->
-                                                vid
-
                                             BackendAuthorityPhoto _ vid _ ->
                                                 vid
 
@@ -321,6 +314,10 @@ update currentDate device msg model =
                                                         doEncode uuid vid (Backend.HealthCenter.Encoder.encodeHealthCenter entity_)
                                                             :: accum
 
+                                                    BackendGeneralNurse uuid vid entity_ ->
+                                                        doEncode uuid vid (Json.Encode.object <| Backend.Nurse.Encoder.encodeNurse entity_)
+                                                            :: accum
+
                                                     BackendGeneralPerson uuid vid entity_ ->
                                                         doEncode uuid vid (Backend.Person.Encoder.encodePerson entity_)
                                                             :: accum
@@ -359,6 +356,9 @@ update currentDate device msg model =
                                                 vid
 
                                             BackendGeneralHealthCenter _ vid _ ->
+                                                vid
+
+                                            BackendGeneralNurse _ vid _ ->
                                                 vid
 
                                             BackendGeneralPerson _ vid _ ->

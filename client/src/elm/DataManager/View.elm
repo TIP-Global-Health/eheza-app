@@ -108,6 +108,9 @@ viewGeneralEntity backendGeneralEntity =
             BackendGeneralHealthCenter _ _ entity ->
                 text <| "Health Center (" ++ entity.name ++ ")"
 
+            BackendGeneralNurse _ _ entity ->
+                text <| "Nurse " ++ entity.name
+
             BackendGeneralPerson _ _ entity ->
                 text <| "Person (" ++ entity.name ++ ")"
 
@@ -165,9 +168,6 @@ viewAuthorityEntity : BackendAuthorityEntity -> Html msg
 viewAuthorityEntity backendAuthorityEntity =
     li []
         [ case backendAuthorityEntity of
-            BackendAuthorityNurse _ _ entity ->
-                text <| "Nurse " ++ entity.name
-
             BackendAuthorityPhoto _ _ entity ->
                 text <| "Photo " ++ Debug.toString entity
 

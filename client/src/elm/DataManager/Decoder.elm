@@ -8,6 +8,7 @@ module DataManager.Decoder exposing
 import AssocList as Dict
 import Backend.HealthCenter.Decoder
 import Backend.Measurement.Decoder
+import Backend.Nurse.Decoder
 import Backend.Person.Decoder
 import Backend.PmtctParticipant.Decoder
 import Backend.Relationship.Decoder
@@ -88,6 +89,10 @@ decodeBackendGeneralEntity =
                         Backend.HealthCenter.Decoder.decodeHealthCenter
                             |> andThen (\entity -> succeed (BackendGeneralHealthCenter uuid vid entity))
 
+                    "nurse" ->
+                        Backend.Nurse.Decoder.decodeNurse
+                            |> andThen (\entity -> succeed (BackendGeneralNurse uuid vid entity))
+
                     "person" ->
                         Backend.Person.Decoder.decodePerson
                             |> andThen (\entity -> succeed (BackendGeneralPerson uuid vid entity))
@@ -128,6 +133,10 @@ decodeBackendAuthorityEntity =
                     "photo" ->
                         Backend.Measurement.Decoder.decodePhoto
                             |> andThen (\entity -> succeed (BackendAuthorityPhoto uuid vid entity))
+
+                    "weight" ->
+                        Backend.Measurement.Decoder.decodeWeight
+                            |> andThen (\entity -> succeed (BackendAuthorityWeight uuid vid entity))
 
                     _ ->
                         succeed (BackendAuthorityEntityUnknown type_ vid)

@@ -47,6 +47,7 @@ type
     -- manage.
     = BackendGeneralCatchmentArea String Int CatchmentArea
     | BackendGeneralHealthCenter String Int HealthCenter
+    | BackendGeneralNurse String Int Nurse
     | BackendGeneralPerson String Int Person
     | BackendGeneralPmtctParticipant String Int PmtctParticipant
     | BackendGeneralRelationship String Int Relationship
@@ -61,8 +62,7 @@ authority (e.g. Health center). For example, a child's measurements is per
 authority.
 -}
 type BackendAuthorityEntity
-    = BackendAuthorityNurse String Int Nurse
-    | BackendAuthorityPhoto String Int Photo
+    = BackendAuthorityPhoto String Int Photo
     | BackendAuthorityWeight String Int Weight
       -- Don't fail on unknown types. We'd like to keep the type name along with
       -- the `vid`. The reason we keep the vid, is that we fetched some content
