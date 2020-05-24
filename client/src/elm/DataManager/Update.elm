@@ -721,9 +721,10 @@ subscriptions model =
                     -- Trigger often.
                     -- @todo: Change to 500 (half a second)? Need to check on
                     -- devices, and while operating other pages.
-                    -- 50
-                    -- For easier debug we wait 1 sec.
-                    1000
+                    50
+
+        -- For easier debug we wait 1 sec.
+        -- 1000
     in
     Sub.batch
         [ Time.every backendFetchMainTime (\_ -> BackendFetchMain)

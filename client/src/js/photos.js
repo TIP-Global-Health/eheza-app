@@ -38,7 +38,9 @@
                                 // `BackendDeferredPhotoFetchHandle` is never called.
                                 // So instead, in case of an error, we build our
                                 // own response.
-                                response = new Response(null,  {"status" : response.status});
+                                // If status is 0, we change it to 503, since 0
+                                // is illegal.
+                                response = new Response(null,  {"status" : response.status || 503});
                             }
 
                             return response;
