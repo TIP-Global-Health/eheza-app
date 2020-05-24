@@ -20,5 +20,3 @@ type Msg
     = SetActivePage Page
     | SetCode String
     | HandlePairClicked
-    | TrySyncing
-    | SetSyncing HealthCenterId Bool

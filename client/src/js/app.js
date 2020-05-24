@@ -35,6 +35,7 @@ dbSync.version(1).stores({
   // UUID of the shard we are syncing. So, for things we sync by health
   // center, it's the UUID of the health center. For things in the nodes
   // table, which every device gets, we use a static UUID here (`nodesUuid`).
+  // @DEPRECATED
   syncMetadata: '&uuid',
 
   // This is like the `nodes` table, but for the things that we don't
@@ -129,7 +130,26 @@ dbSync.version(10).stores({
   // Hold table with photos which have not been downloaded yet.
   // `attempts` holds the number of attempts we've tried to get the image.
   deferredPhotos: '&uuid,type,vid,photo,attempts',
+}).upgrade(function (tx) {
+  // Get the data from the deprecated `syncmetadata` and move to local storage.
+  (async () => {
+
+    // @todo: Check how to test.
+    const collection = await tx.syncmetadata.toCollection();
+
+    var revisionIdPerAuthority = [];
+    collection.forEach(function(uuid) {
+      revisionIdPerAuthority.push({'uuid': uuid, 'revisionId': 0})
+    });
+
+    console.log(revisionIdPerAuthority);
+
+    localStorage.setItem('revisionIdPerAuthority', JSON.stringify(revisionIdPerAuthority));
+
+    return Promise.resolve();
+  })();
 });
+
 
 const getRevisionIdPerAuthority = function() {
   const storage = localStorage.getItem('revisionIdPerAuthority');

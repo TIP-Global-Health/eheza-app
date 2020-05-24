@@ -2,7 +2,6 @@ module DataManager.Decoder exposing
     ( decodeDownloadSyncResponseAuthority
     , decodeDownloadSyncResponseGeneral
     , decodeIndexDbQueryTypeResult
-    , decodeSyncData
     )
 
 import AssocList as Dict
@@ -12,7 +11,14 @@ import Backend.Nurse.Decoder
 import Backend.Person.Decoder
 import Backend.PmtctParticipant.Decoder
 import Backend.Relationship.Decoder
-import DataManager.Model exposing (BackendAuthorityEntity(..), BackendGeneralEntity(..), DownloadStatus, DownloadSyncResponse, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryTypeResult(..), SyncAttempt(..), SyncData, SyncError(..), UploadStatus)
+import DataManager.Model
+    exposing
+        ( BackendAuthorityEntity(..)
+        , BackendGeneralEntity(..)
+        , DownloadSyncResponse
+        , IndexDbQueryDeferredPhotoResultRecord
+        , IndexDbQueryTypeResult(..)
+        )
 import Gizra.Date exposing (decodeDate)
 import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (..)
@@ -143,89 +149,8 @@ decodeBackendAuthorityEntity =
             )
 
 
-decodeSyncData : Decoder SyncData
-decodeSyncData =
-    succeed SyncData
-        |> optional "download" (nullable decodeDownloadStatus) Nothing
-        |> optional "upload" (nullable decodeUploadStatus) Nothing
-        |> required "attempt" decodeSyncAttempt
 
-
-decodeDownloadStatus : Decoder DownloadStatus
-decodeDownloadStatus =
-    succeed DownloadStatus
-        |> custom (decodeTimeField "last_contact")
-        |> required "last_timestamp" decodeInt
-        |> required "remaining" decodeInt
-
-
-decodeUploadStatus : Decoder UploadStatus
-decodeUploadStatus =
-    succeed UploadStatus
-        |> optional "first_timestamp" (nullable decodeInt) Nothing
-        |> required "remaining" decodeInt
-
-
-decodeSyncAttempt : Decoder SyncAttempt
-decodeSyncAttempt =
-    field "tag" string
-        |> andThen
-            (\s ->
-                case s of
-                    "NotAsked" ->
-                        succeed NotAsked
-
-                    "Success" ->
-                        succeed Success
-
-                    "DatabaseError" ->
-                        succeed DatabaseError
-                            |> required "message" string
-                            |> decodeFailure
-
-                    "NetworkError" ->
-                        succeed NetworkError
-                            |> required "message" string
-                            |> decodeFailure
-
-                    "ImageNotFound" ->
-                        succeed ImageNotFound
-                            |> required "url" string
-                            |> decodeFailure
-
-                    "NoCredentials" ->
-                        succeed NoCredentials
-                            |> decodeFailure
-
-                    "BadResponse" ->
-                        succeed BadResponse
-                            |> required "status" decodeInt
-                            |> required "statusText" string
-                            |> decodeFailure
-
-                    "BadJson" ->
-                        succeed BadJson
-                            |> decodeFailure
-
-                    "Loading" ->
-                        succeed Downloading
-                            |> custom (decodeTimeField "timestamp")
-                            |> required "revision" decodeInt
-
-                    "Uploading" ->
-                        succeed Uploading
-                            |> custom (decodeTimeField "timestamp")
-
-                    _ ->
-                        fail <|
-                            s
-                                ++ " is not a recognized SyncAttempt tag"
-            )
-
-
-decodeFailure : Decoder SyncError -> Decoder SyncAttempt
-decodeFailure =
-    map2 DataManager.Model.Failure (decodeTimeField "timestamp")
+-- @todo: Needed? Move to utils.
 
 
 decodeTimeField : String -> Decoder Time.Posix

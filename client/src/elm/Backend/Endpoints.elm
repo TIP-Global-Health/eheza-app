@@ -1,4 +1,69 @@
-module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), attendanceEndpoint, breastExamEndpoint, childFbfEndpoint, childMeasurementListEndpoint, clinicEndpoint, corePhysicalExamEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, dangerSignsEndpoint, encodeIndividualEncounterParams, encodeIndividualEncounterParticipantParams, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, fbfEndpoint, healthCenterEndpoint, heightEndpoint, individualEncounterParticipantEndpoint, lactationEndpoint, lastMenstrualPeriodEndpoint, medicalHistoryEndpoint, medicationEndpoint, motherFbfEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEncounterEndpoint, nutritionEndpoint, nutritionHeightEndpoint, nutritionMeasurementsEndpoint, nutritionMuacEndpoint, nutritionNutritionEndpoint, nutritionPhotoEndpoint, nutritionWeightEndpoint, obstetricHistoryEndpoint, obstetricHistoryStep2Endpoint, obstetricalExamEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, prenatalEncounterEndpoint, prenatalFamilyPlanningEndpoint, prenatalMeasurementsEndpoint, prenatalNutritionEndpoint, prenatalPhotoEndpoint, relationshipEndpoint, resourceEndpoint, sessionEndpoint, socialHistoryEndpoint, swEndpoint, syncDataEndpoint, villageEndpoint, vitalsEndpoint, weightEndpoint)
+module Backend.Endpoints exposing
+    ( NurseParams
+    , PersonParams
+    , PmtctParticipantParams(..)
+    , RelationshipParams
+    , SessionParams(..)
+    , attendanceEndpoint
+    , breastExamEndpoint
+    , childFbfEndpoint
+    , childMeasurementListEndpoint
+    , clinicEndpoint
+    , corePhysicalExamEndpoint
+    , counselingScheduleEndpoint
+    , counselingSessionEndpoint
+    , counselingTopicEndpoint
+    , dangerSignsEndpoint
+    , encodeIndividualEncounterParams
+    , encodeIndividualEncounterParticipantParams
+    , encodeNurseParams
+    , encodePersonParams
+    , encodePmtctParticipantParams
+    , encodeRelationshipParams
+    , encodeSessionParams
+    , familyPlanningEndpoint
+    , fbfEndpoint
+    , healthCenterEndpoint
+    , heightEndpoint
+    , individualEncounterParticipantEndpoint
+    , lactationEndpoint
+    , lastMenstrualPeriodEndpoint
+    , medicalHistoryEndpoint
+    , medicationEndpoint
+    , motherFbfEndpoint
+    , motherMeasurementListEndpoint
+    , muacEndpoint
+    , nurseEndpoint
+    , nutritionEncounterEndpoint
+    , nutritionEndpoint
+    , nutritionHeightEndpoint
+    , nutritionMeasurementsEndpoint
+    , nutritionMuacEndpoint
+    , nutritionNutritionEndpoint
+    , nutritionPhotoEndpoint
+    , nutritionWeightEndpoint
+    , obstetricHistoryEndpoint
+    , obstetricHistoryStep2Endpoint
+    , obstetricalExamEndpoint
+    , participantConsentEndpoint
+    , participantFormEndpoint
+    , personEndpoint
+    , photoEndpoint
+    , pmtctParticipantEndpoint
+    , prenatalEncounterEndpoint
+    , prenatalFamilyPlanningEndpoint
+    , prenatalMeasurementsEndpoint
+    , prenatalNutritionEndpoint
+    , prenatalPhotoEndpoint
+    , relationshipEndpoint
+    , resourceEndpoint
+    , sessionEndpoint
+    , socialHistoryEndpoint
+    , swEndpoint
+    , villageEndpoint
+    , vitalsEndpoint
+    , weightEndpoint
+    )
 
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
@@ -40,9 +105,6 @@ import Backend.Session.Encoder exposing (encodeSession)
 import Backend.Session.Model exposing (EditableSession, OfflineSession, Session)
 import Backend.Village.Decoder exposing (decodeVillage)
 import Backend.Village.Model exposing (Village)
-import DataManager.Decoder exposing (decodeSyncData)
-import DataManager.Encoder exposing (encodeSyncData)
-import DataManager.Model exposing (SyncData)
 import Http exposing (Error)
 import Json.Decode exposing (Decoder, field, succeed)
 import Json.Encode exposing (Value, object)
@@ -110,12 +172,6 @@ healthCenterEndpoint =
 villageEndpoint : ReadOnlyEndPoint Error VillageId Village ()
 villageEndpoint =
     swEndpoint "nodes/village" decodeVillage
-
-
-syncDataEndpoint : ReadWriteEndPoint Error HealthCenterId SyncData SyncData ()
-syncDataEndpoint =
-    swEndpoint "nodes/syncmetadata" decodeSyncData
-        |> withValueEncoder encodeSyncData
 
 
 clinicEndpoint : ReadWriteEndPoint Error ClinicId Clinic Clinic ()

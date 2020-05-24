@@ -3,7 +3,6 @@ module DataManager.Model exposing
     , BackendGeneralEntity(..)
     , DownloadPhotos(..)
     , DownloadPhotosBatchRec
-    , DownloadStatus
     , DownloadSyncResponse
     , FetchFromIndexDbQueryType(..)
     , IndexDbQueryDeferredPhotoResultRecord
@@ -12,17 +11,12 @@ module DataManager.Model exposing
     , Msg(..)
     , RevisionIdPerAuthority
     , RevisionIdPerAuthorityZipper
-    , SyncAttempt(..)
-    , SyncData
-    , SyncError(..)
     , SyncStatus(..)
-    , UploadStatus
     , emptyDownloadPhotosBatchRec
     , emptyModel
-    , emptySyncData
+    , emptyRevisionIdPerAuthority
     )
 
-import AssocList exposing (Dict)
 import Backend.Entities exposing (HealthCenterId)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.Measurement.Model exposing (Attendance, Measurement, Photo, Weight)
@@ -81,6 +75,13 @@ type alias RevisionIdPerAuthority =
     }
 
 
+emptyRevisionIdPerAuthority : String -> RevisionIdPerAuthority
+emptyRevisionIdPerAuthority uuid =
+    { uuid = uuid
+    , revisionId = 0
+    }
+
+
 type alias RevisionIdPerAuthorityZipper =
     Maybe (Zipper RevisionIdPerAuthority)
 
@@ -104,9 +105,6 @@ type alias Model =
     -- Determine is Sync status should be rotated automatically, or manually for debug
     -- purposes.
     , syncStatusRotateAutomatic : Bool
-
-    -- @todo: Remove
-    , syncData : SyncData
     }
 
 
@@ -118,7 +116,6 @@ emptyModel lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper batchSize =
     , lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral
     , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
-    , syncData = emptySyncData
     , downloadPhotos = DownloadPhotosBatch (emptyDownloadPhotosBatchRec batchSize)
     , downloadPhotosBatchSize = batchSize
     , syncStatusRotateAutomatic = True
@@ -234,64 +231,8 @@ type Msg
     | FetchFromIndexDb FetchFromIndexDbQueryType
     | FetchFromIndexDbHandle Value
     | FetchFromIndexDbDeferredPhoto
+    | RevisionIdAuthorityAdd HealthCenterId
+    | RevisionIdAuthorityRemove HealthCenterId
     | SetLastFetchedRevisionIdAuthority (Zipper RevisionIdPerAuthority) Int
     | SetLastFetchedRevisionIdGeneral Int
     | SetSyncStatusRotateAutomatic Bool
-
-
-
--- @todo: Remove.
-
-
-type alias SyncData =
-    { downloadStatus : Maybe DownloadStatus
-    , uploadStatus : Maybe UploadStatus
-    , attempt : SyncAttempt
-    }
-
-
-emptySyncData : SyncData
-emptySyncData =
-    { downloadStatus = Nothing
-    , uploadStatus = Nothing
-    , attempt = NotAsked
-    }
-
-
-type alias DownloadStatus =
-    -- The last time we successfully contacted the backend
-    { lastSuccessfulContact : Time.Posix
-
-    -- The timestamp of the last revision on the backend
-    , lastTimestamp : Int
-
-    -- How many revisions have we not downloaded yet?
-    , remaining : Int
-    }
-
-
-type alias UploadStatus =
-    -- Timestamp of the first revision we haven't uploaded
-    -- (if there is such a revision).
-    { firstTimestamp : Maybe Int
-
-    -- How many revisions remain to be uploaded?
-    , remaining : Int
-    }
-
-
-type SyncAttempt
-    = NotAsked
-    | Downloading Time.Posix Int -- in progress, from base revision
-    | Uploading Time.Posix
-    | Failure Time.Posix SyncError
-    | Success
-
-
-type SyncError
-    = DatabaseError String
-    | NetworkError String
-    | NoCredentials
-    | BadResponse Int String
-    | BadJson
-    | ImageNotFound String

@@ -1,5 +1,9 @@
-module DataManager.View exposing (viewDebugSync)
+module DataManager.View exposing (view)
 
+import AssocList as Dict
+import Backend.Entities exposing (HealthCenterId)
+import Backend.HealthCenter.Model exposing (HealthCenter)
+import Backend.Model exposing (ModelIndexedDb)
 import DataManager.Model
     exposing
         ( BackendAuthorityEntity(..)
@@ -19,18 +23,17 @@ import Html.Events exposing (onCheck, onClick)
 import Json.Encode
 import List.Extra
 import List.Zipper as Zipper
+import Maybe.Extra exposing (isJust)
 import RemoteData exposing (WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
+import Translate exposing (Language, translate)
 import Url
 import Utils.Html exposing (spinner)
+import Utils.WebData
 
 
-
--- @todo: Debug for now
-
-
-viewDebugSync : Model -> Html Msg
-viewDebugSync model =
+view : Language -> ModelIndexedDb -> Model -> Html Msg
+view language db model =
     let
         htmlContent =
             details [ property "open" (Json.Encode.bool True) ]
@@ -52,7 +55,10 @@ viewDebugSync model =
                         emptyNode
                 ]
     in
-    pre [ class "ui segment", style "min-height" "240px" ] [ htmlContent ]
+    div []
+        [ pre [ class "ui segment", style "min-height" "240px" ] [ htmlContent ]
+        , viewHealthCentersForSync language db model
+        ]
 
 
 viewSyncStatusControl : Model -> Html Msg
@@ -205,3 +211,98 @@ viewDownloadPhotosBatch model deferredPhoto =
 
         _ ->
             emptyNode
+
+
+{-| Show a list of Authorities that allow syncing from.
+-}
+viewHealthCentersForSync : Language -> ModelIndexedDb -> Model -> Html Msg
+viewHealthCentersForSync language db model =
+    let
+        -- The Health centers that are synced.
+        selectedHealthCentersUuid =
+            case model.revisionIdPerAuthorityZipper of
+                Just zipper ->
+                    Zipper.toList zipper
+                        |> List.map (\row -> row.uuid)
+
+                Nothing ->
+                    []
+    in
+    case db.healthCenters of
+        RemoteData.Success healthCenters ->
+            if Dict.isEmpty healthCenters then
+                div [ class "segment ui health-center" ] [ text "No health centers synced yet" ]
+
+            else
+                div
+                    [ class "segment ui health-center" ]
+                    [ ul []
+                        (List.map
+                            (\( healthCenterId, healthCenter ) ->
+                                let
+                                    isSynced =
+                                        List.Extra.find (\selectedUuid -> selectedUuid == fromEntityUuid healthCenterId) selectedHealthCentersUuid
+                                            |> isJust
+                                in
+                                viewHealthCenter language ( healthCenterId, healthCenter ) isSynced
+                            )
+                            (Dict.toList healthCenters)
+                        )
+                    ]
+
+        RemoteData.Failure error ->
+            Utils.WebData.viewError language error
+
+        RemoteData.Loading ->
+            spinner
+
+        RemoteData.NotAsked ->
+            emptyNode
+
+
+viewHealthCenter : Language -> ( HealthCenterId, HealthCenter ) -> Bool -> Html Msg
+viewHealthCenter language ( healthCenterId, healthCenter ) isSynced =
+    let
+        ( syncLabel, syncMsg ) =
+            if isSynced then
+                ( "Remove from Sync list", RevisionIdAuthorityRemove healthCenterId )
+
+            else
+                ( "Add to Sync list", RevisionIdAuthorityAdd healthCenterId )
+    in
+    li []
+        [ text <| healthCenter.name
+        , button [ onClick syncMsg ] [ text syncLabel ]
+        ]
+
+
+
+--    sync =
+--        db.syncData
+--            |> RemoteData.map
+--                (\syncData ->
+--                    case Dict.get uuid syncData of
+--                        Just data ->
+--                            div [ class "health-center-info" ]
+--                                [ viewSyncData language data
+--                                , button
+--                                    [ class "ui button"
+--                                    , onClick (SetSyncing uuid False)
+--                                    ]
+--                                    [ text <| translate language Translate.StopSyncing ]
+--                                ]
+--
+--                        Nothing ->
+--                            button
+--                                [ class "ui button"
+--                                , onClick (SetSyncing uuid True)
+--                                ]
+--                                [ text <| translate language Translate.StartSyncing ]
+--                )
+--            |> RemoteData.toMaybe
+--            |> showMaybe
+--in
+--div [ class "health-center" ]
+--    [ h2 [] [ text <| model.name ]
+--    , sync
+--    ]

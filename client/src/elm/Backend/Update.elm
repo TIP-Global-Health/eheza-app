@@ -651,19 +651,6 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             , []
             )
 
-        FetchSyncData ->
-            ( { model | syncData = Loading }
-            , sw.select syncDataEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedSyncData)
-            , []
-            )
-
-        HandleFetchedSyncData data ->
-            ( { model | syncData = data }
-            , Cmd.none
-            , []
-            )
-
         HandleRevisions revisions ->
             case revisions of
                 -- Special handling for a single attendance revision, which means
@@ -744,33 +731,6 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     , Cmd.none
                     , []
                     )
-
-        SaveSyncData uuid data ->
-            ( { model | saveSyncDataRequests = Dict.insert uuid Loading model.saveSyncDataRequests }
-            , sw.put syncDataEndpoint uuid data
-                |> withoutDecoder
-                |> toCmd (RemoteData.fromResult >> HandleSavedSyncData uuid)
-            , []
-            )
-
-        HandleSavedSyncData uuid data ->
-            ( { model | saveSyncDataRequests = Dict.insert uuid data model.saveSyncDataRequests }
-            , Cmd.none
-            , []
-            )
-
-        DeleteSyncData uuid ->
-            ( { model | deleteSyncDataRequests = Dict.insert uuid Loading model.deleteSyncDataRequests }
-            , sw.delete syncDataEndpoint uuid
-                |> toCmd (RemoteData.fromResult >> HandleDeletedSyncData uuid)
-            , []
-            )
-
-        HandleDeletedSyncData uuid data ->
-            ( { model | deleteSyncDataRequests = Dict.insert uuid data model.deleteSyncDataRequests }
-            , Cmd.none
-            , []
-            )
 
         MsgPrenatalEncounter encounterId subMsg ->
             let

@@ -102,7 +102,7 @@ flexPageWrapper model html =
 
         -- Show logged in nurse.
         , loggedInNurse
-        , Html.map MsgDataManager (DataManager.View.viewDebugSync model.dataManager)
+        , Html.map MsgDataManager (DataManager.View.view model.language model.indexedDb model.dataManager)
         , div
             [ class "page-content" ]
             [ html ]

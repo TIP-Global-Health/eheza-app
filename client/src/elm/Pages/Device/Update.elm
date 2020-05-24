@@ -1,8 +1,7 @@
 module Pages.Device.Update exposing (update)
 
 import App.Model
-import Backend.Model
-import DataManager.Model exposing (emptySyncData)
+import DataManager.Model
 import Pages.Device.Model exposing (..)
 
 
@@ -25,24 +24,4 @@ update msg model =
             ( { model | code = "" }
             , Cmd.none
             , [ App.Model.TryPairingCode model.code ]
-            )
-
-        SetSyncing uuid start ->
-            let
-                extraMsg =
-                    if start then
-                        Backend.Model.SaveSyncData uuid emptySyncData
-
-                    else
-                        Backend.Model.DeleteSyncData uuid
-            in
-            ( model
-            , Cmd.none
-            , [ App.Model.MsgIndexedDb extraMsg ]
-            )
-
-        TrySyncing ->
-            ( model
-            , Cmd.none
-            , [ App.Model.TrySyncing ]
             )

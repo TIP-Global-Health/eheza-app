@@ -9,17 +9,7 @@ import Backend.Person.Encoder
 import Backend.PmtctParticipant.Encoder
 import Backend.Relationship.Encoder
 import DataManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseGeneral)
-import DataManager.Model
-    exposing
-        ( BackendAuthorityEntity(..)
-        , BackendGeneralEntity(..)
-        , DownloadPhotos(..)
-        , FetchFromIndexDbQueryType(..)
-        , IndexDbQueryTypeResult(..)
-        , Model
-        , Msg(..)
-        , SyncStatus(..)
-        )
+import DataManager.Model exposing (BackendAuthorityEntity(..), BackendGeneralEntity(..), DownloadPhotos(..), FetchFromIndexDbQueryType(..), IndexDbQueryTypeResult(..), Model, Msg(..), SyncStatus(..), emptyRevisionIdPerAuthority)
 import DataManager.Utils
 import Device.Model exposing (Device)
 import Error.Utils exposing (decodeError, maybeHttpError, noError)
@@ -30,6 +20,7 @@ import Json.Decode exposing (Value, decodeString, decodeValue)
 import Json.Encode
 import List.Zipper as Zipper
 import RemoteData
+import Restful.Endpoint exposing (fromEntityUuid)
 import Time
 import Utils.WebData
 
@@ -218,7 +209,7 @@ update currentDate device msg model =
                     DataManager.Utils.determineSyncStatus { model | syncStatus = SyncDownloadAuthority webData }
             in
             SubModelReturn
-                { modelWithSyncStatus | revisionIdPerAuthorityZipper = Just zipperUpdated }
+                modelWithSyncStatus
                 (Cmd.batch
                     [ cmd
                     , deferredPhotosCmd
@@ -259,6 +250,74 @@ update currentDate device msg model =
                         device
                         FetchFromIndexDbDeferredPhoto
                         model
+
+        RevisionIdAuthorityAdd uuid ->
+            -- Add a new authority to Local storage.
+            let
+                uuidAsString =
+                    fromEntityUuid uuid
+
+                revisionIdPerAuthorityZipper =
+                    case model.revisionIdPerAuthorityZipper of
+                        Just zipper ->
+                            zipper
+                                |> Zipper.toList
+                                -- Before adding, lets remove the same UUID, so in case it's already
+                                -- we won't have duplicates.
+                                |> List.filter (\row -> row.uuid /= uuidAsString)
+                                |> (\list -> emptyRevisionIdPerAuthority uuidAsString :: list)
+                                |> Zipper.fromList
+
+                        Nothing ->
+                            [ emptyRevisionIdPerAuthority uuidAsString ]
+                                |> Zipper.fromList
+
+                cmd =
+                    case revisionIdPerAuthorityZipper of
+                        Just zipper ->
+                            sendRevisionIdPerAuthority (Zipper.toList zipper)
+
+                        Nothing ->
+                            Cmd.none
+            in
+            SubModelReturn
+                { model | revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper }
+                cmd
+                noError
+                []
+
+        RevisionIdAuthorityRemove uuid ->
+            -- Remove authority from Local storage.
+            let
+                uuidAsString =
+                    fromEntityUuid uuid
+
+                revisionIdPerAuthorityZipper =
+                    case model.revisionIdPerAuthorityZipper of
+                        Just zipper ->
+                            zipper
+                                |> Zipper.toList
+                                |> List.filter (\row -> row.uuid /= uuidAsString)
+                                |> Zipper.fromList
+
+                        Nothing ->
+                            -- We don't seem to have a zipper, so we cannot add
+                            -- it.
+                            Nothing
+
+                cmd =
+                    case revisionIdPerAuthorityZipper of
+                        Just zipper ->
+                            sendRevisionIdPerAuthority (Zipper.toList zipper)
+
+                        Nothing ->
+                            Cmd.none
+            in
+            SubModelReturn
+                { model | revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper }
+                cmd
+                noError
+                []
 
         BackendGeneralFetch ->
             case model.syncStatus of
@@ -706,7 +765,7 @@ subscriptions model =
                     -- Trigger often.
                     -- @todo: Change to 500 (half a second)? Need to check on
                     -- devices, and while operating other pages.
-                    50
+                    1500
 
         -- For easier debug we wait 1 sec.
         -- 1000

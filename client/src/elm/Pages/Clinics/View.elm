@@ -5,7 +5,6 @@ user to click on clinics the user is assigned to, to see the sessions which are
 available for data-entry.
 -}
 
-import App.Model exposing (MsgLoggedIn(..))
 import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic, ClinicType(..), allClinicTypes)
 import Backend.Entities exposing (..)
@@ -14,9 +13,7 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isAuthorithedNurse)
 import Backend.Session.Model exposing (Session)
 import Backend.Session.Utils exposing (isClosed)
-import DataManager.Model exposing (SyncData)
 import Date exposing (Unit(..))
-import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -27,7 +24,7 @@ import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import RemoteData exposing (RemoteData(..), WebData, isLoading)
 import Translate exposing (Language, translate)
-import Utils.WebData exposing (viewError, viewWebData)
+import Utils.WebData exposing (viewWebData)
 
 
 {-| If `selectedClinic` is Just, we'll show a page for that clinic. If not,
@@ -51,10 +48,12 @@ viewClinicList : Language -> Nurse -> HealthCenterId -> Model -> ModelIndexedDb 
 viewClinicList language user healthCenterId model db =
     let
         content =
-            viewWebData language
-                (viewLoadedClinicList language user healthCenterId model)
-                identity
-                (RemoteData.append db.clinics db.syncData)
+            -- @todo
+            --viewWebData language
+            --    (viewLoadedClinicList language user healthCenterId model)
+            --    identity
+            --    (RemoteData.append db.clinics db.syncData)
+            div [] [ text "@todo" ]
 
         ( titleTransId, goBackAction ) =
             if isJust model.clinicType then
@@ -89,8 +88,10 @@ We only show clinics for the health centers that we are syncing. In principle,
 we could show something about the sync status here ... might want to know how
 up-to-date things are.
 
+@todo: Pass DataManager.Model instead of the Dict.
+
 -}
-viewLoadedClinicList : Language -> Nurse -> HealthCenterId -> Model -> ( Dict ClinicId Clinic, Dict HealthCenterId SyncData ) -> Html Msg
+viewLoadedClinicList : Language -> Nurse -> HealthCenterId -> Model -> ( Dict ClinicId Clinic, Dict HealthCenterId () ) -> Html Msg
 viewLoadedClinicList language user selectedHealthCenterId model ( clinics, sync ) =
     let
         showWarningMessage header message =
@@ -105,21 +106,12 @@ viewLoadedClinicList language user selectedHealthCenterId model ( clinics, sync 
             (showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync)
             (\selectedHealthCenterSyncData ->
                 let
+                    -- @todo
                     isDownloading =
-                        case selectedHealthCenterSyncData.attempt of
-                            DataManager.Model.Downloading _ _ ->
-                                True
-
-                            _ ->
-                                False
+                        True
 
                     isUploading =
-                        case selectedHealthCenterSyncData.attempt of
-                            DataManager.Model.Uploading _ ->
-                                True
-
-                            _ ->
-                                False
+                        True
                 in
                 if isDownloading then
                     showWarningMessage Translate.SelectedHCSyncing Translate.SelectedHCDownloading

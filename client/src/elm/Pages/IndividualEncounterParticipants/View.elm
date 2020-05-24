@@ -65,54 +65,14 @@ viewHeader title =
 
 viewBody : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> IndividualEncounterType -> Model -> ModelIndexedDb -> Html Msg
 viewBody language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db =
-    let
-        sync =
-            db.syncData |> RemoteData.withDefault Dict.empty
-
-        showWarningMessage header message =
-            div [ class "ui basic segment" ]
-                [ div
-                    [ class "ui message warning" ]
-                    [ div [ class "header" ] [ text <| translate language header ]
-                    , text <| translate language message
-                    ]
-                ]
-    in
-    Dict.get healthCenterId sync
-        |> unwrap
-            (showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync)
-            (\selectedHealthCenterSyncData ->
-                let
-                    isDownloading =
-                        case selectedHealthCenterSyncData.attempt of
-                            DataManager.Model.Downloading _ _ ->
-                                True
-
-                            _ ->
-                                False
-
-                    isUploading =
-                        case selectedHealthCenterSyncData.attempt of
-                            DataManager.Model.Uploading _ ->
-                                True
-
-                            _ ->
-                                False
-                in
-                if isDownloading then
-                    showWarningMessage Translate.SelectedHCSyncing Translate.SelectedHCDownloading
-
-                else if isUploading then
-                    showWarningMessage Translate.SelectedHCSyncing Translate.SelectedHCUploading
-
-                else
-                    div
-                        [ class "search-wrapper" ]
-                        [ div
-                            [ class "ui full segment" ]
-                            [ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db ]
-                        ]
-            )
+    -- @todo: I've removed all the code related to checking if we're syncing,
+    -- as I don't think it's really needed. Worth re-visiting.
+    div
+        [ class "search-wrapper" ]
+        [ div
+            [ class "ui full segment" ]
+            [ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db ]
+        ]
 
 
 viewSearchForm : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> IndividualEncounterType -> Model -> ModelIndexedDb -> Html Msg

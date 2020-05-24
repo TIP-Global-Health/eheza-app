@@ -1,14 +1,8 @@
 module Pages.Device.View exposing (view)
 
 import App.Model
-import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.HealthCenter.Model exposing (HealthCenter)
-import Backend.Model exposing (ModelIndexedDb)
-import DataManager.Model exposing (SyncData)
-import Date
 import Device.Model exposing (..)
-import Gizra.Html exposing (emptyNode, showMaybe)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -16,10 +10,8 @@ import Pages.Device.Model exposing (..)
 import Pages.Page exposing (Page(..))
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
-import Time
 import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner)
-import Utils.WebData exposing (viewError)
 
 
 {-| We organize our DataManager by health center. However, there is also a bunch
@@ -63,14 +55,7 @@ viewDeviceStatus language device app model =
     case device of
         Success _ ->
             div [ class "device-status" ]
-                [ button
-                    [ class "ui fluid primary button"
-                    , onClick TrySyncing
-                    ]
-                    [ text <| translate language Translate.TrySyncing ]
-                , viewStorageStatus language app
-                , viewNodes language app.indexedDb
-                , viewHealthCenters language app.indexedDb
+                [ viewStorageStatus language app
                 ]
 
         _ ->
@@ -98,151 +83,6 @@ viewStorageStatus language app =
     ]
         |> List.filterMap identity
         |> ul [ class "storage-dashboard" ]
-
-
-viewNodes : Language -> ModelIndexedDb -> Html Msg
-viewNodes language db =
-    case db.syncData of
-        Success syncData ->
-            syncData
-                |> Dict.get nodesUuid
-                |> Maybe.map
-                    (\data ->
-                        div [ class "general-sync" ]
-                            [ h2 [] [ text <| translate language Translate.SyncGeneral ]
-                            , viewSyncData language data
-                            ]
-                    )
-                |> showMaybe
-
-        Failure err ->
-            emptyNode
-
-        Loading ->
-            spinner
-
-        NotAsked ->
-            spinner
-
-
-viewSyncData : Language -> SyncData -> Html Msg
-viewSyncData language data =
-    let
-        viewDateTime time =
-            let
-                normalize number =
-                    if number < 10 then
-                        "0" ++ String.fromInt number
-
-                    else
-                        String.fromInt number
-
-                year =
-                    Time.toYear Time.utc time |> String.fromInt
-
-                month =
-                    Time.toMonth Time.utc time
-                        |> Translate.ResolveMonth
-                        |> translate language
-
-                day =
-                    Time.toDay Time.utc time |> normalize
-
-                hour =
-                    Time.toHour Time.utc time |> normalize
-
-                minute =
-                    Time.toMinute Time.utc time |> normalize
-
-                second =
-                    Time.toSecond Time.utc time |> normalize
-            in
-            day ++ " " ++ month ++ " " ++ year ++ " " ++ hour ++ ":" ++ minute ++ ":" ++ second ++ " UTC"
-
-        viewAttempt attempt =
-            case attempt of
-                DataManager.Model.NotAsked ->
-                    "NotAsked"
-
-                DataManager.Model.Downloading _ _ ->
-                    "Downloading"
-
-                DataManager.Model.Uploading _ ->
-                    "Uploading"
-
-                DataManager.Model.Failure time error ->
-                    "Failure " ++ viewDateTime time ++ " " ++ Debug.toString error
-
-                DataManager.Model.Success ->
-                    "Success"
-
-        ( lastSuccessfulContact, remainingForDownload ) =
-            data.downloadStatus
-                |> Maybe.map
-                    (\downloadStatus ->
-                        ( viewDateTime downloadStatus.lastSuccessfulContact, downloadStatus.remaining |> String.fromInt )
-                    )
-                |> Maybe.withDefault ( "NA", "NA" )
-
-        remainingForUpload =
-            data.uploadStatus
-                |> Maybe.map (.remaining >> String.fromInt)
-                |> Maybe.withDefault "NA"
-    in
-    div [ class "general-status" ]
-        [ div [] [ text <| translate language Translate.LastSuccesfulContactLabel ++ ": " ++ lastSuccessfulContact ]
-        , div [] [ text <| translate language Translate.RemainingForUploadLabel ++ ": " ++ remainingForUpload ]
-        , div [] [ text <| translate language Translate.RemainingForDownloadLabel ++ ": " ++ remainingForDownload ]
-        , div [] [ text <| translate language Translate.StatusLabel ++ ": " ++ viewAttempt data.attempt ]
-        ]
-
-
-viewHealthCenters : Language -> ModelIndexedDb -> Html Msg
-viewHealthCenters language db =
-    db.healthCenters
-        |> RemoteData.map
-            (\data ->
-                data
-                    |> Dict.toList
-                    |> List.sortBy (Tuple.second >> .name)
-                    |> List.map (viewHealthCenter language db)
-                    |> div [ class "health-centers" ]
-            )
-        |> RemoteData.withDefault spinner
-
-
-viewHealthCenter : Language -> ModelIndexedDb -> ( HealthCenterId, HealthCenter ) -> Html Msg
-viewHealthCenter language db ( uuid, model ) =
-    let
-        sync =
-            db.syncData
-                |> RemoteData.map
-                    (\syncData ->
-                        case Dict.get uuid syncData of
-                            Just data ->
-                                div [ class "health-center-info" ]
-                                    [ viewSyncData language data
-                                    , button
-                                        [ class "ui button"
-                                        , onClick (SetSyncing uuid False)
-                                        ]
-                                        [ text <| translate language Translate.StopSyncing ]
-                                    ]
-
-                            Nothing ->
-                                button
-                                    [ class "ui button"
-                                    , onClick (SetSyncing uuid True)
-                                    ]
-                                    [ text <| translate language Translate.StartSyncing ]
-                    )
-                |> RemoteData.toMaybe
-                |> showMaybe
-    in
-    div [ class "health-center" ]
-        [ h2 [] [ text <| model.name ]
-        , sync
-        ]
 
 
 viewPairingForm : Language -> WebData Device -> Model -> Html Msg
