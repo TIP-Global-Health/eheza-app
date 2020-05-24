@@ -37,7 +37,8 @@ view language db model =
     let
         htmlContent =
             details [ property "open" (Json.Encode.bool True) ]
-                [ viewSyncStatusControl model
+                [ summary [] [ text "Sync Status" ]
+                , viewSyncStatusControl model
 
                 -- button [ onClick <| DataManager.Model.FetchFromIndexDb DataManager.Model.IndexDbQueryHealthCenters ] [ text "Fetch Health Centers" ]
                 , div [] [ text <| "Sync status: " ++ Debug.toString model.syncStatus ]
@@ -56,8 +57,8 @@ view language db model =
                 ]
     in
     div []
-        [ pre [ class "ui segment", style "min-height" "240px" ] [ htmlContent ]
-        , viewHealthCentersForSync language db model
+        [ viewHealthCentersForSync language db model
+        , div [ class "ui segment" ] [ htmlContent ]
         ]
 
 
@@ -79,28 +80,26 @@ viewSyncDownloadGeneral model webData =
     div []
         [ div [] [ text <| "Trying to fetch `General` from revision ID " ++ String.fromInt model.lastFetchedRevisionIdGeneral ]
         , button [ onClick <| DataManager.Model.SetLastFetchedRevisionIdGeneral 0 ] [ text "Reset revision ID to 0" ]
-        , details [ property "open" (Json.Encode.bool True) ]
-            [ summary [] [ text "HTTP requests" ]
-            , case webData of
-                RemoteData.Success data ->
-                    div []
-                        [ div [] [ text <| String.fromInt data.revisionCount ++ " items left to download" ]
-                        , if List.isEmpty data.entities then
-                            div [] [ text "No content fetched in last HTTP request" ]
+        , div [] [ text "HTTP requests:" ]
+        , case webData of
+            RemoteData.Success data ->
+                div []
+                    [ div [] [ text <| String.fromInt data.revisionCount ++ " items left to download" ]
+                    , if List.isEmpty data.entities then
+                        div [] [ text "No content fetched in last HTTP request" ]
 
-                          else
-                            ol [] (List.map viewGeneralEntity data.entities)
-                        ]
+                      else
+                        ol [] (List.map viewGeneralEntity data.entities)
+                    ]
 
-                RemoteData.Failure error ->
-                    text <| Debug.toString error
+            RemoteData.Failure error ->
+                text <| Debug.toString error
 
-                RemoteData.Loading ->
-                    spinner
+            RemoteData.Loading ->
+                spinner
 
-                RemoteData.NotAsked ->
-                    emptyNode
-            ]
+            RemoteData.NotAsked ->
+                emptyNode
         ]
 
 
@@ -236,18 +235,21 @@ viewHealthCentersForSync language db model =
             else
                 div
                     [ class "segment ui health-center" ]
-                    [ ul []
-                        (List.map
-                            (\( healthCenterId, healthCenter ) ->
-                                let
-                                    isSynced =
-                                        List.Extra.find (\selectedUuid -> selectedUuid == fromEntityUuid healthCenterId) selectedHealthCentersUuid
-                                            |> isJust
-                                in
-                                viewHealthCenter language ( healthCenterId, healthCenter ) isSynced
+                    [ details [ property "open" (Json.Encode.bool False) ]
+                        [ summary [] [ text "Health Centers" ]
+                        , ul []
+                            (List.map
+                                (\( healthCenterId, healthCenter ) ->
+                                    let
+                                        isSynced =
+                                            List.Extra.find (\selectedUuid -> selectedUuid == fromEntityUuid healthCenterId) selectedHealthCentersUuid
+                                                |> isJust
+                                    in
+                                    viewHealthCenter language ( healthCenterId, healthCenter ) isSynced
+                                )
+                                (Dict.toList healthCenters)
                             )
-                            (Dict.toList healthCenters)
-                        )
+                        ]
                     ]
 
         RemoteData.Failure error ->
