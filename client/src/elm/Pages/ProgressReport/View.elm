@@ -14,7 +14,7 @@ import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getMyM
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -28,7 +28,7 @@ import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (thumbnailImage)
-import Utils.NominalDate exposing (Days(..), Months(..), diffDays, diffMonths, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate)
+import Utils.NominalDate exposing (Days(..), Months(..), diffDays, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model exposing (Centimetres(..), Kilograms(..), Length(..), ZScore)
 import ZScore.Utils exposing (zScoreLengthHeightForAge, zScoreWeightForAge)
@@ -425,7 +425,7 @@ viewFoundChild language currentDate zscores ( childId, child ) individualChildMe
         childAgeInMonths =
             case child.birthDate of
                 Just birthDate ->
-                    Gizra.NominalDate.diffMonths birthDate currentDate
+                    diffMonths birthDate currentDate
 
                 Nothing ->
                     0
@@ -740,7 +740,7 @@ chartHeightForAge child height =
         |> Maybe.map
             (\birthDate ->
                 ( diffDays birthDate height.dateMeasured
-                , diffMonths birthDate height.dateMeasured
+                , diffMonths birthDate height.dateMeasured |> Months
                 , case height.value of
                     HeightInCm cm ->
                         Centimetres cm
@@ -754,7 +754,7 @@ chartWeightForAge child weight =
         |> Maybe.map
             (\birthDate ->
                 ( diffDays birthDate weight.dateMeasured
-                , diffMonths birthDate weight.dateMeasured
+                , diffMonths birthDate weight.dateMeasured |> Months
                 , case weight.value of
                     WeightInKg kg ->
                         Kilograms kg
