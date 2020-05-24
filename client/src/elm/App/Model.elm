@@ -217,7 +217,7 @@ type Msg
     | HandlePairedDevice (WebData Device)
       -- Manage ZScore data
     | MsgZScore ZScore.Model.Msg
-      -- Communiating with Rollbar
+      -- Communicating with Rollbar
     | SendRollbar Rollbar.Level String (Dict String Value)
     | HandleRollbar (Result Http.Error Uuid)
       -- Manage our own model

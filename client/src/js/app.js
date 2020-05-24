@@ -131,7 +131,6 @@ dbSync.version(10).stores({
   deferredPhotos: '&uuid,type,vid,photo,attempts',
 });
 
-
 const getRevisionIdPerAuthority = function() {
   const storage = localStorage.getItem('revisionIdPerAuthority');
 

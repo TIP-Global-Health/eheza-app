@@ -11,6 +11,7 @@ import DataManager.View
 import Date
 import Error.View
 import EverySet
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList)
@@ -75,11 +76,32 @@ view model =
 -}
 flexPageWrapper : Model -> Html Msg -> Html Msg
 flexPageWrapper model html =
+    let
+        loggedInNurse =
+            case RemoteData.toMaybe model.configuration of
+                Just config ->
+                    case RemoteData.toMaybe config.loggedIn of
+                        Just loggedIn ->
+                            let
+                                nurse =
+                                    Tuple.second loggedIn.nurse
+                            in
+                            div [ class "segment ui" ] [ text <| "Nurse: " ++ nurse.name ]
+
+                        Nothing ->
+                            emptyNode
+
+                Nothing ->
+                    emptyNode
+    in
     div [ class "page container" ]
         [ viewLanguageSwitcherAndVersion model
 
         -- @todo: Move to sync page only.
         , Error.View.view model.language model.errors
+
+        -- Show logged in nurse.
+        , loggedInNurse
         , Html.map MsgDataManager (DataManager.View.viewDebugSync model.dataManager)
         , div
             [ class "page-content" ]

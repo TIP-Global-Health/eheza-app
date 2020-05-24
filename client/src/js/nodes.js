@@ -13,8 +13,19 @@
 // start by implementing just the things we need -- over time, it may
 // become more comprehensive.
 
-(function () {
-    return;
+(async () => {
+
+    var dbSync = new Dexie('sync');
+
+    // As we defined Dexie's store in app.js, it seems we cannot do it here.
+    // Instead, we re-define the table properties, which seems to make it work.
+    var db = await dbSync.open()
+    db.tables.forEach(function(table) {
+        dbSync[table.name] = table;
+    });
+
+
+
     // This defines our URL scheme. A URL will look like
     //
     // /sw/nodes/health_center
@@ -149,6 +160,8 @@
 
     function getTableForType (type) {
         var table = tableForType[type];
+
+        console.log(dbSync.nodes);
 
         if (table) {
             return Promise.resolve(dbSync[table]);
@@ -376,6 +389,7 @@
 
     function view (type, uuid) {
         return dbSync.open().catch(databaseError).then(function () {
+
             return getTableForType(type).then(function (table) {
               var uuids = uuid.split(',');
 
@@ -516,7 +530,8 @@
         var range = parseInt(params.get('range') || '0');
         var sortBy = '';
 
-        return dbSync.open().catch(databaseError).then(function () {
+        return dbSync.open().catch(databaseError).then(function (db) {
+
             var criteria = {type: type};
 
             // We can do a limited kind of criteria ... can be expanded when

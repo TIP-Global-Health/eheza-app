@@ -46,42 +46,6 @@
                     });
                 })
             );
-
-            // event.respondWith(
-            //     (async () => {
-            //         const cache = await caches.open(cacheName);
-            //         const cachedFiles = await cache.match(event.request);
-            //         if (!!cachedFiles) {
-            //            return cachedFiles;
-            //         }
-            //         else {
-            //           return fetch(event.request);
-            //         }
-            //     })()
-            // );
-
-
-            // var response = caches.open(photosDownloadCache).then(function (cache) {
-            //     return cache.match(event.request.url).then(function(response) {
-            //         if (response) {
-            //             console.log(response);
-            //             return response;
-            //         } else {
-            //             return fetch(event.request);
-            //             throw Error('Image was not cached.');
-            //         }
-            //     });
-            // }).catch(function(e) {
-            //     // As a fallback, we will try to get the file from the backend.
-            //     // This will only work if we're online, of course. We don't
-            //     // cache files fetched in this way, because we don't
-            //     // necessarily want to cache all images -- we'll choose which
-            //     // ones to cache.
-            //     console.log('trying to fetch?');
-            //     return fetch(event.request);
-            // });
-            //
-            // event.respondWith(response);
         }
 
 
