@@ -224,13 +224,7 @@
                             }
                         });
 
-                        if (type === 'syncmetadata') {
-                            return Promise.resolve(response);
-                        } else {
-                            return sendRevisedNode(table, uuid).then(function () {
-                                return Promise.resolve(response);
-                            });
-                        }
+                        return Promise.resolve(response);
                     });
                 });
             });
@@ -256,47 +250,36 @@
                                     }
                                 });
 
-                                if (type === 'syncmetadata') {
-                                    // If our syncmetadata changes, kick off a sync
-                                    self.registration.sync.register('sync').catch(function () {
-                                        self.registration.active.postMessage('sync');
-                                    });
+                                var change = {
+                                    type: type,
+                                    uuid: uuid,
+                                    method: 'PATCH',
+                                    data: json,
+                                    timestamp: Date.now()
+                                };
 
-                                    return sendSyncData().then(function () {
-                                        return Promise.resolve(response);
-                                    });
-                                } else {
-                                    var change = {
-                                        type: type,
-                                        uuid: uuid,
-                                        method: 'PATCH',
-                                        data: json,
-                                        timestamp: Date.now()
-                                    };
+                                var changeTable = dbSync.nodeChanges;
+                                var addShard = Promise.resolve();
 
-                                    var changeTable = dbSync.nodeChanges;
-                                    var addShard = Promise.resolve();
+                                if (table === dbSync.shards) {
+                                    changeTable = dbSync.shardChanges;
 
-                                    if (table === dbSync.shards) {
-                                        changeTable = dbSync.shardChanges;
-
-                                        addShard = table.get(uuid).catch(databaseError).then(function (item) {
-                                            if (item) {
-                                                change.shard = item.shard;
-                                            } else {
-                                                return Promise.reject('Unexpectedly could not find: ' + uuid);
-                                            }
-                                        });
-                                    }
-
-                                    return addShard.then(function () {
-                                        return changeTable.add(change).then(function (localId) {
-                                            return sendRevisedNode(table, uuid).then(function () {
-                                                return Promise.resolve(response);
-                                            });
-                                        });
+                                    addShard = table.get(uuid).catch(databaseError).then(function (item) {
+                                        if (item) {
+                                            change.shard = item.shard;
+                                        } else {
+                                            return Promise.reject('Unexpectedly could not find: ' + uuid);
+                                        }
                                     });
                                 }
+
+                                return addShard.then(function () {
+                                    return changeTable.add(change).then(function (localId) {
+                                        return Promise.resolve(response);
+                                    });
+                                });
+
+
                             } else {
                                 return Promise.reject("UUID unexpectedly not found.");
                             }
@@ -342,37 +325,24 @@
                                     }
                                 });
 
-                                if (type === 'syncmetadata') {
-                                    // If our syncmetadata changes, kick off a sync
-                                    self.registration.sync.register('sync').catch(function () {
-                                        self.registration.active.postMessage('sync');
-                                    });
+                                var change = {
+                                    type: type,
+                                    uuid: uuid,
+                                    method: 'POST',
+                                    data: json,
+                                    timestamp: Date.now()
+                                };
 
-                                    return sendSyncData().then(function () {
-                                        return Promise.resolve(response);
-                                    });
-                                } else {
-                                    var change = {
-                                        type: type,
-                                        uuid: uuid,
-                                        method: 'POST',
-                                        data: json,
-                                        timestamp: Date.now()
-                                    };
+                                var changeTable = dbSync.nodeChanges;
 
-                                    var changeTable = dbSync.nodeChanges;
-
-                                    if (table === dbSync.shards) {
-                                        changeTable = dbSync.shardChanges;
-                                        change.shard = json.shard;
-                                    }
-
-                                    return changeTable.add(change).then(function (localId) {
-                                        return sendRevisedNode(table, uuid).then(function () {
-                                            return Promise.resolve(response);
-                                        });
-                                    });
+                                if (table === dbSync.shards) {
+                                    changeTable = dbSync.shardChanges;
+                                    change.shard = json.shard;
                                 }
+
+                                return changeTable.add(change).then(function (localId) {
+                                    return Promise.resolve(response);
+                                });
                             });
                         });
                     });

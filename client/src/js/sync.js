@@ -7,6 +7,8 @@
  */
 'use strict';
 
+// @todo: Rename file to device-pair, or move elsewhere.
+
 (function () {
     // Here is a list of possible values for the 'tag` field for our status,
     // along with other fields to look for.
@@ -627,22 +629,11 @@
                             return Promise.reject(err);
                         }
                     }).then(function () {
-                        return sendRevisions(saved).then(function () {
-                            return Promise.resolve({
-                                last_timestamp: parseInt(json.data.last_timestamp),
-                                last_contact: Date.now(),
-                                remaining: remaining - saved.length
-                            });
-                        });
+                        return Promise.resolve();
                     });
                 });
             } else {
-                return Promise.reject({
-                    tag: BadResponse,
-                    status: response.status,
-                    statusText: response.statusText,
-                    timestamp: Date.now()
-                });
+                return Promise.reject();
             }
         });
     }
