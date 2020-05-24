@@ -161,8 +161,6 @@
     function getTableForType (type) {
         var table = tableForType[type];
 
-        console.log(dbSync.nodes);
-
         if (table) {
             return Promise.resolve(dbSync[table]);
         } else {
