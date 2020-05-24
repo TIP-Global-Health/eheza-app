@@ -4,7 +4,7 @@
  * @file
  * Adds graduation date for group participants.
  *
- * - Child is considered a graduate when his age is over 26 month.
+ * - Child is considered a graduate when over 26 month old.
  * - Sorwathe participants do not graduate.
  *
  * Execution:
@@ -81,7 +81,7 @@ while ($processed < $count) {
     if ($clinic_type == 'sorwathe') {
       continue;
     }
-    
+
     $child_birth_date = $wrapper->field_person->field_birth_date->value();
     // We can't set graduation date, unless we know child birth date.
     if (empty($child_birth_date)) {
@@ -89,7 +89,7 @@ while ($processed < $count) {
     }
 
     $wrapper->field_expected->set([
-      'value' => $expected['value2'],
+      'value' => $expected['value'],
       'value2' => date('Y-m-d', strtotime("+26 month", $child_birth_date)),
     ]);
     $wrapper->save();
@@ -103,7 +103,9 @@ while ($processed < $count) {
     return;
   }
 
-  $processed += count($nodes);
+  $count = count($nodes);
+  $processed += $count;
+  drush_print("$count nodes of type $type processed.");
 }
 
 drush_print("Done! $graduated participants graduated.");
