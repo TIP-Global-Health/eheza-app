@@ -455,8 +455,8 @@ expectCounselingActivity session childId =
 Note that we don't consider whether the mother is checked in here -- just
 whether we would expect to perform this action if checked in.
 -}
-expectMotherActivity : OfflineSession -> PersonId -> MotherActivity -> Bool
-expectMotherActivity offlineSession motherId activity =
+expectMotherActivity : NominalDate -> OfflineSession -> PersonId -> MotherActivity -> Bool
+expectMotherActivity currentDate offlineSession motherId activity =
     Dict.get motherId offlineSession.participants.byMotherId
         |> Maybe.withDefault []
         |> List.any
@@ -483,14 +483,23 @@ expectMotherActivity offlineSession motherId activity =
                         case participant.adultActivities of
                             MotherActivities ->
                                 if offlineSession.session.clinicType == Fbf then
-                                    getMotherMeasurementData2 motherId offlineSession
-                                        |> LocalData.map
-                                            (.current
-                                                >> .lactation
-                                                >> Maybe.map (Tuple.second >> .value >> EverySet.member Breastfeeding)
-                                                >> Maybe.withDefault False
-                                            )
-                                        |> LocalData.withDefault False
+                                    let
+                                        isBreastfeeding =
+                                            getMotherMeasurementData2 motherId offlineSession
+                                                |> LocalData.map
+                                                    (.current
+                                                        >> .lactation
+                                                        >> Maybe.map (Tuple.second >> .value >> EverySet.member Breastfeeding)
+                                                        >> Maybe.withDefault False
+                                                    )
+                                                |> LocalData.withDefault False
+
+                                        entitledByUbudehe =
+                                            Dict.get motherId offlineSession.mothers
+                                                |> Maybe.map (fbfAmountForPerson currentDate >> isJust)
+                                                |> Maybe.withDefault False
+                                    in
+                                    isBreastfeeding && entitledByUbudehe
 
                                 else
                                     False
@@ -566,7 +575,7 @@ summarizeMotherActivity currentDate activity session isChw checkedIn =
     -- For participant consent, we only consider the activity to be completed once
     -- all expected consents have been saved.
     checkedIn.mothers
-        |> Dict.filter (\motherId _ -> expectMotherActivity session motherId activity)
+        |> Dict.filter (\motherId _ -> expectMotherActivity currentDate session motherId activity)
         |> Dict.partition (\motherId _ -> motherHasCompletedActivity motherId activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
@@ -625,7 +634,7 @@ activities may not be expected for this mother).
 summarizeMotherParticipant : NominalDate -> PersonId -> OfflineSession -> Bool -> CompletedAndPending (List MotherActivity)
 summarizeMotherParticipant currentDate id session isChw =
     getAllMotherActivities session
-        |> List.filter (expectMotherActivity session id)
+        |> List.filter (expectMotherActivity currentDate session id)
         |> List.partition (\activity -> motherHasCompletedActivity id activity session)
         |> (\( completed, pending ) -> { completed = completed, pending = pending })
 
