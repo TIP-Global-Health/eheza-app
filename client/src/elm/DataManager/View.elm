@@ -165,8 +165,14 @@ viewAuthorityEntity : BackendAuthorityEntity -> Html msg
 viewAuthorityEntity backendAuthorityEntity =
     li []
         [ case backendAuthorityEntity of
-            BackendAuthorityPhoto _ _ photo ->
-                text <| "Photo " ++ Debug.toString photo
+            BackendAuthorityNurse _ _ entity ->
+                text <| "Nurse " ++ entity.name
+
+            BackendAuthorityPhoto _ _ entity ->
+                text <| "Photo " ++ Debug.toString entity
+
+            BackendAuthorityWeight _ _ entity ->
+                text <| "Weight " ++ fromEntityUuid entity.participantId
 
             BackendAuthorityEntityUnknown type_ _ ->
                 text <| type_ ++ " (we still don't decode it)"

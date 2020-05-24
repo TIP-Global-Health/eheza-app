@@ -26,6 +26,7 @@ import AssocList exposing (Dict)
 import Backend.Entities exposing (HealthCenterId)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.Measurement.Model exposing (Measurement, Photo, Weight)
+import Backend.Nurse.Model exposing (Nurse)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (Relationship)
@@ -60,8 +61,9 @@ authority (e.g. Health center). For example, a child's measurements is per
 authority.
 -}
 type BackendAuthorityEntity
-    = -- BackendAuthorityMeasurementWeight String Int Weight
-      BackendAuthorityPhoto String Int Photo
+    = BackendAuthorityNurse String Int Nurse
+    | BackendAuthorityPhoto String Int Photo
+    | BackendAuthorityWeight String Int Weight
       -- Don't fail on unknown types. We'd like to keep the type name along with
       -- the `vid`. The reason we keep the vid, is that we fetched some content
       -- which we don't recognize, but we want to keep fetching later content.

@@ -4,6 +4,7 @@ import App.Model exposing (SubModelReturn)
 import Backend.HealthCenter.Encoder
 import Backend.Measurement.Encoder
 import Backend.Model
+import Backend.Nurse.Encoder
 import Backend.Person.Encoder
 import Backend.PmtctParticipant.Encoder
 import Backend.Relationship.Encoder
@@ -118,8 +119,16 @@ update currentDate device msg model =
                                                             |> Json.Encode.encode 0
                                                 in
                                                 case entity of
+                                                    BackendAuthorityNurse uuid vid entity_ ->
+                                                        doEncode uuid vid (Json.Encode.object <| Backend.Nurse.Encoder.encodeNurse entity_)
+                                                            :: accum
+
                                                     BackendAuthorityPhoto uuid vid entity_ ->
                                                         doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodePhoto entity_)
+                                                            :: accum
+
+                                                    BackendAuthorityWeight uuid vid entity_ ->
+                                                        doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodeWeight entity_)
                                                             :: accum
 
                                                     BackendAuthorityEntityUnknown _ _ ->
@@ -185,7 +194,13 @@ update currentDate device msg model =
                                 |> Maybe.map
                                     (\entity ->
                                         case entity of
+                                            BackendAuthorityNurse _ vid _ ->
+                                                vid
+
                                             BackendAuthorityPhoto _ vid _ ->
+                                                vid
+
+                                            BackendAuthorityWeight _ vid _ ->
                                                 vid
 
                                             BackendAuthorityEntityUnknown _ vid ->
