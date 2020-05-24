@@ -90,7 +90,7 @@ while ($processed < $count) {
 
     $wrapper->field_expected->set([
       'value' => $expected['value2'],
-      'value2' => strtotime("+26 month", $child_birth_date),
+      'value2' => date('Y-m-d', strtotime("+26 month", $child_birth_date)),
     ]);
     $wrapper->save();
     $graduated++;
