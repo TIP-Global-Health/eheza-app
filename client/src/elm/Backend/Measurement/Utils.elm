@@ -1,9 +1,12 @@
-module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, getCurrentAndPrevious, mapMeasurementData, muacIndication, socialHistoryHivTestingResultFromString, splitChildMeasurements, splitMotherMeasurements)
+module Backend.Measurement.Utils exposing (currentValue, currentValueWithId, currentValues, fbfAmountForPerson, fbfFormToValue, fbfValueToForm, getCurrentAndPrevious, lactationFormToSigns, lactationSignsToForm, mapMeasurementData, muacIndication, socialHistoryHivTestingResultFromString, splitChildMeasurements, splitMotherMeasurements)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Gizra.NominalDate exposing (compare)
+import Backend.Person.Model exposing (Person, Ubudehe(..))
+import Backend.Person.Utils exposing (isAdult)
+import EverySet exposing (EverySet)
+import Gizra.NominalDate exposing (NominalDate, compare, diffMonths)
 import Restful.Endpoint exposing (EntityUuid)
 
 
@@ -70,6 +73,12 @@ splitMotherMeasurements sessionId =
                 consent =
                     getCurrentAndPrevious sessionId list.consents
                         |> .current
+
+                lactation =
+                    getCurrentAndPrevious sessionId list.lactations
+
+                fbf =
+                    getCurrentAndPrevious sessionId list.fbfs
             in
             { current =
                 { attendance =
@@ -81,6 +90,14 @@ splitMotherMeasurements sessionId =
                         |> Dict.toList
                         |> List.head
                 , consent = consent
+                , lactation =
+                    lactation.current
+                        |> Dict.toList
+                        |> List.head
+                , fbf =
+                    fbf.current
+                        |> Dict.toList
+                        |> List.head
                 }
             , previous =
                 -- We don't "compare" consents, so previous doesn't mean
@@ -88,6 +105,8 @@ splitMotherMeasurements sessionId =
                 { attendance = attendance.previous
                 , familyPlanning = familyPlanning.previous
                 , consent = Dict.empty
+                , lactation = lactation.previous
+                , fbf = fbf.previous
                 }
             }
         )
@@ -115,6 +134,9 @@ splitChildMeasurements sessionId =
 
                 counselingSession =
                     getCurrentAndPrevious sessionId list.counselingSessions
+
+                fbf =
+                    getCurrentAndPrevious sessionId list.fbfs
             in
             { current =
                 -- We can only have one per session ... we enforce that here.
@@ -142,6 +164,10 @@ splitChildMeasurements sessionId =
                     counselingSession.current
                         |> Dict.toList
                         |> List.head
+                , fbf =
+                    fbf.current
+                        |> Dict.toList
+                        |> List.head
                 }
             , previous =
                 { height = height.previous
@@ -150,6 +176,7 @@ splitChildMeasurements sessionId =
                 , nutrition = nutrition.previous
                 , photo = photo.previous
                 , counselingSession = counselingSession.previous
+                , fbf = fbf.previous
                 }
             }
         )
@@ -190,6 +217,103 @@ getCurrentAndPrevious sessionId =
         { current = Dict.empty
         , previous = Nothing
         }
+
+
+lactationSignsToForm : EverySet LactationSign -> LactationForm
+lactationSignsToForm signs =
+    EverySet.member Breastfeeding signs
+        |> Just
+        |> LactationForm
+
+
+lactationFormToSigns : LactationForm -> EverySet LactationSign
+lactationFormToSigns form =
+    form.breastfeeding
+        |> Maybe.map
+            (\breastfeeding ->
+                if breastfeeding then
+                    EverySet.singleton Breastfeeding
+
+                else
+                    EverySet.singleton NoLactationSigns
+            )
+        |> Maybe.withDefault (EverySet.singleton NoLactationSigns)
+
+
+fbfValueToForm : FbfValue -> FbfForm
+fbfValueToForm value =
+    let
+        distributedFully =
+            value.distributionNotice == DistributedFully |> Just
+    in
+    FbfForm distributedFully (Just value.distributedAmount) (Just value.distributionNotice)
+
+
+fbfFormToValue : Float -> FbfForm -> FbfValue
+fbfFormToValue defaultAmount form =
+    let
+        defaultValue =
+            FbfValue defaultAmount DistributedFully
+    in
+    form.distributedFully
+        |> Maybe.map
+            (\distributedFully ->
+                if distributedFully then
+                    defaultValue
+
+                else
+                    Maybe.map2
+                        (\distributedAmount distributionNotice ->
+                            FbfValue distributedAmount distributionNotice
+                        )
+                        form.distributedAmount
+                        form.distributionNotice
+                        -- We should never get here, as we always expect to have
+                        -- these fields filled, when distribution is not full
+                        |> Maybe.withDefault defaultValue
+            )
+        -- We should never get here, as we always expect to have
+        -- 'distributedFully' filled in form.
+        |> Maybe.withDefault defaultValue
+
+
+fbfAmountForPerson : NominalDate -> Person -> Maybe Float
+fbfAmountForPerson currentDate person =
+    person.birthDate
+        |> Maybe.andThen
+            (\birthDate ->
+                isAdult currentDate (Just birthDate)
+                    |> Maybe.andThen
+                        (\isAdult ->
+                            if isAdult then
+                                case person.ubudehe of
+                                    Just Ubudehe1 ->
+                                        Just 4.5
+
+                                    Just Ubudehe2 ->
+                                        Just 3
+
+                                    _ ->
+                                        Nothing
+
+                            else
+                                let
+                                    diff =
+                                        diffMonths birthDate currentDate
+                                in
+                                if diff > 5 && diff < 9 then
+                                    Just 3
+
+                                else if diff > 8 && diff < 12 then
+                                    Just 6
+
+                                else if diff > 11 && diff < 24 then
+                                    Just 7.5
+
+                                else
+                                    Nothing
+                        )
+            )
 
 
 socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult

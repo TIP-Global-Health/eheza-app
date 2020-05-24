@@ -1,4 +1,4 @@
-module Backend.Entities exposing (AttendanceId, AttendanceUuidType(..), BreastExamId, BreastExamUuidType(..), CatchmentAreaId, CatchmentAreaUuidType(..), ChildNutritionId, ChildNutritionUuidType(..), ClinicId, ClinicUuidType(..), CorePhysicalExamId, CorePhysicalExamUuidType(..), CounselingScheduleId, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicUuidType(..), DangerSignsId, DangerSignsUuidType(..), FamilyPlanningId, FamilyPlanningUuidType(..), HealthCenterId, HealthCenterUuidType(..), HeightId, HeightUuidType(..), IndividualEncounterParticipantId, IndividualEncounterParticipantIdType(..), LastMenstrualPeriodId, LastMenstrualPeriodUuidType(..), MedicalHistoryId, MedicalHistoryUuidType(..), MedicationId, MedicationUuidType(..), MuacId, MuacUuidType(..), NurseId, NurseUuidType(..), NutritionEncounterId, NutritionEncounterUuidType(..), NutritionHeightId, NutritionHeightUuidType(..), NutritionMuacId, NutritionMuacUuidType(..), NutritionNutritionId, NutritionNutritionUuidType(..), NutritionPhotoId, NutritionPhotoUuidType(..), NutritionWeightId, NutritionWeightUuidType(..), ObstetricHistoryId, ObstetricHistoryStep2Id, ObstetricHistoryStep2UuidType(..), ObstetricHistoryUuidType(..), ObstetricalExamId, ObstetricalExamUuidType(..), ParticipantConsentId, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormUuidType(..), PersonId, PersonUuidType(..), PhotoId, PhotoUuidType(..), PmtctParticipantId, PmtctParticipantUuidType(..), PrenatalEncounterId, PrenatalEncounterIdType(..), PrenatalFamilyPlanningId, PrenatalFamilyPlanningUuidType(..), PrenatalNutritionId, PrenatalNutritionUuidType(..), PrenatalPhotoId, PrenatalPhotoUuidType(..), RelationshipId, RelationshipUuidType(..), ResourceId, ResourceUuidType(..), SessionId, SessionUuidType(..), SocialHistoryId, SocialHistoryUuidType(..), VillageId, VillageUuidType(..), VitalsId, VitalsUuidType(..), WeightId, WeightUuidType(..))
+module Backend.Entities exposing (AttendanceId, AttendanceUuidType(..), BreastExamId, BreastExamUuidType(..), CatchmentAreaId, CatchmentAreaUuidType(..), ChildFbfId, ChildFbfUuidType(..), ChildNutritionId, ChildNutritionUuidType(..), ClinicId, ClinicUuidType(..), CorePhysicalExamId, CorePhysicalExamUuidType(..), CounselingScheduleId, CounselingScheduleUuidType(..), CounselingSessionId, CounselingSessionUuidType(..), CounselingTopicId, CounselingTopicUuidType(..), DangerSignsId, DangerSignsUuidType(..), FamilyPlanningId, FamilyPlanningUuidType(..), HealthCenterId, HealthCenterUuidType(..), HeightId, HeightUuidType(..), IndividualEncounterParticipantId, IndividualEncounterParticipantIdType(..), LactationId, LactationUuidType(..), LastMenstrualPeriodId, LastMenstrualPeriodUuidType(..), MedicalHistoryId, MedicalHistoryUuidType(..), MedicationId, MedicationUuidType(..), MotherFbfId, MotherFbfUuidType(..), MuacId, MuacUuidType(..), NurseId, NurseUuidType(..), NutritionEncounterId, NutritionEncounterUuidType(..), NutritionHeightId, NutritionHeightUuidType(..), NutritionMuacId, NutritionMuacUuidType(..), NutritionNutritionId, NutritionNutritionUuidType(..), NutritionPhotoId, NutritionPhotoUuidType(..), NutritionWeightId, NutritionWeightUuidType(..), ObstetricHistoryId, ObstetricHistoryStep2Id, ObstetricHistoryStep2UuidType(..), ObstetricHistoryUuidType(..), ObstetricalExamId, ObstetricalExamUuidType(..), ParticipantConsentId, ParticipantConsentUuidType(..), ParticipantFormId, ParticipantFormUuidType(..), PersonId, PersonUuidType(..), PhotoId, PhotoUuidType(..), PmtctParticipantId, PmtctParticipantUuidType(..), PrenatalEncounterId, PrenatalEncounterIdType(..), PrenatalFamilyPlanningId, PrenatalFamilyPlanningUuidType(..), PrenatalNutritionId, PrenatalNutritionUuidType(..), PrenatalPhotoId, PrenatalPhotoUuidType(..), RelationshipId, RelationshipUuidType(..), ResourceId, ResourceUuidType(..), SessionId, SessionUuidType(..), SocialHistoryId, SocialHistoryUuidType(..), VillageId, VillageUuidType(..), VitalsId, VitalsUuidType(..), WeightId, WeightUuidType(..))
 
 {-|
 
@@ -207,6 +207,14 @@ type CatchmentAreaUuidType
     = CatchmentAreaUuidType
 
 
+type alias ChildFbfId =
+    EntityUuid ChildFbfUuidType
+
+
+type ChildFbfUuidType
+    = ChildFbfUuidType
+
+
 type alias ChildNutritionId =
     EntityUuid ChildNutritionUuidType
 
@@ -277,6 +285,22 @@ type alias HeightId =
 
 type HeightUuidType
     = HeightUuidType
+
+
+type alias LactationId =
+    EntityUuid LactationUuidType
+
+
+type LactationUuidType
+    = LactationUuidType
+
+
+type alias MotherFbfId =
+    EntityUuid MotherFbfUuidType
+
+
+type MotherFbfUuidType
+    = MotherFbfUuidType
 
 
 type alias MuacId =

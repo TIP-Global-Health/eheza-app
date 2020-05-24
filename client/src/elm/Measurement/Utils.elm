@@ -4,7 +4,7 @@ import Activity.Utils exposing (expectCounselingActivity, expectParticipantConse
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
+import Backend.Measurement.Utils exposing (currentValue, currentValues, fbfValueToForm, lactationSignsToForm, mapMeasurementData)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildMeasurementData, getMotherMeasurementData)
 import EverySet
@@ -75,6 +75,12 @@ fromChildMeasurementData data =
             |> currentValue
             |> Maybe.map (.value >> (\(WeightInKg kg) -> String.fromFloat kg))
             |> Maybe.withDefault ""
+    , fbfForm =
+        data
+            |> mapMeasurementData .fbf
+            |> currentValue
+            |> Maybe.map (.value >> fbfValueToForm)
+            |> Maybe.withDefault (FbfForm Nothing Nothing Nothing)
     }
 
 
@@ -103,6 +109,18 @@ fromMotherMeasurementData data =
         , view = Nothing
         , progress = progress
         }
+    , lactationForm =
+        data
+            |> mapMeasurementData .lactation
+            |> currentValue
+            |> Maybe.map (.value >> lactationSignsToForm)
+            |> Maybe.withDefault (LactationForm Nothing)
+    , fbfForm =
+        data
+            |> mapMeasurementData .fbf
+            |> currentValue
+            |> Maybe.map (.value >> fbfValueToForm)
+            |> Maybe.withDefault (FbfForm Nothing Nothing Nothing)
     }
 
 

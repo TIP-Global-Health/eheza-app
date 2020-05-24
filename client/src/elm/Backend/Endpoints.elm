@@ -1,4 +1,4 @@
-module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), attendanceEndpoint, breastExamEndpoint, childMeasurementListEndpoint, clinicEndpoint, corePhysicalExamEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, dangerSignsEndpoint, encodeIndividualEncounterParams, encodeIndividualEncounterParticipantParams, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, healthCenterEndpoint, heightEndpoint, individualEncounterParticipantEndpoint, lastMenstrualPeriodEndpoint, medicalHistoryEndpoint, medicationEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEncounterEndpoint, nutritionEndpoint, nutritionHeightEndpoint, nutritionMeasurementsEndpoint, nutritionMuacEndpoint, nutritionNutritionEndpoint, nutritionPhotoEndpoint, nutritionWeightEndpoint, obstetricHistoryEndpoint, obstetricHistoryStep2Endpoint, obstetricalExamEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, prenatalEncounterEndpoint, prenatalFamilyPlanningEndpoint, prenatalMeasurementsEndpoint, prenatalNutritionEndpoint, prenatalPhotoEndpoint, relationshipEndpoint, resourceEndpoint, sessionEndpoint, socialHistoryEndpoint, swEndpoint, syncDataEndpoint, villageEndpoint, vitalsEndpoint, weightEndpoint)
+module Backend.Endpoints exposing (NurseParams, PersonParams, PmtctParticipantParams(..), RelationshipParams, SessionParams(..), attendanceEndpoint, breastExamEndpoint, childFbfEndpoint, childMeasurementListEndpoint, clinicEndpoint, corePhysicalExamEndpoint, counselingScheduleEndpoint, counselingSessionEndpoint, counselingTopicEndpoint, dangerSignsEndpoint, encodeIndividualEncounterParams, encodeIndividualEncounterParticipantParams, encodeNurseParams, encodePersonParams, encodePmtctParticipantParams, encodeRelationshipParams, encodeSessionParams, familyPlanningEndpoint, fbfEndpoint, healthCenterEndpoint, heightEndpoint, individualEncounterParticipantEndpoint, lactationEndpoint, lastMenstrualPeriodEndpoint, medicalHistoryEndpoint, medicationEndpoint, motherFbfEndpoint, motherMeasurementListEndpoint, muacEndpoint, nurseEndpoint, nutritionEncounterEndpoint, nutritionEndpoint, nutritionHeightEndpoint, nutritionMeasurementsEndpoint, nutritionMuacEndpoint, nutritionNutritionEndpoint, nutritionPhotoEndpoint, nutritionWeightEndpoint, obstetricHistoryEndpoint, obstetricHistoryStep2Endpoint, obstetricalExamEndpoint, participantConsentEndpoint, participantFormEndpoint, personEndpoint, photoEndpoint, pmtctParticipantEndpoint, prenatalEncounterEndpoint, prenatalFamilyPlanningEndpoint, prenatalMeasurementsEndpoint, prenatalNutritionEndpoint, prenatalPhotoEndpoint, relationshipEndpoint, resourceEndpoint, sessionEndpoint, socialHistoryEndpoint, swEndpoint, syncDataEndpoint, villageEndpoint, vitalsEndpoint, weightEndpoint)
 
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Clinic.Encoder exposing (encodeClinic)
@@ -176,6 +176,28 @@ familyPlanningEndpoint : ReadWriteEndPoint Error FamilyPlanningId FamilyPlanning
 familyPlanningEndpoint =
     swEndpoint "nodes/family_planning" decodeFamilyPlanning
         |> withValueEncoder (object << encodeFamilyPlanning)
+
+
+lactationEndpoint : ReadWriteEndPoint Error LactationId Lactation Lactation ()
+lactationEndpoint =
+    swEndpoint "nodes/lactation" decodeLactation
+        |> withValueEncoder (object << encodeLactation)
+
+
+childFbfEndpoint : ReadWriteEndPoint Error ChildFbfId Fbf Fbf ()
+childFbfEndpoint =
+    fbfEndpoint "nodes/child_fbf"
+
+
+motherFbfEndpoint : ReadWriteEndPoint Error MotherFbfId Fbf Fbf ()
+motherFbfEndpoint =
+    fbfEndpoint "nodes/mother_fbf"
+
+
+fbfEndpoint : String -> ReadWriteEndPoint Error (EntityUuid a) Fbf Fbf ()
+fbfEndpoint path =
+    swEndpoint path decodeFbf
+        |> withValueEncoder (object << encodeFbf)
 
 
 participantConsentEndpoint : ReadWriteEndPoint Error ParticipantConsentId ParticipantConsent ParticipantConsent ()

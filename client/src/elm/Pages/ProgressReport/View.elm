@@ -10,11 +10,11 @@ import Backend.NutritionEncounter.Utils exposing (generatePreviousMeasurementsFo
 import Backend.Person.Model exposing (Gender(..), Person)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (EditableSession, Session)
-import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getMother, getMyMother)
+import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getMyMother)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -35,8 +35,8 @@ import ZScore.Utils exposing (zScoreLengthHeightForAge, zScoreWeightForAge)
 import ZScore.View
 
 
-view : Language -> ZScore.Model.Model -> PersonId -> ( SessionId, EditableSession ) -> ModelIndexedDb -> Html Pages.Session.Model.Msg
-view language zscores childId ( sessionId, session ) db =
+view : Language -> NominalDate -> ZScore.Model.Model -> PersonId -> ( SessionId, EditableSession ) -> ModelIndexedDb -> Html Pages.Session.Model.Msg
+view language currentDate zscores childId ( sessionId, session ) db =
     case getChild childId session.offlineSession of
         Just child ->
             let
@@ -97,7 +97,7 @@ view language zscores childId ( sessionId, session ) db =
                         |> Pages.Session.Model.SetActivePage
             in
             viewWebData language
-                (viewFoundChild language zscores ( childId, child ) individualChildMeasurements mother relation currentNutritionSigns defaultLastAssessmentDate goBackAction)
+                (viewFoundChild language currentDate zscores ( childId, child ) individualChildMeasurements mother relation currentNutritionSigns defaultLastAssessmentDate goBackAction)
                 identity
                 (RemoteData.append expectedSessions childMeasurements)
 
@@ -116,6 +116,7 @@ view language zscores childId ( sessionId, session ) db =
 
 viewFoundChild :
     Language
+    -> NominalDate
     -> ZScore.Model.Model
     -> ( PersonId, Person )
     -> List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
@@ -126,7 +127,7 @@ viewFoundChild :
     -> msg
     -> ( Dict SessionId Session, ChildMeasurementList )
     -> Html msg
-viewFoundChild language zscores ( childId, child ) individualChildMeasurements maybeMother relation signs defaultLastAssessmentDate goBackAction ( expected, historical ) =
+viewFoundChild language currentDate zscores ( childId, child ) individualChildMeasurements maybeMother relation signs defaultLastAssessmentDate goBackAction ( expected, historical ) =
     let
         -- GROUP CONTEXT.
         expectedSessions =
@@ -364,37 +365,98 @@ viewFoundChild language zscores ( childId, child ) individualChildMeasurements m
         photos =
             viewPhotos language child photoValues
 
-        ( heightForAge, weightForAge, weightForHeight ) =
+        zScoreViewCharts =
             case child.gender of
                 Male ->
-                    ( ZScore.View.viewHeightForAgeBoys
-                    , ZScore.View.viewWeightForAgeBoys
-                    , ZScore.View.viewWeightForHeightBoys
-                    )
+                    { heightForAge = ZScore.View.viewHeightForAgeBoys
+                    , heightForAge2To5 = ZScore.View.viewHeightForAgeBoys2To5
+                    , heightForAge5To19 = ZScore.View.viewHeightForAgeBoys5To19
+                    , weightForAge = ZScore.View.viewWeightForAgeBoys
+                    , weightForAge2To5 = ZScore.View.viewWeightForAgeBoys2To5
+                    , weightForAge5To10 = ZScore.View.viewWeightForAgeBoys5To10
+                    , weightForHeight = ZScore.View.viewWeightForHeightBoys
+                    , weightForHeight2To5 = ZScore.View.viewWeightForHeight2To5Boys
+                    }
 
                 Female ->
-                    ( ZScore.View.viewHeightForAgeGirls
-                    , ZScore.View.viewWeightForAgeGirls
-                    , ZScore.View.viewWeightForHeightGirls
-                    )
+                    { heightForAge = ZScore.View.viewHeightForAgeGirls
+                    , heightForAge2To5 = ZScore.View.viewHeightForAgeGirls2To5
+                    , heightForAge5To19 = ZScore.View.viewHeightForAgeGirls5To19
+                    , weightForAge = ZScore.View.viewWeightForAgeGirls
+                    , weightForAge2To5 = ZScore.View.viewWeightForAgeGirls2To5
+                    , weightForAge5To10 = ZScore.View.viewWeightForAgeGirls5To10
+                    , weightForHeight = ZScore.View.viewWeightForHeightGirls
+                    , weightForHeight2To5 = ZScore.View.viewWeightForHeight2To5Girls
+                    }
 
         heightForAgeData =
             List.filterMap (chartHeightForAge child) heightValues
 
+        heightForAgeDaysData =
+            heightForAgeData
+                |> List.map (\( days, month, height ) -> ( days, height ))
+
+        heightForAgeMonthsData =
+            heightForAgeData
+                |> List.map (\( days, month, height ) -> ( month, height ))
+
         weightForAgeData =
             List.filterMap (chartWeightForAge child) weightValues
 
+        weightForAgeDaysData =
+            weightForAgeData
+                |> List.map (\( days, month, weight ) -> ( days, weight ))
+
+        weightForAgeMonthsData =
+            weightForAgeData
+                |> List.map (\( days, month, weight ) -> ( month, weight ))
+
+        weightForLengtAndHeighthData =
+            List.filterMap (chartWeightForLengthAndHeight heightValues) weightValues
+
+        weightForLengthData =
+            weightForLengtAndHeighthData
+                |> List.map (\( length, height, weight ) -> ( length, weight ))
+
         weightForHeightData =
-            List.filterMap (chartWeightForHeight heightValues) weightValues
+            weightForLengtAndHeighthData
+                |> List.map (\( length, height, weight ) -> ( height, weight ))
+
+        childAgeInMonths =
+            case child.birthDate of
+                Just birthDate ->
+                    diffMonths birthDate currentDate
+
+                Nothing ->
+                    0
 
         charts =
-            div
-                [ class "image-report" ]
-                [ ZScore.View.viewMarkers
-                , heightForAge language zscores heightForAgeData
-                , weightForAge language zscores weightForAgeData
-                , weightForHeight language zscores weightForHeightData
-                ]
+            if childAgeInMonths <= 24 then
+                div
+                    [ class "image-report" ]
+                    [ ZScore.View.viewMarkers
+                    , zScoreViewCharts.heightForAge language zscores heightForAgeDaysData
+                    , zScoreViewCharts.weightForAge language zscores weightForAgeDaysData
+                    , zScoreViewCharts.weightForHeight language zscores weightForLengthData
+                    ]
+
+            else if childAgeInMonths <= 60 then
+                div
+                    [ class "image-report" ]
+                    [ ZScore.View.viewMarkers
+                    , zScoreViewCharts.heightForAge2To5 language zscores heightForAgeDaysData
+                    , zScoreViewCharts.weightForAge2To5 language zscores weightForAgeDaysData
+                    , zScoreViewCharts.weightForHeight2To5 language zscores weightForHeightData
+                    ]
+
+            else
+                -- Child is older than 5 years.
+                div
+                    [ class "image-report" ]
+                    [ ZScore.View.viewMarkers
+                    , zScoreViewCharts.heightForAge5To19 language zscores heightForAgeMonthsData
+                    , zScoreViewCharts.weightForAge5To10 language zscores weightForAgeMonthsData
+                    ]
     in
     div [ class "page-report" ]
         [ div
@@ -672,14 +734,13 @@ zScoreToIndication zScore =
         Positive
 
 
-chartHeightForAge : Person -> { dateMeasured : NominalDate, encounterId : String, value : HeightInCm } -> Maybe ( Days, Centimetres )
+chartHeightForAge : Person -> { dateMeasured : NominalDate, encounterId : String, value : HeightInCm } -> Maybe ( Days, Months, Centimetres )
 chartHeightForAge child height =
     child.birthDate
         |> Maybe.map
             (\birthDate ->
                 ( diffDays birthDate height.dateMeasured
-                  -- I suppose one could avoid this little transformation
-                  -- by unifiying the two tags.
+                , diffMonths birthDate height.dateMeasured |> Months
                 , case height.value of
                     HeightInCm cm ->
                         Centimetres cm
@@ -687,14 +748,13 @@ chartHeightForAge child height =
             )
 
 
-chartWeightForAge : Person -> { dateMeasured : NominalDate, encounterId : String, value : WeightInKg } -> Maybe ( Days, Kilograms )
+chartWeightForAge : Person -> { dateMeasured : NominalDate, encounterId : String, value : WeightInKg } -> Maybe ( Days, Months, Kilograms )
 chartWeightForAge child weight =
     child.birthDate
         |> Maybe.map
             (\birthDate ->
                 ( diffDays birthDate weight.dateMeasured
-                  -- I suppose one could avoid this little transformation
-                  -- by unifiying the two tags.
+                , diffMonths birthDate weight.dateMeasured |> Months
                 , case weight.value of
                     WeightInKg kg ->
                         Kilograms kg
@@ -702,21 +762,24 @@ chartWeightForAge child weight =
             )
 
 
-chartWeightForHeight :
+chartWeightForLengthAndHeight :
     List { dateMeasured : NominalDate, encounterId : String, value : HeightInCm }
     -> { dateMeasured : NominalDate, encounterId : String, value : WeightInKg }
-    -> Maybe ( Length, Kilograms )
-chartWeightForHeight heights weight =
+    -> Maybe ( Length, ZScore.Model.Height, Kilograms )
+chartWeightForLengthAndHeight heights weight =
     -- For each weight, we try to find a height with a matching sessionID.
-    -- Eventually, we shouild take age into account to distingiush height
-    -- and length.
     heights
         |> List.Extra.find (\height -> height.encounterId == weight.encounterId)
         |> Maybe.map
             (\height ->
-                ( case height.value of
-                    HeightInCm cm ->
-                        Length cm
+                let
+                    cm =
+                        case height.value of
+                            HeightInCm val ->
+                                val
+                in
+                ( Length cm
+                , ZScore.Model.Height cm
                 , case weight.value of
                     WeightInKg kg ->
                         Kilograms kg
