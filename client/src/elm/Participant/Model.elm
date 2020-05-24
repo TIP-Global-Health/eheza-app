@@ -46,7 +46,7 @@ type alias Participant id value activity msg date =
     , toChildId : id -> Maybe PersonId
     , toMotherId : id -> Maybe PersonId
     , toParticipantId : id -> ParticipantId
-    , viewMeasurements : Language -> NominalDate -> ZScore.Model.Model -> Bool -> id -> activity -> Pages.Session.Model.Model -> EditableSession -> Html (Pages.Activity.Model.Msg id msg)
+    , viewMeasurements : Language -> NominalDate -> ZScore.Model.Model -> Bool -> ModelIndexedDb -> id -> activity -> Pages.Session.Model.Model -> EditableSession -> Html (Pages.Activity.Model.Msg id msg)
     }
 
 

@@ -135,7 +135,7 @@ fetch model =
                 |> List.map MsgIndexedDb
 
         UserPage (SessionPage sessionId sessionPage) ->
-            Pages.Session.Fetch.fetch sessionId sessionPage model.indexedDb
+            Pages.Session.Fetch.fetch currentDate sessionId sessionPage model.indexedDb
                 |> List.map MsgIndexedDb
 
         UserPage (PrenatalEncounterPage id) ->

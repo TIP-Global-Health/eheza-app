@@ -37,5 +37,5 @@ type alias AssembledData =
     , participant : IndividualEncounterParticipant
     , person : Person
     , measurements : NutritionMeasurements
-    , previousMeasurementsWithDates : List ( NominalDate, NutritionMeasurements )
+    , previousMeasurementsWithDates : List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
     }
