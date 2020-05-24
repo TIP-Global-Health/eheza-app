@@ -137,7 +137,7 @@ function hedley_view_export_add_item(string $type, string $view_name, string $di
   $dir = HEDLEY_VIEW_EXPORT_DIR;
   // Make sure the directory exists.
   if (!file_prepare_directory($dir, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
-    throw new Exception(t('Could not create directory @dir', ['@dir' => $dir]));
+    throw new Exception('Could not create directory @dir', ['@dir' => $dir]);
   }
   // Add random characters to the filename, to make it unique.
   $random = drupal_random_key(16);

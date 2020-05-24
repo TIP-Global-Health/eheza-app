@@ -148,7 +148,8 @@ creating a new one.
 
 -}
 type OutMsgChild
-    = SaveHeight (Maybe HeightId) HeightInCm
+    = FetchIndividualNutritionData PersonId
+    | SaveHeight (Maybe HeightId) HeightInCm
     | SaveWeight (Maybe WeightId) WeightInKg
     | SaveMuac (Maybe MuacId) MuacInCm
     | SaveCounselingSession (Maybe CounselingSessionId) CounselingTiming (EverySet CounselingTopicId)

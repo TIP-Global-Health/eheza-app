@@ -59,6 +59,7 @@ import Backend.Person.Encoder
         )
 import Backend.Person.Model exposing (..)
 import Backend.Person.Utils exposing (diffInYears, expectedAgeByPerson, isAdult, isPersonAnAdult, resolveExpectedAge)
+import Backend.Village.Model exposing (Village)
 import Date
 import Form exposing (..)
 import Form.Field
@@ -101,36 +102,71 @@ expectedAgeByForm currentDate form operation =
         |> (\birthDate_ -> resolveExpectedAge currentDate birthDate_ operation)
 
 
-applyDefaultValues : Maybe Person -> ParticipantDirectoryOperation -> NominalDate -> PersonForm -> PersonForm
-applyDefaultValues maybeRelatedPerson operation currentDate form =
+applyDefaultValues : NominalDate -> Maybe Village -> Bool -> Maybe Person -> ParticipantDirectoryOperation -> PersonForm -> PersonForm
+applyDefaultValues currentDate maybeVillage isChw maybeRelatedPerson operation form =
     let
+        defaultProvince =
+            if isChw then
+                maybeVillage |> Maybe.map .province
+
+            else
+                maybeRelatedPerson
+                    |> Maybe.andThen .province
+
         defaultProvinceId =
-            maybeRelatedPerson
-                |> Maybe.andThen .province
+            defaultProvince
                 |> Maybe.andThen (getGeoLocation Nothing)
                 |> Maybe.map Tuple.first
 
+        defaultDistrict =
+            if isChw then
+                maybeVillage |> Maybe.map .district
+
+            else
+                maybeRelatedPerson
+                    |> Maybe.andThen .district
+
         defaultDistrictId =
-            maybeRelatedPerson
-                |> Maybe.andThen .district
+            defaultDistrict
                 |> Maybe.andThen (getGeoLocation defaultProvinceId)
                 |> Maybe.map Tuple.first
 
+        defaultSector =
+            if isChw then
+                maybeVillage |> Maybe.map .sector
+
+            else
+                maybeRelatedPerson
+                    |> Maybe.andThen .sector
+
         defaultSectorId =
-            maybeRelatedPerson
-                |> Maybe.andThen .sector
+            defaultSector
                 |> Maybe.andThen (getGeoLocation defaultDistrictId)
                 |> Maybe.map Tuple.first
 
+        defaultCell =
+            if isChw then
+                maybeVillage |> Maybe.map .cell
+
+            else
+                maybeRelatedPerson
+                    |> Maybe.andThen .cell
+
         defaultCellId =
-            maybeRelatedPerson
-                |> Maybe.andThen .cell
+            defaultCell
                 |> Maybe.andThen (getGeoLocation defaultSectorId)
                 |> Maybe.map Tuple.first
 
+        defaultVillage =
+            if isChw then
+                maybeVillage |> Maybe.map .village
+
+            else
+                maybeRelatedPerson
+                    |> Maybe.andThen .village
+
         defaultVillageId =
-            maybeRelatedPerson
-                |> Maybe.andThen .village
+            defaultVillage
                 |> Maybe.andThen (getGeoLocation defaultCellId)
                 |> Maybe.map Tuple.first
 
@@ -139,8 +175,13 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
                 |> Maybe.andThen .ubudehe
 
         defaultHealthCenter =
-            maybeRelatedPerson
-                |> Maybe.andThen .healthCenterId
+            if isChw then
+                maybeVillage
+                    |> Maybe.map .healthCenterId
+
+            else
+                maybeRelatedPerson
+                    |> Maybe.andThen .healthCenterId
 
         defaultHmisNumber =
             maybeRelatedPerson
@@ -278,12 +319,12 @@ applyDefaultValues maybeRelatedPerson operation currentDate form =
         CreatePerson _ ->
             form
                 |> applyDefaultSelectInput ubudehe defaultUbudehe (encodeUbudehe >> Debug.toString)
-                |> applyDefaultSelectInput healthCenter defaultHealthCenter fromEntityUuid
                 |> applyDefaultLocation province defaultProvinceId
                 |> applyDefaultLocation district defaultDistrictId
                 |> applyDefaultLocation sector defaultSectorId
                 |> applyDefaultLocation cell defaultCellId
                 |> applyDefaultLocation village defaultVillageId
+                |> applyDefaultSelectInput healthCenter defaultHealthCenter fromEntityUuid
 
         EditPerson _ ->
             form

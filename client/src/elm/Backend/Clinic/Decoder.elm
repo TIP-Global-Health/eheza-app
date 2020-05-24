@@ -1,7 +1,7 @@
 module Backend.Clinic.Decoder exposing (decodeClinic, decodeClinicType)
 
 import Backend.Clinic.Model exposing (..)
-import Json.Decode exposing (Decoder, andThen, fail, string, succeed)
+import Json.Decode exposing (Decoder, andThen, fail, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (required)
 import Restful.Endpoint exposing (decodeEntityUuid)
 
@@ -12,6 +12,7 @@ decodeClinic =
         |> required "label" string
         |> required "health_center" decodeEntityUuid
         |> required "group_type" decodeClinicType
+        |> required "village" (nullable decodeEntityUuid)
 
 
 decodeClinicType : Decoder ClinicType
@@ -20,6 +21,9 @@ decodeClinicType =
         |> andThen
             (\s ->
                 case s of
+                    "chw" ->
+                        succeed Chw
+
                     "fbf" ->
                         succeed Fbf
 

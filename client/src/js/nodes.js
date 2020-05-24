@@ -41,6 +41,9 @@
                     else if (type === 'prenatal-measurements') {
                         return event.respondWith(viewMeasurements('prenatal_encounter', uuid));
                     }
+                    else if (type === 'nutrition-measurements') {
+                        return event.respondWith(viewMeasurements('nutrition_encounter', uuid));
+                    }
                     else {
                         return event.respondWith(view(type, uuid));
                     }
@@ -101,6 +104,12 @@
         muac: 'shards',
         nurse: 'nodes',
         nutrition: 'shards',
+        nutrition_encounter: 'nodes',
+        nutrition_height: 'shards',
+        nutrition_muac: 'shards',
+        nutrition_nutrition: 'shards',
+        nutrition_photo: 'shards',
+        nutrition_weight: 'shards',
         obstetric_history: 'shards',
         obstetric_history_step2: 'shards',
         obstetrical_exam: 'shards',
@@ -119,6 +128,7 @@
         session: 'nodes',
         social_history: 'shards',
         syncmetadata: 'syncMetadata',
+        village: 'nodes',
         vitals: 'shards',
         weight: 'shards'
     };
@@ -401,6 +411,20 @@
         }).catch(sendErrorResponses);
     }
 
+    // A list of all types of measuremnts that can be
+    // taken during groups encounter.
+    var groupMeasurementTypes = [
+      'attendance',
+      'counseling_session',
+      'family_planning',
+      'height',
+      'muac',
+      'nutrition',
+      'participant_consent',
+      'photo',
+      'weight'
+    ];
+
     // This is a kind of special-case for now, at least. We're wanting to get
     // back all of measuremnts for whom the key is equal to the value.
     //
@@ -423,12 +447,22 @@
         });
 
         return query.toArray().catch(databaseError).then(function (nodes) {
-            // We could also check that the type is the expected type.
             if (nodes) {
                 nodes.forEach(function (node) {
                     var target = node.person;
-                    if (key === 'prenatal_encounter') {
-                      target = node.prenatal_encounter;
+                    if (key === 'person') {
+                        // Check that node type for group encounter is one
+                        // of mother / child measurements. See full list at
+                        // groupMeasurementTypes array.
+                        if (!groupMeasurementTypes.includes(node.type)) {
+                          return;
+                        }
+                    }
+                    else if (key === 'prenatal_encounter') {
+                        target = node.prenatal_encounter;
+                    }
+                    else if (key === 'nutrition_encounter') {
+                        target = node.nutrition_encounter;
                     }
 
                     data[target] = data[target] || {};
@@ -549,11 +583,11 @@
                     }
                 }
 
-                if (type === 'prenatal_encounter') {
-                  var prenatalSessionId = params.get('individual_participant');
-                  if (prenatalSessionId) {
+                if (type === 'prenatal_encounter' || type === 'nutrition_encounter') {
+                  var individualSessionId = params.get('individual_participant');
+                  if (individualSessionId) {
                     modifyQuery = modifyQuery.then(function () {
-                        criteria.individual_participant = prenatalSessionId;
+                        criteria.individual_participant = individualSessionId;
                         query = table.where(criteria);
 
                         countQuery = query.clone();
@@ -572,20 +606,18 @@
                             return table.where({
                                 type: 'pmtct_participant',
                                 person: childId
-                            }).first().then(function (participation) {
-                                if (participation) {
-                                    criteria.clinic = participation.clinic;
+                            }).toArray().then(function (participations) {
+                                var clinics = [];
+                                participations.forEach(function(participation) {
+                                  clinics.push(['session', participation.clinic]);
+                                })
 
-                                    query = table.where(criteria).and(function (session) {
-                                        return expectedOnDate(participation, session.scheduled_date.value)
-                                    });
+                                query = table.where('[type+clinic]').anyOf(clinics);
 
-                                    countQuery = query.clone();
+                                // Cloning doesn't seem to work for this one.
+                                countQuery = table.where('[type+clinic]').anyOf(clinics);
 
-                                    return Promise.resolve();
-                                } else {
-                                    return Promise.reject('Could not find participation for child: ' + childId);
-                                }
+                                return Promise.resolve();
                             });
                         });
                     }
@@ -593,6 +625,7 @@
 
                 return modifyQuery.then(function () {
                     return countQuery.count().catch(databaseError).then(function (count) {
+
                         if (offset > 0) {
                             query.offset(offset);
                         }
