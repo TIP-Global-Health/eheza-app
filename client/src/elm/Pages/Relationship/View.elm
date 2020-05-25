@@ -28,14 +28,14 @@ import Utils.WebData exposing (viewError, viewWebData)
 {-| Offer to edit the relationship between these persons, from the point of
 view of the first person.
 -}
-view : Language -> NominalDate -> Maybe VillageId -> Bool -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate maybeVillageId isChw id1 id2 db model =
+view : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate ( healthCenterId, maybeVillageId ) isChw id1 id2 db model =
     div
         [ class "page-relationship" ]
         [ viewHeader language
         , div
             [ class "ui full segment blue" ]
-            [ viewContent language currentDate maybeVillageId isChw id1 id2 db model ]
+            [ viewContent language currentDate ( healthCenterId, maybeVillageId ) isChw id1 id2 db model ]
         ]
 
 
@@ -56,8 +56,8 @@ viewHeader language =
         ]
 
 
-viewContent : Language -> NominalDate -> Maybe VillageId -> Bool -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
-viewContent language currentDate maybeVillageId isChw id1 id2 db model =
+viewContent : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
+viewContent language currentDate ( healthCenterId, maybeVillageId ) isChw id1 id2 db model =
     let
         person1 =
             Dict.get id1 db.people
@@ -93,7 +93,7 @@ viewContent language currentDate maybeVillageId isChw id1 id2 db model =
             maybeVillageId
                 |> Maybe.andThen (\villageId -> getVillageClinicId villageId db)
     in
-    viewWebData language (viewFetchedContent language currentDate maybeVillageGroupId isChw id1 id2 model request) identity fetched
+    viewWebData language (viewFetchedContent language currentDate healthCenterId maybeVillageGroupId isChw id1 id2 model request) identity fetched
 
 
 type alias FetchedData =
@@ -105,8 +105,8 @@ type alias FetchedData =
     }
 
 
-viewFetchedContent : Language -> NominalDate -> Maybe ClinicId -> Bool -> PersonId -> PersonId -> Model -> WebData MyRelationship -> FetchedData -> Html Msg
-viewFetchedContent language currentDate maybeVillageGroupId isChw id1 id2 model request data =
+viewFetchedContent : Language -> NominalDate -> HealthCenterId -> Maybe ClinicId -> Bool -> PersonId -> PersonId -> Model -> WebData MyRelationship -> FetchedData -> Html Msg
+viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId isChw id1 id2 model request data =
     let
         savedRelationship =
             data.relationships
@@ -240,22 +240,7 @@ viewFetchedContent language currentDate maybeVillageGroupId isChw id1 id2 model 
                                             (not <| List.member clinicId currentGroupsIds)
                                                 -- It's not a CHW clinic.
                                                 && (clinic.clinicType /= Chw)
-                                                && -- If both persons are assigned to a health
-                                                   -- center, show the clinic if it is
-                                                   -- assigned to one or the other.  If one of
-                                                   -- the persons has no health center, show
-                                                   -- all clinics.
-                                                   (Maybe.map2
-                                                        (\hc1 hc2 ->
-                                                            clinic.healthCenterId
-                                                                == hc1
-                                                                || clinic.healthCenterId
-                                                                == hc2
-                                                        )
-                                                        data.person1.healthCenterId
-                                                        data.person2.healthCenterId
-                                                        |> Maybe.withDefault True
-                                                   )
+                                                && (clinic.healthCenterId == selectedHealthCenter)
                                         )
                                     |> Dict.map
                                         (\clinicId clinic ->

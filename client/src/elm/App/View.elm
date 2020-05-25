@@ -296,7 +296,14 @@ viewUserPage page model configured =
                                 Dict.get ( id1, id2 ) loggedInModel.relationshipPages
                                     |> Maybe.withDefault Pages.Relationship.Model.emptyModel
                         in
-                        Pages.Relationship.View.view model.language currentDate model.villageId isChw id1 id2 model.indexedDb page_
+                        Pages.Relationship.View.view model.language
+                            currentDate
+                            ( healthCenterId, model.villageId )
+                            isChw
+                            id1
+                            id2
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPageRelationship id1 id2)
                             |> flexPageWrapper model
 
