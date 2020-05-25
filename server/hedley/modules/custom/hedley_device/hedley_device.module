@@ -245,59 +245,47 @@ function hedley_device_assign_shards($node, $wrapper) {
   }
 
   switch ($node->type) {
+    case 'person':
+      $shards = hedley_device_shards_for_person($node->nid);
+      break;
+
     case 'pmtct_participant':
+      $child_id = $wrapper->field_person->getIdentifier();
+      $adult_id = $wrapper->field_adult->getIdentifier();
+      $shards_child = hedley_device_shards_by_person($child_id);
+      $shards_adult = hedley_device_shards_by_person($adult_id);
+      $shards = array_merge($shards_child, $shards_adult);
+      break;
+
+    case 'relationship':
+      $child_id = $wrapper->field_related_to->getIdentifier();
+      $adult_id = $wrapper->field_person->getIdentifier();
+      $shards_child = hedley_device_shards_by_person($child_id);
+      $shards_adult = hedley_device_shards_by_person($adult_id);
+      $shards = array_merge($shards_child, $shards_adult);
+      break;
+
     case 'session':
       $clinic_id = $wrapper->field_clinic->getIdentifier();
       $shard = hedley_device_shard_by_health_center($clinic_id);
-      if (!$shard) {
-        return;
-      }
-      $shards = [$shard];
-      break;
-
-    case 'individual_participant':
-      $person_id = $wrapper->field_person->getIdentifier();
-      $shard = hedley_device_shard_by_health_center($person_id);
-      if (!$shard) {
-        return;
-      }
-      $shards = [$shard];
+      $shards = !$shard ? [] : [$shard];
       break;
 
     case 'prenatal_encounter':
     case 'nutrition_encounter':
       $person_id = $wrapper->field_individual_participant->field_person->getIdentifier();
-      $shard = hedley_device_shard_by_health_center($person_id);
-      if (!$shard) {
-        return;
-      }
-      $shards = [$shard];
+      $shards = hedley_device_shards_by_person($person_id);
       break;
 
-    case 'relationship':
-      $adult_id = $wrapper->field_person->getIdentifier();
-      $child_id = $wrapper->field_related_to->getIdentifier();
-
-      $shard_adult = hedley_device_shard_by_health_center($adult_id);
-      if (!$shard_adult) {
-        return;
-      }
-
-      $shard_child = hedley_device_shard_by_health_center($child_id);
-      if ($shard_adult !== $shard_child) {
-        return;
-      }
-      $shards = [$shard_adult];
-      break;
-
-    // Handling all kinds of measurements
+    // Handling individual_participant and all kinds of measurements.
     default:
       $person_id = $wrapper->field_person->getIdentifier();
-      if (!$person_id) {
-        return;
-      }
-      $shards = hedley_device_shards_for_person($person_id);
+      $shards = hedley_device_shards_by_person($person_id);
       break;
+  }
+
+  if (empty($shards)) {
+    return;
   }
 
   $wrapper->field_shards->set($shards);
@@ -312,6 +300,17 @@ function hedley_device_shard_by_health_center($nid) {
   $shard = $wrapper->field_health_center->getIdentifier();
 
   return $shard ? $shard : FALSE;
+}
+
+function hedley_device_shards_by_person($nid) {
+  if (!$nid) {
+    return [];
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $nid);
+  $shards = $wrapper->field_shards->value(['identifier' => TRUE]);
+
+  return !empty($shards) ? $shards : [];
 }
 
 /**
