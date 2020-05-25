@@ -58,13 +58,6 @@
                         });
 
                         return cache.put(cachedRequest, cachedResponse).then(function () {
-                            if (credentialsUrlRegex.test(event.request.url)) {
-                                // If we have new credentials, kick off a background sync.
-                                registration.sync.register(syncTag).catch(function () {
-                                    registration.active.postMessage(syncTag);
-                                });
-                            }
-
                             return new Response ('', {
                                 status: 201,
                                 statusText: 'Created',

@@ -8,10 +8,17 @@
  */
 'use strict';
 
+
+/**
+ *  Handle photos we've cached from the backend.
+ *
+ *  This file is responsible for fetching cached photos, and also for caching
+ *  them once they are uploaded via Dropzone.
+ */
 (function () {
     self.addEventListener('fetch', function ( event) {
 
-        // Handle avatars and photos we've cached from the backend.
+
         if (event.request.method === 'GET' && photosDownloadUrlRegex.test(event.request.url)) {
 
             event.respondWith(
