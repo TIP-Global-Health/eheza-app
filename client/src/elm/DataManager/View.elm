@@ -55,12 +55,6 @@ view language db model =
                     _ ->
                         emptyNode
                 ]
-
-        currentZipper =
-            model.revisionIdPerAuthorityZipper
-                |> Maybe.map Zipper.current
-                |> Maybe.map (\row -> row.uuid)
-                |> Maybe.withDefault ""
     in
     div []
         [ viewHealthCentersForSync language db model
