@@ -58,7 +58,7 @@ view language db model =
     in
     div []
         [ viewHealthCentersForSync language db model
-        , div [ class "ui segment" ] [ htmlContent ]
+        , pre [ class "ui segment" ] [ htmlContent ]
         ]
 
 
