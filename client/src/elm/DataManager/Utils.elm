@@ -66,7 +66,7 @@ determineSyncStatus model =
                                     -- Check if this is the last element.
                                     if Zipper.isLast zipper then
                                         ( syncDownloadPhotos
-                                        , revisionIdPerAuthorityZipper
+                                        , Just (Zipper.first zipper)
                                         )
 
                                     else
@@ -104,7 +104,7 @@ determineSyncStatus model =
                                     -- but there we non matching the query.
                                     ( SyncIdle, revisionIdPerAuthorityZipper )
 
-                                else if deferredPhoto.batchCounter <= 0 then
+                                else if deferredPhoto.batchCounter < 1 then
                                     -- We've reached the end of the batch, so we
                                     -- need to rotate.
                                     ( SyncIdle, revisionIdPerAuthorityZipper )

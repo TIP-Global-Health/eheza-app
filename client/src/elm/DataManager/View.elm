@@ -55,6 +55,12 @@ view language db model =
                     _ ->
                         emptyNode
                 ]
+
+        currentZipper =
+            model.revisionIdPerAuthorityZipper
+                |> Maybe.map Zipper.current
+                |> Maybe.map (\row -> row.uuid)
+                |> Maybe.withDefault ""
     in
     div []
         [ viewHealthCentersForSync language db model
@@ -240,7 +246,7 @@ viewDownloadPhotosBatch language model deferredPhoto =
                             String.fromInt attempt ++ "th"
             in
             div []
-                [ text <| "Photos batch download (" ++ String.fromInt deferredPhoto.batchCounter ++ " out of " ++ String.fromInt deferredPhoto.batchSize ++ ")"
+                [ text <| "Photos batch download (" ++ String.fromInt (deferredPhoto.batchCounter + 1) ++ " out of " ++ String.fromInt deferredPhoto.batchSize ++ ")"
                 , div []
                     [ text <| attemptString ++ " attempt to download "
                     , a [ href result.photo, target "_blank" ] [ text fileName ]

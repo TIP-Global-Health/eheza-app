@@ -769,7 +769,7 @@ subscriptions model =
                     -- Trigger often.
                     -- @todo: Change to 500 (half a second)? Need to check on
                     -- devices, and while operating other pages.
-                    1500
+                    500
 
         -- For easier debug we wait 1 sec.
         -- 1000

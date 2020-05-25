@@ -313,7 +313,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         let result = await dbSync
             .deferredPhotos
             .where('attempts')
-            .belowOrEqual(3)
+            // 2 here means 3 attempts, as it starts from 0.
+            .belowOrEqual(2)
             .limit(1)
             // Get attempts sorted, so we won't always grab the same one.
             .sortBy('attempts');
