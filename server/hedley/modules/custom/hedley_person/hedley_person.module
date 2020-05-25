@@ -20,3 +20,66 @@ define('HEDLEY_PERSON_GENDER_FEMALE', 'female');
 
 define('HEDLEY_PERSON_RELATED_BY_PARENT_OF', 'parent');
 define('HEDLEY_PERSON_RELATED_BY_CAREGIVER_FOR', 'caregiver');
+
+/**
+ * Implements hook_node_update().
+ *
+ * When child age is edited, updates graduation date for all
+ * it's pmtct_participants.
+ */
+function hedley_person_node_update($node) {
+  if ($node->type != 'person') {
+    return;
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $wrapper_orig = entity_metadata_wrapper('node', $node->original);
+
+  $birth_date = $wrapper->field_birth_date->value();
+  $birth_date_orig = $wrapper_orig->field_birth_date->value();
+
+  if (empty($birth_date) || $birth_date === $birth_date_orig) {
+    return;
+  }
+
+  $ids = hedley_person_pmtct_participants_for_child($node->nid);
+  if (empty($ids)) {
+    return;
+  }
+
+  $participants = node_load_multiple($ids);
+  foreach ($participants as $participant) {
+    $participant_wrapper = entity_metadata_wrapper('node', $participant);
+
+    $clinic_type = $participant_wrapper->field_clinic->field_group_type->value();
+    // We do not set graduation date for sorwathe group participants.
+    if (empty($clinic_type) || $clinic_type == 'sorwathe') {
+      continue;
+    }
+    $expected = $participant_wrapper->field_expected->value();
+
+    $participant_wrapper->field_expected->set([
+      'value' => $expected['value'],
+      'value2' => date('Y-m-d', strtotime("+26 month", $birth_date)),
+    ]);
+    $participant_wrapper->save();
+  }
+}
+
+/**
+ * Resolves all pmtct_participant nodes IDs for child.
+ *
+ * @param int $nid
+ *   Child node ID.
+ *
+ * @return array
+ *   List of pmtct_participant nodes IDs.
+ */
+function hedley_person_pmtct_participants_for_child($nid) {
+  $query = db_select('field_data_field_person', 'person');
+  $query->fields('person', ['entity_id']);
+  $query->condition('bundle', 'pmtct_participant');
+  $query->condition('field_person_target_id', $nid);
+
+  return $query->execute()->fetchCol();
+}
