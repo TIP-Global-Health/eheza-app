@@ -58,7 +58,7 @@ while (TRUE) {
       '@id' => $id,
     ];
 
-    hedley_recalculate_shards_for_person($id);
+    hedley_patient_recalculate_shards_for_person_content($id);
 
     drush_print(format_string('Recalculed shards for person @id.', $params));
   }
