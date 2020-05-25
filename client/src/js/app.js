@@ -131,24 +131,21 @@ dbSync.version(10).stores({
   // `attempts` holds the number of attempts we've tried to get the image.
   deferredPhotos: '&uuid,type,vid,photo,attempts',
 }).upgrade(function (tx) {
-  // Get the data from the deprecated `syncmetadata` and move to local storage.
+  // Get the data from the deprecated `syncMetadata` and move to local storage.
   (async () => {
-
-    // @todo: Check how to test.
-    const collection = await tx.syncmetadata.toCollection();
+    const collection = await tx.syncMetadata.toCollection().toArray();
 
     var revisionIdPerAuthority = [];
-    collection.forEach(function(uuid) {
-      revisionIdPerAuthority.push({'uuid': uuid, 'revisionId': 0})
+    collection.forEach(function(row) {
+      revisionIdPerAuthority.push({'uuid': row.uuid, 'revisionId': 0})
     });
-
-    console.log(revisionIdPerAuthority);
 
     localStorage.setItem('revisionIdPerAuthority', JSON.stringify(revisionIdPerAuthority));
 
     return Promise.resolve();
   })();
 });
+
 
 
 const getRevisionIdPerAuthority = function() {
