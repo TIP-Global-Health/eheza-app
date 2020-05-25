@@ -42,12 +42,15 @@ type alias ModelChild =
     , photo : Maybe PhotoUrl
     , weight : String
     , counseling : Maybe ( CounselingTiming, EverySet CounselingTopicId )
+    , fbfForm : FbfForm
     }
 
 
 type alias ModelMother =
     { familyPlanningSigns : EverySet FamilyPlanningSign
     , participantConsent : ParticipantFormUI
+    , lactationForm : LactationForm
+    , fbfForm : FbfForm
     }
 
 
@@ -125,6 +128,9 @@ type MsgChild
     = SelectNutritionSign Bool ChildNutritionSign
     | SelectCounselingTopic Bool CounselingTopicId
     | SendOutMsgChild OutMsgChild
+    | SetDistributedAmountForChild String
+    | SetDistributedFullyForChild Bool
+    | SetDistributoinNoticeForChild DistributionNotice
     | UpdateHeight String
     | UpdateMuac String
     | UpdateWeight String
@@ -133,8 +139,12 @@ type MsgChild
 
 type MsgMother
     = SelectFamilyPlanningSign Bool FamilyPlanningSign
+    | SelectLactationSign LactationSign Bool
     | ViewParticipantForm (Maybe ParticipantFormId)
     | SetCounselorSigned ParticipantFormId Bool
+    | SetDistributedAmountForMother String
+    | SetDistributedFullyForMother Bool
+    | SetDistributoinNoticeForMother DistributionNotice
     | SetParticipantSigned ParticipantFormId Bool
     | SendOutMsgMother OutMsgMother
 
@@ -155,12 +165,15 @@ type OutMsgChild
     | SaveCounselingSession (Maybe CounselingSessionId) CounselingTiming (EverySet CounselingTopicId)
     | SaveChildNutritionSigns (Maybe ChildNutritionId) (EverySet ChildNutritionSign)
     | SavePhoto (Maybe PhotoId) PhotoUrl
+    | SaveChildFbf (Maybe ChildFbfId) FbfValue
 
 
 type OutMsgMother
     = SaveAttendance (Maybe AttendanceId) Bool
     | SaveFamilyPlanningSigns (Maybe FamilyPlanningId) (EverySet FamilyPlanningSign)
     | SaveCompletedForm (Maybe ParticipantConsentId) ParticipantFormId Language
+    | SaveLactation (Maybe LactationId) (EverySet LactationSign)
+    | SaveMotherFbf (Maybe MotherFbfId) FbfValue
 
 
 emptyModelChild : ModelChild
@@ -171,6 +184,7 @@ emptyModelChild =
     , photo = Nothing
     , weight = ""
     , counseling = Nothing
+    , fbfForm = FbfForm Nothing Nothing Nothing
     }
 
 
@@ -178,4 +192,6 @@ emptyModelMother : ModelMother
 emptyModelMother =
     { familyPlanningSigns = EverySet.empty
     , participantConsent = emptyParticipantFormUI
+    , lactationForm = LactationForm Nothing
+    , fbfForm = FbfForm Nothing Nothing Nothing
     }

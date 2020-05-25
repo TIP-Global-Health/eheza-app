@@ -273,6 +273,7 @@ type Revision
     = AttendanceRevision AttendanceId Attendance
     | BreastExamRevision BreastExamId BreastExam
     | CatchmentAreaRevision CatchmentAreaId CatchmentArea
+    | ChildFbfRevision ChildFbfId Fbf
     | ChildNutritionRevision ChildNutritionId ChildNutrition
     | ClinicRevision ClinicId Clinic
     | CorePhysicalExamRevision CorePhysicalExamId CorePhysicalExam
@@ -281,11 +282,13 @@ type Revision
     | CounselingTopicRevision CounselingTopicId CounselingTopic
     | DangerSignsRevision DangerSignsId DangerSigns
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
+    | LactationRevision LactationId Lactation
     | HealthCenterRevision HealthCenterId HealthCenter
     | HeightRevision HeightId Height
     | LastMenstrualPeriodRevision LastMenstrualPeriodId LastMenstrualPeriod
     | MedicalHistoryRevision MedicalHistoryId MedicalHistory
     | MedicationRevision MedicationId Medication
+    | MotherFbfRevision MotherFbfId Fbf
     | MuacRevision MuacId Muac
     | NurseRevision NurseId Nurse
     | NutritionEncounterRevision NutritionEncounterId NutritionEncounter
