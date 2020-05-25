@@ -62,6 +62,7 @@ features[field_instance][] = node-person-field_photo
 features[field_instance][] = node-person-field_province
 features[field_instance][] = node-person-field_second_name
 features[field_instance][] = node-person-field_sector
+features[field_instance][] = node-person-field_shards
 features[field_instance][] = node-person-field_ubudehe
 features[field_instance][] = node-person-field_uuid
 features[field_instance][] = node-person-field_village
