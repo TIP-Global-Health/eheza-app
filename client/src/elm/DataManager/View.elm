@@ -25,7 +25,7 @@ import List.Extra
 import List.Zipper as Zipper
 import Maybe.Extra exposing (isJust)
 import RemoteData exposing (WebData)
-import Restful.Endpoint exposing (fromEntityUuid)
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import Translate exposing (Language, translate)
 import Url
 import Utils.Html exposing (spinner)
@@ -44,13 +44,13 @@ view language db model =
                 , div [] [ text <| "Sync status: " ++ Debug.toString model.syncStatus ]
                 , case model.syncStatus of
                     SyncDownloadGeneral webData ->
-                        viewSyncDownloadGeneral model webData
+                        viewSyncDownloadGeneral language model webData
 
                     SyncDownloadAuthority webData ->
-                        viewSyncDownloadAuthority model webData
+                        viewSyncDownloadAuthority language db model webData
 
                     SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
-                        viewDownloadPhotosBatch model deferredPhoto
+                        viewDownloadPhotosBatch language model deferredPhoto
 
                     _ ->
                         emptyNode
@@ -58,7 +58,7 @@ view language db model =
     in
     div []
         [ viewHealthCentersForSync language db model
-        , pre [ class "ui segment" ] [ htmlContent ]
+        , pre [ class "ui segment sync-status" ] [ htmlContent ]
         ]
 
 
@@ -75,10 +75,10 @@ viewSyncStatusControl model =
         ]
 
 
-viewSyncDownloadGeneral : Model -> WebData (DownloadSyncResponse BackendGeneralEntity) -> Html Msg
-viewSyncDownloadGeneral model webData =
+viewSyncDownloadGeneral : Language -> Model -> WebData (DownloadSyncResponse BackendGeneralEntity) -> Html Msg
+viewSyncDownloadGeneral language model webData =
     div []
-        [ div [] [ text <| "Trying to fetch `General` from revision ID " ++ String.fromInt model.lastFetchedRevisionIdGeneral ]
+        [ div [] [ text <| "Fetch from General from revision ID " ++ String.fromInt model.lastFetchedRevisionIdGeneral ]
         , button [ onClick <| DataManager.Model.SetLastFetchedRevisionIdGeneral 0 ] [ text "Reset revision ID to 0" ]
         , div [] [ text "HTTP requests:" ]
         , case webData of
@@ -89,7 +89,7 @@ viewSyncDownloadGeneral model webData =
                         div [] [ text "No content fetched in last HTTP request" ]
 
                       else
-                        ol [] (List.map viewGeneralEntity data.entities)
+                        ol [] (List.map (viewGeneralEntity language) data.entities)
                     ]
 
             RemoteData.Failure error ->
@@ -103,8 +103,8 @@ viewSyncDownloadGeneral model webData =
         ]
 
 
-viewGeneralEntity : BackendGeneralEntity -> Html msg
-viewGeneralEntity backendGeneralEntity =
+viewGeneralEntity : Language -> BackendGeneralEntity -> Html msg
+viewGeneralEntity language backendGeneralEntity =
     li []
         [ case backendGeneralEntity of
             BackendGeneralCatchmentArea _ _ entity ->
@@ -130,8 +130,8 @@ viewGeneralEntity backendGeneralEntity =
         ]
 
 
-viewSyncDownloadAuthority : Model -> WebData (DownloadSyncResponse BackendAuthorityEntity) -> Html Msg
-viewSyncDownloadAuthority model webData =
+viewSyncDownloadAuthority : Language -> ModelIndexedDb -> Model -> WebData (DownloadSyncResponse BackendAuthorityEntity) -> Html Msg
+viewSyncDownloadAuthority language db model webData =
     case model.revisionIdPerAuthorityZipper of
         Nothing ->
             emptyNode
@@ -140,9 +140,28 @@ viewSyncDownloadAuthority model webData =
             let
                 currentZipper =
                     Zipper.current zipper
+
+                getAuthorityName uuid =
+                    db.healthCenters
+                        |> RemoteData.toMaybe
+                        |> Maybe.andThen (\healthCenters -> Dict.get (toEntityUuid uuid) healthCenters)
+                        |> Maybe.map (\healthCenter -> healthCenter.name)
+                        |> Maybe.withDefault uuid
+
+                authoritiesListHtml =
+                    Zipper.toList zipper
+                        |> List.map
+                            (\row ->
+                                if row.uuid == currentZipper.uuid then
+                                    li [ class "active" ] [ text <| getAuthorityName row.uuid ++ " (from revision ID " ++ String.fromInt row.revisionId ++ ")" ]
+
+                                else
+                                    li [] [ text <| getAuthorityName row.uuid ]
+                            )
             in
             div []
-                [ div [] [ text <| "Trying to fetch `Authority` from UUID " ++ currentZipper.uuid ++ " revision ID " ++ String.fromInt currentZipper.revisionId ]
+                [ div [] [ text <| "Fetch from Authority" ]
+                , ol [] authoritiesListHtml
                 , button [ onClick <| DataManager.Model.SetLastFetchedRevisionIdAuthority zipper 0 ] [ text "Reset revision ID to 0" ]
                 , case webData of
                     RemoteData.Success data ->
@@ -187,8 +206,8 @@ viewAuthorityEntity backendAuthorityEntity =
         ]
 
 
-viewDownloadPhotosBatch : Model -> DownloadPhotosBatchRec -> Html Msg
-viewDownloadPhotosBatch model deferredPhoto =
+viewDownloadPhotosBatch : Language -> Model -> DownloadPhotosBatchRec -> Html Msg
+viewDownloadPhotosBatch language model deferredPhoto =
     case deferredPhoto.indexDbRemoteData of
         RemoteData.Success (Just result) ->
             let
@@ -202,10 +221,30 @@ viewDownloadPhotosBatch model deferredPhoto =
                                     |> List.Extra.last
                             )
                         |> Maybe.withDefault ""
+
+                attempt =
+                    result.attempts + 1
+
+                attemptString =
+                    case attempt of
+                        1 ->
+                            "1st"
+
+                        2 ->
+                            "2nd"
+
+                        3 ->
+                            "3rd"
+
+                        _ ->
+                            String.fromInt attempt ++ "th"
             in
             div []
-                [ text <| "Attempt " ++ String.fromInt (result.attempts + 1) ++ " to download "
-                , a [ href result.photo, target "_blank" ] [ text fileName ]
+                [ text <| "Photos batch download (" ++ String.fromInt deferredPhoto.batchCounter ++ " out of " ++ String.fromInt deferredPhoto.batchSize ++ ")"
+                , div []
+                    [ text <| attemptString ++ " attempt to download "
+                    , a [ href result.photo, target "_blank" ] [ text fileName ]
+                    ]
                 ]
 
         _ ->

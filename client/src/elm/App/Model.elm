@@ -306,7 +306,7 @@ emptyModel key url flags =
     , villageId = villageId
 
     -- @todo: Get the batch size from flag.downloadPhotosBatchSize
-    , dataManager = DataManager.Model.emptyModel flags.lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper 10
+    , dataManager = DataManager.Model.emptyModel flags.lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper 3
     , errors = []
     }
 
