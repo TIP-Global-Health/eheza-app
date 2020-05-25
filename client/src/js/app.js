@@ -130,6 +130,18 @@ dbSync.version(10).stores({
   // Hold table with photos which have not been downloaded yet.
   // `attempts` holds the number of attempts we've tried to get the image.
   deferredPhotos: '&uuid,type,vid,photo,attempts',
+
+  // Keep a list of the photos the need to be uploaded to the backend.
+  // The `localId` corresponds to the `localId` present in the `nodeChanges`
+  // The `file` is the file ID we will eventually get from Drupal, once
+  // the file is uploaded. This is the the file ID we would need to insert into
+  // the request, when creating or editing an entity such as a photo.
+  // This property is a Maybe value, as at the time of creation of the photo
+  // locally, we still don't have it.
+  generalPhotoUploadChanges: '&localId,photo,fileId',
+
+  // Similar to `generalPhotoUploadChanges` but for `shardChanges`.
+  authorityPhotoUploadChanges: '&localId,photo,fileId',
 }).upgrade(function (tx) {
   // Get the data from the deprecated `syncMetadata` and move to local storage.
   (async () => {
