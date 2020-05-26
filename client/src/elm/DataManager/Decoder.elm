@@ -10,15 +10,7 @@ import Backend.Nurse.Decoder
 import Backend.Person.Decoder
 import Backend.PmtctParticipant.Decoder
 import Backend.Relationship.Decoder
-import DataManager.Model
-    exposing
-        ( BackendAuthorityEntity(..)
-        , BackendGeneralEntity(..)
-        , DownloadSyncResponse
-        , IndexDbQueryDeferredPhotoResultRecord
-        , IndexDbQueryTypeResult(..)
-        , IndexDbQueryUploadPhotoResultRecord
-        )
+import DataManager.Model exposing (BackendAuthorityEntity(..), BackendGeneralEntity(..), DownloadSyncResponse, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryTypeResult(..), IndexDbQueryUploadGeneralResultRecord, IndexDbQueryUploadPhotoResultRecord)
 import Gizra.Date exposing (decodeDate)
 import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (..)
@@ -39,6 +31,15 @@ decodeIndexDbQueryTypeResult =
 
                             -- In case we have no photos to upload.
                             , succeed (IndexDbQueryUploadPhotoGeneralResult Nothing)
+                            ]
+
+                    "IndexDbQueryUploadGeneralResult" ->
+                        oneOf
+                            [ field "data" decodeIndexDbQueryUploadGeneralResultRecord
+                                |> andThen (\record -> succeed (IndexDbQueryUploadGeneralResult (Just record)))
+
+                            -- In case we have no photos to upload.
+                            , succeed (IndexDbQueryUploadGeneralResult Nothing)
                             ]
 
                     "IndexDbQueryDeferredPhotoResult" ->
@@ -64,6 +65,13 @@ decodeIndexDbQueryUploadPhotoResultRecord =
         |> optional "fileId" (nullable int) Nothing
 
 
+decodeIndexDbQueryUploadGeneralResultRecord : Decoder IndexDbQueryUploadGeneralResultRecord
+decodeIndexDbQueryUploadGeneralResultRecord =
+    succeed IndexDbQueryUploadGeneralResultRecord
+        |> required "entities" (list <| decodeBackendGeneralEntity "localId")
+        |> required "uploadPhotos" (list decodeIndexDbQueryUploadPhotoResultRecord)
+
+
 decodeIndexDbQueryDeferredPhotoResult : Decoder IndexDbQueryDeferredPhotoResultRecord
 decodeIndexDbQueryDeferredPhotoResult =
     succeed IndexDbQueryDeferredPhotoResultRecord
@@ -76,18 +84,18 @@ decodeDownloadSyncResponseGeneral : Decoder (DownloadSyncResponse BackendGeneral
 decodeDownloadSyncResponseGeneral =
     field "data"
         (succeed DownloadSyncResponse
-            |> required "batch" (list decodeBackendGeneralEntity)
+            |> required "batch" (list <| decodeBackendGeneralEntity "vid")
             |> required "last_timestamp" decodeDate
             |> required "revision_count" decodeInt
         )
 
 
-decodeBackendGeneralEntity : Decoder BackendGeneralEntity
-decodeBackendGeneralEntity =
+decodeBackendGeneralEntity : String -> Decoder BackendGeneralEntity
+decodeBackendGeneralEntity identifier =
     (succeed (\a b c -> ( a, b, c ))
         |> required "type" string
         |> required "uuid" string
-        |> required "vid" decodeInt
+        |> required identifier decodeInt
     )
         |> andThen
             (\( type_, uuid, vid ) ->

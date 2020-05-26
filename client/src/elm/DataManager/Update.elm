@@ -243,7 +243,7 @@ update currentDate device msg model =
                     update
                         currentDate
                         device
-                        BackendUploadGeneral
+                        FetchFromIndexDbUploadGeneral
                         model
 
                 SyncDownloadGeneral _ ->
@@ -500,15 +500,15 @@ update currentDate device msg model =
                 SyncDownloadPhotos DownloadPhotosNone ->
                     noChange
 
-                SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
-                    if RemoteData.isLoading deferredPhoto.indexDbRemoteData || RemoteData.isLoading deferredPhoto.backendRemoteData then
+                SyncDownloadPhotos (DownloadPhotosBatch record) ->
+                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
                         -- We are already loading.
                         noChange
 
                     else
                         let
-                            deferredPhotoUpdated =
-                                { deferredPhoto
+                            recordUpdated =
+                                { record
                                     | indexDbRemoteData = RemoteData.Loading
                                     , backendRemoteData = RemoteData.NotAsked
                                 }
@@ -517,17 +517,17 @@ update currentDate device msg model =
                             currentDate
                             device
                             (QueryIndexDb IndexDbQueryDeferredPhoto)
-                            { model | syncStatus = SyncDownloadPhotos (DownloadPhotosBatch deferredPhotoUpdated) }
+                            { model | syncStatus = SyncDownloadPhotos (DownloadPhotosBatch recordUpdated) }
 
-                SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
-                    if RemoteData.isLoading deferredPhoto.indexDbRemoteData || RemoteData.isLoading deferredPhoto.backendRemoteData then
+                SyncDownloadPhotos (DownloadPhotosAll record) ->
+                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
                         -- We are already loading.
                         noChange
 
                     else
                         let
-                            deferredPhotoUpdated =
-                                { deferredPhoto
+                            recordUpdated =
+                                { record
                                     | indexDbRemoteData = RemoteData.Loading
                                     , backendRemoteData = RemoteData.NotAsked
                                 }
@@ -536,7 +536,32 @@ update currentDate device msg model =
                             currentDate
                             device
                             (QueryIndexDb IndexDbQueryDeferredPhoto)
-                            { model | syncStatus = SyncDownloadPhotos (DownloadPhotosAll deferredPhotoUpdated) }
+                            { model | syncStatus = SyncDownloadPhotos (DownloadPhotosAll recordUpdated) }
+
+                _ ->
+                    noChange
+
+        FetchFromIndexDbUploadGeneral ->
+            -- Get a entities for upload from IndexDB.
+            case model.syncStatus of
+                SyncUploadGeneral record ->
+                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                        -- We are already loading.
+                        noChange
+
+                    else
+                        let
+                            recordUpdated =
+                                { record
+                                    | indexDbRemoteData = RemoteData.Loading
+                                    , backendRemoteData = RemoteData.NotAsked
+                                }
+                        in
+                        update
+                            currentDate
+                            device
+                            (QueryIndexDb IndexDbQueryUploadGeneral)
+                            { model | syncStatus = SyncUploadGeneral recordUpdated }
 
                 _ ->
                     noChange
@@ -558,20 +583,8 @@ update currentDate device msg model =
                     noChange
 
         BackendUploadGeneral ->
-            case model.syncStatus of
-                SyncUploadGeneral webData ->
-                    if RemoteData.isLoading webData then
-                        noChange
-
-                    else
-                        update
-                            currentDate
-                            device
-                            (QueryIndexDb IndexDbQueryUploadGeneral)
-                            { model | syncStatus = SyncUploadGeneral RemoteData.Loading }
-
-                _ ->
-                    noChange
+            -- @todo: Do the actual POST
+            noChange
 
         BackendDeferredPhotoFetch result ->
             let
@@ -794,6 +807,40 @@ update currentDate device msg model =
                                 Cmd.none
                                 noError
                                 []
+
+                        IndexDbQueryUploadGeneralResult Nothing ->
+                            let
+                                syncStatus =
+                                    -- There are no entities for upload matching the query.
+                                    case model.syncStatus of
+                                        SyncUploadGeneral record ->
+                                            SyncUploadGeneral { record | indexDbRemoteData = RemoteData.Success Nothing }
+
+                                        _ ->
+                                            model.syncStatus
+                            in
+                            SubModelReturn
+                                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                                Cmd.none
+                                noError
+                                []
+
+                        IndexDbQueryUploadGeneralResult (Just val_) ->
+                            let
+                                syncStatus =
+                                    -- There are entities for upload.
+                                    case model.syncStatus of
+                                        SyncUploadGeneral record ->
+                                            SyncUploadGeneral { record | indexDbRemoteData = RemoteData.Success (Just val_) }
+
+                                        _ ->
+                                            model.syncStatus
+                            in
+                            update
+                                currentDate
+                                device
+                                BackendUploadGeneral
+                                { model | syncStatus = syncStatus }
 
                         IndexDbQueryDeferredPhotoResult Nothing ->
                             let

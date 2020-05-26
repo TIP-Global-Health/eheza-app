@@ -7,16 +7,17 @@ module DataManager.Model exposing
     , IndexDbQueryDeferredPhotoResultRecord
     , IndexDbQueryType(..)
     , IndexDbQueryTypeResult(..)
+    , IndexDbQueryUploadGeneralResultRecord
     , IndexDbQueryUploadPhotoResultRecord
     , Model
     , Msg(..)
     , RevisionIdPerAuthority
     , RevisionIdPerAuthorityZipper
     , SyncStatus(..)
-    , UploadSyncResponse
     , emptyDownloadPhotosBatchRec
     , emptyModel
     , emptyRevisionIdPerAuthority
+    , emptyUploadRec
     )
 
 import Backend.Entities exposing (HealthCenterId)
@@ -136,17 +137,6 @@ type alias DownloadSyncResponse a =
     }
 
 
-{-| Hold the info we're going to decode from a POST call to /api/sync.
-
-We can have the `a` replaced with BackendGeneralEntity or BackendAuthorityEntity
-
--}
-type alias UploadSyncResponse a =
-    { entities : List a
-    , lastTimestampOfLastRevision : Time.Posix
-    }
-
-
 {-| Determine how photos are going to be downloaded.
 -}
 type DownloadPhotos
@@ -162,10 +152,25 @@ type DownloadPhotos
     | DownloadPhotosAll DownloadPhotosAllRec
 
 
+{-| Hold info related to uploading entities.
+-}
+type alias UploadRec =
+    { indexDbRemoteData : IndexDbUploadRemoteData
+    , backendRemoteData : WebData ()
+    }
+
+
+emptyUploadRec : UploadRec
+emptyUploadRec =
+    { indexDbRemoteData = RemoteData.NotAsked
+    , backendRemoteData = RemoteData.NotAsked
+    }
+
+
 type alias DownloadPhotosBatchRec =
     { batchSize : Int
     , batchCounter : Int
-    , indexDbRemoteData : DeferredPhotoIndexDbRemoteData
+    , indexDbRemoteData : IndexDbDeferredPhotoRemoteData
     , backendRemoteData : WebData ()
     }
 
@@ -180,15 +185,21 @@ emptyDownloadPhotosBatchRec batchSize =
 
 
 type alias DownloadPhotosAllRec =
-    { indexDbRemoteData : DeferredPhotoIndexDbRemoteData
+    { indexDbRemoteData : IndexDbDeferredPhotoRemoteData
     , backendRemoteData : WebData ()
     }
 
 
 {-| RemoteData to indicate fetching deferred photos info from IndexDB.
 -}
-type alias DeferredPhotoIndexDbRemoteData =
+type alias IndexDbDeferredPhotoRemoteData =
     RemoteData () (Maybe IndexDbQueryDeferredPhotoResultRecord)
+
+
+{-| RemoteData to indicate fetching entities for upload info from IndexDB.
+-}
+type alias IndexDbUploadRemoteData =
+    RemoteData () (Maybe IndexDbQueryUploadGeneralResultRecord)
 
 
 {-| The Sync (download or upload), by its order.
@@ -196,7 +207,7 @@ type alias DeferredPhotoIndexDbRemoteData =
 type SyncStatus
     = SyncIdle
     | SyncUploadPhotoGeneral (RemoteData () (Maybe IndexDbQueryUploadPhotoResultRecord))
-    | SyncUploadGeneral (WebData (UploadSyncResponse BackendGeneralEntity))
+    | SyncUploadGeneral UploadRec
     | SyncDownloadGeneral (WebData (DownloadSyncResponse BackendGeneralEntity))
     | SyncDownloadAuthority (WebData (DownloadSyncResponse BackendAuthorityEntity))
     | SyncDownloadPhotos DownloadPhotos
@@ -221,6 +232,7 @@ type IndexDbQueryType
 type IndexDbQueryTypeResult
     = -- A single photo for upload, if exists.
       IndexDbQueryUploadPhotoGeneralResult (Maybe IndexDbQueryUploadPhotoResultRecord)
+    | IndexDbQueryUploadGeneralResult (Maybe IndexDbQueryUploadGeneralResultRecord)
       -- A single deferred photo, if exists.
     | IndexDbQueryDeferredPhotoResult (Maybe IndexDbQueryDeferredPhotoResultRecord)
 
@@ -234,6 +246,12 @@ type alias IndexDbQueryUploadPhotoResultRecord =
 
     -- If photo was uploaded to Drupal, get the file ID.
     , fileId : Maybe Int
+    }
+
+
+type alias IndexDbQueryUploadGeneralResultRecord =
+    { entities : List BackendGeneralEntity
+    , uploadPhotos : List IndexDbQueryUploadPhotoResultRecord
     }
 
 
@@ -264,6 +282,7 @@ type Msg
     | QueryIndexDb IndexDbQueryType
     | QueryIndexDbHandle Value
     | FetchFromIndexDbDeferredPhoto
+    | FetchFromIndexDbUploadGeneral
     | RevisionIdAuthorityAdd HealthCenterId
     | RevisionIdAuthorityRemove HealthCenterId
     | SetLastFetchedRevisionIdAuthority (Zipper RevisionIdPerAuthority) Int

@@ -411,6 +411,30 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       })();
       break;
 
+
+    case 'IndexDbQueryUploadGeneral':
+      (async () => {
+
+        let result = await dbSync
+            .nodeChanges
+            // @todo; Change to 50.
+            .limit(5);
+
+        console.log(result);
+
+        // Query by the localId the `generalUploadPhotos` to get the matching
+        // file ID.
+        const resultToSend = {
+          'entities': result,
+          // @todo
+          'uploadPhotos': [],
+        };
+
+        sendResultToElm(queryType, resultToSend);
+
+      })();
+      break;
+
     case 'IndexDbQueryDeferredPhoto':
       (async () => {
 

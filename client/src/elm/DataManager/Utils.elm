@@ -1,6 +1,6 @@
 module DataManager.Utils exposing (determineSyncStatus, setPhotosBatch)
 
-import DataManager.Model exposing (DownloadPhotos(..), Model, SyncStatus(..), emptyDownloadPhotosBatchRec)
+import DataManager.Model exposing (DownloadPhotos(..), Model, SyncStatus(..), emptyDownloadPhotosBatchRec, emptyUploadRec)
 import List.Zipper as Zipper
 import RemoteData
 
@@ -36,27 +36,19 @@ determineSyncStatus model =
 
                                     Nothing ->
                                         -- No more photos to upload.
-                                        ( SyncUploadGeneral RemoteData.NotAsked, revisionIdPerAuthorityZipper )
+                                        ( SyncUploadGeneral emptyUploadRec, revisionIdPerAuthorityZipper )
 
                             _ ->
                                 noChange
 
-                    SyncUploadGeneral webData ->
-                        case webData of
-                            RemoteData.Success data ->
-                                if List.isEmpty data.entities then
-                                    -- We tried to fetch, but there was no more data.
-                                    -- Next we try authorities.
-                                    ( SyncDownloadGeneral RemoteData.NotAsked
-                                    , revisionIdPerAuthorityZipper
-                                    )
+                    SyncUploadGeneral record ->
+                        if record.indexDbRemoteData == RemoteData.Success Nothing then
+                            -- We tried to fetch entities for upload from IndexDB,
+                            -- but there we non matching the query.
+                            ( SyncDownloadGeneral RemoteData.NotAsked, revisionIdPerAuthorityZipper )
 
-                                else
-                                    -- Still have data to download.
-                                    noChange
-
-                            _ ->
-                                noChange
+                        else
+                            noChange
 
                     SyncDownloadGeneral webData ->
                         case webData of
@@ -121,8 +113,8 @@ determineSyncStatus model =
                             _ ->
                                 noChange
 
-                    SyncDownloadPhotos downloadPhotos ->
-                        case downloadPhotos of
+                    SyncDownloadPhotos record ->
+                        case record of
                             DownloadPhotosNone ->
                                 ( SyncIdle, revisionIdPerAuthorityZipper )
 
