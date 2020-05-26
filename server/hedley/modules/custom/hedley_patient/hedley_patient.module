@@ -105,7 +105,7 @@ function hedley_patient_recalculate_shards_for_person_content($nid) {
   $query->condition($person_or);
 
   // Limit to sharded measurements.
-  $sharded = array_keys(HEDLEY_RESTFUL_SHARDED_NODES);
+  $sharded = array_keys(HEDLEY_RESTFUL_SHARDED);
   $query->condition('n.type', $sharded);
   $query->fields('n', ['nid', 'type']);
   $query->fields('s', ['field_shards_target_id']);
