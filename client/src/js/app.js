@@ -394,20 +394,19 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             console.log(e);
           }
 
-          const fileId = parseInt(json.data[0].id);
-
           const updateRecord = {
-            'fileId': fileId,
+            'fileId': parseInt(json.data[0].id),
             'remoteFileName': json.data[0].label,
             'isSynced': 1,
           }
 
           // Update IndexDb to hold the fileId.
-          let updateResult = await dbSync
+          await dbSync
               .generalPhotoUploadChanges
               .update(row.localId, updateRecord);
 
-          console.log(updateResult);
+          const completedResult = Object.assign(row, updateRecord);
+          return sendResultToElm(queryType, completedResult);
         }
       })();
       break;
