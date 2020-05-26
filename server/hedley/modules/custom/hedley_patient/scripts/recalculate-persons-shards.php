@@ -5,7 +5,7 @@
  * Recalculate all shards.
  *
  * Drush scr
- * profiles/hedley/modules/custom/hedley_patient/scripts/populate-clinics-shards.php.
+ * profiles/hedley/modules/custom/hedley_patient/scripts/populate-persons-shards.php.
  */
 
 if (!drupal_is_cli()) {
@@ -25,7 +25,7 @@ $memory_limit = drush_get_option('memory_limit', 500);
 $base_query = new EntityFieldQuery();
 $base_query
   ->entityCondition('entity_type', 'node')
-  ->propertyCondition('type', 'clinic')
+  ->propertyCondition('type', 'person')
   ->propertyCondition('status', NODE_PUBLISHED)
   ->propertyOrderBy('nid', 'ASC');
 
@@ -34,11 +34,11 @@ $count_query->propertyCondition('nid', $nid, '>');
 $total = $count_query->count()->execute();
 
 if ($total == 0) {
-  drush_print("There are no clinics in DB.");
+  drush_print("There are no people in DB.");
   exit;
 }
 
-drush_print("$total clinics located.");
+drush_print("$total people located.");
 
 $processed = 0;
 while ($processed < $total) {
@@ -60,19 +60,16 @@ while ($processed < $total) {
   }
 
   $ids = array_keys($result['node']);
-  $nodes = node_load_multiple($ids);
-  foreach ($nodes as $node) {
-    $wrapper = entity_metadata_wrapper('node', $node);
-    $health_center_id = $wrapper->field_health_center->getIdentifier();
-
-    if (empty($health_center_id)) {
-      drush_print("Clinic with ID $node->nid is not assigned to HC! Skipping...");
-
+  foreach ($ids as $id) {
+    if (hedley_patient_recalculate_shards_for_person($id)) {
+      // Recalculation shards for person triggers
+      // shards recalculation for person content.
       continue;
     }
 
-    $wrapper->field_shards->set([$health_center_id]);
-    $wrapper->save();
+    // If shards were not recalculated for person, we still try to
+    // recalculate shards for person's content.
+    hedley_patient_recalculate_shards_for_person_content($id);
   }
 
   $nid = end($ids);
@@ -82,9 +79,9 @@ while ($processed < $total) {
     return;
   }
 
-  $count = count($nodes);
+  $count = count($ids);
   $processed += $count;
-  drush_print("$count clinics processed.");
+  drush_print("$count persons processed.");
 }
 
 drush_print('Done!');

@@ -5,7 +5,7 @@
  * Recalculate all shards.
  *
  * Drush scr
- * profiles/hedley/modules/custom/hedley_patient/scripts/populate-clinic-shards.php.
+ * profiles/hedley/modules/custom/hedley_patient/scripts/populate-clinics-shards.php.
  */
 
 if (!drupal_is_cli()) {

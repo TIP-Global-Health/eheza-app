@@ -5,7 +5,7 @@
  * Recalculate all shards.
  *
  * Drush scr
- * profiles/hedley/modules/custom/hedley_patient/scripts/populate-clinics-shards.php.
+ * profiles/hedley/modules/custom/hedley_patient/scripts/populate-sessions-shards.php.
  */
 
 if (!drupal_is_cli()) {
@@ -25,7 +25,7 @@ $memory_limit = drush_get_option('memory_limit', 500);
 $base_query = new EntityFieldQuery();
 $base_query
   ->entityCondition('entity_type', 'node')
-  ->propertyCondition('type', 'clinic')
+  ->propertyCondition('type', 'session')
   ->propertyCondition('status', NODE_PUBLISHED)
   ->propertyOrderBy('nid', 'ASC');
 
@@ -34,11 +34,11 @@ $count_query->propertyCondition('nid', $nid, '>');
 $total = $count_query->count()->execute();
 
 if ($total == 0) {
-  drush_print("There are no clinics in DB.");
+  drush_print("There are no sessions in DB.");
   exit;
 }
 
-drush_print("$total clinics located.");
+drush_print("$total sessions located.");
 
 $processed = 0;
 while ($processed < $total) {
@@ -63,10 +63,10 @@ while ($processed < $total) {
   $nodes = node_load_multiple($ids);
   foreach ($nodes as $node) {
     $wrapper = entity_metadata_wrapper('node', $node);
-    $health_center_id = $wrapper->field_health_center->getIdentifier();
+    $health_center_id = $wrapper->field_clinic->field_health_center->getIdentifier();
 
     if (empty($health_center_id)) {
-      drush_print("Clinic with ID $node->nid is not assigned to HC! Skipping...");
+      drush_print("Can't resolve health center of clinic for session with ID $node->nid! Skipping...");
 
       continue;
     }
@@ -84,7 +84,7 @@ while ($processed < $total) {
 
   $count = count($nodes);
   $processed += $count;
-  drush_print("$count clinics processed.");
+  drush_print("$count sessions processed.");
 }
 
 drush_print('Done!');
