@@ -895,7 +895,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                     -- we've probably just entered it, or we've loaded the child
                                     -- for some other reason. We won't try to fetch the child here
                                     -- if we don't have the child, at least for now, because it
-                                    -- would add complexity.  If we don't know the child's
+                                    -- would add complexity. If we don't know the child's
                                     -- birthdate, we'll default to 28 days ago. That should be
                                     -- enough so that, if we're in the middle of a group encounter,
                                     -- the child will be expected at that group encounter.
@@ -905,7 +905,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
                                     -- For all groups but Sorwathe, we expect child to graduate from programm
                                     -- after 26 months. Therefore, if we can resolve clinic type and child birthday,
-                                    -- we'll set  expected graduation date.
+                                    -- we'll set expected graduation date.
                                     defaultEndDate =
                                         model.clinics
                                             |> RemoteData.toMaybe

@@ -32,6 +32,7 @@ $base_query = new EntityFieldQuery();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->propertyCondition('type', $type)
+  ->propertyCondition('status', NODE_PUBLISHED)
   ->propertyOrderBy('nid', 'ASC');
 
 $count_query = clone $base_query;
@@ -78,7 +79,7 @@ while ($processed < $total) {
 
     $clinic_type = $wrapper->field_clinic->field_group_type->value();
     // We do not set graduation date for sorwathe group participants.
-    if ($clinic_type == 'sorwathe') {
+    if ($clinic_type == HEDLEY_PERSON_CLINIC_TYPE_SORWATHE) {
       continue;
     }
 
