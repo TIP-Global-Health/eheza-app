@@ -7,8 +7,8 @@ import DataManager.Model
         , IndexDbQueryUploadGeneralResultRecord
         , UploadMethod(..)
         )
+import DataManager.Utils exposing (getBackendGeneralEntityIdentifier)
 import Json.Encode exposing (Value, int, list, object, string)
-import List.Extra
 
 
 encodeIndexDbQueryUploadGeneralResultRecord : IndexDbQueryUploadGeneralResultRecord -> List ( String, Value )
@@ -21,20 +21,25 @@ encodeIndexDbQueryUploadGeneralResultRecord record =
                 |> (\list_ -> ( "photo", int fileId ) :: list_)
 
         encodeData ( entity, method ) =
-            (case entity of
-                BackendGeneralPerson uuid _ entity_ ->
-                    [ ( "uuid", string uuid )
-                    , ( "type", string "person" )
+            let
+                identifier =
+                    getBackendGeneralEntityIdentifier entity
 
-                    -- @todo: Get correct file ID.
-                    , ( "data", Json.Encode.object <| replacePhotoWithFileId (Backend.Person.Encoder.encodePerson entity_) 21053 )
-                    , ( "method", encodeUploadMethod method )
-                    ]
+                data =
+                    case entity of
+                        BackendGeneralPerson uuid _ entity_ ->
+                            -- @todo: Get correct file ID.
+                            Json.Encode.object <| replacePhotoWithFileId (Backend.Person.Encoder.encodePerson entity_) 21053
 
-                _ ->
-                    -- @todo
-                    []
-            )
+                        _ ->
+                            -- @todo
+                            Json.Encode.object []
+            in
+            [ ( "uuid", string identifier.uuid )
+            , ( "type", string identifier.type_ )
+            , ( "method", encodeUploadMethod method )
+            , ( "data", data )
+            ]
                 |> object
     in
     [ ( "changes", list encodeData record.entities ) ]

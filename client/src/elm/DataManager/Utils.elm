@@ -1,6 +1,14 @@
-module DataManager.Utils exposing (determineSyncStatus, setPhotosBatch)
+module DataManager.Utils exposing (determineSyncStatus, getBackendGeneralEntityIdentifier, setPhotosBatch)
 
-import DataManager.Model exposing (DownloadPhotos(..), Model, SyncStatus(..), emptyDownloadPhotosBatchRec, emptyUploadRec)
+import DataManager.Model
+    exposing
+        ( BackendGeneralEntity(..)
+        , DownloadPhotos(..)
+        , Model
+        , SyncStatus(..)
+        , emptyDownloadPhotosBatchRec
+        , emptyUploadRec
+        )
 import List.Zipper as Zipper
 import RemoteData
 
@@ -170,3 +178,28 @@ resetDownloadPhotosBatchCounter model =
 setPhotosBatch : Model -> Model
 setPhotosBatch model =
     { model | syncStatus = SyncDownloadPhotos (DownloadPhotosBatch (emptyDownloadPhotosBatchRec model.downloadPhotosBatchSize)) }
+
+
+getBackendGeneralEntityIdentifier : BackendGeneralEntity -> { uuid : String, type_ : String }
+getBackendGeneralEntityIdentifier backendGeneralEntity =
+    case backendGeneralEntity of
+        BackendGeneralCatchmentArea uuid _ _ ->
+            { uuid = uuid, type_ = "catchment_area" }
+
+        BackendGeneralHealthCenter uuid _ _ ->
+            { uuid = uuid, type_ = "health_center" }
+
+        BackendGeneralNurse uuid _ _ ->
+            { uuid = uuid, type_ = "nurse" }
+
+        BackendGeneralPerson uuid _ _ ->
+            { uuid = uuid, type_ = "person" }
+
+        BackendGeneralPmtctParticipant uuid _ _ ->
+            { uuid = uuid, type_ = "pmtct_participant" }
+
+        BackendGeneralRelationship uuid _ _ ->
+            { uuid = uuid, type_ = "relationship" }
+
+        BackendGeneralEntityUnknown uuid _ ->
+            { uuid = uuid, type_ = "unknown" }
