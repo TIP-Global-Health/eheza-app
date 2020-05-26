@@ -41,7 +41,11 @@ function hedley_patient_node_update($node) {
   $shards = $wrapper->field_shards->value(['identifier' => TRUE]);
   $shards_orig = $wrapper_orig->field_shards->value(['identifier' => TRUE]);
 
-  if (empty(array_diff($shards, $shards_orig))) {
+  // We sort, to be able to compare arrays with `==`.
+  sort($shards);
+  sort($shards_orig);
+
+  if ($shards == $shards_orig) {
     return;
   }
 
@@ -55,7 +59,11 @@ function hedley_patient_recalculate_shards_for_person($nid) {
   // Figure out what the shards for this person ought to be.
   $shards = hedley_patient_shards_for_person_by_pmtct_participants($nid);
 
-  if (empty(array_diff($shards, $current_shards))) {
+  // We sort, to be able to compare arrays with `==`.
+  sort($current_shards);
+  sort($shards);
+
+  if ($shards == $current_shards) {
     return;
   }
 
