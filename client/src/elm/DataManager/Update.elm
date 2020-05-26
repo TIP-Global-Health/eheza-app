@@ -361,7 +361,6 @@ update currentDate device msg model =
                             []
 
                 _ ->
-                    -- @todo: Probably needs to be `noChange`?
                     SubModelReturn
                         (DataManager.Utils.determineSyncStatus model)
                         Cmd.none
@@ -600,53 +599,41 @@ update currentDate device msg model =
                 []
 
         BackendUploadGeneral (Just result) ->
-            let
-                isLoading =
-                    case model.syncStatus of
-                        SyncUploadGeneral record ->
-                            RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData
+            case model.syncStatus of
+                SyncUploadGeneral record ->
+                    if RemoteData.isLoading record.backendRemoteData then
+                        -- We are already POSTing to the backend.
+                        noChange
 
-                        _ ->
-                            False
-            in
-            if isLoading then
-                noChange
+                    else
+                        let
+                            recordUpdated =
+                                { record
+                                    | backendRemoteData = RemoteData.Loading
+                                    , indexDbRemoteData = RemoteData.Success (Just result)
+                                }
 
-            else
-                let
-                    syncStatus =
-                        case model.syncStatus of
-                            SyncUploadGeneral record ->
-                                let
-                                    recordUpdated =
-                                        { record
-                                            | backendRemoteData = RemoteData.Loading
-                                            , indexDbRemoteData = RemoteData.Success (Just result)
-                                        }
-                                in
-                                SyncUploadGeneral recordUpdated
+                            modelUpdated =
+                                { model | syncStatus = SyncUploadGeneral recordUpdated }
 
-                            _ ->
-                                model.syncStatus
+                            cmd =
+                                HttpBuilder.post (device.backendUrl ++ "/api/sync")
+                                    |> withQueryParams
+                                        [ ( "access_token", device.accessToken )
+                                        , ( "db_version", String.fromInt dbVersion )
+                                        ]
+                                    -- We don't need to decode anything, as we just want to have
+                                    -- the browser download it.
+                                    |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadGeneralHandle)
+                        in
+                        SubModelReturn
+                            (DataManager.Utils.determineSyncStatus modelUpdated)
+                            cmd
+                            noError
+                            []
 
-                    modelUpdated =
-                        { model | syncStatus = syncStatus }
-
-                    cmd =
-                        HttpBuilder.post (device.backendUrl ++ "/api/sync")
-                            |> withQueryParams
-                                [ ( "access_token", device.accessToken )
-                                , ( "db_version", String.fromInt dbVersion )
-                                ]
-                            -- We don't need to decode anything, as we just want to have
-                            -- the browser download it.
-                            |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadGeneralHandle)
-                in
-                SubModelReturn
-                    (DataManager.Utils.determineSyncStatus modelUpdated)
-                    cmd
-                    noError
-                    []
+                _ ->
+                    noChange
 
         BackendUploadGeneralHandle webData ->
             case webData of

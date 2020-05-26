@@ -285,6 +285,10 @@ type Msg
       -- Fetch a deferred photo from the server.
     | BackendDeferredPhotoFetch (Maybe IndexDbQueryDeferredPhotoResultRecord)
     | BackendDeferredPhotoFetchHandle IndexDbQueryDeferredPhotoResultRecord (WebData ())
+      -- Unlike other `Backend...` msgs, we have no HTTP activity from Elm. That is,
+      -- uploading the photos happens in JS, since we have to deal with file blobs
+      -- which would be harder in Elm, given we have elm/http@1.0.
+      -- This is the reason it doesn't get as arguments the result of the IndexDB.
     | BackendPhotoUploadGeneral
     | BackendUploadGeneral (Maybe IndexDbQueryUploadGeneralResultRecord)
     | BackendUploadGeneralHandle (WebData ())
