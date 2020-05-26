@@ -250,6 +250,21 @@ elmApp.ports.scrollToElement.subscribe(function(elementId) {
 });
 
 /**
+ * Set the last revision ID used to download General.
+ */
+elmApp.ports.sendLastFetchedRevisionIdGeneral.subscribe(function(lastFetchedRevisionIdGeneral) {
+  localStorage.setItem('lastFetchedRevisionIdGeneral', lastFetchedRevisionIdGeneral);
+});
+
+/**
+ * Set a list with the last revision ID used to download Authority, along with
+ * their UUID.
+ */
+elmApp.ports.sendRevisionIdPerAuthority.subscribe(function(revisionIdPerAuthority) {
+  localStorage.setItem('revisionIdPerAuthority', JSON.stringify(revisionIdPerAuthority));
+});
+
+/**
  * Save Synced data to IndexDB.
  */
 elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
@@ -295,21 +310,6 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
 });
 
 /**
- * Set the last revision ID used to download General.
- */
-elmApp.ports.sendLastFetchedRevisionIdGeneral.subscribe(function(lastFetchedRevisionIdGeneral) {
-  localStorage.setItem('lastFetchedRevisionIdGeneral', lastFetchedRevisionIdGeneral);
-});
-
-/**
- * Set a list with the last revision ID used to download Authority, along with
- * their UUID.
- */
-elmApp.ports.sendRevisionIdPerAuthority.subscribe(function(revisionIdPerAuthority) {
-  localStorage.setItem('revisionIdPerAuthority', JSON.stringify(revisionIdPerAuthority));
-});
-
-/**
  * Fetch data from IndexDB, and send to Elm.
  *
  * See DataManager.Model.FetchFromIndexDbQueryType to see possible values.
@@ -334,7 +334,77 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         console.log(result);
 
-        sendResultToElm(queryType, result);
+        if (!result[0]) {
+          // No photos to upload.
+          return sendResultToElm(queryType, result);
+        }
+
+        const row = result[0];
+        const photosUploadCache = "photos-upload";
+
+        const cache = await caches.open(photosUploadCache);
+        const cachedResponse = await cache.match(row.photo);
+        if (!cachedResponse) {
+          // Photo is registered in IndexDB, but doesn't appear in the cache
+          // @todo: Send Error back to Elm.
+          return sendResultToElm(queryType, []);
+        }
+
+        const blob = await cachedResponse.blob();
+        const formData = new FormData();
+        const imageName = 'image-' + row.uuid.substring(0, 7) + '.jpg';
+
+        formData.set('file', blob, imageName);
+
+        const dataArr = JSON.parse(data);
+
+        const backendUrl = dataArr.backend_url;
+        const accessToken = dataArr.access_token;
+        const dbVersion = 9;
+
+        // @tood: Get db_version from Elm?
+
+        const uploadUrl = [
+          backendUrl,
+          '/api/file-upload?access_token=',
+          accessToken,
+        ].join('');
+
+        try {
+          var response = await fetch(uploadUrl, {
+            method: 'POST',
+            body: formData,
+            // This prevents attaching cookies to request, to prevent
+            // sending authentication cookie, as our desired
+            // authentication method is token.
+            credentials: 'omit'
+          });
+        }
+        catch (e) {
+            // Network error?
+            // @todo
+            console.log(e);
+          }
+
+        if (response.ok) {
+          try {
+            var json = await response.json();
+          }
+          catch (e) {
+            // Bad JSON?
+            // @todo
+            console.log(e);
+          }
+
+          const fileId = parseInt(json.data[0].id);
+
+          // Update IndexDb to hold the fileId.
+          let updateResult = await dbSync
+              .generalPhotoUploadChanges
+              .update(row.localId, {'fileId': fileId, 'isSynced': 1});
+
+          console.log(updateResult);
+        }
       })();
       break;
 

@@ -111,7 +111,7 @@ type alias Model =
 
 emptyModel : LastFetchedRevisionIdGeneral -> RevisionIdPerAuthorityZipper -> Int -> Model
 emptyModel lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper batchSize =
-    { syncStatus = SyncDownloadGeneral RemoteData.NotAsked
+    { syncStatus = SyncUploadPhotoGeneral RemoteData.NotAsked
     , lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral
     , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0

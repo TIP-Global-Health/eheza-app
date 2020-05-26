@@ -32,7 +32,7 @@ decodeIndexDbQueryTypeResult =
         |> andThen
             (\queryType ->
                 case queryType of
-                    "IndexDbQueryUploadPhotoGeneral" ->
+                    "IndexDbQueryUploadPhotoGeneralResult" ->
                         oneOf
                             [ field "data" decodeIndexDbQueryUploadPhotoResultRecord
                                 |> andThen (\record -> succeed (IndexDbQueryUploadPhotoGeneralResult (Just record)))

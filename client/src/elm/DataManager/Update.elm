@@ -11,6 +11,7 @@ import Backend.Relationship.Encoder
 import DataManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseGeneral)
 import DataManager.Model exposing (BackendAuthorityEntity(..), BackendGeneralEntity(..), DownloadPhotos(..), IndexDbQueryType(..), IndexDbQueryTypeResult(..), Model, Msg(..), SyncStatus(..), emptyRevisionIdPerAuthority)
 import DataManager.Utils
+import Device.Encoder
 import Device.Model exposing (Device)
 import Error.Utils exposing (decodeError, maybeHttpError, noError)
 import Gizra.NominalDate exposing (NominalDate)
@@ -686,8 +687,15 @@ update currentDate device msg model =
                 record =
                     case indexDbQueryType of
                         IndexDbQueryUploadPhotoGeneral ->
+                            let
+                                -- Send the device info so on JS, we'd know how
+                                -- to contact the backend.
+                                encodedData =
+                                    Device.Encoder.encode device
+                                        |> Json.Encode.encode 0
+                            in
                             { queryType = "IndexDbQueryUploadPhotoGeneral"
-                            , data = Nothing
+                            , data = Just encodedData
                             }
 
                         IndexDbQueryDeferredPhoto ->
