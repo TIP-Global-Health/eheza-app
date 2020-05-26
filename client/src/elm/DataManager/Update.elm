@@ -9,6 +9,7 @@ import Backend.Person.Encoder
 import Backend.PmtctParticipant.Encoder
 import Backend.Relationship.Encoder
 import DataManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseGeneral)
+import DataManager.Encoder
 import DataManager.Model exposing (BackendAuthorityEntity(..), BackendGeneralEntity(..), DownloadPhotos(..), IndexDbQueryType(..), IndexDbQueryTypeResult(..), Model, Msg(..), SyncStatus(..), emptyRevisionIdPerAuthority)
 import DataManager.Utils
 import Device.Encoder
@@ -16,7 +17,7 @@ import Device.Model exposing (Device)
 import Error.Utils exposing (decodeError, maybeHttpError, noError)
 import Gizra.NominalDate exposing (NominalDate)
 import Http
-import HttpBuilder exposing (withExpectJson, withQueryParams)
+import HttpBuilder exposing (withExpectJson, withJsonBody, withQueryParams)
 import Json.Decode exposing (Value, decodeString, decodeValue)
 import Json.Encode
 import List.Zipper as Zipper
@@ -622,6 +623,7 @@ update currentDate device msg model =
                                         [ ( "access_token", device.accessToken )
                                         , ( "db_version", String.fromInt dbVersion )
                                         ]
+                                    |> withJsonBody (Json.Encode.object <| DataManager.Encoder.encodeIndexDbQueryUploadGeneralResultRecord result)
                                     -- We don't need to decode anything, as we just want to have
                                     -- the browser download it.
                                     |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadGeneralHandle)
@@ -636,46 +638,36 @@ update currentDate device msg model =
                     noChange
 
         BackendUploadGeneralHandle webData ->
-            case webData of
-                RemoteData.Failure error ->
-                    if Utils.WebData.isNetworkError error then
-                        -- We're offline, so this doesn't qualify as an attempt.
-                        noChange
+            case model.syncStatus of
+                SyncUploadGeneral record ->
+                    case webData of
+                        RemoteData.Failure error ->
+                            let
+                                syncStatus =
+                                    SyncUploadGeneral { record | backendRemoteData = RemoteData.Failure error }
+                            in
+                            SubModelReturn
+                                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                                Cmd.none
+                                (maybeHttpError webData "Backend.DataManager.Update" "BackendUploadGeneralHandle")
+                                []
 
-                    else
-                        let
-                            syncStatus =
-                                case model.syncStatus of
-                                    SyncUploadGeneral record ->
-                                        SyncUploadGeneral { record | backendRemoteData = RemoteData.Failure error }
-
-                                    _ ->
-                                        model.syncStatus
-                        in
-                        SubModelReturn
-                            (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
-                            Cmd.none
-                            (maybeHttpError webData "Backend.DataManager.Update" "BackendUploadGeneralHandle")
-                            []
-
-                RemoteData.Success queryResult ->
-                    let
-                        syncStatus =
-                            case model.syncStatus of
-                                SyncUploadGeneral record ->
+                        RemoteData.Success queryResult ->
+                            let
+                                syncStatus =
                                     SyncUploadGeneral { record | backendRemoteData = RemoteData.Success queryResult }
+                            in
+                            SubModelReturn
+                                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                                Cmd.none
+                                noError
+                                []
 
-                                _ ->
-                                    model.syncStatus
-                    in
-                    SubModelReturn
-                        (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
-                        Cmd.none
-                        noError
-                        []
+                        _ ->
+                            -- Satisfy the compiler.
+                            noChange
 
                 _ ->
-                    -- Satisfy the compiler.
                     noChange
 
         BackendDeferredPhotoFetch Nothing ->
