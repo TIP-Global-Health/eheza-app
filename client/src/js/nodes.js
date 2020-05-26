@@ -211,20 +211,26 @@
                     json.uuid = uuid;
                     json.type = type;
 
-                    return table.put(json).catch(databaseError).then(function () {
-                        var body = JSON.stringify({
-                            data: [json]
-                        });
+                    // For hooks to be able to work, we need to declare the
+                    // tables that may be altered due to a change. In this case
+                    // We want to allow adding pending upload photos.
+                    // See for example dbSync.nodeChanges.hook().
+                    return db.transaction('rw', table, dbSync.nodeChanges, dbSync.shardChanges, dbSync.generalPhotoUploadChanges, dbSync.authorityPhotoUploadChanges, function() {
+                        return table.put(json).catch(databaseError).then(function () {
+                            var body = JSON.stringify({
+                                data: [json]
+                            });
 
-                        var response = new Response(body, {
-                            status: 200,
-                            statusText: 'OK',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
+                            var response = new Response(body, {
+                                status: 200,
+                                statusText: 'OK',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
 
-                        return Promise.resolve(response);
+                            return Promise.resolve(response);
+                        });
                     });
                 });
             });
@@ -235,54 +241,64 @@
         return dbSync.open().catch(databaseError).then(function () {
             return getTableForType(type).then(function (table) {
                 return request.json().catch(jsonError).then(function (json) {
-                    return table.update(uuid, json).catch(databaseError).then(function () {
-                        return table.get(uuid).catch(databaseError).then(function (node) {
-                            if (node) {
-                                var body = JSON.stringify({
-                                    data: [node]
-                                });
 
-                                var response = new Response(body, {
-                                    status: 200,
-                                    statusText: 'OK',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    }
-                                });
+                    // For hooks to be able to work, we need to declare the
+                    // tables that may be altered due to a change. In this case
+                    // We want to allow adding pending upload photos.
+                    // See for example dbSync.nodeChanges.hook().
+                    return db.transaction('rw', table, dbSync.nodeChanges, dbSync.shardChanges, dbSync.generalPhotoUploadChanges, dbSync.authorityPhotoUploadChanges, function() {
 
-                                var change = {
-                                    type: type,
-                                    uuid: uuid,
-                                    method: 'PATCH',
-                                    data: json,
-                                    timestamp: Date.now()
-                                };
+                        return table.update(uuid, json).catch(databaseError).then(function () {
+                            return table.get(uuid).catch(databaseError).then(function (node) {
+                                if (node) {
+                                    var body = JSON.stringify({
+                                        data: [node]
+                                    });
 
-                                var changeTable = dbSync.nodeChanges;
-                                var addShard = Promise.resolve();
-
-                                if (table === dbSync.shards) {
-                                    changeTable = dbSync.shardChanges;
-
-                                    addShard = table.get(uuid).catch(databaseError).then(function (item) {
-                                        if (item) {
-                                            change.shard = item.shard;
-                                        } else {
-                                            return Promise.reject('Unexpectedly could not find: ' + uuid);
+                                    var response = new Response(body, {
+                                        status: 200,
+                                        statusText: 'OK',
+                                        headers: {
+                                            'Content-Type': 'application/json'
                                         }
                                     });
-                                }
 
-                                return addShard.then(function () {
-                                    return changeTable.add(change).then(function (localId) {
-                                        return Promise.resolve(response);
+                                    var change = {
+                                        type: type,
+                                        uuid: uuid,
+                                        method: 'PATCH',
+                                        data: json,
+                                        timestamp: Date.now()
+                                    };
+
+                                    var changeTable = dbSync.nodeChanges;
+                                    var addShard = Promise.resolve();
+
+                                    if (table === dbSync.shards) {
+                                        changeTable = dbSync.shardChanges;
+
+                                        addShard = table.get(uuid).catch(databaseError).then(function (item) {
+                                            if (item) {
+                                                change.shard = item.shard;
+                                            }
+                                            else {
+                                                return Promise.reject('Unexpectedly could not find: ' + uuid);
+                                            }
+                                        });
+                                    }
+
+                                    return addShard.then(function () {
+                                        return changeTable.add(change).then(function (localId) {
+                                            return Promise.resolve(response);
+                                        });
                                     });
-                                });
 
 
-                            } else {
-                                return Promise.reject("UUID unexpectedly not found.");
-                            }
+                                }
+                                else {
+                                    return Promise.reject("UUID unexpectedly not found.");
+                                }
+                            });
                         });
                     });
                 });
@@ -312,7 +328,13 @@
                         }
 
                         return addShard.then(function (json) {
-                            return table.put(json).catch(databaseError).then(function () {
+                            // For hooks to be able to work, we need to declare the
+                            // tables that may be altered due to a change. In this case
+                            // We want to allow adding pending upload photos.
+                            // See for example dbSync.nodeChanges.hook().
+                            return db.transaction('rw', table, dbSync.nodeChanges, dbSync.shardChanges, dbSync.generalPhotoUploadChanges, dbSync.authorityPhotoUploadChanges, function() {
+
+                                return table.put(json).catch(databaseError).then(function () {
                                 var body = JSON.stringify({
                                     data: [json]
                                 });
@@ -343,6 +365,8 @@
                                 return changeTable.add(change).then(function (localId) {
                                     return Promise.resolve(response);
                                 });
+                            });
+
                             });
                         });
                     });
@@ -390,7 +414,7 @@
         }).catch(sendErrorResponses);
     }
 
-    // A list of all types of measuremnts that can be
+    // A list of all types of measurements that can be
     // taken during groups encounter.
     var groupMeasurementTypes = [
       'attendance',
@@ -408,7 +432,7 @@
     ];
 
     // This is a kind of special-case for now, at least. We're wanting to get
-    // back all of measuremnts for whom the key is equal to the value.
+    // back all of measurements for whom the key is equal to the value.
     //
     // Ultimately, it would be better to make this more generic here and do the
     // processing on the client side, but this mirrors the pre-existing
@@ -680,16 +704,6 @@
         }
     }
 
-    function sendRevisedNode (table, uuid) {
-        return table.get(uuid).catch(databaseError).then(function (item) {
-            if (item) {
-                return sendRevisions([item]);
-            } else {
-                return Promise.reject("UUID unexpectedly not found.");
-            }
-        });
-    }
-
     function databaseError (err) {
         var response = new Response(JSON.stringify(err), {
             status: 500,
@@ -743,6 +757,58 @@
         }).then(function (deviceUuid) {
             return Promise.resolve(kelektivUuid.v5(timestamp, deviceUuid));
         });
+    }
+
+    /**
+     * Create matching row in `generalPhotoUploadChanges`, if entity has a photo.
+     */
+    dbSync.nodeChanges.hook('creating', function (primKey, obj, transaction) {
+        const self = this;
+        return addPhotoUploadChanges(self, dbSync.generalPhotoUploadChanges, obj);
+    });
+
+    /**
+     * Create matching row in `authorityPhotoUploadChanges`, if entity has a photo.
+     */
+    dbSync.shardChanges.hook('creating', function (primKey, obj, transaction) {
+        const self = this;
+        return addPhotoUploadChanges(self, dbSync.authorityPhotoUploadChanges, obj);
+    });
+
+    /**
+     * Helper function to add a record to general or authority PhotoUploadChanges.
+     *
+     * @param table
+     *   The Dexie table object.
+     * @param primaryKey
+     *   The localId
+     * @param obj
+     *   THe saved entity (e.g. person or photo)
+     * @returns {Promise<void>}
+     */
+    function addPhotoUploadChanges(tableHook, table, obj) {
+        if (!obj.data.hasOwnProperty('photo')) {
+            // Entity doesn't have a photo.
+            return;
+        }
+
+        if (!photosUploadUrlRegex.test(obj.data.photo)) {
+            // Photo URL doesn't point to the local cache.
+            return;
+        }
+
+        // As `localId`, the primary key, is auto incremented, we have to wait
+        // for the transaction to finish in order to have it.
+        tableHook.onsuccess = async function (primaryKey) {
+            const result = await table.add({
+                localId : primaryKey,
+                uuid: obj.uuid,
+                photo: obj.data.photo,
+                fileId: null
+            });
+
+            return result;
+        };
     }
 
 })();
