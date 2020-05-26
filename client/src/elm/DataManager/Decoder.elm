@@ -48,7 +48,7 @@ decodeIndexDbQueryTypeResult =
                             [ field "data" decodeIndexDbQueryUploadGeneralResultRecord
                                 |> andThen (\record -> succeed (IndexDbQueryUploadGeneralResult (Just record)))
 
-                            -- In case we have no photos to upload.
+                            -- In case we have no entities to upload.
                             , succeed (IndexDbQueryUploadGeneralResult Nothing)
                             ]
 
@@ -82,11 +82,30 @@ decodeIndexDbQueryUploadGeneralResultRecord =
         |> required "uploadPhotos" (list decodeIndexDbQueryUploadPhotoResultRecord)
 
 
+{-| We need to get the localId, which is wrapping the data. It looks something like:
+
+{ type: "person"
+, uuid: "some-uuid"
+, localId: 1
+, data: {label: "My name", gender: "female"
+...
+}
+
+So we grab the `localId` and `uuid`, and feed them to the decodeBackendGeneralEntity.
+
+-}
 decodeBackendGeneralEntityAndUploadMethod : Decoder ( BackendGeneralEntity, UploadMethod )
 decodeBackendGeneralEntityAndUploadMethod =
-    succeed (\a b -> ( a, b ))
-        |> custom (decodeBackendGeneralEntity "localId")
-        |> custom decodeUploadMethod
+    (succeed (\a b -> ( a, b ))
+        |> required "uuid" string
+        |> required "localId" int
+    )
+        |> andThen
+            (\( uuid, localId ) ->
+                succeed (\c d -> ( c, d ))
+                    |> required "data" (decodeBackendGeneralEntity (hardcoded uuid) (hardcoded localId))
+                    |> required "method" decodeUploadMethod
+            )
 
 
 decodeUploadMethod : Decoder UploadMethod
@@ -118,48 +137,51 @@ decodeDownloadSyncResponseGeneral : Decoder (DownloadSyncResponse BackendGeneral
 decodeDownloadSyncResponseGeneral =
     field "data"
         (succeed DownloadSyncResponse
-            |> required "batch" (list <| decodeBackendGeneralEntity "vid")
+            |> required "batch" (list <| decodeBackendGeneralEntity (required "uuid" string) (required "vid" decodeInt))
             |> required "last_timestamp" decodeDate
             |> required "revision_count" decodeInt
         )
 
 
-decodeBackendGeneralEntity : String -> Decoder BackendGeneralEntity
-decodeBackendGeneralEntity identifier =
+
+--decodeBackendGeneralEntity : Decoder (number -> BackendGeneralEntity) -> Decoder BackendGeneralEntity
+
+
+decodeBackendGeneralEntity uuidDecoder identifierDecoder =
     (succeed (\a b c -> ( a, b, c ))
         |> required "type" string
-        |> required "uuid" string
-        |> required identifier decodeInt
+        |> uuidDecoder
+        |> identifierDecoder
     )
         |> andThen
-            (\( type_, uuid, vid ) ->
+            (\( type_, uuid, identifier_ ) ->
                 case type_ of
                     "catchment_area" ->
                         Backend.HealthCenter.Decoder.decodeCatchmentArea
-                            |> andThen (\entity -> succeed (BackendGeneralCatchmentArea uuid vid entity))
+                            |> andThen (\entity -> succeed (BackendGeneralCatchmentArea uuid identifier_ entity))
 
                     "health_center" ->
                         Backend.HealthCenter.Decoder.decodeHealthCenter
-                            |> andThen (\entity -> succeed (BackendGeneralHealthCenter uuid vid entity))
+                            |> andThen (\entity -> succeed (BackendGeneralHealthCenter uuid identifier_ entity))
 
                     "nurse" ->
                         Backend.Nurse.Decoder.decodeNurse
-                            |> andThen (\entity -> succeed (BackendGeneralNurse uuid vid entity))
+                            |> andThen (\entity -> succeed (BackendGeneralNurse uuid identifier_ entity))
 
                     "person" ->
                         Backend.Person.Decoder.decodePerson
-                            |> andThen (\entity -> succeed (BackendGeneralPerson uuid vid entity))
+                            |> andThen (\entity -> succeed (BackendGeneralPerson uuid identifier_ entity))
 
                     "pmtct_participant" ->
                         Backend.PmtctParticipant.Decoder.decodePmtctParticipant
-                            |> andThen (\entity -> succeed (BackendGeneralPmtctParticipant uuid vid entity))
+                            |> andThen (\entity -> succeed (BackendGeneralPmtctParticipant uuid identifier_ entity))
 
                     "relationship" ->
                         Backend.Relationship.Decoder.decodeRelationship
-                            |> andThen (\entity -> succeed (BackendGeneralRelationship uuid vid entity))
+                            |> andThen (\entity -> succeed (BackendGeneralRelationship uuid identifier_ entity))
 
                     _ ->
-                        succeed (BackendGeneralEntityUnknown type_ vid)
+                        succeed (BackendGeneralEntityUnknown type_ identifier_)
             )
 
 
