@@ -13,6 +13,7 @@ module DataManager.Model exposing
     , RevisionIdPerAuthority
     , RevisionIdPerAuthorityZipper
     , SyncStatus(..)
+    , UploadSyncResponse
     , emptyDownloadPhotosBatchRec
     , emptyModel
     , emptyRevisionIdPerAuthority
@@ -37,9 +38,11 @@ but a child's measurements is per authority.
 -}
 type
     BackendGeneralEntity
-    -- UUID is not part of the entities, so we'd keep it along with the entity
-    -- itself. We keep the UUID is regular string to keep decoder code easier to
-    -- manage.
+    -- The `String` is the UUID which is not part of the entities, so we'd keep
+    -- it along with the entity itself. We keep the UUID is regular string to
+    -- keep decoder code easier to manage.
+    -- When downloading, the `Int` is the vid of the node.
+    -- When uploading, the `Int` the the `localId` from IndexDB.
     = BackendGeneralCatchmentArea String Int CatchmentArea
     | BackendGeneralHealthCenter String Int HealthCenter
     | BackendGeneralNurse String Int Nurse
@@ -133,6 +136,17 @@ type alias DownloadSyncResponse a =
     }
 
 
+{-| Hold the info we're going to decode from a POST call to /api/sync.
+
+We can have the `a` replaced with BackendGeneralEntity or BackendAuthorityEntity
+
+-}
+type alias UploadSyncResponse a =
+    { entities : List a
+    , lastTimestampOfLastRevision : Time.Posix
+    }
+
+
 {-| Determine how photos are going to be downloaded.
 -}
 type DownloadPhotos
@@ -182,6 +196,7 @@ type alias DeferredPhotoIndexDbRemoteData =
 type SyncStatus
     = SyncIdle
     | SyncUploadPhotoGeneral (RemoteData () (Maybe IndexDbQueryUploadPhotoResultRecord))
+    | SyncUploadGeneral (WebData (UploadSyncResponse BackendGeneralEntity))
     | SyncDownloadGeneral (WebData (DownloadSyncResponse BackendGeneralEntity))
     | SyncDownloadAuthority (WebData (DownloadSyncResponse BackendAuthorityEntity))
     | SyncDownloadPhotos DownloadPhotos
@@ -192,6 +207,7 @@ type SyncStatus
 type IndexDbQueryType
     = -- Get a single photo pending uploading
       IndexDbQueryUploadPhotoGeneral
+    | IndexDbQueryUploadGeneral
       -- Get a single deferred photo.
     | IndexDbQueryDeferredPhoto
       -- When we successfully download a photo, we remove it from the `deferredPhotos` table.
@@ -244,6 +260,7 @@ type Msg
     | BackendDeferredPhotoFetch IndexDbQueryDeferredPhotoResultRecord
     | BackendDeferredPhotoFetchHandle IndexDbQueryDeferredPhotoResultRecord (WebData ())
     | BackendPhotoUploadGeneral
+    | BackendUploadGeneral
     | QueryIndexDb IndexDbQueryType
     | QueryIndexDbHandle Value
     | FetchFromIndexDbDeferredPhoto

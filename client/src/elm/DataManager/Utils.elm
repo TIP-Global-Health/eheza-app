@@ -36,7 +36,24 @@ determineSyncStatus model =
 
                                     Nothing ->
                                         -- No more photos to upload.
-                                        ( SyncDownloadGeneral RemoteData.NotAsked, revisionIdPerAuthorityZipper )
+                                        ( SyncUploadGeneral RemoteData.NotAsked, revisionIdPerAuthorityZipper )
+
+                            _ ->
+                                noChange
+
+                    SyncUploadGeneral webData ->
+                        case webData of
+                            RemoteData.Success data ->
+                                if List.isEmpty data.entities then
+                                    -- We tried to fetch, but there was no more data.
+                                    -- Next we try authorities.
+                                    ( SyncDownloadGeneral RemoteData.NotAsked
+                                    , revisionIdPerAuthorityZipper
+                                    )
+
+                                else
+                                    -- Still have data to download.
+                                    noChange
 
                             _ ->
                                 noChange

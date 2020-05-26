@@ -239,6 +239,13 @@ update currentDate device msg model =
                         BackendPhotoUploadGeneral
                         model
 
+                SyncUploadGeneral _ ->
+                    update
+                        currentDate
+                        device
+                        BackendUploadGeneral
+                        model
+
                 SyncDownloadGeneral _ ->
                     update
                         currentDate
@@ -550,6 +557,22 @@ update currentDate device msg model =
                 _ ->
                     noChange
 
+        BackendUploadGeneral ->
+            case model.syncStatus of
+                SyncUploadGeneral webData ->
+                    if RemoteData.isLoading webData then
+                        noChange
+
+                    else
+                        update
+                            currentDate
+                            device
+                            (QueryIndexDb IndexDbQueryUploadGeneral)
+                            { model | syncStatus = SyncUploadGeneral RemoteData.Loading }
+
+                _ ->
+                    noChange
+
         BackendDeferredPhotoFetch result ->
             let
                 isLoading =
@@ -698,6 +721,11 @@ update currentDate device msg model =
                             , data = Just encodedData
                             }
 
+                        IndexDbQueryUploadGeneral ->
+                            { queryType = "IndexDbQueryUploadGeneral"
+                            , data = Nothing
+                            }
+
                         IndexDbQueryDeferredPhoto ->
                             { queryType = "IndexDbQueryDeferredPhoto"
                             , data = Nothing
@@ -837,7 +865,7 @@ subscriptions model =
                     -- Trigger often.
                     -- @todo: Change to 500 (half a second)? Need to check on
                     -- devices, and while operating other pages.
-                    500
+                    2500
 
         -- For easier debug we wait 1 sec.
         -- 1000

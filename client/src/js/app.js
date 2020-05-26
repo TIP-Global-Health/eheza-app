@@ -334,7 +334,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         if (!result[0]) {
           // No photos to upload.
-          return sendResultToElm(queryType, result);
+          return sendResultToElm(queryType, null);
         }
 
         const row = result[0];
@@ -345,7 +345,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         if (!cachedResponse) {
           // Photo is registered in IndexDB, but doesn't appear in the cache
           // @todo: Send Error back to Elm.
-          return sendResultToElm(queryType, []);
+          return sendResultToElm(queryType, null);
         }
 
         const blob = await cachedResponse.blob();

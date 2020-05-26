@@ -58,10 +58,10 @@ decodeIndexDbQueryTypeResult =
 decodeIndexDbQueryUploadPhotoResultRecord : Decoder IndexDbQueryUploadPhotoResultRecord
 decodeIndexDbQueryUploadPhotoResultRecord =
     succeed IndexDbQueryUploadPhotoResultRecord
-        |> requiredAt [ "0", "uuid" ] string
-        |> requiredAt [ "0", "photo" ] string
-        |> requiredAt [ "0", "localId" ] int
-        |> optionalAt [ "0", "fileId" ] (nullable int) Nothing
+        |> required "uuid" string
+        |> required "photo" string
+        |> required "localId" int
+        |> optional "fileId" (nullable int) Nothing
 
 
 decodeIndexDbQueryDeferredPhotoResult : Decoder IndexDbQueryDeferredPhotoResultRecord
