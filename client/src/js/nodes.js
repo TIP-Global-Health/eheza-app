@@ -806,6 +806,8 @@
                 photo: obj.data.photo,
                 // Drupal's file ID.
                 fileId: null,
+                // The file name on Drupal.
+                remoteFileName: null,
                 // Indicate photo was not uploaded to Drupal yet.
                 // Dexie doesn't index Boolean, so we use an Int.
                 isSynced: 0,

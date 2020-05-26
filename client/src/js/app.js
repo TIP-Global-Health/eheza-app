@@ -332,8 +332,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .limit(1)
             .toArray();
 
-        console.log(result);
-
         if (!result[0]) {
           // No photos to upload.
           return sendResultToElm(queryType, result);
@@ -398,10 +396,16 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
           const fileId = parseInt(json.data[0].id);
 
+          const updateRecord = {
+            'fileId': fileId,
+            'remoteFileName': json.data[0].label,
+            'isSynced': 1,
+          }
+
           // Update IndexDb to hold the fileId.
           let updateResult = await dbSync
               .generalPhotoUploadChanges
-              .update(row.localId, {'fileId': fileId, 'isSynced': 1});
+              .update(row.localId, updateRecord);
 
           console.log(updateResult);
         }
