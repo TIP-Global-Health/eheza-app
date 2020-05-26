@@ -582,20 +582,125 @@ update currentDate device msg model =
                 _ ->
                     noChange
 
-        BackendUploadGeneral ->
-            -- @todo: Do the actual POST
-            noChange
+        BackendUploadGeneral Nothing ->
+            let
+                syncStatus =
+                    -- There are no deferred photos matching the query.
+                    case model.syncStatus of
+                        SyncUploadGeneral record ->
+                            SyncUploadGeneral { record | indexDbRemoteData = RemoteData.Success Nothing }
+
+                        _ ->
+                            model.syncStatus
+            in
+            SubModelReturn
+                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                Cmd.none
+                noError
+                []
+
+        BackendUploadGeneral (Just result) ->
+            let
+                isLoading =
+                    case model.syncStatus of
+                        SyncUploadGeneral record ->
+                            RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData
+
+                        _ ->
+                            False
+            in
+            if isLoading then
+                noChange
+
+            else
+                let
+                    syncStatus =
+                        case model.syncStatus of
+                            SyncUploadGeneral record ->
+                                let
+                                    recordUpdated =
+                                        { record
+                                            | backendRemoteData = RemoteData.Loading
+                                            , indexDbRemoteData = RemoteData.Success (Just result)
+                                        }
+                                in
+                                SyncUploadGeneral recordUpdated
+
+                            _ ->
+                                model.syncStatus
+
+                    modelUpdated =
+                        { model | syncStatus = syncStatus }
+
+                    cmd =
+                        HttpBuilder.post (device.backendUrl ++ "/api/sync")
+                            |> withQueryParams
+                                [ ( "access_token", device.accessToken )
+                                , ( "db_version", String.fromInt dbVersion )
+                                ]
+                            -- We don't need to decode anything, as we just want to have
+                            -- the browser download it.
+                            |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadGeneralHandle)
+                in
+                SubModelReturn
+                    (DataManager.Utils.determineSyncStatus modelUpdated)
+                    cmd
+                    noError
+                    []
+
+        BackendUploadGeneralHandle webData ->
+            case webData of
+                RemoteData.Failure error ->
+                    if Utils.WebData.isNetworkError error then
+                        -- We're offline, so this doesn't qualify as an attempt.
+                        noChange
+
+                    else
+                        let
+                            syncStatus =
+                                case model.syncStatus of
+                                    SyncUploadGeneral record ->
+                                        SyncUploadGeneral { record | backendRemoteData = RemoteData.Failure error }
+
+                                    _ ->
+                                        model.syncStatus
+                        in
+                        SubModelReturn
+                            (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                            Cmd.none
+                            (maybeHttpError webData "Backend.DataManager.Update" "BackendUploadGeneralHandle")
+                            []
+
+                RemoteData.Success queryResult ->
+                    let
+                        syncStatus =
+                            case model.syncStatus of
+                                SyncUploadGeneral record ->
+                                    SyncUploadGeneral { record | backendRemoteData = RemoteData.Success queryResult }
+
+                                _ ->
+                                    model.syncStatus
+                    in
+                    SubModelReturn
+                        (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                        Cmd.none
+                        noError
+                        []
+
+                _ ->
+                    -- Satisfy the compiler.
+                    noChange
 
         BackendDeferredPhotoFetch Nothing ->
             let
                 syncStatus =
                     -- There are no deferred photos matching the query.
                     case model.syncStatus of
-                        SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
-                            SyncDownloadPhotos (DownloadPhotosBatch { deferredPhoto | indexDbRemoteData = RemoteData.Success Nothing })
+                        SyncDownloadPhotos (DownloadPhotosBatch record) ->
+                            SyncDownloadPhotos (DownloadPhotosBatch { record | indexDbRemoteData = RemoteData.Success Nothing })
 
-                        SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
-                            SyncDownloadPhotos (DownloadPhotosAll { deferredPhoto | indexDbRemoteData = RemoteData.Success Nothing })
+                        SyncDownloadPhotos (DownloadPhotosAll record) ->
+                            SyncDownloadPhotos (DownloadPhotosAll { record | indexDbRemoteData = RemoteData.Success Nothing })
 
                         _ ->
                             model.syncStatus
@@ -821,6 +926,8 @@ update currentDate device msg model =
                                 syncStatus =
                                     -- There was an upload photo matching the query
                                     -- and we tried uploading it from JS.
+                                    -- @todo: Move to own Msg like `IndexDbQueryUploadGeneralResult`
+                                    -- for consistency.
                                     case model.syncStatus of
                                         SyncUploadPhotoGeneral _ ->
                                             SyncUploadPhotoGeneral (RemoteData.Success (Just val_))
@@ -834,39 +941,12 @@ update currentDate device msg model =
                                 noError
                                 []
 
-                        IndexDbQueryUploadGeneralResult Nothing ->
-                            let
-                                syncStatus =
-                                    -- There are no entities for upload matching the query.
-                                    case model.syncStatus of
-                                        SyncUploadGeneral record ->
-                                            SyncUploadGeneral { record | indexDbRemoteData = RemoteData.Success Nothing }
-
-                                        _ ->
-                                            model.syncStatus
-                            in
-                            SubModelReturn
-                                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
-                                Cmd.none
-                                noError
-                                []
-
-                        IndexDbQueryUploadGeneralResult (Just val_) ->
-                            let
-                                syncStatus =
-                                    -- There are entities for upload.
-                                    case model.syncStatus of
-                                        SyncUploadGeneral record ->
-                                            SyncUploadGeneral { record | indexDbRemoteData = RemoteData.Success (Just val_) }
-
-                                        _ ->
-                                            model.syncStatus
-                            in
+                        IndexDbQueryUploadGeneralResult result ->
                             update
                                 currentDate
                                 device
-                                BackendUploadGeneral
-                                { model | syncStatus = syncStatus }
+                                (BackendUploadGeneral result)
+                                model
 
                         IndexDbQueryDeferredPhotoResult result ->
                             update

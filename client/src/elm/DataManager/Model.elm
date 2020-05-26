@@ -286,7 +286,8 @@ type Msg
     | BackendDeferredPhotoFetch (Maybe IndexDbQueryDeferredPhotoResultRecord)
     | BackendDeferredPhotoFetchHandle IndexDbQueryDeferredPhotoResultRecord (WebData ())
     | BackendPhotoUploadGeneral
-    | BackendUploadGeneral
+    | BackendUploadGeneral (Maybe IndexDbQueryUploadGeneralResultRecord)
+    | BackendUploadGeneralHandle (WebData ())
     | QueryIndexDb IndexDbQueryType
     | QueryIndexDbHandle Value
     | FetchFromIndexDbDeferredPhoto
