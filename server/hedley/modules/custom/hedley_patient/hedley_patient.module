@@ -128,29 +128,30 @@ function hedley_patient_recalculate_shards_for_person_content($nid) {
       $individual_participants[] = $record->nid;
     }
   }
-
   // On second step, we fetch all content that is associated with person
   // by individual_participant field.
   // These are individual encounters - antenatal, nutrition, ...
-  $query = db_select('node', 'n');
-  $query->join('field_data_field_individual_participant', 'ip', 'ip.entity_id = n.nid');
-  $query->leftJoin('field_data_field_shards', 's', 's.entity_id = n.nid');
+  if (!empty( $individual_participants)) {
+    $query = db_select('node', 'n');
+    $query->join('field_data_field_individual_participant', 'ip', 'ip.entity_id = n.nid');
+    $query->leftJoin('field_data_field_shards', 's', 's.entity_id = n.nid');
 
-  // Limit to individual participants we're interested in.
-  $query->condition('ip.field_individual_participant_target_id', $individual_participants);
-  $query->condition('n.type', $sharded);
-  $query->fields('n', ['nid']);
-  $query->fields('s', ['field_shards_target_id']);
+    // Limit to individual participants we're interested in.
+    $query->condition('ip.field_individual_participant_target_id', $individual_participants);
+    $query->condition('n.type', $sharded);
+    $query->fields('n', ['nid']);
+    $query->fields('s', ['field_shards_target_id']);
 
-  $result = $query->execute();
+    $result = $query->execute();
 
-  foreach ($result as $record) {
-    if (empty($content[$record->nid])) {
-      $content[$record->nid] = [];
-    }
+    foreach ($result as $record) {
+      if (empty($content[$record->nid])) {
+        $content[$record->nid] = [];
+      }
 
-    if (!empty($record->field_shards_target_id)) {
-      $content[$record->nid][] = $record->field_shards_target_id;
+      if (!empty($record->field_shards_target_id)) {
+        $content[$record->nid][] = $record->field_shards_target_id;
+      }
     }
   }
 
