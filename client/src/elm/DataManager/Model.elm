@@ -283,7 +283,7 @@ type Msg
     | BackendGeneralFetch
     | BackendGeneralFetchHandle (WebData (DownloadSyncResponse BackendGeneralEntity))
       -- Fetch a deferred photo from the server.
-    | BackendDeferredPhotoFetch IndexDbQueryDeferredPhotoResultRecord
+    | BackendDeferredPhotoFetch (Maybe IndexDbQueryDeferredPhotoResultRecord)
     | BackendDeferredPhotoFetchHandle IndexDbQueryDeferredPhotoResultRecord (WebData ())
     | BackendPhotoUploadGeneral
     | BackendUploadGeneral

@@ -586,15 +586,35 @@ update currentDate device msg model =
             -- @todo: Do the actual POST
             noChange
 
-        BackendDeferredPhotoFetch result ->
+        BackendDeferredPhotoFetch Nothing ->
+            let
+                syncStatus =
+                    -- There are no deferred photos matching the query.
+                    case model.syncStatus of
+                        SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
+                            SyncDownloadPhotos (DownloadPhotosBatch { deferredPhoto | indexDbRemoteData = RemoteData.Success Nothing })
+
+                        SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
+                            SyncDownloadPhotos (DownloadPhotosAll { deferredPhoto | indexDbRemoteData = RemoteData.Success Nothing })
+
+                        _ ->
+                            model.syncStatus
+            in
+            SubModelReturn
+                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                Cmd.none
+                noError
+                []
+
+        BackendDeferredPhotoFetch (Just result) ->
             let
                 isLoading =
                     case model.syncStatus of
-                        SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
-                            RemoteData.isLoading deferredPhoto.indexDbRemoteData || RemoteData.isLoading deferredPhoto.backendRemoteData
+                        SyncDownloadPhotos (DownloadPhotosBatch record) ->
+                            RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData
 
-                        SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
-                            RemoteData.isLoading deferredPhoto.indexDbRemoteData || RemoteData.isLoading deferredPhoto.backendRemoteData
+                        SyncDownloadPhotos (DownloadPhotosAll record) ->
+                            RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData
 
                         _ ->
                             False
@@ -606,19 +626,25 @@ update currentDate device msg model =
                 let
                     syncStatus =
                         case model.syncStatus of
-                            SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
+                            SyncDownloadPhotos (DownloadPhotosBatch record) ->
                                 let
-                                    deferredPhotoUpdated =
-                                        { deferredPhoto | backendRemoteData = RemoteData.Loading }
+                                    recordUpdated =
+                                        { record
+                                            | backendRemoteData = RemoteData.Loading
+                                            , indexDbRemoteData = RemoteData.Success (Just result)
+                                        }
                                 in
-                                SyncDownloadPhotos (DownloadPhotosBatch deferredPhotoUpdated)
+                                SyncDownloadPhotos (DownloadPhotosBatch recordUpdated)
 
-                            SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
+                            SyncDownloadPhotos (DownloadPhotosAll record) ->
                                 let
-                                    deferredPhotoUpdated =
-                                        { deferredPhoto | backendRemoteData = RemoteData.Loading }
+                                    recordUpdated =
+                                        { record
+                                            | backendRemoteData = RemoteData.Loading
+                                            , indexDbRemoteData = RemoteData.Success (Just result)
+                                        }
                                 in
-                                SyncDownloadPhotos (DownloadPhotosAll deferredPhotoUpdated)
+                                SyncDownloadPhotos (DownloadPhotosAll recordUpdated)
 
                             _ ->
                                 model.syncStatus
@@ -842,53 +868,12 @@ update currentDate device msg model =
                                 BackendUploadGeneral
                                 { model | syncStatus = syncStatus }
 
-                        IndexDbQueryDeferredPhotoResult Nothing ->
-                            let
-                                syncStatus =
-                                    -- There are no deferred photos matching the query.
-                                    case model.syncStatus of
-                                        SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
-                                            SyncDownloadPhotos (DownloadPhotosBatch { deferredPhoto | indexDbRemoteData = RemoteData.Success Nothing })
-
-                                        SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
-                                            SyncDownloadPhotos (DownloadPhotosAll { deferredPhoto | indexDbRemoteData = RemoteData.Success Nothing })
-
-                                        _ ->
-                                            model.syncStatus
-                            in
-                            SubModelReturn
-                                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
-                                Cmd.none
-                                noError
-                                []
-
-                        IndexDbQueryDeferredPhotoResult (Just val_) ->
-                            let
-                                syncStatus =
-                                    -- There is a deferred photos matching the query.
-                                    case model.syncStatus of
-                                        SyncDownloadPhotos (DownloadPhotosBatch deferredPhoto) ->
-                                            let
-                                                deferredPhotoUpdated =
-                                                    { deferredPhoto | indexDbRemoteData = RemoteData.Success (Just val_) }
-                                            in
-                                            SyncDownloadPhotos (DownloadPhotosBatch deferredPhotoUpdated)
-
-                                        SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
-                                            let
-                                                deferredPhotoUpdated =
-                                                    { deferredPhoto | indexDbRemoteData = RemoteData.Success (Just val_) }
-                                            in
-                                            SyncDownloadPhotos (DownloadPhotosAll deferredPhotoUpdated)
-
-                                        _ ->
-                                            model.syncStatus
-                            in
+                        IndexDbQueryDeferredPhotoResult result ->
                             update
                                 currentDate
                                 device
-                                (BackendDeferredPhotoFetch val_)
-                                { model | syncStatus = syncStatus }
+                                (BackendDeferredPhotoFetch result)
+                                model
 
                 Err error ->
                     SubModelReturn
