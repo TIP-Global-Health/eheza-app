@@ -24,11 +24,22 @@ determineSyncStatus model =
             ( syncStatusUpdated, revisionIdPerAuthorityZipperUpdated ) =
                 case syncStatus of
                     SyncIdle ->
-                        ( SyncUpload, revisionIdPerAuthorityZipper )
+                        ( SyncUploadPhotoGeneral RemoteData.NotAsked, revisionIdPerAuthorityZipper )
 
-                    SyncUpload ->
-                        -- @todo: add logic
-                        ( SyncDownloadGeneral RemoteData.NotAsked, revisionIdPerAuthorityZipper )
+                    SyncUploadPhotoGeneral webData ->
+                        case webData of
+                            RemoteData.Success maybeData ->
+                                case maybeData of
+                                    Just data ->
+                                        -- We still have date.
+                                        noChange
+
+                                    Nothing ->
+                                        -- No more photos to upload.
+                                        ( SyncDownloadGeneral RemoteData.NotAsked, revisionIdPerAuthorityZipper )
+
+                            _ ->
+                                noChange
 
                     SyncDownloadGeneral webData ->
                         case webData of

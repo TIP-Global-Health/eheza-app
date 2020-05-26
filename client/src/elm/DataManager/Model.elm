@@ -4,9 +4,10 @@ module DataManager.Model exposing
     , DownloadPhotos(..)
     , DownloadPhotosBatchRec
     , DownloadSyncResponse
-    , FetchFromIndexDbQueryType(..)
     , IndexDbQueryDeferredPhotoResultRecord
+    , IndexDbQueryType(..)
     , IndexDbQueryTypeResult(..)
+    , IndexDbQueryUploadPhotoResultRecord
     , Model
     , Msg(..)
     , RevisionIdPerAuthority
@@ -111,16 +112,12 @@ type alias Model =
 emptyModel : LastFetchedRevisionIdGeneral -> RevisionIdPerAuthorityZipper -> Int -> Model
 emptyModel lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper batchSize =
     { syncStatus = SyncDownloadGeneral RemoteData.NotAsked
-
-    -- syncStatus = SyncDownloadPhotos (DownloadPhotosAll RemoteData.NotAsked)
     , lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral
     , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
     , downloadPhotos = DownloadPhotosBatch (emptyDownloadPhotosBatchRec batchSize)
     , downloadPhotosBatchSize = batchSize
     , syncStatusRotateAutomatic = True
-
-    --, syncStatusRotateAutomatic = False
     }
 
 
@@ -184,7 +181,7 @@ type alias DeferredPhotoIndexDbRemoteData =
 -}
 type SyncStatus
     = SyncIdle
-    | SyncUpload
+    | SyncUploadPhotoGeneral (RemoteData () (Maybe IndexDbQueryUploadPhotoResultRecord))
     | SyncDownloadGeneral (WebData (DownloadSyncResponse BackendGeneralEntity))
     | SyncDownloadAuthority (WebData (DownloadSyncResponse BackendAuthorityEntity))
     | SyncDownloadPhotos DownloadPhotos
@@ -192,9 +189,11 @@ type SyncStatus
 
 {-| Indicate what content, or query we'd like to get from IndexDB.
 -}
-type FetchFromIndexDbQueryType
-    = -- Get a single deferred photo.
-      IndexDbQueryDeferredPhoto
+type IndexDbQueryType
+    = -- Get a single photo pending uploading
+      IndexDbQueryUploadPhotoGeneral
+      -- Get a single deferred photo.
+    | IndexDbQueryDeferredPhoto
       -- When we successfully download a photo, we remove it from the `deferredPhotos` table.
       -- We just need the UUID.
     | IndexDbQueryRemoveDeferredPhotoAttempts String
@@ -204,10 +203,26 @@ type FetchFromIndexDbQueryType
 
 
 type IndexDbQueryTypeResult
-    = -- A single deferred photo, if exists.
-      IndexDbQueryDeferredPhotoResult (Maybe IndexDbQueryDeferredPhotoResultRecord)
+    = -- A single photo for upload, if exists.
+      IndexDbQueryUploadPhotoGeneralResult (Maybe IndexDbQueryUploadPhotoResultRecord)
+      -- A single deferred photo, if exists.
+    | IndexDbQueryDeferredPhotoResult (Maybe IndexDbQueryDeferredPhotoResultRecord)
 
 
+{-| The info we get from query to `generalPhotoUploadChanges`.
+-}
+type alias IndexDbQueryUploadPhotoResultRecord =
+    { uuid : String
+    , photo : String
+    , localId : Int
+
+    -- If photo was uploaded to Drupal, get the file ID.
+    , fileId : Maybe Int
+    }
+
+
+{-| The info we get from query to `deferredPhotos`.
+-}
 type alias IndexDbQueryDeferredPhotoResultRecord =
     { uuid : String
     , photo : String
@@ -228,8 +243,9 @@ type Msg
       -- Fetch a deferred photo from the server.
     | BackendDeferredPhotoFetch IndexDbQueryDeferredPhotoResultRecord
     | BackendDeferredPhotoFetchHandle IndexDbQueryDeferredPhotoResultRecord (WebData ())
-    | FetchFromIndexDb FetchFromIndexDbQueryType
-    | FetchFromIndexDbHandle Value
+    | BackendPhotoUploadGeneral
+    | QueryIndexDb IndexDbQueryType
+    | QueryIndexDbHandle Value
     | FetchFromIndexDbDeferredPhoto
     | RevisionIdAuthorityAdd HealthCenterId
     | RevisionIdAuthorityRemove HealthCenterId

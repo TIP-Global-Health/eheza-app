@@ -4,7 +4,6 @@ module DataManager.Decoder exposing
     , decodeIndexDbQueryTypeResult
     )
 
-import AssocList as Dict
 import Backend.HealthCenter.Decoder
 import Backend.Measurement.Decoder
 import Backend.Nurse.Decoder
@@ -18,12 +17,12 @@ import DataManager.Model
         , DownloadSyncResponse
         , IndexDbQueryDeferredPhotoResultRecord
         , IndexDbQueryTypeResult(..)
+        , IndexDbQueryUploadPhotoResultRecord
         )
 import Gizra.Date exposing (decodeDate)
 import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
-import Restful.Endpoint exposing (decodeEntityUuid)
 import Time
 
 
@@ -33,6 +32,15 @@ decodeIndexDbQueryTypeResult =
         |> andThen
             (\queryType ->
                 case queryType of
+                    "IndexDbQueryUploadPhotoGeneral" ->
+                        oneOf
+                            [ field "data" decodeIndexDbQueryUploadPhotoResultRecord
+                                |> andThen (\record -> succeed (IndexDbQueryUploadPhotoGeneralResult (Just record)))
+
+                            -- In case we have no photos to upload.
+                            , succeed (IndexDbQueryUploadPhotoGeneralResult Nothing)
+                            ]
+
                     "IndexDbQueryDeferredPhotoResult" ->
                         oneOf
                             [ field "data" decodeIndexDbQueryDeferredPhotoResult
@@ -47,12 +55,13 @@ decodeIndexDbQueryTypeResult =
             )
 
 
-decodeIndexDbQueryHealthCentersResult =
-    (succeed (\a b -> ( a, b ))
-        |> required "uuid" decodeEntityUuid
-        |> custom Backend.HealthCenter.Decoder.decodeHealthCenter
-    )
-        |> list
+decodeIndexDbQueryUploadPhotoResultRecord : Decoder IndexDbQueryUploadPhotoResultRecord
+decodeIndexDbQueryUploadPhotoResultRecord =
+    succeed IndexDbQueryUploadPhotoResultRecord
+        |> requiredAt [ "0", "uuid" ] string
+        |> requiredAt [ "0", "photo" ] string
+        |> requiredAt [ "0", "localId" ] int
+        |> optionalAt [ "0", "fileId" ] (nullable int) Nothing
 
 
 decodeIndexDbQueryDeferredPhotoResult : Decoder IndexDbQueryDeferredPhotoResultRecord

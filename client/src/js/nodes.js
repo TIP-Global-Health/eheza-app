@@ -804,7 +804,11 @@
                 localId : primaryKey,
                 uuid: obj.uuid,
                 photo: obj.data.photo,
-                fileId: null
+                // Drupal's file ID.
+                fileId: null,
+                // Indicate photo was not uploaded to Drupal yet.
+                // Dexie doesn't index Boolean, so we use an Int.
+                isSynced: 0,
             });
 
             return result;

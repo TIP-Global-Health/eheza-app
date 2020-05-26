@@ -138,10 +138,12 @@ dbSync.version(10).stores({
   // the request, when creating or editing an entity such as a photo.
   // This property is a Maybe value, as at the time of creation of the photo
   // locally, we still don't have it.
-  generalPhotoUploadChanges: '&localId,photo,fileId',
+  // `isSynced` is a boolean index, since Dexie doesn't support IsNull query,
+  // but we would need to fetch photos who were not synced yet.
+  generalPhotoUploadChanges: '&localId,photo,fileId,isSynced',
 
   // Similar to `generalPhotoUploadChanges` but for `shardChanges`.
-  authorityPhotoUploadChanges: '&localId,photo,fileId',
+  authorityPhotoUploadChanges: '&localId,photo,fileId,isSynced',
 }).upgrade(function (tx) {
   // Get the data from the deprecated `syncMetadata` and move to local storage.
   (async () => {
@@ -318,6 +320,23 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
   // Some queries pass may pass us data.
   const data = info.data;
   switch (queryType) {
+
+    case 'IndexDbQueryUploadPhotoGeneral':
+      (async () => {
+
+        let result = await dbSync
+            .generalPhotoUploadChanges
+            .where('isSynced')
+            // Dexie doesn't index Boolean, so we use an Int to indicate "false".
+            .equals(0)
+            .limit(1)
+            .toArray();
+
+        console.log(result);
+
+        sendResultToElm(queryType, result);
+      })();
+      break;
 
     case 'IndexDbQueryDeferredPhoto':
       (async () => {

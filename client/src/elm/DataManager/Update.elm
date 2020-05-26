@@ -9,7 +9,7 @@ import Backend.Person.Encoder
 import Backend.PmtctParticipant.Encoder
 import Backend.Relationship.Encoder
 import DataManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseGeneral)
-import DataManager.Model exposing (BackendAuthorityEntity(..), BackendGeneralEntity(..), DownloadPhotos(..), FetchFromIndexDbQueryType(..), IndexDbQueryTypeResult(..), Model, Msg(..), SyncStatus(..), emptyRevisionIdPerAuthority)
+import DataManager.Model exposing (BackendAuthorityEntity(..), BackendGeneralEntity(..), DownloadPhotos(..), IndexDbQueryType(..), IndexDbQueryTypeResult(..), Model, Msg(..), SyncStatus(..), emptyRevisionIdPerAuthority)
 import DataManager.Utils
 import Device.Model exposing (Device)
 import Error.Utils exposing (decodeError, maybeHttpError, noError)
@@ -231,8 +231,12 @@ update currentDate device msg model =
                 SyncIdle ->
                     returnDetermineSyncStatus
 
-                SyncUpload ->
-                    returnDetermineSyncStatus
+                SyncUploadPhotoGeneral _ ->
+                    update
+                        currentDate
+                        device
+                        BackendPhotoUploadGeneral
+                        model
 
                 SyncDownloadGeneral _ ->
                     update
@@ -504,7 +508,7 @@ update currentDate device msg model =
                         update
                             currentDate
                             device
-                            (FetchFromIndexDb IndexDbQueryDeferredPhoto)
+                            (QueryIndexDb IndexDbQueryDeferredPhoto)
                             { model | syncStatus = SyncDownloadPhotos (DownloadPhotosBatch deferredPhotoUpdated) }
 
                 SyncDownloadPhotos (DownloadPhotosAll deferredPhoto) ->
@@ -523,8 +527,24 @@ update currentDate device msg model =
                         update
                             currentDate
                             device
-                            (FetchFromIndexDb IndexDbQueryDeferredPhoto)
+                            (QueryIndexDb IndexDbQueryDeferredPhoto)
                             { model | syncStatus = SyncDownloadPhotos (DownloadPhotosAll deferredPhotoUpdated) }
+
+                _ ->
+                    noChange
+
+        BackendPhotoUploadGeneral ->
+            case model.syncStatus of
+                SyncUploadPhotoGeneral webData ->
+                    if RemoteData.isLoading webData then
+                        noChange
+
+                    else
+                        update
+                            currentDate
+                            device
+                            (QueryIndexDb IndexDbQueryUploadPhotoGeneral)
+                            { model | syncStatus = SyncUploadPhotoGeneral RemoteData.Loading }
 
                 _ ->
                     noChange
@@ -621,7 +641,7 @@ update currentDate device msg model =
                         update
                             currentDate
                             device
-                            (FetchFromIndexDb <| IndexDbQueryUpdateDeferredPhotoAttempts result)
+                            (QueryIndexDb <| IndexDbQueryUpdateDeferredPhotoAttempts result)
                             { model | syncStatus = syncStatus }
 
                 RemoteData.Success queryResult ->
@@ -654,17 +674,22 @@ update currentDate device msg model =
                     update
                         currentDate
                         device
-                        (FetchFromIndexDb <| IndexDbQueryRemoveDeferredPhotoAttempts result.uuid)
+                        (QueryIndexDb <| IndexDbQueryRemoveDeferredPhotoAttempts result.uuid)
                         { model | syncStatus = syncStatus }
 
                 _ ->
                     -- Satisfy the compiler.
                     noChange
 
-        FetchFromIndexDb indexDbQueryType ->
+        QueryIndexDb indexDbQueryType ->
             let
                 record =
                     case indexDbQueryType of
+                        IndexDbQueryUploadPhotoGeneral ->
+                            { queryType = "IndexDbQueryUploadPhotoGeneral"
+                            , data = Nothing
+                            }
+
                         IndexDbQueryDeferredPhoto ->
                             { queryType = "IndexDbQueryDeferredPhoto"
                             , data = Nothing
@@ -695,10 +720,45 @@ update currentDate device msg model =
                 noError
                 []
 
-        FetchFromIndexDbHandle val ->
+        QueryIndexDbHandle val ->
             case decodeValue DataManager.Decoder.decodeIndexDbQueryTypeResult val of
                 Ok indexDbQueryTypeResult ->
                     case indexDbQueryTypeResult of
+                        IndexDbQueryUploadPhotoGeneralResult Nothing ->
+                            let
+                                syncStatus =
+                                    -- There are no upload photos matching the query.
+                                    case model.syncStatus of
+                                        SyncUploadPhotoGeneral _ ->
+                                            SyncUploadPhotoGeneral (RemoteData.Success Nothing)
+
+                                        _ ->
+                                            model.syncStatus
+                            in
+                            SubModelReturn
+                                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                                Cmd.none
+                                noError
+                                []
+
+                        IndexDbQueryUploadPhotoGeneralResult (Just val_) ->
+                            let
+                                syncStatus =
+                                    -- There was an upload photo matching the query
+                                    -- and we tried uploading it from JS.
+                                    case model.syncStatus of
+                                        SyncUploadPhotoGeneral _ ->
+                                            SyncUploadPhotoGeneral (RemoteData.Success (Just val_))
+
+                                        _ ->
+                                            model.syncStatus
+                            in
+                            SubModelReturn
+                                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                                Cmd.none
+                                noError
+                                []
+
                         IndexDbQueryDeferredPhotoResult Nothing ->
                             let
                                 syncStatus =
@@ -776,7 +836,7 @@ subscriptions model =
     in
     Sub.batch
         [ Time.every backendFetchMainTime (\_ -> BackendFetchMain)
-        , getFromIndexDb FetchFromIndexDbHandle
+        , getFromIndexDb QueryIndexDbHandle
         ]
 
 
