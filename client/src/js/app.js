@@ -400,6 +400,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             'isSynced': 1,
           }
 
+
+          // @todo: Use `modify` to change all record with the same `photo`.
           // Update IndexDb to hold the fileId.
           await dbSync
               .generalPhotoUploadChanges
@@ -418,7 +420,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         let result = await dbSync
             .nodeChanges
             // @todo; Change to 50.
-            .limit(5);
+            .limit(5)
+            .toArray();
 
         console.log(result);
 
