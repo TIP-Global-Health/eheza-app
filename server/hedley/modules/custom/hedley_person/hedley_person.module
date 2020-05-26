@@ -23,7 +23,6 @@ define('HEDLEY_PERSON_RELATED_BY_CAREGIVER_FOR', 'caregiver');
 
 define('HEDLEY_PERSON_CLINIC_TYPE_SORWATHE', 'sorwathe');
 
-
 /**
  * Implements hook_node_update().
  *
