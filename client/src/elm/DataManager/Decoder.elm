@@ -10,7 +10,17 @@ import Backend.Nurse.Decoder
 import Backend.Person.Decoder
 import Backend.PmtctParticipant.Decoder
 import Backend.Relationship.Decoder
-import DataManager.Model exposing (BackendAuthorityEntity(..), BackendGeneralEntity(..), DownloadSyncResponse, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryTypeResult(..), IndexDbQueryUploadGeneralResultRecord, IndexDbQueryUploadPhotoResultRecord)
+import DataManager.Model
+    exposing
+        ( BackendAuthorityEntity(..)
+        , BackendGeneralEntity(..)
+        , DownloadSyncResponse
+        , IndexDbQueryDeferredPhotoResultRecord
+        , IndexDbQueryTypeResult(..)
+        , IndexDbQueryUploadGeneralResultRecord
+        , IndexDbQueryUploadPhotoResultRecord
+        , UploadMethod(..)
+        )
 import Gizra.Date exposing (decodeDate)
 import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (..)
@@ -68,8 +78,32 @@ decodeIndexDbQueryUploadPhotoResultRecord =
 decodeIndexDbQueryUploadGeneralResultRecord : Decoder IndexDbQueryUploadGeneralResultRecord
 decodeIndexDbQueryUploadGeneralResultRecord =
     succeed IndexDbQueryUploadGeneralResultRecord
-        |> required "entities" (list <| decodeBackendGeneralEntity "localId")
+        |> required "entities" (list decodeBackendGeneralEntityAndUploadMethod)
         |> required "uploadPhotos" (list decodeIndexDbQueryUploadPhotoResultRecord)
+
+
+decodeBackendGeneralEntityAndUploadMethod : Decoder ( BackendGeneralEntity, UploadMethod )
+decodeBackendGeneralEntityAndUploadMethod =
+    succeed (\a b -> ( a, b ))
+        |> custom (decodeBackendGeneralEntity "localId")
+        |> custom decodeUploadMethod
+
+
+decodeUploadMethod : Decoder UploadMethod
+decodeUploadMethod =
+    string
+        |> andThen
+            (\str ->
+                case str of
+                    "POST" ->
+                        succeed UploadMethodCreate
+
+                    "PATCH" ->
+                        succeed UploadMethodUpdate
+
+                    _ ->
+                        fail <| str ++ " is not a recognized UploadMethod"
+            )
 
 
 decodeIndexDbQueryDeferredPhotoResult : Decoder IndexDbQueryDeferredPhotoResultRecord

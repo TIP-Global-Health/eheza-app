@@ -14,6 +14,7 @@ module DataManager.Model exposing
     , RevisionIdPerAuthority
     , RevisionIdPerAuthorityZipper
     , SyncStatus(..)
+    , UploadMethod(..)
     , emptyDownloadPhotosBatchRec
     , emptyModel
     , emptyRevisionIdPerAuthority
@@ -249,8 +250,15 @@ type alias IndexDbQueryUploadPhotoResultRecord =
     }
 
 
+{-| Indicate if we should create (POST) or update (PATCH) and entity.
+-}
+type UploadMethod
+    = UploadMethodCreate
+    | UploadMethodUpdate
+
+
 type alias IndexDbQueryUploadGeneralResultRecord =
-    { entities : List BackendGeneralEntity
+    { entities : List ( BackendGeneralEntity, UploadMethod )
     , uploadPhotos : List IndexDbQueryUploadPhotoResultRecord
     }
 
