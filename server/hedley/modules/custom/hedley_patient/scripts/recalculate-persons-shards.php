@@ -61,15 +61,7 @@ while ($processed < $total) {
 
   $ids = array_keys($result['node']);
   foreach ($ids as $id) {
-    if (hedley_patient_recalculate_shards_for_person($id)) {
-      // Recalculation shards for person triggers
-      // shards recalculation for person content.
-      continue;
-    }
-
-    // If shards were not recalculated for person, we still try to
-    // recalculate shards for person's content.
-    hedley_patient_recalculate_shards_for_person_content($id);
+    hedley_patient_recalculate_shards_for_person($id);
   }
 
   $nid = end($ids);
