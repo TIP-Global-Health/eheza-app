@@ -401,7 +401,7 @@ update currentDate device msg model =
                                                             :: accum
 
                                                     BackendGeneralPerson uuid vid entity_ ->
-                                                        doEncode uuid vid (Backend.Person.Encoder.encodePerson entity_)
+                                                        doEncode uuid vid (Json.Encode.object <| Backend.Person.Encoder.encodePerson entity_)
                                                             :: accum
 
                                                     BackendGeneralPmtctParticipant uuid vid entity_ ->
