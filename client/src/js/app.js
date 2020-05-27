@@ -127,9 +127,9 @@ dbSync.version(9).stores({
 });
 
 dbSync.version(10).stores({
-  // Add `isSynced` and `uuid` so we would have an indication to when we can
-  // delete local changes. Only after we download from the backend, we'd want to
-  // delete the records.
+  // Add `isSynced` and `uuid` indices so we would have an indication to when we
+  // can delete local changes. Only after we download from the backend, we'd
+  // want to delete the records.
   nodeChanges: '++localId,uuid,isSynced',
   shardChanges: '++localId,shard,uuid,isSynced',
 
@@ -519,7 +519,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 });
 
 /**
- * Delete local entities that were uploaded.
+ * Delete local entities that were already uploaded, and then re-synced.
  *
  * @todo: Maybe This is wrong? we need to delete after we downloaded.
  */
@@ -544,10 +544,26 @@ elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
       throw type + " is not a known type for sendLocalIdsForDelete";
   }
 
-  await table.bulkDelete(info.localIds);
+  // Find the localIds with matching uuid, that have been already uploaded.
+  const result = table
+      .where('uuid')
+      .anyOf(info.uuid)
+      // Get only the rows there were already uploaded.
+      .filter(row => row.isSynced === 1)
+      .toArray();
+
+  if (!result[0]) {
+    // No matching local changes found.
+    return;
+  }
+
+
+  const localIds = result.map(row => row.localId);
+
+  await table.bulkDelete(localIds);
 
   // Delete also from the photoUploadChanges table.
-  await photoUploadTable.bulkDelete(info.localIds);
+  await photoUploadTable.bulkDelete(localIds);
 });
 
 

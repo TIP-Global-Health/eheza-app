@@ -424,6 +424,29 @@ update currentDate device msg model =
                         Nothing ->
                             Cmd.none
 
+                -- We have successfully uploaded the entities, so
+                -- we can delete them fom the `nodeChanges` table.
+                -- We will do it, by their localId.
+                deleteLocalIdsCmd =
+                    case RemoteData.toMaybe webData of
+                        Just data ->
+                            let
+                                localIds =
+                                    List.map
+                                        (\entity ->
+                                            let
+                                                identifier =
+                                                    DataManager.Utils.getBackendGeneralEntityIdentifier entity
+                                            in
+                                            identifier.uuid
+                                        )
+                                        data.entities
+                            in
+                            sendLocalIdsForDelete { type_ = "General", uuid = localIds }
+
+                        _ ->
+                            Cmd.none
+
                 lastFetchedRevisionIdGeneral =
                     case RemoteData.toMaybe webData of
                         Just data ->
@@ -465,7 +488,12 @@ update currentDate device msg model =
             in
             SubModelReturn
                 { modelWithSyncStatus | lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral }
-                (Cmd.batch [ cmd, sendLastFetchedRevisionIdGeneral lastFetchedRevisionIdGeneral ])
+                (Cmd.batch
+                    [ cmd
+                    , deleteLocalIdsCmd
+                    , sendLastFetchedRevisionIdGeneral lastFetchedRevisionIdGeneral
+                    ]
+                )
                 (maybeHttpError webData "Backend.DataManager.Update" "BackendGeneralFetchHandle")
                 []
 
@@ -667,33 +695,10 @@ update currentDate device msg model =
                             let
                                 syncStatus =
                                     SyncUploadGeneral { record | backendRemoteData = RemoteData.Success result }
-
-                                -- We have successfully uploaded the entities, so
-                                -- we can delete them fom the `nodeChanges` table.
-                                -- We will do it, by their localId.
-                                cmd =
-                                    case RemoteData.toMaybe record.indexDbRemoteData of
-                                        Just (Just indexDbResult) ->
-                                            let
-                                                localIds =
-                                                    List.map
-                                                        (\( entity, _ ) ->
-                                                            let
-                                                                identifier =
-                                                                    DataManager.Utils.getBackendGeneralEntityIdentifier entity
-                                                            in
-                                                            identifier.revision
-                                                        )
-                                                        indexDbResult.entities
-                                            in
-                                            sendLocalIdsForDelete { type_ = "General", localIds = localIds }
-
-                                        _ ->
-                                            Cmd.none
                             in
                             SubModelReturn
                                 (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
-                                cmd
+                                Cmd.none
                                 noError
                                 []
 
@@ -1017,11 +1022,13 @@ along with their UUID.
 port sendRevisionIdPerAuthority : List { uuid : String, revisionId : Int } -> Cmd msg
 
 
-{-| Send to JS the localIds that can be deleted. This is done after they are
-uploaded to the backend.
+{-| Send to JS a uuid list of local changes that can be deleted.
+This is done after they are uploaded to the backend, and re-downloaded.
+
 The `type_` can be `General` or `Authority`.
+
 -}
-port sendLocalIdsForDelete : { type_ : String, localIds : List Int } -> Cmd msd
+port sendLocalIdsForDelete : { type_ : String, uuid : List String } -> Cmd msd
 
 
 {-| Ask JS to send us data from IndexDB. We send the query type, and in case
