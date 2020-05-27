@@ -419,7 +419,11 @@ update currentDate device msg model =
                                             []
                                         |> List.reverse
                             in
-                            sendSyncedDataToIndexDb { table = "General", data = dataToSend }
+                            if List.isEmpty dataToSend then
+                                Cmd.none
+
+                            else
+                                sendSyncedDataToIndexDb { table = "General", data = dataToSend }
 
                         Nothing ->
                             Cmd.none
@@ -442,7 +446,11 @@ update currentDate device msg model =
                                         )
                                         data.entities
                             in
-                            sendLocalIdsForDelete { type_ = "General", uuid = localIds }
+                            if List.isEmpty localIds then
+                                Cmd.none
+
+                            else
+                                sendLocalIdsForDelete { type_ = "General", uuid = localIds }
 
                         _ ->
                             Cmd.none

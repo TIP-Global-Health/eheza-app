@@ -288,6 +288,7 @@
                                     }
 
                                     return addShard.then(function () {
+                                        change.isSynced = 0;
                                         return changeTable.add(change).then(function (localId) {
                                             return Promise.resolve(response);
                                         });

@@ -428,6 +428,9 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         let entitiesResult = await dbSync
             .nodeChanges
+            .where('isSynced')
+            // Don't include items that were already synced.
+            .notEqual(1)
             .limit(batchSize)
             .toArray();
 
@@ -578,8 +581,13 @@ elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
       .where('uuid')
       .anyOf(info.uuid)
       // Get only the rows there were already uploaded.
-      .filter(row => row.isSynced === 1)
+      .filter(row => {
+        return row.hasOwnProperty('isSynced') && row.isSynced === 1;
+      })
       .toArray();
+
+  console.log(info.uuid);
+  console.log(result);
 
   if (!result[0]) {
     // No matching local changes found.
@@ -587,6 +595,8 @@ elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
   }
 
   const localIds = result.map(row => row.localId);
+
+  console.log(localIds);
 
   await table.bulkDelete(localIds);
 
