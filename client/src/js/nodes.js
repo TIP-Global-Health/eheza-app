@@ -614,45 +614,44 @@
         }).catch(sendErrorResponses);
     }
 
-    // It's not entirely clear whose job it ought to be to figure out what
-    // shard a node should be assigned to. For now, it seems simplest to do it
-    // here, but we can revisit that.
     function determineShard (node) {
-        console.log(node);
+        // Resolving for group measurements.
+        if (node.session) {
+            return dbSync.shards.get(node.session).then (function (session) {
+                return resolveShardByClinicId(session.clinic)
+            });
+        }
+
+        // Resolving for individual measurements.
         if (node.health_center) {
             return Promise.resolve(node.health_center);
         }
 
+        // Resolving for pmtct_participant.
         if (node.clinic) {
-          return dbSync.shards.get(node.clinic).then(function (clinic) {
-              if (clinic) {
-                  if (clinic.health_center) {
-                      return Promise.resolve(clinic.health_center);
-                  } else {
-                      return Promise.reject('Clinic had no health_center: ' + clinic.uuid);
-                  }
+            return resolveShardByClinicId(node.clinic);
+        }
+
+        // Other shraded nodes.
+        if (node.shard) {
+            return Promise.resolve(node.shard);
+        }
+
+        return Promise.reject('Node ' + node.uuid + ' got no fields using which shard can be resolved!' );
+    }
+
+    function resolveShardByClinicId(clinicId) {
+      return dbSync.shards.get(clinicId).then(function (clinic) {
+          if (clinic) {
+              if (clinic.health_center) {
+                  return Promise.resolve(clinic.health_center);
               } else {
-                  return Promise.reject('Could not find clinic: ' + session.clinic);
+                  return Promise.reject('Clinic had no health_center: ' + clinic.uuid);
               }
-          });
-        }
-        else if (node.session) {
-            return dbSync.shards.get(node.session).then (function (session) {
-                return dbSync.shards.get(session.clinic).then(function (clinic) {
-                    if (clinic) {
-                        if (clinic.health_center) {
-                            return Promise.resolve(clinic.health_center);
-                        } else {
-                            return Promise.reject('Clinic had no health_center: ' + clinic.uuid);
-                        }
-                    } else {
-                        return Promise.reject('Could not find clinic: ' + session.clinic);
-                    }
-                });
-            });
-        } else {
-            return Promise.reject('Node had no session field: ' + node.uuid);
-        }
+          } else {
+              return Promise.reject('Could not find clinic: ' + session.clinic);
+          }
+      });
     }
 
     // This is meant for the end of a promise chain. If we've rejected with a
