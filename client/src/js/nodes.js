@@ -616,6 +616,8 @@
 
     function determineShard (node) {
         // Shraded nodes that specifically specify their shard.
+        // To be more precise, these are individual participants,
+        // individual encounters, persons and relationships.
         // This check must be first, so the shard field would not get
         // overriden by health_center field, when both of them exist
         // at node - for example, at perosn node.
