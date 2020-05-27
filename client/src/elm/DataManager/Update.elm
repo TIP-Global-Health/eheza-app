@@ -424,7 +424,7 @@ update currentDate device msg model =
                         Nothing ->
                             Cmd.none
 
-                -- We have successfully uploaded the entities, so
+                -- We have successfully downloaded the entities, so
                 -- we can delete them fom the `nodeChanges` table.
                 -- We will do it, by their localId.
                 deleteLocalIdsCmd =
@@ -665,7 +665,7 @@ update currentDate device msg model =
                                         |> withJsonBody (Json.Encode.object <| DataManager.Encoder.encodeIndexDbQueryUploadGeneralResultRecord result)
                                         -- We don't need to decode anything, as we just want to have
                                         -- the browser download it.
-                                        |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadGeneralHandle)
+                                        |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadGeneralHandle result)
                         in
                         SubModelReturn
                             (DataManager.Utils.determineSyncStatus modelUpdated)
@@ -676,7 +676,7 @@ update currentDate device msg model =
                 _ ->
                     noChange
 
-        BackendUploadGeneralHandle webData ->
+        BackendUploadGeneralHandle result webData ->
             case model.syncStatus of
                 SyncUploadGeneral record ->
                     case webData of
@@ -691,14 +691,31 @@ update currentDate device msg model =
                                 (maybeHttpError webData "Backend.DataManager.Update" "BackendUploadGeneralHandle")
                                 []
 
-                        RemoteData.Success result ->
+                        RemoteData.Success _ ->
                             let
                                 syncStatus =
-                                    SyncUploadGeneral { record | backendRemoteData = RemoteData.Success result }
+                                    SyncUploadGeneral { record | backendRemoteData = RemoteData.Success () }
+
+                                -- We have successfully uploaded the entities, so
+                                -- we can mark them as `isSynced`.
+                                cmd =
+                                    let
+                                        localIds =
+                                            List.map
+                                                (\( entity, _ ) ->
+                                                    let
+                                                        identifier =
+                                                            DataManager.Utils.getBackendGeneralEntityIdentifier entity
+                                                    in
+                                                    identifier.revision
+                                                )
+                                                result.entities
+                                    in
+                                    sendLocalIdsForMarkAsUploaded { type_ = "General", localId = localIds }
                             in
                             SubModelReturn
                                 (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
-                                Cmd.none
+                                cmd
                                 noError
                                 []
 

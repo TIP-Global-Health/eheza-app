@@ -296,7 +296,7 @@ type Msg
       -- This is the reason it doesn't get as arguments the result of the IndexDB.
     | BackendPhotoUploadGeneral
     | BackendUploadGeneral (Maybe IndexDbQueryUploadGeneralResultRecord)
-    | BackendUploadGeneralHandle (WebData ())
+    | BackendUploadGeneralHandle IndexDbQueryUploadGeneralResultRecord (WebData ())
     | QueryIndexDb IndexDbQueryType
     | QueryIndexDbHandle Value
     | FetchFromIndexDbDeferredPhoto
