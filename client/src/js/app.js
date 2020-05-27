@@ -195,8 +195,12 @@ var elmApp = Elm.Main.init({
     villageId: localStorage.getItem('villageId') || '',
 
     // @todo: Instead of 0, we can check IndexDB for latest vid.
+    // Sync related.
     lastFetchedRevisionIdGeneral: parseInt(localStorage.getItem('lastFetchedRevisionIdGeneral')) || 0,
     revisionIdPerAuthority: getRevisionIdPerAuthority(),
+    photoDownloadBatchSize: parseInt(localStorage.getItem('photoDownloadBatchSize')) || (10),
+    syncSpeedInSecondsIdle: parseInt(localStorage.getItem('syncSpeedInSecondsIdle')) || (10 * 1000),
+    syncSpeedInSecondsSync: parseInt(localStorage.getItem('syncSpeedInSecondsSync')) || 50,
   }
 });
 

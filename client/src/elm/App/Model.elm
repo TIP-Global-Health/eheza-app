@@ -265,6 +265,9 @@ type alias Flags =
     -- We may have multiple authorities, and each one has its own revision ID to
     -- fetch from.
     , revisionIdPerAuthority : List RevisionIdPerAuthority
+    , photoDownloadBatchSize : Int
+    , syncSpeedInSecondsIdle : Int
+    , syncSpeedInSecondsSync : Int
     }
 
 
@@ -287,6 +290,16 @@ emptyModel key url flags =
 
         revisionIdPerAuthorityZipper =
             Zipper.fromList flags.revisionIdPerAuthority
+
+        dataManagerFlags =
+            { lastFetchedRevisionIdGeneral = flags.lastFetchedRevisionIdGeneral
+            , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper
+            , batchSize = flags.photoDownloadBatchSize
+            , syncSpeedInSeconds =
+                { idle = flags.syncSpeedInSecondsIdle
+                , sync = flags.syncSpeedInSecondsSync
+                }
+            }
     in
     { activePage = PinCodePage
     , navigationKey = key
@@ -304,9 +317,7 @@ emptyModel key url flags =
     , zscores = ZScore.Model.emptyModel
     , healthCenterId = healthCenterId
     , villageId = villageId
-
-    -- @todo: Get the batch size from flag.downloadPhotosBatchSize
-    , dataManager = DataManager.Model.emptyModel flags.lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper 3
+    , dataManager = DataManager.Model.emptyModel dataManagerFlags
     , errors = []
     }
 

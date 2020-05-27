@@ -4,6 +4,7 @@ module DataManager.Model exposing
     , DownloadPhotos(..)
     , DownloadPhotosBatchRec
     , DownloadSyncResponse
+    , Flags
     , IndexDbQueryDeferredPhotoResultRecord
     , IndexDbQueryType(..)
     , IndexDbQueryTypeResult(..)
@@ -112,18 +113,41 @@ type alias Model =
     -- Determine is Sync status should be rotated automatically, or manually for debug
     -- purposes.
     , syncStatusRotateAutomatic : Bool
+
+    -- Time in seconds while idle or while syncing.
+    -- In production, a good value would be:
+    -- `idle` - 0.05s; which is the minimum we will allow.
+    -- `sync` - 10s. The means that sync will sit idle for 10 seconds.
+    , syncSpeedInSeconds : SyncSpeedInSeconds
     }
 
 
-emptyModel : LastFetchedRevisionIdGeneral -> RevisionIdPerAuthorityZipper -> Int -> Model
-emptyModel lastFetchedRevisionIdGeneral revisionIdPerAuthorityZipper batchSize =
+emptyModel : Flags -> Model
+emptyModel flags =
     { syncStatus = SyncUploadPhotoGeneral RemoteData.NotAsked
-    , lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral
-    , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper
+    , lastFetchedRevisionIdGeneral = flags.lastFetchedRevisionIdGeneral
+    , revisionIdPerAuthorityZipper = flags.revisionIdPerAuthorityZipper
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
-    , downloadPhotos = DownloadPhotosBatch (emptyDownloadPhotosBatchRec batchSize)
-    , downloadPhotosBatchSize = batchSize
+    , downloadPhotos = DownloadPhotosBatch (emptyDownloadPhotosBatchRec flags.batchSize)
+    , downloadPhotosBatchSize = flags.batchSize
     , syncStatusRotateAutomatic = True
+    , syncSpeedInSeconds = flags.syncSpeedInSeconds
+    }
+
+
+{-| The information we get initially from App.Model via flags.
+-}
+type alias Flags =
+    { lastFetchedRevisionIdGeneral : LastFetchedRevisionIdGeneral
+    , revisionIdPerAuthorityZipper : RevisionIdPerAuthorityZipper
+    , batchSize : Int
+    , syncSpeedInSeconds : SyncSpeedInSeconds
+    }
+
+
+type alias SyncSpeedInSeconds =
+    { idle : Int
+    , sync : Int
     }
 
 
