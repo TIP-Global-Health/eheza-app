@@ -370,7 +370,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         if (!result[0]) {
           // No photos to upload.
-          return sendResultToElm(queryType, null);
+          return sendResultToElm(queryType, {tag: 'Success', result: null});
         }
 
         const row = result[0];
@@ -380,8 +380,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         const cachedResponse = await cache.match(row.photo);
         if (!cachedResponse) {
           // Photo is registered in IndexDB, but doesn't appear in the cache.
-          // @todo: Send Error back to Elm.
-          return sendResultToElm(queryType, null);
+          return sendResultToElm(queryType, {tag: 'Error', error: 'PhotoNotFoundOnCacheStorage'});
         }
 
         const blob = await cachedResponse.blob();
@@ -418,6 +417,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             // Network error?
             // @todo
             console.log(e);
+            return {tag: 'Error', error: 'FetchError', reason: e.toString()};
           }
 
         if (response.ok) {
@@ -428,6 +428,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             // Bad JSON?
             // @todo
             console.log(e);
+            return {tag: 'Error', error: 'BadJson', reason: e.toString()};
           }
 
           const changes = {
@@ -444,7 +445,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
           await dbSync.generalPhotoUploadChanges.where('photo').equals(row.photo).modify(changes);
 
           const completedResult = Object.assign(row, changes);
-          return sendResultToElm(queryType, completedResult);
+          return sendResultToElm(queryType, {tag: 'Success', result: completedResult});
         }
       })();
       break;

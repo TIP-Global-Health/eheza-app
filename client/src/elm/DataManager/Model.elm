@@ -17,6 +17,7 @@ module DataManager.Model exposing
     , SyncSpeed
     , SyncStatus(..)
     , UploadMethod(..)
+    , UploadPhotoError(..)
     , emptyDownloadPhotosBatchRec
     , emptyModel
     , emptyRevisionIdPerAuthority
@@ -234,7 +235,7 @@ type alias IndexDbUploadRemoteData =
 -}
 type SyncStatus
     = SyncIdle
-    | SyncUploadPhotoGeneral (RemoteData () (Maybe IndexDbQueryUploadPhotoResultRecord))
+    | SyncUploadPhotoGeneral (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
     | SyncUploadGeneral UploadRec
     | SyncDownloadGeneral (WebData (DownloadSyncResponse BackendGeneralEntity))
     | SyncDownloadAuthority (WebData (DownloadSyncResponse BackendAuthorityEntity))
@@ -259,10 +260,16 @@ type IndexDbQueryType
 
 type IndexDbQueryTypeResult
     = -- A single photo for upload, if exists.
-      IndexDbQueryUploadPhotoGeneralResult (Maybe IndexDbQueryUploadPhotoResultRecord)
+      IndexDbQueryUploadPhotoGeneralResult (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
     | IndexDbQueryUploadGeneralResult (Maybe IndexDbQueryUploadGeneralResultRecord)
       -- A single deferred photo, if exists.
     | IndexDbQueryDeferredPhotoResult (Maybe IndexDbQueryDeferredPhotoResultRecord)
+
+
+type UploadPhotoError
+    = PhotoNotFoundOnCacheStorage
+    | FetchError String
+    | BadJson String
 
 
 {-| The info we get from query to `generalPhotoUploadChanges`.

@@ -948,7 +948,7 @@ update currentDate device msg model =
             case decodeValue DataManager.Decoder.decodeIndexDbQueryTypeResult val of
                 Ok indexDbQueryTypeResult ->
                     case indexDbQueryTypeResult of
-                        IndexDbQueryUploadPhotoGeneralResult Nothing ->
+                        IndexDbQueryUploadPhotoGeneralResult (RemoteData.Success Nothing) ->
                             let
                                 syncStatus =
                                     -- There are no upload photos matching the query.
@@ -965,13 +965,11 @@ update currentDate device msg model =
                                 noError
                                 []
 
-                        IndexDbQueryUploadPhotoGeneralResult (Just val_) ->
+                        IndexDbQueryUploadPhotoGeneralResult (RemoteData.Success (Just val_)) ->
                             let
                                 syncStatus =
                                     -- There was an upload photo matching the query
                                     -- and we tried uploading it from JS.
-                                    -- @todo: Move to own Msg like `IndexDbQueryUploadGeneralResult`
-                                    -- for consistency.
                                     case model.syncStatus of
                                         SyncUploadPhotoGeneral _ ->
                                             SyncUploadPhotoGeneral (RemoteData.Success (Just val_))
@@ -984,6 +982,25 @@ update currentDate device msg model =
                                 Cmd.none
                                 noError
                                 []
+
+                        IndexDbQueryUploadPhotoGeneralResult (RemoteData.Failure error) ->
+                            let
+                                syncStatus =
+                                    case model.syncStatus of
+                                        SyncUploadPhotoGeneral _ ->
+                                            SyncUploadPhotoGeneral (RemoteData.Failure error)
+
+                                        _ ->
+                                            model.syncStatus
+                            in
+                            SubModelReturn
+                                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                                Cmd.none
+                                noError
+                                []
+
+                        IndexDbQueryUploadPhotoGeneralResult _ ->
+                            noChange
 
                         IndexDbQueryUploadGeneralResult result ->
                             update

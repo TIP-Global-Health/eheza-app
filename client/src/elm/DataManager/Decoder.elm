@@ -21,11 +21,13 @@ import DataManager.Model
         , IndexDbQueryUploadGeneralResultRecord
         , IndexDbQueryUploadPhotoResultRecord
         , UploadMethod(..)
+        , UploadPhotoError(..)
         )
 import Gizra.Date exposing (decodeDate)
 import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
+import RemoteData exposing (RemoteData)
 import Time
 
 
@@ -36,13 +38,8 @@ decodeIndexDbQueryTypeResult =
             (\queryType ->
                 case queryType of
                     "IndexDbQueryUploadPhotoGeneralResult" ->
-                        oneOf
-                            [ field "data" decodeIndexDbQueryUploadPhotoResultRecord
-                                |> andThen (\record -> succeed (IndexDbQueryUploadPhotoGeneralResult (Just record)))
-
-                            -- In case we have no photos to upload.
-                            , succeed (IndexDbQueryUploadPhotoGeneralResult Nothing)
-                            ]
+                        decodeIndexDbQueryUploadPhotoResultRecordRemoteData
+                            |> andThen (\val -> succeed (IndexDbQueryUploadPhotoGeneralResult val))
 
                     "IndexDbQueryUploadGeneralResult" ->
                         oneOf
@@ -64,6 +61,47 @@ decodeIndexDbQueryTypeResult =
 
                     _ ->
                         fail <| queryType ++ " is not a recognized IndexDbQueryTypeResult"
+            )
+
+
+decodeIndexDbQueryUploadPhotoResultRecordRemoteData : Decoder (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
+decodeIndexDbQueryUploadPhotoResultRecordRemoteData =
+    field "tag" string
+        |> andThen
+            (\tag ->
+                case tag of
+                    "Success" ->
+                        oneOf
+                            [ field "data" decodeIndexDbQueryUploadPhotoResultRecord
+                                |> andThen (\record -> succeed (RemoteData.Success (Just record)))
+
+                            -- In case we have no photos to upload.
+                            , succeed (RemoteData.Success Nothing)
+                            ]
+
+                    "Error" ->
+                        (succeed (\a b -> ( a, b ))
+                            |> required "error" string
+                            |> optional "reason" (nullable string) Nothing
+                        )
+                            |> andThen
+                                (\( error, maybeReason ) ->
+                                    case error of
+                                        "PhotoNotFoundOnCacheStorage" ->
+                                            succeed (RemoteData.Failure PhotoNotFoundOnCacheStorage)
+
+                                        "FetchError" ->
+                                            succeed (RemoteData.Failure <| FetchError (Maybe.withDefault "" maybeReason))
+
+                                        "BadJson" ->
+                                            succeed (RemoteData.Failure <| BadJson (Maybe.withDefault "" maybeReason))
+
+                                        _ ->
+                                            fail <| error ++ " is not a recognized Error tag IndexDbQueryUploadGeneralResultRecord"
+                                )
+
+                    _ ->
+                        fail <| tag ++ " is not a recognized Error for IndexDbQueryUploadGeneralResultRecord"
             )
 
 
