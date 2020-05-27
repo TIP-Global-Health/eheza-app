@@ -240,6 +240,7 @@ viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId
                                             (not <| List.member clinicId currentGroupsIds)
                                                 -- It's not a CHW clinic.
                                                 && (clinic.clinicType /= Chw)
+                                                -- Clinic belongs to selected health center.
                                                 && (clinic.healthCenterId == selectedHealthCenter)
                                         )
                                     |> Dict.map

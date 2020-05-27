@@ -38,6 +38,7 @@ function hedley_device_node_presave($node) {
     hedley_device_assign_pairing_code($node, $wrapper);
   }
 
+  // For nodes that got Shards field.
   if ($wrapper->__isset('field_shards')) {
     hedley_device_assign_shards($node, $wrapper);
   }
@@ -219,18 +220,20 @@ function hedley_device_verify_unique_uuid($node, $wrapper) {
  * Fill in field_shards with the shards this node should be sent to.
  */
 function hedley_device_assign_shards($node, $wrapper) {
+  // We do no changes, when shards field is already populated.
   if (!empty($wrapper->field_shards->value())) {
     return;
   }
 
   switch ($node->type) {
     case 'clinic':
-      // We only assign shards, when clinic is created.
-      // We do nothing when clinic is edited.
+      // We only assign shards, when clinic is created, based on
+      // HC clinic is assigned to. We do nothing when clinic is edited.
       $shards = $node->original ? [] : [$wrapper->field_health_center->getIdentifier()];
       break;
 
     case 'session':
+      // Assign shards based on HC of the clinic, to which session belongs.
       $clinic_id = $wrapper->field_clinic->getIdentifier();
       $shard = hedley_device_shard_by_health_center($clinic_id);
       $shards = !$shard ? [] : [$shard];
@@ -250,6 +253,7 @@ function hedley_device_assign_shards($node, $wrapper) {
       break;
 
     case 'pmtct_participant':
+      // Participant shards are the union of adult and child shards.
       $child_id = $wrapper->field_person->getIdentifier();
       $adult_id = $wrapper->field_adult->getIdentifier();
       $shards_child = hedley_device_shards_by_person($child_id);
@@ -258,6 +262,7 @@ function hedley_device_assign_shards($node, $wrapper) {
       break;
 
     case 'relationship':
+      // Relationship shards are the union of adult and child shards.
       $child_id = $wrapper->field_related_to->getIdentifier();
       $adult_id = $wrapper->field_person->getIdentifier();
       $shards_child = hedley_device_shards_by_person($child_id);
@@ -267,11 +272,14 @@ function hedley_device_assign_shards($node, $wrapper) {
 
     case 'prenatal_encounter':
     case 'nutrition_encounter':
+      // Assign shards based on Person of the individual participant,
+      // to which encounter belongs.
       $person_id = $wrapper->field_individual_participant->field_person->getIdentifier();
       $shards = hedley_device_shards_by_person($person_id);
       break;
 
     // Handling individual_participant and all kinds of measurements.
+    // Shards are assigned based on Person for which measurement was taken.
     default:
       $person_id = $wrapper->field_person->getIdentifier();
       $shards = hedley_device_shards_by_person($person_id);
@@ -285,6 +293,15 @@ function hedley_device_assign_shards($node, $wrapper) {
   $wrapper->field_shards->set($shards);
 }
 
+/**
+ * Resolve a shard based on HC field of the node.
+ *
+ * @param int $nid
+ *   The node ID.
+ *
+ * @return int|bool
+ *   Node ID of the shard. False, if shard wasn't successfully resolved.
+ */
 function hedley_device_shard_by_health_center($nid) {
   if (!$nid) {
     return FALSE;
@@ -296,6 +313,16 @@ function hedley_device_shard_by_health_center($nid) {
   return $shard ? $shard : FALSE;
 }
 
+/**
+ * Resolve shards based on Person field of the node.
+ *
+ * @param int $nid
+ *   The node ID.
+ *
+ * @return array
+ *   List of shards node IDs. Empty array, if none are found.
+ *
+ */
 function hedley_device_shards_by_person($nid) {
   if (!$nid) {
     return [];
