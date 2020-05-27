@@ -866,7 +866,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
         PostRelationship personId myRelationship addGroup ->
             let
                 normalized =
-                    toRelationship personId myRelationship
+                    toRelationship personId myRelationship healthCenterId
 
                 -- If we'd also like to add these people to a group, construct
                 -- a Msg to do that.

@@ -3,6 +3,7 @@ module Backend.Relationship.Encoder exposing (encodePersonField, encodeRelatedBy
 import Backend.Entities exposing (..)
 import Backend.Relationship.Model exposing (..)
 import Json.Encode exposing (..)
+import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
 
 
@@ -12,6 +13,7 @@ encodeRelationship data =
         [ encodePersonField data.person
         , encodeRelatedToField data.relatedTo
         , encodeRelatedByField data.relatedBy
+        , ( "shard", maybe encodeEntityUuid data.shard )
         ]
 
 
@@ -42,6 +44,7 @@ encodeRelationshipChanges { old, new } =
     [ person
     , relatedTo
     , relatedBy
+    , Nothing
     ]
         |> List.filterMap identity
 
