@@ -1022,6 +1022,14 @@ along with their UUID.
 port sendRevisionIdPerAuthority : List { uuid : String, revisionId : Int } -> Cmd msg
 
 
+{-| Send to JS a list of local ID that were uploaded.
+
+The `type_` can be `General` or `Authority`.
+
+-}
+port sendLocalIdsForMarkAsUploaded : { type_ : String, localId : List Int } -> Cmd msd
+
+
 {-| Send to JS a uuid list of local changes that can be deleted.
 This is done after they are uploaded to the backend, and re-downloaded.
 

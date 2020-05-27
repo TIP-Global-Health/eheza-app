@@ -518,10 +518,39 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
   }
 });
 
+
+/**
+ * Mark local changes are uploaded, so later we could delete them.
+ *
+ * see elmApp.ports.sendLocalIdsForDelete
+ *
+ */
+elmApp.ports.sendLocalIdsForMarkAsUploaded.subscribe(async function(info) {
+  const type = info.type_;
+
+  var table;
+  var photoUploadTable;
+
+  switch (type) {
+    case 'General':
+      table = dbSync.nodeChanges;
+      photoUploadTable = dbSync.generalPhotoUploadChanges;
+      break;
+
+    case 'Authority':
+      table = dbSync.shardChanges;
+      photoUploadTable = dbSync.authorityPhotoUploadChanges;
+      break;
+
+    default:
+      throw type + " is not a known type for sendLocalIdsForDelete";
+  }
+
+  await table.where('localId').anyOf(info.localId).modify({'isSynced': 1});
+});
+
 /**
  * Delete local entities that were already uploaded, and then re-synced.
- *
- * @todo: Maybe This is wrong? we need to delete after we downloaded.
  */
 elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
   const type = info.type_;
@@ -556,7 +585,6 @@ elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
     // No matching local changes found.
     return;
   }
-
 
   const localIds = result.map(row => row.localId);
 
