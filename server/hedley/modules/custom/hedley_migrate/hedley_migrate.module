@@ -449,9 +449,8 @@ function _hedley_migrate_get_children_by_parents(array $parents, $vocabulary_id 
     $query->innerJoin('taxonomy_term_data', 'data', 'hierarchy.tid = data.tid');
   }
 
-  $query
-    ->addField('hierarchy', 'tid')
-    ->condition('hierarchy.parent', $parents, 'IN');
+  $query->addField('hierarchy', 'tid');
+  $query->condition('hierarchy.parent', $parents, 'IN');
 
   if ($vocabulary_id) {
     $query->condition('data.vid', $vocabulary_id);

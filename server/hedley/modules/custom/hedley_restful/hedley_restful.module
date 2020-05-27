@@ -198,9 +198,11 @@ function hedley_restful_output_for_bundles($bundleHandlers, array $nids, $accoun
  *   The Node ID. False, if not found.
  */
 function hedley_restful_resolve_nid_for_uuid($uuid) {
-  $result = db_select('field_data_field_uuid', 'uuid')
-    ->addField('uuid', 'entity_id')
-    ->condition('uuid.field_uuid_value', $uuid)
+  $query = db_select('field_data_field_uuid', 'uuid');
+  $query->condition('uuid.field_uuid_value', $uuid);
+  $query->addField('uuid', 'entity_id');
+
+  $result = $query
     ->execute()
     ->fetchField();
 
