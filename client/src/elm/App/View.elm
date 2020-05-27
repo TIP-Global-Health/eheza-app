@@ -272,11 +272,11 @@ viewUserPage page model configured =
                             |> flexPageWrapper model
 
                     PrenatalParticipantPage id ->
-                        Pages.PrenatalParticipant.View.view model.language currentDate id model.indexedDb
+                        Pages.PrenatalParticipant.View.view model.language currentDate healthCenterId id model.indexedDb
                             |> flexPageWrapper model
 
                     NutritionParticipantPage id ->
-                        Pages.NutritionParticipant.View.view model.language currentDate id model.indexedDb
+                        Pages.NutritionParticipant.View.view model.language currentDate healthCenterId id model.indexedDb
                             |> flexPageWrapper model
 
                     IndividualEncounterParticipantsPage encounterType ->

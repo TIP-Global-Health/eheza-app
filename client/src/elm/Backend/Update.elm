@@ -1158,13 +1158,13 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                         (\( sessionId, _ ) ->
                             case encounterType of
                                 AntenatalEncounter ->
-                                    [ Backend.PrenatalEncounter.Model.PrenatalEncounter sessionId currentDate Nothing
+                                    [ Backend.PrenatalEncounter.Model.PrenatalEncounter sessionId currentDate Nothing healthCenterId
                                         |> Backend.Model.PostPrenatalEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]
 
                                 NutritionEncounter ->
-                                    [ Backend.NutritionEncounter.Model.NutritionEncounter sessionId currentDate Nothing
+                                    [ Backend.NutritionEncounter.Model.NutritionEncounter sessionId currentDate Nothing healthCenterId
                                         |> Backend.Model.PostNutritionEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]
