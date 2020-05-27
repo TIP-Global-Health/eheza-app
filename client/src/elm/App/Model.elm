@@ -297,7 +297,7 @@ emptyModel key url flags =
             , batchSize = flags.photoDownloadBatchSize
             , syncSpeedInSeconds =
                 { idle = flags.syncSpeedInSecondsIdle
-                , sync = flags.syncSpeedInSecondsSync
+                , cycle = flags.syncSpeedInSecondsSync
                 }
             }
     in

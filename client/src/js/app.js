@@ -199,9 +199,7 @@ var elmApp = Elm.Main.init({
     lastFetchedRevisionIdGeneral: parseInt(localStorage.getItem('lastFetchedRevisionIdGeneral')) || 0,
     revisionIdPerAuthority: getRevisionIdPerAuthority(),
     photoDownloadBatchSize: parseInt(localStorage.getItem('photoDownloadBatchSize')) || (10),
-
-    // @todo: Change to 10 sec.
-    syncSpeedInSecondsIdle: parseInt(localStorage.getItem('syncSpeedInSecondsIdle')) || (3 * 1000),
+    syncSpeedInSecondsIdle: parseInt(localStorage.getItem('syncSpeedInSecondsIdle')) || (10 * 1000),
     syncSpeedInSecondsSync: parseInt(localStorage.getItem('syncSpeedInSecondsSync')) || 50,
   }
 });

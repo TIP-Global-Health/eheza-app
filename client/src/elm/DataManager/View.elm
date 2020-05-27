@@ -16,10 +16,11 @@ import DataManager.Model
         , RevisionIdPerAuthorityZipper
         , SyncStatus(..)
         )
+import Editable
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onCheck, onClick)
+import Html.Events exposing (onCheck, onClick, onInput)
 import Json.Encode
 import List.Extra
 import List.Zipper as Zipper
@@ -38,7 +39,6 @@ view language db model =
         htmlContent =
             details [ property "open" (Json.Encode.bool True) ]
                 [ summary [] [ text "Sync Status" ]
-                , viewSyncSettings model
 
                 -- button [ onClick <| DataManager.Model.FetchFromIndexDb DataManager.Model.IndexDbQueryHealthCenters ] [ text "Fetch Health Centers" ]
                 , div [] [ text <| "Sync status: " ++ Debug.toString model.syncStatus ]
@@ -58,30 +58,50 @@ view language db model =
     in
     div []
         [ viewHealthCentersForSync language db model
+        , viewSyncSettings model
         , pre [ class "ui segment sync-status" ] [ htmlContent ]
         ]
 
 
 viewSyncSettings : Model -> Html Msg
 viewSyncSettings model =
+    let
+        ( cycleStatus, cycleBtnText, cycleIcon ) =
+            if model.syncCycle then
+                ( "Cycle is currently on"
+                , "Pause cycle"
+                , "pause"
+                )
+
+            else
+                ( "Cycle is currently off"
+                , "Start cycle"
+                , "play"
+                )
+
+        syncSpeed =
+            Editable.value model.syncSpeed
+    in
     details
         [ property "open" (Json.Encode.bool True)
         , style "border" "1px solid black"
-        , style "margin-left" "40px"
-        , style "padding-left" "25px"
+        , class "html ui top attached segment"
         ]
-        [ summary [] [ text "Settings" ]
-        , div []
-            [ input
-                [ type_ "checkbox"
-                , checked model.syncStatusRotateAutomatic
-                , onCheck SetSyncStatusRotateAutomatic
+        [ summary [] [ text "Sync Settings" ]
+        , div [ class "ui right labeled input fluid" ]
+            [ label [ class "ui label" ] [ text cycleStatus ]
+            , button
+                [ onClick <| SetSyncStatusRotateAutomatic (not model.syncCycle)
+                , style "margin-left" "20px"
+                , class "ui labeled icon button"
                 ]
-                []
-            , label [] [ text "Cycle through sync states" ]
+                [ i [ class <| "icon " ++ cycleIcon ] []
+                , text cycleBtnText
+                ]
             ]
-        , div []
-            [ input
+        , div [ class "ui right labeled input fluid" ]
+            [ label [ class "ui label" ] [ text "Idle time" ]
+            , input
                 [ type_ "number"
 
                 -- No less than every 3 second. On production it should be
@@ -91,11 +111,42 @@ viewSyncSettings model =
                 -- No more than every 5 minutes.
                 , Html.Attributes.max (String.fromInt <| 5 * 60 * 1000)
                 , Html.Attributes.required True
-                , value <| String.fromInt model.syncSpeed.idle
+                , value <| String.fromInt syncSpeed.idle
+                , onInput SetSyncSpeedIdle
                 ]
                 []
-            , label [] [ text "Idle time in ms" ]
+            , div [ class "ui basic label" ] [ text "ms" ]
             ]
+        , div [ class "ui right labeled input fluid" ]
+            [ label [ class "ui label" ] [ text "Cycle time" ]
+            , input
+                [ type_ "number"
+
+                -- No less than every 50 ms.
+                , Html.Attributes.min (String.fromInt <| 50)
+
+                -- No more than every 5 minutes.
+                , Html.Attributes.max (String.fromInt <| 5 * 60 * 1000)
+                , Html.Attributes.required True
+                , value <| String.fromInt syncSpeed.cycle
+                , onInput SetSyncSpeedCycle
+                ]
+                []
+            , div [ class "ui basic label" ] [ text "ms" ]
+            ]
+        , div []
+            [ button
+                [ onClick SaveSettings
+                , class "ui primary button"
+                ]
+                [ text "Save" ]
+            , button
+                [ onClick ResetSettings
+                , class "ui button"
+                ]
+                [ text "Reset Settings" ]
+            ]
+        , div [] [ text <| Debug.toString model.syncSpeed ]
         ]
 
 

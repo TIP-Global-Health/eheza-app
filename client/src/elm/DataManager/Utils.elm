@@ -18,7 +18,7 @@ according to the order `SyncStatus` is defined.
 -}
 determineSyncStatus : Model -> Model
 determineSyncStatus model =
-    if model.syncStatusRotateAutomatic then
+    if model.syncCycle then
         let
             syncStatus =
                 model.syncStatus

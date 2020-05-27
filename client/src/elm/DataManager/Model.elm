@@ -30,6 +30,7 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (Relationship)
+import Editable exposing (Editable)
 import Json.Decode exposing (Value)
 import List.Zipper exposing (Zipper)
 import RemoteData exposing (RemoteData, WebData)
@@ -112,13 +113,13 @@ type alias Model =
 
     -- Determine is Sync status should be rotated automatically, or manually for debug
     -- purposes.
-    , syncStatusRotateAutomatic : Bool
+    , syncCycle : Bool
 
     -- Time in seconds while idle or while syncing.
     -- In production, a good value would be:
     -- `idle` - 50; which is the minimum we will allow.
     -- `sync` - 10000. The means that sync will sit idle for 10 seconds.
-    , syncSpeed : SyncSpeedInSeconds
+    , syncSpeed : Editable SyncSpeed
     }
 
 
@@ -130,8 +131,8 @@ emptyModel flags =
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
     , downloadPhotos = DownloadPhotosBatch (emptyDownloadPhotosBatchRec flags.batchSize)
     , downloadPhotosBatchSize = flags.batchSize
-    , syncStatusRotateAutomatic = True
-    , syncSpeed = flags.syncSpeedInSeconds
+    , syncCycle = True
+    , syncSpeed = Editable.ReadOnly flags.syncSpeedInSeconds
     }
 
 
@@ -141,13 +142,13 @@ type alias Flags =
     { lastFetchedRevisionIdGeneral : LastFetchedRevisionIdGeneral
     , revisionIdPerAuthorityZipper : RevisionIdPerAuthorityZipper
     , batchSize : Int
-    , syncSpeedInSeconds : SyncSpeedInSeconds
+    , syncSpeedInSeconds : SyncSpeed
     }
 
 
-type alias SyncSpeedInSeconds =
+type alias SyncSpeed =
     { idle : Int
-    , sync : Int
+    , cycle : Int
     }
 
 
@@ -330,3 +331,8 @@ type Msg
     | SetLastFetchedRevisionIdAuthority (Zipper RevisionIdPerAuthority) Int
     | SetLastFetchedRevisionIdGeneral Int
     | SetSyncStatusRotateAutomatic Bool
+      -- UI settings
+    | ResetSettings
+    | SaveSettings
+    | SetSyncSpeedIdle String
+    | SetSyncSpeedCycle String
