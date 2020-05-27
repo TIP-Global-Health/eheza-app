@@ -31,7 +31,7 @@ var tableForType = {
     attendance: 'shards',
     breast_exam: 'shards',
     catchment_area: 'nodes',
-    clinic: 'nodes',
+    clinic: 'shards',
     counseling_schedule: 'nodes',
     counseling_session: 'shards',
     counseling_topic: 'nodes',
@@ -40,13 +40,14 @@ var tableForType = {
     family_planning: 'shards',
     health_center: 'nodes',
     height: 'shards',
+    individual_participant: 'shards',
     last_menstrual_period: 'shards',
     medical_history: 'shards',
     medication: 'shards',
     muac: 'shards',
     nurse: 'nodes',
     nutrition: 'shards',
-    nutrition_encounter: 'nodes',
+    nutrition_encounter: 'shards',
     nutrition_height: 'shards',
     nutrition_muac: 'shards',
     nutrition_nutrition: 'shards',
@@ -57,17 +58,16 @@ var tableForType = {
     obstetrical_exam: 'shards',
     participant_consent: 'shards',
     participant_form: 'nodes',
-    person: 'nodes',
+    person: 'shards',
     photo: 'shards',
     prenatal_photo: 'shards',
-    pmtct_participant: 'nodes',
+    pmtct_participant: 'shards',
     prenatal_family_planning: 'shards',
     prenatal_nutrition: 'shards',
-    individual_participant: 'nodes',
-    prenatal_encounter: 'nodes',
-    relationship: 'nodes',
+    prenatal_encounter: 'shards',
+    relationship: 'shards',
     resource: 'shards',
-    session: 'nodes',
+    session: 'shards',
     social_history: 'shards',
     syncmetadata: 'syncMetadata',
     village: 'nodes',
@@ -194,6 +194,11 @@ dbSync.version(8).upgrade(function (tx) {
 
 dbSync.version(9).stores({
     shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter',
+});
+
+dbSync.version(10).stores({
+    nodes: '&uuid,type,vid,status,[type+pin_code]',
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
 });
 
 function gatherWords (text) {
