@@ -21,6 +21,7 @@ module DataManager.Model exposing
     , emptyUploadRec
     )
 
+import AssocList exposing (Dict)
 import Backend.Entities exposing (HealthCenterId)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.Measurement.Model exposing (Attendance, Measurement, Photo, Weight)
@@ -259,7 +260,11 @@ type UploadMethod
 
 type alias IndexDbQueryUploadGeneralResultRecord =
     { entities : List ( BackendGeneralEntity, UploadMethod )
-    , uploadPhotos : List IndexDbQueryUploadPhotoResultRecord
+
+    -- Instead of list, it would be handier to get a Dict, keyed by the `localId`
+    -- so when we would like to switch the photo URL with Drupal's file ID, we could
+    -- get that info quicker.
+    , uploadPhotos : Dict Int IndexDbQueryUploadPhotoResultRecord
     }
 
 

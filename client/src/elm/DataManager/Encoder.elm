@@ -1,5 +1,6 @@
 module DataManager.Encoder exposing (encodeIndexDbQueryUploadGeneralResultRecord)
 
+import AssocList as Dict
 import Backend.Person.Encoder
 import DataManager.Model
     exposing
@@ -8,18 +9,26 @@ import DataManager.Model
         , UploadMethod(..)
         )
 import DataManager.Utils exposing (getBackendGeneralEntityIdentifier)
-import Json.Encode exposing (Value, int, list, object, string)
+import Json.Encode exposing (Value, int, list, null, object, string)
+import Json.Encode.Extra exposing (maybe)
 
 
 encodeIndexDbQueryUploadGeneralResultRecord : IndexDbQueryUploadGeneralResultRecord -> List ( String, Value )
 encodeIndexDbQueryUploadGeneralResultRecord record =
     let
-        replacePhotoWithFileId encodedList fileId =
-            encodedList
+        replacePhotoWithFileId encodedEntity localId =
+            let
+                maybeFileId =
+                    Dict.get localId record.uploadPhotos
+                        |> Maybe.map (\row -> maybe int row.fileId)
+                        |> Maybe.withDefault null
+            in
+            encodedEntity
                 -- Remove existing photo key.
-                |> List.filter (\( key, _ ) -> key /= "photo")
+                |> Dict.fromList
                 -- Replace with file ID.
-                |> (\list_ -> ( "photo", int fileId ) :: list_)
+                |> Dict.insert "photo" maybeFileId
+                |> Dict.toList
 
         encodeData ( entity, method ) =
             let
@@ -28,9 +37,21 @@ encodeIndexDbQueryUploadGeneralResultRecord record =
 
                 data =
                     case entity of
-                        BackendGeneralPerson uuid _ entity_ ->
-                            -- @todo: Get correct file ID.
-                            Json.Encode.object <| replacePhotoWithFileId (Backend.Person.Encoder.encodePerson entity_) 21053
+                        BackendGeneralPerson _ localId entity_ ->
+                            let
+                                encodedEntity =
+                                    Backend.Person.Encoder.encodePerson entity_
+
+                                encodedEntityUpdated =
+                                    case entity_.avatarUrl of
+                                        Just photo ->
+                                            -- @todo: Get correct file ID.
+                                            replacePhotoWithFileId encodedEntity localId
+
+                                        Nothing ->
+                                            encodedEntity
+                            in
+                            Json.Encode.object encodedEntityUpdated
 
                         _ ->
                             -- @todo, get all the rest.

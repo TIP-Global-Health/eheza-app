@@ -437,19 +437,11 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
           return row.localId;
         });
 
-        console.log(localIds);
-
         let uploadPhotosResult = await dbSync
             .generalPhotoUploadChanges
             .where('localId')
             .anyOf(localIds)
             .toArray();
-
-        console.log(uploadPhotosResult);
-
-
-
-
 
         const resultToSend = {
           'entities': entitiesResult,

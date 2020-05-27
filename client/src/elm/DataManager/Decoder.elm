@@ -4,6 +4,7 @@ module DataManager.Decoder exposing
     , decodeIndexDbQueryTypeResult
     )
 
+import AssocList as Dict
 import Backend.HealthCenter.Decoder
 import Backend.Measurement.Decoder
 import Backend.Nurse.Decoder
@@ -79,7 +80,17 @@ decodeIndexDbQueryUploadGeneralResultRecord : Decoder IndexDbQueryUploadGeneralR
 decodeIndexDbQueryUploadGeneralResultRecord =
     succeed IndexDbQueryUploadGeneralResultRecord
         |> required "entities" (list decodeBackendGeneralEntityAndUploadMethod)
-        |> required "uploadPhotos" (list decodeIndexDbQueryUploadPhotoResultRecord)
+        |> required "uploadPhotos"
+            (list decodeIndexDbQueryUploadPhotoResultRecord
+                |> andThen
+                    (\list_ ->
+                        -- Convert list to a dict.
+                        list_
+                            |> List.map (\row -> ( row.localId, row ))
+                            |> Dict.fromList
+                            |> succeed
+                    )
+            )
 
 
 {-| We need to get the localId, which is wrapping the data. It looks something like:
