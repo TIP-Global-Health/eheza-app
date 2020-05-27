@@ -2390,7 +2390,7 @@ translationSet trans =
             }
 
         KilogramsPerMonth ->
-            { english = "kgs / months"
+            { english = "kgs / month"
             , kinyarwanda = Nothing
             }
 
@@ -4178,12 +4178,12 @@ translationSet trans =
         WhyDifferentFbfAmount activity ->
             case activity of
                 ChildActivity _ ->
-                    { english = "Select why child receiverd a different amount of FBF"
+                    { english = "Select why child received a different amount of FBF"
                     , kinyarwanda = Nothing
                     }
 
                 MotherActivity _ ->
-                    { english = "Select why mother receiverd a different amount of FBF"
+                    { english = "Select why mother received a different amount of FBF"
                     , kinyarwanda = Nothing
                     }
 
