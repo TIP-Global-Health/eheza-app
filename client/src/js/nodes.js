@@ -778,14 +778,6 @@
 
     /**
      * Helper function to add a record to general or authority PhotoUploadChanges.
-     *
-     * @param table
-     *   The Dexie table object.
-     * @param primaryKey
-     *   The localId
-     * @param obj
-     *   THe saved entity (e.g. person or photo)
-     * @returns {Promise<void>}
      */
     function addPhotoUploadChanges(tableHook, table, obj) {
         if (!obj.data.hasOwnProperty('photo')) {

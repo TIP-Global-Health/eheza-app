@@ -167,8 +167,6 @@ dbSync.version(10).stores({
   })();
 });
 
-
-
 const getRevisionIdPerAuthority = function() {
   const storage = localStorage.getItem('revisionIdPerAuthority');
 
@@ -334,7 +332,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         let result = await dbSync
             .generalPhotoUploadChanges
             .where('isSynced')
-            // Dexie doesn't index Boolean, so we use an Int to indicate "false".
+            // IndexDB doesn't index Boolean, so we use an Int to indicate "false".
             .equals(0)
             .limit(1)
             .toArray();
@@ -577,7 +575,7 @@ elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
   }
 
   // Find the localIds with matching uuid, that have been already uploaded.
-  const result = table
+  const result = await table
       .where('uuid')
       .anyOf(info.uuid)
       // Get only the rows there were already uploaded.
@@ -586,18 +584,12 @@ elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
       })
       .toArray();
 
-  console.log(info.uuid);
-  console.log(result);
-
   if (!result[0]) {
     // No matching local changes found.
     return;
   }
 
   const localIds = result.map(row => row.localId);
-
-  console.log(localIds);
-
   await table.bulkDelete(localIds);
 
   // Delete also from the photoUploadChanges table.
