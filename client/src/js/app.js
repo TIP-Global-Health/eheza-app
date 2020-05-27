@@ -127,6 +127,13 @@ dbSync.version(9).stores({
 });
 
 dbSync.version(10).stores({
+  // Add `isSynced` and `uuid` so we would have an indication to when we can
+  // delete local changes. Only after we download from the backend, we'd want to
+  // delete the records.
+  nodeChanges: '++localId,uuid,isSynced',
+  shardChanges: '++localId,shard,uuid,isSynced',
+
+
   // Hold table with photos which have not been downloaded yet.
   // `attempts` holds the number of attempts we've tried to get the image.
   deferredPhotos: '&uuid,type,vid,photo,attempts',
@@ -518,15 +525,19 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
  */
 elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
   const type = info.type_;
+
   var table;
+  var photoUploadTable;
 
   switch (type) {
     case 'General':
       table = dbSync.nodeChanges;
+      photoUploadTable = dbSync.generalPhotoUploadChanges;
       break;
 
     case 'Authority':
       table = dbSync.shardChanges;
+      photoUploadTable = dbSync.authorityPhotoUploadChanges;
       break;
 
     default:
@@ -534,6 +545,9 @@ elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
   }
 
   await table.bulkDelete(info.localIds);
+
+  // Delete also from the photoUploadChanges table.
+  await photoUploadTable.bulkDelete(info.localIds);
 });
 
 
