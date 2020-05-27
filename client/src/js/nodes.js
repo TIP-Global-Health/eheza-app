@@ -618,13 +618,27 @@
     // shard a node should be assigned to. For now, it seems simplest to do it
     // here, but we can revisit that.
     function determineShard (node) {
+        console.log(node);
         if (node.health_center) {
             return Promise.resolve(node.health_center);
         }
 
-        if (node.session) {
-            return dbSync.nodes.get(node.session).then (function (session) {
-                return dbSync.nodes.get(session.clinic).then(function (clinic) {
+        if (node.clinic) {
+          return dbSync.shards.get(node.clinic).then(function (clinic) {
+              if (clinic) {
+                  if (clinic.health_center) {
+                      return Promise.resolve(clinic.health_center);
+                  } else {
+                      return Promise.reject('Clinic had no health_center: ' + clinic.uuid);
+                  }
+              } else {
+                  return Promise.reject('Could not find clinic: ' + session.clinic);
+              }
+          });
+        }
+        else if (node.session) {
+            return dbSync.shards.get(node.session).then (function (session) {
+                return dbSync.shards.get(session.clinic).then(function (clinic) {
                     if (clinic) {
                         if (clinic.health_center) {
                             return Promise.resolve(clinic.health_center);

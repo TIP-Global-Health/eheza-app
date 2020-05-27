@@ -199,6 +199,12 @@ dbSync.version(9).stores({
 dbSync.version(10).stores({
     nodes: '&uuid,type,vid,status,[type+pin_code]',
     shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
+}).upgrade(function (tx) {
+    return tx.shards.where({
+        type: 'person'
+    }).modify(function (person) {
+        person.name_search = gatherWords(person.label);
+    });
 });
 
 function gatherWords (text) {
