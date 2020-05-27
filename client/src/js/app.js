@@ -343,7 +343,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         const cache = await caches.open(photosUploadCache);
         const cachedResponse = await cache.match(row.photo);
         if (!cachedResponse) {
-          // Photo is registered in IndexDB, but doesn't appear in the cache
+          // Photo is registered in IndexDB, but doesn't appear in the cache.
           // @todo: Send Error back to Elm.
           return sendResultToElm(queryType, null);
         }
@@ -358,9 +358,9 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         const backendUrl = dataArr.backend_url;
         const accessToken = dataArr.access_token;
-        const dbVersion = 9;
 
-        // @tood: Get db_version from Elm?
+        // @todo: Get db_version from Elm?
+        const dbVersion = 9;
 
         const uploadUrl = [
           backendUrl,
@@ -394,20 +394,20 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             console.log(e);
           }
 
-          const updateRecord = {
+          const changes = {
             'fileId': parseInt(json.data[0].id),
             'remoteFileName': json.data[0].label,
             'isSynced': 1,
           }
 
+          // Update IndexDb to hold the fileId. As there could have been multiple
+          // operations on the same entity, we replace all the photo occurrences.
+          // For example, lets say a person's photo was changed, and later also
+          // their name. So on the two records there were created on the
+          // photoUploadChanges table, the same photo local URL will appear.
+          await dbSync.generalPhotoUploadChanges.where('photo').equals(row.photo).modify(changes);
 
-          // @todo: Use `modify` to change all record with the same `photo`.
-          // Update IndexDb to hold the fileId.
-          await dbSync
-              .generalPhotoUploadChanges
-              .update(row.localId, updateRecord);
-
-          const completedResult = Object.assign(row, updateRecord);
+          const completedResult = Object.assign(row, changes);
           return sendResultToElm(queryType, completedResult);
         }
       })();
@@ -417,20 +417,43 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
     case 'IndexDbQueryUploadGeneral':
       (async () => {
 
-        let result = await dbSync
+        const batchSize = 50;
+
+        let entitiesResult = await dbSync
             .nodeChanges
-            // @todo; Change to 50.
-            .limit(5)
+            .limit(batchSize)
             .toArray();
 
-        console.log(result);
+        console.log(entitiesResult);
+
+        if (!entitiesResult[0]) {
+          // No entities for upload found.
+          sendResultToElm(null);
+        }
 
         // Query by the localId the `generalUploadPhotos` to get the matching
         // file ID.
+        const localIds = entitiesResult.map(function(row) {
+          return row.localId;
+        });
+
+        console.log(localIds);
+
+        let uploadPhotosResult = await dbSync
+            .generalPhotoUploadChanges
+            .where('localId')
+            .anyOf(localIds)
+            .toArray();
+
+        console.log(uploadPhotosResult);
+
+
+
+
+
         const resultToSend = {
-          'entities': result,
-          // @todo
-          'uploadPhotos': [],
+          'entities': entitiesResult,
+          'uploadPhotos': uploadPhotosResult,
         };
 
         sendResultToElm(queryType, resultToSend);

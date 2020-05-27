@@ -18,6 +18,7 @@ encodeIndexDbQueryUploadGeneralResultRecord record =
             encodedList
                 -- Remove existing photo key.
                 |> List.filter (\( key, _ ) -> key /= "photo")
+                -- Replace with file ID.
                 |> (\list_ -> ( "photo", int fileId ) :: list_)
 
         encodeData ( entity, method ) =
@@ -32,7 +33,7 @@ encodeIndexDbQueryUploadGeneralResultRecord record =
                             Json.Encode.object <| replacePhotoWithFileId (Backend.Person.Encoder.encodePerson entity_) 21053
 
                         _ ->
-                            -- @todo
+                            -- @todo, get all the rest.
                             Json.Encode.object []
             in
             [ ( "uuid", string identifier.uuid )
