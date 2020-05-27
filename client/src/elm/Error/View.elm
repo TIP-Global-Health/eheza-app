@@ -5,6 +5,7 @@ import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Json.Decode
+import Json.Encode
 import Translate as Trans exposing (Language, translate)
 import Utils.WebData
 
@@ -15,8 +16,12 @@ view language errors =
         emptyNode
 
     else
-        div [ class "ui segment elm-errors alert debug-errors" ]
-            [ ul [] (List.map (viewError language) errors)
+        details
+            [ class "ui segment elm-errors alert debug-errors"
+            , property "open" (Json.Encode.bool True)
+            ]
+            [ summary [] [ text "Error log" ]
+            , ol [] (List.map (viewError language) errors)
             ]
 
 

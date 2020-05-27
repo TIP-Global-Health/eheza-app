@@ -83,7 +83,7 @@ viewSyncSettings model =
             Editable.value model.syncSpeed
     in
     details
-        [ property "open" (Json.Encode.bool True)
+        [ property "open" (Json.Encode.bool False)
         , style "border" "1px solid black"
         , class "html ui top attached segment"
         ]

@@ -66,7 +66,7 @@ decodeIndexDbQueryTypeResult =
 
 decodeIndexDbQueryUploadPhotoResultRecordRemoteData : Decoder (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
 decodeIndexDbQueryUploadPhotoResultRecordRemoteData =
-    field "tag" string
+    at [ "data", "tag" ] string
         |> andThen
             (\tag ->
                 case tag of
@@ -81,8 +81,8 @@ decodeIndexDbQueryUploadPhotoResultRecordRemoteData =
 
                     "Error" ->
                         (succeed (\a b -> ( a, b ))
-                            |> required "error" string
-                            |> optional "reason" (nullable string) Nothing
+                            |> requiredAt [ "data", "error" ] string
+                            |> optionalAt [ "data", "reason" ] (nullable string) Nothing
                         )
                             |> andThen
                                 (\( error, maybeReason ) ->
