@@ -1013,8 +1013,7 @@ subscriptions model =
             case model.syncStatus of
                 SyncIdle ->
                     -- Rest until the next sync loop.
-                    -- 5000
-                    3000
+                    toFloat model.syncSpeed.idle
 
                 _ ->
                     -- Trigger often.

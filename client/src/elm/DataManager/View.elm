@@ -38,7 +38,7 @@ view language db model =
         htmlContent =
             details [ property "open" (Json.Encode.bool True) ]
                 [ summary [] [ text "Sync Status" ]
-                , viewSyncStatusControl model
+                , viewSyncSettings model
 
                 -- button [ onClick <| DataManager.Model.FetchFromIndexDb DataManager.Model.IndexDbQueryHealthCenters ] [ text "Fetch Health Centers" ]
                 , div [] [ text <| "Sync status: " ++ Debug.toString model.syncStatus ]
@@ -62,16 +62,40 @@ view language db model =
         ]
 
 
-viewSyncStatusControl : Model -> Html Msg
-viewSyncStatusControl model =
-    div []
-        [ input
-            [ type_ "checkbox"
-            , checked model.syncStatusRotateAutomatic
-            , onCheck SetSyncStatusRotateAutomatic
+viewSyncSettings : Model -> Html Msg
+viewSyncSettings model =
+    details
+        [ property "open" (Json.Encode.bool True)
+        , style "border" "1px solid black"
+        , style "margin-left" "40px"
+        , style "padding-left" "25px"
+        ]
+        [ summary [] [ text "Settings" ]
+        , div []
+            [ input
+                [ type_ "checkbox"
+                , checked model.syncStatusRotateAutomatic
+                , onCheck SetSyncStatusRotateAutomatic
+                ]
+                []
+            , label [] [ text "Cycle through sync states" ]
             ]
-            []
-        , label [] [ text "Automatic Sync status control" ]
+        , div []
+            [ input
+                [ type_ "number"
+
+                -- No less than every 3 second. On production it should be
+                -- no less than 10 seconds.
+                , Html.Attributes.min (String.fromInt <| 3 * 1000)
+
+                -- No more than every 5 minutes.
+                , Html.Attributes.max (String.fromInt <| 5 * 60 * 1000)
+                , Html.Attributes.required True
+                , value <| String.fromInt model.syncSpeed.idle
+                ]
+                []
+            , label [] [ text "Idle time in ms" ]
+            ]
         ]
 
 

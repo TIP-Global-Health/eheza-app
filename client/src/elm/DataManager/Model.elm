@@ -116,9 +116,9 @@ type alias Model =
 
     -- Time in seconds while idle or while syncing.
     -- In production, a good value would be:
-    -- `idle` - 0.05s; which is the minimum we will allow.
-    -- `sync` - 10s. The means that sync will sit idle for 10 seconds.
-    , syncSpeedInSeconds : SyncSpeedInSeconds
+    -- `idle` - 50; which is the minimum we will allow.
+    -- `sync` - 10000. The means that sync will sit idle for 10 seconds.
+    , syncSpeed : SyncSpeedInSeconds
     }
 
 
@@ -131,7 +131,7 @@ emptyModel flags =
     , downloadPhotos = DownloadPhotosBatch (emptyDownloadPhotosBatchRec flags.batchSize)
     , downloadPhotosBatchSize = flags.batchSize
     , syncStatusRotateAutomatic = True
-    , syncSpeedInSeconds = flags.syncSpeedInSeconds
+    , syncSpeed = flags.syncSpeedInSeconds
     }
 
 
