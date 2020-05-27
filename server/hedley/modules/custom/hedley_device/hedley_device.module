@@ -321,7 +321,6 @@ function hedley_device_shard_by_health_center($nid) {
  *
  * @return array
  *   List of shards node IDs. Empty array, if none are found.
- *
  */
 function hedley_device_shards_by_person($nid) {
   if (!$nid) {
