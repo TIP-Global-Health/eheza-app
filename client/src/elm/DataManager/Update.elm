@@ -610,7 +610,13 @@ update currentDate device msg model =
                         let
                             recordUpdated =
                                 { record
-                                    | backendRemoteData = RemoteData.Loading
+                                    | backendRemoteData =
+                                        if List.isEmpty result.entities then
+                                            -- There were no entities for upload.
+                                            RemoteData.NotAsked
+
+                                        else
+                                            RemoteData.Loading
                                     , indexDbRemoteData = RemoteData.Success (Just result)
                                 }
 
@@ -618,15 +624,20 @@ update currentDate device msg model =
                                 { model | syncStatus = SyncUploadGeneral recordUpdated }
 
                             cmd =
-                                HttpBuilder.post (device.backendUrl ++ "/api/sync")
-                                    |> withQueryParams
-                                        [ ( "access_token", device.accessToken )
-                                        , ( "db_version", String.fromInt dbVersion )
-                                        ]
-                                    |> withJsonBody (Json.Encode.object <| DataManager.Encoder.encodeIndexDbQueryUploadGeneralResultRecord result)
-                                    -- We don't need to decode anything, as we just want to have
-                                    -- the browser download it.
-                                    |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadGeneralHandle)
+                                if List.isEmpty result.entities then
+                                    -- There were no entities for upload.
+                                    Cmd.none
+
+                                else
+                                    HttpBuilder.post (device.backendUrl ++ "/api/sync")
+                                        |> withQueryParams
+                                            [ ( "access_token", device.accessToken )
+                                            , ( "db_version", String.fromInt dbVersion )
+                                            ]
+                                        |> withJsonBody (Json.Encode.object <| DataManager.Encoder.encodeIndexDbQueryUploadGeneralResultRecord result)
+                                        -- We don't need to decode anything, as we just want to have
+                                        -- the browser download it.
+                                        |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadGeneralHandle)
                         in
                         SubModelReturn
                             (DataManager.Utils.determineSyncStatus modelUpdated)
@@ -652,14 +663,37 @@ update currentDate device msg model =
                                 (maybeHttpError webData "Backend.DataManager.Update" "BackendUploadGeneralHandle")
                                 []
 
-                        RemoteData.Success queryResult ->
+                        RemoteData.Success result ->
                             let
                                 syncStatus =
-                                    SyncUploadGeneral { record | backendRemoteData = RemoteData.Success queryResult }
+                                    SyncUploadGeneral { record | backendRemoteData = RemoteData.Success result }
+
+                                -- We have successfully uploaded the entities, so
+                                -- we can delete them fom the `nodeChanges` table.
+                                -- We will do it, by their localId.
+                                cmd =
+                                    case RemoteData.toMaybe record.indexDbRemoteData of
+                                        Just (Just indexDbResult) ->
+                                            let
+                                                localIds =
+                                                    List.map
+                                                        (\( entity, _ ) ->
+                                                            let
+                                                                identifier =
+                                                                    DataManager.Utils.getBackendGeneralEntityIdentifier entity
+                                                            in
+                                                            identifier.revision
+                                                        )
+                                                        indexDbResult.entities
+                                            in
+                                            sendLocalIdsForDelete { type_ = "General", localIds = localIds }
+
+                                        _ ->
+                                            Cmd.none
                             in
                             SubModelReturn
                                 (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
-                                Cmd.none
+                                cmd
                                 noError
                                 []
 
@@ -981,6 +1015,13 @@ port sendLastFetchedRevisionIdGeneral : Int -> Cmd msg
 along with their UUID.
 -}
 port sendRevisionIdPerAuthority : List { uuid : String, revisionId : Int } -> Cmd msg
+
+
+{-| Send to JS the localIds that can be deleted. This is done after they are
+uploaded to the backend.
+The `type_` can be `General` or `Authority`.
+-}
+port sendLocalIdsForDelete : { type_ : String, localIds : List Int } -> Cmd msd
 
 
 {-| Ask JS to send us data from IndexDB. We send the query type, and in case

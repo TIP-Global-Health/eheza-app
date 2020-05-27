@@ -424,11 +424,9 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .limit(batchSize)
             .toArray();
 
-        console.log(entitiesResult);
-
         if (!entitiesResult[0]) {
           // No entities for upload found.
-          sendResultToElm(null);
+          sendResultToElm(queryType, null);
         }
 
         // Query by the localId the `generalUploadPhotos` to get the matching
@@ -511,8 +509,33 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
     elmApp.ports.getFromIndexDb.send(dataForSend);
   }
-
 });
+
+/**
+ * Delete local entities that were uploaded.
+ *
+ * @todo: Maybe This is wrong? we need to delete after we downloaded.
+ */
+elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
+  const type = info.type_;
+  var table;
+
+  switch (type) {
+    case 'General':
+      table = dbSync.nodeChanges;
+      break;
+
+    case 'Authority':
+      table = dbSync.shardChanges;
+      break;
+
+    default:
+      throw type + " is not a known type for sendLocalIdsForDelete";
+  }
+
+  await table.bulkDelete(info.localIds);
+});
+
 
 // @todo: Move logic to Elm to `gatherWords`.
 function gatherWords (text) {

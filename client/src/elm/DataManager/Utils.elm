@@ -180,26 +180,50 @@ setPhotosBatch model =
     { model | syncStatus = SyncDownloadPhotos (DownloadPhotosBatch (emptyDownloadPhotosBatchRec model.downloadPhotosBatchSize)) }
 
 
-getBackendGeneralEntityIdentifier : BackendGeneralEntity -> { uuid : String, type_ : String }
+{-| Get info about an entity. `revision` would be the Drupal revision
+in case of download, or the `localId` in case of upload.
+-}
+getBackendGeneralEntityIdentifier : BackendGeneralEntity -> { uuid : String, revision : Int, type_ : String }
 getBackendGeneralEntityIdentifier backendGeneralEntity =
     case backendGeneralEntity of
-        BackendGeneralCatchmentArea uuid _ _ ->
-            { uuid = uuid, type_ = "catchment_area" }
+        BackendGeneralCatchmentArea uuid revision _ ->
+            { uuid = uuid
+            , revision = revision
+            , type_ = "catchment_area"
+            }
 
-        BackendGeneralHealthCenter uuid _ _ ->
-            { uuid = uuid, type_ = "health_center" }
+        BackendGeneralHealthCenter uuid revision _ ->
+            { uuid = uuid
+            , revision = revision
+            , type_ = "health_center"
+            }
 
-        BackendGeneralNurse uuid _ _ ->
-            { uuid = uuid, type_ = "nurse" }
+        BackendGeneralNurse uuid revision _ ->
+            { uuid = uuid
+            , revision = revision
+            , type_ = "nurse"
+            }
 
-        BackendGeneralPerson uuid _ _ ->
-            { uuid = uuid, type_ = "person" }
+        BackendGeneralPerson uuid revision _ ->
+            { uuid = uuid
+            , revision = revision
+            , type_ = "person"
+            }
 
-        BackendGeneralPmtctParticipant uuid _ _ ->
-            { uuid = uuid, type_ = "pmtct_participant" }
+        BackendGeneralPmtctParticipant uuid revision _ ->
+            { uuid = uuid
+            , revision = revision
+            , type_ = "pmtct_participant"
+            }
 
-        BackendGeneralRelationship uuid _ _ ->
-            { uuid = uuid, type_ = "relationship" }
+        BackendGeneralRelationship uuid revision _ ->
+            { uuid = uuid
+            , revision = revision
+            , type_ = "relationship"
+            }
 
-        BackendGeneralEntityUnknown uuid _ ->
-            { uuid = uuid, type_ = "unknown" }
+        BackendGeneralEntityUnknown uuid revision ->
+            { uuid = uuid
+            , revision = revision
+            , type_ = "unknown"
+            }
