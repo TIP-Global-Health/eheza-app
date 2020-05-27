@@ -101,7 +101,7 @@ decodeIndexDbQueryUploadPhotoResultRecordRemoteData =
                                 )
 
                     _ ->
-                        fail <| tag ++ " is not a recognized Error for IndexDbQueryUploadGeneralResultRecord"
+                        fail <| tag ++ " is not a recognized Error for decodeIndexDbQueryUploadPhotoResultRecordRemoteData"
             )
 
 

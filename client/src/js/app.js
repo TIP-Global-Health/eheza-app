@@ -414,10 +414,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
           });
         }
         catch (e) {
-            // Network error?
-            // @todo
-            console.log(e);
-            return {tag: 'Error', error: 'FetchError', reason: e.toString()};
+            // Network error.
+            return sendResultToElm(queryType,{tag: 'Error', error: 'FetchError', reason: e.toString()});
           }
 
         if (response.ok) {
@@ -425,10 +423,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             var json = await response.json();
           }
           catch (e) {
-            // Bad JSON?
-            // @todo
-            console.log(e);
-            return {tag: 'Error', error: 'BadJson', reason: e.toString()};
+            // Bad JSON.
+            return sendResultToElm(queryType,{tag: 'Error', error: 'BadJson', reason: e.toString()});
           }
 
           const changes = {

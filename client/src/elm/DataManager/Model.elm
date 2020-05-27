@@ -127,7 +127,7 @@ type alias Model =
 
 emptyModel : Flags -> Model
 emptyModel flags =
-    { syncStatus = SyncUploadPhotoGeneral RemoteData.NotAsked
+    { syncStatus = SyncIdle
     , lastFetchedRevisionIdGeneral = flags.lastFetchedRevisionIdGeneral
     , revisionIdPerAuthorityZipper = flags.revisionIdPerAuthorityZipper
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
@@ -330,6 +330,7 @@ type Msg
     | BackendPhotoUploadGeneral
     | BackendUploadGeneral (Maybe IndexDbQueryUploadGeneralResultRecord)
     | BackendUploadGeneralHandle IndexDbQueryUploadGeneralResultRecord (WebData ())
+    | BackendUploadPhotoGeneralHandle (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
     | QueryIndexDb IndexDbQueryType
     | QueryIndexDbHandle Value
     | FetchFromIndexDbDeferredPhoto
