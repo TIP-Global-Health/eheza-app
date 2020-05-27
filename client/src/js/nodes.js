@@ -615,6 +615,14 @@
     }
 
     function determineShard (node) {
+        // Shraded nodes that specifically specify their shard.
+        // This check must be first, so the shard field would not get
+        // overriden by health_center field, when both of them exist
+        // at node - for example, at perosn node.
+        if (node.shard) {
+            return Promise.resolve(node.shard);
+        }
+
         // Resolving for group measurements.
         if (node.session) {
             return dbSync.shards.get(node.session).then (function (session) {
@@ -632,15 +640,10 @@
             return resolveShardByClinicId(node.clinic);
         }
 
-        // Other shraded nodes.
-        if (node.shard) {
-            return Promise.resolve(node.shard);
-        }
-
         return Promise.reject('Node ' + node.uuid + ' got no fields using which shard can be resolved!' );
     }
 
-    function resolveShardByClinicId(clinicId) {
+    function resolveShardByClinicId (clinicId) {
       return dbSync.shards.get(clinicId).then(function (clinic) {
           if (clinic) {
               if (clinic.health_center) {
