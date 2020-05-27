@@ -1007,15 +1007,15 @@ update currentDate device msg model =
                         []
 
         ResetSettings ->
+            let
+                syncSpeed =
+                    { idle = 10000
+                    , cycle = 50
+                    }
+            in
             SubModelReturn
-                { model
-                    | syncSpeed =
-                        Editable.ReadOnly
-                            { idle = 10000
-                            , cycle = 50
-                            }
-                }
-                Cmd.none
+                { model | syncSpeed = Editable.ReadOnly syncSpeed }
+                (sendSyncSpeed syncSpeed)
                 noError
                 []
 
@@ -1043,7 +1043,7 @@ update currentDate device msg model =
             in
             SubModelReturn
                 { model | syncSpeed = Editable.ReadOnly syncSpeedUpdated }
-                Cmd.none
+                (sendSyncSpeed syncSpeedUpdated)
                 noError
                 []
 
@@ -1150,6 +1150,11 @@ The `type_` can be `General` or `Authority`.
 
 -}
 port sendLocalIdsForDelete : { type_ : String, uuid : List String } -> Cmd msd
+
+
+{-| Send to JS model.syncSpeed
+-}
+port sendSyncSpeed : { idle : Int, cycle : Int } -> Cmd msd
 
 
 {-| Ask JS to send us data from IndexDB. We send the query type, and in case

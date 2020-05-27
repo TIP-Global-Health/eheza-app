@@ -264,10 +264,9 @@ type alias Flags =
 
     -- We may have multiple authorities, and each one has its own revision ID to
     -- fetch from.
-    , revisionIdPerAuthority : List RevisionIdPerAuthority
+    , revisionIdPerAuthority : List DataManager.Model.RevisionIdPerAuthority
     , photoDownloadBatchSize : Int
-    , syncSpeedInSecondsIdle : Int
-    , syncSpeedInSecondsSync : Int
+    , syncSpeed : DataManager.Model.SyncSpeed
     }
 
 
@@ -295,10 +294,7 @@ emptyModel key url flags =
             { lastFetchedRevisionIdGeneral = flags.lastFetchedRevisionIdGeneral
             , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper
             , batchSize = flags.photoDownloadBatchSize
-            , syncSpeedInSeconds =
-                { idle = flags.syncSpeedInSecondsIdle
-                , cycle = flags.syncSpeedInSecondsSync
-                }
+            , syncSpeed = flags.syncSpeed
             }
     in
     { activePage = PinCodePage

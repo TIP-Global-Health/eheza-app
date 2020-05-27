@@ -167,6 +167,9 @@ dbSync.version(10).stores({
   })();
 });
 
+/**
+ * Return saved authorities.
+ */
 const getRevisionIdPerAuthority = function() {
   const storage = localStorage.getItem('revisionIdPerAuthority');
 
@@ -184,6 +187,24 @@ const getRevisionIdPerAuthority = function() {
   return [];
 };
 
+/**
+ * Return sync speed.
+ * See DataManager.Model.syncSpeed
+ */
+const getSyncSpeed = function() {
+  const storage = localStorage.getItem('syncSpeed');
+
+  if (!!storage) {
+    let storageArr = JSON.parse(storage);
+    storageArr.idle = parseInt(storageArr.idle);
+    storageArr.cycle = parseInt(storageArr.cycle);
+
+    return storageArr;
+  }
+
+  return {idle: (10 * 1000), cycle: 50};
+}
+
 // Start up our Elm app.
 var elmApp = Elm.Main.init({
   flags: {
@@ -199,8 +220,7 @@ var elmApp = Elm.Main.init({
     lastFetchedRevisionIdGeneral: parseInt(localStorage.getItem('lastFetchedRevisionIdGeneral')) || 0,
     revisionIdPerAuthority: getRevisionIdPerAuthority(),
     photoDownloadBatchSize: parseInt(localStorage.getItem('photoDownloadBatchSize')) || (10),
-    syncSpeedInSecondsIdle: parseInt(localStorage.getItem('syncSpeedInSecondsIdle')) || (10 * 1000),
-    syncSpeedInSecondsSync: parseInt(localStorage.getItem('syncSpeedInSecondsSync')) || 50,
+    syncSpeed: getSyncSpeed(),
   }
 });
 
@@ -271,6 +291,13 @@ elmApp.ports.sendLastFetchedRevisionIdGeneral.subscribe(function(lastFetchedRevi
  */
 elmApp.ports.sendRevisionIdPerAuthority.subscribe(function(revisionIdPerAuthority) {
   localStorage.setItem('revisionIdPerAuthority', JSON.stringify(revisionIdPerAuthority));
+});
+
+/**
+ * Sets the sync speed.
+ */
+elmApp.ports.sendSyncSpeed.subscribe(function(syncSpeed) {
+  localStorage.setItem('syncSpeed', JSON.stringify(syncSpeed));
 });
 
 /**

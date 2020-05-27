@@ -14,6 +14,7 @@ module DataManager.Model exposing
     , Msg(..)
     , RevisionIdPerAuthority
     , RevisionIdPerAuthorityZipper
+    , SyncSpeed
     , SyncStatus(..)
     , UploadMethod(..)
     , emptyDownloadPhotosBatchRec
@@ -132,7 +133,7 @@ emptyModel flags =
     , downloadPhotos = DownloadPhotosBatch (emptyDownloadPhotosBatchRec flags.batchSize)
     , downloadPhotosBatchSize = flags.batchSize
     , syncCycle = True
-    , syncSpeed = Editable.ReadOnly flags.syncSpeedInSeconds
+    , syncSpeed = Editable.ReadOnly flags.syncSpeed
     }
 
 
@@ -142,7 +143,7 @@ type alias Flags =
     { lastFetchedRevisionIdGeneral : LastFetchedRevisionIdGeneral
     , revisionIdPerAuthorityZipper : RevisionIdPerAuthorityZipper
     , batchSize : Int
-    , syncSpeedInSeconds : SyncSpeed
+    , syncSpeed : SyncSpeed
     }
 
 
