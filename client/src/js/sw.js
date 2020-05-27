@@ -199,12 +199,6 @@ dbSync.version(9).stores({
 dbSync.version(10).stores({
     nodes: '&uuid,type,vid,status,[type+pin_code]',
     shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
-}).upgrade(function (tx) {
-    return tx.shards.where({
-        type: 'person'
-    }).modify(function (person) {
-        person.name_search = gatherWords(person.label);
-    });
 });
 
 function gatherWords (text) {
@@ -219,7 +213,7 @@ function gatherWords (text) {
 }
 
 // Hooks that index persons for searching name.
-dbSync.nodes.hook("creating", function (primKey, obj, trans) {
+dbSync.shards.hook("creating", function (primKey, obj, trans) {
     if (obj.type === 'person') {
         if (typeof obj.label == 'string') {
             obj.name_search = gatherWords(obj.label);
@@ -227,7 +221,7 @@ dbSync.nodes.hook("creating", function (primKey, obj, trans) {
     }
 });
 
-dbSync.nodes.hook("updating", function (mods, primKey, obj, trans) {
+dbSync.shards.hook("updating", function (mods, primKey, obj, trans) {
     if (obj.type === 'person') {
         if (mods.hasOwnProperty("label")) {
             if (typeof mods.label == 'string') {
