@@ -351,7 +351,7 @@ function hedley_view_export_file_download($uri) {
 
   // Find the file owner by the uri.
   $uid = db_select('file_managed', 'f')
-    ->addField('f', 'uid')
+    ->fields('f', ['uid'])
     ->condition('uri', $uri)
     ->execute()
     ->fetchField();
