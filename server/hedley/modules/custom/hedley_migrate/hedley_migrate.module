@@ -450,7 +450,7 @@ function _hedley_migrate_get_children_by_parents(array $parents, $vocabulary_id 
   }
 
   $query
-    ->fields('hierarchy', ['tid'])
+    ->addField('hierarchy', 'tid')
     ->condition('hierarchy.parent', $parents, 'IN');
 
   if ($vocabulary_id) {

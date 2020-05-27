@@ -199,7 +199,7 @@ function hedley_restful_output_for_bundles($bundleHandlers, array $nids, $accoun
  */
 function hedley_restful_resolve_nid_for_uuid($uuid) {
   $result = db_select('field_data_field_uuid', 'uuid')
-    ->fields('uuid', ['entity_id'])
+    ->addField('uuid', 'entity_id')
     ->condition('uuid.field_uuid_value', $uuid)
     ->execute()
     ->fetchField();

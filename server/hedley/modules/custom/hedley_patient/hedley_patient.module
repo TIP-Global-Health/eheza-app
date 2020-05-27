@@ -108,7 +108,7 @@ function hedley_patient_recalculate_shards_for_person_content($nid) {
   $sharded = array_keys(HEDLEY_RESTFUL_SHARDED);
   $query->condition('n.type', $sharded);
   $query->fields('n', ['nid', 'type']);
-  $query->fields('s', ['field_shards_target_id']);
+  $query->addField('s', 'field_shards_target_id');
 
   $result = $query->execute();
 
@@ -139,8 +139,8 @@ function hedley_patient_recalculate_shards_for_person_content($nid) {
     // Limit to individual participants we're interested in.
     $query->condition('ip.field_individual_participant_target_id', $individual_participants);
     $query->condition('n.type', $sharded);
-    $query->fields('n', ['nid']);
-    $query->fields('s', ['field_shards_target_id']);
+    $query->addField('n', 'nid');
+    $query->addField('s', 'field_shards_target_id');
 
     $result = $query->execute();
 
@@ -197,7 +197,7 @@ function hedley_patient_shards_for_person_by_pmtct_participants($nid) {
   $query->join('field_data_field_clinic', 'clinic', 'clinic.entity_id = n.nid');
   $query->join('field_data_field_health_center', 'hc', 'hc.entity_id = clinic.field_clinic_target_id');
 
-  $query->fields('hc', ['field_health_center_target_id']);
+  $query->addField('hc', 'field_health_center_target_id');
   $query->distinct();
 
   $shards = $query->execute()->fetchCol();
