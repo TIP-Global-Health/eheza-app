@@ -146,7 +146,6 @@ viewSyncSettings model =
                 ]
                 [ text "Reset Settings" ]
             ]
-        , div [] [ text <| Debug.toString model.syncSpeed ]
         ]
 
 
