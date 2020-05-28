@@ -70,7 +70,7 @@ jobs:
         - "$TRAVIS_BUILD_DIR/ci-scripts/prepare_client.sh"
         - "$TRAVIS_BUILD_DIR/ci-scripts/install_ddev.sh"
         - "$TRAVIS_BUILD_DIR/ci-scripts/prepare_deploy.sh"
-        - "ddev robo deploy:pantheon qa"
+        - "cd $TRAVIS_BUILD_DIR/server && ddev robo deploy:pantheon qa"
 
 cache:
   directories:
