@@ -1,4 +1,4 @@
-module DataManager.Utils exposing (determineSyncStatus, getBackendGeneralEntityIdentifier, setPhotosBatch)
+module DataManager.Utils exposing (determineSyncStatus, getBackendGeneralEntityIdentifier, getSyncSpeedForSubscriptions, setPhotosBatch)
 
 import DataManager.Model
     exposing
@@ -9,8 +9,10 @@ import DataManager.Model
         , emptyDownloadPhotosBatchRec
         , emptyUploadRec
         )
+import Editable
 import List.Zipper as Zipper
 import RemoteData
+import Utils.WebData
 
 
 {-| Decide on the Sync status. Either keep the exiting one, or set the next one,
@@ -227,3 +229,71 @@ getBackendGeneralEntityIdentifier backendGeneralEntity =
             , revision = revision
             , type_ = "unknown"
             }
+
+
+getSyncSpeedForSubscriptions : Model -> Float
+getSyncSpeedForSubscriptions model =
+    let
+        syncSpeed =
+            model.syncSpeed
+                -- Take the original values.
+                |> Editable.cancel
+                |> Editable.value
+
+        syncCycle =
+            if syncSpeed.cycle < 50 then
+                -- Safeguard against too quick iterations, in case someone
+                -- changed values directly on localStorage.
+                50
+
+            else
+                toFloat syncSpeed.cycle
+
+        checkWebData webData =
+            case webData of
+                RemoteData.Failure error ->
+                    if Utils.WebData.isNetworkError error then
+                        if syncSpeed.offline < 1000 then
+                            1000
+
+                        else
+                            toFloat syncSpeed.offline
+
+                    else
+                        syncCycle
+
+                _ ->
+                    syncCycle
+    in
+    case model.syncStatus of
+        SyncIdle ->
+            -- Rest until the next sync loop.
+            if syncSpeed.idle < 3000 then
+                -- Safeguard against too quick iterations.
+                3000
+
+            else
+                toFloat syncSpeed.idle
+
+        SyncUploadGeneral record ->
+            checkWebData record.backendRemoteData
+
+        SyncDownloadGeneral webData ->
+            checkWebData webData
+
+        SyncDownloadAuthority webData ->
+            checkWebData webData
+
+        SyncDownloadPhotos downloadPhotos ->
+            case downloadPhotos of
+                DownloadPhotosNone ->
+                    syncCycle
+
+                DownloadPhotosBatch record ->
+                    checkWebData record.backendRemoteData
+
+                DownloadPhotosAll record ->
+                    checkWebData record.backendRemoteData
+
+        _ ->
+            syncCycle

@@ -134,6 +134,23 @@ viewSyncSettings model =
                 []
             , div [ class "ui basic label" ] [ text "ms" ]
             ]
+        , div [ class "ui right labeled input fluid" ]
+            [ label [ class "ui label" ] [ text "Offline time" ]
+            , input
+                [ type_ "number"
+
+                -- No less than every 1000 ms.
+                , Html.Attributes.min (String.fromInt <| 1000)
+
+                -- No more than every 5 minutes.
+                , Html.Attributes.max (String.fromInt <| 5 * 60 * 1000)
+                , Html.Attributes.required True
+                , value <| String.fromInt syncSpeed.offline
+                , onInput SetSyncSpeedOffline
+                ]
+                []
+            , div [ class "ui basic label" ] [ text "ms" ]
+            ]
         , div []
             [ button
                 [ onClick SaveSettings

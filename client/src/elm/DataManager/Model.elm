@@ -151,6 +151,10 @@ type alias Flags =
 type alias SyncSpeed =
     { idle : Int
     , cycle : Int
+
+    -- If we're offline, we don't want to hammer the system with HTTP requests
+    -- that will fail, so we have a longer pause.
+    , offline : Int
     }
 
 
@@ -345,3 +349,4 @@ type Msg
     | SaveSettings
     | SetSyncSpeedIdle String
     | SetSyncSpeedCycle String
+    | SetSyncSpeedOffline String

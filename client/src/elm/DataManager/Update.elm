@@ -11,7 +11,7 @@ import Backend.Relationship.Encoder
 import DataManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseGeneral)
 import DataManager.Encoder
 import DataManager.Model exposing (BackendAuthorityEntity(..), BackendGeneralEntity(..), DownloadPhotos(..), IndexDbQueryType(..), IndexDbQueryTypeResult(..), Model, Msg(..), SyncStatus(..), emptyRevisionIdPerAuthority)
-import DataManager.Utils
+import DataManager.Utils exposing (getSyncSpeedForSubscriptions)
 import Device.Encoder
 import Device.Model exposing (Device)
 import Editable
@@ -996,6 +996,7 @@ update currentDate device msg model =
                 syncSpeed =
                     { idle = 10000
                     , cycle = 50
+                    , offline = 3000
                     }
             in
             SubModelReturn
@@ -1024,6 +1025,12 @@ update currentDate device msg model =
 
                             else
                                 syncSpeed.cycle
+                        , offline =
+                            if syncSpeed.offline < 1000 then
+                                1000
+
+                            else
+                                syncSpeed.offline
                     }
             in
             SubModelReturn
@@ -1068,38 +1075,29 @@ update currentDate device msg model =
                 _ ->
                     noChange
 
+        SetSyncSpeedOffline str ->
+            case String.toInt str of
+                Just val ->
+                    let
+                        syncSpeed =
+                            model.syncSpeed
+                                |> Editable.edit
+                                |> Editable.map (\old -> { old | offline = val })
+                    in
+                    SubModelReturn
+                        { model | syncSpeed = syncSpeed }
+                        Cmd.none
+                        noError
+                        []
+
+                _ ->
+                    noChange
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    let
-        syncSpeed =
-            model.syncSpeed
-                -- Take the original values.
-                |> Editable.cancel
-                |> Editable.value
-
-        backendFetchMainTime =
-            case model.syncStatus of
-                SyncIdle ->
-                    -- Rest until the next sync loop.
-                    if syncSpeed.idle < 3000 then
-                        -- Safeguard against too quick iterations.
-                        3000
-
-                    else
-                        toFloat syncSpeed.idle
-
-                _ ->
-                    -- Not idle, so trigger often.
-                    if syncSpeed.cycle < 50 then
-                        -- Safeguard against too quick iterations.
-                        50
-
-                    else
-                        toFloat syncSpeed.cycle
-    in
     Sub.batch
-        [ Time.every backendFetchMainTime (\_ -> BackendFetchMain)
+        [ Time.every (getSyncSpeedForSubscriptions model) (\_ -> BackendFetchMain)
         , getFromIndexDb QueryIndexDbHandle
         ]
 
@@ -1139,7 +1137,7 @@ port sendLocalIdsForDelete : { type_ : String, uuid : List String } -> Cmd msd
 
 {-| Send to JS model.syncSpeed
 -}
-port sendSyncSpeed : { idle : Int, cycle : Int } -> Cmd msd
+port sendSyncSpeed : { idle : Int, cycle : Int, offline : Int } -> Cmd msd
 
 
 {-| Ask JS to send us data from IndexDB. We send the query type, and in case

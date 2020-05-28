@@ -198,11 +198,12 @@ const getSyncSpeed = function() {
     let storageArr = JSON.parse(storage);
     storageArr.idle = parseInt(storageArr.idle);
     storageArr.cycle = parseInt(storageArr.cycle);
+    storageArr.offline = parseInt(storageArr.offline);
 
     return storageArr;
   }
 
-  return {idle: (10 * 1000), cycle: 50};
+  return {idle: (10 * 1000), cycle: 50, offline: 3000};
 }
 
 // Start up our Elm app.
