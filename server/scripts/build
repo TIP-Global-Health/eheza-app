@@ -70,5 +70,7 @@ source "$ROOT"/scripts/helper-colors.sh
   # Move the profile in place.
   echo
   echo -e "${LBLUE}> Create symbolic link to the $PROFILE_NAME profile${RESTORE}"
-  ln -s ../../$PROFILE_NAME "$ROOT"/www/profiles/$PROFILE_NAME
+  cd "$ROOT"/www/profiles
+  ln -s ../../"$PROFILE_NAME" "$PROFILE_NAME"
+  cd "$ROOT"
 )
