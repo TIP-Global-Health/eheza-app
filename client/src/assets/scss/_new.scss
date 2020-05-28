@@ -311,6 +311,92 @@ div.page-person {
     }
 }
 
+div.page-participant,
+div.page-activity {
+
+  .ui.full.segment .content {
+
+    .fbf-to-receive {
+      border-bottom: 2px solid;
+      border-top: 2px solid;
+      font-size: 1.8rem;
+      font-weight: 500;
+      margin-bottom: 30px;
+      margin-top: 30px;
+      padding-bottom: 10px;
+      padding-top: 10px;
+    }
+
+    .label {
+      margin-bottom: 10px;
+    }
+
+    .form-input {
+      margin-bottom: 30px;
+
+      // Number inputs
+      &.measurement {
+        height: 50px;
+
+        .unit {
+          float: left;
+          font-weight: normal;
+          margin-left: 20px;
+          margin-top: 10px;
+          width: 35%;
+        }
+
+        input {
+          background-color: $color-white;
+          border: 2px solid $color-gray-border;
+          float: left;
+          width: 60%;
+        }
+      }
+
+      // Bool inputs
+      &.yes-no {
+        padding-bottom: 15px;
+        margin-left: 25px;
+
+        label {
+          font-size: 25px;
+          margin-left: 10px;
+        }
+
+        label:before {
+          content: " ";
+          display: inline-block;
+          position: relative;
+          top: 5px;
+          margin-right: 10px;
+          width: 26px;
+          height: 26px;
+          border-radius: 13px;
+          border: 2px solid $color-gray-border;
+          background-color: transparent;
+        }
+
+        input[type=radio] {
+          display: none;
+        }
+
+        input[type=radio]:checked + label:after {
+          content: " ";
+          border-radius: 7px;
+          width: 14px;
+          height: 14px;
+          position: absolute;
+          top: 25px;
+          left: 30px;
+          display: block;
+          background: $color-text;
+        }
+      }
+    }
+  }
+}
+
 //Device Status Page
 .device-status {
   button {
@@ -332,7 +418,7 @@ div.page-person {
   }
 }
 
-//Common for Prenatal Encounter and Prenatal Activity pages
+// Common for Prenatal Encounter and Prenatal Activity pages
 div.page-prenatal-activity,
 div.page-nutrition-activity,
 div.page-prenatal-encounter,
@@ -430,7 +516,8 @@ div.page-prenatal-activity {
     }
 }
 
-// Prenatal Encounter page
+// Prenatal Encounter and Nutrition Encounter pages
+div.page-nutrition-encounter,
 div.page-prenatal-encounter {
 
     .ui.full.segment {

@@ -22,6 +22,7 @@ type Msg
 type Tab
     = Completed
     | Pending
+    | Reports
 
 
 emptyModel : Model
@@ -36,5 +37,5 @@ type alias AssembledData =
     , participant : IndividualEncounterParticipant
     , person : Person
     , measurements : NutritionMeasurements
-    , previousMeasurementsWithDates : List ( NominalDate, NutritionMeasurements )
+    , previousMeasurementsWithDates : List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) )
     }

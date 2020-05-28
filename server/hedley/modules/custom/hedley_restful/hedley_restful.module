@@ -5,7 +5,7 @@
  * Code for the RESTful integration.
  */
 
-define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 8);
+define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 9);
 
 /**
  * Nodes synced to all devices.
@@ -40,14 +40,17 @@ const HEDLEY_RESTFUL_ALL_DEVICES = [
 const HEDLEY_RESTFUL_SHARDED = [
   'attendance' => 'attendances',
   'breast_exam' => 'breast-exams',
+  'child_fbf' => 'child-fbfs',
   'counseling_session' => 'counseling-sessions',
   'core_physical_exam' => 'core-physical-exams',
   'danger_signs' => 'danger-signs',
   'family_planning' => 'family-plannings',
   'height' => 'heights',
+  'lactation' => 'lactations',
   'last_menstrual_period' => 'last-menstrual-periods',
   'medical_history' => 'medical-histories',
   'medication' => 'medications',
+  'mother_fbf' => 'mother-fbfs',
   'muac' => 'muacs',
   'nutrition' => 'nutritions',
   'nutrition_height' => 'nutrition-heights',

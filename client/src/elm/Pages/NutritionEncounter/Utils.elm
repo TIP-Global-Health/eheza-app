@@ -12,10 +12,9 @@ import NutritionActivity.Model exposing (..)
 import Pages.NutritionEncounter.Model exposing (AssembledData)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
-import Utils.NominalDate exposing (compareDates)
 
 
-generatePreviousMeasurements : NutritionEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, NutritionMeasurements ))
+generatePreviousMeasurements : NutritionEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> WebData (List ( NominalDate, ( NutritionEncounterId, NutritionMeasurements ) ))
 generatePreviousMeasurements currentEncounterId participantId db =
     Dict.get participantId db.nutritionEncountersByParticipant
         |> Maybe.withDefault NotAsked
@@ -30,13 +29,14 @@ generatePreviousMeasurements currentEncounterId participantId db =
                         else
                             case Dict.get encounterId db.nutritionMeasurements of
                                 Just (Success data) ->
-                                    Just ( encounter.startDate, data )
+                                    Just ( encounter.startDate, ( encounterId, data ) )
 
                                 _ ->
                                     Nothing
                     )
+                -- Most recent date to least recent date.
                 >> List.sortWith
-                    (\( date1, _ ) ( date2, _ ) -> compareDates date1 date2)
+                    (\( date1, _ ) ( date2, _ ) -> Gizra.NominalDate.compare date2 date1)
             )
 
 

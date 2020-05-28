@@ -89,6 +89,7 @@
         attendance: 'shards',
         breast_exam: 'shards',
         catchment_area: 'nodes',
+        child_fbf: 'shards',
         clinic: 'nodes',
         counseling_schedule: 'nodes',
         counseling_session: 'shards',
@@ -96,11 +97,13 @@
         core_physical_exam: 'shards',
         danger_signs: 'shards',
         family_planning: 'shards',
+        lactation: 'shards',
         health_center: 'nodes',
         height: 'shards',
         last_menstrual_period: 'shards',
         medical_history: 'shards',
         medication: 'shards',
+        mother_fbf: 'shards',
         muac: 'shards',
         nurse: 'nodes',
         nutrition: 'shards',
@@ -411,6 +414,23 @@
         }).catch(sendErrorResponses);
     }
 
+    // A list of all types of measuremnts that can be
+    // taken during groups encounter.
+    var groupMeasurementTypes = [
+      'attendance',
+      'counseling_session',
+      'child_fbf',
+      'family_planning',
+      'height',
+      'lactation',
+      'mother_fbf',
+      'muac',
+      'nutrition',
+      'participant_consent',
+      'photo',
+      'weight'
+    ];
+
     // This is a kind of special-case for now, at least. We're wanting to get
     // back all of measuremnts for whom the key is equal to the value.
     //
@@ -433,15 +453,22 @@
         });
 
         return query.toArray().catch(databaseError).then(function (nodes) {
-            // We could also check that the type is the expected type.
             if (nodes) {
                 nodes.forEach(function (node) {
                     var target = node.person;
-                    if (key === 'prenatal_encounter') {
-                      target = node.prenatal_encounter;
+                    if (key === 'person') {
+                        // Check that node type for group encounter is one
+                        // of mother / child measurements. See full list at
+                        // groupMeasurementTypes array.
+                        if (!groupMeasurementTypes.includes(node.type)) {
+                          return;
+                        }
+                    }
+                    else if (key === 'prenatal_encounter') {
+                        target = node.prenatal_encounter;
                     }
                     else if (key === 'nutrition_encounter') {
-                      target = node.nutrition_encounter;
+                        target = node.nutrition_encounter;
                     }
 
                     data[target] = data[target] || {};
@@ -591,16 +618,12 @@
                                   clinics.push(['session', participation.clinic]);
                                 })
 
-                                if (clinics.length > 0) {
-                                    query = table.where('[type+clinic]').anyOf(clinics);
+                                query = table.where('[type+clinic]').anyOf(clinics);
 
-                                    // Cloning doesn't seem to work for this one.
-                                    countQuery = table.where('[type+clinic]').anyOf(clinics);
+                                // Cloning doesn't seem to work for this one.
+                                countQuery = table.where('[type+clinic]').anyOf(clinics);
 
-                                    return Promise.resolve();
-                                } else {
-                                    return Promise.reject('Could not find participation for child: ' + childId);
-                                }
+                                return Promise.resolve();
                             });
                         });
                     }

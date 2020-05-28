@@ -1,4 +1,4 @@
-module Backend.Measurement.Encoder exposing (encodeAbdomenCPESign, encodeAttendance, encodeAttendanceValue, encodeBreastExam, encodeBreastExamSign, encodeBreastExamValue, encodeCSectionReason, encodeCSectionScar, encodeCorePhysicalExam, encodeCorePhysicalExamValue, encodeCounselingSession, encodeCounselingSessionValue, encodeDangerSign, encodeDangerSigns, encodeDangerSignsValue, encodeEverySet, encodeEyesCPESign, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeFetalPresentation, encodeGroupMeasurement, encodeHairHeadCPESign, encodeHandsCPESign, encodeHeartCPESign, encodeHeight, encodeHeightInCm, encodeHeightValue, encodeLastMenstrualPeriod, encodeLastMenstrualPeriodValue, encodeLegsCPESign, encodeLungsCPESign, encodeMeasurement, encodeMedicalHistory, encodeMedicalHistorySign, encodeMedicalHistoryValue, encodeMedication, encodeMedicationSign, encodeMedicationValue, encodeMuac, encodeMuacInCm, encodeMuacValue, encodeNeckCPESign, encodeNutrition, encodeNutritionHeight, encodeNutritionMeasurement, encodeNutritionMuac, encodeNutritionNutrition, encodeNutritionPhoto, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeNutritionWeight, encodeObstetricHistory, encodeObstetricHistorySign, encodeObstetricHistoryStep2, encodeObstetricHistoryStep2Value, encodeObstetricHistoryValue, encodeObstetricalExam, encodeObstetricalExamValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodePrenatalFamilyPlanning, encodePrenatalMeasurement, encodePrenatalNutrition, encodePrenatalNutritionValue, encodePrenatalPhoto, encodePreviousDeliveryPeriod, encodePreviousDeliverySign, encodeResource, encodeResourceSign, encodeResourceValue, encodeSocialHistory, encodeSocialHistoryHivTestingResult, encodeSocialHistorySign, encodeSocialHistoryValue, encodeVitals, encodeVitalsValue, encodeWeight, encodeWeightInKg, encodeWeightValue, socialHistoryHivTestingResultToString)
+module Backend.Measurement.Encoder exposing (encodeAbdomenCPESign, encodeAttendance, encodeAttendanceValue, encodeBreastExam, encodeBreastExamSign, encodeBreastExamValue, encodeCSectionReason, encodeCSectionScar, encodeCorePhysicalExam, encodeCorePhysicalExamValue, encodeCounselingSession, encodeCounselingSessionValue, encodeDangerSign, encodeDangerSigns, encodeDangerSignsValue, encodeDistributionNotice, encodeDistributionNoticeAsString, encodeEverySet, encodeEyesCPESign, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeFbf, encodeFbfValue, encodeFetalPresentation, encodeGroupMeasurement, encodeHairHeadCPESign, encodeHandsCPESign, encodeHeartCPESign, encodeHeight, encodeHeightInCm, encodeHeightValue, encodeLactation, encodeLactationSign, encodeLactationValue, encodeLastMenstrualPeriod, encodeLastMenstrualPeriodValue, encodeLegsCPESign, encodeLungsCPESign, encodeMeasurement, encodeMedicalHistory, encodeMedicalHistorySign, encodeMedicalHistoryValue, encodeMedication, encodeMedicationSign, encodeMedicationValue, encodeMuac, encodeMuacInCm, encodeMuacValue, encodeNeckCPESign, encodeNutrition, encodeNutritionHeight, encodeNutritionMeasurement, encodeNutritionMuac, encodeNutritionNutrition, encodeNutritionPhoto, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeNutritionWeight, encodeObstetricHistory, encodeObstetricHistorySign, encodeObstetricHistoryStep2, encodeObstetricHistoryStep2Value, encodeObstetricHistoryValue, encodeObstetricalExam, encodeObstetricalExamValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodePrenatalFamilyPlanning, encodePrenatalMeasurement, encodePrenatalNutrition, encodePrenatalNutritionValue, encodePrenatalPhoto, encodePreviousDeliveryPeriod, encodePreviousDeliverySign, encodeResource, encodeResourceSign, encodeResourceValue, encodeSocialHistory, encodeSocialHistoryHivTestingResult, encodeSocialHistorySign, encodeSocialHistoryValue, encodeVitals, encodeVitalsValue, encodeWeight, encodeWeightInKg, encodeWeightValue, socialHistoryHivTestingResultToString)
 
 import AssocList as Dict
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
@@ -158,6 +158,20 @@ encodeGroupMeasurement =
     encodeMeasurement "session"
 
 
+encodeLactationValue : EverySet LactationSign -> List ( String, Value )
+encodeLactationValue signs =
+    [ ( "lactation_signs"
+      , EverySet.toList signs
+            |> list encodeLactationSign
+      )
+    ]
+
+
+encodeLactation : Lactation -> List ( String, Value )
+encodeLactation =
+    encodeGroupMeasurement encodeLactationValue
+
+
 encodeNutritionMeasurement : (value -> List ( String, Value )) -> NutritionMeasurement value -> List ( String, Value )
 encodeNutritionMeasurement =
     encodeMeasurement "nutrition_encounter"
@@ -260,6 +274,16 @@ encodeFamilyPlanningSignAsString sign =
 
         Vasectomy ->
             "vasectomy"
+
+
+encodeLactationSign : LactationSign -> Value
+encodeLactationSign sign =
+    case sign of
+        Breastfeeding ->
+            string "breastfeeding"
+
+        NoLactationSigns ->
+            string "none"
 
 
 encodeBreastExamSign : BreastExamSign -> Value
@@ -550,6 +574,36 @@ encodeMedicationSign sign =
 encodeMedication : Medication -> List ( String, Value )
 encodeMedication =
     encodePrenatalMeasurement encodeMedicationValue
+
+
+encodeFbf : Fbf -> List ( String, Value )
+encodeFbf =
+    encodeGroupMeasurement encodeFbfValue
+
+
+encodeFbfValue : FbfValue -> List ( String, Value )
+encodeFbfValue value =
+    [ ( "distributed_amount", float value.distributedAmount )
+    , ( "distribution_notice", encodeDistributionNotice value.distributionNotice )
+    ]
+
+
+encodeDistributionNotice : DistributionNotice -> Value
+encodeDistributionNotice =
+    encodeDistributionNoticeAsString >> string
+
+
+encodeDistributionNoticeAsString : DistributionNotice -> String
+encodeDistributionNoticeAsString notice =
+    case notice of
+        DistributedFully ->
+            "complete"
+
+        DistributedPartiallyLackOfStock ->
+            "lack-of-stock"
+
+        DistributedPartiallyOther ->
+            "other"
 
 
 encodeMedicationValue : EverySet MedicationSign -> List ( String, Value )
