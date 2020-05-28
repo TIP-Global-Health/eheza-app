@@ -19,16 +19,5 @@ npm install
 
 # Gulp is responsible for creating the `src/generated` files.
 gulp build
+cp ./client/src/elm/LocalConfig.Example.elm ./client/src/elm/LocalConfig.elm
 elm make ./src/elm/Main.elm
-
-# Getting elm-make to run quicker.
-# See https://github.com/elm-lang/elm-compiler/issues/1473#issuecomment-245704142
-if [ ! -d sysconfcpus/bin ];
-then
-  git clone https://github.com/obmarg/libsysconfcpus.git;
-  cd libsysconfcpus || exit;
-  ./configure --prefix="$TRAVIS_BUILD_DIR"/sysconfcpus;
-  make && make install;
-  pwd
-  cd ..;
-fi
