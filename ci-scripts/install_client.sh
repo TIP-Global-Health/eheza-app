@@ -18,6 +18,5 @@ cd "$TRAVIS_BUILD_DIR"/client
 npm install
 
 # Gulp is responsible for creating the `src/generated` files.
+cp ./src/elm/LocalConfig.Example.elm ./src/elm/LocalConfig.elm
 gulp build
-cp ./client/src/elm/LocalConfig.Example.elm ./client/src/elm/LocalConfig.elm
-elm make ./src/elm/Main.elm
