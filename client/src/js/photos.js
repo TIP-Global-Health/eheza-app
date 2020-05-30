@@ -40,7 +40,7 @@
                 }
                 catch (e) {
                     // Network error.
-                    return;
+                    return response;
                 }
 
                 if (!response.ok) {

@@ -330,7 +330,6 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
 
     case 'DeferredPhotos':
       table = dbSync.deferredPhotos;
-      console.log(info);
       break;
 
     default:
@@ -500,8 +499,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .limit(1)
             // Get attempts sorted, so we won't always grab the same one.
             .sortBy('attempts');
-
-        console.log(result);
 
         sendResultToElm(queryType, result);
 

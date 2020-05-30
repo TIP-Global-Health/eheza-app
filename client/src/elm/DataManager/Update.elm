@@ -535,7 +535,6 @@ update currentDate device msg model =
                                             )
                                             []
                                         |> List.reverse
-                                        |> Debug.log "DeferredPhotos"
                             in
                             if List.isEmpty dataToSend then
                                 Cmd.none
@@ -830,10 +829,10 @@ update currentDate device msg model =
                 isLoading =
                     case model.syncStatus of
                         SyncDownloadPhotos (DownloadPhotosBatch record) ->
-                            RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData
+                            RemoteData.isLoading record.backendRemoteData
 
                         SyncDownloadPhotos (DownloadPhotosAll record) ->
-                            RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData
+                            RemoteData.isLoading record.backendRemoteData
 
                         _ ->
                             False
