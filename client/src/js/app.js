@@ -336,7 +336,7 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
       throw info.table +" is an unknown table type.";
   }
 
-  table.bulkAdd(entities)
+  table.bulkPut(entities)
       .then(function(lastKey) {})
       .catch(Dexie.BulkError, function (e) {
         // Explicitly catching the bulkAdd() operation makes those successful
@@ -624,11 +624,10 @@ elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
   // Delete also from the photoUploadChanges table.
   await photoUploadTable.bulkDelete(localIds);
 
-  // @todo: Delete photo from cache storage.
-  // For now it doesn't seem to work correctly.
+  // Delete photo from cache storage.
   const row = result[0];
   const cache = await caches.open('photos-upload');
-  // await cache.delete(row.data.photo);
+  await cache.delete(row.data.photo);
 });
 
 
