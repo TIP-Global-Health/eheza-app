@@ -3,7 +3,6 @@ port module DataManager.Update exposing (subscriptions, update)
 import App.Model exposing (SubModelReturn)
 import Backend.HealthCenter.Encoder
 import Backend.Measurement.Encoder
-import Backend.Model
 import Backend.Nurse.Encoder
 import Backend.Person.Encoder
 import Backend.PmtctParticipant.Encoder
@@ -17,9 +16,8 @@ import Device.Model exposing (Device)
 import Editable
 import Error.Utils exposing (decodeError, maybeHttpError, noError)
 import Gizra.NominalDate exposing (NominalDate)
-import Http
 import HttpBuilder exposing (withExpectJson, withJsonBody, withQueryParams)
-import Json.Decode exposing (Value, decodeString, decodeValue)
+import Json.Decode exposing (Value, decodeValue)
 import Json.Encode
 import List.Zipper as Zipper
 import RemoteData
@@ -173,7 +171,11 @@ update currentDate device msg model =
                                             []
                                         |> List.reverse
                             in
-                            sendSyncedDataToIndexDb { table = "DeferredPhotos", data = dataToSend }
+                            if List.isEmpty dataToSend then
+                                Cmd.none
+
+                            else
+                                sendSyncedDataToIndexDb { table = "DeferredPhotos", data = dataToSend }
 
                         Nothing ->
                             Cmd.none
@@ -492,6 +494,58 @@ update currentDate device msg model =
                         Nothing ->
                             model.lastFetchedRevisionIdGeneral
 
+                deferredPhotosCmd =
+                    -- Prepare a list of the photos, so we could grab them in a later
+                    -- time.
+                    case RemoteData.toMaybe webData of
+                        Just data ->
+                            let
+                                dataToSend =
+                                    data.entities
+                                        |> List.foldl
+                                            (\entity accum ->
+                                                case entity of
+                                                    BackendGeneralPerson uuid vid entity_ ->
+                                                        case entity_.avatarUrl of
+                                                            Nothing ->
+                                                                -- No photo.
+                                                                accum
+
+                                                            Just avatarUrl ->
+                                                                let
+                                                                    encodedPhoto =
+                                                                        [ ( "photo", Json.Encode.string avatarUrl ) ]
+
+                                                                    encodedEntityWithAttempt =
+                                                                        ( "attempts", Json.Encode.int 0 ) :: encodedPhoto
+                                                                in
+                                                                -- We don't need all the info, so we just keep what we need.
+                                                                (Json.Encode.object
+                                                                    [ ( "uuid", Json.Encode.string uuid )
+                                                                    , ( "entity", Json.Encode.object encodedEntityWithAttempt )
+                                                                    , ( "vid", Json.Encode.int vid )
+                                                                    ]
+                                                                    |> Json.Encode.encode 0
+                                                                )
+                                                                    :: accum
+
+                                                    _ ->
+                                                        -- Not a photo.
+                                                        accum
+                                            )
+                                            []
+                                        |> List.reverse
+                                        |> Debug.log "DeferredPhotos"
+                            in
+                            if List.isEmpty dataToSend then
+                                Cmd.none
+
+                            else
+                                sendSyncedDataToIndexDb { table = "DeferredPhotos", data = dataToSend }
+
+                        _ ->
+                            Cmd.none
+
                 modelWithSyncStatus =
                     DataManager.Utils.determineSyncStatus { model | syncStatus = SyncDownloadGeneral webData }
             in
@@ -499,6 +553,7 @@ update currentDate device msg model =
                 { modelWithSyncStatus | lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral }
                 (Cmd.batch
                     [ cmd
+                    , deferredPhotosCmd
                     , deleteLocalIdsCmd
                     , sendLastFetchedRevisionIdGeneral lastFetchedRevisionIdGeneral
                     ]

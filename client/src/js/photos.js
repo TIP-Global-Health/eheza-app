@@ -33,7 +33,10 @@
                     // Make sure we allow cors.
                     // @todo: Currently request is asked with mode:no-cors. Why? Is
                     // it from elm?
-                    var response = await fetch(event.request, {mode: 'cors'});
+                    var response = await fetch(event.request, {
+                        mode: 'cors',
+                        credentials: "omit"
+                    });
                 }
                 catch (e) {
                     // Network error.
