@@ -21,49 +21,51 @@
 
         if (event.request.method === 'GET' && photosDownloadUrlRegex.test(event.request.url)) {
 
-            event.respondWith(
-                caches.open(photosDownloadCache).then(function(cache) {
-                    return cache.match(event.request).then(function (response) {
-                        if (!!response) {
-                            // We got cached result.
-                            return response;
-                        }
+            event.respondWith(async function() {
+                const cache = await caches.open(photosDownloadCache);
+                const cachedResponse = await cache.match(event.request);
+                if (cachedResponse) {
+                    // Photo is in the cache.
+                    return cachedResponse;
+                }
 
+                try {
+                    // Try to get photo from server.
+                    var response = await fetch(event.request);
+                }
+                catch (e) {
+                    // Network error.
+                    return response;
+                }
 
-                        return fetch(event.request).then(function(response) {
-                            if (response.ok) {
-                                // We got the image, so cache it but without
-                                // the `access_token` param.
-                                let url = new URL(event.request.url);
-                                let params = new URLSearchParams(url.search.slice(1));
+                if (!response.ok) {
+                    // If an image style of Drupal is missing from the
+                    // file system, but it still exists on the DB
+                    // then Drupal sends a corrupted page. If we try
+                    // to return the response, it causes Elm to ignore
+                    // it (probably a bug in elm/http package), and
+                    // `BackendDeferredPhotoFetchHandle` is never called.
+                    // So instead, in case of an error, we build our
+                    // own response.
+                    // If status is 0, we change it to 503, since 0
+                    // is illegal.
+                    var response = new Response(null,  {"status" : response.status || 503});
+                    return response;
+                }
 
-                                params.delete('access_token');
+                // We got the image, so cache it but without
+                // the `access_token` param.
+                let url = new URL(event.request.url);
+                let params = new URLSearchParams(url.search.slice(1));
 
-                                url.search = params.toString();
-                                cache.put(url, response.clone());
-                            }
-                            else {
-                                // If an image style of Drupal is missing from the
-                                // file system, but it still exists on the DB
-                                // then Drupal sends a corrupted page. If we try
-                                // to return the response, it causes Elm to ignore
-                                // it (probably a bug in elm/http package), and
-                                // `BackendDeferredPhotoFetchHandle` is never called.
-                                // So instead, in case of an error, we build our
-                                // own response.
-                                // If status is 0, we change it to 503, since 0
-                                // is illegal.
-                                response = new Response(null,  {"status" : response.status || 503});
-                            }
+                params.delete('access_token');
 
-                            return response;
-                        });
-                    });
-                })
-            );
+                url.search = params.toString();
+                cache.put(url, response.clone());
+                return response;
+            }());
         }
-
-
+        
         // Handle GET for images which we've uploaded to the cache, but which
         // have not yet reached the backend.
         if ((event.request.method === 'GET') && photosUploadUrlRegex.test(event.request.url)) {
