@@ -24,6 +24,12 @@
             event.respondWith(
                 caches.open(photosDownloadCache).then(function(cache) {
                     return cache.match(event.request).then(function (response) {
+                        if (!!response) {
+                            // We got cached result.
+                            return response;
+                        }
+
+
                         return fetch(event.request).then(function(response) {
                             if (response.ok) {
                                 // We got the image, so cache it but without
