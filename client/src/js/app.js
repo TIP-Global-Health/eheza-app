@@ -624,10 +624,11 @@ elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
   // Delete also from the photoUploadChanges table.
   await photoUploadTable.bulkDelete(localIds);
 
-  // Delete photo from cache storage.
+  // @todo: Delete photo from cache storage.
+  // For now it doesn't seem to work correctly.
   const row = result[0];
   const cache = await caches.open('photos-upload');
-  await cache.delete(row.data.photo);
+  // await cache.delete(row.data.photo);
 });
 
 
