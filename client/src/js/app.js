@@ -417,7 +417,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         catch (e) {
             // Network error.
             return sendResultToElm(queryType,{tag: 'Error', error: 'FetchError', reason: e.toString()});
-          }
+        }
 
         if (response.ok) {
           try {
