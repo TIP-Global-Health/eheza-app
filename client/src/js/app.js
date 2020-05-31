@@ -628,9 +628,9 @@ elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
   // Note that this is not a safe delete. That is, there could be a case where
   // we have downloaded the entity from the backend, but have not downloaded
   // the photo yet. However, to do it in a safe way, the cleanest way would be
-  // to keep track in the backend the local ID and device that created the photo
-  // and send that info back on download. This seems to require more work than
-  // we'd like to do for this use case.
+  // to keep track in the backend of the local ID and device that created the
+  // photo and send that info back on download upon sync. This will to require
+  // more work than we'd like to invest for this use case.
   const row = result[0];
   const cache = await caches.open('photos-upload');
   await cache.delete(row.data.photo);
