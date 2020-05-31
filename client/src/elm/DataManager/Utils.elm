@@ -238,6 +238,12 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
             , type_ = "attendance"
             }
 
+        BackendAuthorityBreastExam uuid revision _ ->
+            { uuid = uuid
+            , revision = revision
+            , type_ = "breast_exam"
+            }
+
         BackendAuthorityNutritionPhoto uuid revision _ ->
             { uuid = uuid
             , revision = revision
@@ -320,6 +326,9 @@ getPhotoFromBackendAuthorityEntity backendAuthorityEntity =
             Nothing
 
         BackendAuthorityEntityUnknown string int ->
+            Nothing
+
+        BackendAuthorityBreastExam string int breastExam ->
             Nothing
 
 
