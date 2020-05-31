@@ -65,7 +65,7 @@
                 return response;
             }());
         }
-        
+
         // Handle GET for images which we've uploaded to the cache, but which
         // have not yet reached the backend.
         if ((event.request.method === 'GET') && photosUploadUrlRegex.test(event.request.url)) {
