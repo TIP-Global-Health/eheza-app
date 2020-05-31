@@ -89,7 +89,7 @@ viewDeviceInfo language configuration =
     in
     details
         [ class "segment ui"
-        , property "open" (Json.Encode.bool True)
+        , property "open" (Json.Encode.bool False)
         ]
         [ summary [] [ text "Device info" ]
         , loggedInNurse
