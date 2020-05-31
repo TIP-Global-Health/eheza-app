@@ -500,33 +500,23 @@ update currentDate device msg model =
                                     data.entities
                                         |> List.foldl
                                             (\entity accum ->
-                                                case entity of
-                                                    BackendGeneralPerson uuid vid entity_ ->
-                                                        case entity_.avatarUrl of
-                                                            Nothing ->
-                                                                -- No photo.
-                                                                accum
+                                                case DataManager.Utils.getPhotoFromBackendGeneralEntity entity of
+                                                    Just photoUrl ->
+                                                        let
+                                                            entityIdentifier =
+                                                                DataManager.Utils.getBackendGeneralEntityIdentifier entity
+                                                        in
+                                                        (Json.Encode.object
+                                                            [ ( "uuid", Json.Encode.string entityIdentifier.uuid )
+                                                            , ( "photo", Json.Encode.string photoUrl )
+                                                            , ( "attempts", Json.Encode.int 0 )
+                                                            , ( "vid", Json.Encode.int entityIdentifier.revision )
+                                                            ]
+                                                            |> Json.Encode.encode 0
+                                                        )
+                                                            :: accum
 
-                                                            Just avatarUrl ->
-                                                                let
-                                                                    encodedPhoto =
-                                                                        [ ( "photo", Json.Encode.string avatarUrl ) ]
-
-                                                                    encodedEntityWithAttempt =
-                                                                        ( "attempts", Json.Encode.int 0 ) :: encodedPhoto
-                                                                in
-                                                                -- We don't need all the info, so we just keep what we need.
-                                                                (Json.Encode.object
-                                                                    [ ( "uuid", Json.Encode.string uuid )
-                                                                    , ( "entity", Json.Encode.object encodedEntityWithAttempt )
-                                                                    , ( "vid", Json.Encode.int vid )
-                                                                    ]
-                                                                    |> Json.Encode.encode 0
-                                                                )
-                                                                    :: accum
-
-                                                    _ ->
-                                                        -- Not a photo.
+                                                    Nothing ->
                                                         accum
                                             )
                                             []
