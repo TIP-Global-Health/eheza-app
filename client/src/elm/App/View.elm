@@ -76,33 +76,12 @@ view model =
 -}
 flexPageWrapper : Model -> Html Msg -> Html Msg
 flexPageWrapper model html =
-    let
-        loggedInNurse =
-            case RemoteData.toMaybe model.configuration of
-                Just config ->
-                    case RemoteData.toMaybe config.loggedIn of
-                        Just loggedIn ->
-                            let
-                                nurse =
-                                    Tuple.second loggedIn.nurse
-                            in
-                            div [ class "segment ui" ] [ text <| "Nurse: " ++ nurse.name ]
-
-                        Nothing ->
-                            emptyNode
-
-                Nothing ->
-                    emptyNode
-    in
     div [ class "page container" ]
         [ viewLanguageSwitcherAndVersion model
 
         -- @todo: Move to sync page only.
         , Error.View.view model.language model.errors
-
-        -- Show logged in nurse.
-        , loggedInNurse
-        , Html.map MsgDataManager (DataManager.View.view model.language model.indexedDb model.dataManager)
+        , Html.map MsgDataManager (DataManager.View.view model.language model.configuration model.indexedDb model.dataManager)
         , div
             [ class "page-content" ]
             [ html ]

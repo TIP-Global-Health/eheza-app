@@ -1,5 +1,6 @@
 module DataManager.View exposing (view)
 
+import App.Model exposing (ConfiguredModel)
 import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
 import Backend.HealthCenter.Model exposing (HealthCenter)
@@ -25,7 +26,7 @@ import Json.Encode
 import List.Extra
 import List.Zipper as Zipper
 import Maybe.Extra exposing (isJust)
-import RemoteData exposing (WebData)
+import RemoteData exposing (RemoteData, WebData)
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import Translate exposing (Language, translate)
 import Url
@@ -33,8 +34,8 @@ import Utils.Html exposing (spinner)
 import Utils.WebData
 
 
-view : Language -> ModelIndexedDb -> Model -> Html Msg
-view language db model =
+view : Language -> RemoteData String ConfiguredModel -> ModelIndexedDb -> Model -> Html Msg
+view language configuration db model =
     let
         htmlContent =
             details [ property "open" (Json.Encode.bool True) ]
@@ -57,14 +58,46 @@ view language db model =
                 ]
     in
     div []
-        [ viewHealthCentersForSync language db model
-        , viewSyncSettings model
+        [ viewDeviceInfo language configuration
+        , viewHealthCentersForSync language db model
+        , viewSyncSettings language model
         , pre [ class "ui segment sync-status" ] [ htmlContent ]
         ]
 
 
-viewSyncSettings : Model -> Html Msg
-viewSyncSettings model =
+{-| Helper to see the device UUID, and current nurse, if logged in.
+-}
+viewDeviceInfo : Language -> RemoteData String ConfiguredModel -> Html Msg
+viewDeviceInfo language configuration =
+    let
+        loggedInNurse =
+            case RemoteData.toMaybe configuration of
+                Just config ->
+                    case RemoteData.toMaybe config.loggedIn of
+                        Just loggedIn ->
+                            let
+                                nurse =
+                                    Tuple.second loggedIn.nurse
+                            in
+                            div [] [ text <| "Nurse: " ++ nurse.name ]
+
+                        Nothing ->
+                            div [] [ text "Nurse not logged in" ]
+
+                Nothing ->
+                    emptyNode
+    in
+    details
+        [ class "segment ui"
+        , property "open" (Json.Encode.bool True)
+        ]
+        [ summary [] [ text "Device info" ]
+        , loggedInNurse
+        ]
+
+
+viewSyncSettings : Language -> Model -> Html Msg
+viewSyncSettings language model =
     let
         ( cycleStatus, cycleBtnText, cycleIcon ) =
             if model.syncCycle then
