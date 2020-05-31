@@ -310,6 +310,7 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
   let entities = [];
   info.data.forEach(function (row) {
     const rowObject = JSON.parse(row);
+    console.log(rowObject);
 
     let entity = rowObject.entity;
     entity.uuid = rowObject.uuid;
@@ -499,6 +500,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .limit(1)
             // Get attempts sorted, so we won't always grab the same one.
             .sortBy('attempts');
+
+        console.log(result);
 
         sendResultToElm(queryType, result);
 

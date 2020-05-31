@@ -1,5 +1,6 @@
 module DataManager.Model exposing
     ( BackendAuthorityEntity(..)
+    , BackendEntityIdentifier
     , BackendGeneralEntity(..)
     , DownloadPhotos(..)
     , DownloadPhotosBatchRec
@@ -74,6 +75,13 @@ type BackendAuthorityEntity
       -- the `vid`. The reason we keep the vid, is that we fetched some content
       -- which we don't recognize, but we want to keep fetching later content.
     | BackendAuthorityEntityUnknown String Int
+
+
+{-| Get info about an entity. `revision` would be the Drupal revision
+in case of download, or the `localId` in case of upload.
+-}
+type alias BackendEntityIdentifier =
+    { uuid : String, revision : Int, type_ : String }
 
 
 type alias LastFetchedRevisionIdGeneral =

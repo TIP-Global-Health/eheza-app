@@ -147,17 +147,9 @@ update currentDate device msg model =
                                             (\entity accum ->
                                                 case DataManager.Utils.getPhotoFromBackendAuthorityEntity entity of
                                                     Just photoUrl ->
-                                                        let
-                                                            entityIdentifier =
-                                                                DataManager.Utils.getBackendAuthorityEntityIdentifier entity
-                                                        in
-                                                        (Json.Encode.object
-                                                            [ ( "uuid", Json.Encode.string entityIdentifier.uuid )
-                                                            , ( "photo", Json.Encode.string photoUrl )
-                                                            , ( "attempts", Json.Encode.int 0 )
-                                                            , ( "vid", Json.Encode.int entityIdentifier.revision )
-                                                            ]
-                                                            |> Json.Encode.encode 0
+                                                        (entity
+                                                            |> DataManager.Utils.getBackendAuthorityEntityIdentifier
+                                                            |> DataManager.Encoder.encodeDataForDeferredPhotos photoUrl
                                                         )
                                                             :: accum
 
@@ -502,17 +494,9 @@ update currentDate device msg model =
                                             (\entity accum ->
                                                 case DataManager.Utils.getPhotoFromBackendGeneralEntity entity of
                                                     Just photoUrl ->
-                                                        let
-                                                            entityIdentifier =
-                                                                DataManager.Utils.getBackendGeneralEntityIdentifier entity
-                                                        in
-                                                        (Json.Encode.object
-                                                            [ ( "uuid", Json.Encode.string entityIdentifier.uuid )
-                                                            , ( "photo", Json.Encode.string photoUrl )
-                                                            , ( "attempts", Json.Encode.int 0 )
-                                                            , ( "vid", Json.Encode.int entityIdentifier.revision )
-                                                            ]
-                                                            |> Json.Encode.encode 0
+                                                        (entity
+                                                            |> DataManager.Utils.getBackendGeneralEntityIdentifier
+                                                            |> DataManager.Encoder.encodeDataForDeferredPhotos photoUrl
                                                         )
                                                             :: accum
 
@@ -521,6 +505,7 @@ update currentDate device msg model =
                                             )
                                             []
                                         |> List.reverse
+                                        |> Debug.log "DeferredPhotosGeneral"
                             in
                             if List.isEmpty dataToSend then
                                 Cmd.none
@@ -1025,10 +1010,21 @@ update currentDate device msg model =
                                 model
 
                 Err error ->
+                    let
+                        location =
+                            -- Try to decode at least the queryType so we'd have better
+                            -- knowledge of what caused the decoder error.
+                            case decodeValue (Json.Decode.field "queryType" Json.Decode.string) val of
+                                Ok queryType ->
+                                    "FetchFromIndexDbHandle (" ++ queryType ++ ")"
+
+                                Err _ ->
+                                    "FetchFromIndexDbHandle (unknown queryType)"
+                    in
                     SubModelReturn
                         model
                         Cmd.none
-                        (decodeError "Backend.DataManager.Update" "FetchFromIndexDbHandle" error)
+                        (decodeError "Backend.DataManager.Update" location error)
                         []
 
         ResetSettings ->

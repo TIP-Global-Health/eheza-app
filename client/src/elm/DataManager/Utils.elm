@@ -8,16 +8,7 @@ module DataManager.Utils exposing
     )
 
 import Backend.Measurement.Model exposing (PhotoUrl(..))
-import DataManager.Model
-    exposing
-        ( BackendAuthorityEntity(..)
-        , BackendGeneralEntity(..)
-        , DownloadPhotos(..)
-        , Model
-        , SyncStatus(..)
-        , emptyDownloadPhotosBatchRec
-        , emptyUploadRec
-        )
+import DataManager.Model exposing (BackendAuthorityEntity(..), BackendEntityIdentifier, BackendGeneralEntity(..), DownloadPhotos(..), Model, SyncStatus(..), emptyDownloadPhotosBatchRec, emptyUploadRec)
 import Editable
 import List.Zipper as Zipper
 import RemoteData
@@ -189,7 +180,7 @@ resetDownloadPhotosBatchCounter model =
 {-| Get info about an entity. `revision` would be the Drupal revision
 in case of download, or the `localId` in case of upload.
 -}
-getBackendGeneralEntityIdentifier : BackendGeneralEntity -> { uuid : String, revision : Int, type_ : String }
+getBackendGeneralEntityIdentifier : BackendGeneralEntity -> BackendEntityIdentifier
 getBackendGeneralEntityIdentifier backendGeneralEntity =
     case backendGeneralEntity of
         BackendGeneralCatchmentArea uuid revision _ ->
@@ -238,7 +229,7 @@ getBackendGeneralEntityIdentifier backendGeneralEntity =
 {-| Get info about an "Authority" entity. `revision` would be the Drupal revision
 in case of download, or the `localId` in case of upload.
 -}
-getBackendAuthorityEntityIdentifier : BackendAuthorityEntity -> { uuid : String, revision : Int, type_ : String }
+getBackendAuthorityEntityIdentifier : BackendAuthorityEntity -> BackendEntityIdentifier
 getBackendAuthorityEntityIdentifier backendAuthorityEntity =
     case backendAuthorityEntity of
         BackendAuthorityAttendance uuid revision attendance ->

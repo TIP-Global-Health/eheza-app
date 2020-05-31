@@ -1,13 +1,8 @@
-module DataManager.Encoder exposing (encodeIndexDbQueryUploadGeneralResultRecord)
+module DataManager.Encoder exposing (encodeDataForDeferredPhotos, encodeIndexDbQueryUploadGeneralResultRecord)
 
 import AssocList as Dict
 import Backend.Person.Encoder
-import DataManager.Model
-    exposing
-        ( BackendGeneralEntity(..)
-        , IndexDbQueryUploadGeneralResultRecord
-        , UploadMethod(..)
-        )
+import DataManager.Model exposing (BackendEntityIdentifier, BackendGeneralEntity(..), IndexDbQueryUploadGeneralResultRecord, UploadMethod(..))
 import DataManager.Utils exposing (getBackendGeneralEntityIdentifier)
 import Json.Encode exposing (Value, int, list, null, object, string)
 import Json.Encode.Extra exposing (maybe)
@@ -75,3 +70,21 @@ encodeUploadMethod uploadMethod =
 
         UploadMethodUpdate ->
             string "PATCH"
+
+
+encodeDataForDeferredPhotos : String -> BackendEntityIdentifier -> String
+encodeDataForDeferredPhotos photoUrl entityIdentifier =
+    [ ( "uuid", string entityIdentifier.uuid )
+
+    -- We place the `photo` and `attempts` under `entity`, as this is what
+    -- elmApp.ports.sendSyncedDataToIndexDb is expecting.
+    , ( "entity"
+      , object
+            [ ( "photo", string photoUrl )
+            , ( "attempts", int 0 )
+            ]
+      )
+    , ( "vid", int entityIdentifier.revision )
+    ]
+        |> Json.Encode.object
+        |> Json.Encode.encode 0
