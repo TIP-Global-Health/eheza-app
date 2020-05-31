@@ -253,18 +253,23 @@ decodeBackendAuthorityEntity =
     )
         |> andThen
             (\( type_, uuid, vid ) ->
+                let
+                    doDecode decoder tag =
+                        decoder
+                            |> andThen (\entity -> succeed (tag uuid vid entity))
+                in
                 case type_ of
                     "attendance" ->
-                        Backend.Measurement.Decoder.decodeAttendance
-                            |> andThen (\entity -> succeed (BackendAuthorityAttendance uuid vid entity))
+                        doDecode Backend.Measurement.Decoder.decodeAttendance BackendAuthorityAttendance
+
+                    "nutrition_photo" ->
+                        doDecode Backend.Measurement.Decoder.decodeNutritionPhoto BackendAuthorityNutritionPhoto
 
                     "photo" ->
-                        Backend.Measurement.Decoder.decodePhoto
-                            |> andThen (\entity -> succeed (BackendAuthorityPhoto uuid vid entity))
+                        doDecode Backend.Measurement.Decoder.decodePhoto BackendAuthorityPhoto
 
                     "weight" ->
-                        Backend.Measurement.Decoder.decodeWeight
-                            |> andThen (\entity -> succeed (BackendAuthorityWeight uuid vid entity))
+                        doDecode Backend.Measurement.Decoder.decodeWeight BackendAuthorityWeight
 
                     _ ->
                         succeed (BackendAuthorityEntityUnknown type_ vid)

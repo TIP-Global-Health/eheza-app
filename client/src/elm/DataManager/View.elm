@@ -286,6 +286,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityAttendance _ _ entity ->
                 text <| "Attendance for person ID" ++ fromEntityUuid entity.participantId
 
+            BackendAuthorityNutritionPhoto _ _ entity ->
+                text <| "Nutrition Photo for person ID" ++ fromEntityUuid entity.participantId
+
             BackendAuthorityPhoto _ _ entity ->
                 text <| "Photo for person ID" ++ fromEntityUuid entity.participantId
 

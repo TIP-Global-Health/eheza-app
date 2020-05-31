@@ -115,6 +115,10 @@ update currentDate device msg model =
                                                         doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodeAttendance entity_)
                                                             :: accum
 
+                                                    BackendAuthorityNutritionPhoto uuid vid entity_ ->
+                                                        doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodeNutritionPhoto entity_)
+                                                            :: accum
+
                                                     BackendAuthorityPhoto uuid vid entity_ ->
                                                         doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodePhoto entity_)
                                                             :: accum
@@ -177,18 +181,8 @@ update currentDate device msg model =
                                 |> List.head
                                 |> Maybe.map
                                     (\entity ->
-                                        case entity of
-                                            BackendAuthorityAttendance _ vid _ ->
-                                                vid
-
-                                            BackendAuthorityPhoto _ vid _ ->
-                                                vid
-
-                                            BackendAuthorityWeight _ vid _ ->
-                                                vid
-
-                                            BackendAuthorityEntityUnknown _ vid ->
-                                                vid
+                                        DataManager.Utils.getBackendAuthorityEntityIdentifier entity
+                                            |> (\entityIdentifier -> entityIdentifier.revision)
                                     )
                                 |> Maybe.withDefault currentZipper.revisionId
 

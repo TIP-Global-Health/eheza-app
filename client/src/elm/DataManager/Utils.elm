@@ -232,19 +232,25 @@ in case of download, or the `localId` in case of upload.
 getBackendAuthorityEntityIdentifier : BackendAuthorityEntity -> BackendEntityIdentifier
 getBackendAuthorityEntityIdentifier backendAuthorityEntity =
     case backendAuthorityEntity of
-        BackendAuthorityAttendance uuid revision attendance ->
+        BackendAuthorityAttendance uuid revision _ ->
             { uuid = uuid
             , revision = revision
             , type_ = "attendance"
             }
 
-        BackendAuthorityPhoto uuid revision photo ->
+        BackendAuthorityNutritionPhoto uuid revision _ ->
+            { uuid = uuid
+            , revision = revision
+            , type_ = "nutrition_photo"
+            }
+
+        BackendAuthorityPhoto uuid revision _ ->
             { uuid = uuid
             , revision = revision
             , type_ = "photo"
             }
 
-        BackendAuthorityWeight uuid revision weight ->
+        BackendAuthorityWeight uuid revision _ ->
             { uuid = uuid
             , revision = revision
             , type_ = "weight"
@@ -269,7 +275,22 @@ getPhotoFromBackendGeneralEntity backendGeneralEntity =
         BackendGeneralPerson _ _ person ->
             person.avatarUrl
 
-        _ ->
+        BackendGeneralCatchmentArea string int catchmentArea ->
+            Nothing
+
+        BackendGeneralHealthCenter string int healthCenter ->
+            Nothing
+
+        BackendGeneralNurse string int nurse ->
+            Nothing
+
+        BackendGeneralPmtctParticipant string int pmtctParticipant ->
+            Nothing
+
+        BackendGeneralRelationship string int relationship ->
+            Nothing
+
+        BackendGeneralEntityUnknown string int ->
             Nothing
 
 
@@ -277,15 +298,28 @@ getPhotoFromBackendGeneralEntity backendGeneralEntity =
 -}
 getPhotoFromBackendAuthorityEntity : BackendAuthorityEntity -> Maybe String
 getPhotoFromBackendAuthorityEntity backendAuthorityEntity =
-    case backendAuthorityEntity of
-        BackendAuthorityPhoto _ _ photo ->
+    let
+        getPhotoFromMeasurement entity_ =
             let
                 (PhotoUrl url) =
-                    photo.value
+                    entity_.value
             in
             Just url
+    in
+    case backendAuthorityEntity of
+        BackendAuthorityPhoto _ _ entity ->
+            getPhotoFromMeasurement entity
 
-        _ ->
+        BackendAuthorityNutritionPhoto _ _ entity ->
+            getPhotoFromMeasurement entity
+
+        BackendAuthorityAttendance string int attendance ->
+            Nothing
+
+        BackendAuthorityWeight string int weight ->
+            Nothing
+
+        BackendAuthorityEntityUnknown string int ->
             Nothing
 
 

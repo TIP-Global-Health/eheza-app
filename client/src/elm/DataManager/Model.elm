@@ -28,7 +28,7 @@ module DataManager.Model exposing
 import AssocList exposing (Dict)
 import Backend.Entities exposing (HealthCenterId)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
-import Backend.Measurement.Model exposing (Attendance, Measurement, Photo, Weight)
+import Backend.Measurement.Model exposing (Attendance, Measurement, NutritionPhoto, Photo, Weight)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
@@ -60,6 +60,7 @@ type
       -- Don't fail on unknown types. We'd like to keep the type name along with
       -- the `vid`. The reason we keep the vid, is that we fetched some content
       -- which we don't recognize, but we want to keep fetching later content.
+      -- @todo: Remove after we decode all entity types.
     | BackendGeneralEntityUnknown String Int
 
 
@@ -69,11 +70,13 @@ authority.
 -}
 type BackendAuthorityEntity
     = BackendAuthorityAttendance String Int Attendance
+    | BackendAuthorityNutritionPhoto String Int NutritionPhoto
     | BackendAuthorityPhoto String Int Photo
     | BackendAuthorityWeight String Int Weight
       -- Don't fail on unknown types. We'd like to keep the type name along with
       -- the `vid`. The reason we keep the vid, is that we fetched some content
       -- which we don't recognize, but we want to keep fetching later content.
+      -- @todo: Remove after we decode all entity types.
     | BackendAuthorityEntityUnknown String Int
 
 
