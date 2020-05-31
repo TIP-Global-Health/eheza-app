@@ -145,27 +145,23 @@ update currentDate device msg model =
                                     data.entities
                                         |> List.foldl
                                             (\entity accum ->
-                                                case entity of
-                                                    BackendAuthorityPhoto uuid vid entity_ ->
+                                                case DataManager.Utils.getPhotoFromBackendAuthorityEntity entity of
+                                                    Just photoUrl ->
                                                         let
-                                                            encodedEntity =
-                                                                Backend.Measurement.Encoder.encodePhotoUrl entity_.value
-
-                                                            encodedEntityWithAttempt =
-                                                                ( "attempts", Json.Encode.int 0 ) :: encodedEntity
+                                                            entityIdentifier =
+                                                                DataManager.Utils.getBackendAuthorityEntityIdentifier entity
                                                         in
-                                                        -- We don't need all the info, so we just keep what we need.
                                                         (Json.Encode.object
-                                                            [ ( "uuid", Json.Encode.string uuid )
-                                                            , ( "entity", Json.Encode.object encodedEntityWithAttempt )
-                                                            , ( "vid", Json.Encode.int vid )
+                                                            [ ( "uuid", Json.Encode.string entityIdentifier.uuid )
+                                                            , ( "photo", Json.Encode.string photoUrl )
+                                                            , ( "attempts", Json.Encode.int 0 )
+                                                            , ( "vid", Json.Encode.int entityIdentifier.revision )
                                                             ]
                                                             |> Json.Encode.encode 0
                                                         )
                                                             :: accum
 
-                                                    _ ->
-                                                        -- Not a photo.
+                                                    Nothing ->
                                                         accum
                                             )
                                             []

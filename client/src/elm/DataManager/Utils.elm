@@ -1,8 +1,17 @@
-module DataManager.Utils exposing (determineSyncStatus, getBackendGeneralEntityIdentifier, getSyncSpeedForSubscriptions, setPhotosBatch)
+module DataManager.Utils exposing
+    ( determineSyncStatus
+    , getBackendAuthorityEntityIdentifier
+    , getBackendGeneralEntityIdentifier
+    , getPhotoFromBackendAuthorityEntity
+    , getPhotoFromBackendGeneralEntity
+    , getSyncSpeedForSubscriptions
+    )
 
+import Backend.Measurement.Model exposing (PhotoUrl(..))
 import DataManager.Model
     exposing
-        ( BackendGeneralEntity(..)
+        ( BackendAuthorityEntity(..)
+        , BackendGeneralEntity(..)
         , DownloadPhotos(..)
         , Model
         , SyncStatus(..)
@@ -177,11 +186,6 @@ resetDownloadPhotosBatchCounter model =
             SyncDownloadPhotos model.downloadPhotos
 
 
-setPhotosBatch : Model -> Model
-setPhotosBatch model =
-    { model | syncStatus = SyncDownloadPhotos (DownloadPhotosBatch (emptyDownloadPhotosBatchRec model.downloadPhotosBatchSize)) }
-
-
 {-| Get info about an entity. `revision` would be the Drupal revision
 in case of download, or the `localId` in case of upload.
 -}
@@ -229,6 +233,69 @@ getBackendGeneralEntityIdentifier backendGeneralEntity =
             , revision = revision
             , type_ = "unknown"
             }
+
+
+{-| Get info about an "Authority" entity. `revision` would be the Drupal revision
+in case of download, or the `localId` in case of upload.
+-}
+getBackendAuthorityEntityIdentifier : BackendAuthorityEntity -> { uuid : String, revision : Int, type_ : String }
+getBackendAuthorityEntityIdentifier backendAuthorityEntity =
+    case backendAuthorityEntity of
+        BackendAuthorityAttendance uuid revision attendance ->
+            { uuid = uuid
+            , revision = revision
+            , type_ = "attendance"
+            }
+
+        BackendAuthorityPhoto uuid revision photo ->
+            { uuid = uuid
+            , revision = revision
+            , type_ = "photo"
+            }
+
+        BackendAuthorityWeight uuid revision weight ->
+            { uuid = uuid
+            , revision = revision
+            , type_ = "weight"
+            }
+
+        BackendAuthorityEntityUnknown uuid revision ->
+            { uuid = uuid
+            , revision = revision
+            , type_ = "unknown"
+            }
+
+
+{-| Return a photo from a "General" entity.
+
+Not all entities have a photo, and even if they do, it might be a Maybe value
+(for example the `avatar` of a `Person` entity).
+
+-}
+getPhotoFromBackendGeneralEntity : BackendGeneralEntity -> Maybe String
+getPhotoFromBackendGeneralEntity backendGeneralEntity =
+    case backendGeneralEntity of
+        BackendGeneralPerson _ _ person ->
+            person.avatarUrl
+
+        _ ->
+            Nothing
+
+
+{-| Return a photo from a "Authority" entity.
+-}
+getPhotoFromBackendAuthorityEntity : BackendAuthorityEntity -> Maybe String
+getPhotoFromBackendAuthorityEntity backendAuthorityEntity =
+    case backendAuthorityEntity of
+        BackendAuthorityPhoto _ _ photo ->
+            let
+                (PhotoUrl url) =
+                    photo.value
+            in
+            Just url
+
+        _ ->
+            Nothing
 
 
 getSyncSpeedForSubscriptions : Model -> Float
