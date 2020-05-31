@@ -262,6 +262,9 @@ decodeBackendAuthorityEntity =
                     "attendance" ->
                         doDecode Backend.Measurement.Decoder.decodeAttendance BackendAuthorityAttendance
 
+                    "child_fbf" ->
+                        doDecode Backend.Measurement.Decoder.decodeFbf BackendAuthorityChildFbf
+
                     "breast_exam" ->
                         doDecode Backend.Measurement.Decoder.decodeBreastExam BackendAuthorityBreastExam
 

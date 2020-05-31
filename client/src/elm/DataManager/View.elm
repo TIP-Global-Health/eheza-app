@@ -322,6 +322,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityBreastExam _ _ entity ->
                 text <| "Breast Exam for person ID" ++ fromEntityUuid entity.participantId
 
+            BackendAuthorityChildFbf _ _ entity ->
+                text <| "Child Fbf for person ID" ++ fromEntityUuid entity.participantId
+
             BackendAuthorityNutritionPhoto _ _ entity ->
                 text <| "Nutrition Photo for person ID" ++ fromEntityUuid entity.participantId
 

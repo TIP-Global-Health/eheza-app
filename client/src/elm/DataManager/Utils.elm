@@ -244,6 +244,12 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
             , type_ = "breast_exam"
             }
 
+        BackendAuthorityChildFbf uuid revision _ ->
+            { uuid = uuid
+            , revision = revision
+            , type_ = "child_fbf"
+            }
+
         BackendAuthorityNutritionPhoto uuid revision _ ->
             { uuid = uuid
             , revision = revision
@@ -320,6 +326,9 @@ getPhotoFromBackendAuthorityEntity backendAuthorityEntity =
             getPhotoFromMeasurement entity
 
         BackendAuthorityAttendance string int attendance ->
+            Nothing
+
+        BackendAuthorityChildFbf string int fbf ->
             Nothing
 
         BackendAuthorityWeight string int weight ->
