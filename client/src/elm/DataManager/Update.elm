@@ -505,7 +505,6 @@ update currentDate device msg model =
                                             )
                                             []
                                         |> List.reverse
-                                        |> Debug.log "DeferredPhotosGeneral"
                             in
                             if List.isEmpty dataToSend then
                                 Cmd.none
