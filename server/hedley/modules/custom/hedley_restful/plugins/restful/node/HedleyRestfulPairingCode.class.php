@@ -126,4 +126,5 @@ class HedleyRestfulPairingCode extends \RestfulTokenAuthenticationBase {
 
     return $output;
   }
+
 }
