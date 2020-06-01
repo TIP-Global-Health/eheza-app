@@ -118,7 +118,12 @@ class HedleyRestfulPairingCode extends \RestfulTokenAuthenticationBase {
     // Create the new tokens and return them.
     $controller = entity_get_controller($this->getEntityType());
     $token = $controller->generateAccessToken($uid);
-    return $this->viewEntity($token->id);
-  }
+    $output = $this->viewEntity($token->id);
 
+    // As we have already calculated, add the device node ID here instead of in
+    // `self::publicFieldsInfo`.
+    $output['device_id'] = $device->nid;
+
+    return $output;
+  }
 }

@@ -86,6 +86,30 @@ viewDeviceInfo language configuration =
 
                 Nothing ->
                     emptyNode
+
+        deviceIdInfo =
+            case RemoteData.toMaybe configuration of
+                Just config ->
+                    case RemoteData.toMaybe config.device of
+                        Just device ->
+                            case device.deviceId of
+                                Just deviceId ->
+                                    div [] [ text <| "Device ID: " ++ String.fromInt deviceId ]
+
+                                Nothing ->
+                                    div []
+                                        [ text """
+                                    Device ID not set as device was paired before June 2020.
+                                    You may re-pair to get a new ID, but in general this is not a problem -
+                                    it just makes troubleshooting a bit easier.
+                                    """
+                                        ]
+
+                        Nothing ->
+                            div [] [ text "Device ID not set, either not paired, or a pair before June 2020" ]
+
+                Nothing ->
+                    emptyNode
     in
     details
         [ class "segment ui"
@@ -93,6 +117,7 @@ viewDeviceInfo language configuration =
         ]
         [ summary [] [ text "Device info" ]
         , loggedInNurse
+        , deviceIdInfo
         ]
 
 

@@ -787,7 +787,8 @@
         var body = JSON.stringify({
             backend_url: credentials.backend_url,
             access_token: json.access_token,
-            refresh_token: json.refresh_token
+            refresh_token: json.refresh_token,
+            device_id: json.device_id
         });
 
         return caches.open(configCache).then(function (cache) {
