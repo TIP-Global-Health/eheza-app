@@ -94,6 +94,7 @@
         attendance: 'shards',
         breast_exam: 'shards',
         catchment_area: 'nodes',
+        child_fbf: 'shards',
         clinic: 'nodes',
         counseling_schedule: 'nodes',
         counseling_session: 'shards',
@@ -102,14 +103,16 @@
         danger_signs: 'shards',
         exposure: 'shards',
         family_planning: 'shards',
-        hc_contact: 'shards',        
+        hc_contact: 'shards',
         health_center: 'nodes',
         height: 'shards',
         isolation: 'shards',
+        lactation: 'shards',
         last_menstrual_period: 'shards',
         malaria_testing: 'shards',
         medical_history: 'shards',
         medication: 'shards',
+        mother_fbf: 'shards',
         muac: 'shards',
         nurse: 'nodes',
         nutrition: 'shards',
@@ -429,8 +432,11 @@
     var groupMeasurementTypes = [
       'attendance',
       'counseling_session',
+      'child_fbf',
       'family_planning',
       'height',
+      'lactation',
+      'mother_fbf',
       'muac',
       'nutrition',
       'participant_consent',
@@ -628,16 +634,12 @@
                                   clinics.push(['session', participation.clinic]);
                                 })
 
-                                if (clinics.length > 0) {
-                                    query = table.where('[type+clinic]').anyOf(clinics);
+                                query = table.where('[type+clinic]').anyOf(clinics);
 
-                                    // Cloning doesn't seem to work for this one.
-                                    countQuery = table.where('[type+clinic]').anyOf(clinics);
+                                // Cloning doesn't seem to work for this one.
+                                countQuery = table.where('[type+clinic]').anyOf(clinics);
 
-                                    return Promise.resolve();
-                                } else {
-                                    return Promise.reject('Could not find participation for child: ' + childId);
-                                }
+                                return Promise.resolve();
                             });
                         });
                     }

@@ -78,6 +78,7 @@
     var floatFields = [
         'body_temperature',
         'dia',
+        'distributed_amount',
         'fundal_height',
         'height',
         'muac',

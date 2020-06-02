@@ -27,11 +27,11 @@ view language nurse ( sessionId, session ) model =
                 |> LocalData.withDefault emptySummaryByActivity
 
         pendingActivities =
-            getAllActivities
+            getAllActivities session.offlineSession
                 |> List.filter (\activity -> (getParticipantCountForActivity summary activity).pending > 0)
 
         noPendingActivities =
-            getAllActivities
+            getAllActivities session.offlineSession
                 |> List.filter (\activity -> (getParticipantCountForActivity summary activity).completed > 0)
 
         pendingTabTitle =

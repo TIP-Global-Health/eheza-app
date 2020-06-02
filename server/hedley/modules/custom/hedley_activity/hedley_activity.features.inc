@@ -43,6 +43,14 @@ function hedley_activity_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'child_fbf' => array(
+      'name' => t('Child FBF'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'core_physical_exam' => array(
       'name' => t('Core Physical Exam'),
       'base' => 'node_content',
@@ -99,6 +107,14 @@ function hedley_activity_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'lactation' => array(
+      'name' => t('Lactation'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'last_menstrual_period' => array(
       'name' => t('Last Menstrual Period'),
       'base' => 'node_content',
@@ -125,6 +141,14 @@ function hedley_activity_node_info() {
     ),
     'medication' => array(
       'name' => t('Medication'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'mother_fbf' => array(
+      'name' => t('Mother FBF'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',

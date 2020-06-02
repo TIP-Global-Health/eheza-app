@@ -295,6 +295,7 @@ type Revision
     | AttendanceRevision AttendanceId Attendance
     | BreastExamRevision BreastExamId BreastExam
     | CatchmentAreaRevision CatchmentAreaId CatchmentArea
+    | ChildFbfRevision ChildFbfId Fbf
     | ChildNutritionRevision ChildNutritionId ChildNutrition
     | ClinicRevision ClinicId Clinic
     | CorePhysicalExamRevision CorePhysicalExamId CorePhysicalExam
@@ -309,10 +310,12 @@ type Revision
     | HeightRevision HeightId Height
     | IndividualEncounterParticipantRevision IndividualEncounterParticipantId IndividualEncounterParticipant
     | IsolationRevision IsolationId Isolation
+    | LactationRevision LactationId Lactation
     | LastMenstrualPeriodRevision LastMenstrualPeriodId LastMenstrualPeriod
     | MalariaTestingRevision MalariaTestingId MalariaTesting
     | MedicalHistoryRevision MedicalHistoryId MedicalHistory
     | MedicationRevision MedicationId Medication
+    | MotherFbfRevision MotherFbfId Fbf
     | MuacRevision MuacId Muac
     | NurseRevision NurseId Nurse
     | NutritionEncounterRevision NutritionEncounterId NutritionEncounter

@@ -153,6 +153,20 @@ encodeFamilyPlanning =
     encodeGroupMeasurement encodeFamilyPlanningValue
 
 
+encodeLactationValue : EverySet LactationSign -> List ( String, Value )
+encodeLactationValue signs =
+    [ ( "lactation_signs"
+      , EverySet.toList signs
+            |> list encodeLactationSign
+      )
+    ]
+
+
+encodeLactation : Lactation -> List ( String, Value )
+encodeLactation =
+    encodeGroupMeasurement encodeLactationValue
+
+
 encodeGroupMeasurement : (value -> List ( String, Value )) -> GroupMeasurement value -> List ( String, Value )
 encodeGroupMeasurement =
     encodeMeasurement "session"
@@ -265,6 +279,16 @@ encodeFamilyPlanningSignAsString sign =
 
         Vasectomy ->
             "vasectomy"
+
+
+encodeLactationSign : LactationSign -> Value
+encodeLactationSign sign =
+    case sign of
+        Breastfeeding ->
+            string "breastfeeding"
+
+        NoLactationSigns ->
+            string "none"
 
 
 encodeBreastExamSign : BreastExamSign -> Value
@@ -555,6 +579,36 @@ encodeMedicationSign sign =
 encodeMedication : Medication -> List ( String, Value )
 encodeMedication =
     encodePrenatalMeasurement encodeMedicationValue
+
+
+encodeFbf : Fbf -> List ( String, Value )
+encodeFbf =
+    encodeGroupMeasurement encodeFbfValue
+
+
+encodeFbfValue : FbfValue -> List ( String, Value )
+encodeFbfValue value =
+    [ ( "distributed_amount", float value.distributedAmount )
+    , ( "distribution_notice", encodeDistributionNotice value.distributionNotice )
+    ]
+
+
+encodeDistributionNotice : DistributionNotice -> Value
+encodeDistributionNotice =
+    encodeDistributionNoticeAsString >> string
+
+
+encodeDistributionNoticeAsString : DistributionNotice -> String
+encodeDistributionNoticeAsString notice =
+    case notice of
+        DistributedFully ->
+            "complete"
+
+        DistributedPartiallyLackOfStock ->
+            "lack-of-stock"
+
+        DistributedPartiallyOther ->
+            "other"
 
 
 encodeMedicationValue : EverySet MedicationSign -> List ( String, Value )

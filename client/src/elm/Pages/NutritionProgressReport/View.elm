@@ -28,12 +28,8 @@ import ZScore.View
 
 view : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> ModelIndexedDb -> Html Msg
 view language currentDate zscores id db =
-    let
-        data =
-            generateAssembledData id db
-    in
-    div [ class "page-report nutrition" ] <|
-        [ viewWebData language (viewContent language currentDate zscores db) identity data ]
+    generateAssembledData id db
+        |> viewWebData language (viewContent language currentDate zscores db) identity
 
 
 viewContent : Language -> NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> AssembledData -> Html Msg
@@ -108,6 +104,6 @@ viewContent language currentDate zscores db data =
                 |> App.Model.SetActivePage
     in
     viewWebData language
-        (viewFoundChild language zscores ( childId, child ) individualChildMeasurements mother relation currentNutritionSigns defaultLastAssessmentDate goBackAction)
+        (viewFoundChild language currentDate zscores ( childId, child ) individualChildMeasurements mother relation currentNutritionSigns defaultLastAssessmentDate goBackAction)
         identity
         (RemoteData.append expectedSessions childMeasurements)

@@ -240,6 +240,9 @@ function hedley_device_verify_unique_uuid($node, $wrapper) {
  * Fill in field_shards with the shards this node should be sent to.
  */
 function hedley_device_assign_shards($node, $wrapper) {
+  if (!empty($wrapper->field_shards->value())) {
+    return;
+  }
   if (!$person_id = $wrapper->field_person->getIdentifier()) {
     return;
   }

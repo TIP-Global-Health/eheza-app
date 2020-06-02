@@ -1059,50 +1059,83 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
 
         PostRelationship personId myRelationship addGroup ->
             let
+                normalized =
+                    toRelationship personId myRelationship
+
                 -- If we'd also like to add these people to a group, construct
                 -- a Msg to do that.
                 extraMsgs =
                     addGroup
                         |> Maybe.map
                             (\clinicId ->
+                                let
+                                    defaultAdultActivities =
+                                        case normalized.relatedBy of
+                                            ParentOf ->
+                                                MotherActivities
+
+                                            CaregiverFor ->
+                                                CaregiverActivities
+
+                                    childBirthDate =
+                                        Dict.get normalized.relatedTo model.people
+                                            |> Maybe.withDefault NotAsked
+                                            |> RemoteData.toMaybe
+                                            |> Maybe.andThen .birthDate
+
+                                    -- The start date determines when we start expecting this pair
+                                    -- to be attending a group encounter. We'll look to see if we
+                                    -- know the child's birth date. Normally, we will, because
+                                    -- we've probably just entered it, or we've loaded the child
+                                    -- for some other reason. We won't try to fetch the child here
+                                    -- if we don't have the child, at least for now, because it
+                                    -- would add complexity. If we don't know the child's
+                                    -- birthdate, we'll default to 28 days ago. That should be
+                                    -- enough so that, if we're in the middle of a group encounter,
+                                    -- the child will be expected at that group encounter.
+                                    defaultStartDate =
+                                        childBirthDate
+                                            |> Maybe.withDefault (Date.add Days -28 currentDate)
+
+                                    -- For all groups but Sorwathe, we expect child to graduate from programm
+                                    -- after 26 months. Therefore, if we can resolve clinic type and child birthday,
+                                    -- we'll set expected graduation date.
+                                    defaultEndDate =
+                                        model.clinics
+                                            |> RemoteData.toMaybe
+                                            |> Maybe.andThen
+                                                (Dict.get clinicId
+                                                    >> Maybe.andThen
+                                                        (\clinic ->
+                                                            let
+                                                                graduationDate =
+                                                                    Maybe.map (Date.add Months 26) childBirthDate
+                                                            in
+                                                            case clinic.clinicType of
+                                                                Pmtct ->
+                                                                    graduationDate
+
+                                                                Fbf ->
+                                                                    graduationDate
+
+                                                                Chw ->
+                                                                    graduationDate
+
+                                                                Sorwathe ->
+                                                                    Nothing
+                                                        )
+                                                )
+                                in
                                 PostPmtctParticipant
                                     { adult = normalized.person
                                     , child = normalized.relatedTo
                                     , adultActivities = defaultAdultActivities
                                     , start = defaultStartDate
-                                    , end = Nothing
+                                    , end = defaultEndDate
                                     , clinic = clinicId
                                     }
                             )
                         |> Maybe.Extra.toList
-
-                -- The start date determines when we start expecting this pair
-                -- to be attending a group encounter. We'll look to see if we
-                -- know the child's birth date. Normally, we will, because
-                -- we've probably just entered it, or we've loaded the child
-                -- for some other reason. We won't try to fetch the child here
-                -- if we don't have the child, at least for now, because it
-                -- would add complexity.  If we don't know the child's
-                -- birthdate, we'll default to 28 days ago. That should be
-                -- enough so that, if we're in the middle of a group encounter,
-                -- the child will be expected at that group encounter.
-                defaultStartDate =
-                    Dict.get normalized.relatedTo model.people
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
-                        |> Maybe.andThen .birthDate
-                        |> Maybe.withDefault (Date.add Days -28 currentDate)
-
-                defaultAdultActivities =
-                    case normalized.relatedBy of
-                        ParentOf ->
-                            MotherActivities
-
-                        CaregiverFor ->
-                            CaregiverActivities
-
-                normalized =
-                    toRelationship personId myRelationship
 
                 -- We want to patch any relationship between these two,
                 -- whether or not reversed.
@@ -1463,6 +1496,14 @@ handleRevision revision (( model, recalc ) as noChange) =
         CatchmentAreaRevision uuid data ->
             noChange
 
+        ChildFbfRevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | fbfs = Dict.insert uuid data measurements.fbfs })
+                model
+            , True
+            )
+
         ChildNutritionRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
@@ -1579,6 +1620,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        LactationRevision uuid data ->
+            ( mapMotherMeasurements
+                data.participantId
+                (\measurements -> { measurements | lactations = Dict.insert uuid data measurements.lactations })
+                model
+            , True
+            )
+
         LastMenstrualPeriodRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
@@ -1609,6 +1658,14 @@ handleRevision revision (( model, recalc ) as noChange) =
                 (\measurements -> { measurements | medication = Just ( uuid, data ) })
                 model
             , recalc
+            )
+
+        MotherFbfRevision uuid data ->
+            ( mapMotherMeasurements
+                data.participantId
+                (\measurements -> { measurements | fbfs = Dict.insert uuid data measurements.fbfs })
+                model
+            , True
             )
 
         MuacRevision uuid data ->
@@ -1969,13 +2026,10 @@ makeEditableSession sessionId db =
 
         hasChildrenMeasurementsNotSuccess =
             hasNoSuccessValues db.childMeasurements
-
-        hasPeoplesNotSuccess =
-            hasNoSuccessValues db.people
     in
-    -- Make sure we don't still have people and measurements being lazy loaded.
+    -- Make sure we don't still have measurements being lazy loaded.
     -- If we do, allow rebuilding the `EditableSession`.
-    if hasMothersMeasurementsNotSuccess || hasChildrenMeasurementsNotSuccess || hasPeoplesNotSuccess then
+    if hasMothersMeasurementsNotSuccess || hasChildrenMeasurementsNotSuccess then
         Loading
 
     else
@@ -1998,11 +2052,12 @@ makeEditableSession sessionId db =
                 RemoteData.andThen
                     (\participants ->
                         Dict.keys participants.byMotherId
-                            |> List.map
+                            |> List.filterMap
                                 (\id ->
                                     Dict.get id db.people
                                         |> Maybe.withDefault NotAsked
-                                        |> RemoteData.map (\data -> ( id, data ))
+                                        |> RemoteData.toMaybe
+                                        |> Maybe.map (\data -> Success ( id, data ))
                                 )
                             |> RemoteData.fromList
                             |> RemoteData.map (List.sortBy (Tuple.second >> .name) >> Dict.fromList)
@@ -2013,11 +2068,12 @@ makeEditableSession sessionId db =
                 RemoteData.andThen
                     (\participants ->
                         Dict.keys participants.byChildId
-                            |> List.map
+                            |> List.filterMap
                                 (\id ->
                                     Dict.get id db.people
                                         |> Maybe.withDefault NotAsked
-                                        |> RemoteData.map (\data -> ( id, data ))
+                                        |> RemoteData.toMaybe
+                                        |> Maybe.map (\data -> Success ( id, data ))
                                 )
                             |> RemoteData.fromList
                             |> RemoteData.map Dict.fromList
@@ -2096,7 +2152,7 @@ summarizeByActivity currentDate session checkedIn_ isChw =
         (\checkedIn ->
             let
                 children =
-                    getAllChildActivities
+                    getAllChildActivities session
                         |> List.map
                             (\activity ->
                                 ( activity
@@ -2106,7 +2162,7 @@ summarizeByActivity currentDate session checkedIn_ isChw =
                         |> Dict.fromList
 
                 mothers =
-                    getAllMotherActivities
+                    getAllMotherActivities session
                         |> List.map
                             (\activity ->
                                 ( activity

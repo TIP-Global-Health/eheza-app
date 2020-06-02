@@ -231,6 +231,35 @@ update nurseId sessionId maybeSession currentDate db msg model =
                     , []
                     )
 
+                SaveChildFbf maybeId value ->
+                    let
+                        cmd =
+                            case maybeId of
+                                Nothing ->
+                                    { participantId = childId
+                                    , dateMeasured = currentDate
+                                    , encounterId = Just sessionId
+                                    , nurse = nurseId
+                                    , healthCenter = Nothing
+                                    , value = value
+                                    }
+                                        |> sw.post childFbfEndpoint
+                                        |> withoutDecoder
+                                        |> toCmd (RemoteData.fromResult >> HandleSaveFbf childId)
+
+                                Just id ->
+                                    encodeFbfValue value
+                                        |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                        |> object
+                                        |> sw.patchAny childFbfEndpoint id
+                                        |> withoutDecoder
+                                        |> toCmd (RemoteData.fromResult >> HandleSaveFbf childId)
+                    in
+                    ( { model | saveFbfRequest = Dict.insert childId Loading model.saveLactationRequest }
+                    , cmd
+                    , []
+                    )
+
         -- We're handling responses in order to pick up error conditions.
         -- However, we'll let the general "handleRevision" mechanism handle
         -- integrating the data into our model ... we need that anyway, so
@@ -295,6 +324,64 @@ update nurseId sessionId maybeSession currentDate db msg model =
                     , []
                     )
 
+                SaveLactation maybeId signs ->
+                    let
+                        cmd =
+                            case maybeId of
+                                Nothing ->
+                                    { participantId = motherId
+                                    , dateMeasured = currentDate
+                                    , encounterId = Just sessionId
+                                    , nurse = nurseId
+                                    , healthCenter = Nothing
+                                    , value = signs
+                                    }
+                                        |> sw.post lactationEndpoint
+                                        |> withoutDecoder
+                                        |> toCmd (RemoteData.fromResult >> HandleSaveLactation motherId)
+
+                                Just id ->
+                                    encodeLactationValue signs
+                                        |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                        |> object
+                                        |> sw.patchAny lactationEndpoint id
+                                        |> withoutDecoder
+                                        |> toCmd (RemoteData.fromResult >> HandleSaveLactation motherId)
+                    in
+                    ( { model | saveLactationRequest = Dict.insert motherId Loading model.saveLactationRequest }
+                    , cmd
+                    , []
+                    )
+
+                SaveMotherFbf maybeId value ->
+                    let
+                        cmd =
+                            case maybeId of
+                                Nothing ->
+                                    { participantId = motherId
+                                    , dateMeasured = currentDate
+                                    , encounterId = Just sessionId
+                                    , nurse = nurseId
+                                    , healthCenter = Nothing
+                                    , value = value
+                                    }
+                                        |> sw.post motherFbfEndpoint
+                                        |> withoutDecoder
+                                        |> toCmd (RemoteData.fromResult >> HandleSaveFbf motherId)
+
+                                Just id ->
+                                    encodeFbfValue value
+                                        |> (::) ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                        |> object
+                                        |> sw.patchAny motherFbfEndpoint id
+                                        |> withoutDecoder
+                                        |> toCmd (RemoteData.fromResult >> HandleSaveFbf motherId)
+                    in
+                    ( { model | saveFbfRequest = Dict.insert motherId Loading model.saveLactationRequest }
+                    , cmd
+                    , []
+                    )
+
                 SaveCompletedForm maybeId formId language ->
                     let
                         cmd =
@@ -350,6 +437,18 @@ update nurseId sessionId maybeSession currentDate db msg model =
 
         HandleSaveFamilyPlanning motherId data ->
             ( { model | saveFamilyPlanningRequest = Dict.insert motherId data model.saveFamilyPlanningRequest }
+            , Cmd.none
+            , []
+            )
+
+        HandleSaveLactation motherId data ->
+            ( { model | saveLactationRequest = Dict.insert motherId data model.saveLactationRequest }
+            , Cmd.none
+            , []
+            )
+
+        HandleSaveFbf personId data ->
+            ( { model | saveFbfRequest = Dict.insert personId data model.saveFbfRequest }
             , Cmd.none
             , []
             )

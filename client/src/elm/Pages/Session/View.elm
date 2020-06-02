@@ -123,7 +123,7 @@ viewEditableSession language currentDate zscores isChw nurse sessionId page mode
                 |> Html.map MsgParticipants
 
         ProgressReportPage childId ->
-            Pages.ProgressReport.View.view language zscores childId ( sessionId, session ) db
+            Pages.ProgressReport.View.view language currentDate zscores childId ( sessionId, session ) db
 
         ChildPage childId ->
             Dict.get childId model.childPages
