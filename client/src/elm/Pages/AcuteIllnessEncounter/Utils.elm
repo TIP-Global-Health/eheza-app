@@ -32,6 +32,15 @@ import RemoteData exposing (RemoteData(..), WebData)
 suspectedCovid19Case : AcuteIllnessMeasurements -> Bool
 suspectedCovid19Case measurements =
     let
+        contactedPeopleWithSymptoms =
+            measurements.exposure
+                |> Maybe.map
+                    (Tuple.second
+                        >> .value
+                        >> EverySet.member COVID19Symptoms
+                    )
+                |> Maybe.withDefault False
+
         calculateSymptoms measurement_ default =
             measurement_
                 |> Maybe.map
@@ -101,7 +110,7 @@ suspectedCovid19Case measurements =
                     )
                 |> Maybe.withDefault False
     in
-    totalSigns > 0 && (fever || totalSymptoms > 1)
+    contactedPeopleWithSymptoms || (totalSigns > 0 && (fever || totalSymptoms > 1))
 
 
 generateAssembledData : AcuteIllnessEncounterId -> ModelIndexedDb -> WebData AssembledData
