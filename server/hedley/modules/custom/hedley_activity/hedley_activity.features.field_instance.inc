@@ -4141,7 +4141,7 @@ function hedley_activity_field_default_field_instances() {
       'weight' => 7,
     ),
   );
-  
+
   // Exported field_instance: 'node-lactation-field_date_measured'.
   $field_instances['node-lactation-field_date_measured'] = array(
     'bundle' => 'lactation',
@@ -15180,6 +15180,7 @@ function hedley_activity_field_default_field_instances() {
   t('Nutrition Signs');
   t('Obstetric History');
   t('Partner HIV Testing');
+  t('Peron');
   t('Person');
   t('Photo');
   t('PreTerm Pregnancy');

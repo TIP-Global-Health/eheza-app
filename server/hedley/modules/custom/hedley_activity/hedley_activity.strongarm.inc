@@ -87,7 +87,7 @@ function hedley_activity_strongarm() {
   $strongarm->name = 'auto_entitylabel_node_isolation';
   $strongarm->value = '1';
   $export['auto_entitylabel_node_isolation'] = $strongarm;
-  
+
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
@@ -360,7 +360,7 @@ function hedley_activity_strongarm() {
   $strongarm->name = 'auto_entitylabel_pattern_node_isolation';
   $strongarm->value = '[node:content-type] - [node:field-person:title] - [node:field-date-measured:custom:Y-m-d] ';
   $export['auto_entitylabel_pattern_node_isolation'] = $strongarm;
-  
+
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
@@ -633,7 +633,7 @@ function hedley_activity_strongarm() {
   $strongarm->name = 'auto_entitylabel_php_node_isolation';
   $strongarm->value = 0;
   $export['auto_entitylabel_php_node_isolation'] = $strongarm;
-  
+
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
@@ -1645,7 +1645,7 @@ function hedley_activity_strongarm() {
     0 => 'main-menu',
   );
   $export['menu_options_isolation'] = $strongarm;
-  
+
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
@@ -1974,7 +1974,7 @@ function hedley_activity_strongarm() {
   $strongarm->name = 'menu_parent_isolation';
   $strongarm->value = 'main-menu:0';
   $export['menu_parent_isolation'] = $strongarm;
-  
+
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
@@ -2280,7 +2280,7 @@ function hedley_activity_strongarm() {
     1 => 'promote',
   );
   $export['node_options_isolation'] = $strongarm;
-  
+
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
@@ -2634,7 +2634,7 @@ function hedley_activity_strongarm() {
   $strongarm->name = 'node_preview_isolation';
   $strongarm->value = '1';
   $export['node_preview_isolation'] = $strongarm;
-  
+
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
@@ -2907,7 +2907,7 @@ function hedley_activity_strongarm() {
   $strongarm->name = 'node_submitted_isolation';
   $strongarm->value = 1;
   $export['node_submitted_isolation'] = $strongarm;
-  
+
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;

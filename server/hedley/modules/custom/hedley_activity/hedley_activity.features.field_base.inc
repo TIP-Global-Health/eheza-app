@@ -562,7 +562,7 @@ function hedley_activity_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_text',
-  );  
+  );
 
   // Exported field_base: 'field_exposure'.
   $field_bases['field_exposure'] = array(
@@ -1008,7 +1008,7 @@ function hedley_activity_field_default_field_bases() {
     'translatable' => 0,
     'type' => 'list_text',
   );
-  
+
   // Exported field_base: 'field_lactation_signs'.
   $field_bases['field_lactation_signs'] = array(
     'active' => 1,
