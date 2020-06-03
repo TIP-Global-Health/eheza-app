@@ -229,7 +229,7 @@ function hedley_device_assign_shards($node, $wrapper) {
     case 'clinic':
       // We only assign shards, when clinic is created, based on
       // HC clinic is assigned to. We do nothing when clinic is edited.
-      $shards = $node->original ? [] : [$wrapper->field_health_center->getIdentifier()];
+      $shards = empty($node->original) ? [] : [$wrapper->field_health_center->getIdentifier()];
       break;
 
     case 'session':
@@ -242,7 +242,7 @@ function hedley_device_assign_shards($node, $wrapper) {
     case 'person':
       // When editing person, calculate shards by it's participants.
       // Note that this only happens when field_shards is not set.
-      if ($node->original) {
+      if (!empty($node->original)) {
         $shards = hedley_patient_shards_for_person_by_pmtct_participants($node->nid);
       }
       // When creating person, assign health center as shard.
