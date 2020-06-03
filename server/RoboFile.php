@@ -75,8 +75,11 @@ class RoboFile extends Tasks {
 
     $rsyncExcludeString = '--exclude=' . join(' --exclude=', $rsyncExclude);
 
-    // Copy all files and folders.
+    // Copy all files and folders of the Drupal installation.
     $this->_exec("rsync -az -q --delete $rsyncExcludeString . $pantheonDirectory");
+
+    // Copy all the files and folders of the app.
+    $this->_exec("rsync -az -q --delete $rsyncExcludeString ../client/dist $pantheonDirectory/app");
 
     // We don't want to change Pantheon's git ignore, as we do want to commit
     // vendor and contrib directories.
