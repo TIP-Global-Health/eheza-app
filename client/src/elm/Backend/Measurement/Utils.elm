@@ -251,10 +251,6 @@ fbfValueToForm value =
 
 fbfFormToValue : FbfForm -> FbfValue
 fbfFormToValue form =
-    let
-        defaultValue =
-            FbfValue 0 DistributedFully
-    in
     Maybe.map2
         (\distributedAmount distributionNotice ->
             FbfValue distributedAmount distributionNotice
@@ -262,8 +258,8 @@ fbfFormToValue form =
         form.distributedAmount
         form.distributionNotice
         -- We should never get here, as we always expect to have
-        -- these fields filled, when distribution is not full
-        |> Maybe.withDefault defaultValue
+        -- these fields filled.
+        |> Maybe.withDefault (FbfValue 0 DistributedFully)
 
 
 socialHistoryHivTestingResultFromString : String -> Maybe SocialHistoryHivTestingResult
