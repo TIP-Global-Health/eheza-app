@@ -129,7 +129,6 @@ type MsgChild
     | SelectCounselingTopic Bool CounselingTopicId
     | SendOutMsgChild OutMsgChild
     | SetDistributedAmountForChild String
-    | SetDistributedFullyForChild Bool
     | SetDistributoinNoticeForChild DistributionNotice
     | UpdateHeight String
     | UpdateMuac String
@@ -143,7 +142,6 @@ type MsgMother
     | ViewParticipantForm (Maybe ParticipantFormId)
     | SetCounselorSigned ParticipantFormId Bool
     | SetDistributedAmountForMother String
-    | SetDistributedFullyForMother Bool
     | SetDistributoinNoticeForMother DistributionNotice
     | SetParticipantSigned ParticipantFormId Bool
     | SendOutMsgMother OutMsgMother
