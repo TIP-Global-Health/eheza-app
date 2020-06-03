@@ -31,3 +31,7 @@ mkcert -install
 # -------------------------------------------------- #
 echo "Install ddev."
 curl -s -L https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh | bash
+
+echo "Configure ddev."
+mkdir ~/.ddev
+cp "$ROOT_DIR/ci-scripts/global_config.yaml" ~/.ddev/
