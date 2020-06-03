@@ -9,6 +9,7 @@ cp deployment-robot-key ~/.ssh/id_rsa
 chmod 600 ~/.ssh/id_rsa
 
 # Make the site semi-installed.
+ddev config global --instrumentation-opt-in=false
 ddev start
 export ROOT="$TRAVIS_BUILD_DIR/server"
 cd "$ROOT" || exit 1
