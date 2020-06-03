@@ -72,9 +72,8 @@ while ($processed < $total) {
     $wrapper = entity_metadata_wrapper('node', $node);
 
     $expected = $wrapper->field_expected->value();
-    // We do not change graduation date if it's already set,
-    // unless start date equals end date.
-    if (!empty($expected['value2']) && $expected['value'] != $expected['value2']) {
+    // We do not change graduation date if it's already set.
+    if (!empty($expected['value2'])) {
       continue;
     }
 
