@@ -92,10 +92,9 @@
 
     function expectedOnDate (participation, sessionDate) {
         var joinedGroupBeforeSession = participation.expected.value <= sessionDate;
-        var notLeftGroup = !participation.expected.value2 || (participation.expected.value === participation.expected.value2);
-        var leftGroupAfterSession = participation.expected.value2 > sessionDate;
+        var notLeftGroup = !participation.expected.value2 || participation.expected.value2 > sessionDate;
 
-        return joinedGroupBeforeSession && (notLeftGroup || leftGroupAfterSession);
+        return joinedGroupBeforeSession && notLeftGroup;
     }
 
     function getTableForType (type) {
