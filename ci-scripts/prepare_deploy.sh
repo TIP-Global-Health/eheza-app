@@ -3,6 +3,7 @@
 set -e
 
 cd "$TRAVIS_BUILD_DIR" || exit 1
+source server/scripts/helper-functions.sh
 
 # Make Git operations possible.
 cp deployment-robot-key ~/.ssh/id_rsa

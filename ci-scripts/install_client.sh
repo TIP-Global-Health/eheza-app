@@ -19,4 +19,10 @@ npm install
 
 # Gulp is responsible for creating the `src/generated` files.
 cp ./src/elm/LocalConfig.Example.elm ./src/elm/LocalConfig.elm
-gulp build
+
+if [ -z "$DEPLOY" ]
+then
+  gulp build
+else
+  gulp publish
+fi
