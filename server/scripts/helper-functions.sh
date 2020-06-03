@@ -357,7 +357,7 @@ function symlink_externals {
   if [ ${#SYMLINKS[@]} -eq 0 ]; then
     echo "No directories or files to symlink."
     echo
-    return 1
+    return 0
   fi
 
   # Loop trough the symlinks configuration.
