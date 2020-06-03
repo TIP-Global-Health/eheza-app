@@ -182,7 +182,7 @@ emptyModelChild =
     , photo = Nothing
     , weight = ""
     , counseling = Nothing
-    , fbfForm = FbfForm Nothing Nothing Nothing
+    , fbfForm = FbfForm Nothing Nothing
     }
 
 
@@ -191,5 +191,5 @@ emptyModelMother =
     { familyPlanningSigns = EverySet.empty
     , participantConsent = emptyParticipantFormUI
     , lactationForm = LactationForm Nothing
-    , fbfForm = FbfForm Nothing Nothing Nothing
+    , fbfForm = FbfForm Nothing Nothing
     }

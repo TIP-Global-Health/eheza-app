@@ -150,8 +150,7 @@ type alias FbfValue =
 
 
 type alias FbfForm =
-    { distributedFully : Maybe Bool
-    , distributedAmount : Maybe Float
+    { distributedAmount : Maybe Float
     , distributionNotice : Maybe DistributionNotice
     }
 

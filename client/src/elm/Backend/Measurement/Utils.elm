@@ -242,11 +242,7 @@ lactationFormToSigns form =
 
 fbfValueToForm : FbfValue -> FbfForm
 fbfValueToForm value =
-    let
-        distributedFully =
-            value.distributionNotice == DistributedFully |> Just
-    in
-    FbfForm distributedFully (Just value.distributedAmount) (Just value.distributionNotice)
+    FbfForm (Just value.distributedAmount) (Just value.distributionNotice)
 
 
 fbfFormToValue : FbfForm -> FbfValue
