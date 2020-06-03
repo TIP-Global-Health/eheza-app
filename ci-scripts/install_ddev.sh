@@ -34,4 +34,4 @@ curl -s -L https://raw.githubusercontent.com/drud/ddev/master/scripts/install_dd
 
 echo "Configure ddev."
 mkdir ~/.ddev
-cp "$ROOT_DIR/ci-scripts/global_config.yaml" ~/.ddev/
+cp "$TRAVIS_BUILD_DIR"/ci-scripts/global_config.yaml ~/.ddev/
