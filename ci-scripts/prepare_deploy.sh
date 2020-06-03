@@ -11,13 +11,6 @@ phpenv config-rm xdebug.ini
 cp deployment-robot-key ~/.ssh/id_rsa
 chmod 600 ~/.ssh/id_rsa
 
-# Make Drush 8 available.
-mkdir -p ~/vendor/bin
-cd ~/vendor/bin || exit 1
-wget --quiet https://github.com/drush-ops/drush/releases/download/8.1.18/drush.phar
-mv drush.phar drush
-chmod +x drush
-
 # Make the site semi-installed.
 export ROOT="$TRAVIS_BUILD_DIR/server"
 cd "$ROOT" || exit 1

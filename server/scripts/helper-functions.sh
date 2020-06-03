@@ -168,7 +168,7 @@ function delete_www_content {
 ##
 function drupal_make {
   echo -e "${LBLUE}> Run the build script (scripts/build)${RESTORE}"
-  bash "$ROOT"/scripts/build
+  ddev . "cd .. && scripts/build"
   echo
 }
 
@@ -199,8 +199,7 @@ function install_drupal_profile {
 function composer_install {
   echo -e "${LBLUE}> Composer install${RESTORE}"
 
-  cd "$ROOT"/www/sites/default/files/composer
-  composer install
+  ddev . "cd sites/default/files/composer && composer install"
   echo
 
   cd "$ROOT"
