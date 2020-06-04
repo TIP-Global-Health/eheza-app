@@ -344,21 +344,6 @@ toSymptomsRespiratoryValueWithDefault saved form =
         |> .signs
 
 
-
---
---
--- toSymptomsRespiratoryValue : SymptomsRespiratoryForm -> Maybe (Dict SymptomsRespiratorySign Int)
--- toSymptomsRespiratoryValue form =
---     form.signs
---
---
--- fromSymptomsGIValue : Maybe (Dict SymptomsGISign Int) -> SymptomsGIForm
--- fromSymptomsGIValue saved =
---     { signs = saved }
---
---
-
-
 symptomsGIFormWithDefault : SymptomsGIForm -> Maybe SymptomsGIValue -> SymptomsGIForm
 symptomsGIFormWithDefault form saved =
     saved
