@@ -381,7 +381,7 @@ symptomsGIFormWithDefault form saved =
                             Just True
 
                         else
-                            Nothing
+                            Just False
                 in
                 { signs = signs
                 , intractableVomiting = intractableVomiting
@@ -396,7 +396,7 @@ toSymptomsGIValueWithDefault saved form =
             symptomsGIFormWithDefault form saved
 
         derivedSigns =
-            if Dict.member Vomiting formWithDefault.signs && isJust formWithDefault.intractableVomiting then
+            if Dict.member Vomiting formWithDefault.signs && formWithDefault.intractableVomiting == Just True then
                 EverySet.singleton IntractableVomiting
 
             else
