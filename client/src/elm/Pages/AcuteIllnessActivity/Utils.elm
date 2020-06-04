@@ -33,6 +33,17 @@ allSymptomsGeneralSigns =
       , NightSweats
       , BodyAches
       , Headache
+      , Lethargy
+      , PoorSuck
+      , UnableToDrink
+      , UnableToEat
+      , IncreasedThirst
+      , DryMouth
+      , SevereWeakness
+      , YellowEyes
+      , CokeColoredUrine
+      , SymptomsGeneralConvulsions
+      , SpontaneousBleeding
       ]
     , NoSymptomsGeneral
     )
