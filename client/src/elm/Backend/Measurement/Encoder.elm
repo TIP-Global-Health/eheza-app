@@ -999,12 +999,16 @@ encodeSymptomsRespiratoryValue signs =
 
         soreThroat =
             Dict.get SoreThroat signs |> Maybe.withDefault 0
+
+        stabbingChestPain =
+            Dict.get StabbingChestPain signs |> Maybe.withDefault 0
     in
     [ ( "cough_period", int cough )
     , ( "shortness_of_breath_period", int shortnessOfBreath )
     , ( "nasal_congestion_period", int nasalCongestion )
     , ( "blood_in_sputum_period", int bloodInSputum )
     , ( "sore_throat_period", int soreThroat )
+    , ( "stabbing_chest_pain", int stabbingChestPain )
     ]
 
 

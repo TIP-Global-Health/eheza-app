@@ -56,6 +56,7 @@ allSymptomsRespiratorySigns =
       , NasalCongestion
       , BloodInSputum
       , SoreThroat
+      , StabbingChestPain
       ]
     , NoSymptomsRespiratory
     )

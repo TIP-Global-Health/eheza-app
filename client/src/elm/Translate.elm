@@ -4413,6 +4413,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                StabbingChestPain ->
+                    { english = "Stabbing Chest Pain"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoSymptomsRespiratory ->
                     { english = "None of the above"
                     , kinyarwanda = Nothing

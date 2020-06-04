@@ -556,6 +556,7 @@ type SymptomsRespiratorySign
     | NasalCongestion
     | ShortnessOfBreath
     | SoreThroat
+    | StabbingChestPain
     | NoSymptomsRespiratory
 
 
