@@ -4372,7 +4372,7 @@ translationSet trans =
                     }
 
                 NonBloodyDiarrhea ->
-                    { english = "Non-Bloody Diarrhea"
+                    { english = "Non-Bloody Diarrhea - >3 liquid stools in the last 24 hours"
                     , kinyarwanda = Nothing
                     }
 
