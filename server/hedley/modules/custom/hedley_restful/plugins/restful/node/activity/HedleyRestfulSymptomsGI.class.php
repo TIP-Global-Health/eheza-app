@@ -19,6 +19,9 @@ class HedleyRestfulSymptomsGI extends HedleyRestfulAcuteIllnessActivityBase {
     'field_nausea_period',
     'field_vomiting_period',
     'field_abdominal_pain_period',
+  ];
+
+  protected $multiFields = [
     'field_symptoms_gi_derived_signs',
   ];
 
