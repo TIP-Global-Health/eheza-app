@@ -1,4 +1,4 @@
-module Backend.Measurement.Decoder exposing (decodeAbdomenCPESign, decodeAcuteIllnessMeasurement, decodeAcuteIllnessMeasurements, decodeAcuteIllnessVitals, decodeAttendance, decodeBreastExam, decodeBreastExamSign, decodeCSectionReason, decodeCSectionScar, decodeChildMeasurementList, decodeChildNutritionSign, decodeCorePhysicalExam, decodeCounselingSession, decodeDangerSign, decodeDangerSigns, decodeDistributionNotice, decodeExposure, decodeExposureSign, decodeEyesCPESign, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeFbf, decodeFbfValue, decodeFetalPresentation, decodeGroupMeasurement, decodeHCContact, decodeHCContactSign, decodeHCRecomendation, decodeHairHeadCPESign, decodeHandsCPESign, decodeHead, decodeHeartCPESign, decodeHeight, decodeIsolation, decodeIsolationSign, decodeLactation, decodeLactationSign, decodeLastMenstrualPeriod, decodeLegsCPESign, decodeLungsCPESign, decodeMalariaTesting, decodeMalariaTestingSign, decodeMeasurement, decodeMedicalHistory, decodeMedicalHistorySign, decodeMedication, decodeMedicationSign, decodeMotherMeasurementList, decodeMuac, decodeNeckCPESign, decodeNutrition, decodeNutritionHeight, decodeNutritionMeasurement, decodeNutritionMeasurements, decodeNutritionMuac, decodeNutritionNutrition, decodeNutritionPhoto, decodeNutritionWeight, decodeObstetricHistory, decodeObstetricHistorySign, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodePrenatalFamilyPlanning, decodePrenatalMeasurement, decodePrenatalMeasurements, decodePrenatalNutrition, decodePrenatalPhoto, decodePreviousDeliveryPeriod, decodePreviousDeliverySign, decodeReasonForNotIsolating, decodeResource, decodeResourceSign, decodeResponsePeriod, decodeSocialHistory, decodeSocialHistoryHivTestingResult, decodeSocialHistorySign, decodeSymptomsGI, decodeSymptomsGISign, decodeSymptomsGeneral, decodeSymptomsRespiratory, decodeSymptomsRespiratorySign, decodeTravelHistory, decodeTravelHistorySign, decodeVitals, decodeWeight, decodeWithEntityUuid, symptomsGIToDict, symptomsGeneralToDict, symptomsRespiratoryToDict)
+module Backend.Measurement.Decoder exposing (decodeAbdomenCPESign, decodeAcuteIllnessMeasurement, decodeAcuteIllnessMeasurements, decodeAcuteIllnessVitals, decodeAttendance, decodeBreastExam, decodeBreastExamSign, decodeCSectionReason, decodeCSectionScar, decodeChildMeasurementList, decodeChildNutritionSign, decodeCorePhysicalExam, decodeCounselingSession, decodeDangerSign, decodeDangerSigns, decodeDistributionNotice, decodeExposure, decodeExposureSign, decodeEyesCPESign, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeFbf, decodeFbfValue, decodeFetalPresentation, decodeGroupMeasurement, decodeHCContact, decodeHCContactSign, decodeHCRecomendation, decodeHairHeadCPESign, decodeHandsCPESign, decodeHead, decodeHeartCPESign, decodeHeight, decodeIsolation, decodeIsolationSign, decodeLactation, decodeLactationSign, decodeLastMenstrualPeriod, decodeLegsCPESign, decodeLungsCPESign, decodeMalariaTesting, decodeMalariaTestingSign, decodeMeasurement, decodeMedicalHistory, decodeMedicalHistorySign, decodeMedication, decodeMedicationSign, decodeMotherMeasurementList, decodeMuac, decodeNeckCPESign, decodeNutrition, decodeNutritionHeight, decodeNutritionMeasurement, decodeNutritionMeasurements, decodeNutritionMuac, decodeNutritionNutrition, decodeNutritionPhoto, decodeNutritionWeight, decodeObstetricHistory, decodeObstetricHistorySign, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodePrenatalFamilyPlanning, decodePrenatalMeasurement, decodePrenatalMeasurements, decodePrenatalNutrition, decodePrenatalPhoto, decodePreviousDeliveryPeriod, decodePreviousDeliverySign, decodeReasonForNotIsolating, decodeResource, decodeResourceSign, decodeResponsePeriod, decodeSocialHistory, decodeSocialHistoryHivTestingResult, decodeSocialHistorySign, decodeSymptomsGI, decodeSymptomsGIDerivedSign, decodeSymptomsGIDict, decodeSymptomsGeneral, decodeSymptomsRespiratory, decodeSymptomsRespiratorySign, decodeTravelHistory, decodeTravelHistorySign, decodeVitals, decodeWeight, decodeWithEntityUuid, symptomsGIToDict, symptomsGeneralToDict, symptomsRespiratoryToDict)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
@@ -1139,13 +1139,20 @@ decodeSymptomsRespiratorySign =
 
 decodeSymptomsGI : Decoder SymptomsGI
 decodeSymptomsGI =
-    decodeAcuteIllnessMeasurement <|
-        map5 symptomsGIToDict
-            (field "bloody_diarrhea_period" decodeInt)
-            (field "non_bloody_diarrhea_period" decodeInt)
-            (field "nausea_period" decodeInt)
-            (field "vomiting_period" decodeInt)
-            (field "abdominal_pain_period" decodeInt)
+    succeed SymptomsGIValue
+        |> custom decodeSymptomsGIDict
+        |> required "symptoms_gi_derived_signs" (decodeEverySet decodeSymptomsGIDerivedSign)
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeSymptomsGIDict : Decoder (Dict SymptomsGISign Int)
+decodeSymptomsGIDict =
+    map5 symptomsGIToDict
+        (field "bloody_diarrhea_period" decodeInt)
+        (field "non_bloody_diarrhea_period" decodeInt)
+        (field "nausea_period" decodeInt)
+        (field "vomiting_period" decodeInt)
+        (field "abdominal_pain_period" decodeInt)
 
 
 symptomsGIToDict : Int -> Int -> Int -> Int -> Int -> Dict SymptomsGISign Int
@@ -1167,34 +1174,22 @@ symptomsGIToDict bloodyDiarrhea nonBloodyDiarrhea nausea vomiting abdominalPain 
         |> Dict.fromList
 
 
-decodeSymptomsGISign : Decoder SymptomsGISign
-decodeSymptomsGISign =
+decodeSymptomsGIDerivedSign : Decoder SymptomsGIDerivedSign
+decodeSymptomsGIDerivedSign =
     string
         |> andThen
             (\sign ->
                 case sign of
-                    "abdominal-pain" ->
-                        succeed SymptomGIAbdominalPain
-
-                    "bloody-diarrhea" ->
-                        succeed BloodyDiarrhea
-
-                    "nausea" ->
-                        succeed Nausea
-
-                    "non-bloody-diarrhea" ->
-                        succeed NonBloodyDiarrhea
-
-                    "vomiting" ->
-                        succeed Vomiting
+                    "intractable-vomiting" ->
+                        succeed IntractableVomiting
 
                     "none" ->
-                        succeed NoSymptomsGI
+                        succeed NoSymptomsGIDerived
 
                     _ ->
                         fail <|
                             sign
-                                ++ " is not a recognized SymptomsGISign"
+                                ++ " is not a recognized SymptomsGIDerivedSign"
             )
 
 

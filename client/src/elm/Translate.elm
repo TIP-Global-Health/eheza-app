@@ -388,6 +388,7 @@ type TranslationId
     | IndividualEncounterType IndividualEncounterType
     | IndividualEncounterTypes
     | InitialResultsDisplay InitialResultsDisplay
+    | IntractableVomitingQuestion
     | IsCurrentlyBreastfeeding
     | KilogramShorthand
     | KilogramsPerMonth
@@ -2586,6 +2587,11 @@ translationSet trans =
                     { english = "Hide all mothers / caregivers"
                     , kinyarwanda = Just "Hisha ababyeyi bose / abarezi"
                     }
+
+        IntractableVomitingQuestion ->
+            { english = "Is Intractable Vomiting"
+            , kinyarwanda = Nothing
+            }
 
         IsCurrentlyBreastfeeding ->
             { english = "Is the mother currently breastfeeding her infant"

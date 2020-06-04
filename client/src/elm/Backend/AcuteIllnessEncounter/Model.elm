@@ -54,7 +54,7 @@ type Msg
     | HandleSavedSymptomsGeneral (WebData ())
     | SaveSymptomsRespiratory PersonId (Maybe SymptomsRespiratoryId) (Dict SymptomsRespiratorySign Int)
     | HandleSavedSymptomsRespiratory (WebData ())
-    | SaveSymptomsGI PersonId (Maybe SymptomsGIId) (Dict SymptomsGISign Int)
+    | SaveSymptomsGI PersonId (Maybe SymptomsGIId) SymptomsGIValue
     | HandleSavedSymptomsGI (WebData ())
     | SaveVitals PersonId (Maybe AcuteIllnessVitalsId) AcuteIllnessVitalsValue
     | HandleSavedVitals (WebData ())

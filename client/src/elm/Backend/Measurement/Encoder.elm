@@ -1017,30 +1017,42 @@ encodeSymptomsGI =
     encodeAcuteIllnessMeasurement encodeSymptomsGIValue
 
 
-encodeSymptomsGIValue : Dict SymptomsGISign Int -> List ( String, Value )
-encodeSymptomsGIValue signs =
+encodeSymptomsGIValue : SymptomsGIValue -> List ( String, Value )
+encodeSymptomsGIValue value =
     let
         bloodyDiarrhea =
-            Dict.get BloodyDiarrhea signs |> Maybe.withDefault 0
+            Dict.get BloodyDiarrhea value.signs |> Maybe.withDefault 0
 
         nonBloodyDiarrhea =
-            Dict.get NonBloodyDiarrhea signs |> Maybe.withDefault 0
+            Dict.get NonBloodyDiarrhea value.signs |> Maybe.withDefault 0
 
         nausea =
-            Dict.get Nausea signs |> Maybe.withDefault 0
+            Dict.get Nausea value.signs |> Maybe.withDefault 0
 
         vomiting =
-            Dict.get Vomiting signs |> Maybe.withDefault 0
+            Dict.get Vomiting value.signs |> Maybe.withDefault 0
 
         abdominalPain =
-            Dict.get SymptomGIAbdominalPain signs |> Maybe.withDefault 0
+            Dict.get SymptomGIAbdominalPain value.signs |> Maybe.withDefault 0
     in
     [ ( "bloody_diarrhea_period", int bloodyDiarrhea )
     , ( "non_bloody_diarrhea_period", int nonBloodyDiarrhea )
     , ( "nausea_period", int nausea )
     , ( "vomiting_period", int vomiting )
     , ( "abdominal_pain_period", int abdominalPain )
+    , ( "symptoms_gi_derived_signs", encodeEverySet encodeSymptomsGIDerivedSigns value.derivedSigns )
     ]
+
+
+encodeSymptomsGIDerivedSigns : SymptomsGIDerivedSign -> Value
+encodeSymptomsGIDerivedSigns sign =
+    string <|
+        case sign of
+            IntractableVomiting ->
+                "intractable-vomiting"
+
+            NoSymptomsGIDerived ->
+                "none"
 
 
 encodeAcuteIllnessVitals : AcuteIllnessVitals -> List ( String, Value )
