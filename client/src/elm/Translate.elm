@@ -4294,6 +4294,61 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Lethargy ->
+                    { english = "Lethargy"
+                    , kinyarwanda = Nothing
+                    }
+
+                PoorSuck ->
+                    { english = "PoorSuck"
+                    , kinyarwanda = Nothing
+                    }
+
+                UnableToDrink ->
+                    { english = "Unable to Drink"
+                    , kinyarwanda = Nothing
+                    }
+
+                UnableToEat ->
+                    { english = "Unable to Eat"
+                    , kinyarwanda = Nothing
+                    }
+
+                IncreasedThirst ->
+                    { english = "Increased Thirst"
+                    , kinyarwanda = Nothing
+                    }
+
+                DryMouth ->
+                    { english = "Dry/Sticky Mouth"
+                    , kinyarwanda = Nothing
+                    }
+
+                SevereWeakness ->
+                    { english = "Severe Weakness"
+                    , kinyarwanda = Nothing
+                    }
+
+                YellowEyes ->
+                    { english = "Yellow Eyes"
+                    , kinyarwanda = Nothing
+                    }
+
+                CokeColoredUrine ->
+                    { english = "Coca-Cola Colored Urine"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomsGeneralConvulsions ->
+                    { english = "Convulsions"
+                    , kinyarwanda = Nothing
+                    }
+
+                SpontaneousBleeding ->
+                    { english = "Spontaneous Bleeding"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoSymptomsGeneral ->
                     { english = "None of the above"
                     , kinyarwanda = Nothing
