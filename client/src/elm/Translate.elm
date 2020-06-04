@@ -1053,6 +1053,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                AcuteIllnessPriorTreatment ->
+                    { english = "Prior Treatment History"
+                    , kinyarwanda = Nothing
+                    }
+
                 AcuteIllnessLaboratory ->
                     { english = "Laboratory"
                     , kinyarwanda = Nothing

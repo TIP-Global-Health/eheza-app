@@ -8,5 +8,6 @@ nutrition activities.
 type AcuteIllnessActivity
     = AcuteIllnessSymptoms
     | AcuteIllnessPhysicalExam
+    | AcuteIllnessPriorTreatment
     | AcuteIllnessLaboratory
     | AcuteIllnessExposure

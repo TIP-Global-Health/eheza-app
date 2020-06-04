@@ -138,6 +138,9 @@ viewActivity language currentDate id activity isSuspected data model =
         AcuteIllnessPhysicalExam ->
             viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) model.physicalExamData
 
+        AcuteIllnessPriorTreatment ->
+            [ div [] [ text "@ToDo" ] ]
+
         AcuteIllnessLaboratory ->
             viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) model.laboratoryData
 
