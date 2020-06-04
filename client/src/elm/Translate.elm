@@ -4306,7 +4306,7 @@ translationSet trans =
                     }
 
                 PoorSuck ->
-                    { english = "PoorSuck"
+                    { english = "Poor Suck"
                     , kinyarwanda = Nothing
                     }
 
