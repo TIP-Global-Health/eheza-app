@@ -13283,7 +13283,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 9,
+      'weight' => 20,
     ),
   );
 
@@ -13331,6 +13331,100 @@ function hedley_activity_field_default_field_instances() {
       'settings' => array(),
       'type' => 'number',
       'weight' => 5,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-symptoms_respiratory-field_coke_colored_urine_period'.
+  $field_instances['node-symptoms_respiratory-field_coke_colored_urine_period'] = array(
+    'bundle' => 'symptoms_respiratory',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 19,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_coke_colored_urine_period',
+    'label' => 'Coke Colored Urine Period',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 15,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-symptoms_respiratory-field_convulsions_period'.
+  $field_instances['node-symptoms_respiratory-field_convulsions_period'] = array(
+    'bundle' => 'symptoms_respiratory',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 20,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_convulsions_period',
+    'label' => 'Convulsions Period',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 16,
     ),
   );
 
@@ -13432,6 +13526,146 @@ function hedley_activity_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
+      'weight' => 18,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-symptoms_respiratory-field_dry_mouth_period'.
+  $field_instances['node-symptoms_respiratory-field_dry_mouth_period'] = array(
+    'bundle' => 'symptoms_respiratory',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 16,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_dry_mouth_period',
+    'label' => 'Dry Mouth Period',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 12,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-symptoms_respiratory-field_increased_thirst_period'.
+  $field_instances['node-symptoms_respiratory-field_increased_thirst_period'] = array(
+    'bundle' => 'symptoms_respiratory',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 15,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_increased_thirst_period',
+    'label' => 'Increased Thirst Period',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 11,
+    ),
+  );
+
+  // Exported field_instance: 'node-symptoms_respiratory-field_lethargy_period'.
+  $field_instances['node-symptoms_respiratory-field_lethargy_period'] = array(
+    'bundle' => 'symptoms_respiratory',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_lethargy_period',
+    'label' => 'Lethargy Period',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
       'weight' => 7,
     ),
   );
@@ -13523,7 +13757,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 8,
+      'weight' => 19,
     ),
   );
 
@@ -13571,6 +13805,100 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-symptoms_respiratory-field_poor_suck_period'.
+  $field_instances['node-symptoms_respiratory-field_poor_suck_period'] = array(
+    'bundle' => 'symptoms_respiratory',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 12,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_poor_suck_period',
+    'label' => 'Poor Suck Period',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-symptoms_respiratory-field_severe_weakness_period'.
+  $field_instances['node-symptoms_respiratory-field_severe_weakness_period'] = array(
+    'bundle' => 'symptoms_respiratory',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 17,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_severe_weakness_period',
+    'label' => 'Severe Weakness Period',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 13,
+    ),
+  );
+
   // Exported field_instance: 'node-symptoms_respiratory-field_shards'.
   $field_instances['node-symptoms_respiratory-field_shards'] = array(
     'bundle' => 'symptoms_respiratory',
@@ -13611,7 +13939,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 11,
+      'weight' => 22,
     ),
   );
 
@@ -13709,6 +14037,147 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-symptoms_respiratory-field_spontaneos_bleeding_period'.
+  $field_instances['node-symptoms_respiratory-field_spontaneos_bleeding_period'] = array(
+    'bundle' => 'symptoms_respiratory',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 21,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_spontaneos_bleeding_period',
+    'label' => 'Spontaneous Bleeding Period',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 17,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-symptoms_respiratory-field_unable_to_drink_period'.
+  $field_instances['node-symptoms_respiratory-field_unable_to_drink_period'] = array(
+    'bundle' => 'symptoms_respiratory',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 13,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_unable_to_drink_period',
+    'label' => 'Unable to Drink Period',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 9,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-symptoms_respiratory-field_unable_to_eat_period'.
+  $field_instances['node-symptoms_respiratory-field_unable_to_eat_period'] = array(
+    'bundle' => 'symptoms_respiratory',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 14,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_unable_to_eat_period',
+    'label' => 'Unable to Eat Period',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 10,
+    ),
+  );
+
   // Exported field_instance: 'node-symptoms_respiratory-field_uuid'.
   $field_instances['node-symptoms_respiratory-field_uuid'] = array(
     'bundle' => 'symptoms_respiratory',
@@ -13745,7 +14214,54 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 10,
+      'weight' => 21,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-symptoms_respiratory-field_yellow_eyes_period'.
+  $field_instances['node-symptoms_respiratory-field_yellow_eyes_period'] = array(
+    'bundle' => 'symptoms_respiratory',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 18,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_yellow_eyes_period',
+    'label' => 'Yellow Eyes Period',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 14,
     ),
   );
 
@@ -15126,7 +15642,9 @@ function hedley_activity_field_default_field_instances() {
   t('C-Section Scar');
   t('Child');
   t('Chills Period');
+  t('Coke Colored Urine Period');
   t('Confident');
+  t('Convulsions Period');
   t('Cough Period');
   t('Currently Pregnant');
   t('Danger Signs');
@@ -15134,6 +15652,7 @@ function hedley_activity_field_default_field_instances() {
   t('Dia');
   t('Distributed amount');
   t('Distribution notice');
+  t('Dry Mouth Period');
   t('Exposure');
   t('Eyes');
   t('Family Planning');
@@ -15155,6 +15674,7 @@ function hedley_activity_field_default_field_instances() {
   t('Heart rate');
   t('Height');
   t('In days');
+  t('Increased Thirst Period');
   t('Isolation');
   t('Lactation signs');
   t('Last Menstrual Period');
@@ -15163,6 +15683,7 @@ function hedley_activity_field_default_field_instances() {
   t('Leave this blank -- it will be automatically generated.');
   t('Leave this blank -- it will be filled in automatically.');
   t('Legs');
+  t('Lethargy Period');
   t('Live Children');
   t('Lungs');
   t('MUAC');
@@ -15183,6 +15704,7 @@ function hedley_activity_field_default_field_instances() {
   t('Peron');
   t('Person');
   t('Photo');
+  t('Poor Suck Period');
   t('PreTerm Pregnancy');
   t('Prenatal Encounter');
   t('Previous Delivery');
@@ -15192,10 +15714,12 @@ function hedley_activity_field_default_field_instances() {
   t('Represents the date which on which the measurement took place. This is distinct from the date which data entry was scheduled (though that would be the default). It is also distinct from the creation date of the node, since that could be different from the date the measurement took place.');
   t('Resources');
   t('Respiratory rate');
+  t('Severe Weakness Period');
   t('Shards');
   t('Shortness of Breath Period');
   t('Social History');
   t('Sore Throat Period');
+  t('Spontaneous Bleeding Period');
   t('Stillbirths PreTerm');
   t('Stillbirths at Term');
   t('Sys');
@@ -15203,9 +15727,12 @@ function hedley_activity_field_default_field_instances() {
   t('This field will be calculated -- you can leave it blank.');
   t('Travel History');
   t('UUID');
+  t('Unable to Drink Period');
+  t('Unable to Eat Period');
   t('Vomiting Period');
   t('Weight');
   t('When was this measurement actually made (as opposed to scheduled, or entered)?');
+  t('Yellow Eyes Period');
   t('You can leave the UUID blank -- it will be automatically generated.');
   t('ZScore Age');
   t('ZScore BMI');
