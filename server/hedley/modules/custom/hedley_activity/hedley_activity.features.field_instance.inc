@@ -13795,7 +13795,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 20,
+      'weight' => 10,
     ),
   );
 
@@ -13944,7 +13944,7 @@ function hedley_activity_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 18,
+      'weight' => 8,
     ),
   );
 
@@ -14035,7 +14035,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 19,
+      'weight' => 9,
     ),
   );
 
@@ -14123,7 +14123,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 22,
+      'weight' => 12,
     ),
   );
 
@@ -14221,6 +14221,53 @@ function hedley_activity_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-symptoms_respiratory-field_stabbing_chest_pain_period'.
+  $field_instances['node-symptoms_respiratory-field_stabbing_chest_pain_period'] = array(
+    'bundle' => 'symptoms_respiratory',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_stabbing_chest_pain_period',
+    'label' => 'Stabbing Chest Pain Period',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 7,
+    ),
+  );
+
   // Exported field_instance: 'node-symptoms_respiratory-field_uuid'.
   $field_instances['node-symptoms_respiratory-field_uuid'] = array(
     'bundle' => 'symptoms_respiratory',
@@ -14257,7 +14304,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 21,
+      'weight' => 11,
     ),
   );
 
@@ -15716,6 +15763,7 @@ function hedley_activity_field_default_field_instances() {
   t('Social History');
   t('Sore Throat Period');
   t('Spontaneous Bleeding Period');
+  t('Stabbing Chest Pain Period');
   t('Stillbirths PreTerm');
   t('Stillbirths at Term');
   t('Sys');

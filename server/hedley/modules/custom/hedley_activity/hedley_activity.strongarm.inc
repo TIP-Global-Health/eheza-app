@@ -2729,13 +2729,6 @@ function hedley_activity_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
-  $strongarm->name = 'node_preview_obstetrical_exam';
-  $strongarm->value = '1';
-  $export['node_preview_obstetrical_exam'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
   $strongarm->name = 'node_preview_obstetric_history';
   $strongarm->value = '1';
   $export['node_preview_obstetric_history'] = $strongarm;
@@ -2746,13 +2739,6 @@ function hedley_activity_strongarm() {
   $strongarm->name = 'node_preview_obstetric_history_step2';
   $strongarm->value = '1';
   $export['node_preview_obstetric_history_step2'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'node_preview_photo';
-  $strongarm->value = '1';
-  $export['node_preview_photo'] = $strongarm;
 
   return $export;
 }
