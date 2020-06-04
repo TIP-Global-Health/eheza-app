@@ -1008,7 +1008,7 @@ encodeSymptomsRespiratoryValue signs =
     , ( "nasal_congestion_period", int nasalCongestion )
     , ( "blood_in_sputum_period", int bloodInSputum )
     , ( "sore_throat_period", int soreThroat )
-    , ( "stabbing_chest_pain", int stabbingChestPain )
+    , ( "stabbing_chest_pain_period", int stabbingChestPain )
     ]
 
 
