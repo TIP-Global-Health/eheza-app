@@ -924,12 +924,56 @@ encodeSymptomsGeneralValue signs =
 
         headache =
             Dict.get Headache signs |> Maybe.withDefault 0
+
+        lethargy =
+            Dict.get Lethargy signs |> Maybe.withDefault 0
+
+        poorSuck =
+            Dict.get PoorSuck signs |> Maybe.withDefault 0
+
+        unableToDrink =
+            Dict.get UnableToDrink signs |> Maybe.withDefault 0
+
+        unableToEat =
+            Dict.get UnableToEat signs |> Maybe.withDefault 0
+
+        increasedThirst =
+            Dict.get IncreasedThirst signs |> Maybe.withDefault 0
+
+        dryMouth =
+            Dict.get DryMouth signs |> Maybe.withDefault 0
+
+        severeWeakness =
+            Dict.get SevereWeakness signs |> Maybe.withDefault 0
+
+        yellowEyes =
+            Dict.get YellowEyes signs |> Maybe.withDefault 0
+
+        cokeColoredUrine =
+            Dict.get CokeColoredUrine signs |> Maybe.withDefault 0
+
+        convulsions =
+            Dict.get SymptomsGeneralConvulsions signs |> Maybe.withDefault 0
+
+        spontaneousBleeding =
+            Dict.get SpontaneousBleeding signs |> Maybe.withDefault 0
     in
     [ ( "fever_period", int fever )
     , ( "chills_period", int chills )
     , ( "night_sweats_period", int nightSweats )
     , ( "body_aches_period", int bodyAches )
     , ( "headache_period", int headache )
+    , ( "coke_colored_urine_period", int cokeColoredUrine )
+    , ( "convulsions_period", int convulsions )
+    , ( "dry_mouth_period", int dryMouth )
+    , ( "increased_thirst_period", int increasedThirst )
+    , ( "lethargy_period", int lethargy )
+    , ( "poor_suck_period", int poorSuck )
+    , ( "severe_weakness_period", int severeWeakness )
+    , ( "spontaneos_bleeding_period", int spontaneousBleeding )
+    , ( "unable_to_drink_period", int unableToDrink )
+    , ( "unable_to_eat_period", int unableToEat )
+    , ( "yellow_eyes_period", int yellowEyes )
     ]
 
 
