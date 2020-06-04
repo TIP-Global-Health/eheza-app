@@ -2726,19 +2726,5 @@ function hedley_activity_strongarm() {
   $strongarm->value = '1';
   $export['node_preview_nutrition_weight'] = $strongarm;
 
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'node_preview_obstetric_history';
-  $strongarm->value = '1';
-  $export['node_preview_obstetric_history'] = $strongarm;
-
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'node_preview_obstetric_history_step2';
-  $strongarm->value = '1';
-  $export['node_preview_obstetric_history_step2'] = $strongarm;
-
   return $export;
 }
