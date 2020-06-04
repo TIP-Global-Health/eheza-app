@@ -129,7 +129,6 @@ type MsgChild
     | SelectCounselingTopic Bool CounselingTopicId
     | SendOutMsgChild OutMsgChild
     | SetDistributedAmountForChild String
-    | SetDistributedFullyForChild Bool
     | SetDistributoinNoticeForChild DistributionNotice
     | UpdateHeight String
     | UpdateMuac String
@@ -143,7 +142,6 @@ type MsgMother
     | ViewParticipantForm (Maybe ParticipantFormId)
     | SetCounselorSigned ParticipantFormId Bool
     | SetDistributedAmountForMother String
-    | SetDistributedFullyForMother Bool
     | SetDistributoinNoticeForMother DistributionNotice
     | SetParticipantSigned ParticipantFormId Bool
     | SendOutMsgMother OutMsgMother
@@ -184,7 +182,7 @@ emptyModelChild =
     , photo = Nothing
     , weight = ""
     , counseling = Nothing
-    , fbfForm = FbfForm Nothing Nothing Nothing
+    , fbfForm = FbfForm Nothing Nothing
     }
 
 
@@ -193,5 +191,5 @@ emptyModelMother =
     { familyPlanningSigns = EverySet.empty
     , participantConsent = emptyParticipantFormUI
     , lactationForm = LactationForm Nothing
-    , fbfForm = FbfForm Nothing Nothing Nothing
+    , fbfForm = FbfForm Nothing Nothing
     }

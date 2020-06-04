@@ -346,9 +346,11 @@ div.page-activity {
           width: 35%;
         }
 
-        input {
+        input,
+        select {
           background-color: $color-white;
           border: 2px solid $color-gray-border;
+          color: $color-text;
           float: left;
           width: 60%;
         }
