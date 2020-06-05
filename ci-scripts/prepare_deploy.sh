@@ -20,6 +20,8 @@ drupal_make
 cd ..
 symlink_externals
 
+cd server || exit 1
+
 # Install Robo.li.
 ddev composer install
 
