@@ -199,11 +199,9 @@ function install_drupal_profile {
 function composer_install {
   echo -e "${LBLUE}> Composer install${RESTORE}"
 
-  cd "$ROOT"/server
+  cd "$ROOT"
   ddev . "cd sites/default/files/composer && composer install"
   echo
-
-  cd "$ROOT"
 }
 
 ##
