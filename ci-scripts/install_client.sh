@@ -13,6 +13,8 @@ echo -e "Host github.com\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
 npm install -g elm@latest-0.19.1
 npm install -g elm-test@0.18.12
 npm install --global gulp-cli
+bower install
+elm-package install -y
 
 cd "$TRAVIS_BUILD_DIR"/client
 npm install
