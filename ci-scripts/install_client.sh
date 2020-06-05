@@ -18,7 +18,6 @@ npm install -g bower
 cd "$TRAVIS_BUILD_DIR"/client
 bower install
 npm install
-elm-package install -y
 
 # Gulp is responsible for creating the `src/generated` files.
 cp ./src/elm/LocalConfig.Example.elm ./src/elm/LocalConfig.elm
@@ -29,3 +28,5 @@ then
 else
   gulp publish
 fi
+
+elm make ./src/elm/Main.elm
