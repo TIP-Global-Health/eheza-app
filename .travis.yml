@@ -62,7 +62,7 @@ jobs:
         - "export DEPLOY=1 && $TRAVIS_BUILD_DIR/ci-scripts/install_client.sh"
         - "$TRAVIS_BUILD_DIR/ci-scripts/install_ddev.sh"
         - "$TRAVIS_BUILD_DIR/ci-scripts/prepare_deploy.sh"
-        - "cd $TRAVIS_BUILD_DIR/server && ddev robo deploy:pantheon qa"
+        - "cd $TRAVIS_BUILD_DIR/server && ddev robo deploy:pantheon qa --no-interactive"
 
 cache:
   directories:

@@ -78,7 +78,7 @@ class RoboFile extends Tasks {
     $rsyncExcludeString = '--exclude=' . join(' --exclude=', $rsyncExclude);
 
     // Copy all files and folders of the Drupal installation.
-    $this->_exec("rsync -az -q --delete $rsyncExcludeString . $pantheonDirectory");
+    $this->_exec("rsync -az -q --delete $rsyncExcludeString www/. $pantheonDirectory");
 
     // Copy all the files and folders of the app.
     $this->_exec("rsync -az -q --delete $rsyncExcludeString ../client/dist $pantheonDirectory/app");
@@ -90,7 +90,7 @@ class RoboFile extends Tasks {
 
     $this->_exec("cd $pantheonDirectory && git status");
 
-    $commitAndDeployConfirm = $this->confirm('Commit changes and deploy?');
+    $commitAndDeployConfirm = $this->confirm('Commit changes and deploy?', TRUE);
     if (!$commitAndDeployConfirm) {
       $this->say('Aborted commit and deploy, you can do it manually');
 
@@ -135,15 +135,10 @@ class RoboFile extends Tasks {
     }
 
     $task
-      ->exec("terminus remote:drush $pantheonTerminusEnvironment -- cr")
-
+      ->exec("terminus remote:drush $pantheonTerminusEnvironment -- cc all")
       // A second cache-clear, because Drupal...
-      ->exec("terminus remote:drush $pantheonTerminusEnvironment -- cr")
+      ->exec("terminus remote:drush $pantheonTerminusEnvironment -- cc all")
       ->exec("terminus remote:drush $pantheonTerminusEnvironment -- updb -y")
-
-      // A second config import, because Drupal...
-      ->exec("terminus remote:drush $pantheonTerminusEnvironment -- cim -y")
-      ->exec("terminus remote:drush $pantheonTerminusEnvironment -- cim -y")
       ->exec("terminus remote:drush $pantheonTerminusEnvironment -- uli")
       ->run();
   }
