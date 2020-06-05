@@ -26,7 +26,7 @@ cd server || exit 1
 ddev composer install
 
 # Authenticate with Terminus.
-ddev terminus auth:login --machine-token="$TERMINUS_TOKEN"
+ddev . terminus auth:login --machine-token="$TERMINUS_TOKEN"
 
 GIT_HOST="***REMOVED***"
 
