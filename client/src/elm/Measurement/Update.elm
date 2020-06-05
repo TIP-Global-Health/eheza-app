@@ -117,22 +117,17 @@ updateChild msg model =
             , Nothing
             )
 
-        SetDistributedFullyForChild isFully ->
-            let
-                fbfForm =
-                    model.fbfForm
-                        |> (\form -> { form | distributedFully = Just isFully })
-            in
-            ( { model | fbfForm = fbfForm }
-            , Cmd.none
-            , Nothing
-            )
-
         SetDistributoinNoticeForChild notice ->
             let
                 fbfForm =
                     model.fbfForm
-                        |> (\form -> { form | distributionNotice = Just notice })
+                        |> (\form ->
+                                if form.distributionNotice == Just notice then
+                                    { form | distributionNotice = Nothing }
+
+                                else
+                                    { form | distributionNotice = Just notice }
+                           )
             in
             ( { model | fbfForm = fbfForm }
             , Cmd.none
@@ -241,22 +236,17 @@ updateMother measurements msg model =
             , Nothing
             )
 
-        SetDistributedFullyForMother isFully ->
-            let
-                fbfForm =
-                    model.fbfForm
-                        |> (\form -> { form | distributedFully = Just isFully })
-            in
-            ( { model | fbfForm = fbfForm }
-            , Cmd.none
-            , Nothing
-            )
-
         SetDistributoinNoticeForMother notice ->
             let
                 fbfForm =
                     model.fbfForm
-                        |> (\form -> { form | distributionNotice = Just notice })
+                        |> (\form ->
+                                if form.distributionNotice == Just notice then
+                                    { form | distributionNotice = Nothing }
+
+                                else
+                                    { form | distributionNotice = Just notice }
+                           )
             in
             ( { model | fbfForm = fbfForm }
             , Cmd.none
