@@ -19,8 +19,6 @@ pwd
 drupal_make
 cd ..
 symlink_externals
-composer_install
-create_sites_default_files_directory
 
 # Install Robo.li.
 ddev composer install

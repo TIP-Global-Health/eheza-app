@@ -69,6 +69,7 @@ class RoboFile extends Tasks {
       '.idea',
       '.pantheon',
       'sites/default',
+      'sites/all/vendor',
       'pantheon.yml',
       'pantheon.upstream.yml',
     ];
