@@ -206,6 +206,8 @@ function composer_install {
   cd "$ROOT"/www/sites/default/files/composer
   composer install
   echo
+
+  cd "$ROOT"
 }
 
 ##
