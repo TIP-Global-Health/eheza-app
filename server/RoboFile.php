@@ -52,11 +52,12 @@ class RoboFile extends Tasks {
     }
 
     // Validate pantheon.upstream.yml.
-    if (!file_exists($pantheonDirectory . '/pantheon.upstream.yml')) {
+    $pantheonConfig = $pantheonDirectory . '/pantheon.upstream.yml';
+    if (!file_exists($pantheonConfig)) {
       throw new Exception("pantheon.upstream.yml is missing from the Pantheon directory ($pantheonDirectory)");
     }
 
-    $yaml = Yaml::parseFile($pantheonDirectory . '/pantheon.yml');
+    $yaml = Yaml::parseFile($pantheonConfig);
     if (empty($yaml['php_version'])) {
       throw new Exception("'php_version:' directive is missing from pantheon.upstream.yml in Pantheon directory ($pantheonDirectory)");
     }
@@ -107,9 +108,6 @@ class RoboFile extends Tasks {
 
       return;
     }
-
-    $pantheonName = self::PANTHEON_NAME;
-    $pantheonTerminusEnvironment = $pantheonName . '.dev';
 
     $this->_exec("cd $pantheonDirectory && git pull && git add . && git commit -am 'Site update' && git push");
     $this->deployPantheonSync('dev', false);
