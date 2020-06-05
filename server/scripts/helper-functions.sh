@@ -169,7 +169,7 @@ function delete_www_content {
 function drupal_make {
   echo -e "${LBLUE}> Run the build script (scripts/build)${RESTORE}"
   if ! [ -x "$(command -v ddev)" ]; then
-    ./scripts/build
+    bash "$ROOT"/scripts/build
   else
     ddev . "cd .. && scripts/build"
   fi
