@@ -1815,6 +1815,20 @@ input::placeholder {
   }
 }
 
+.icon-treatment-review {
+  .active &:after {
+    background-image: url(#{$img-path}icon-treatment-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-treatment-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-treatment-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
 // Lists
 
 .ui.list {
