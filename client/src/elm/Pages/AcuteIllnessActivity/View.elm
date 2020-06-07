@@ -1046,17 +1046,16 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
                     []
 
         actions =
-            -- let
-            --     saveMsg =
-            --         case data.activeTask of
-            --             TreatmentMalariaTesting ->
-            --                 SaveMalariaTesting personId measurements.malariaTesting
-            -- in
+            let
+                saveMsg =
+                    case data.activeTask of
+                        TreatmentReview ->
+                            SaveTreatmentReview personId measurements.treatmentReview
+            in
             div [ class "actions malaria-testing" ]
                 [ button
                     [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-
-                    -- , onClick saveMsg
+                    , onClick saveMsg
                     ]
                     [ text <| translate language Translate.Save ]
                 ]

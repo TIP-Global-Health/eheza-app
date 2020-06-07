@@ -747,11 +747,11 @@ toTreatmentReviewValueWithDefault saved form =
 toTreatmentReviewValue : TreatmentReviewForm -> Maybe (EverySet TreatmentReviewSign)
 toTreatmentReviewValue form =
     [ Maybe.map (ifTrue FeverPast6Hours) form.feverPast6Hours
-    , Maybe.map (ifTrue FeverPast6HoursHelped) form.feverPast6HoursHelped
+    , ifNullableTrue FeverPast6HoursHelped form.feverPast6HoursHelped
     , Maybe.map (ifTrue MalariaToday) form.malariaToday
-    , Maybe.map (ifTrue MalariaTodayHelped) form.malariaTodayHelped
+    , ifNullableTrue MalariaTodayHelped form.malariaTodayHelped
     , Maybe.map (ifTrue MalariaWithinPastMonth) form.malariaWithinPastMonth
-    , Maybe.map (ifTrue MalariaWithinPastMonthHelped) form.malariaWithinPastMonthHelped
+    , ifNullableTrue MalariaWithinPastMonthHelped form.malariaWithinPastMonthHelped
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoTreatmentReviewSigns)

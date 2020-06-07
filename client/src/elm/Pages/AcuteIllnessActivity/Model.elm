@@ -51,6 +51,7 @@ type Msg
       -- PRIOR TREATMNENT
     | SetActivePriorTreatmentTask PriorTreatmentTask
     | SetTreatmentReviewBoolInput (Bool -> TreatmentReviewForm -> TreatmentReviewForm) Bool
+    | SaveTreatmentReview PersonId (Maybe ( TreatmentReviewId, TreatmentReview ))
 
 
 type alias Model =

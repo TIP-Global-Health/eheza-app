@@ -29,6 +29,7 @@ type alias Model =
     , saveExposure : WebData ()
     , saveIsolation : WebData ()
     , saveHCContact : WebData ()
+    , saveTreatmentReview : WebData ()
     }
 
 
@@ -44,6 +45,7 @@ emptyModel =
     , saveExposure = NotAsked
     , saveIsolation = NotAsked
     , saveHCContact = NotAsked
+    , saveTreatmentReview = NotAsked
     }
 
 
@@ -68,3 +70,5 @@ type Msg
     | HandleSavedIsolation (WebData ())
     | SaveHCContact PersonId (Maybe HCContactId) HCContactValue
     | HandleSavedHCContact (WebData ())
+    | SaveTreatmentReview PersonId (Maybe TreatmentReviewId) (EverySet TreatmentReviewSign)
+    | HandleSavedTreatmentReview (WebData ())
