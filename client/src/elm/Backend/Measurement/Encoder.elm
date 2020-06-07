@@ -924,12 +924,56 @@ encodeSymptomsGeneralValue signs =
 
         headache =
             Dict.get Headache signs |> Maybe.withDefault 0
+
+        lethargy =
+            Dict.get Lethargy signs |> Maybe.withDefault 0
+
+        poorSuck =
+            Dict.get PoorSuck signs |> Maybe.withDefault 0
+
+        unableToDrink =
+            Dict.get UnableToDrink signs |> Maybe.withDefault 0
+
+        unableToEat =
+            Dict.get UnableToEat signs |> Maybe.withDefault 0
+
+        increasedThirst =
+            Dict.get IncreasedThirst signs |> Maybe.withDefault 0
+
+        dryMouth =
+            Dict.get DryMouth signs |> Maybe.withDefault 0
+
+        severeWeakness =
+            Dict.get SevereWeakness signs |> Maybe.withDefault 0
+
+        yellowEyes =
+            Dict.get YellowEyes signs |> Maybe.withDefault 0
+
+        cokeColoredUrine =
+            Dict.get CokeColoredUrine signs |> Maybe.withDefault 0
+
+        convulsions =
+            Dict.get SymptomsGeneralConvulsions signs |> Maybe.withDefault 0
+
+        spontaneousBleeding =
+            Dict.get SpontaneousBleeding signs |> Maybe.withDefault 0
     in
     [ ( "fever_period", int fever )
     , ( "chills_period", int chills )
     , ( "night_sweats_period", int nightSweats )
     , ( "body_aches_period", int bodyAches )
     , ( "headache_period", int headache )
+    , ( "coke_colored_urine_period", int cokeColoredUrine )
+    , ( "convulsions_period", int convulsions )
+    , ( "dry_mouth_period", int dryMouth )
+    , ( "increased_thirst_period", int increasedThirst )
+    , ( "lethargy_period", int lethargy )
+    , ( "poor_suck_period", int poorSuck )
+    , ( "severe_weakness_period", int severeWeakness )
+    , ( "spontaneos_bleeding_period", int spontaneousBleeding )
+    , ( "unable_to_drink_period", int unableToDrink )
+    , ( "unable_to_eat_period", int unableToEat )
+    , ( "yellow_eyes_period", int yellowEyes )
     ]
 
 
@@ -955,12 +999,16 @@ encodeSymptomsRespiratoryValue signs =
 
         soreThroat =
             Dict.get SoreThroat signs |> Maybe.withDefault 0
+
+        stabbingChestPain =
+            Dict.get StabbingChestPain signs |> Maybe.withDefault 0
     in
     [ ( "cough_period", int cough )
     , ( "shortness_of_breath_period", int shortnessOfBreath )
     , ( "nasal_congestion_period", int nasalCongestion )
     , ( "blood_in_sputum_period", int bloodInSputum )
     , ( "sore_throat_period", int soreThroat )
+    , ( "stabbing_chest_pain_period", int stabbingChestPain )
     ]
 
 
@@ -969,30 +1017,42 @@ encodeSymptomsGI =
     encodeAcuteIllnessMeasurement encodeSymptomsGIValue
 
 
-encodeSymptomsGIValue : Dict SymptomsGISign Int -> List ( String, Value )
-encodeSymptomsGIValue signs =
+encodeSymptomsGIValue : SymptomsGIValue -> List ( String, Value )
+encodeSymptomsGIValue value =
     let
         bloodyDiarrhea =
-            Dict.get BloodyDiarrhea signs |> Maybe.withDefault 0
+            Dict.get BloodyDiarrhea value.signs |> Maybe.withDefault 0
 
         nonBloodyDiarrhea =
-            Dict.get NonBloodyDiarrhea signs |> Maybe.withDefault 0
+            Dict.get NonBloodyDiarrhea value.signs |> Maybe.withDefault 0
 
         nausea =
-            Dict.get Nausea signs |> Maybe.withDefault 0
+            Dict.get Nausea value.signs |> Maybe.withDefault 0
 
         vomiting =
-            Dict.get Vomiting signs |> Maybe.withDefault 0
+            Dict.get Vomiting value.signs |> Maybe.withDefault 0
 
         abdominalPain =
-            Dict.get SymptomGIAbdominalPain signs |> Maybe.withDefault 0
+            Dict.get SymptomGIAbdominalPain value.signs |> Maybe.withDefault 0
     in
     [ ( "bloody_diarrhea_period", int bloodyDiarrhea )
     , ( "non_bloody_diarrhea_period", int nonBloodyDiarrhea )
     , ( "nausea_period", int nausea )
     , ( "vomiting_period", int vomiting )
     , ( "abdominal_pain_period", int abdominalPain )
+    , ( "symptoms_gi_derived_signs", encodeEverySet encodeSymptomsGIDerivedSigns value.derivedSigns )
     ]
+
+
+encodeSymptomsGIDerivedSigns : SymptomsGIDerivedSign -> Value
+encodeSymptomsGIDerivedSigns sign =
+    string <|
+        case sign of
+            IntractableVomiting ->
+                "intractable-vomiting"
+
+            NoSymptomsGIDerived ->
+                "none"
 
 
 encodeAcuteIllnessVitals : AcuteIllnessVitals -> List ( String, Value )

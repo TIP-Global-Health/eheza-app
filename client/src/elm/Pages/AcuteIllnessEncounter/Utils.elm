@@ -41,13 +41,13 @@ suspectedCovid19Case measurements =
                     )
                 |> Maybe.withDefault False
 
-        calculateSymptoms measurement_ default =
+        calculateSymptoms measurement_ getSetFunc default =
             measurement_
                 |> Maybe.map
                     (\measurement ->
                         let
                             set =
-                                Tuple.second measurement |> .value
+                                Tuple.second measurement |> getSetFunc
 
                             setSize =
                                 Dict.size set
@@ -90,9 +90,9 @@ suspectedCovid19Case measurements =
                 |> Maybe.withDefault 0
 
         totalSymptoms =
-            calculateSymptoms measurements.symptomsGeneral NoSymptomsGeneral
-                + calculateSymptoms measurements.symptomsRespiratory NoSymptomsRespiratory
-                + calculateSymptoms measurements.symptomsGI NoSymptomsGI
+            calculateSymptoms measurements.symptomsGeneral .value NoSymptomsGeneral
+                + calculateSymptoms measurements.symptomsRespiratory .value NoSymptomsRespiratory
+                + calculateSymptoms measurements.symptomsGI (.value >> .signs) NoSymptomsGI
 
         totalSigns =
             calculateSigns measurements.travelHistory NoTravelHistorySigns

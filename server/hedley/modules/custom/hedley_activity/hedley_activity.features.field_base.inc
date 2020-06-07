@@ -375,6 +375,21 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_coke_colored_urine_period'.
+  $field_bases['field_coke_colored_urine_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_coke_colored_urine_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
   // Exported field_base: 'field_confident'.
   $field_bases['field_confident'] = array(
     'active' => 1,
@@ -398,6 +413,21 @@ function hedley_activity_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_boolean',
+  );
+
+  // Exported field_base: 'field_convulsions_period'.
+  $field_bases['field_convulsions_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_convulsions_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
   );
 
   // Exported field_base: 'field_cough_period'.
@@ -562,6 +592,21 @@ function hedley_activity_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_dry_mouth_period'.
+  $field_bases['field_dry_mouth_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_dry_mouth_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
   );
 
   // Exported field_base: 'field_exposure'.
@@ -982,6 +1027,21 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'number_float',
   );
 
+  // Exported field_base: 'field_increased_thirst_period'.
+  $field_bases['field_increased_thirst_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_increased_thirst_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
   // Exported field_base: 'field_isolation'.
   $field_bases['field_isolation'] = array(
     'active' => 1,
@@ -1091,6 +1151,21 @@ function hedley_activity_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_lethargy_period'.
+  $field_bases['field_lethargy_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_lethargy_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
   );
 
   // Exported field_base: 'field_live_children'.
@@ -1480,6 +1555,21 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_poor_suck_period'.
+  $field_bases['field_poor_suck_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_poor_suck_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
   // Exported field_base: 'field_prenatal_encounter'.
   $field_bases['field_prenatal_encounter'] = array(
     'active' => 1,
@@ -1690,6 +1780,21 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
+  // Exported field_base: 'field_severe_weakness_period'.
+  $field_bases['field_severe_weakness_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_severe_weakness_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
   // Exported field_base: 'field_shortness_of_breath_period'.
   $field_bases['field_shortness_of_breath_period'] = array(
     'active' => 1,
@@ -1746,6 +1851,36 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_spontaneos_bleeding_period'.
+  $field_bases['field_spontaneos_bleeding_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_spontaneos_bleeding_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_stabbing_chest_pain_period'.
+  $field_bases['field_stabbing_chest_pain_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_stabbing_chest_pain_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
   // Exported field_base: 'field_stillbirths_at_term'.
   $field_bases['field_stillbirths_at_term'] = array(
     'active' => 1,
@@ -1774,6 +1909,31 @@ function hedley_activity_field_default_field_bases() {
     'settings' => array(),
     'translatable' => 0,
     'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_symptoms_gi_derived_signs'.
+  $field_bases['field_symptoms_gi_derived_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_symptoms_gi_derived_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'intractable-vomiting' => 'Intractable Vomiting',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_sys'.
@@ -1833,6 +1993,36 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_unable_to_drink_period'.
+  $field_bases['field_unable_to_drink_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_unable_to_drink_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_unable_to_eat_period'.
+  $field_bases['field_unable_to_eat_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_unable_to_eat_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
   // Exported field_base: 'field_vomiting_period'.
   $field_bases['field_vomiting_period'] = array(
     'active' => 1,
@@ -1863,6 +2053,21 @@ function hedley_activity_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'number_float',
+  );
+
+  // Exported field_base: 'field_yellow_eyes_period'.
+  $field_bases['field_yellow_eyes_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_yellow_eyes_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
   );
 
   // Exported field_base: 'field_zscore_age'.

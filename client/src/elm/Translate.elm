@@ -388,6 +388,7 @@ type TranslationId
     | IndividualEncounterType IndividualEncounterType
     | IndividualEncounterTypes
     | InitialResultsDisplay InitialResultsDisplay
+    | IntractableVomitingQuestion
     | IsCurrentlyBreastfeeding
     | KilogramShorthand
     | KilogramsPerMonth
@@ -2587,6 +2588,11 @@ translationSet trans =
                     , kinyarwanda = Just "Hisha ababyeyi bose / abarezi"
                     }
 
+        IntractableVomitingQuestion ->
+            { english = "Is Intractable Vomiting"
+            , kinyarwanda = Nothing
+            }
+
         IsCurrentlyBreastfeeding ->
             { english = "Is the mother currently breastfeeding her infant"
             , kinyarwanda = Nothing
@@ -4294,6 +4300,61 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                Lethargy ->
+                    { english = "Lethargy"
+                    , kinyarwanda = Nothing
+                    }
+
+                PoorSuck ->
+                    { english = "Poor Suck"
+                    , kinyarwanda = Nothing
+                    }
+
+                UnableToDrink ->
+                    { english = "Unable to Drink"
+                    , kinyarwanda = Nothing
+                    }
+
+                UnableToEat ->
+                    { english = "Unable to Eat"
+                    , kinyarwanda = Nothing
+                    }
+
+                IncreasedThirst ->
+                    { english = "Increased Thirst"
+                    , kinyarwanda = Nothing
+                    }
+
+                DryMouth ->
+                    { english = "Dry/Sticky Mouth"
+                    , kinyarwanda = Nothing
+                    }
+
+                SevereWeakness ->
+                    { english = "Severe Weakness"
+                    , kinyarwanda = Nothing
+                    }
+
+                YellowEyes ->
+                    { english = "Yellow Eyes"
+                    , kinyarwanda = Nothing
+                    }
+
+                CokeColoredUrine ->
+                    { english = "Coca-Cola Colored Urine"
+                    , kinyarwanda = Nothing
+                    }
+
+                SymptomsGeneralConvulsions ->
+                    { english = "Convulsions"
+                    , kinyarwanda = Nothing
+                    }
+
+                SpontaneousBleeding ->
+                    { english = "Spontaneous Bleeding"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoSymptomsGeneral ->
                     { english = "None of the above"
                     , kinyarwanda = Nothing
@@ -4317,7 +4378,7 @@ translationSet trans =
                     }
 
                 NonBloodyDiarrhea ->
-                    { english = "Non-Bloody Diarrhea"
+                    { english = "Non-Bloody Diarrhea - >3 liquid stools in the last 24 hours"
                     , kinyarwanda = Nothing
                     }
 
@@ -4355,6 +4416,11 @@ translationSet trans =
 
                 SoreThroat ->
                     { english = "Sore Throat"
+                    , kinyarwanda = Nothing
+                    }
+
+                StabbingChestPain ->
+                    { english = "Stabbing Chest Pain"
                     , kinyarwanda = Nothing
                     }
 

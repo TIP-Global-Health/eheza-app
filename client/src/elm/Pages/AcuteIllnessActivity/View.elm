@@ -305,17 +305,36 @@ viewSymptomsRespiratoryForm language currentDate measurements form =
 
 viewSymptomsGIForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SymptomsGIForm -> Html Msg
 viewSymptomsGIForm language currentDate measurements form =
-    viewCheckBoxValueInput language
-        allSymptomsGISigns
-        form.signs
-        ToggleSymptomsGISign
-        SetSymptomsGISignValue
-        Translate.SymptomsGISign
-        |> List.append
-            [ viewQuestionLabel language Translate.PatientGotAnySymptoms
-            , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
-            ]
-        |> div [ class "symptoms-form gi" ]
+    let
+        symptoms =
+            viewCheckBoxValueInput language
+                allSymptomsGISigns
+                form.signs
+                ToggleSymptomsGISign
+                SetSymptomsGISignValue
+                Translate.SymptomsGISign
+                |> List.append
+                    [ viewQuestionLabel language Translate.PatientGotAnySymptoms
+                    , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+                    ]
+
+        derivedQuestions =
+            if Dict.member Vomiting form.signs then
+                [ viewQuestionLabel language Translate.IntractableVomitingQuestion
+                , viewBoolInput language
+                    form.intractableVomiting
+                    SetSymptomsGIIntractableVomiting
+                    "intractable-vomiting"
+                    Nothing
+                ]
+
+            else
+                []
+    in
+    div [ class "symptoms-form gi" ]
+        [ div [ class "symptoms" ] symptoms
+        , div [ class "derived-questions" ] derivedQuestions
+        ]
 
 
 viewAcuteIllnessPhysicalExam : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> PhysicalExamData -> List (Html Msg)
@@ -799,7 +818,7 @@ viewIsolationForm language currentDate measurements form =
                 Nothing
             ]
 
-        derrivedInputs =
+        derivedInputs =
             case form.patientIsolated of
                 Just True ->
                     [ div [ class "ui grid" ]
@@ -855,7 +874,7 @@ viewIsolationForm language currentDate measurements form =
             ]
     in
     patientIsolatedInput
-        ++ derrivedInputs
+        ++ derivedInputs
         |> div [ class "ui form exposure isolation" ]
 
 
@@ -880,7 +899,7 @@ viewHCContactForm language currentDate measurements form =
                 Nothing
             ]
 
-        derrivedInputs =
+        derivedInputs =
             case form.contactedHC of
                 Just True ->
                     let
@@ -904,7 +923,7 @@ viewHCContactForm language currentDate measurements form =
                                 Translate.ResponsePeriod
                             ]
 
-                        derrivedInput =
+                        derivedInput =
                             form.recomendations
                                 |> Maybe.map
                                     (\recomendations ->
@@ -923,13 +942,13 @@ viewHCContactForm language currentDate measurements form =
                                     )
                                 |> Maybe.withDefault []
                     in
-                    hcRespnonseInput ++ hcRespnonsePerionInput ++ derrivedInput
+                    hcRespnonseInput ++ hcRespnonsePerionInput ++ derivedInput
 
                 _ ->
                     []
     in
     contactedHCInput
-        ++ derrivedInputs
+        ++ derivedInputs
         |> div [ class "ui form exposure hc-contact" ]
 
 

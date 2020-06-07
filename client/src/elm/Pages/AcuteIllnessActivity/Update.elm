@@ -89,8 +89,11 @@ update currentDate id db msg model =
 
         ToggleSymptomsGeneralSign sign ->
             let
+                updatedSigns =
+                    toggleSymptomsSign SymptomsGeneral sign NoSymptomsGeneral symptomsGeneralForm.signs
+
                 updatedForm =
-                    toggleSymptomsSign SymptomsGeneral sign NoSymptomsGeneral symptomsGeneralForm
+                    { symptomsGeneralForm | signs = updatedSigns }
 
                 updatedData =
                     model.symptomsData
@@ -103,8 +106,11 @@ update currentDate id db msg model =
 
         ToggleSymptomsGISign sign ->
             let
+                updatedSigns =
+                    toggleSymptomsSign SymptomsGI sign NoSymptomsGI symptomsGIForm.signs
+
                 updatedForm =
-                    toggleSymptomsSign SymptomsGI sign NoSymptomsGI symptomsGIForm
+                    { symptomsGIForm | signs = updatedSigns }
 
                 updatedData =
                     model.symptomsData
@@ -117,8 +123,11 @@ update currentDate id db msg model =
 
         ToggleSymptomsRespiratorySign sign ->
             let
+                updatedSigns =
+                    toggleSymptomsSign SymptomsRespiratory sign NoSymptomsRespiratory symptomsRespiratoryForm.signs
+
                 updatedForm =
-                    toggleSymptomsSign SymptomsRespiratory sign NoSymptomsRespiratory symptomsRespiratoryForm
+                    { symptomsRespiratoryForm | signs = updatedSigns }
 
                 updatedData =
                     model.symptomsData
@@ -185,6 +194,20 @@ update currentDate id db msg model =
                         )
                     )
                 |> Maybe.withDefault noChange
+
+        SetSymptomsGIIntractableVomiting value ->
+            let
+                updatedForm =
+                    { symptomsGIForm | intractableVomiting = Just value }
+
+                updatedData =
+                    model.symptomsData
+                        |> (\data -> { data | symptomsGIForm = updatedForm })
+            in
+            ( { model | symptomsData = updatedData }
+            , Cmd.none
+            , []
+            )
 
         SaveSymptomsGeneral personId saved nextTask_ ->
             let

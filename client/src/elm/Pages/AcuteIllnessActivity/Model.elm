@@ -18,6 +18,7 @@ type Msg
     | SetSymptomsGeneralSignValue SymptomsGeneralSign String
     | SetSymptomsGISignValue SymptomsGISign String
     | SetSymptomsRespiratorySignValue SymptomsRespiratorySign String
+    | SetSymptomsGIIntractableVomiting Bool
     | SaveSymptomsGeneral PersonId (Maybe ( SymptomsGeneralId, SymptomsGeneral )) (Maybe SymptomsTask)
     | SaveSymptomsRespiratory PersonId (Maybe ( SymptomsRespiratoryId, SymptomsRespiratory )) (Maybe SymptomsTask)
     | SaveSymptomsGI PersonId (Maybe ( SymptomsGIId, SymptomsGI )) (Maybe SymptomsTask)
@@ -86,7 +87,7 @@ emptySymptomsData : SymptomsData
 emptySymptomsData =
     { symptomsGeneralForm = SymptomsGeneralForm Dict.empty
     , symptomsRespiratoryForm = SymptomsRespiratoryForm Dict.empty
-    , symptomsGIForm = SymptomsGIForm Dict.empty
+    , symptomsGIForm = SymptomsGIForm Dict.empty Nothing
     , activeTask = SymptomsGeneral
     }
 
@@ -109,6 +110,7 @@ type alias SymptomsRespiratoryForm =
 
 type alias SymptomsGIForm =
     { signs : Dict SymptomsGISign Int
+    , intractableVomiting : Maybe Bool
     }
 
 
