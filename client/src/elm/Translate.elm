@@ -4594,7 +4594,7 @@ translationSet trans =
 
         TreatmentTask task ->
             case task of
-                TreatmentHistory ->
+                TreatmentReview ->
                     { english = "Treatment History"
                     , kinyarwanda = Nothing
                     }

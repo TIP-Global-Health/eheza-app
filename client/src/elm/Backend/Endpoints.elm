@@ -522,10 +522,10 @@ travelHistoryEndpoint =
         |> withValueEncoder (object << encodeTravelHistory)
 
 
-treatmentHistoryEndpoint : ReadWriteEndPoint Error TreatmentHistoryId TreatmentHistory TreatmentHistory ()
+treatmentHistoryEndpoint : ReadWriteEndPoint Error TreatmentReviewId TreatmentReview TreatmentReview ()
 treatmentHistoryEndpoint =
-    swEndpoint "nodes/treatment_history" decodeTreatmentHistory
-        |> withValueEncoder (object << encodeTreatmentHistory)
+    swEndpoint "nodes/treatment_history" decodeTreatmentReview
+        |> withValueEncoder (object << encodeTreatmentReview)
 
 
 exposureEndpoint : ReadWriteEndPoint Error ExposureId Exposure Exposure ()

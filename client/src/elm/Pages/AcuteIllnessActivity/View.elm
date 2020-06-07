@@ -990,13 +990,13 @@ viewAcuteIllnessTreatment language currentDate id ( personId, measurements ) dat
             AcuteIllnessTreatment
 
         tasks =
-            [ TreatmentHistory ]
+            [ TreatmentReview ]
 
         viewTask task =
             let
                 ( iconClass, isCompleted ) =
                     case task of
-                        TreatmentHistory ->
+                        TreatmentReview ->
                             ( "treatment-review"
                             , isJust measurements.treatmentHistory
                             )
@@ -1034,7 +1034,7 @@ viewAcuteIllnessTreatment language currentDate id ( personId, measurements ) dat
 
         viewForm =
             case data.activeTask of
-                TreatmentHistory ->
+                TreatmentReview ->
                     div [] [ text "Todo" ]
 
         -- measurements.malariaTesting
@@ -1043,7 +1043,7 @@ viewAcuteIllnessTreatment language currentDate id ( personId, measurements ) dat
         --     |> viewMalariaTestingForm language currentDate measurements
         getNextTask currentTask =
             case currentTask of
-                TreatmentHistory ->
+                TreatmentReview ->
                     []
 
         actions =

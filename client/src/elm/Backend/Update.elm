@@ -1911,7 +1911,7 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
-        TreatmentHistoryRevision uuid data ->
+        TreatmentReviewRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
                 (\measurements -> { measurements | treatmentHistory = Just ( uuid, data ) })

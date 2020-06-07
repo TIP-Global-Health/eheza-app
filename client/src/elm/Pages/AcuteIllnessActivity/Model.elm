@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Model exposing (ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, TreatmentData, TreatmentHistoryForm, TreatmentTask(..), VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptySymptomsData, emptyTreatmentData, emptyTreatmentHistoryForm)
+module Pages.AcuteIllnessActivity.Model exposing (ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, TreatmentData, TreatmentReviewForm, TreatmentTask(..), VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptySymptomsData, emptyTreatmentData, emptyTreatmentReviewForm)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -233,23 +233,23 @@ type alias HCContactForm =
 
 
 type alias TreatmentData =
-    { treatmentHistoryForm : TreatmentHistoryForm
+    { treatmentHistoryForm : TreatmentReviewForm
     , activeTask : TreatmentTask
     }
 
 
 emptyTreatmentData : TreatmentData
 emptyTreatmentData =
-    { treatmentHistoryForm = emptyTreatmentHistoryForm
-    , activeTask = TreatmentHistory
+    { treatmentHistoryForm = emptyTreatmentReviewForm
+    , activeTask = TreatmentReview
     }
 
 
 type TreatmentTask
-    = TreatmentHistory
+    = TreatmentReview
 
 
-type alias TreatmentHistoryForm =
+type alias TreatmentReviewForm =
     { feverPast6Hours : Maybe Bool
     , feverPast6HoursHelped : Maybe Bool
     , malariaToday : Maybe Bool
@@ -259,8 +259,8 @@ type alias TreatmentHistoryForm =
     }
 
 
-emptyTreatmentHistoryForm : TreatmentHistoryForm
-emptyTreatmentHistoryForm =
+emptyTreatmentReviewForm : TreatmentReviewForm
+emptyTreatmentReviewForm =
     { feverPast6Hours = Nothing
     , feverPast6HoursHelped = Nothing
     , malariaToday = Nothing

@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, exposureFormWithDefault, exposureTasksCompletedFromTotal, fromExposureValue, fromHCContactValue, fromIsolationValue, fromListWithDefaultValue, fromMalariaTestingValue, fromTravelHistoryValue, fromTreatmentHistoryValue, fromVitalsValue, hcContactFormWithDefault, hcContactValuePostProcess, isolationFormWithDefault, isolationValuePostProcess, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, naListTaskCompleted, naTaskCompleted, physicalExamTasksCompletedFromTotal, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toExposureValue, toExposureValueWithDefault, toHCContactValue, toHCContactValueWithDefault, toIsolationValue, toIsolationValueWithDefault, toMalariaTestingValue, toMalariaTestingValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValue, toTravelHistoryValueWithDefault, toTreatmentHistoryValue, toTreatmentHistoryValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, treatmentHistoryFormWithDefault, treatmentTasksCompletedFromTotal, vitalsFormWithDefault, withDefaultValue)
+module Pages.AcuteIllnessActivity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, exposureFormWithDefault, exposureTasksCompletedFromTotal, fromExposureValue, fromHCContactValue, fromIsolationValue, fromListWithDefaultValue, fromMalariaTestingValue, fromTravelHistoryValue, fromTreatmentReviewValue, fromVitalsValue, hcContactFormWithDefault, hcContactValuePostProcess, isolationFormWithDefault, isolationValuePostProcess, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, naListTaskCompleted, naTaskCompleted, physicalExamTasksCompletedFromTotal, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toExposureValue, toExposureValueWithDefault, toHCContactValue, toHCContactValueWithDefault, toIsolationValue, toIsolationValueWithDefault, toMalariaTestingValue, toMalariaTestingValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValue, toTravelHistoryValueWithDefault, toTreatmentReviewValue, toTreatmentReviewValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, treatmentHistoryFormWithDefault, treatmentTasksCompletedFromTotal, vitalsFormWithDefault, withDefaultValue)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model
@@ -20,7 +20,7 @@ import Backend.Measurement.Model
         , SymptomsGeneralSign(..)
         , SymptomsRespiratorySign(..)
         , TravelHistorySign(..)
-        , TreatmentHistorySign(..)
+        , TreatmentReviewSign(..)
         )
 import EverySet exposing (EverySet)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
@@ -264,7 +264,7 @@ exposureTasksCompletedFromTotal measurements data task =
 treatmentTasksCompletedFromTotal : AcuteIllnessMeasurements -> TreatmentData -> TreatmentTask -> ( Int, Int )
 treatmentTasksCompletedFromTotal measurements data task =
     case task of
-        TreatmentHistory ->
+        TreatmentReview ->
             let
                 form =
                     measurements.treatmentHistory
@@ -711,8 +711,8 @@ hcContactValuePostProcess saved =
             )
 
 
-fromTreatmentHistoryValue : Maybe (EverySet TreatmentHistorySign) -> TreatmentHistoryForm
-fromTreatmentHistoryValue saved =
+fromTreatmentReviewValue : Maybe (EverySet TreatmentReviewSign) -> TreatmentReviewForm
+fromTreatmentReviewValue saved =
     { feverPast6Hours = Maybe.map (EverySet.member FeverPast6Hours) saved
     , feverPast6HoursHelped = Maybe.map (EverySet.member FeverPast6HoursHelped) saved
     , malariaToday = Maybe.map (EverySet.member MalariaToday) saved
@@ -722,7 +722,7 @@ fromTreatmentHistoryValue saved =
     }
 
 
-treatmentHistoryFormWithDefault : TreatmentHistoryForm -> Maybe (EverySet TreatmentHistorySign) -> TreatmentHistoryForm
+treatmentHistoryFormWithDefault : TreatmentReviewForm -> Maybe (EverySet TreatmentReviewSign) -> TreatmentReviewForm
 treatmentHistoryFormWithDefault form saved =
     saved
         |> unwrap
@@ -738,14 +738,14 @@ treatmentHistoryFormWithDefault form saved =
             )
 
 
-toTreatmentHistoryValueWithDefault : Maybe (EverySet TreatmentHistorySign) -> TreatmentHistoryForm -> Maybe (EverySet TreatmentHistorySign)
-toTreatmentHistoryValueWithDefault saved form =
+toTreatmentReviewValueWithDefault : Maybe (EverySet TreatmentReviewSign) -> TreatmentReviewForm -> Maybe (EverySet TreatmentReviewSign)
+toTreatmentReviewValueWithDefault saved form =
     treatmentHistoryFormWithDefault form saved
-        |> toTreatmentHistoryValue
+        |> toTreatmentReviewValue
 
 
-toTreatmentHistoryValue : TreatmentHistoryForm -> Maybe (EverySet TreatmentHistorySign)
-toTreatmentHistoryValue form =
+toTreatmentReviewValue : TreatmentReviewForm -> Maybe (EverySet TreatmentReviewSign)
+toTreatmentReviewValue form =
     [ Maybe.map (ifTrue FeverPast6Hours) form.feverPast6Hours
     , Maybe.map (ifTrue FeverPast6HoursHelped) form.feverPast6HoursHelped
     , Maybe.map (ifTrue MalariaToday) form.malariaToday
@@ -754,7 +754,7 @@ toTreatmentHistoryValue form =
     , Maybe.map (ifTrue MalariaWithinPastMonthHelped) form.malariaWithinPastMonthHelped
     ]
         |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoTreatmentHistorySigns)
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoTreatmentReviewSigns)
 
 
 
