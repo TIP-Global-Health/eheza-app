@@ -855,7 +855,7 @@ update currentDate id db msg model =
             , appMsgs
             )
 
-        SetActiveTreatmentTask task ->
+        SetActivePriorTreatmentTask task ->
             let
                 updatedData =
                     model.priorTreatmentData

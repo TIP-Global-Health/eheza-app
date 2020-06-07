@@ -998,7 +998,7 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
                     case task of
                         TreatmentReview ->
                             ( "treatment-review"
-                            , isJust measurements.treatmentHistory
+                            , isJust measurements.treatmentReview
                             )
 
                 isActive =
@@ -1010,13 +1010,13 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
                                 []
 
                             else
-                                [ onClick <| SetActiveTreatmentTask task ]
+                                [ onClick <| SetActivePriorTreatmentTask task ]
                            )
             in
             div [ class "column" ]
                 [ a attributes
                     [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
-                    , text <| translate language (Translate.TreatmentTask task)
+                    , text <| translate language (Translate.PriorTreatmentTask task)
                     ]
                 ]
 
@@ -1035,12 +1035,11 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
         viewForm =
             case data.activeTask of
                 TreatmentReview ->
-                    div [] [ text "Todo" ]
+                    measurements.treatmentReview
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> treatmentReviewFormWithDefault data.treatmentReviewForm
+                        |> viewTreatmentReviewForm language currentDate measurements
 
-        -- measurements.malariaTesting
-        --     |> Maybe.map (Tuple.second >> .value)
-        --     |> malariaTestingFormWithDefault data.malariaTestingForm
-        --     |> viewMalariaTestingForm language currentDate measurements
         getNextTask currentTask =
             case currentTask of
                 TreatmentReview ->
@@ -1074,3 +1073,75 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
             ]
         ]
     ]
+
+
+viewTreatmentReviewForm : Language -> NominalDate -> AcuteIllnessMeasurements -> TreatmentReviewForm -> Html Msg
+viewTreatmentReviewForm language currentDate measurements form =
+    div [ class "ui form treatment-review" ]
+        [ div [ class "ui grid" ]
+            [ div [ class "sixteen wide column" ]
+                [ viewQuestionLabel language Translate.MedicationForFeverPast6HoursQuestion ]
+            ]
+
+        -- , viewBoolInput
+        --     language
+        --     form.covid19Symptoms
+        --     SetCovid19Symptoms
+        --     "covid19-symptoms"
+        --     Nothing
+        , div [ class "ui grid" ]
+            [ div [ class "sixteen wide column" ]
+                [ viewQuestionLabel language Translate.MedicationHelpedQuestion ]
+            ]
+
+        -- , viewBoolInput
+        --     language
+        --     form.similarSymptoms
+        --     SetSimilarSymptoms
+        --     "similar-symptoms"
+        --     Nothing
+        , div [ class "ui grid" ]
+            [ div [ class "sixteen wide column" ]
+                [ viewQuestionLabel language Translate.MedicationForMalariaWithinPastMonthQuestion ]
+            ]
+
+        -- , viewBoolInput
+        --     language
+        --     form.covid19Symptoms
+        --     SetCovid19Symptoms
+        --     "covid19-symptoms"
+        --     Nothing
+        , div [ class "ui grid" ]
+            [ div [ class "sixteen wide column" ]
+                [ viewQuestionLabel language Translate.MedicationHelpedQuestion ]
+            ]
+
+        -- , viewBoolInput
+        --     language
+        --     form.similarSymptoms
+        --     SetSimilarSymptoms
+        --     "similar-symptoms"
+        --     Nothing
+        , div [ class "ui grid" ]
+            [ div [ class "sixteen wide column" ]
+                [ viewQuestionLabel language Translate.MedicationForMalariaTodayQuestion ]
+            ]
+
+        -- , viewBoolInput
+        --     language
+        --     form.covid19Symptoms
+        --     SetCovid19Symptoms
+        --     "covid19-symptoms"
+        --     Nothing
+        , div [ class "ui grid" ]
+            [ div [ class "sixteen wide column" ]
+                [ viewQuestionLabel language Translate.MedicationHelpedQuestion ]
+            ]
+
+        -- , viewBoolInput
+        --     language
+        --     form.similarSymptoms
+        --     SetSimilarSymptoms
+        --     "similar-symptoms"
+        --     Nothing
+        ]

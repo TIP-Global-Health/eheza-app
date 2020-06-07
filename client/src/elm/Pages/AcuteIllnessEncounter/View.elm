@@ -172,8 +172,7 @@ viewMainPageContent language currentDate id data isSuspected model =
                                 isJust measurements.vitals
 
                             AcuteIllnessPriorTreatment ->
-                                -- Todo
-                                False
+                                isJust measurements.treatmentReview
 
                             AcuteIllnessLaboratory ->
                                 isJust measurements.malariaTesting

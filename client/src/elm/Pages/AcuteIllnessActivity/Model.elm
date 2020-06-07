@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Model exposing (ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), PriorTreatmentData, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, TreatmentReviewForm, TreatmentTask(..), VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptyPriorTreatmentData, emptySymptomsData, emptyTreatmentReviewForm)
+module Pages.AcuteIllnessActivity.Model exposing (ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), PriorTreatmentData, PriorTreatmentTask(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, TreatmentReviewForm, VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptyPriorTreatmentData, emptySymptomsData, emptyTreatmentReviewForm)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -49,7 +49,7 @@ type Msg
     | SetAmbulanceArrivalPeriod ResponsePeriod
     | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe ExposureTask)
       -- PRIOR TREATMNENT
-    | SetActiveTreatmentTask TreatmentTask
+    | SetActivePriorTreatmentTask PriorTreatmentTask
 
 
 type alias Model =
@@ -233,19 +233,19 @@ type alias HCContactForm =
 
 
 type alias PriorTreatmentData =
-    { treatmentHistoryForm : TreatmentReviewForm
-    , activeTask : TreatmentTask
+    { treatmentReviewForm : TreatmentReviewForm
+    , activeTask : PriorTreatmentTask
     }
 
 
 emptyPriorTreatmentData : PriorTreatmentData
 emptyPriorTreatmentData =
-    { treatmentHistoryForm = emptyTreatmentReviewForm
+    { treatmentReviewForm = emptyTreatmentReviewForm
     , activeTask = TreatmentReview
     }
 
 
-type TreatmentTask
+type PriorTreatmentTask
     = TreatmentReview
 
 

@@ -819,7 +819,7 @@ type alias AcuteIllnessMeasurements =
     , exposure : Maybe ( ExposureId, Exposure )
     , isolation : Maybe ( IsolationId, Isolation )
     , hcContact : Maybe ( HCContactId, HCContact )
-    , treatmentHistory : Maybe ( TreatmentReviewId, TreatmentReview )
+    , treatmentReview : Maybe ( TreatmentReviewId, TreatmentReview )
     }
 
 
