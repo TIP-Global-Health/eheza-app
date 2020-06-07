@@ -656,6 +656,36 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_treatment_history'.
+  $field_bases['field_treatment_history'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_treatment_history',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'fever-past-six-hours' => 'Fever medication in the past 6 hours',
+        'fever-past-six-hours-helped' => 'Fever medication in the past 6 hours helped',
+        'malaria-today' => 'Malaria medication today',
+        'malaria-today-helped' => 'Malaria medication today helped',
+        'malaria-past-month' => 'Malaria medication within past month',
+        'malaria-past-month-helped' => 'Malaria medication within past month helped',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_unable_to_drink_period'.
   $field_bases['field_unable_to_drink_period'] = array(
     'active' => 1,
