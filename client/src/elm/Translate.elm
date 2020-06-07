@@ -2888,7 +2888,7 @@ translationSet trans =
             }
 
         MedicationForMalariaWithinPastMonthQuestion ->
-            { english = "Have you received medication for malaria within the past month before taday's visit"
+            { english = "Have you received medication for malaria within the past month before today's visit"
             , kinyarwanda = Nothing
             }
 

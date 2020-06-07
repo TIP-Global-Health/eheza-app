@@ -1077,71 +1077,137 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
 
 viewTreatmentReviewForm : Language -> NominalDate -> AcuteIllnessMeasurements -> TreatmentReviewForm -> Html Msg
 viewTreatmentReviewForm language currentDate measurements form =
-    div [ class "ui form treatment-review" ]
-        [ div [ class "ui grid" ]
-            [ div [ class "sixteen wide column" ]
-                [ viewQuestionLabel language Translate.MedicationForFeverPast6HoursQuestion ]
-            ]
+    let
+        feverPast6HoursUpdateFunc value form_ =
+            { form_ | feverPast6Hours = Just value }
 
-        -- , viewBoolInput
-        --     language
-        --     form.covid19Symptoms
-        --     SetCovid19Symptoms
-        --     "covid19-symptoms"
-        --     Nothing
-        , div [ class "ui grid" ]
-            [ div [ class "sixteen wide column" ]
-                [ viewQuestionLabel language Translate.MedicationHelpedQuestion ]
-            ]
+        feverPast6HoursHelpedUpdateFunc value form_ =
+            { form_ | feverPast6HoursHelped = Just value }
 
-        -- , viewBoolInput
-        --     language
-        --     form.similarSymptoms
-        --     SetSimilarSymptoms
-        --     "similar-symptoms"
-        --     Nothing
-        , div [ class "ui grid" ]
-            [ div [ class "sixteen wide column" ]
-                [ viewQuestionLabel language Translate.MedicationForMalariaWithinPastMonthQuestion ]
-            ]
+        malariaTodayUpdateFunc value form_ =
+            { form_ | malariaToday = Just value }
 
-        -- , viewBoolInput
-        --     language
-        --     form.covid19Symptoms
-        --     SetCovid19Symptoms
-        --     "covid19-symptoms"
-        --     Nothing
-        , div [ class "ui grid" ]
-            [ div [ class "sixteen wide column" ]
-                [ viewQuestionLabel language Translate.MedicationHelpedQuestion ]
-            ]
+        malariaTodayHelpedUpdateFunc value form_ =
+            { form_ | malariaTodayHelped = Just value }
 
-        -- , viewBoolInput
-        --     language
-        --     form.similarSymptoms
-        --     SetSimilarSymptoms
-        --     "similar-symptoms"
-        --     Nothing
-        , div [ class "ui grid" ]
-            [ div [ class "sixteen wide column" ]
-                [ viewQuestionLabel language Translate.MedicationForMalariaTodayQuestion ]
-            ]
+        malariaWithinPastMonthUpdateFunc value form_ =
+            { form_ | malariaWithinPastMonth = Just value }
 
-        -- , viewBoolInput
-        --     language
-        --     form.covid19Symptoms
-        --     SetCovid19Symptoms
-        --     "covid19-symptoms"
-        --     Nothing
-        , div [ class "ui grid" ]
-            [ div [ class "sixteen wide column" ]
-                [ viewQuestionLabel language Translate.MedicationHelpedQuestion ]
-            ]
+        malariaWithinPastMonthHelpedUpdateFunc value form_ =
+            { form_ | malariaWithinPastMonthHelped = Just value }
 
-        -- , viewBoolInput
-        --     language
-        --     form.similarSymptoms
-        --     SetSimilarSymptoms
-        --     "similar-symptoms"
-        --     Nothing
-        ]
+        feverPast6HoursSection =
+            let
+                feverPast6HoursPositive =
+                    form.feverPast6Hours
+                        |> Maybe.withDefault False
+
+                feverPast6HoursHelpedInput =
+                    if feverPast6HoursPositive then
+                        [ div [ class "ui grid" ]
+                            [ div [ class "one wide column" ] []
+                            , div [ class "fifteen wide column" ]
+                                [ viewQuestionLabel language Translate.MedicationHelpedQuestion ]
+                            ]
+                        , viewBoolInput
+                            language
+                            form.feverPast6HoursHelped
+                            (SetTreatmentReviewBoolInput feverPast6HoursHelpedUpdateFunc)
+                            "fever-past-6-hours-helped"
+                            Nothing
+                        ]
+
+                    else
+                        []
+            in
+            [ div [ class "ui grid" ]
+                [ div [ class "sixteen wide column" ]
+                    [ viewQuestionLabel language Translate.MedicationForFeverPast6HoursQuestion ]
+                ]
+            , viewBoolInput
+                language
+                form.feverPast6Hours
+                (SetTreatmentReviewBoolInput feverPast6HoursUpdateFunc)
+                "fever-past-6-hours"
+                Nothing
+            ]
+                ++ feverPast6HoursHelpedInput
+
+        malariaTodaySection =
+            let
+                malariaTodayPositive =
+                    form.malariaToday
+                        |> Maybe.withDefault False
+
+                malariaTodayHelpedInput =
+                    if malariaTodayPositive then
+                        [ div [ class "ui grid" ]
+                            [ div [ class "one wide column" ] []
+                            , div [ class "fifteen wide column" ]
+                                [ viewQuestionLabel language Translate.MedicationHelpedQuestion ]
+                            ]
+                        , viewBoolInput
+                            language
+                            form.malariaTodayHelped
+                            (SetTreatmentReviewBoolInput malariaTodayHelpedUpdateFunc)
+                            "malaria-today-helped"
+                            Nothing
+                        ]
+
+                    else
+                        []
+            in
+            [ div [ class "ui grid" ]
+                [ div [ class "sixteen wide column" ]
+                    [ viewQuestionLabel language Translate.MedicationForMalariaWithinPastMonthQuestion ]
+                ]
+            , viewBoolInput
+                language
+                form.malariaToday
+                (SetTreatmentReviewBoolInput malariaTodayUpdateFunc)
+                "malaria-today"
+                Nothing
+            ]
+                ++ malariaTodayHelpedInput
+
+        malariaWithinPastMonth =
+            let
+                malariaWithinPastMonthPositive =
+                    form.malariaWithinPastMonth
+                        |> Maybe.withDefault False
+
+                malariaWithinPastMonthHelpedInput =
+                    if malariaWithinPastMonthPositive then
+                        [ div [ class "ui grid" ]
+                            [ div [ class "one wide column" ] []
+                            , div [ class "fifteen wide column" ]
+                                [ viewQuestionLabel language Translate.MedicationHelpedQuestion ]
+                            ]
+                        , viewBoolInput
+                            language
+                            form.malariaWithinPastMonthHelped
+                            (SetTreatmentReviewBoolInput malariaWithinPastMonthHelpedUpdateFunc)
+                            "malaria-within-past-month-helped"
+                            Nothing
+                        ]
+
+                    else
+                        []
+            in
+            [ div [ class "ui grid" ]
+                [ div [ class "sixteen wide column" ]
+                    [ viewQuestionLabel language Translate.MedicationForMalariaTodayQuestion ]
+                ]
+            , viewBoolInput
+                language
+                form.malariaWithinPastMonth
+                (SetTreatmentReviewBoolInput malariaWithinPastMonthUpdateFunc)
+                "malaria-within-past-month"
+                Nothing
+            ]
+                ++ malariaWithinPastMonthHelpedInput
+    in
+    feverPast6HoursSection
+        ++ malariaTodaySection
+        ++ malariaWithinPastMonth
+        |> div [ class "ui form treatment-review" ]

@@ -50,6 +50,7 @@ type Msg
     | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe ExposureTask)
       -- PRIOR TREATMNENT
     | SetActivePriorTreatmentTask PriorTreatmentTask
+    | SetTreatmentReviewBoolInput (Bool -> TreatmentReviewForm -> TreatmentReviewForm) Bool
 
 
 type alias Model =

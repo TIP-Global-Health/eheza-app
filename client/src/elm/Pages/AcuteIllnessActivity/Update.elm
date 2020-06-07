@@ -865,3 +865,18 @@ update currentDate id db msg model =
             , Cmd.none
             , []
             )
+
+        SetTreatmentReviewBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.priorTreatmentData.treatmentReviewForm
+                    in
+                    model.priorTreatmentData
+                        |> (\data -> { data | treatmentReviewForm = updatedForm })
+            in
+            ( { model | priorTreatmentData = updatedData }
+            , Cmd.none
+            , []
+            )
