@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Model exposing (ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, TreatmentData, TreatmentReviewForm, TreatmentTask(..), VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptySymptomsData, emptyTreatmentData, emptyTreatmentReviewForm)
+module Pages.AcuteIllnessActivity.Model exposing (ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), PriorTreatmentData, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, TreatmentReviewForm, TreatmentTask(..), VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptyPriorTreatmentData, emptySymptomsData, emptyTreatmentReviewForm)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -48,7 +48,7 @@ type Msg
     | SetResponsePeriod ResponsePeriod
     | SetAmbulanceArrivalPeriod ResponsePeriod
     | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe ExposureTask)
-      -- TREATMNENT
+      -- PRIOR TREATMNENT
     | SetActiveTreatmentTask TreatmentTask
 
 
@@ -57,7 +57,7 @@ type alias Model =
     , physicalExamData : PhysicalExamData
     , laboratoryData : LaboratoryData
     , exposureData : ExposureData
-    , treatmentData : TreatmentData
+    , priorTreatmentData : PriorTreatmentData
     , showAlertsDialog : Bool
     , showCovid19Popup : Bool
     }
@@ -69,7 +69,7 @@ emptyModel =
     , physicalExamData = emptyPhysicalExamData
     , laboratoryData = emptyLaboratoryData
     , exposureData = emptyExposureData
-    , treatmentData = emptyTreatmentData
+    , priorTreatmentData = emptyPriorTreatmentData
     , showAlertsDialog = False
     , showCovid19Popup = False
     }
@@ -229,17 +229,17 @@ type alias HCContactForm =
 
 
 
--- TREATMENT
+-- PRIOR TREATMENT
 
 
-type alias TreatmentData =
+type alias PriorTreatmentData =
     { treatmentHistoryForm : TreatmentReviewForm
     , activeTask : TreatmentTask
     }
 
 
-emptyTreatmentData : TreatmentData
-emptyTreatmentData =
+emptyPriorTreatmentData : PriorTreatmentData
+emptyPriorTreatmentData =
     { treatmentHistoryForm = emptyTreatmentReviewForm
     , activeTask = TreatmentReview
     }

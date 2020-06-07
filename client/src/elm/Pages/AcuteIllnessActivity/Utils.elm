@@ -261,7 +261,7 @@ exposureTasksCompletedFromTotal measurements data task =
                 |> Maybe.withDefault ( 0, 1 )
 
 
-treatmentTasksCompletedFromTotal : AcuteIllnessMeasurements -> TreatmentData -> TreatmentTask -> ( Int, Int )
+treatmentTasksCompletedFromTotal : AcuteIllnessMeasurements -> PriorTreatmentData -> TreatmentTask -> ( Int, Int )
 treatmentTasksCompletedFromTotal measurements data task =
     case task of
         TreatmentReview ->

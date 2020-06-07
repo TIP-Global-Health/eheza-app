@@ -171,7 +171,7 @@ viewMainPageContent language currentDate id data isSuspected model =
                             AcuteIllnessPhysicalExam ->
                                 isJust measurements.vitals
 
-                            AcuteIllnessTreatment ->
+                            AcuteIllnessPriorTreatment ->
                                 -- Todo
                                 False
 

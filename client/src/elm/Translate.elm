@@ -1054,7 +1054,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                AcuteIllnessTreatment ->
+                AcuteIllnessPriorTreatment ->
                     { english = "Prior Treatment History"
                     , kinyarwanda = Nothing
                     }
@@ -4595,7 +4595,7 @@ translationSet trans =
         TreatmentTask task ->
             case task of
                 TreatmentReview ->
-                    { english = "Treatment History"
+                    { english = "Treatment Review"
                     , kinyarwanda = Nothing
                     }
 

@@ -138,8 +138,8 @@ viewActivity language currentDate id activity isSuspected data model =
         AcuteIllnessPhysicalExam ->
             viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) model.physicalExamData
 
-        AcuteIllnessTreatment ->
-            viewAcuteIllnessTreatment language currentDate id ( personId, measurements ) model.treatmentData
+        AcuteIllnessPriorTreatment ->
+            viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) model.priorTreatmentData
 
         AcuteIllnessLaboratory ->
             viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) model.laboratoryData
@@ -983,11 +983,11 @@ viewHCRecomendation language recomendation =
         ]
 
 
-viewAcuteIllnessTreatment : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> TreatmentData -> List (Html Msg)
-viewAcuteIllnessTreatment language currentDate id ( personId, measurements ) data =
+viewAcuteIllnessPriorTreatment : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> PriorTreatmentData -> List (Html Msg)
+viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) data =
     let
         activity =
-            AcuteIllnessTreatment
+            AcuteIllnessPriorTreatment
 
         tasks =
             [ TreatmentReview ]

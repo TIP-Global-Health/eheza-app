@@ -26,7 +26,7 @@ encodeActivityAsString activity =
         AcuteIllnessPhysicalExam ->
             "physical-exam"
 
-        AcuteIllnessTreatment ->
+        AcuteIllnessPriorTreatment ->
             "prior-treatment"
 
         AcuteIllnessLaboratory ->
@@ -48,7 +48,7 @@ decodeActivityFromString s =
             Just AcuteIllnessPhysicalExam
 
         "prior-treatment" ->
-            Just AcuteIllnessTreatment
+            Just AcuteIllnessPriorTreatment
 
         "laboratory" ->
             Just AcuteIllnessLaboratory
@@ -77,4 +77,4 @@ getActivityIcon activity =
 
 getAllActivities : List AcuteIllnessActivity
 getAllActivities =
-    [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessTreatment, AcuteIllnessPhysicalExam, AcuteIllnessLaboratory ]
+    [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPriorTreatment, AcuteIllnessPhysicalExam, AcuteIllnessLaboratory ]

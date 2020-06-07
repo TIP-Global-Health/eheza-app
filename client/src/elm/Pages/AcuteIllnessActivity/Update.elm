@@ -858,10 +858,10 @@ update currentDate id db msg model =
         SetActiveTreatmentTask task ->
             let
                 updatedData =
-                    model.treatmentData
+                    model.priorTreatmentData
                         |> (\data -> { data | activeTask = task })
             in
-            ( { model | treatmentData = updatedData }
+            ( { model | priorTreatmentData = updatedData }
             , Cmd.none
             , []
             )
