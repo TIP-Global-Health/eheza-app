@@ -144,6 +144,7 @@
         symptoms_gi: 'shards',
         symptoms_respiratory: 'shards',
         travel_history: 'shards',
+        treatment_history: 'shards',
         village: 'nodes',
         vitals: 'shards',
         weight: 'shards'
