@@ -344,6 +344,7 @@ type Revision
     | SymptomsGIRevision SymptomsGIId SymptomsGI
     | SymptomsRespiratoryRevision SymptomsRespiratoryId SymptomsRespiratory
     | TravelHistoryRevision TravelHistoryId TravelHistory
+    | TreatmentHistoryRevision TreatmentHistoryId TreatmentHistory
     | VillageRevision VillageId Village
     | VitalsRevision VitalsId Vitals
     | WeightRevision WeightId Weight
