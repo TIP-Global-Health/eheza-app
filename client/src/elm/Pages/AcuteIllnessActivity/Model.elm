@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Model exposing (ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptySymptomsData)
+module Pages.AcuteIllnessActivity.Model exposing (ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, TreatmentData, TreatmentHistoryForm, TreatmentTask(..), VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptySymptomsData, emptyTreatmentData, emptyTreatmentHistoryForm)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -48,6 +48,8 @@ type Msg
     | SetResponsePeriod ResponsePeriod
     | SetAmbulanceArrivalPeriod ResponsePeriod
     | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe ExposureTask)
+      -- TREATMNENT
+    | SetActiveTreatmentTask TreatmentTask
 
 
 type alias Model =
@@ -55,6 +57,7 @@ type alias Model =
     , physicalExamData : PhysicalExamData
     , laboratoryData : LaboratoryData
     , exposureData : ExposureData
+    , treatmentData : TreatmentData
     , showAlertsDialog : Bool
     , showCovid19Popup : Bool
     }
@@ -66,6 +69,7 @@ emptyModel =
     , physicalExamData = emptyPhysicalExamData
     , laboratoryData = emptyLaboratoryData
     , exposureData = emptyExposureData
+    , treatmentData = emptyTreatmentData
     , showAlertsDialog = False
     , showCovid19Popup = False
     }
@@ -221,4 +225,46 @@ type alias HCContactForm =
     , recomendations : Maybe HCRecomendation
     , responsePeriod : Maybe ResponsePeriod
     , ambulanceArrivalPeriod : Maybe ResponsePeriod
+    }
+
+
+
+-- TREATMENT
+
+
+type alias TreatmentData =
+    { treatmentHistoryForm : TreatmentHistoryForm
+    , activeTask : TreatmentTask
+    }
+
+
+emptyTreatmentData : TreatmentData
+emptyTreatmentData =
+    { treatmentHistoryForm = emptyTreatmentHistoryForm
+    , activeTask = TreatmentHistory
+    }
+
+
+type TreatmentTask
+    = TreatmentHistory
+
+
+type alias TreatmentHistoryForm =
+    { feverPast6Hours : Maybe Bool
+    , feverPast6HoursHelped : Maybe Bool
+    , malariaToday : Maybe Bool
+    , malariaTodayHelped : Maybe Bool
+    , malariaWithinPastMonth : Maybe Bool
+    , malariaWithinPastMonthHelped : Maybe Bool
+    }
+
+
+emptyTreatmentHistoryForm : TreatmentHistoryForm
+emptyTreatmentHistoryForm =
+    { feverPast6Hours = Nothing
+    , feverPast6HoursHelped = Nothing
+    , malariaToday = Nothing
+    , malariaTodayHelped = Nothing
+    , malariaWithinPastMonth = Nothing
+    , malariaWithinPastMonthHelped = Nothing
     }

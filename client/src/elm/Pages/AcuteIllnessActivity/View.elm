@@ -138,8 +138,8 @@ viewActivity language currentDate id activity isSuspected data model =
         AcuteIllnessPhysicalExam ->
             viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) model.physicalExamData
 
-        AcuteIllnessPriorTreatment ->
-            [ div [] [ text "@ToDo" ] ]
+        AcuteIllnessTreatment ->
+            viewAcuteIllnessTreatment language currentDate id ( personId, measurements ) model.treatmentData
 
         AcuteIllnessLaboratory ->
             viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) model.laboratoryData
@@ -981,3 +981,96 @@ viewHCRecomendation language recomendation =
         , translate language Translate.And |> text
         , span [ class "strong" ] [ Translate.HCRecomendation recomendation |> translate language |> text ]
         ]
+
+
+viewAcuteIllnessTreatment : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> TreatmentData -> List (Html Msg)
+viewAcuteIllnessTreatment language currentDate id ( personId, measurements ) data =
+    let
+        activity =
+            AcuteIllnessTreatment
+
+        tasks =
+            [ TreatmentHistory ]
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        TreatmentHistory ->
+                            ( "treatment-review"
+                            , isJust measurements.treatmentHistory
+                            )
+
+                isActive =
+                    task == data.activeTask
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveTreatmentTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ a attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.TreatmentTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, treatmentTasksCompletedFromTotal measurements data task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Dict.get data.activeTask tasksCompletedFromTotalDict
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case data.activeTask of
+                TreatmentHistory ->
+                    div [] [ text "Todo" ]
+
+        -- measurements.malariaTesting
+        --     |> Maybe.map (Tuple.second >> .value)
+        --     |> malariaTestingFormWithDefault data.malariaTestingForm
+        --     |> viewMalariaTestingForm language currentDate measurements
+        getNextTask currentTask =
+            case currentTask of
+                TreatmentHistory ->
+                    []
+
+        actions =
+            -- let
+            --     saveMsg =
+            --         case data.activeTask of
+            --             TreatmentMalariaTesting ->
+            --                 SaveMalariaTesting personId measurements.malariaTesting
+            -- in
+            div [ class "actions malaria-testing" ]
+                [ button
+                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+
+                    -- , onClick saveMsg
+                    ]
+                    [ text <| translate language Translate.Save ]
+                ]
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui three column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
+            ]
+        ]
+    ]

@@ -43,7 +43,7 @@ import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Http
 import NutritionActivity.Model exposing (NutritionActivity(..))
-import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..), LaboratoryTask(..), PhysicalExamTask(..), SymptomsTask(..))
+import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..), LaboratoryTask(..), PhysicalExamTask(..), SymptomsTask(..), TreatmentTask(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
@@ -654,6 +654,7 @@ type TranslationId
     | TrainingGroupEncounterCreateSuccessMessage
     | TrainingGroupEncounterDeleteSuccessMessage
     | TraveledToCOVID19CountryQuestion
+    | TreatmentTask TreatmentTask
     | TrySyncing
     | TuberculosisPast
     | TuberculosisPresent
@@ -1053,7 +1054,7 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                AcuteIllnessPriorTreatment ->
+                AcuteIllnessTreatment ->
                     { english = "Prior Treatment History"
                     , kinyarwanda = Nothing
                     }
@@ -4590,6 +4591,13 @@ translationSet trans =
             { english = "Have you traveled to any country known to have COVID-19 in the past 14 days"
             , kinyarwanda = Nothing
             }
+
+        TreatmentTask task ->
+            case task of
+                TreatmentHistory ->
+                    { english = "Treatment History"
+                    , kinyarwanda = Nothing
+                    }
 
         TrySyncing ->
             { english = "Try syncing with backend"

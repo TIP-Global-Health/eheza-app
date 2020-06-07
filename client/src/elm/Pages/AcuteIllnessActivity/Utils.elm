@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, exposureFormWithDefault, exposureTasksCompletedFromTotal, fromExposureValue, fromHCContactValue, fromIsolationValue, fromMalariaTestingValue, fromTravelHistoryValue, fromVitalsValue, hcContactFormWithDefault, isolationFormWithDefault, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, physicalExamTasksCompletedFromTotal, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toExposureValue, toExposureValueWithDefault, toHCContactValue, toHCContactValueWithDefault, toIsolationValue, toIsolationValueWithDefault, toMalariaTestingValue, toMalariaTestingValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValue, toTravelHistoryValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, vitalsFormWithDefault)
+module Pages.AcuteIllnessActivity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, exposureFormWithDefault, exposureTasksCompletedFromTotal, fromExposureValue, fromHCContactValue, fromIsolationValue, fromListWithDefaultValue, fromMalariaTestingValue, fromTravelHistoryValue, fromTreatmentHistoryValue, fromVitalsValue, hcContactFormWithDefault, hcContactValuePostProcess, isolationFormWithDefault, isolationValuePostProcess, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, naListTaskCompleted, naTaskCompleted, physicalExamTasksCompletedFromTotal, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toExposureValue, toExposureValueWithDefault, toHCContactValue, toHCContactValueWithDefault, toIsolationValue, toIsolationValueWithDefault, toMalariaTestingValue, toMalariaTestingValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValue, toTravelHistoryValueWithDefault, toTreatmentHistoryValue, toTreatmentHistoryValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, treatmentHistoryFormWithDefault, treatmentTasksCompletedFromTotal, vitalsFormWithDefault, withDefaultValue)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model
@@ -20,6 +20,7 @@ import Backend.Measurement.Model
         , SymptomsGeneralSign(..)
         , SymptomsRespiratorySign(..)
         , TravelHistorySign(..)
+        , TreatmentHistorySign(..)
         )
 import EverySet exposing (EverySet)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
@@ -258,6 +259,69 @@ exposureTasksCompletedFromTotal measurements data task =
                             ( 1, 1 )
                     )
                 |> Maybe.withDefault ( 0, 1 )
+
+
+treatmentTasksCompletedFromTotal : AcuteIllnessMeasurements -> TreatmentData -> TreatmentTask -> ( Int, Int )
+treatmentTasksCompletedFromTotal measurements data task =
+    case task of
+        TreatmentHistory ->
+            let
+                form =
+                    measurements.treatmentHistory
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> treatmentHistoryFormWithDefault data.treatmentHistoryForm
+
+                ( feverActive, feverCompleted ) =
+                    form.feverPast6Hours
+                        |> Maybe.map
+                            (\receivedTreatment ->
+                                if receivedTreatment then
+                                    if isJust form.feverPast6HoursHelped then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+
+                ( malariaTodayActive, malariaTodayCompleted ) =
+                    form.malariaToday
+                        |> Maybe.map
+                            (\receivedTreatment ->
+                                if receivedTreatment then
+                                    if isJust form.malariaTodayHelped then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+
+                ( malariaWithinPastMonth, malariaWithinPastMonthCompleted ) =
+                    form.malariaWithinPastMonth
+                        |> Maybe.map
+                            (\receivedTreatment ->
+                                if receivedTreatment then
+                                    if isJust form.malariaWithinPastMonthHelped then
+                                        ( 2, 2 )
+
+                                    else
+                                        ( 1, 2 )
+
+                                else
+                                    ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 1 )
+            in
+            ( feverActive + malariaTodayActive + malariaWithinPastMonth
+            , feverCompleted + malariaTodayCompleted + malariaWithinPastMonthCompleted
+            )
 
 
 taskNotCompleted : Bool -> Int
@@ -645,6 +709,56 @@ hcContactValuePostProcess saved =
                         , ambulanceArrivalPeriod = EverySet.singleton ResponsePeriodNotApplicable
                     }
             )
+
+
+fromTreatmentHistoryValue : Maybe (EverySet TreatmentHistorySign) -> TreatmentHistoryForm
+fromTreatmentHistoryValue saved =
+    { feverPast6Hours = Maybe.map (EverySet.member FeverPast6Hours) saved
+    , feverPast6HoursHelped = Maybe.map (EverySet.member FeverPast6HoursHelped) saved
+    , malariaToday = Maybe.map (EverySet.member MalariaToday) saved
+    , malariaTodayHelped = Maybe.map (EverySet.member MalariaTodayHelped) saved
+    , malariaWithinPastMonth = Maybe.map (EverySet.member MalariaWithinPastMonth) saved
+    , malariaWithinPastMonthHelped = Maybe.map (EverySet.member MalariaWithinPastMonthHelped) saved
+    }
+
+
+treatmentHistoryFormWithDefault : TreatmentHistoryForm -> Maybe (EverySet TreatmentHistorySign) -> TreatmentHistoryForm
+treatmentHistoryFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { feverPast6Hours = or form.feverPast6Hours (EverySet.member FeverPast6Hours value |> Just)
+                , feverPast6HoursHelped = or form.feverPast6HoursHelped (EverySet.member FeverPast6HoursHelped value |> Just)
+                , malariaToday = or form.malariaToday (EverySet.member MalariaToday value |> Just)
+                , malariaTodayHelped = or form.malariaTodayHelped (EverySet.member MalariaTodayHelped value |> Just)
+                , malariaWithinPastMonth = or form.malariaWithinPastMonth (EverySet.member MalariaWithinPastMonth value |> Just)
+                , malariaWithinPastMonthHelped = or form.malariaWithinPastMonthHelped (EverySet.member MalariaWithinPastMonthHelped value |> Just)
+                }
+            )
+
+
+toTreatmentHistoryValueWithDefault : Maybe (EverySet TreatmentHistorySign) -> TreatmentHistoryForm -> Maybe (EverySet TreatmentHistorySign)
+toTreatmentHistoryValueWithDefault saved form =
+    treatmentHistoryFormWithDefault form saved
+        |> toTreatmentHistoryValue
+
+
+toTreatmentHistoryValue : TreatmentHistoryForm -> Maybe (EverySet TreatmentHistorySign)
+toTreatmentHistoryValue form =
+    [ Maybe.map (ifTrue FeverPast6Hours) form.feverPast6Hours
+    , Maybe.map (ifTrue FeverPast6HoursHelped) form.feverPast6HoursHelped
+    , Maybe.map (ifTrue MalariaToday) form.malariaToday
+    , Maybe.map (ifTrue MalariaTodayHelped) form.malariaTodayHelped
+    , Maybe.map (ifTrue MalariaWithinPastMonth) form.malariaWithinPastMonth
+    , Maybe.map (ifTrue MalariaWithinPastMonthHelped) form.malariaWithinPastMonthHelped
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoTreatmentHistorySigns)
+
+
+
+-- HELPER FUNCTIONS
 
 
 withDefaultValue : a -> Maybe a -> EverySet a

@@ -854,3 +854,14 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetActiveTreatmentTask task ->
+            let
+                updatedData =
+                    model.treatmentData
+                        |> (\data -> { data | activeTask = task })
+            in
+            ( { model | treatmentData = updatedData }
+            , Cmd.none
+            , []
+            )
