@@ -14,13 +14,15 @@ import Backend.Measurement.Model
         , MalariaTestingSign(..)
         , ReasonForNotIsolating(..)
         , ResponsePeriod(..)
+        , SymptomsGIDerivedSign(..)
         , SymptomsGISign(..)
+        , SymptomsGIValue
         , SymptomsGeneralSign(..)
         , SymptomsRespiratorySign(..)
         , TravelHistorySign(..)
         )
 import EverySet exposing (EverySet)
-import Maybe.Extra exposing (andMap, isJust, or, unwrap)
+import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.PrenatalActivity.Utils exposing (ifEmpty, ifNullableTrue, ifTrue)
 import Pages.Utils exposing (taskCompleted)
@@ -33,6 +35,17 @@ allSymptomsGeneralSigns =
       , NightSweats
       , BodyAches
       , Headache
+      , Lethargy
+      , PoorSuck
+      , UnableToDrink
+      , UnableToEat
+      , IncreasedThirst
+      , DryMouth
+      , SevereWeakness
+      , YellowEyes
+      , CokeColoredUrine
+      , SymptomsGeneralConvulsions
+      , SpontaneousBleeding
       ]
     , NoSymptomsGeneral
     )
@@ -45,6 +58,7 @@ allSymptomsRespiratorySigns =
       , NasalCongestion
       , BloodInSputum
       , SoreThroat
+      , StabbingChestPain
       ]
     , NoSymptomsRespiratory
     )
@@ -62,28 +76,21 @@ allSymptomsGISigns =
     )
 
 
-toggleSymptomsSign : SymptomsTask -> a -> a -> { signs : Dict a Int } -> { signs : Dict a Int }
-toggleSymptomsSign task sign noneSign form =
-    let
-        signs =
-            form.signs
+toggleSymptomsSign : SymptomsTask -> a -> a -> Dict a Int -> Dict a Int
+toggleSymptomsSign task sign noneSign signs =
+    if sign == noneSign then
+        Dict.singleton sign 1
 
-        updatedSigns =
-            if sign == noneSign then
-                Dict.singleton sign 1
+    else
+        let
+            signs_ =
+                Dict.remove noneSign signs
+        in
+        if Dict.member sign signs_ then
+            Dict.remove sign signs_
 
-            else
-                let
-                    signs_ =
-                        Dict.remove noneSign signs
-                in
-                if Dict.member sign signs_ then
-                    Dict.remove sign signs_
-
-                else
-                    Dict.insert sign 1 signs_
-    in
-    { form | signs = updatedSigns }
+        else
+            Dict.insert sign 1 signs_
 
 
 symptomsTasksCompletedFromTotal : AcuteIllnessMeasurements -> SymptomsData -> SymptomsTask -> ( Int, Int )
@@ -117,9 +124,23 @@ symptomsTasksCompletedFromTotal measurements data task =
                     measurements.symptomsGI
                         |> Maybe.map (Tuple.second >> .value)
                         |> symptomsGIFormWithDefault data.symptomsGIForm
+
+                totalDerived =
+                    if Dict.member Vomiting form.signs then
+                        1
+
+                    else
+                        0
+
+                completedDerived =
+                    if totalDerived > 0 then
+                        taskNotCompleted (isNothing form.intractableVomiting)
+
+                    else
+                        0
             in
-            ( taskNotCompleted (Dict.isEmpty form.signs)
-            , 1
+            ( taskNotCompleted (Dict.isEmpty form.signs) + completedDerived
+            , 1 + totalDerived
             )
 
 
@@ -185,7 +206,7 @@ exposureTasksCompletedFromTotal measurements data task =
                         |> Maybe.map (Tuple.second >> .value)
                         |> isolationFormWithDefault data.isolationForm
 
-                ( derrivedActive, derrivedCompleted ) =
+                ( derivedActive, derivedCompleted ) =
                     case form.patientIsolated of
                         Just True ->
                             ( 2, taskCompleted form.healthEducation + taskCompleted form.signOnDoor )
@@ -196,8 +217,8 @@ exposureTasksCompletedFromTotal measurements data task =
                         Nothing ->
                             ( 0, 0 )
             in
-            ( taskCompleted form.patientIsolated + derrivedCompleted
-            , 1 + derrivedActive
+            ( taskCompleted form.patientIsolated + derivedCompleted
+            , 1 + derivedActive
             )
 
         ExposureContactHC ->
@@ -323,39 +344,52 @@ toSymptomsRespiratoryValueWithDefault saved form =
         |> .signs
 
 
-
---
---
--- toSymptomsRespiratoryValue : SymptomsRespiratoryForm -> Maybe (Dict SymptomsRespiratorySign Int)
--- toSymptomsRespiratoryValue form =
---     form.signs
---
---
--- fromSymptomsGIValue : Maybe (Dict SymptomsGISign Int) -> SymptomsGIForm
--- fromSymptomsGIValue saved =
---     { signs = saved }
---
---
-
-
-symptomsGIFormWithDefault : SymptomsGIForm -> Maybe (Dict SymptomsGISign Int) -> SymptomsGIForm
+symptomsGIFormWithDefault : SymptomsGIForm -> Maybe SymptomsGIValue -> SymptomsGIForm
 symptomsGIFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                if Dict.isEmpty form.signs then
-                    SymptomsGIForm value
+                let
+                    signs =
+                        if Dict.isEmpty form.signs then
+                            value.signs
 
-                else
-                    form
+                        else
+                            form.signs
+
+                    intractableVomiting =
+                        if isJust form.intractableVomiting then
+                            form.intractableVomiting
+
+                        else if EverySet.member IntractableVomiting value.derivedSigns then
+                            Just True
+
+                        else
+                            Just False
+                in
+                { signs = signs
+                , intractableVomiting = intractableVomiting
+                }
             )
 
 
-toSymptomsGIValueWithDefault : Maybe (Dict SymptomsGISign Int) -> SymptomsGIForm -> Dict SymptomsGISign Int
+toSymptomsGIValueWithDefault : Maybe SymptomsGIValue -> SymptomsGIForm -> SymptomsGIValue
 toSymptomsGIValueWithDefault saved form =
-    symptomsGIFormWithDefault form saved
-        |> .signs
+    let
+        formWithDefault =
+            symptomsGIFormWithDefault form saved
+
+        derivedSigns =
+            if Dict.member Vomiting formWithDefault.signs && formWithDefault.intractableVomiting == Just True then
+                EverySet.singleton IntractableVomiting
+
+            else
+                EverySet.singleton NoSymptomsGIDerived
+    in
+    { signs = formWithDefault.signs
+    , derivedSigns = derivedSigns
+    }
 
 
 fromVitalsValue : Maybe AcuteIllnessVitalsValue -> VitalsForm

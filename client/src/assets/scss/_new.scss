@@ -581,6 +581,10 @@ div.page-activity.acute-illness {
       min-height: 210px;
     }
 
+    .symptoms-form.gi .symptoms {
+      margin-bottom: 30px;
+    }
+
     .label {
       margin-bottom: 5px;
     }
@@ -597,6 +601,7 @@ div.page-activity.acute-illness {
     .form-input.period {
       background: $color-white;
       border: 2px solid $color-light-gray;
+      margin-bottom: 0;
       margin-top: -10px;
       padding: 5px;
       width: 100%;
