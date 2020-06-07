@@ -115,6 +115,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "exposure" (decodeHead decodeExposure) Nothing
         |> optional "isolation" (decodeHead decodeIsolation) Nothing
         |> optional "hc_contact" (decodeHead decodeHCContact) Nothing
+        |> optional "treatment_history" (decodeHead decodeTreatmentHistory) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
