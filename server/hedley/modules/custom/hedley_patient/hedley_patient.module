@@ -252,7 +252,7 @@ function hedley_patient_mother_birth_date_validation($form, &$form_state) {
 /**
  * Checks if array1 is equal to array2.
  *
- * This means that both have same number of elements, and all elements
+ * Equal means that both have same number of elements, and all elements
  * at array1 also appear at array2.
  *
  * @param array $array1
