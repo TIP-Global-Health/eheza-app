@@ -263,7 +263,6 @@ function hedley_patient_mother_birth_date_validation($form, &$form_state) {
  * @return bool
  *   True, if array1 is equal to array2.
  */
-function hedley_patient_arrays_equal($array1, $array2) {
+function hedley_patient_arrays_equal(array $array1, array $array2) {
   return count($array1) == count($array2) && empty(array_diff($array1, $array2));
 }
-
