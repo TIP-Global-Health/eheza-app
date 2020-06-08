@@ -272,6 +272,7 @@ function hedley_device_assign_shards($node, $wrapper) {
 
     case 'prenatal_encounter':
     case 'nutrition_encounter':
+    case 'acute_illness_encounter':
       // Assign shards based on Person of the individual participant,
       // to which encounter belongs.
       $person_id = $wrapper->field_individual_participant->field_person->getIdentifier();
@@ -303,10 +304,6 @@ function hedley_device_assign_shards($node, $wrapper) {
  *   Node ID of the shard. False, if shard wasn't successfully resolved.
  */
 function hedley_device_shard_by_health_center($nid) {
-  if (!$nid) {
-    return FALSE;
-  }
-
   $wrapper = entity_metadata_wrapper('node', $nid);
   $shard = $wrapper->field_health_center->getIdentifier();
 
@@ -323,10 +320,6 @@ function hedley_device_shard_by_health_center($nid) {
  *   List of shards node IDs. Empty array, if none are found.
  */
 function hedley_device_shards_by_person($nid) {
-  if (!$nid) {
-    return [];
-  }
-
   $wrapper = entity_metadata_wrapper('node', $nid);
   $shards = $wrapper->field_shards->value(['identifier' => TRUE]);
 

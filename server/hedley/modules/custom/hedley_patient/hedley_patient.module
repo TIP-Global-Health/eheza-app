@@ -210,10 +210,9 @@ function hedley_patient_shards_for_person_by_pmtct_participants($nid) {
 
   $shards = $query->execute()->fetchCol();
 
-  if ($shard = hedley_device_shard_by_health_center($nid)) {
-    if ($shard && !in_array($shard, $shards)) {
-      $shards[] = $shard;
-    }
+  $shard = hedley_device_shard_by_health_center($nid);
+  if ($shard && !in_array($shard, $shards)) {
+    $shards[] = $shard;
   }
 
   return $shards;
