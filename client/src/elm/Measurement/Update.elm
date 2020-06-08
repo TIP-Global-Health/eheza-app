@@ -2,7 +2,7 @@ module Measurement.Update exposing (updateChild, updateMother)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), MeasurementData, MotherMeasurements, PhotoUrl(..))
+import Backend.Measurement.Model exposing (ChildNutritionSign(..), FamilyPlanningSign(..), LactationSign(..), MeasurementData, MotherMeasurements, PhotoUrl(..))
 import Backend.Measurement.Utils exposing (currentValues, mapMeasurementData)
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
@@ -95,6 +95,45 @@ updateChild msg model =
             , Just outMsg
             )
 
+        SetDistributedAmountForChild string ->
+            let
+                amount =
+                    String.toFloat string
+                        |> Maybe.andThen
+                            (\number ->
+                                if number < 0 then
+                                    Nothing
+
+                                else
+                                    Just number
+                            )
+
+                fbfForm =
+                    model.fbfForm
+                        |> (\form -> { form | distributedAmount = amount })
+            in
+            ( { model | fbfForm = fbfForm }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetDistributoinNoticeForChild notice ->
+            let
+                fbfForm =
+                    model.fbfForm
+                        |> (\form ->
+                                if form.distributionNotice == Just notice then
+                                    { form | distributionNotice = Nothing }
+
+                                else
+                                    { form | distributionNotice = Just notice }
+                           )
+            in
+            ( { model | fbfForm = fbfForm }
+            , Cmd.none
+            , Nothing
+            )
+
         UpdateWeight val ->
             ( { model | weight = val }
             , Cmd.none
@@ -144,6 +183,22 @@ updateMother measurements msg model =
             , Nothing
             )
 
+        SelectLactationSign sign value ->
+            let
+                formUpdated =
+                    case sign of
+                        Breastfeeding ->
+                            model.lactationForm
+                                |> (\form -> { form | breastfeeding = Just value })
+
+                        NoLactationSigns ->
+                            model.lactationForm
+            in
+            ( { model | lactationForm = formUpdated }
+            , Cmd.none
+            , Nothing
+            )
+
         SetCounselorSigned formId signed ->
             let
                 updated =
@@ -158,6 +213,45 @@ updateMother measurements msg model =
                 )
             )
                 model.participantConsent
+
+        SetDistributedAmountForMother string ->
+            let
+                amount =
+                    String.toFloat string
+                        |> Maybe.andThen
+                            (\number ->
+                                if number < 0 then
+                                    Nothing
+
+                                else
+                                    Just number
+                            )
+
+                fbfForm =
+                    model.fbfForm
+                        |> (\form -> { form | distributedAmount = amount })
+            in
+            ( { model | fbfForm = fbfForm }
+            , Cmd.none
+            , Nothing
+            )
+
+        SetDistributoinNoticeForMother notice ->
+            let
+                fbfForm =
+                    model.fbfForm
+                        |> (\form ->
+                                if form.distributionNotice == Just notice then
+                                    { form | distributionNotice = Nothing }
+
+                                else
+                                    { form | distributionNotice = Just notice }
+                           )
+            in
+            ( { model | fbfForm = fbfForm }
+            , Cmd.none
+            , Nothing
+            )
 
         SetParticipantSigned formId signed ->
             let

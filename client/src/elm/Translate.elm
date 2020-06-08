@@ -116,6 +116,12 @@ type ChartPhrase
     = AgeCompletedMonthsYears
     | Birth
     | BirthToTwoYears
+    | TwoToFiveYears
+    | FiveToNineteenYears
+    | FiveToTenYears
+    | HeightCm
+    | HeightForAgeBoys
+    | HeightForAgeGirls
     | LengthCm
     | LengthForAgeBoys
     | LengthForAgeGirls
@@ -278,6 +284,7 @@ type TranslationId
     | DeviceNotAuthorized
     | DeviceStatus
     | Diabetes
+    | DistributionNotice DistributionNotice
     | District
     | DOB
     | DropzoneDefaultMessage
@@ -292,6 +299,7 @@ type TranslationId
     | EmptyString
     | EndEncounter
     | EndGroupEncounter
+    | EnterAmountDistributed
     | EnterPairingCode
     | ErrorCheckLocalConfig
     | ErrorConfigurationError
@@ -306,6 +314,8 @@ type TranslationId
     | FamilyPlanningInFutureQuestion
     | FamilyPlanningSignLabel FamilyPlanningSign
     | FamilyUbudehe
+    | FbfDistribution
+    | FbfToReceive Activity Float
     | FetalHeartRate
     | FetalMovement
     | FetalPresentationLabel
@@ -359,7 +369,9 @@ type TranslationId
     | IndividualEncounterType IndividualEncounterType
     | IndividualEncounterTypes
     | InitialResultsDisplay InitialResultsDisplay
+    | IsCurrentlyBreastfeeding
     | KilogramShorthand
+    | KilogramsPerMonth
     | LastChecked
     | LastSuccesfulContactLabel
     | Legs
@@ -442,6 +454,7 @@ type TranslationId
     | OneVisit
     | OnceYouEndYourGroupEncounter
     | Or
+    | PackagesPerMonth
     | Page
     | Page404
     | PageNotFoundMsg
@@ -615,10 +628,12 @@ type TranslationId
     | View
     | ViewProgressReport
     | Village
+    | WasFbfDistirbuted Activity
     | WeekSinglePlural Int
     | Weight
     | WelcomeUser String
     | WhatDoYouWantToDo
+    | WhyDifferentFbfAmount Activity
     | Year
     | YearsOld Int
     | Yes
@@ -755,6 +770,16 @@ translationSet trans =
                     , kinyarwanda = Just "Buri mubyeyi agomba kubazwa uburyo bwo kuboneza urubyaro akoresha buri kwezi. Niba umubyeyi akeneye kuboneza urubyaro mwohereze ku kigo nderabuzima k'ubishinzwe"
                     }
 
+                MotherActivity Lactation ->
+                    { english = "Ideally a mother exclusively breastfeeds her infant for at least 6 months. Every mother should be asked about how she is feeding her infant each month."
+                    , kinyarwanda = Nothing
+                    }
+
+                MotherActivity MotherFbf ->
+                    { english = "If a mother is breastfeeding, she should receive FBF every month. If she did not receive the specified amount, please record the amount distributed and select the reason why."
+                    , kinyarwanda = Nothing
+                    }
+
                 MotherActivity ParticipantConsent ->
                     { english = "Please review the following forms with the participant."
                     , kinyarwanda = Nothing
@@ -765,6 +790,11 @@ translationSet trans =
                    , kinyarwanda = Just "Kurikiza iyi lisiti mu gihe utanga ubujyanama, witondere kureba ko buri gikorwa cyakozwe."
                    }
                 -}
+                ChildActivity ChildFbf ->
+                    { english = "Every child should receive FBF every month. If he/she did not receive the specified amount, please record the amount distributed and select the reason why."
+                    , kinyarwanda = Nothing
+                    }
+
                 ChildActivity Activity.Model.Height ->
                     { english = "Ask the mother to hold the baby’s head at the end of the measuring board. Move the slider to the baby’s heel and pull their leg straight."
                     , kinyarwanda = Just "Saba Umubyeyi guhagarara inyuma y’umwana we agaramye, afata umutwe ku gice cy’amatwi. Sunikira akabaho ku buryo gakora mu bworo by’ibirenge byombi."
@@ -797,6 +827,16 @@ translationSet trans =
                     , kinyarwanda = Just "Ni ubuhe buryo, niba hari ubuhari, mu buryo bukurikira bwo kuboneza urubyaro ukoresha? Muri ubu buryo bukurikira bwo kuboneza urubyaro, ni ubuhe buryo mukoresha?"
                     }
 
+                MotherActivity Lactation ->
+                    { english = ""
+                    , kinyarwanda = Nothing
+                    }
+
+                MotherActivity MotherFbf ->
+                    { english = "Enter the amount of CSB++ (FBF) distributed below."
+                    , kinyarwanda = Nothing
+                    }
+
                 MotherActivity ParticipantConsent ->
                     { english = "Forms:"
                     , kinyarwanda = Nothing
@@ -807,6 +847,11 @@ translationSet trans =
                    , kinyarwanda = Just "Kurikiza iyi lisiti mu gihe utanga ubujyanama, witondere kureba ko buri gikorwa cyakozwe."
                    }
                 -}
+                ChildActivity ChildFbf ->
+                    { english = "Enter the amount of CSB++ (FBF) distributed below."
+                    , kinyarwanda = Nothing
+                    }
+
                 ChildActivity Activity.Model.Height ->
                     { english = "Height:"
                     , kinyarwanda = Just "Uburere:"
@@ -839,6 +884,16 @@ translationSet trans =
                     , kinyarwanda = Just "Kuboneza Urubyaro?"
                     }
 
+                MotherActivity Lactation ->
+                    { english = "Lactation"
+                    , kinyarwanda = Nothing
+                    }
+
+                MotherActivity MotherFbf ->
+                    { english = "FBF Mother"
+                    , kinyarwanda = Nothing
+                    }
+
                 MotherActivity ParticipantConsent ->
                     { english = "Forms"
                     , kinyarwanda = Nothing
@@ -849,6 +904,11 @@ translationSet trans =
                    , kinyarwanda = Just "Ubujyanama"
                    }
                 -}
+                ChildActivity ChildFbf ->
+                    { english = "FBF Child"
+                    , kinyarwanda = Nothing
+                    }
+
                 ChildActivity Activity.Model.Height ->
                     { english = "Height"
                     , kinyarwanda = Just "Uburebure"
@@ -881,6 +941,16 @@ translationSet trans =
                     , kinyarwanda = Just "Kuboneza Urubyaro? nticyaza muri raporo yimikurire yumwana"
                     }
 
+                MotherActivity Lactation ->
+                    { english = "Lactation"
+                    , kinyarwanda = Nothing
+                    }
+
+                MotherActivity MotherFbf ->
+                    { english = "FBF"
+                    , kinyarwanda = Nothing
+                    }
+
                 MotherActivity ParticipantConsent ->
                     { english = "Forms"
                     , kinyarwanda = Nothing
@@ -891,6 +961,11 @@ translationSet trans =
                    , kinyarwanda = Nothing
                    }
                 -}
+                ChildActivity ChildFbf ->
+                    { english = "FBF"
+                    , kinyarwanda = Nothing
+                    }
+
                 ChildActivity Activity.Model.Height ->
                     { english = "Height"
                     , kinyarwanda = Just "Uburebure"
@@ -1588,6 +1663,23 @@ translationSet trans =
             , kinyarwanda = Just "Diyabete (Indwara y'igisukari)"
             }
 
+        DistributionNotice notice ->
+            case notice of
+                DistributedFully ->
+                    { english = "Complete"
+                    , kinyarwanda = Nothing
+                    }
+
+                DistributedPartiallyLackOfStock ->
+                    { english = "Lack of stock"
+                    , kinyarwanda = Nothing
+                    }
+
+                DistributedPartiallyOther ->
+                    { english = "Other"
+                    , kinyarwanda = Nothing
+                    }
+
         District ->
             { english = "District"
             , kinyarwanda = Just "Akarere"
@@ -1656,6 +1748,11 @@ translationSet trans =
         EndGroupEncounter ->
             { english = "End Group Encounter"
             , kinyarwanda = Just "Gusoza igikorwa"
+            }
+
+        EnterAmountDistributed ->
+            { english = "Enter amount distributed"
+            , kinyarwanda = Nothing
             }
 
         EnterPairingCode ->
@@ -1829,6 +1926,23 @@ translationSet trans =
             { english = "Family Ubudehe"
             , kinyarwanda = Just "Icyiciro cy'ubudehe umuryango uherereyemo"
             }
+
+        FbfDistribution ->
+            { english = "FBF Distribution"
+            , kinyarwanda = Nothing
+            }
+
+        FbfToReceive activity amount ->
+            case activity of
+                MotherActivity _ ->
+                    { english = "Mother should receive: " ++ String.fromFloat amount ++ " kgs of CSB++ (FBF)"
+                    , kinyarwanda = Nothing
+                    }
+
+                ChildActivity _ ->
+                    { english = "Child should receive: " ++ String.fromFloat amount ++ " kgs of CSB++ (FBF)"
+                    , kinyarwanda = Nothing
+                    }
 
         FatherName ->
             { english = "Father's Name"
@@ -2266,9 +2380,19 @@ translationSet trans =
                     , kinyarwanda = Just "Hisha ababyeyi bose / abarezi"
                     }
 
+        IsCurrentlyBreastfeeding ->
+            { english = "Is the mother currently breastfeeding her infant"
+            , kinyarwanda = Nothing
+            }
+
         KilogramShorthand ->
             { english = "kg"
             , kinyarwanda = Just "kg"
+            }
+
+        KilogramsPerMonth ->
+            { english = "kgs / month"
+            , kinyarwanda = Nothing
             }
 
         LastChecked ->
@@ -2947,6 +3071,11 @@ translationSet trans =
 
         Or ->
             { english = "or"
+            , kinyarwanda = Nothing
+            }
+
+        PackagesPerMonth ->
+            { english = "packages / month"
             , kinyarwanda = Nothing
             }
 
@@ -4014,6 +4143,18 @@ translationSet trans =
             , kinyarwanda = Just "Umudugudu"
             }
 
+        WasFbfDistirbuted activity ->
+            case activity of
+                ChildActivity _ ->
+                    { english = "If distributed amount is not as per guidelines, select the reason"
+                    , kinyarwanda = Nothing
+                    }
+
+                MotherActivity _ ->
+                    { english = "If distributed amount is not as per guidelines, select the reason"
+                    , kinyarwanda = Nothing
+                    }
+
         WeekSinglePlural value ->
             if value == 1 then
                 { english = "1 Week"
@@ -4039,6 +4180,18 @@ translationSet trans =
             { english = "What do you want to do?"
             , kinyarwanda = Just "Urashaka gukora iki?"
             }
+
+        WhyDifferentFbfAmount activity ->
+            case activity of
+                ChildActivity _ ->
+                    { english = "Select why child received a different amount of FBF"
+                    , kinyarwanda = Nothing
+                    }
+
+                MotherActivity _ ->
+                    { english = "Select why mother received a different amount of FBF"
+                    , kinyarwanda = Nothing
+                    }
 
         Year ->
             { english = "Year"
@@ -4382,6 +4535,36 @@ translateChartPhrase phrase =
         BirthToTwoYears ->
             { english = "Birth to 2 years (z-scores)"
             , kinyarwanda = Just "kuvuka (Kuva avutse)  kugeza ku myaka 2 Z-score"
+            }
+
+        TwoToFiveYears ->
+            { english = "2 to 5 years (z-scores)"
+            , kinyarwanda = Nothing
+            }
+
+        FiveToNineteenYears ->
+            { english = "5 to 19 years (z-scores)"
+            , kinyarwanda = Nothing
+            }
+
+        FiveToTenYears ->
+            { english = "5 to 10 years (z-scores)"
+            , kinyarwanda = Nothing
+            }
+
+        HeightCm ->
+            { english = "Height (cm)"
+            , kinyarwanda = Just "Uburere cm"
+            }
+
+        HeightForAgeBoys ->
+            { english = "Height-for-age BOYS"
+            , kinyarwanda = Just "Uburere ku myaka/ umuhungu"
+            }
+
+        HeightForAgeGirls ->
+            { english = "Height-for-age GIRLS"
+            , kinyarwanda = Just "Uburere ku myaka/ umukobwa"
             }
 
         LengthCm ->

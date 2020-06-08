@@ -185,6 +185,11 @@ diffMonths low high =
     Date.diff Date.Months low high
 
 
+diffCalendarMonths : NominalDate -> NominalDate -> Int
+diffCalendarMonths low high =
+    diffCalendarMonthsAndDays low high |> .months
+
+
 {-| Difference between two dates, in terms of months and days. This is based on
 calendar months. So, if you're on the same day of the next month, you'd get {
 months : 1, days: 0 }. Now, you can't tell from this how many actual deys

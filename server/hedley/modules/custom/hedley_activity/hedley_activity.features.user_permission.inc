@@ -32,6 +32,17 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create child_fbf content'.
+  $permissions['create child_fbf content'] = array(
+    'name' => 'create child_fbf content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create core_physical_exam content'.
   $permissions['create core_physical_exam content'] = array(
     'name' => 'create core_physical_exam content',
@@ -74,11 +85,22 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create lactation content'.
+  $permissions['create lactation content'] = array(
+    'name' => 'create lactation content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create last_menstrual_period content'.
   $permissions['create last_menstrual_period content'] = array(
     'name' => 'create last_menstrual_period content',
     'roles' => array(
       'administrator' => 'administrator',
+      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -99,6 +121,17 @@ function hedley_activity_user_default_permissions() {
     'name' => 'create medication content',
     'roles' => array(
       'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create mother_fbf content'.
+  $permissions['create mother_fbf content'] = array(
+    'name' => 'create mother_fbf content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -306,6 +339,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any child_fbf content'.
+  $permissions['delete any child_fbf content'] = array(
+    'name' => 'delete any child_fbf content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any core_physical_exam content'.
   $permissions['delete any core_physical_exam content'] = array(
     'name' => 'delete any core_physical_exam content',
@@ -342,6 +384,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any lactation content'.
+  $permissions['delete any lactation content'] = array(
+    'name' => 'delete any lactation content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any last_menstrual_period content'.
   $permissions['delete any last_menstrual_period content'] = array(
     'name' => 'delete any last_menstrual_period content',
@@ -363,6 +414,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete any medication content'.
   $permissions['delete any medication content'] = array(
     'name' => 'delete any medication content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any mother_fbf content'.
+  $permissions['delete any mother_fbf content'] = array(
+    'name' => 'delete any mother_fbf content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -549,6 +609,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete own child_fbf content'.
+  $permissions['delete own child_fbf content'] = array(
+    'name' => 'delete own child_fbf content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own core_physical_exam content'.
   $permissions['delete own core_physical_exam content'] = array(
     'name' => 'delete own core_physical_exam content',
@@ -585,6 +654,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete own lactation content'.
+  $permissions['delete own lactation content'] = array(
+    'name' => 'delete own lactation content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own last_menstrual_period content'.
   $permissions['delete own last_menstrual_period content'] = array(
     'name' => 'delete own last_menstrual_period content',
@@ -606,6 +684,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own medication content'.
   $permissions['delete own medication content'] = array(
     'name' => 'delete own medication content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own mother_fbf content'.
+  $permissions['delete own mother_fbf content'] = array(
+    'name' => 'delete own mother_fbf content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -795,6 +882,17 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any child_fbf content'.
+  $permissions['edit any child_fbf content'] = array(
+    'name' => 'edit any child_fbf content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any core_physical_exam content'.
   $permissions['edit any core_physical_exam content'] = array(
     'name' => 'edit any core_physical_exam content',
@@ -837,11 +935,22 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any lactation content'.
+  $permissions['edit any lactation content'] = array(
+    'name' => 'edit any lactation content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any last_menstrual_period content'.
   $permissions['edit any last_menstrual_period content'] = array(
     'name' => 'edit any last_menstrual_period content',
     'roles' => array(
       'administrator' => 'administrator',
+      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -862,6 +971,17 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit any medication content',
     'roles' => array(
       'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any mother_fbf content'.
+  $permissions['edit any mother_fbf content'] = array(
+    'name' => 'edit any mother_fbf content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1072,6 +1192,17 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit own child_fbf content'.
+  $permissions['edit own child_fbf content'] = array(
+    'name' => 'edit own child_fbf content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit own core_physical_exam content'.
   $permissions['edit own core_physical_exam content'] = array(
     'name' => 'edit own core_physical_exam content',
@@ -1114,11 +1245,22 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit own lactation content'.
+  $permissions['edit own lactation content'] = array(
+    'name' => 'edit own lactation content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit own last_menstrual_period content'.
   $permissions['edit own last_menstrual_period content'] = array(
     'name' => 'edit own last_menstrual_period content',
     'roles' => array(
       'administrator' => 'administrator',
+      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',
@@ -1139,6 +1281,17 @@ function hedley_activity_user_default_permissions() {
     'name' => 'edit own medication content',
     'roles' => array(
       'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own mother_fbf content'.
+  $permissions['edit own mother_fbf content'] = array(
+    'name' => 'edit own mother_fbf content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'nurse' => 'nurse',
       'sync' => 'sync',
     ),
     'module' => 'node',

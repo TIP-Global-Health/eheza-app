@@ -89,6 +89,7 @@
         attendance: 'shards',
         breast_exam: 'shards',
         catchment_area: 'nodes',
+        child_fbf: 'shards',
         clinic: 'nodes',
         counseling_schedule: 'nodes',
         counseling_session: 'shards',
@@ -96,11 +97,13 @@
         core_physical_exam: 'shards',
         danger_signs: 'shards',
         family_planning: 'shards',
+        lactation: 'shards',
         health_center: 'nodes',
         height: 'shards',
         last_menstrual_period: 'shards',
         medical_history: 'shards',
         medication: 'shards',
+        mother_fbf: 'shards',
         muac: 'shards',
         nurse: 'nodes',
         nutrition: 'shards',
@@ -140,10 +143,9 @@
 
     function expectedOnDate (participation, sessionDate) {
         var joinedGroupBeforeSession = participation.expected.value <= sessionDate;
-        var notLeftGroup = !participation.expected.value2 || (participation.expected.value === participation.expected.value2);
-        var leftGroupAfterSession = participation.expected.value2 > sessionDate;
+        var notLeftGroup = !participation.expected.value2 || participation.expected.value2 > sessionDate;
 
-        return joinedGroupBeforeSession && (notLeftGroup || leftGroupAfterSession);
+        return joinedGroupBeforeSession && notLeftGroup;
     }
 
     function getTableForType (type) {
@@ -416,8 +418,11 @@
     var groupMeasurementTypes = [
       'attendance',
       'counseling_session',
+      'child_fbf',
       'family_planning',
       'height',
+      'lactation',
+      'mother_fbf',
       'muac',
       'nutrition',
       'participant_consent',

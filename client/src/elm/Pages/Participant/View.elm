@@ -16,7 +16,7 @@ import Html.Events exposing (onClick)
 import LocalData
 import Maybe.Extra
 import Measurement.Model
-import Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getMotherForm)
+import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Measurement.View
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
@@ -182,7 +182,7 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
                     Nothing ->
                         []
     in
-    divKeyed [ class "wrap" ] <|
+    divKeyed [ class "wrap page-participant" ] <|
         List.concat
             [ [ viewHeader language sessionId |> keyed "header"
               , div [ class "ui unstackable items participant-page child" ]
@@ -289,7 +289,7 @@ viewFoundMother language currentDate isChw ( motherId, mother ) ( sessionId, ses
                         |> LocalData.unwrap
                             []
                             (\measurements ->
-                                [ Measurement.View.viewMother language activity measurements form
+                                [ Measurement.View.viewMother language currentDate mother activity measurements form
                                     |> Html.map MsgMeasurement
                                     |> keyed "content"
                                 ]
@@ -298,7 +298,7 @@ viewFoundMother language currentDate isChw ( motherId, mother ) ( sessionId, ses
                 Nothing ->
                     []
     in
-    divKeyed [ class "wrap" ] <|
+    divKeyed [ class "wrap page-participant" ] <|
         List.concat
             [ [ viewHeader language sessionId |> keyed "header"
               , div
