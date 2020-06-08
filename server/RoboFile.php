@@ -74,6 +74,7 @@ class RoboFile extends Tasks {
       'sites/all/vendor',
       'pantheon.yml',
       'pantheon.upstream.yml',
+      'client',
     ];
 
     $rsyncExcludeString = '--exclude=' . join(' --exclude=', $rsyncExclude);
@@ -82,7 +83,7 @@ class RoboFile extends Tasks {
     $this->_exec("rsync -az -q -L -K --delete $rsyncExcludeString www/. $pantheonDirectory");
 
     // Copy all the files and folders of the app.
-    $this->_exec("rsync -az -q -L -K --delete $rsyncExcludeString ../client/dist $pantheonDirectory/app");
+    $this->_exec("rsync -az -q -L -K --delete client/dist $pantheonDirectory/app");
 
     // We don't want to change Pantheon's git ignore, as we do want to commit
     // vendor and contrib directories.

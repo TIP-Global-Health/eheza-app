@@ -36,3 +36,6 @@ git clone ***REMOVED*** .pantheon
 
 # Make the DDEV container aware of your ssh.
 ddev auth ssh
+
+# Make client-side available for DDEV for the sake of deployment.
+mv ../client .
