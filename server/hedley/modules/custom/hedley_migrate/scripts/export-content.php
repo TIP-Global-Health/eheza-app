@@ -278,8 +278,15 @@ foreach ($health_centers_ids as $health_center_id) {
   foreach ($people_ids as $person_id) {
     $wrapper = entity_metadata_wrapper('node', $person_id);
     $gender = $wrapper->field_gender->value();
+    $birth_date = $wrapper->field_birth_date->value();
+    $is_adult = $birth_date < strtotime('-13 year');
+
+
     $first_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
     $second_name = $faker->lastName;
+
+
+
     $photo = rand(1, 5) . ".jpg";
     $national_id = '1199270' . $faker->numberBetween(100000000, 199999999);
     $phone_number = '0' . $faker->numberBetween(700000000, 799999999);
@@ -290,7 +297,7 @@ foreach ($health_centers_ids as $health_center_id) {
       $first_name,
       $second_name,
       $gender,
-      date('Y-m-d', $wrapper->field_birth_date->value()),
+      date('Y-m-d', $birth_date),
       $wrapper->field_health_center->getIdentifier(),
       $wrapper->field_birth_date_estimated->value(),
       $wrapper->field_hmis_number->value(),
