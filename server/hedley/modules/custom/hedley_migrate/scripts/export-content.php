@@ -165,6 +165,15 @@ $measurements = [
   'photo' => [array_merge($measurements_fields, ['field_photo'])],
 ];
 
+$male_first_names = hedley_migrate_male_first_names();
+$female_first_names = hedley_migrate_female_first_names();
+$second_names = hedley_migrate_second_names();
+$total_male_first_names = count($male_first_names);
+$total_female_first_names = count($female_first_names);
+$total_second_names = count($second_names);
+$total_males = 0;
+$total_females = 0;
+
 $catchment_area_ids = [];
 foreach ($health_centers_ids as $health_center_id) {
   $node = node_load($health_center_id);
@@ -294,9 +303,20 @@ foreach ($health_centers_ids as $health_center_id) {
     $birth_date = $wrapper->field_birth_date->value();
 
     if ($health_centers_data[$health_center_id] == 'anonymize') {
-      // Todo: Refactor to use real names
-      $first_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
-      $second_name = $faker->lastName;
+      if ($gender == 'male') {
+        $total_males++;
+        $first_name_id = ($total_males - 1) % $total_male_first_names;
+        $second_name_id = (($total_males - 1) / $total_male_first_names) % $total_second_names;
+        $first_name = $male_first_names[$first_name_id];
+        $second_name = $second_names[$second_name_id];
+      }
+      else {
+        $total_females++;
+        $first_name_id = ($total_females - 1) % $total_female_first_names;
+        $second_name_id = (($total_females - 1) / $total_female_first_names) % $total_second_names;
+        $first_name = $female_first_names[$first_name_id];
+        $second_name = $second_names[$second_name_id];
+      }
 
       $photo = hedley_migrate_allocate_photo_for_person($gender, $birth_date);
       $national_id = '1199270' . $faker->numberBetween(100000000, 199999999);
@@ -312,7 +332,6 @@ foreach ($health_centers_ids as $health_center_id) {
       $national_id = $wrapper->field_national_id_number->value();
       $phone_number = $wrapper->field_phone_number->value();
     }
-
 
     $people[$person_id] = [
       $person_id,
