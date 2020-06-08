@@ -15,7 +15,6 @@ export ROOT="$TRAVIS_BUILD_DIR/server"
 cd "$ROOT" || exit 1
 ddev config global --instrumentation-opt-in=false
 ddev start
-pwd
 drupal_make
 cd ..
 symlink_externals
