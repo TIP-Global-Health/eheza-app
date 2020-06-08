@@ -25,7 +25,8 @@ class HedleyActivityZscoreUpdate extends HedleyWebTestBase {
    * Test updating ZScores.
    */
   public function testUpdatingZscores() {
-    $clinic_id = $this->createClinic();
+    $health_center_id = $this->createHealthCenter();
+    $clinic_id = $this->createClinic($health_center_id);
     $mother_id = $this->createMother($clinic_id);
     $child_id = $this->createChild($mother_id);
 
