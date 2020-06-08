@@ -61,7 +61,7 @@ function hedley_chw_node_insert($node) {
   $residents = array_keys($result['node']);
 
   // Create participants for the clinic.
-  $batch_size = 60;
+  $batch_size = 50;
   $offset = 0;
 
   // A query that loads relationship for village. Since we create relations
