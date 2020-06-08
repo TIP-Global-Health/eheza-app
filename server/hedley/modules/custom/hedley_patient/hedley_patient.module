@@ -41,11 +41,7 @@ function hedley_patient_node_update($node) {
   $shards = $wrapper->field_shards->value(['identifier' => TRUE]);
   $shards_orig = $wrapper_orig->field_shards->value(['identifier' => TRUE]);
 
-  // We sort, to be able to compare arrays with `==`.
-  sort($shards);
-  sort($shards_orig);
-
-  if ($shards == $shards_orig) {
+  if (hedley_patient_arrays_equal($shards, $shards_orig)) {
     return;
   }
 
@@ -67,11 +63,7 @@ function hedley_patient_recalculate_shards_for_person($nid) {
   // Figure out what the shards for this person ought to be.
   $shards = hedley_patient_shards_for_person_by_pmtct_participants($nid);
 
-  // We sort, to be able to compare arrays with `==`.
-  sort($current_shards);
-  sort($shards);
-
-  if ($shards == $current_shards) {
+  if (hedley_patient_arrays_equal($shards, $current_shards)) {
     return;
   }
 
@@ -90,7 +82,6 @@ function hedley_patient_recalculate_shards_for_person($nid) {
 function hedley_patient_recalculate_shards_for_person_content($nid) {
   $wrapper = entity_metadata_wrapper('node', $nid);
   $shards = $wrapper->field_shards->value(['identifier' => TRUE]);
-  sort($shards);
 
   // Now, we need to cycle through the sharded entities for the person and
   // update those that do not match, so that they will get sent to the right
@@ -165,8 +156,7 @@ function hedley_patient_recalculate_shards_for_person_content($nid) {
 
   // For each sharded content, check whether we need to update it.
   foreach ($content as $key => $value) {
-    sort($value);
-    if ($value != $shards) {
+    if (!hedley_patient_arrays_equal($shards, $value)) {
       $wrapper = entity_metadata_wrapper('node', $key);
       $wrapper->field_shards->set($shards);
       $wrapper->save();
@@ -258,3 +248,22 @@ function hedley_patient_mother_birth_date_validation($form, &$form_state) {
     form_set_error('field_date_birth', t('The date of birth field is required when adding a mother.'));
   }
 }
+
+/**
+ * Checks if array1 is equal to array2.
+ *
+ * This means that both have same number of elements, and all elements
+ * at array1 also appear at array2.
+ *
+ * @param array $array1
+ *   First array.
+ * @param array $array2
+ *   Second array.
+ *
+ * @return bool
+ *   True, if array1 is equal to array2.
+ */
+function hedley_patient_arrays_equal($array1, $array2) {
+  return count($array1) == count($array2) && empty(array_diff($array1, $array2));
+}
+
