@@ -18,8 +18,20 @@ drush_print('Starting export!');
 $faker = hedley_faker_create();
 
 // For sample db: Rukura, Rwankuba, Test.
-//$health_centers_ids = [7091, 7092, 28589];
-$health_centers_ids = [4,5];
+//$health_centers_data = [
+//  7091 => 'anonymize',
+//  7092 => 'anonymize',
+//  28589 => 'none',
+//];
+
+$health_centers_data = [
+  4 => 'anonymize',
+  5 => 'none',
+];
+
+$health_centers_ids = array_keys($health_centers_data);
+
+
 
 $catchment_areas = [
   [
@@ -281,12 +293,26 @@ foreach ($health_centers_ids as $health_center_id) {
     $gender = $wrapper->field_gender->value();
     $birth_date = $wrapper->field_birth_date->value();
 
-    $first_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
-    $second_name = $faker->lastName;
+    if ($health_centers_data[$health_center_id] == 'anonymize') {
+      // Todo: Refactor to use real names
+      $first_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
+      $second_name = $faker->lastName;
 
-    $photo = hedley_migrate_allocate_photo_for_person($gender, $birth_date);
-    $national_id = '1199270' . $faker->numberBetween(100000000, 199999999);
-    $phone_number = '0' . $faker->numberBetween(700000000, 799999999);
+      $photo = hedley_migrate_allocate_photo_for_person($gender, $birth_date);
+      $national_id = '1199270' . $faker->numberBetween(100000000, 199999999);
+      $phone_number = '0' . $faker->numberBetween(700000000, 799999999);
+    }
+    else {
+      $first_name = trim($wrapper->field_first_name->value());
+      $second_name = trim($wrapper->field_second_name->value());
+      if (empty($first_name) && empty($second_name)) {
+        $second_name = $wrapper->label();
+      }
+      // Todo: handle photo
+      $national_id = $wrapper->field_national_id_number->value();
+      $phone_number = $wrapper->field_phone_number->value();
+    }
+
 
     $people[$person_id] = [
       $person_id,
