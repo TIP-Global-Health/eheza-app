@@ -18,7 +18,8 @@ drush_print('Starting export!');
 $faker = hedley_faker_create();
 
 // For sample db: Rukura, Rwankuba, Test.
-$health_centers_ids = [7091, 7092, 28589];
+//$health_centers_ids = [7091, 7092, 28589];
+$health_centers_ids = [4,5];
 
 $catchment_areas = [
   [
@@ -279,15 +280,11 @@ foreach ($health_centers_ids as $health_center_id) {
     $wrapper = entity_metadata_wrapper('node', $person_id);
     $gender = $wrapper->field_gender->value();
     $birth_date = $wrapper->field_birth_date->value();
-    $is_adult = $birth_date < strtotime('-13 year');
-
 
     $first_name = $gender == 'male' ? $faker->firstNameMale : $faker->firstNameFemale;
     $second_name = $faker->lastName;
 
-
-
-    $photo = rand(1, 5) . ".jpg";
+    $photo = hedley_migrate_allocate_photo_for_person($gender, $birth_date);
     $national_id = '1199270' . $faker->numberBetween(100000000, 199999999);
     $phone_number = '0' . $faker->numberBetween(700000000, 799999999);
 
@@ -382,8 +379,10 @@ foreach ($health_centers_ids as $health_center_id) {
           break;
 
         case 'photo':
-          $id = rand(1, 5);
-          $type_based_values = ["$id.jpg"];
+          $gender = $wrapper->field_person->field_gender->value();
+          $birth_date = $wrapper->field_person->field_birth_date->value();
+          $photo = hedley_migrate_allocate_photo_for_person($gender, $birth_date);
+          $type_based_values = [$photo];
           break;
 
         default:
