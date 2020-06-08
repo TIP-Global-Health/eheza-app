@@ -25,11 +25,12 @@ class HedleyScheduleIntegrity extends HedleyWebTestBase {
    * Test creating a session and then try unbulishing it.
    */
   public function testDeleteEmptySession() {
-    $clinic_nid = $this->createClinic();
-    $session_nid = $this->createSession($clinic_nid);
+    $health_center_id = $this->createHealthCenter();
+    $clinic_id = $this->createClinic($health_center_id);
+    $session_id = $this->createSession($clinic_id);
 
     // Make sure we can get it the session now.
-    $session_node = node_load($session_nid);
+    $session_node = node_load($session_id);
 
     // Should retrieve session we just created.
     $this->assertTrue($session_node);

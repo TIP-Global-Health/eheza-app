@@ -34,7 +34,7 @@ function hedley_person_image_default_styles() {
       ),
     ),
   );
-  
+
   return $styles;
 }
 

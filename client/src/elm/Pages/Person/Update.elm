@@ -2,7 +2,7 @@ module Pages.Person.Update exposing (update)
 
 import App.Model
 import AssocList as Dict exposing (Dict)
-import Backend.Entities exposing (PersonId, VillageId)
+import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Form exposing (PersonForm, applyDefaultValues, birthDate, validatePerson)
@@ -17,8 +17,8 @@ import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 
 
-update : NominalDate -> Maybe VillageId -> Bool -> Msg -> ModelIndexedDb -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate maybeVillageId isChw msg db model =
+update : NominalDate -> Maybe HealthCenterId -> Maybe VillageId -> Bool -> Msg -> ModelIndexedDb -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate selectedHealthCenter maybeVillageId isChw msg db model =
     case msg of
         MsgForm operation initiator subMsg ->
             let
@@ -55,7 +55,11 @@ update currentDate maybeVillageId isChw msg db model =
                                         |> Form.getOutput
                                         |> Maybe.map
                                             (\person ->
-                                                [ person
+                                                let
+                                                    personWithShard =
+                                                        { person | shard = selectedHealthCenter }
+                                                in
+                                                [ personWithShard
                                                     |> Backend.Model.PostPerson relation initiator
                                                     |> App.Model.MsgIndexedDb
                                                 ]
@@ -77,7 +81,11 @@ update currentDate maybeVillageId isChw msg db model =
                                                     |> Form.getOutput
                                                     |> Maybe.map
                                                         (\person ->
-                                                            generateMsgsForPersonEdit currentDate personId person model.form db
+                                                            let
+                                                                personWithShard =
+                                                                    { person | shard = selectedHealthCenter }
+                                                            in
+                                                            generateMsgsForPersonEdit currentDate personId personWithShard model.form db
                                                         )
                                                     -- If we submit, but can't actually submit,
                                                     -- then change the request status to
@@ -105,7 +113,7 @@ update currentDate maybeVillageId isChw msg db model =
                 subMsg =
                     Form.Input Backend.Person.Form.photo Form.Text (Form.Field.String result.url)
             in
-            update currentDate maybeVillageId isChw (MsgForm operation initiator subMsg) db model
+            update currentDate selectedHealthCenter maybeVillageId isChw (MsgForm operation initiator subMsg) db model
 
         ResetCreateForm ->
             ( Pages.Person.Model.emptyCreateModel
@@ -139,7 +147,7 @@ update currentDate maybeVillageId isChw msg db model =
                 setFieldMsg =
                     Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm operation initiator
             in
-            update currentDate maybeVillageId isChw setFieldMsg db model
+            update currentDate selectedHealthCenter maybeVillageId isChw setFieldMsg db model
 
 
 generateMsgsForPersonEdit : NominalDate -> PersonId -> Person -> PersonForm -> ModelIndexedDb -> List App.Model.Msg

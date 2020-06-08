@@ -46,6 +46,7 @@ type alias Person =
     , village : Maybe String
     , telephoneNumber : Maybe String
     , healthCenterId : Maybe HealthCenterId
+    , shard : Maybe HealthCenterId
     }
 
 
