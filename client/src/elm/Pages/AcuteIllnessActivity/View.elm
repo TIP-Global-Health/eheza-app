@@ -1112,7 +1112,7 @@ viewTreatmentReviewForm language currentDate measurements form =
                             language
                             form.feverPast6HoursHelped
                             (SetTreatmentReviewBoolInput feverPast6HoursHelpedUpdateFunc)
-                            "fever-past-6-hours-helped"
+                            "fever-past-6-hours-helped derived"
                             Nothing
                         ]
 
@@ -1149,7 +1149,7 @@ viewTreatmentReviewForm language currentDate measurements form =
                             language
                             form.malariaTodayHelped
                             (SetTreatmentReviewBoolInput malariaTodayHelpedUpdateFunc)
-                            "malaria-today-helped"
+                            "malaria-today-helped derived"
                             Nothing
                         ]
 
@@ -1186,7 +1186,7 @@ viewTreatmentReviewForm language currentDate measurements form =
                             language
                             form.malariaWithinPastMonthHelped
                             (SetTreatmentReviewBoolInput malariaWithinPastMonthHelpedUpdateFunc)
-                            "malaria-within-past-month-helped"
+                            "malaria-within-past-month-helped derived"
                             Nothing
                         ]
 
