@@ -86,7 +86,7 @@ class RoboFile extends Tasks {
     }
 
     // Copy all the files and folders of the app.
-    $client_sync_result = $this->_exec("rsync -az -q -L -K --delete client/dist $pantheonDirectory/app")->getExitCode();
+    $client_sync_result = $this->_exec("rsync -az -q -L -K --delete client/dist/. $pantheonDirectory/app")->getExitCode();
     if ($client_sync_result != 0) {
       throw new Exception('Failed to sync the client-side');
     }
