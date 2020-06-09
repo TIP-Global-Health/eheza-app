@@ -189,6 +189,12 @@ getBackendGeneralEntityIdentifier backendGeneralEntity =
             , type_ = "catchment_area"
             }
 
+        BackendGeneralCounselingSchedule uuid revision _ ->
+            { uuid = uuid
+            , revision = revision
+            , type_ = "counseling_schedule"
+            }
+
         BackendGeneralHealthCenter uuid revision _ ->
             { uuid = uuid
             , revision = revision
@@ -293,22 +299,7 @@ getPhotoFromBackendGeneralEntity backendGeneralEntity =
         BackendGeneralPerson _ _ person ->
             person.avatarUrl
 
-        BackendGeneralCatchmentArea string int catchmentArea ->
-            Nothing
-
-        BackendGeneralHealthCenter string int healthCenter ->
-            Nothing
-
-        BackendGeneralNurse string int nurse ->
-            Nothing
-
-        BackendGeneralPmtctParticipant string int pmtctParticipant ->
-            Nothing
-
-        BackendGeneralRelationship string int relationship ->
-            Nothing
-
-        BackendGeneralEntityUnknown string int ->
+        _ ->
             Nothing
 
 

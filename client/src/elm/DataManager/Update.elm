@@ -2,6 +2,7 @@ port module DataManager.Update exposing (subscriptions, update)
 
 import App.Model exposing (SubModelReturn)
 import Backend.Clinic.Encoder
+import Backend.Counseling.Encoder
 import Backend.HealthCenter.Encoder
 import Backend.Measurement.Encoder
 import Backend.Nurse.Encoder
@@ -390,6 +391,10 @@ update currentDate device msg model =
                                                         doEncode uuid vid (Backend.HealthCenter.Encoder.encodeCatchmentArea entity_)
                                                             :: accum
 
+                                                    BackendGeneralCounselingSchedule uuid vid entity_ ->
+                                                        doEncode uuid vid (Backend.Counseling.Encoder.encodeCounselingSchedule entity_)
+                                                            :: accum
+
                                                     BackendGeneralHealthCenter uuid vid entity_ ->
                                                         doEncode uuid vid (Backend.HealthCenter.Encoder.encodeHealthCenter entity_)
                                                             :: accum
@@ -462,27 +467,11 @@ update currentDate device msg model =
                                 |> List.head
                                 |> Maybe.map
                                     (\entity ->
-                                        case entity of
-                                            BackendGeneralCatchmentArea _ vid _ ->
-                                                vid
-
-                                            BackendGeneralHealthCenter _ vid _ ->
-                                                vid
-
-                                            BackendGeneralNurse _ vid _ ->
-                                                vid
-
-                                            BackendGeneralPerson _ vid _ ->
-                                                vid
-
-                                            BackendGeneralPmtctParticipant _ vid _ ->
-                                                vid
-
-                                            BackendGeneralRelationship _ vid _ ->
-                                                vid
-
-                                            BackendGeneralEntityUnknown _ vid ->
-                                                vid
+                                        let
+                                            identifier =
+                                                DataManager.Utils.getBackendGeneralEntityIdentifier entity
+                                        in
+                                        identifier.revision
                                     )
                                 |> Maybe.withDefault model.lastFetchedRevisionIdGeneral
 

@@ -257,22 +257,25 @@ viewGeneralEntity language backendGeneralEntity =
     li []
         [ case backendGeneralEntity of
             BackendGeneralCatchmentArea _ _ entity ->
-                text <| "Catchment area (" ++ entity.name ++ ")"
+                text <| "Catchment area " ++ entity.name
+
+            BackendGeneralCounselingSchedule uuid _ entity ->
+                text <| "Counseling Schedule " ++ uuid
 
             BackendGeneralHealthCenter _ _ entity ->
-                text <| "Health Center (" ++ entity.name ++ ")"
+                text <| "Health Center " ++ entity.name
 
             BackendGeneralNurse _ _ entity ->
                 text <| "Nurse " ++ entity.name
 
             BackendGeneralPerson _ _ entity ->
-                text <| "Person (" ++ entity.name ++ ")"
+                text <| "Person " ++ entity.name
 
             BackendGeneralPmtctParticipant _ _ entity ->
-                text <| "Pmtct Participant for child ID (" ++ fromEntityUuid entity.child ++ ")"
+                text <| "Pmtct Participant for child ID " ++ fromEntityUuid entity.child
 
             BackendGeneralRelationship _ _ entity ->
-                text <| "Relationship for person ID (" ++ fromEntityUuid entity.person ++ ")"
+                text <| "Relationship for person ID " ++ fromEntityUuid entity.person
 
             BackendGeneralEntityUnknown type_ _ ->
                 text <| type_ ++ " (we still don't decode it)"

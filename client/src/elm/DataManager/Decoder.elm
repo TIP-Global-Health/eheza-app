@@ -6,6 +6,7 @@ module DataManager.Decoder exposing
 
 import AssocList as Dict
 import Backend.Clinic.Decoder
+import Backend.Counseling.Decoder
 import Backend.HealthCenter.Decoder
 import Backend.Measurement.Decoder
 import Backend.Nurse.Decoder
@@ -209,6 +210,10 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
                     "catchment_area" ->
                         Backend.HealthCenter.Decoder.decodeCatchmentArea
                             |> andThen (\entity -> succeed (BackendGeneralCatchmentArea uuid identifier_ entity))
+
+                    "counseling_schedule" ->
+                        Backend.Counseling.Decoder.decodeCounselingSchedule
+                            |> andThen (\entity -> succeed (BackendGeneralCounselingSchedule uuid identifier_ entity))
 
                     "health_center" ->
                         Backend.HealthCenter.Decoder.decodeHealthCenter
