@@ -13,27 +13,31 @@ if (!drupal_is_cli()) {
   return;
 }
 
+// For sample db: Rukura, Rwankuba, Test.
+$health_centers_data = [
+  7091 => ['anonymize' => TRUE],
+  7092 => ['anonymize' => TRUE],
+  28589 => ['anonymize' => FALSE],
+];
+
+// In case we need to pull real files, make sure
+// that destination directory is writable.
+foreach ($health_centers_data as $health_center_data) {
+  if (!$health_center_data['anonymize']) {
+    $destination = drupal_get_path('module', 'hedley_migrate') . '/images';
+    if (!is_writable($destination)) {
+      drush_print("Destination folder for images $destination is not writable.");
+      drush_print('Please run export again after fixing this problem.');
+      exit;
+    }
+    break;
+  }
+}
+
 drush_print('Starting export!');
 
 $faker = hedley_faker_create();
-
-// For sample db: Rukura, Rwankuba, Test.
-//$health_centers_data = [
-//  7091 => ['anonymize' => TRUE],
-//  7092 => ['anonymize' => TRUE],
-//  28589 => ['anonymize' => FALSE],
-//];
-
-$health_centers_data = [
-  4 => ['anonymize' => TRUE],
-//  5 => ['anonymize' => TRUE],
-  6 => ['anonymize' => FALSE],
-];
-
 $health_centers_ids = array_keys($health_centers_data);
-
-
-
 $catchment_areas = [
   [
     'id',
@@ -333,7 +337,7 @@ foreach ($health_centers_ids as $health_center_id) {
       $national_id = $wrapper->field_national_id_number->value();
       $phone_number = $wrapper->field_phone_number->value();
       $image = $wrapper->field_photo->value();
-      $photo = hedley_migrate_copy_image($image['fid'], $image['filename']);
+      $photo = hedley_migrate_export_real_image($image['fid'], $image['filename']);
     }
 
     $people[$person_id] = [
@@ -434,7 +438,7 @@ foreach ($health_centers_ids as $health_center_id) {
           }
           else {
             $image = $wrapper->field_photo->value();
-            $photo = hedley_migrate_copy_image($image['fid'], $image['filename']);
+            $photo = hedley_migrate_export_real_image($image['fid'], $image['filename']);
           }
           $type_based_values = [$photo];
           break;

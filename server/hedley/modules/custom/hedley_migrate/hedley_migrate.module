@@ -745,23 +745,34 @@ function hedley_migrate_allocate_photo_for_person($gender, $birth_date) {
 }
 
 /**
- * @param $fid
- * @param $file_name
- * @return mixed|string
+ * Copies real image into migration module 'images' folder.
+ *
+ * @param int $fid
+ *   Image file ID.
+ * @param string $file_name
+ *  Image file name.
+ *
+ * @return string|bool
+ *   The name of copied file. FALSE on failure.
  */
-function hedley_migrate_copy_image($fid, $file_name) {
+function hedley_migrate_export_real_image($fid, $file_name) {
   $file = file_load($fid);
   $destination = drupal_get_path('module', 'hedley_migrate');
   $new_uri = $destination . '/images/'. $file_name;
 
   $new_url = file_unmanaged_copy($file->uri, $new_uri, 'FILE_EXISTS_RENAME');
-
   $parts = explode('/', $new_url);
 
   return $parts ? end($parts ) : '';
 }
 
 
+/**
+ * Provides a list of Rwandan male first names.
+ *
+ * @return string[]
+ *   List of Rwandan male first names.
+ */
 function hedley_migrate_male_first_names() {
   return [
     'Ernest',
@@ -829,6 +840,12 @@ function hedley_migrate_male_first_names() {
   ];
 }
 
+/**
+ * Provides a list of Rwandan female first names.
+ *
+ * @return string[]
+ *   List of Rwandan female first names.
+ */
 function hedley_migrate_female_first_names() {
   return [
     'Ariella',
@@ -893,6 +910,12 @@ function hedley_migrate_female_first_names() {
   ];
 }
 
+/**
+ * Provides a list of Rwandan second names.
+ *
+ * @return string[]
+ *   List of Rwandan second names.
+ */
 function hedley_migrate_second_names() {
   return [
     'Iradukunda',
