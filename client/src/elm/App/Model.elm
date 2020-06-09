@@ -60,6 +60,10 @@ type alias Model =
     , navigationKey : Nav.Key
     , url : Url
 
+    -- The DB version on the backend.
+    -- This must be sent whenever we POST or PATCH an entity to the backend.
+    , dbVersion : Int
+
     -- Access to things stored in IndexedDB. Eventually, most of this probably
     -- ought to be in LoggedInModel instead, but it's not urgent.
     , indexedDb : Backend.Model.ModelIndexedDb
@@ -257,6 +261,7 @@ type alias Flags =
     { activeLanguage : String
     , activeServiceWorker : Bool
     , hostname : String
+    , dbVersion : Int
     , pinCode : String
     , healthCenterId : String
     , villageId : String
@@ -300,6 +305,7 @@ emptyModel key url flags =
     { activePage = PinCodePage
     , navigationKey = key
     , url = url
+    , dbVersion = flags.dbVersion
     , configuration = NotAsked
     , currentTime = Time.millisToPosix 0
     , dataWanted = Dict.empty

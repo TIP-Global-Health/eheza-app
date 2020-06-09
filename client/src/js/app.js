@@ -173,6 +173,15 @@ dbSync.version(11).stores({
 });
 
 /**
+ * The DB version on the backend.
+ *
+ * This must be sent whenever we POST or PATCH an entity to the backend.
+ *
+ * @type {number}
+ */
+const dbVersion = 10;
+
+/**
  * Return saved authorities.
  */
 const getRevisionIdPerAuthority = function() {
@@ -214,6 +223,7 @@ const getSyncSpeed = function() {
 // Start up our Elm app.
 var elmApp = Elm.Main.init({
   flags: {
+    dbVersion: dbVersion,
     pinCode: localStorage.getItem('pinCode') || '',
     activeServiceWorker: !!navigator.serviceWorker.controller,
     hostname: window.location.hostname,
@@ -399,9 +409,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         const backendUrl = dataArr.backend_url;
         const accessToken = dataArr.access_token;
-
-        // @todo: Get db_version from Elm?
-        const dbVersion = 11;
 
         const uploadUrl = [
           backendUrl,

@@ -29,8 +29,8 @@ import Time
 import Utils.WebData
 
 
-update : NominalDate -> Device -> Msg -> Model -> SubModelReturn Model Msg
-update currentDate device msg model =
+update : NominalDate -> Int -> Device -> Msg -> Model -> SubModelReturn Model Msg
+update currentDate dbVersion device msg model =
     let
         noChange =
             SubModelReturn model Cmd.none noError []
@@ -41,10 +41,6 @@ update currentDate device msg model =
                 Cmd.none
                 noError
                 []
-
-        -- @todo: Move has hardcoded in flags, or keep here?
-        dbVersion =
-            11
     in
     case msg of
         BackendAuthorityFetch ->
@@ -322,6 +318,7 @@ update currentDate device msg model =
                 SyncUploadPhotoGeneral _ ->
                     update
                         currentDate
+                        dbVersion
                         device
                         BackendPhotoUploadGeneral
                         model
@@ -329,6 +326,7 @@ update currentDate device msg model =
                 SyncUploadGeneral _ ->
                     update
                         currentDate
+                        dbVersion
                         device
                         FetchFromIndexDbUploadGeneral
                         model
@@ -336,6 +334,7 @@ update currentDate device msg model =
                 SyncDownloadGeneral _ ->
                     update
                         currentDate
+                        dbVersion
                         device
                         BackendGeneralFetch
                         model
@@ -343,6 +342,7 @@ update currentDate device msg model =
                 SyncDownloadAuthority _ ->
                     update
                         currentDate
+                        dbVersion
                         device
                         BackendAuthorityFetch
                         model
@@ -350,6 +350,7 @@ update currentDate device msg model =
                 SyncDownloadPhotos _ ->
                     update
                         currentDate
+                        dbVersion
                         device
                         FetchFromIndexDbDeferredPhoto
                         model
@@ -670,6 +671,7 @@ update currentDate device msg model =
                         in
                         update
                             currentDate
+                            dbVersion
                             device
                             (QueryIndexDb IndexDbQueryDeferredPhoto)
                             { model | syncStatus = SyncDownloadPhotos (DownloadPhotosBatch recordUpdated) }
@@ -689,6 +691,7 @@ update currentDate device msg model =
                         in
                         update
                             currentDate
+                            dbVersion
                             device
                             (QueryIndexDb IndexDbQueryDeferredPhoto)
                             { model | syncStatus = SyncDownloadPhotos (DownloadPhotosAll recordUpdated) }
@@ -714,6 +717,7 @@ update currentDate device msg model =
                         in
                         update
                             currentDate
+                            dbVersion
                             device
                             (QueryIndexDb IndexDbQueryUploadGeneral)
                             { model | syncStatus = SyncUploadGeneral recordUpdated }
@@ -730,6 +734,7 @@ update currentDate device msg model =
                     else
                         update
                             currentDate
+                            dbVersion
                             device
                             (QueryIndexDb IndexDbQueryUploadPhotoGeneral)
                             { model | syncStatus = SyncUploadPhotoGeneral RemoteData.Loading }
@@ -985,6 +990,7 @@ update currentDate device msg model =
                         in
                         update
                             currentDate
+                            dbVersion
                             device
                             (QueryIndexDb <| IndexDbQueryUpdateDeferredPhotoAttempts result)
                             { model | syncStatus = syncStatus }
@@ -1018,6 +1024,7 @@ update currentDate device msg model =
                     -- `deferredPhotos` table.
                     update
                         currentDate
+                        dbVersion
                         device
                         (QueryIndexDb <| IndexDbQueryRemoveDeferredPhotoAttempts result.uuid)
                         { model | syncStatus = syncStatus }
@@ -1084,6 +1091,7 @@ update currentDate device msg model =
                         IndexDbQueryUploadPhotoGeneralResult remoteData ->
                             update
                                 currentDate
+                                dbVersion
                                 device
                                 (BackendUploadPhotoGeneralHandle remoteData)
                                 model
@@ -1091,6 +1099,7 @@ update currentDate device msg model =
                         IndexDbQueryUploadGeneralResult result ->
                             update
                                 currentDate
+                                dbVersion
                                 device
                                 (BackendUploadGeneral result)
                                 model
@@ -1098,6 +1107,7 @@ update currentDate device msg model =
                         IndexDbQueryDeferredPhotoResult result ->
                             update
                                 currentDate
+                                dbVersion
                                 device
                                 (BackendDeferredPhotoFetch result)
                                 model
