@@ -58,7 +58,7 @@ jobs:
         - "$TRAVIS_BUILD_DIR/ci-scripts/test_client.sh"
     - stage: Deploy
       name: "Deployment to Pantheon"
-      if: branch = 1535-deploy
+      if: branch = develop
       script:
         - "export DEPLOY=1 && $TRAVIS_BUILD_DIR/ci-scripts/install_client.sh"
         - "$TRAVIS_BUILD_DIR/ci-scripts/install_ddev.sh"
