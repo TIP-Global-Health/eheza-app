@@ -25,6 +25,7 @@ encodeIndividualEncounterParticipant data =
                 ]
           )
         , ( "shard", maybe encodeEntityUuid data.shard )
+        , ( "type", string "individual_participant" )
         ]
 
 

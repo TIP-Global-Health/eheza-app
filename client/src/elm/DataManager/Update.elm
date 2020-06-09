@@ -4,6 +4,7 @@ import App.Model exposing (SubModelReturn)
 import Backend.Clinic.Encoder
 import Backend.Counseling.Encoder
 import Backend.HealthCenter.Encoder
+import Backend.IndividualEncounterParticipant.Encoder
 import Backend.Measurement.Encoder
 import Backend.Nurse.Encoder
 import Backend.Person.Encoder
@@ -148,6 +149,66 @@ update currentDate device msg model =
                                                             identifier
                                                             accum
                                                             (Json.Encode.object << Backend.Measurement.Encoder.encodeCorePhysicalExam)
+
+                                                    BackendAuthorityDangerSigns identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Measurement.Encoder.encodeDangerSigns)
+
+                                                    BackendAuthorityFamilyPlanning identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Measurement.Encoder.encodeFamilyPlanning)
+
+                                                    BackendAuthorityHeight identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Measurement.Encoder.encodeHeight)
+
+                                                    BackendAuthorityIndividualParticipant identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            Backend.IndividualEncounterParticipant.Encoder.encodeIndividualEncounterParticipant
+
+                                                    BackendAuthorityLactation identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Measurement.Encoder.encodeLactation)
+
+                                                    BackendAuthorityLastMenstrualPeriod identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Measurement.Encoder.encodeLastMenstrualPeriod)
+
+                                                    BackendAuthorityMedicalHistory identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Measurement.Encoder.encodeMedicalHistory)
+
+                                                    BackendAuthorityMedication identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Measurement.Encoder.encodeMedication)
+
+                                                    BackendAuthorityMotherFbf identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Measurement.Encoder.encodeFbf)
+
+                                                    BackendAuthorityMuac identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Measurement.Encoder.encodeMuac)
 
                                                     BackendAuthorityNutritionPhoto identifier ->
                                                         DataManager.Utils.encodeDataToSend
