@@ -21,8 +21,8 @@ import Translate exposing (Language, TranslationId, translate)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
-view language currentDate id db =
+view : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
+view language currentDate selectedHealthCenter id db =
     let
         sessions =
             Dict.get id db.individualParticipantsByPerson
@@ -33,7 +33,7 @@ view language currentDate id db =
         [ viewHeader language id
         , div
             [ class "ui full segment" ]
-            [ viewWebData language (viewActions language currentDate id db) identity sessions
+            [ viewWebData language (viewActions language currentDate selectedHealthCenter id db) identity sessions
             ]
         ]
 
@@ -62,8 +62,8 @@ viewHeader language id =
         ]
 
 
-viewActions : Language -> NominalDate -> PersonId -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
-viewActions language currentDate id db sessions =
+viewActions : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
+viewActions language currentDate selectedHealthCenter id db sessions =
     let
         maybeSessionId =
             sessions
@@ -139,7 +139,7 @@ viewActions language currentDate id db sessions =
                     |> Maybe.map
                         -- If session exists, create new encounter for it.
                         (\sessionId ->
-                            [ Backend.AcuteIllnessEncounter.Model.AcuteIllnessEncounter sessionId currentDate Nothing
+                            [ Backend.AcuteIllnessEncounter.Model.AcuteIllnessEncounter sessionId currentDate Nothing (Just selectedHealthCenter)
                                 |> Backend.Model.PostAcuteIllnessEncounter
                                 |> App.Model.MsgIndexedDb
                                 |> onClick
@@ -152,6 +152,7 @@ viewActions language currentDate id db sessions =
                             currentDate
                             Nothing
                             Nothing
+                            (Just selectedHealthCenter)
                             |> Backend.Model.PostIndividualSession
                             |> App.Model.MsgIndexedDb
                             |> onClick
@@ -164,7 +165,7 @@ viewActions language currentDate id db sessions =
                     (maybeSessionId
                         |> Maybe.map
                             (\sessionId ->
-                                [ Backend.AcuteIllnessEncounter.Model.AcuteIllnessEncounter sessionId currentDate Nothing
+                                [ Backend.AcuteIllnessEncounter.Model.AcuteIllnessEncounter sessionId currentDate Nothing (Just selectedHealthCenter)
                                     |> Backend.Model.PostAcuteIllnessEncounter
                                     |> App.Model.MsgIndexedDb
                                     |> onClick

@@ -33,7 +33,7 @@ view language currentDate selectedHealthCenter id db =
         [ viewHeader language id
         , div
             [ class "ui full segment" ]
-            [ viewWebData language (viewActions language currentDate selectedHealthCenter id db) identity prenatalSessions
+            [ viewWebData language (viewActions language currentDate selectedHealthCenter id db) identity sessions
             ]
         ]
 
@@ -63,7 +63,7 @@ viewHeader language id =
 
 
 viewActions : Language -> NominalDate -> HealthCenterId -> PersonId -> ModelIndexedDb -> Dict IndividualEncounterParticipantId IndividualEncounterParticipant -> Html App.Model.Msg
-viewActions language currentDate selectedHealthCenter id db nutritionSessions =
+viewActions language currentDate selectedHealthCenter id db sessions =
     let
         -- Person nutrition session.
         maybeSessionId =

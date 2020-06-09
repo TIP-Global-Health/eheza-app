@@ -12,6 +12,7 @@ type alias AcuteIllnessEncounter =
     { participant : IndividualEncounterParticipantId
     , startDate : NominalDate
     , endDate : Maybe NominalDate
+    , shard : Maybe HealthCenterId
     }
 
 

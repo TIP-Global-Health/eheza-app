@@ -285,7 +285,7 @@ viewUserPage page model configured =
                             |> flexPageWrapper model
 
                     AcuteIllnessParticipantPage id ->
-                        Pages.AcuteIllnessParticipant.View.view model.language currentDate id model.indexedDb
+                        Pages.AcuteIllnessParticipant.View.view model.language currentDate healthCenterId id model.indexedDb
                             |> flexPageWrapper model
 
                     IndividualEncounterParticipantsPage encounterType ->
