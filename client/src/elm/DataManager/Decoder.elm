@@ -205,42 +205,49 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
         |> identifierDecoder
     )
         |> andThen
-            (\( type_, uuid, identifier_ ) ->
+            (\( type_, uuid, revisionIdentifier ) ->
+                let
+                    doDecode decoder tag =
+                        decoder
+                            |> andThen
+                                (\entity ->
+                                    let
+                                        backendEntity =
+                                            { uuid = uuid
+                                            , revision = revisionIdentifier
+                                            , entity = entity
+                                            }
+                                    in
+                                    succeed (tag backendEntity)
+                                )
+                in
                 case type_ of
                     "catchment_area" ->
-                        Backend.HealthCenter.Decoder.decodeCatchmentArea
-                            |> andThen (\entity -> succeed (BackendGeneralCatchmentArea uuid identifier_ entity))
+                        doDecode Backend.HealthCenter.Decoder.decodeCatchmentArea BackendGeneralCatchmentArea
 
                     "counseling_schedule" ->
-                        Backend.Counseling.Decoder.decodeCounselingSchedule
-                            |> andThen (\entity -> succeed (BackendGeneralCounselingSchedule uuid identifier_ entity))
+                        doDecode Backend.Counseling.Decoder.decodeCounselingSchedule BackendGeneralCounselingSchedule
 
                     "counseling_topic" ->
-                        Backend.Counseling.Decoder.decodeCounselingTopic
-                            |> andThen (\entity -> succeed (BackendGeneralCounselingTopic uuid identifier_ entity))
+                        doDecode Backend.Counseling.Decoder.decodeCounselingTopic BackendGeneralCounselingTopic
 
                     "health_center" ->
-                        Backend.HealthCenter.Decoder.decodeHealthCenter
-                            |> andThen (\entity -> succeed (BackendGeneralHealthCenter uuid identifier_ entity))
+                        doDecode Backend.HealthCenter.Decoder.decodeHealthCenter BackendGeneralHealthCenter
 
                     "nurse" ->
-                        Backend.Nurse.Decoder.decodeNurse
-                            |> andThen (\entity -> succeed (BackendGeneralNurse uuid identifier_ entity))
+                        doDecode Backend.Nurse.Decoder.decodeNurse BackendGeneralNurse
 
                     "person" ->
-                        Backend.Person.Decoder.decodePerson
-                            |> andThen (\entity -> succeed (BackendGeneralPerson uuid identifier_ entity))
+                        doDecode Backend.Person.Decoder.decodePerson BackendGeneralPerson
 
                     "pmtct_participant" ->
-                        Backend.PmtctParticipant.Decoder.decodePmtctParticipant
-                            |> andThen (\entity -> succeed (BackendGeneralPmtctParticipant uuid identifier_ entity))
+                        doDecode Backend.PmtctParticipant.Decoder.decodePmtctParticipant BackendGeneralPmtctParticipant
 
                     "relationship" ->
-                        Backend.Relationship.Decoder.decodeRelationship
-                            |> andThen (\entity -> succeed (BackendGeneralRelationship uuid identifier_ entity))
+                        doDecode Backend.Relationship.Decoder.decodeRelationship BackendGeneralRelationship
 
                     _ ->
-                        succeed (BackendGeneralEntityUnknown type_ identifier_)
+                        succeed (BackendGeneralEntityUnknown type_ revisionIdentifier)
             )
 
 
@@ -266,7 +273,17 @@ decodeBackendAuthorityEntity =
                 let
                     doDecode decoder tag =
                         decoder
-                            |> andThen (\entity -> succeed (tag uuid vid entity))
+                            |> andThen
+                                (\entity ->
+                                    let
+                                        backendEntity =
+                                            { uuid = uuid
+                                            , revision = vid
+                                            , entity = entity
+                                            }
+                                    in
+                                    succeed (tag backendEntity)
+                                )
                 in
                 case type_ of
                     "attendance" ->
