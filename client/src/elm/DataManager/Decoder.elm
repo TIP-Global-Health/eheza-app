@@ -277,6 +277,9 @@ decodeBackendAuthorityEntity =
                     "clinic" ->
                         doDecode Backend.Clinic.Decoder.decodeClinic BackendAuthorityClinic
 
+                    "counseling_session" ->
+                        doDecode Backend.Measurement.Decoder.decodeCounselingSession BackendAuthorityCounselingSession
+
                     "nutrition_photo" ->
                         doDecode Backend.Measurement.Decoder.decodeNutritionPhoto BackendAuthorityNutritionPhoto
 

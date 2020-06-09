@@ -262,6 +262,12 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
             , type_ = "child_fbf"
             }
 
+        BackendAuthorityCounselingSession uuid revision _ ->
+            { uuid = uuid
+            , revision = revision
+            , type_ = "counseling_session"
+            }
+
         BackendAuthorityNutritionPhoto uuid revision _ ->
             { uuid = uuid
             , revision = revision
