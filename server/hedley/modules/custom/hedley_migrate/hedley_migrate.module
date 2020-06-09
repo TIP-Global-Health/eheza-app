@@ -750,7 +750,7 @@ function hedley_migrate_allocate_photo_for_person($gender, $birth_date) {
  * @param int $fid
  *   Image file ID.
  * @param string $file_name
- *  Image file name.
+ *   Image file name.
  *
  * @return string|bool
  *   The name of copied file. FALSE on failure.
@@ -758,14 +758,13 @@ function hedley_migrate_allocate_photo_for_person($gender, $birth_date) {
 function hedley_migrate_export_real_image($fid, $file_name) {
   $file = file_load($fid);
   $destination = drupal_get_path('module', 'hedley_migrate');
-  $new_uri = $destination . '/images/'. $file_name;
+  $new_uri = $destination . '/images/' . $file_name;
 
   $new_url = file_unmanaged_copy($file->uri, $new_uri, 'FILE_EXISTS_RENAME');
   $parts = explode('/', $new_url);
 
   return $parts ? end($parts ) : '';
 }
-
 
 /**
  * Provides a list of Rwandan male first names.
