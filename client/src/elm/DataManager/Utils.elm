@@ -1,5 +1,6 @@
 module DataManager.Utils exposing
     ( determineSyncStatus
+    , encodeDataToSend
     , getBackendAuthorityEntityIdentifier
     , getBackendGeneralEntityIdentifier
     , getPhotoFromBackendAuthorityEntity
@@ -8,8 +9,9 @@ module DataManager.Utils exposing
     )
 
 import Backend.Measurement.Model exposing (PhotoUrl(..))
-import DataManager.Model exposing (BackendAuthorityEntity(..), BackendEntityIdentifier, BackendGeneralEntity(..), DownloadPhotos(..), Model, SyncStatus(..), emptyDownloadPhotosBatchRec, emptyUploadRec)
+import DataManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), DownloadPhotos(..), Model, SyncStatus(..), emptyDownloadPhotosBatchRec, emptyUploadRec)
 import Editable
+import Json.Encode
 import List.Zipper as Zipper
 import RemoteData
 import Utils.WebData
@@ -373,3 +375,15 @@ getSyncSpeedForSubscriptions model =
 
         _ ->
             syncCycle
+
+
+encodeDataToSend : BackendEntity a -> List String -> (a -> Json.Encode.Value) -> List String
+encodeDataToSend identifier accum func =
+    (Json.Encode.object
+        [ ( "uuid", Json.Encode.string identifier.uuid )
+        , ( "vid", Json.Encode.int identifier.revision )
+        , ( "entity", func identifier.entity )
+        ]
+        |> Json.Encode.encode 0
+    )
+        :: accum

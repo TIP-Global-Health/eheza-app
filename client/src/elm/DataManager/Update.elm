@@ -104,50 +104,68 @@ update currentDate device msg model =
                                         |> List.foldl
                                             (\entity accum ->
                                                 let
-                                                    doEncode uuid vid val =
+                                                    doEncode identifier val =
                                                         Json.Encode.object
-                                                            [ ( "uuid", Json.Encode.string uuid )
+                                                            [ ( "uuid", Json.Encode.string identifier.uuid )
+                                                            , ( "vid", Json.Encode.int identifier.vid )
                                                             , ( "entity", val )
-                                                            , ( "vid", Json.Encode.int vid )
                                                             ]
                                                             |> Json.Encode.encode 0
                                                 in
                                                 case entity of
-                                                    BackendAuthorityAttendance uuid vid entity_ ->
-                                                        doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodeAttendance entity_)
-                                                            :: accum
+                                                    BackendAuthorityAttendance identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Measurement.Encoder.encodeAttendance)
 
-                                                    BackendAuthorityBreastExam uuid vid entity_ ->
-                                                        doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodeBreastExam entity_)
-                                                            :: accum
+                                                    BackendAuthorityBreastExam identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Measurement.Encoder.encodeBreastExam)
 
-                                                    BackendAuthorityClinic uuid vid entity_ ->
-                                                        doEncode uuid vid (Json.Encode.object <| Backend.Clinic.Encoder.encodeClinic entity_)
-                                                            :: accum
+                                                    BackendAuthorityClinic identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Clinic.Encoder.encodeClinic)
 
-                                                    BackendAuthorityChildFbf uuid vid entity_ ->
-                                                        doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodeFbf entity_)
-                                                            :: accum
+                                                    BackendAuthorityChildFbf identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Measurement.Encoder.encodeFbf)
 
-                                                    BackendAuthorityCounselingSession uuid vid entity_ ->
-                                                        doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodeCounselingSession entity_)
-                                                            :: accum
+                                                    BackendAuthorityCounselingSession identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Measurement.Encoder.encodeCounselingSession)
 
-                                                    BackendAuthorityCorePhysicalExam uuid vid entity_ ->
-                                                        doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodeCorePhysicalExam entity_)
-                                                            :: accum
+                                                    BackendAuthorityCorePhysicalExam identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Measurement.Encoder.encodeCorePhysicalExam)
 
-                                                    BackendAuthorityNutritionPhoto uuid vid entity_ ->
-                                                        doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodeNutritionPhoto entity_)
-                                                            :: accum
+                                                    BackendAuthorityNutritionPhoto identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Measurement.Encoder.encodeNutritionPhoto)
 
-                                                    BackendAuthorityPhoto uuid vid entity_ ->
-                                                        doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodePhoto entity_)
-                                                            :: accum
+                                                    BackendAuthorityPhoto identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Measurement.Encoder.encodePhoto)
 
-                                                    BackendAuthorityWeight uuid vid entity_ ->
-                                                        doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodeWeight entity_)
-                                                            :: accum
+                                                    BackendAuthorityWeight identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Measurement.Encoder.encodeWeight)
 
                                                     BackendAuthorityEntityUnknown _ _ ->
                                                         -- Filter out the unknown entities.
@@ -385,47 +403,54 @@ update currentDate device msg model =
                                     data.entities
                                         |> List.foldl
                                             (\entity accum ->
-                                                let
-                                                    doEncode uuid vid val =
-                                                        Json.Encode.object
-                                                            [ ( "uuid", Json.Encode.string uuid )
-                                                            , ( "entity", val )
-                                                            , ( "vid", Json.Encode.int vid )
-                                                            ]
-                                                            |> Json.Encode.encode 0
-                                                in
                                                 case entity of
-                                                    BackendGeneralCatchmentArea uuid vid entity_ ->
-                                                        doEncode uuid vid (Backend.HealthCenter.Encoder.encodeCatchmentArea entity_)
-                                                            :: accum
+                                                    BackendGeneralCatchmentArea identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            Backend.HealthCenter.Encoder.encodeCatchmentArea
 
-                                                    BackendGeneralCounselingSchedule uuid vid entity_ ->
-                                                        doEncode uuid vid (Backend.Counseling.Encoder.encodeCounselingSchedule entity_)
-                                                            :: accum
+                                                    BackendGeneralCounselingSchedule identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            Backend.Counseling.Encoder.encodeCounselingSchedule
 
-                                                    BackendGeneralHealthCenter uuid vid entity_ ->
-                                                        doEncode uuid vid (Backend.HealthCenter.Encoder.encodeHealthCenter entity_)
-                                                            :: accum
+                                                    BackendGeneralHealthCenter identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            Backend.HealthCenter.Encoder.encodeHealthCenter
 
-                                                    BackendGeneralCounselingTopic uuid vid entity_ ->
-                                                        doEncode uuid vid (Json.Encode.object <| Backend.Counseling.Encoder.encodeCounselingTopic entity_)
-                                                            :: accum
+                                                    BackendGeneralCounselingTopic identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Counseling.Encoder.encodeCounselingTopic)
 
-                                                    BackendGeneralNurse uuid vid entity_ ->
-                                                        doEncode uuid vid (Json.Encode.object <| Backend.Nurse.Encoder.encodeNurse entity_)
-                                                            :: accum
+                                                    BackendGeneralNurse identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Nurse.Encoder.encodeNurse)
 
-                                                    BackendGeneralPerson uuid vid entity_ ->
-                                                        doEncode uuid vid (Json.Encode.object <| Backend.Person.Encoder.encodePerson entity_)
-                                                            :: accum
+                                                    BackendGeneralPerson identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.Person.Encoder.encodePerson)
 
-                                                    BackendGeneralPmtctParticipant uuid vid entity_ ->
-                                                        doEncode uuid vid (Backend.PmtctParticipant.Encoder.encodePmtctParticipant entity_)
-                                                            :: accum
+                                                    BackendGeneralPmtctParticipant identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            Backend.PmtctParticipant.Encoder.encodePmtctParticipant
 
-                                                    BackendGeneralRelationship uuid vid entity_ ->
-                                                        doEncode uuid vid (Backend.Relationship.Encoder.encodeRelationship entity_)
-                                                            :: accum
+                                                    BackendGeneralRelationship identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            Backend.Relationship.Encoder.encodeRelationship
 
                                                     BackendGeneralEntityUnknown _ _ ->
                                                         -- Filter out the unknown entities.

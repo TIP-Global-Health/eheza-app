@@ -6,6 +6,7 @@ import DataManager.Model exposing (BackendEntityIdentifier, BackendGeneralEntity
 import DataManager.Utils exposing (getBackendGeneralEntityIdentifier)
 import Json.Encode exposing (Value, int, list, null, object, string)
 import Json.Encode.Extra exposing (maybe)
+import Maybe.Extra exposing (isJust)
 
 
 encodeIndexDbQueryUploadGeneralResultRecord : IndexDbQueryUploadGeneralResultRecord -> List ( String, Value )
@@ -32,24 +33,23 @@ encodeIndexDbQueryUploadGeneralResultRecord record =
 
                 data =
                     case entity of
-                        BackendGeneralPerson _ localId entity_ ->
+                        BackendGeneralPerson identifier_ ->
                             let
                                 encodedEntity =
-                                    Backend.Person.Encoder.encodePerson entity_
+                                    Backend.Person.Encoder.encodePerson identifier_.entity
 
                                 encodedEntityUpdated =
-                                    case entity_.avatarUrl of
-                                        Just photo ->
-                                            -- @todo: Get correct file ID.
-                                            replacePhotoWithFileId encodedEntity localId
+                                    if isJust identifier_.entity.avatarUrl then
+                                        replacePhotoWithFileId encodedEntity identifier_.revision
 
-                                        Nothing ->
-                                            encodedEntity
+                                    else
+                                        encodedEntity
                             in
                             Json.Encode.object encodedEntityUpdated
 
                         _ ->
-                            -- @todo, get all the rest.
+                            -- @todo, get all the rest of entities that can have
+                            -- photos.
                             Json.Encode.object []
             in
             [ ( "uuid", string identifier.uuid )
