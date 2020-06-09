@@ -26,6 +26,10 @@ var photosUploadUrlRegex = /\/cache-upload\/images/;
 // all devices get. (That is, unsharded data).
 var nodesUuid = '78cf21d1-b3f4-496a-b312-d8ae73041f09';
 
+// All those entities are the entities we're going to get from the backend.
+// They should also be mapped in DataManager.Model.BackendGeneralEntity (for
+// General entities), or DataManager.Model.BackendAuthorityEntity (for Authority
+// entities).
 var tableForType = {
     attendance: 'shards',
     breast_exam: 'shards',
@@ -47,8 +51,8 @@ var tableForType = {
     medication: 'shards',
     mother_fbf: 'shards',
     muac: 'shards',
-    // <--
     nurse: 'nodes',
+    // <--
     nutrition: 'shards',
     nutrition_encounter: 'shards',
     nutrition_height: 'shards',
