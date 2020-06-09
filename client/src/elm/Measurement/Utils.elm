@@ -80,7 +80,7 @@ fromChildMeasurementData data =
             |> mapMeasurementData .fbf
             |> currentValue
             |> Maybe.map (.value >> fbfValueToForm)
-            |> Maybe.withDefault (FbfForm Nothing Nothing Nothing)
+            |> Maybe.withDefault (FbfForm Nothing Nothing)
     }
 
 
@@ -120,7 +120,7 @@ fromMotherMeasurementData data =
             |> mapMeasurementData .fbf
             |> currentValue
             |> Maybe.map (.value >> fbfValueToForm)
-            |> Maybe.withDefault (FbfForm Nothing Nothing Nothing)
+            |> Maybe.withDefault (FbfForm Nothing Nothing)
     }
 
 

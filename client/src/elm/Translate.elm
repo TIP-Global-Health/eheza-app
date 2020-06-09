@@ -478,6 +478,7 @@ type TranslationId
     | OnceYouEndTheEncounter
     | OnceYouEndYourGroupEncounter
     | Or
+    | PackagesPerMonth
     | Page
     | Page404
     | PageNotFoundMsg
@@ -875,7 +876,7 @@ translationSet trans =
                     }
 
                 MotherActivity MotherFbf ->
-                    { english = "The amount of CSB++ (FBF) is calculated below. If mother did not receive the specified amount, please record the amount distributed, and select the reason why."
+                    { english = "Enter the amount of CSB++ (FBF) distributed below."
                     , kinyarwanda = Nothing
                     }
 
@@ -890,7 +891,7 @@ translationSet trans =
                    }
                 -}
                 ChildActivity ChildFbf ->
-                    { english = "The amount of CSB++ (FBF) is calculated below. If child did not receive the specified amount, please record the amount distributed, and select the reason why."
+                    { english = "Enter the amount of CSB++ (FBF) distributed below."
                     , kinyarwanda = Nothing
                     }
 
@@ -3309,6 +3310,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        PackagesPerMonth ->
+            { english = "packages / month"
+            , kinyarwanda = Nothing
+            }
+
         Page ->
             { english = "Page"
             , kinyarwanda = Just "Paji"
@@ -4665,12 +4671,12 @@ translationSet trans =
         WasFbfDistirbuted activity ->
             case activity of
                 ChildActivity _ ->
-                    { english = "Was this amount distirbuted to the child"
+                    { english = "If distributed amount is not as per guidelines, select the reason"
                     , kinyarwanda = Nothing
                     }
 
                 MotherActivity _ ->
-                    { english = "Was this amount distirbuted to the mother"
+                    { english = "If distributed amount is not as per guidelines, select the reason"
                     , kinyarwanda = Nothing
                     }
 

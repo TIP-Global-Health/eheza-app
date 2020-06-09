@@ -16,9 +16,9 @@ import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Model exposing (CounselingTiming(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (currentValue, currentValues, fbfAmountForPerson, mapMeasurementData)
+import Backend.Measurement.Utils exposing (currentValue, currentValues, mapMeasurementData)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
-import Backend.Person.Model exposing (Person)
+import Backend.Person.Model exposing (Person, Ubudehe(..))
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (..)
 import Backend.Session.Utils exposing (getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother)
@@ -233,13 +233,7 @@ expectChildActivity currentDate offlineSession childId isChw activity =
                expectCounselingActivity session childId
         -}
         ChildFbf ->
-            if offlineSession.session.clinicType == Fbf then
-                Dict.get childId offlineSession.children
-                    |> Maybe.map (fbfAmountForPerson currentDate >> isJust)
-                    |> Maybe.withDefault False
-
-            else
-                False
+            offlineSession.session.clinicType == Fbf
 
         _ ->
             -- In all other cases, we expect each ativity each time.
@@ -496,7 +490,18 @@ expectMotherActivity currentDate offlineSession motherId activity =
 
                                         entitledByUbudehe =
                                             Dict.get motherId offlineSession.mothers
-                                                |> Maybe.map (fbfAmountForPerson currentDate >> isJust)
+                                                |> Maybe.map
+                                                    (\mother ->
+                                                        case mother.ubudehe of
+                                                            Just Ubudehe1 ->
+                                                                True
+
+                                                            Just Ubudehe2 ->
+                                                                True
+
+                                                            _ ->
+                                                                False
+                                                    )
                                                 |> Maybe.withDefault False
                                     in
                                     isBreastfeeding && entitledByUbudehe

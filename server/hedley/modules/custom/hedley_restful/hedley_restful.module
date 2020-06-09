@@ -5,7 +5,7 @@
  * Code for the RESTful integration.
  */
 
-define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 9);
+define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 10);
 
 /**
  * Nodes synced to all devices.
@@ -14,21 +14,12 @@ define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 9);
  * we sync to all devices.
  */
 const HEDLEY_RESTFUL_ALL_DEVICES = [
-  'acute_illness_encounter' => 'acute-illness-encounters',
   'catchment_area' => 'catchment_areas',
-  'clinic' => 'clinics',
   'counseling_schedule' => 'counseling-schedule',
   'counseling_topic' => 'counseling-topics',
   'health_center' => 'health_centers',
   'nurse' => 'nurses',
   'participant_form' => 'participants-form',
-  'person' => 'people',
-  'pmtct_participant' => 'pmtct-participants',
-  'individual_participant' => 'individual-participants',
-  'prenatal_encounter' => 'prenatal-encounters',
-  'nutrition_encounter' => 'nutrition-encounters',
-  'relationship' => 'relationships',
-  'session' => 'sessions',
   'village' => 'villages',
 ];
 
@@ -39,6 +30,15 @@ const HEDLEY_RESTFUL_ALL_DEVICES = [
  * we sync to just some devices.
  */
 const HEDLEY_RESTFUL_SHARDED = [
+  'clinic' => 'clinics',
+  'person' => 'people',
+  'pmtct_participant' => 'pmtct-participants',
+  'individual_participant' => 'individual-participants',
+  'prenatal_encounter' => 'prenatal-encounters',
+  'nutrition_encounter' => 'nutrition-encounters',
+  'acute_illness_encounter' => 'acute-illness-encounters',
+  'relationship' => 'relationships',
+  'session' => 'sessions',
   'acute_illness_vitals' => 'acute-illness-vitals',
   'attendance' => 'attendances',
   'breast_exam' => 'breast-exams',
@@ -205,9 +205,11 @@ function hedley_restful_output_for_bundles($bundleHandlers, array $nids, $accoun
  *   The Node ID. False, if not found.
  */
 function hedley_restful_resolve_nid_for_uuid($uuid) {
-  $result = db_select('field_data_field_uuid', 'uuid')
-    ->fields('uuid', ['entity_id'])
-    ->condition('uuid.field_uuid_value', $uuid)
+  $query = db_select('field_data_field_uuid', 'uuid');
+  $query->condition('uuid.field_uuid_value', $uuid);
+  $query->addField('uuid', 'entity_id');
+
+  $result = $query
     ->execute()
     ->fetchField();
 

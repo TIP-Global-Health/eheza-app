@@ -226,7 +226,7 @@ update msg model =
                         MsgPageCreatePerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Person.Update.update currentDate model.villageId isChw subMsg model.indexedDb data.createPersonPage
+                                    Pages.Person.Update.update currentDate model.healthCenterId model.villageId isChw subMsg model.indexedDb data.createPersonPage
                             in
                             ( { data | createPersonPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageCreatePerson) subCmd
@@ -236,7 +236,7 @@ update msg model =
                         MsgPageEditPerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Person.Update.update currentDate model.villageId isChw subMsg model.indexedDb data.editPersonPage
+                                    Pages.Person.Update.update currentDate model.healthCenterId model.villageId isChw subMsg model.indexedDb data.editPersonPage
                             in
                             ( { data | editPersonPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageEditPerson) subCmd

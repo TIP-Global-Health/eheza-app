@@ -24,6 +24,7 @@ encodeIndividualEncounterParticipant data =
                 , ( "value2", maybe encodeYYYYMMDD data.endDate )
                 ]
           )
+        , ( "shard", maybe encodeEntityUuid data.shard )
         ]
 
 
