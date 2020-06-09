@@ -20,6 +20,7 @@ type alias IndividualEncounterParticipant =
     , startDate : NominalDate
     , endDate : Maybe NominalDate
     , eddDate : Maybe NominalDate
+    , shard : Maybe HealthCenterId
     }
 
 

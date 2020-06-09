@@ -35,6 +35,6 @@ decodeIndividualEncounterTypeFromString string =
             Nothing
 
 
-isDailyEncounterActive : NominalDate -> { participant : a, startDate : NominalDate, endDate : Maybe NominalDate } -> Bool
+isDailyEncounterActive : NominalDate -> { participant : a, startDate : NominalDate, endDate : Maybe NominalDate, shard : Maybe HealthCenterId } -> Bool
 isDailyEncounterActive currentDate encounter =
     encounter.startDate == currentDate && isNothing encounter.endDate
