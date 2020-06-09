@@ -182,54 +182,37 @@ in case of download, or the `localId` in case of upload.
 -}
 getBackendGeneralEntityIdentifier : BackendGeneralEntity -> BackendEntityIdentifier
 getBackendGeneralEntityIdentifier backendGeneralEntity =
+    let
+        getIdentifier identifier type_ =
+            { uuid = identifier.uuid
+            , revision = identifier.revision
+            , type_ = type_
+            }
+    in
     case backendGeneralEntity of
-        BackendGeneralCatchmentArea uuid revision _ ->
-            { uuid = uuid
-            , revision = revision
-            , type_ = "catchment_area"
-            }
+        BackendGeneralCatchmentArea identifier ->
+            getIdentifier identifier "catchment_area"
 
-        BackendGeneralCounselingSchedule uuid revision _ ->
-            { uuid = uuid
-            , revision = revision
-            , type_ = "counseling_schedule"
-            }
+        BackendGeneralCounselingSchedule identifier ->
+            getIdentifier identifier "counseling_schedule"
 
-        BackendGeneralCounselingTopic uuid revision _ ->
-            { uuid = uuid
-            , revision = revision
-            , type_ = "counseling_topic"
-            }
+        BackendGeneralCounselingTopic identifier ->
+            getIdentifier identifier "counseling_topic"
 
-        BackendGeneralHealthCenter uuid revision _ ->
-            { uuid = uuid
-            , revision = revision
-            , type_ = "health_center"
-            }
+        BackendGeneralHealthCenter identifier ->
+            getIdentifier identifier "health_center"
 
-        BackendGeneralNurse uuid revision _ ->
-            { uuid = uuid
-            , revision = revision
-            , type_ = "nurse"
-            }
+        BackendGeneralNurse identifier ->
+            getIdentifier identifier "nurse"
 
-        BackendGeneralPerson uuid revision _ ->
-            { uuid = uuid
-            , revision = revision
-            , type_ = "person"
-            }
+        BackendGeneralPerson identifier ->
+            getIdentifier identifier "person"
 
-        BackendGeneralPmtctParticipant uuid revision _ ->
-            { uuid = uuid
-            , revision = revision
-            , type_ = "pmtct_participant"
-            }
+        BackendGeneralPmtctParticipant identifier ->
+            getIdentifier identifier "pmtct_participant"
 
-        BackendGeneralRelationship uuid revision _ ->
-            { uuid = uuid
-            , revision = revision
-            , type_ = "relationship"
-            }
+        BackendGeneralRelationship identifier ->
+            getIdentifier identifier "relationship"
 
         BackendGeneralEntityUnknown uuid revision ->
             { uuid = uuid
@@ -243,60 +226,40 @@ in case of download, or the `localId` in case of upload.
 -}
 getBackendAuthorityEntityIdentifier : BackendAuthorityEntity -> BackendEntityIdentifier
 getBackendAuthorityEntityIdentifier backendAuthorityEntity =
+    let
+        getIdentifier identifier type_ =
+            { uuid = identifier.uuid
+            , revision = identifier.revision
+            , type_ = type_
+            }
+    in
     case backendAuthorityEntity of
-        BackendAuthorityAttendance uuid revision _ ->
-            { uuid = uuid
-            , revision = revision
-            , type_ = "attendance"
-            }
+        BackendAuthorityAttendance identifier ->
+            getIdentifier identifier "attendance"
 
-        BackendAuthorityBreastExam uuid revision _ ->
-            { uuid = uuid
-            , revision = revision
-            , type_ = "breast_exam"
-            }
+        BackendAuthorityBreastExam identifier ->
+            getIdentifier identifier "breast_exam"
 
-        BackendAuthorityClinic uuid revision _ ->
-            { uuid = uuid
-            , revision = revision
-            , type_ = "clinic"
-            }
+        BackendAuthorityClinic identifier ->
+            getIdentifier identifier "clinic"
 
-        BackendAuthorityChildFbf uuid revision _ ->
-            { uuid = uuid
-            , revision = revision
-            , type_ = "child_fbf"
-            }
+        BackendAuthorityChildFbf identifier ->
+            getIdentifier identifier "child_fbf"
 
-        BackendAuthorityCounselingSession uuid revision _ ->
-            { uuid = uuid
-            , revision = revision
-            , type_ = "counseling_session"
-            }
+        BackendAuthorityCounselingSession identifier ->
+            getIdentifier identifier "counseling_session"
 
-        BackendAuthorityCorePhysicalExam uuid revision _ ->
-            { uuid = uuid
-            , revision = revision
-            , type_ = "core_physical_exam"
-            }
+        BackendAuthorityCorePhysicalExam identifier ->
+            getIdentifier identifier "counseling_session"
 
-        BackendAuthorityNutritionPhoto uuid revision _ ->
-            { uuid = uuid
-            , revision = revision
-            , type_ = "nutrition_photo"
-            }
+        BackendAuthorityNutritionPhoto identifier ->
+            getIdentifier identifier "nutrition_photo"
 
-        BackendAuthorityPhoto uuid revision _ ->
-            { uuid = uuid
-            , revision = revision
-            , type_ = "photo"
-            }
+        BackendAuthorityPhoto identifier ->
+            getIdentifier identifier "photo"
 
-        BackendAuthorityWeight uuid revision _ ->
-            { uuid = uuid
-            , revision = revision
-            , type_ = "weight"
-            }
+        BackendAuthorityWeight identifier ->
+            getIdentifier identifier "weight"
 
         BackendAuthorityEntityUnknown uuid revision ->
             { uuid = uuid
@@ -314,8 +277,8 @@ Not all entities have a photo, and even if they do, it might be a Maybe value
 getPhotoFromBackendGeneralEntity : BackendGeneralEntity -> Maybe String
 getPhotoFromBackendGeneralEntity backendGeneralEntity =
     case backendGeneralEntity of
-        BackendGeneralPerson _ _ person ->
-            person.avatarUrl
+        BackendGeneralPerson identifier ->
+            identifier.entity.avatarUrl
 
         _ ->
             Nothing
@@ -326,19 +289,19 @@ getPhotoFromBackendGeneralEntity backendGeneralEntity =
 getPhotoFromBackendAuthorityEntity : BackendAuthorityEntity -> Maybe String
 getPhotoFromBackendAuthorityEntity backendAuthorityEntity =
     let
-        getPhotoFromMeasurement entity_ =
+        getPhotoFromMeasurement identifier =
             let
                 (PhotoUrl url) =
-                    entity_.value
+                    identifier.entity.value
             in
             Just url
     in
     case backendAuthorityEntity of
-        BackendAuthorityPhoto _ _ entity ->
-            getPhotoFromMeasurement entity
+        BackendAuthorityPhoto identifier ->
+            getPhotoFromMeasurement identifier
 
-        BackendAuthorityNutritionPhoto _ _ entity ->
-            getPhotoFromMeasurement entity
+        BackendAuthorityNutritionPhoto identifier ->
+            getPhotoFromMeasurement identifier
 
         _ ->
             Nothing

@@ -1,5 +1,6 @@
 module DataManager.Model exposing
     ( BackendAuthorityEntity(..)
+    , BackendEntity
     , BackendEntityIdentifier
     , BackendGeneralEntity(..)
     , DownloadPhotos(..)
@@ -46,21 +47,15 @@ import Time
 authority (e.g. Health center). For example, a person is a "general" entity,
 but a child's measurements is per authority.
 -}
-type
-    BackendGeneralEntity
-    -- The `String` is the UUID which is not part of the entities, so we'd keep
-    -- it along with the entity itself. We keep the UUID is regular string to
-    -- keep decoder code easier to manage.
-    -- When downloading, the `Int` is the vid of the node.
-    -- When uploading, the `Int` the the `localId` from IndexDB.
-    = BackendGeneralCatchmentArea String Int CatchmentArea
-    | BackendGeneralCounselingSchedule String Int CounselingSchedule
-    | BackendGeneralCounselingTopic String Int CounselingTopic
-    | BackendGeneralHealthCenter String Int HealthCenter
-    | BackendGeneralNurse String Int Nurse
-    | BackendGeneralPerson String Int Person
-    | BackendGeneralPmtctParticipant String Int PmtctParticipant
-    | BackendGeneralRelationship String Int Relationship
+type BackendGeneralEntity
+    = BackendGeneralCatchmentArea (BackendEntity CatchmentArea)
+    | BackendGeneralCounselingSchedule (BackendEntity CounselingSchedule)
+    | BackendGeneralCounselingTopic (BackendEntity CounselingTopic)
+    | BackendGeneralHealthCenter (BackendEntity HealthCenter)
+    | BackendGeneralNurse (BackendEntity Nurse)
+    | BackendGeneralPerson (BackendEntity Person)
+    | BackendGeneralPmtctParticipant (BackendEntity PmtctParticipant)
+    | BackendGeneralRelationship (BackendEntity Relationship)
       -- Don't fail on unknown types. We'd like to keep the type name along with
       -- the `vid`. The reason we keep the vid, is that we fetched some content
       -- which we don't recognize, but we want to keep fetching later content.
@@ -73,20 +68,35 @@ authority (e.g. Health center). For example, a child's measurements is per
 authority.
 -}
 type BackendAuthorityEntity
-    = BackendAuthorityAttendance String Int Attendance
-    | BackendAuthorityBreastExam String Int BreastExam
-    | BackendAuthorityChildFbf String Int Fbf
-    | BackendAuthorityClinic String Int Clinic
-    | BackendAuthorityCounselingSession String Int CounselingSession
-    | BackendAuthorityCorePhysicalExam String Int CorePhysicalExam
-    | BackendAuthorityNutritionPhoto String Int NutritionPhoto
-    | BackendAuthorityPhoto String Int Photo
-    | BackendAuthorityWeight String Int Weight
+    = BackendAuthorityAttendance (BackendEntity Attendance)
+    | BackendAuthorityBreastExam (BackendEntity BreastExam)
+    | BackendAuthorityChildFbf (BackendEntity Fbf)
+    | BackendAuthorityClinic (BackendEntity Clinic)
+    | BackendAuthorityCounselingSession (BackendEntity CounselingSession)
+    | BackendAuthorityCorePhysicalExam (BackendEntity CorePhysicalExam)
+    | BackendAuthorityNutritionPhoto (BackendEntity NutritionPhoto)
+    | BackendAuthorityPhoto (BackendEntity Photo)
+    | BackendAuthorityWeight (BackendEntity Weight)
       -- Don't fail on unknown types. We'd like to keep the type name along with
       -- the `vid`. The reason we keep the vid, is that we fetched some content
       -- which we don't recognize, but we want to keep fetching later content.
       -- @todo: Remove after we decode all entity types.
     | BackendAuthorityEntityUnknown String Int
+
+
+{-| Wrapper for a Backend entity (both General and Authority).
+-}
+type alias BackendEntity a =
+    { -- The `String` is the UUID which is not part of the entities, so we'd keep
+      -- it along with the entity itself. We keep the UUID is regular string to
+      -- keep decoder code easier to manage.
+      uuid : String
+
+    -- When downloading, the `Int` is the vid of the node.
+    -- When uploading, the `Int` the the `localId` from IndexDB.
+    , revision : Int
+    , entity : a
+    }
 
 
 {-| Get info about an entity. `revision` would be the Drupal revision

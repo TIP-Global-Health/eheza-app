@@ -256,29 +256,29 @@ viewGeneralEntity : Language -> BackendGeneralEntity -> Html msg
 viewGeneralEntity language backendGeneralEntity =
     li []
         [ case backendGeneralEntity of
-            BackendGeneralCatchmentArea _ _ entity ->
-                text <| "Catchment area " ++ entity.name
+            BackendGeneralCatchmentArea identifier ->
+                text <| "Catchment area " ++ identifier.entity.name
 
-            BackendGeneralCounselingSchedule uuid _ _ ->
-                text <| "Counseling Schedule " ++ uuid
+            BackendGeneralCounselingSchedule identifier ->
+                text <| "Counseling Schedule " ++ identifier.uuid
 
-            BackendGeneralCounselingTopic _ _ entity ->
-                text <| "Counseling Topic " ++ entity.english
+            BackendGeneralCounselingTopic identifier ->
+                text <| "Counseling Topic " ++ identifier.entity.english
 
-            BackendGeneralHealthCenter _ _ entity ->
-                text <| "Health Center " ++ entity.name
+            BackendGeneralHealthCenter identifier ->
+                text <| "Health Center " ++ identifier.entity.name
 
-            BackendGeneralNurse _ _ entity ->
-                text <| "Nurse " ++ entity.name
+            BackendGeneralNurse identifier ->
+                text <| "Nurse " ++ identifier.entity.name
 
-            BackendGeneralPerson _ _ entity ->
-                text <| "Person " ++ entity.name
+            BackendGeneralPerson identifier ->
+                text <| "Person " ++ identifier.entity.name
 
-            BackendGeneralPmtctParticipant _ _ entity ->
-                text <| "Pmtct Participant for child ID " ++ fromEntityUuid entity.child
+            BackendGeneralPmtctParticipant identifier ->
+                text <| "Pmtct Participant for child ID " ++ fromEntityUuid identifier.entity.child
 
-            BackendGeneralRelationship _ _ entity ->
-                text <| "Relationship for person ID " ++ fromEntityUuid entity.person
+            BackendGeneralRelationship identifier ->
+                text <| "Relationship for person ID " ++ fromEntityUuid identifier.entity.person
 
             BackendGeneralEntityUnknown type_ _ ->
                 text <| type_ ++ " (we still don't decode it)"
@@ -346,37 +346,37 @@ viewSyncDownloadAuthority language db model webData =
 viewAuthorityEntity : BackendAuthorityEntity -> Html msg
 viewAuthorityEntity backendAuthorityEntity =
     let
-        viewMeasurement entity name =
-            text (name ++ " for person ID " ++ fromEntityUuid entity.participantId)
+        viewMeasurement identifier name =
+            text (name ++ " for person ID " ++ fromEntityUuid identifier.entity.participantId)
     in
     li []
         [ case backendAuthorityEntity of
-            BackendAuthorityAttendance _ _ entity ->
-                viewMeasurement entity "Attendance"
+            BackendAuthorityAttendance identifier ->
+                viewMeasurement identifier "Attendance"
 
-            BackendAuthorityBreastExam _ _ entity ->
-                viewMeasurement entity "Breast Exam"
+            BackendAuthorityBreastExam identifier ->
+                viewMeasurement identifier "Breast Exam"
 
-            BackendAuthorityChildFbf _ _ entity ->
-                viewMeasurement entity "Child Fbf"
+            BackendAuthorityChildFbf identifier ->
+                viewMeasurement identifier "Child Fbf"
 
-            BackendAuthorityClinic _ _ entity ->
-                text <| "Clinic " ++ entity.name
+            BackendAuthorityClinic identifier ->
+                text <| "Clinic " ++ identifier.entity.name
 
-            BackendAuthorityCounselingSession _ _ entity ->
-                viewMeasurement entity "Counseling Session"
+            BackendAuthorityCounselingSession identifier ->
+                viewMeasurement identifier "Counseling Session"
 
-            BackendAuthorityCorePhysicalExam _ _ entity ->
-                viewMeasurement entity "Core Physical Exam"
+            BackendAuthorityCorePhysicalExam identifier ->
+                viewMeasurement identifier "Core Physical Exam"
 
-            BackendAuthorityNutritionPhoto _ _ entity ->
-                viewMeasurement entity "Nutrition Photo"
+            BackendAuthorityNutritionPhoto identifier ->
+                viewMeasurement identifier "Nutrition Photo"
 
-            BackendAuthorityPhoto _ _ entity ->
-                viewMeasurement entity "Photo"
+            BackendAuthorityPhoto identifier ->
+                viewMeasurement identifier "Photo"
 
-            BackendAuthorityWeight _ _ entity ->
-                viewMeasurement entity "Weight"
+            BackendAuthorityWeight identifier ->
+                viewMeasurement identifier "Weight"
 
             BackendAuthorityEntityUnknown type_ _ ->
                 text <| type_ ++ " (we still don't decode it)"
