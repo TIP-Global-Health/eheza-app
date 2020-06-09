@@ -744,6 +744,24 @@ function hedley_migrate_allocate_photo_for_person($gender, $birth_date) {
   return $image_name . '.jpeg';
 }
 
+/**
+ * @param $fid
+ * @param $file_name
+ * @return mixed|string
+ */
+function hedley_migrate_copy_image($fid, $file_name) {
+  $file = file_load($fid);
+  $destination = drupal_get_path('module', 'hedley_migrate');
+  $new_uri = $destination . '/images/'. $file_name;
+
+  $new_url = file_unmanaged_copy($file->uri, $new_uri, 'FILE_EXISTS_RENAME');
+
+  $parts = explode('/', $new_url);
+
+  return $parts ? end($parts ) : '';
+}
+
+
 function hedley_migrate_male_first_names() {
   return [
     'Ernest',

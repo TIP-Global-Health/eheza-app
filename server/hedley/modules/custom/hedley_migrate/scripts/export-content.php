@@ -19,14 +19,15 @@ $faker = hedley_faker_create();
 
 // For sample db: Rukura, Rwankuba, Test.
 //$health_centers_data = [
-//  7091 => 'anonymize',
-//  7092 => 'anonymize',
-//  28589 => 'none',
+//  7091 => ['anonymize' => TRUE],
+//  7092 => ['anonymize' => TRUE],
+//  28589 => ['anonymize' => FALSE],
 //];
 
 $health_centers_data = [
-  4 => 'anonymize',
-  5 => 'none',
+  4 => ['anonymize' => TRUE],
+//  5 => ['anonymize' => TRUE],
+  6 => ['anonymize' => FALSE],
 ];
 
 $health_centers_ids = array_keys($health_centers_data);
@@ -302,7 +303,7 @@ foreach ($health_centers_ids as $health_center_id) {
     $gender = $wrapper->field_gender->value();
     $birth_date = $wrapper->field_birth_date->value();
 
-    if ($health_centers_data[$health_center_id] == 'anonymize') {
+    if ($health_centers_data[$health_center_id]['anonymize']) {
       if ($gender == 'male') {
         $total_males++;
         $first_name_id = ($total_males - 1) % $total_male_first_names;
@@ -318,9 +319,9 @@ foreach ($health_centers_ids as $health_center_id) {
         $second_name = $second_names[$second_name_id];
       }
 
-      $photo = hedley_migrate_allocate_photo_for_person($gender, $birth_date);
       $national_id = '1199270' . $faker->numberBetween(100000000, 199999999);
       $phone_number = '0' . $faker->numberBetween(700000000, 799999999);
+      $photo = hedley_migrate_allocate_photo_for_person($gender, $birth_date);
     }
     else {
       $first_name = trim($wrapper->field_first_name->value());
@@ -328,9 +329,11 @@ foreach ($health_centers_ids as $health_center_id) {
       if (empty($first_name) && empty($second_name)) {
         $second_name = $wrapper->label();
       }
-      // Todo: handle photo
+
       $national_id = $wrapper->field_national_id_number->value();
       $phone_number = $wrapper->field_phone_number->value();
+      $image = $wrapper->field_photo->value();
+      $photo = hedley_migrate_copy_image($image['fid'], $image['filename']);
     }
 
     $people[$person_id] = [
@@ -424,9 +427,15 @@ foreach ($health_centers_ids as $health_center_id) {
           break;
 
         case 'photo':
-          $gender = $wrapper->field_person->field_gender->value();
-          $birth_date = $wrapper->field_person->field_birth_date->value();
-          $photo = hedley_migrate_allocate_photo_for_person($gender, $birth_date);
+          if ($health_centers_data[$health_center_id]['anonymize']) {
+            $gender = $wrapper->field_person->field_gender->value();
+            $birth_date = $wrapper->field_person->field_birth_date->value();
+            $photo = hedley_migrate_allocate_photo_for_person($gender, $birth_date);
+          }
+          else {
+            $image = $wrapper->field_photo->value();
+            $photo = hedley_migrate_copy_image($image['fid'], $image['filename']);
+          }
           $type_based_values = [$photo];
           break;
 
