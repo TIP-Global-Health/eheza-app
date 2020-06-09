@@ -345,31 +345,38 @@ viewSyncDownloadAuthority language db model webData =
 
 viewAuthorityEntity : BackendAuthorityEntity -> Html msg
 viewAuthorityEntity backendAuthorityEntity =
+    let
+        viewMeasurement entity name =
+            text (name ++ " for person ID " ++ fromEntityUuid entity.participantId)
+    in
     li []
         [ case backendAuthorityEntity of
             BackendAuthorityAttendance _ _ entity ->
-                text <| "Attendance for person ID " ++ fromEntityUuid entity.participantId
+                viewMeasurement entity "Attendance"
 
             BackendAuthorityBreastExam _ _ entity ->
-                text <| "Breast Exam for person ID " ++ fromEntityUuid entity.participantId
+                viewMeasurement entity "Breast Exam"
 
             BackendAuthorityChildFbf _ _ entity ->
-                text <| "Child Fbf for person ID " ++ fromEntityUuid entity.participantId
+                viewMeasurement entity "Child Fbf"
 
             BackendAuthorityClinic _ _ entity ->
                 text <| "Clinic " ++ entity.name
 
             BackendAuthorityCounselingSession _ _ entity ->
-                text <| "Counseling Session for person ID " ++ fromEntityUuid entity.participantId
+                viewMeasurement entity "Counseling Session"
+
+            BackendAuthorityCorePhysicalExam _ _ entity ->
+                viewMeasurement entity "Core Physical Exam"
 
             BackendAuthorityNutritionPhoto _ _ entity ->
-                text <| "Nutrition Photo for person ID " ++ fromEntityUuid entity.participantId
+                viewMeasurement entity "Nutrition Photo"
 
             BackendAuthorityPhoto _ _ entity ->
-                text <| "Photo for person ID " ++ fromEntityUuid entity.participantId
+                viewMeasurement entity "Photo"
 
             BackendAuthorityWeight _ _ entity ->
-                text <| "Weight for person ID " ++ fromEntityUuid entity.participantId
+                viewMeasurement entity "Weight"
 
             BackendAuthorityEntityUnknown type_ _ ->
                 text <| type_ ++ " (we still don't decode it)"

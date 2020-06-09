@@ -30,7 +30,7 @@ import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
 import Backend.Entities exposing (HealthCenterId)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
-import Backend.Measurement.Model exposing (Attendance, BreastExam, CounselingSession, Fbf, Measurement, NutritionPhoto, Photo, Weight)
+import Backend.Measurement.Model exposing (Attendance, BreastExam, CorePhysicalExam, CounselingSession, Fbf, Measurement, NutritionPhoto, Photo, Weight)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
@@ -78,6 +78,7 @@ type BackendAuthorityEntity
     | BackendAuthorityChildFbf String Int Fbf
     | BackendAuthorityClinic String Int Clinic
     | BackendAuthorityCounselingSession String Int CounselingSession
+    | BackendAuthorityCorePhysicalExam String Int CorePhysicalExam
     | BackendAuthorityNutritionPhoto String Int NutritionPhoto
     | BackendAuthorityPhoto String Int Photo
     | BackendAuthorityWeight String Int Weight

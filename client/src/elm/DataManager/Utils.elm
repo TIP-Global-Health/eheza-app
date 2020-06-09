@@ -274,6 +274,12 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
             , type_ = "counseling_session"
             }
 
+        BackendAuthorityCorePhysicalExam uuid revision _ ->
+            { uuid = uuid
+            , revision = revision
+            , type_ = "core_physical_exam"
+            }
+
         BackendAuthorityNutritionPhoto uuid revision _ ->
             { uuid = uuid
             , revision = revision

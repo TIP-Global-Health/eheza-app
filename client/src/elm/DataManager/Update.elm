@@ -133,6 +133,10 @@ update currentDate device msg model =
                                                         doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodeCounselingSession entity_)
                                                             :: accum
 
+                                                    BackendAuthorityCorePhysicalExam uuid vid entity_ ->
+                                                        doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodeCorePhysicalExam entity_)
+                                                            :: accum
+
                                                     BackendAuthorityNutritionPhoto uuid vid entity_ ->
                                                         doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodeNutritionPhoto entity_)
                                                             :: accum
