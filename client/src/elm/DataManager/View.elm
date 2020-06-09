@@ -259,8 +259,11 @@ viewGeneralEntity language backendGeneralEntity =
             BackendGeneralCatchmentArea _ _ entity ->
                 text <| "Catchment area " ++ entity.name
 
-            BackendGeneralCounselingSchedule uuid _ entity ->
+            BackendGeneralCounselingSchedule uuid _ _ ->
                 text <| "Counseling Schedule " ++ uuid
+
+            BackendGeneralCounselingTopic _ _ entity ->
+                text <| "Counseling Topic " ++ entity.english
 
             BackendGeneralHealthCenter _ _ entity ->
                 text <| "Health Center " ++ entity.name

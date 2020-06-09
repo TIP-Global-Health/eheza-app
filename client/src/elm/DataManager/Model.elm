@@ -27,7 +27,7 @@ module DataManager.Model exposing
 
 import AssocList exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic)
-import Backend.Counseling.Model exposing (CounselingSchedule)
+import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
 import Backend.Entities exposing (HealthCenterId)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.Measurement.Model exposing (Attendance, BreastExam, CounselingSession, Fbf, Measurement, NutritionPhoto, Photo, Weight)
@@ -55,6 +55,7 @@ type
     -- When uploading, the `Int` the the `localId` from IndexDB.
     = BackendGeneralCatchmentArea String Int CatchmentArea
     | BackendGeneralCounselingSchedule String Int CounselingSchedule
+    | BackendGeneralCounselingTopic String Int CounselingTopic
     | BackendGeneralHealthCenter String Int HealthCenter
     | BackendGeneralNurse String Int Nurse
     | BackendGeneralPerson String Int Person

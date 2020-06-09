@@ -403,6 +403,10 @@ update currentDate device msg model =
                                                         doEncode uuid vid (Backend.HealthCenter.Encoder.encodeHealthCenter entity_)
                                                             :: accum
 
+                                                    BackendGeneralCounselingTopic uuid vid entity_ ->
+                                                        doEncode uuid vid (Json.Encode.object <| Backend.Counseling.Encoder.encodeCounselingTopic entity_)
+                                                            :: accum
+
                                                     BackendGeneralNurse uuid vid entity_ ->
                                                         doEncode uuid vid (Json.Encode.object <| Backend.Nurse.Encoder.encodeNurse entity_)
                                                             :: accum

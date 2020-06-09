@@ -10,6 +10,7 @@ encodeCounselingTopic : CounselingTopic -> List ( String, Value )
 encodeCounselingTopic topic =
     [ ( "label", string topic.english )
     , ( "kinyarwanda_title", maybe string topic.kinyarwanda )
+    , ( "type", string "counseling_topic" )
     ]
 
 
@@ -37,4 +38,5 @@ encodeCounselingSchedule schedule =
     object
         [ ( "timing", encodeCounselingTiming schedule.timing )
         , ( "topics", list encodeEntityUuid schedule.topics )
+        , ( "type", string "counseling_schedule" )
         ]

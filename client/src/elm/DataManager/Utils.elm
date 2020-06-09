@@ -195,6 +195,12 @@ getBackendGeneralEntityIdentifier backendGeneralEntity =
             , type_ = "counseling_schedule"
             }
 
+        BackendGeneralCounselingTopic uuid revision _ ->
+            { uuid = uuid
+            , revision = revision
+            , type_ = "counseling_topic"
+            }
+
         BackendGeneralHealthCenter uuid revision _ ->
             { uuid = uuid
             , revision = revision

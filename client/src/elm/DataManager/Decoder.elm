@@ -215,6 +215,10 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
                         Backend.Counseling.Decoder.decodeCounselingSchedule
                             |> andThen (\entity -> succeed (BackendGeneralCounselingSchedule uuid identifier_ entity))
 
+                    "counseling_topic" ->
+                        Backend.Counseling.Decoder.decodeCounselingTopic
+                            |> andThen (\entity -> succeed (BackendGeneralCounselingTopic uuid identifier_ entity))
+
                     "health_center" ->
                         Backend.HealthCenter.Decoder.decodeHealthCenter
                             |> andThen (\entity -> succeed (BackendGeneralHealthCenter uuid identifier_ entity))
