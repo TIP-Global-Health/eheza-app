@@ -337,7 +337,7 @@ foreach ($health_centers_ids as $health_center_id) {
       $national_id = $wrapper->field_national_id_number->value();
       $phone_number = $wrapper->field_phone_number->value();
       $image = $wrapper->field_photo->value();
-      $photo = hedley_migrate_export_real_image($image['fid'], $image['filename']);
+      $photo = empty($image) ? '' : hedley_migrate_export_real_image($image['fid'], $image['filename']);
     }
 
     $people[$person_id] = [
@@ -438,7 +438,7 @@ foreach ($health_centers_ids as $health_center_id) {
           }
           else {
             $image = $wrapper->field_photo->value();
-            $photo = hedley_migrate_export_real_image($image['fid'], $image['filename']);
+            $photo = empty($image) ? '' : hedley_migrate_export_real_image($image['fid'], $image['filename']);
           }
           $type_based_values = [$photo];
           break;
