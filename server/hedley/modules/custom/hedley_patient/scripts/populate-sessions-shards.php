@@ -5,7 +5,7 @@
  * Recalculate all shards.
  *
  * Drush scr
- * profiles/hedley/modules/custom/hedley_device/scripts/recalculate-shards.php.
+ * profiles/hedley/modules/custom/hedley_patient/scripts/populate-sessions-shards.php.
  */
 
 if (!drupal_is_cli()) {
@@ -25,15 +25,23 @@ $memory_limit = drush_get_option('memory_limit', 500);
 $base_query = new EntityFieldQuery();
 $base_query
   ->entityCondition('entity_type', 'node')
-  ->propertyCondition('type', 'person')
+  ->propertyCondition('type', 'session')
   ->propertyCondition('status', NODE_PUBLISHED)
   ->propertyOrderBy('nid', 'ASC');
 
-if ($nid) {
-  $base_query->propertyCondition('nid', $nid, '>');
+$count_query = clone $base_query;
+$count_query->propertyCondition('nid', $nid, '>');
+$total = $count_query->count()->execute();
+
+if ($total == 0) {
+  drush_print("There are no sessions in DB.");
+  exit;
 }
 
-while (TRUE) {
+drush_print("$total sessions located.");
+
+$processed = 0;
+while ($processed < $total) {
   // Free up memory.
   drupal_static_reset();
 
@@ -52,15 +60,19 @@ while (TRUE) {
   }
 
   $ids = array_keys($result['node']);
+  $nodes = node_load_multiple($ids);
+  foreach ($nodes as $node) {
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $health_center_id = $wrapper->field_clinic->field_health_center->getIdentifier();
 
-  foreach ($ids as $id) {
-    $params = [
-      '@id' => $id,
-    ];
+    if (empty($health_center_id)) {
+      drush_print("Can't resolve health center of clinic for session with ID $node->nid! Skipping...");
 
-    hedley_recalculate_shards_for_person($id);
+      continue;
+    }
 
-    drush_print(format_string('Recalculed shards for person @id.', $params));
+    $wrapper->field_shards->set([$health_center_id]);
+    $wrapper->save();
   }
 
   $nid = end($ids);
@@ -69,6 +81,10 @@ while (TRUE) {
     drush_print(dt('Stopped before out of memory. Start process from the node ID @nid', ['@nid' => $nid]));
     return;
   }
+
+  $count = count($nodes);
+  $processed += $count;
+  drush_print("$count sessions processed.");
 }
 
 drush_print('Done!');

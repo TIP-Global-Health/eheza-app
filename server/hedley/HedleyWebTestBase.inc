@@ -110,15 +110,38 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   }
 
   /**
-   * Create a clinic with a random name.
+   * Create a health center.
    *
    * @return int
    *   The node ID.
    */
-  public function createClinic() {
-    return $this->drupalCreateNode([
+  public function createHealthCenter() {
+    $node = $this->drupalCreateNode([
+      'type' => 'health_center',
+    ]);
+
+    return $node->nid;
+  }
+
+  /**
+   * Create a clinic and assign it ot health center.
+   *
+   * @param int $health_center_id
+   *   The health center to assign the clinic to.
+   *
+   * @return int
+   *   The node ID.
+   */
+  public function createClinic($health_center_id) {
+    $node = $this->drupalCreateNode([
       'type' => 'clinic',
     ]);
+
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_health_center->set($health_center_id);
+    $wrapper->save();
+
+    return $node->nid;
   }
 
   /**
@@ -209,9 +232,6 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    * @param int $timestamp
    *   Optional; The date of the session, as a unix timestamp, defaults to the
    *   time of the request.
-   * @param bool $is_training
-   *   Optional; Whether the session is a training session or not, defaults to
-   *   FALSE.
    *
    * @return int
    *   The node ID of the session.

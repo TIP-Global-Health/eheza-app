@@ -1060,7 +1060,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
         PostRelationship personId myRelationship addGroup ->
             let
                 normalized =
-                    toRelationship personId myRelationship
+                    toRelationship personId myRelationship healthCenterId
 
                 -- If we'd also like to add these people to a group, construct
                 -- a Msg to do that.
@@ -1361,13 +1361,13 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                     ]
 
                                 AntenatalEncounter ->
-                                    [ Backend.PrenatalEncounter.Model.PrenatalEncounter sessionId currentDate Nothing
+                                    [ Backend.PrenatalEncounter.Model.PrenatalEncounter sessionId currentDate Nothing healthCenterId
                                         |> Backend.Model.PostPrenatalEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]
 
                                 NutritionEncounter ->
-                                    [ Backend.NutritionEncounter.Model.NutritionEncounter sessionId currentDate Nothing
+                                    [ Backend.NutritionEncounter.Model.NutritionEncounter sessionId currentDate Nothing healthCenterId
                                         |> Backend.Model.PostNutritionEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]

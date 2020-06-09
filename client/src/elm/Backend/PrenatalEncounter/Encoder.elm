@@ -18,4 +18,5 @@ encodePrenatalEncounter session =
             ]
       )
     , ( "individual_participant", encodeEntityUuid session.participant )
+    , ( "shard", maybe encodeEntityUuid session.shard )
     ]
