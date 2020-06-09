@@ -38,20 +38,9 @@ function hedley_device_node_presave($node) {
     hedley_device_assign_pairing_code($node, $wrapper);
   }
 
+  // For nodes that got Shards field.
   if ($wrapper->__isset('field_shards')) {
     hedley_device_assign_shards($node, $wrapper);
-  }
-}
-
-/**
- * Implements hook_node_insert().
- */
-function hedley_device_node_insert($node) {
-  if ($node->type == 'pmtct_participant') {
-    $wrapper = entity_metadata_wrapper('node', $node);
-
-    hedley_recalculate_shards_for_person($wrapper->field_person->getIdentifier());
-    hedley_recalculate_shards_for_person($wrapper->field_adult->getIdentifier());
   }
 }
 
@@ -59,28 +48,19 @@ function hedley_device_node_insert($node) {
  * Implements hook_node_update().
  */
 function hedley_device_node_update($node) {
-  if (!in_array($node->type, ['device', 'pmtct_participant'])) {
+  if ($node->type != 'device') {
     return;
   }
 
-  if ($node->type == 'pmtct_participant') {
-    $wrapper = entity_metadata_wrapper('node', $node);
+  $wrapper = entity_metadata_wrapper('node', $node->original);
+  $pairing_code = $wrapper->field_pairing_code->value();
+  $super_user_mode = variable_get('hedley_super_user_mode', FALSE);
 
-    hedley_recalculate_shards_for_person($wrapper->field_person->getIdentifier());
-    hedley_recalculate_shards_for_person($wrapper->field_adult->getIdentifier());
-  }
-  // The type is 'device'.
-  else {
-    $wrapper = entity_metadata_wrapper('node', $node->original);
-    $pairing_code = $wrapper->field_pairing_code->value();
-    $super_user_mode = variable_get('hedley_super_user_mode', FALSE);
-
-    // Do not allow to reset device pairing code, if it was already
-    // paired (pairing code is empty). This check is skipped when
-    // working at 'super_user' mode.
-    if (empty($pairing_code) && !$super_user_mode) {
-      throw new Exception('Device can\'t be edited after it was paired!');
-    }
+  // Do not allow to reset device pairing code, if it was already
+  // paired (pairing code is empty). This check is skipped when
+  // working at 'super_user' mode.
+  if (empty($pairing_code) && !$super_user_mode) {
+    throw new Exception('Device can\'t be edited after it was paired!');
   }
 }
 
@@ -240,116 +220,118 @@ function hedley_device_verify_unique_uuid($node, $wrapper) {
  * Fill in field_shards with the shards this node should be sent to.
  */
 function hedley_device_assign_shards($node, $wrapper) {
+  // We do no changes, when shards field is already populated.
   if (!empty($wrapper->field_shards->value())) {
     return;
   }
-  if (!$person_id = $wrapper->field_person->getIdentifier()) {
+
+  switch ($node->type) {
+    case 'clinic':
+      // We only assign shards, when clinic is created, based on
+      // HC clinic is assigned to. We do nothing when clinic is edited.
+      $shards = empty($node->original) ? [] : [$wrapper->field_health_center->getIdentifier()];
+      break;
+
+    case 'session':
+      // Assign shards based on HC of the clinic, to which session belongs.
+      $clinic_id = $wrapper->field_clinic->getIdentifier();
+      $shard = hedley_device_shard_by_health_center($clinic_id);
+      $shards = !$shard ? [] : [$shard];
+      break;
+
+    case 'person':
+      // When editing person, calculate shards by it's participants.
+      // Note that this only happens when field_shards is not set.
+      if (!empty($node->original)) {
+        $shards = hedley_patient_shards_for_person_by_pmtct_participants($node->nid);
+      }
+      // When creating person, assign health center as shard.
+      else {
+        $health_centeter_id = $wrapper->field_health_center->getIdentifier();
+        $shards = $health_centeter_id ? [$health_centeter_id] : [];
+      }
+      break;
+
+    case 'pmtct_participant':
+      // Participant shards are the union of adult and child shards.
+      $child_id = $wrapper->field_person->getIdentifier();
+      $adult_id = $wrapper->field_adult->getIdentifier();
+      $shards_child = hedley_device_shards_by_person($child_id);
+      $shards_adult = hedley_device_shards_by_person($adult_id);
+      $shards = array_unique(array_merge($shards_child, $shards_adult));
+      break;
+
+    case 'relationship':
+      // Relationship shards are the union of adult and child shards.
+      $child_id = $wrapper->field_related_to->getIdentifier();
+      $adult_id = $wrapper->field_person->getIdentifier();
+      $shards_child = hedley_device_shards_by_person($child_id);
+      $shards_adult = hedley_device_shards_by_person($adult_id);
+      $shards = array_unique(array_merge($shards_child, $shards_adult));
+      break;
+
+    case 'prenatal_encounter':
+    case 'nutrition_encounter':
+    case 'acute_illness_encounter':
+      // Assign shards based on Person of the individual participant,
+      // to which encounter belongs.
+      $person_id = $wrapper->field_individual_participant->field_person->getIdentifier();
+      $shards = hedley_device_shards_by_person($person_id);
+      break;
+
+    // Handling individual_participant and all kinds of measurements.
+    // Shards are assigned based on Person for which measurement was taken.
+    default:
+      $person_id = $wrapper->field_person->getIdentifier();
+      $shards = hedley_device_shards_by_person($person_id);
+      break;
+  }
+
+  if (empty($shards)) {
     return;
   }
 
-  $shards = hedley_device_shards_for_person($person_id);
   $wrapper->field_shards->set($shards);
 }
 
 /**
- * Which shards should a person's measurements be sent to?
+ * Resolve a shard based on HC field of the node.
  *
  * @param int $nid
- *   The nid of the person.
+ *   The node ID.
  *
- * @return array
- *   An array of shard ID's.
+ * @return int|bool
+ *   Node ID of the shard. False, if shard wasn't successfully resolved.
  */
-function hedley_device_shards_for_person($nid) {
-  // For now, we just look at their pmtct_participant records.  If they have
-  // one, we send their measurements to the associated health center.
-  //
-  // We do this as a db_select because we need an `OR`, and we can
-  // do it all at once with several joins, which is pleasant.
-  $query = db_select('node', 'n');
-
-  $query->condition('n.type', 'pmtct_participant');
-
-  $query->join('field_data_field_adult', 'adult', 'adult.entity_id = n.nid');
-  $query->join('field_data_field_person', 'child', 'child.entity_id = n.nid');
-
-  $adult_or_child = db_or();
-  $adult_or_child->condition('adult.field_adult_target_id', $nid);
-  $adult_or_child->condition('child.field_person_target_id', $nid);
-
-  $query->condition($adult_or_child);
-
-  $query->join('field_data_field_clinic', 'clinic', 'clinic.entity_id = n.nid');
-  $query->join('field_data_field_health_center', 'hc', 'hc.entity_id = clinic.field_clinic_target_id');
-
-  $query->fields('hc', ['field_health_center_target_id']);
-  $query->distinct();
-
-  $shards = $query->execute()->fetchCol();
-
-  $person = entity_metadata_wrapper('node', $nid);
-
-  if ($shard = $person->field_health_center->getIdentifier()) {
-    if (!in_array($shard, $shards)) {
-      $shards[] = $shard;
-    }
+function hedley_device_shard_by_health_center($nid) {
+  // We have this check to allow SimpleTest to pass.
+  if (!$nid) {
+    return FALSE;
   }
 
-  return $shards;
+  $wrapper = entity_metadata_wrapper('node', $nid);
+  $shard = $wrapper->field_health_center->getIdentifier();
+
+  return $shard ? $shard : FALSE;
 }
 
 /**
- * Recalculate and potentially update shard assignments.
+ * Resolve shards based on Person field of the node.
  *
  * @param int $nid
- *   The node ID of a person to recalculate for.
+ *   The node ID.
+ *
+ * @return array
+ *   List of shards node IDs. Empty array, if none are found.
  */
-function hedley_recalculate_shards_for_person($nid) {
-  // Figure out what the shards for this person ought to be.
-  $shards = hedley_device_shards_for_person($nid);
-  sort($shards);
-
-  // Now, we need to cycle through the sharded entities for the person and
-  // update those that do not match, so that they will get sent to the right
-  // devices.
-  $query = db_select('node', 'n');
-
-  // Join field_shards and field_person. So, we're getting all sharded nodes
-  // that have a field_person.
-  $query->join('field_data_field_person', 'p', 'p.entity_id = n.nid');
-  $query->leftJoin('field_data_field_shards', 's', 's.entity_id = n.nid');
-
-  // Limit to the person we're interested in.
-  $query->condition('p.field_person_target_id', $nid);
-
-  // Limit to sharded nodes.
-  $sharded = array_keys(HEDLEY_RESTFUL_SHARDED);
-  $query->condition('n.type', $sharded);
-
-  $query->fields('n', ['nid']);
-  $query->fields('s', ['field_shards_target_id']);
-
-  $result = $query->execute();
-  $measurement = [];
-
-  // Group the resulting shards by the nid of the sharded node.
-  foreach ($result as $record) {
-    if (empty($measurement[$record->nid])) {
-      $measurement[$record->nid] = [];
-    }
-
-    if (!empty($record->field_shards_target_id)) {
-      $measurement[$record->nid][] = $record->field_shards_target_id;
-    }
+function hedley_device_shards_by_person($nid) {
+  // We have this check to allow SimpleTest to pass.
+  if (!$nid) {
+    return [];
   }
 
-  // For each sharded node, check whether we need to update it.
-  foreach ($measurement as $key => $value) {
-    sort($value);
-    if ($value != $shards) {
-      $wrapper = entity_metadata_wrapper('node', $key);
-      $wrapper->field_shards->set($shards);
-      $wrapper->save();
-    }
-  }
+  $wrapper = entity_metadata_wrapper('node', $nid);
+  $shards = $wrapper->field_shards->value(['identifier' => TRUE]);
+
+  return !empty($shards) ? $shards : [];
 }
