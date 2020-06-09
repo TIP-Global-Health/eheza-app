@@ -763,7 +763,7 @@ function hedley_migrate_export_real_image($fid, $file_name) {
   $new_url = file_unmanaged_copy($file->uri, $new_uri, 'FILE_EXISTS_RENAME');
   $parts = explode('/', $new_url);
 
-  return $parts ? end($parts ) : '';
+  return $parts ? end($parts) : '';
 }
 
 /**
