@@ -431,7 +431,10 @@ viewFoundChild language currentDate zscores ( childId, child ) individualChildMe
                     0
 
         charts =
-            if childAgeInMonths <= 24 then
+            -- With exception of Sortwathe, children graduate from all
+            -- groups at the age of 26 month. Therefore, we will show
+            -- 0-2 graph for all children that are less than 26 month old.
+            if childAgeInMonths < 26 then
                 div
                     [ class "image-report" ]
                     [ ZScore.View.viewMarkers
@@ -440,7 +443,7 @@ viewFoundChild language currentDate zscores ( childId, child ) individualChildMe
                     , zScoreViewCharts.weightForHeight language zscores weightForLengthData
                     ]
 
-            else if childAgeInMonths <= 60 then
+            else if childAgeInMonths < 60 then
                 div
                     [ class "image-report" ]
                     [ ZScore.View.viewMarkers

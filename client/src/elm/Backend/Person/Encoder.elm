@@ -31,8 +31,7 @@ encodePerson person =
     , ( "village", maybe string person.village )
     , ( "phone_number", maybe string person.telephoneNumber )
     , ( "health_center", maybe encodeEntityUuid person.healthCenterId )
-
-    -- @todo: Is there a problem with adding type?
+    , ( "shard", maybe encodeEntityUuid person.shard )
     , ( "type", string "person" )
     ]
 
