@@ -369,6 +369,36 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityCorePhysicalExam identifier ->
                 viewMeasurement identifier "Core Physical Exam"
 
+            BackendAuthorityDangerSigns identifier ->
+                viewMeasurement identifier "Danger Signs"
+
+            BackendAuthorityFamilyPlanning identifier ->
+                viewMeasurement identifier "Family Planning"
+
+            BackendAuthorityHeight identifier ->
+                viewMeasurement identifier "Height"
+
+            BackendAuthorityIndividualParticipant identifier ->
+                text <| "Individual Participant for person ID " ++ fromEntityUuid identifier.entity.person
+
+            BackendAuthorityLactation identifier ->
+                viewMeasurement identifier "Lactation"
+
+            BackendAuthorityLastMenstrualPeriod identifier ->
+                viewMeasurement identifier "Menstrual Period"
+
+            BackendAuthorityMedicalHistory identifier ->
+                viewMeasurement identifier "Medical History"
+
+            BackendAuthorityMedication identifier ->
+                viewMeasurement identifier "Medication"
+
+            BackendAuthorityMotherFbf identifier ->
+                viewMeasurement identifier "Mother Fbf"
+
+            BackendAuthorityMuac identifier ->
+                viewMeasurement identifier "Muac"
+
             BackendAuthorityNutritionPhoto identifier ->
                 viewMeasurement identifier "Nutrition Photo"
 

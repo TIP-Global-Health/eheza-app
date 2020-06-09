@@ -254,6 +254,36 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityCorePhysicalExam identifier ->
             getIdentifier identifier "counseling_session"
 
+        BackendAuthorityDangerSigns identifier ->
+            getIdentifier identifier "danger_signs"
+
+        BackendAuthorityFamilyPlanning identifier ->
+            getIdentifier identifier "family_planning"
+
+        BackendAuthorityHeight identifier ->
+            getIdentifier identifier "height"
+
+        BackendAuthorityIndividualParticipant identifier ->
+            getIdentifier identifier "individual_participant"
+
+        BackendAuthorityLactation identifier ->
+            getIdentifier identifier "lactation"
+
+        BackendAuthorityLastMenstrualPeriod identifier ->
+            getIdentifier identifier "last_menstrual_period"
+
+        BackendAuthorityMedicalHistory identifier ->
+            getIdentifier identifier "medical_history"
+
+        BackendAuthorityMedication identifier ->
+            getIdentifier identifier "medication"
+
+        BackendAuthorityMotherFbf identifier ->
+            getIdentifier identifier "mother_fbf"
+
+        BackendAuthorityMuac identifier ->
+            getIdentifier identifier "muac"
+
         BackendAuthorityNutritionPhoto identifier ->
             getIdentifier identifier "nutrition_photo"
 
