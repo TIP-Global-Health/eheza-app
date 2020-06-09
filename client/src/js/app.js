@@ -127,6 +127,11 @@ dbSync.version(9).stores({
 });
 
 dbSync.version(10).stores({
+    nodes: '&uuid,type,vid,status,[type+pin_code]',
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
+});
+
+dbSync.version(11).stores({
   // Add `isSynced` and `uuid` indices so we would have an indication to when we
   // can delete local changes. Only after we download from the backend, we'd
   // want to delete the records.
