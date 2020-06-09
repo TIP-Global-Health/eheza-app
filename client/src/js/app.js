@@ -401,7 +401,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
         const accessToken = dataArr.access_token;
 
         // @todo: Get db_version from Elm?
-        const dbVersion = 9;
+        const dbVersion = 11;
 
         const uploadUrl = [
           backendUrl,
@@ -643,6 +643,7 @@ elmApp.ports.sendLocalIdsForDelete.subscribe(async function(info) {
 
 
 // @todo: Move logic to Elm to `gatherWords`.
+
 function gatherWords (text) {
   // Split on spaces, and remove blanks from result.
   return (text || '').split(/\s+/).flatMap(function (word) {
@@ -654,9 +655,8 @@ function gatherWords (text) {
   });
 }
 
-
 // Hooks that index persons for searching name.
-dbSync.nodes.hook("creating", function (primKey, obj, trans) {
+dbSync.shards.hook("creating", function (primKey, obj, trans) {
   if (obj.type === 'person') {
     if (typeof obj.label == 'string') {
       obj.name_search = gatherWords(obj.label);
@@ -664,7 +664,7 @@ dbSync.nodes.hook("creating", function (primKey, obj, trans) {
   }
 });
 
-dbSync.nodes.hook("updating", function (mods, primKey, obj, trans) {
+dbSync.shards.hook("updating", function (mods, primKey, obj, trans) {
   if (obj.type === 'person') {
     if (mods.hasOwnProperty("label")) {
       if (typeof mods.label == 'string') {
@@ -683,6 +683,7 @@ dbSync.nodes.hook("updating", function (mods, primKey, obj, trans) {
     }
   }
 });
+
 
 
 

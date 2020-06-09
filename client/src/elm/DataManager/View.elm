@@ -342,22 +342,25 @@ viewAuthorityEntity backendAuthorityEntity =
     li []
         [ case backendAuthorityEntity of
             BackendAuthorityAttendance _ _ entity ->
-                text <| "Attendance for person ID" ++ fromEntityUuid entity.participantId
+                text <| "Attendance for person ID " ++ fromEntityUuid entity.participantId
 
             BackendAuthorityBreastExam _ _ entity ->
-                text <| "Breast Exam for person ID" ++ fromEntityUuid entity.participantId
+                text <| "Breast Exam for person ID " ++ fromEntityUuid entity.participantId
 
             BackendAuthorityChildFbf _ _ entity ->
-                text <| "Child Fbf for person ID" ++ fromEntityUuid entity.participantId
+                text <| "Child Fbf for person ID " ++ fromEntityUuid entity.participantId
+
+            BackendAuthorityClinic _ _ entity ->
+                text <| "Clinic " ++ entity.name
 
             BackendAuthorityNutritionPhoto _ _ entity ->
-                text <| "Nutrition Photo for person ID" ++ fromEntityUuid entity.participantId
+                text <| "Nutrition Photo for person ID " ++ fromEntityUuid entity.participantId
 
             BackendAuthorityPhoto _ _ entity ->
-                text <| "Photo for person ID" ++ fromEntityUuid entity.participantId
+                text <| "Photo for person ID " ++ fromEntityUuid entity.participantId
 
             BackendAuthorityWeight _ _ entity ->
-                text <| "Weight for person ID" ++ fromEntityUuid entity.participantId
+                text <| "Weight for person ID " ++ fromEntityUuid entity.participantId
 
             BackendAuthorityEntityUnknown type_ _ ->
                 text <| type_ ++ " (we still don't decode it)"

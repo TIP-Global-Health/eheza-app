@@ -78,6 +78,9 @@ var tableForType = {
 };
 
 var dbSync = new Dexie('sync');
+
+
+// @todo: Remove from here, as moved to app.js
 //
 // // Note that this code only configures ... the actual database upgrade will
 // // only take place once the db is opened, which only happens once we're
@@ -202,46 +205,6 @@ var dbSync = new Dexie('sync');
 //     nodes: '&uuid,type,vid,status,[type+pin_code]',
 //     shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
 // });
-
-function gatherWords (text) {
-    // Split on spaces, and remove blanks from result.
-    return (text || '').split(/\s+/).flatMap(function (word) {
-        if (word) {
-            return [word.toLowerCase()];
-        } else {
-            return [];
-        }
-    });
-}
-
-// Hooks that index persons for searching name.
-dbSync.shards.hook("creating", function (primKey, obj, trans) {
-    if (obj.type === 'person') {
-        if (typeof obj.label == 'string') {
-            obj.name_search = gatherWords(obj.label);
-        }
-    }
-});
-
-dbSync.shards.hook("updating", function (mods, primKey, obj, trans) {
-    if (obj.type === 'person') {
-        if (mods.hasOwnProperty("label")) {
-            if (typeof mods.label == 'string') {
-                return {
-                    name_search: gatherWords(mods.label)
-                };
-            } else {
-                return {
-                    name_search: []
-                };
-            }
-        } else {
-            return {
-                name_search: gatherWords(obj.label)
-            };
-        }
-    }
-});
 
 // For when any sync metadata changes, send it all to the app
 // @DEPRECATED

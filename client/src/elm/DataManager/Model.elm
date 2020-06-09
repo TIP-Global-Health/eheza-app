@@ -26,6 +26,7 @@ module DataManager.Model exposing
     )
 
 import AssocList exposing (Dict)
+import Backend.Clinic.Model exposing (Clinic)
 import Backend.Entities exposing (HealthCenterId)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.Measurement.Model exposing (Attendance, BreastExam, Fbf, Measurement, NutritionPhoto, Photo, Weight)
@@ -72,6 +73,7 @@ type BackendAuthorityEntity
     = BackendAuthorityAttendance String Int Attendance
     | BackendAuthorityBreastExam String Int BreastExam
     | BackendAuthorityChildFbf String Int Fbf
+    | BackendAuthorityClinic String Int Clinic
     | BackendAuthorityNutritionPhoto String Int NutritionPhoto
     | BackendAuthorityPhoto String Int Photo
     | BackendAuthorityWeight String Int Weight

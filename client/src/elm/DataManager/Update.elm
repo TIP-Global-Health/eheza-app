@@ -1,6 +1,7 @@
 port module DataManager.Update exposing (subscriptions, update)
 
 import App.Model exposing (SubModelReturn)
+import Backend.Clinic.Encoder
 import Backend.HealthCenter.Encoder
 import Backend.Measurement.Encoder
 import Backend.Nurse.Encoder
@@ -41,7 +42,7 @@ update currentDate device msg model =
 
         -- @todo: Move has hardcoded in flags, or keep here?
         dbVersion =
-            9
+            11
     in
     case msg of
         BackendAuthorityFetch ->
@@ -117,6 +118,10 @@ update currentDate device msg model =
 
                                                     BackendAuthorityBreastExam uuid vid entity_ ->
                                                         doEncode uuid vid (Json.Encode.object <| Backend.Measurement.Encoder.encodeBreastExam entity_)
+                                                            :: accum
+
+                                                    BackendAuthorityClinic uuid vid entity_ ->
+                                                        doEncode uuid vid (Json.Encode.object <| Backend.Clinic.Encoder.encodeClinic entity_)
                                                             :: accum
 
                                                     BackendAuthorityChildFbf uuid vid entity_ ->

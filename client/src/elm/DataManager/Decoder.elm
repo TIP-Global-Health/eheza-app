@@ -5,6 +5,7 @@ module DataManager.Decoder exposing
     )
 
 import AssocList as Dict
+import Backend.Clinic.Decoder
 import Backend.HealthCenter.Decoder
 import Backend.Measurement.Decoder
 import Backend.Nurse.Decoder
@@ -267,6 +268,9 @@ decodeBackendAuthorityEntity =
 
                     "breast_exam" ->
                         doDecode Backend.Measurement.Decoder.decodeBreastExam BackendAuthorityBreastExam
+
+                    "clinic" ->
+                        doDecode Backend.Clinic.Decoder.decodeClinic BackendAuthorityClinic
 
                     "nutrition_photo" ->
                         doDecode Backend.Measurement.Decoder.decodeNutritionPhoto BackendAuthorityNutritionPhoto
