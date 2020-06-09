@@ -741,7 +741,7 @@ function hedley_migrate_allocate_photo_for_person($gender, $birth_date) {
     $image_name .= rand(1, 4);
   }
 
-  return $image_name . '.jpeg';
+  return $image_name . '.jpg';
 }
 
 /**
