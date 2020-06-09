@@ -47,6 +47,7 @@ var tableForType = {
     medication: 'shards',
     mother_fbf: 'shards',
     muac: 'shards',
+    // <--
     nurse: 'nodes',
     nutrition: 'shards',
     nutrition_encounter: 'shards',

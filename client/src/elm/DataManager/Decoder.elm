@@ -8,6 +8,7 @@ import AssocList as Dict
 import Backend.Clinic.Decoder
 import Backend.Counseling.Decoder
 import Backend.HealthCenter.Decoder
+import Backend.IndividualEncounterParticipant.Decoder
 import Backend.Measurement.Decoder
 import Backend.Nurse.Decoder
 import Backend.Person.Decoder
@@ -287,31 +288,99 @@ decodeBackendAuthorityEntity =
                 in
                 case type_ of
                     "attendance" ->
-                        doDecode Backend.Measurement.Decoder.decodeAttendance BackendAuthorityAttendance
+                        doDecode
+                            Backend.Measurement.Decoder.decodeAttendance
+                            BackendAuthorityAttendance
 
                     "child_fbf" ->
-                        doDecode Backend.Measurement.Decoder.decodeFbf BackendAuthorityChildFbf
+                        doDecode
+                            Backend.Measurement.Decoder.decodeFbf
+                            BackendAuthorityChildFbf
 
                     "breast_exam" ->
-                        doDecode Backend.Measurement.Decoder.decodeBreastExam BackendAuthorityBreastExam
+                        doDecode
+                            Backend.Measurement.Decoder.decodeBreastExam
+                            BackendAuthorityBreastExam
 
                     "clinic" ->
-                        doDecode Backend.Clinic.Decoder.decodeClinic BackendAuthorityClinic
+                        doDecode
+                            Backend.Clinic.Decoder.decodeClinic
+                            BackendAuthorityClinic
 
                     "counseling_session" ->
-                        doDecode Backend.Measurement.Decoder.decodeCounselingSession BackendAuthorityCounselingSession
+                        doDecode
+                            Backend.Measurement.Decoder.decodeCounselingSession
+                            BackendAuthorityCounselingSession
 
                     "core_physical_exam" ->
-                        doDecode Backend.Measurement.Decoder.decodeCorePhysicalExam BackendAuthorityCorePhysicalExam
+                        doDecode
+                            Backend.Measurement.Decoder.decodeCorePhysicalExam
+                            BackendAuthorityCorePhysicalExam
+
+                    "danger_signs" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeDangerSigns
+                            BackendAuthorityDangerSigns
+
+                    "family_planning" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeFamilyPlanning
+                            BackendAuthorityFamilyPlanning
+
+                    "height" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHeight
+                            BackendAuthorityHeight
+
+                    "individual_participant" ->
+                        doDecode
+                            Backend.IndividualEncounterParticipant.Decoder.decodeIndividualEncounterParticipant
+                            BackendAuthorityIndividualParticipant
+
+                    "lactation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeLactation
+                            BackendAuthorityLactation
+
+                    "last_menstrual_period" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeLastMenstrualPeriod
+                            BackendAuthorityLastMenstrualPeriod
+
+                    "medical_history" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeMedicalHistory
+                            BackendAuthorityMedicalHistory
+
+                    "medication" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeMedication
+                            BackendAuthorityMedication
+
+                    "mother_fbf" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeFbf
+                            BackendAuthorityMotherFbf
+
+                    "muac" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeMuac
+                            BackendAuthorityMuac
 
                     "nutrition_photo" ->
-                        doDecode Backend.Measurement.Decoder.decodeNutritionPhoto BackendAuthorityNutritionPhoto
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionPhoto
+                            BackendAuthorityNutritionPhoto
 
                     "photo" ->
-                        doDecode Backend.Measurement.Decoder.decodePhoto BackendAuthorityPhoto
+                        doDecode
+                            Backend.Measurement.Decoder.decodePhoto
+                            BackendAuthorityPhoto
 
                     "weight" ->
-                        doDecode Backend.Measurement.Decoder.decodeWeight BackendAuthorityWeight
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWeight
+                            BackendAuthorityWeight
 
                     _ ->
                         succeed (BackendAuthorityEntityUnknown type_ vid)
