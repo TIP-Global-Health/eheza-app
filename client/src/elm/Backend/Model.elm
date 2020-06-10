@@ -286,6 +286,7 @@ type Revision
     | CounselingSessionRevision CounselingSessionId CounselingSession
     | CounselingTopicRevision CounselingTopicId CounselingTopic
     | DangerSignsRevision DangerSignsId DangerSigns
+    | DashboardStatsRevision HealthCenterId DashboardStats
     | FamilyPlanningRevision FamilyPlanningId FamilyPlanning
     | LactationRevision LactationId Lactation
     | HealthCenterRevision HealthCenterId HealthCenter
@@ -322,4 +323,3 @@ type Revision
     | VillageRevision VillageId Village
     | VitalsRevision VitalsId Vitals
     | WeightRevision WeightId Weight
-    | DashboardStatsRevision HealthCenterId DashboardStats
