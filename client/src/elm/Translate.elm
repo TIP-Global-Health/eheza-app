@@ -2884,7 +2884,7 @@ translationSet trans =
             }
 
         MedicationForMalariaTodayQuestion ->
-            { english = "Did you receive medication for malaria today"
+            { english = "Did you receive medication for malaria today before this visit"
             , kinyarwanda = Nothing
             }
 
