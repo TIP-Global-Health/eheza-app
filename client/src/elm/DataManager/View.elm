@@ -131,7 +131,7 @@ viewSyncSettings language model =
                     "Cycle is currently on"
 
                 SyncCycleStayOnCurrentSyncStatus ->
-                    "Cycle is currently off"
+                    "Cycle is currently off, sync continues, but won't rotate to a new sync step"
 
                 SyncCyclePause ->
                     "Sync is completely paused"
@@ -187,72 +187,75 @@ viewSyncSettings language model =
         , class "html ui top attached segment"
         ]
         [ summary [] [ text "Sync Settings" ]
-        , div [ class "ui right labeled input fluid" ]
-            [ label [ class "ui label" ] [ text "Idle time" ]
-            , input
-                [ type_ "number"
+        , fieldset []
+            [ div [] [ text "Sync Speed" ]
+            , div [ class "ui right labeled input fluid" ]
+                [ label [ class "ui label" ] [ text "Idle time" ]
+                , input
+                    [ type_ "number"
 
-                -- No less than every 3 second. On production it should be
-                -- no less than 10 seconds.
-                , Html.Attributes.min (String.fromInt <| 3 * 1000)
+                    -- No less than every 3 second. On production it should be
+                    -- no less than 10 seconds.
+                    , Html.Attributes.min (String.fromInt <| 3 * 1000)
 
-                -- No more than every 5 minutes.
-                , Html.Attributes.max (String.fromInt <| 5 * 60 * 1000)
-                , Html.Attributes.required True
-                , value <| String.fromInt syncSpeed.idle
-                , onInput SetSyncSpeedIdle
+                    -- No more than every 5 minutes.
+                    , Html.Attributes.max (String.fromInt <| 5 * 60 * 1000)
+                    , Html.Attributes.required True
+                    , value <| String.fromInt syncSpeed.idle
+                    , onInput SetSyncSpeedIdle
+                    ]
+                    []
+                , div [ class "ui basic label" ] [ text "ms" ]
                 ]
-                []
-            , div [ class "ui basic label" ] [ text "ms" ]
+            , div [ class "ui right labeled input fluid" ]
+                [ label [ class "ui label" ] [ text "Cycle time" ]
+                , input
+                    [ type_ "number"
+
+                    -- No less than every 50 ms.
+                    , Html.Attributes.min (String.fromInt <| 50)
+
+                    -- No more than every 5 minutes.
+                    , Html.Attributes.max (String.fromInt <| 5 * 60 * 1000)
+                    , Html.Attributes.required True
+                    , value <| String.fromInt syncSpeed.cycle
+                    , onInput SetSyncSpeedCycle
+                    ]
+                    []
+                , div [ class "ui basic label" ] [ text "ms" ]
+                ]
+            , div [ class "ui right labeled input fluid" ]
+                [ label [ class "ui label" ] [ text "Offline time" ]
+                , input
+                    [ type_ "number"
+
+                    -- No less than every 1000 ms.
+                    , Html.Attributes.min (String.fromInt <| 1000)
+
+                    -- No more than every 5 minutes.
+                    , Html.Attributes.max (String.fromInt <| 5 * 60 * 1000)
+                    , Html.Attributes.required True
+                    , value <| String.fromInt syncSpeed.offline
+                    , onInput SetSyncSpeedOffline
+                    ]
+                    []
+                , div [ class "ui basic label" ] [ text "ms" ]
+                ]
+            , div []
+                [ button
+                    [ onClick SaveSettings
+                    , class "ui primary button"
+                    ]
+                    [ text "Save" ]
+                , button
+                    [ onClick ResetSettings
+                    , class "ui button"
+                    ]
+                    [ text "Reset Settings" ]
+                ]
             ]
-        , div [ class "ui right labeled input fluid" ]
-            [ label [ class "ui label" ] [ text "Cycle time" ]
-            , input
-                [ type_ "number"
-
-                -- No less than every 50 ms.
-                , Html.Attributes.min (String.fromInt <| 50)
-
-                -- No more than every 5 minutes.
-                , Html.Attributes.max (String.fromInt <| 5 * 60 * 1000)
-                , Html.Attributes.required True
-                , value <| String.fromInt syncSpeed.cycle
-                , onInput SetSyncSpeedCycle
-                ]
-                []
-            , div [ class "ui basic label" ] [ text "ms" ]
-            ]
-        , div [ class "ui right labeled input fluid" ]
-            [ label [ class "ui label" ] [ text "Offline time" ]
-            , input
-                [ type_ "number"
-
-                -- No less than every 1000 ms.
-                , Html.Attributes.min (String.fromInt <| 1000)
-
-                -- No more than every 5 minutes.
-                , Html.Attributes.max (String.fromInt <| 5 * 60 * 1000)
-                , Html.Attributes.required True
-                , value <| String.fromInt syncSpeed.offline
-                , onInput SetSyncSpeedOffline
-                ]
-                []
-            , div [ class "ui basic label" ] [ text "ms" ]
-            ]
-        , div []
-            [ button
-                [ onClick SaveSettings
-                , class "ui primary button"
-                ]
-                [ text "Save" ]
-            , button
-                [ onClick ResetSettings
-                , class "ui button"
-                ]
-                [ text "Reset Settings" ]
-            ]
-        , fieldset [ class "ui right labeled input fluid" ]
-            [ label [ class "ui label" ] [ text "Sync Cycle" ]
+        , fieldset []
+            [ div [] [ text "Sync Cycle" ]
             , div [] [ text <| "Current status: " ++ currentStatus ]
             , syncCycleButtons
             ]
