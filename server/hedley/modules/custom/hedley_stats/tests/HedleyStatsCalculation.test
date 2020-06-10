@@ -372,8 +372,8 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
     // Make sure anonymous user doesn't get the content.
     $handler->setAccount($this->nurse);
     $request = [
-      'base_revision' => 1,
-      'db_version' => 8,
+      'base_revision' => 0,
+      'db_version' => HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION,
     ];
 
     // First request will create the AQ item and get all the data for the HC.
