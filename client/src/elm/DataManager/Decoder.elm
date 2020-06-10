@@ -12,6 +12,7 @@ import Backend.IndividualEncounterParticipant.Decoder
 import Backend.Measurement.Decoder
 import Backend.Nurse.Decoder
 import Backend.NutritionEncounter.Decoder
+import Backend.ParticipantConsent.Decoder
 import Backend.Person.Decoder
 import Backend.PmtctParticipant.Decoder
 import Backend.Relationship.Decoder
@@ -404,19 +405,24 @@ decodeBackendAuthorityEntity =
                             BackendAuthorityNutritionWeight
 
                     "obstetric_history" ->
-                        decodeWithUuid ObstetricHistoryRevision decodeObstetricHistory
+                        doDecode
+                            Backend.Measurement.Decoder.decodeObstetricHistory
+                            BackendAuthorityObstetricHistory
 
                     "obstetric_history_step2" ->
-                        decodeWithUuid ObstetricHistoryStep2Revision decodeObstetricHistoryStep2
+                        doDecode
+                            Backend.Measurement.Decoder.decodeObstetricHistoryStep2
+                            BackendAuthorityObstetricHistoryStep2
 
                     "obstetrical_exam" ->
-                        decodeWithUuid ObstetricalExamRevision decodeObstetricalExam
+                        doDecode
+                            Backend.Measurement.Decoder.decodeObstetricalExam
+                            BackendAuthorityObstetricalExam
 
                     "participant_consent" ->
-                        decodeWithUuid ParticipantConsentRevision decodeParticipantConsent
-
-                    "participant_form" ->
-                        decodeWithUuid ParticipantFormRevision decodeParticipantForm
+                        doDecode
+                            Backend.Measurement.Decoder.decodeParticipantConsent
+                            BackendAuthorityParticipantConsent
 
                     "photo" ->
                         doDecode
