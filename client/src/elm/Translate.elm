@@ -2600,7 +2600,7 @@ translationSet trans =
                     }
 
         IntractableVomitingQuestion ->
-            { english = "Is Intractable Vomiting"
+            { english = "Is Vomiting Intractable"
             , kinyarwanda = Nothing
             }
 
