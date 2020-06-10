@@ -15,6 +15,7 @@ import DataManager.Model
         , Model
         , Msg(..)
         , RevisionIdPerAuthorityZipper
+        , SyncCycle(..)
         , SyncStatus(..)
         )
 import Editable
@@ -124,17 +125,57 @@ viewDeviceInfo language configuration =
 viewSyncSettings : Language -> Model -> Html Msg
 viewSyncSettings language model =
     let
-        ( cycleStatus, cycleBtnText, cycleIcon ) =
-            if model.syncCycle then
-                ( "Cycle is currently on"
-                , "Pause cycle"
-                , "pause"
-                )
+        currentStatus =
+            case model.syncCycle of
+                SyncCycleOn ->
+                    "Cycle is currently on"
 
-            else
-                ( "Cycle is currently off"
-                , "Start cycle"
-                , "play"
+                SyncCycleStayOnCurrentSyncStatus ->
+                    "Cycle is currently off"
+
+                SyncCyclePause ->
+                    "Sync is completely paused"
+
+        getOption status =
+            case status of
+                SyncCycleOn ->
+                    { name = "On"
+                    , icon = "recycle"
+                    , msg = SetSyncCycle SyncCycleOn
+                    }
+
+                SyncCycleStayOnCurrentSyncStatus ->
+                    { name = "Stay on current sync step"
+                    , icon = "repeat"
+                    , msg = SetSyncCycle SyncCycleStayOnCurrentSyncStatus
+                    }
+
+                SyncCyclePause ->
+                    { name = "Pause"
+                    , icon = "pause"
+                    , msg = SetSyncCycle SyncCyclePause
+                    }
+
+        syncCycleButtons =
+            div []
+                (List.map
+                    (\status ->
+                        let
+                            record =
+                                getOption status
+                        in
+                        button
+                            [ classList
+                                [ ( "ui labeled icon button", True )
+                                , ( "active", model.syncCycle == status )
+                                ]
+                            , onClick record.msg
+                            ]
+                            [ i [ class <| "icon " ++ record.icon ] []
+                            , text record.name
+                            ]
+                    )
+                    [ SyncCycleOn, SyncCycleStayOnCurrentSyncStatus, SyncCyclePause ]
                 )
 
         syncSpeed =
@@ -146,17 +187,6 @@ viewSyncSettings language model =
         , class "html ui top attached segment"
         ]
         [ summary [] [ text "Sync Settings" ]
-        , div [ class "ui right labeled input fluid" ]
-            [ label [ class "ui label" ] [ text cycleStatus ]
-            , button
-                [ onClick <| SetSyncStatusRotateAutomatic (not model.syncCycle)
-                , style "margin-left" "20px"
-                , class "ui labeled icon button"
-                ]
-                [ i [ class <| "icon " ++ cycleIcon ] []
-                , text cycleBtnText
-                ]
-            ]
         , div [ class "ui right labeled input fluid" ]
             [ label [ class "ui label" ] [ text "Idle time" ]
             , input
@@ -220,6 +250,11 @@ viewSyncSettings language model =
                 , class "ui button"
                 ]
                 [ text "Reset Settings" ]
+            ]
+        , fieldset [ class "ui right labeled input fluid" ]
+            [ label [ class "ui label" ] [ text "Sync Cycle" ]
+            , div [] [ text <| "Current status: " ++ currentStatus ]
+            , syncCycleButtons
             ]
         ]
 

@@ -643,13 +643,6 @@ update currentDate dbVersion device msg model =
                 noError
                 []
 
-        SetSyncStatusRotateAutomatic status ->
-            SubModelReturn
-                { model | syncCycle = status }
-                Cmd.none
-                noError
-                []
-
         FetchFromIndexDbDeferredPhoto ->
             -- Get a deferred photo from IndexDB.
             case model.syncStatus of
@@ -1175,6 +1168,13 @@ update currentDate dbVersion device msg model =
             SubModelReturn
                 { model | syncSpeed = Editable.ReadOnly syncSpeedUpdated }
                 (sendSyncSpeed syncSpeedUpdated)
+                noError
+                []
+
+        SetSyncCycle syncCycle ->
+            SubModelReturn
+                { model | syncCycle = syncCycle }
+                Cmd.none
                 noError
                 []
 

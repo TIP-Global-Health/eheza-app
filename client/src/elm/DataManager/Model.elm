@@ -16,6 +16,7 @@ module DataManager.Model exposing
     , Msg(..)
     , RevisionIdPerAuthority
     , RevisionIdPerAuthorityZipper
+    , SyncCycle(..)
     , SyncSpeed
     , SyncStatus(..)
     , UploadMethod(..)
@@ -156,7 +157,7 @@ type alias Model =
 
     -- Determine is Sync status should be rotated automatically, or manually for debug
     -- purposes.
-    , syncCycle : Bool
+    , syncCycle : SyncCycle
 
     -- Time in seconds while idle or while syncing.
     -- In production, a good value would be:
@@ -174,7 +175,7 @@ emptyModel flags =
     , lastTryBackendGeneralDownloadTime = Time.millisToPosix 0
     , downloadPhotos = DownloadPhotosBatch (emptyDownloadPhotosBatchRec flags.batchSize)
     , downloadPhotosBatchSize = flags.batchSize
-    , syncCycle = True
+    , syncCycle = SyncCycleOn
     , syncSpeed = Editable.ReadOnly flags.syncSpeed
     }
 
@@ -287,6 +288,18 @@ type SyncStatus
     | SyncDownloadPhotos DownloadPhotos
 
 
+type SyncCycle
+    = -- Work normally.
+      SyncCycleOn
+      -- Keep calling sync, but never switch to the next Sync status. For example,
+      -- if we're currently downloading from General, by selecting this, we'd
+      -- keep trying to download from General, without switching to downloading
+      -- from Authority.
+    | SyncCycleStayOnCurrentSyncStatus
+      -- Completely pause sync.
+    | SyncCyclePause
+
+
 {-| Indicate what content, or query we'd like to get from IndexDB.
 -}
 type IndexDbQueryType
@@ -384,10 +397,10 @@ type Msg
     | RevisionIdAuthorityRemove HealthCenterId
     | SetLastFetchedRevisionIdAuthority (Zipper RevisionIdPerAuthority) Int
     | SetLastFetchedRevisionIdGeneral Int
-    | SetSyncStatusRotateAutomatic Bool
       -- UI settings
     | ResetSettings
     | SaveSettings
+    | SetSyncCycle SyncCycle
     | SetSyncSpeedIdle String
     | SetSyncSpeedCycle String
     | SetSyncSpeedOffline String

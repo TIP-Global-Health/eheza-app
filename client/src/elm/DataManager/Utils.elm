@@ -22,7 +22,16 @@ according to the order `SyncStatus` is defined.
 -}
 determineSyncStatus : Model -> Model
 determineSyncStatus model =
-    if model.syncCycle then
+    let
+        syncCycleRotate =
+            case model.syncCycle of
+                DataManager.Model.SyncCycleOn ->
+                    True
+
+                _ ->
+                    False
+    in
+    if syncCycleRotate then
         let
             syncStatus =
                 model.syncStatus
