@@ -27,6 +27,57 @@ var backendUploadUrlRegex = /\/backend-upload\/images/;
 // all devices get. (That is, unsharded data).
 var nodesUuid = '78cf21d1-b3f4-496a-b312-d8ae73041f09';
 
+var tableForType = {
+    attendance: 'shards',
+    breast_exam: 'shards',
+    catchment_area: 'nodes',
+    child_fbf: 'shards',
+    clinic: 'shards',
+    counseling_schedule: 'nodes',
+    counseling_session: 'shards',
+    counseling_topic: 'nodes',
+    core_physical_exam: 'shards',
+    danger_signs: 'shards',
+    family_planning: 'shards',
+    health_center: 'nodes',
+    height: 'shards',
+    individual_participant: 'shards',
+    lactation: 'shards',
+    last_menstrual_period: 'shards',
+    medical_history: 'shards',
+    medication: 'shards',
+    mother_fbf: 'shards',
+    muac: 'shards',
+    nurse: 'nodes',
+    nutrition: 'shards',
+    nutrition_encounter: 'shards',
+    nutrition_height: 'shards',
+    nutrition_muac: 'shards',
+    nutrition_nutrition: 'shards',
+    nutrition_photo: 'shards',
+    nutrition_weight: 'shards',
+    obstetric_history: 'shards',
+    obstetric_history_step2: 'shards',
+    obstetrical_exam: 'shards',
+    participant_consent: 'shards',
+    participant_form: 'nodes',
+    person: 'shards',
+    photo: 'shards',
+    prenatal_photo: 'shards',
+    pmtct_participant: 'shards',
+    prenatal_family_planning: 'shards',
+    prenatal_nutrition: 'shards',
+    prenatal_encounter: 'shards',
+    relationship: 'shards',
+    resource: 'shards',
+    session: 'shards',
+    social_history: 'shards',
+    syncmetadata: 'syncMetadata',
+    village: 'nodes',
+    vitals: 'shards',
+    weight: 'shards'
+};
+
 var dbSync = new Dexie('sync');
 
 // Note that this code only configures ... the actual database upgrade will
@@ -145,6 +196,15 @@ dbSync.version(8).upgrade(function (tx) {
 });
 
 dbSync.version(9).stores({
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter',
+});
+
+dbSync.version(10).stores({
+    nodes: '&uuid,type,vid,status,[type+pin_code]',
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
+});
+
+dbSync.version(11).stores({
     statistics: '&uuid',
 }).upgrade(function (tx) {
     return tx.nodes.where({
@@ -164,7 +224,7 @@ function gatherWords (text) {
 }
 
 // Hooks that index persons for searching name.
-dbSync.nodes.hook("creating", function (primKey, obj, trans) {
+dbSync.shards.hook("creating", function (primKey, obj, trans) {
     if (obj.type === 'person') {
         if (typeof obj.label == 'string') {
             obj.name_search = gatherWords(obj.label);
@@ -172,7 +232,7 @@ dbSync.nodes.hook("creating", function (primKey, obj, trans) {
     }
 });
 
-dbSync.nodes.hook("updating", function (mods, primKey, obj, trans) {
+dbSync.shards.hook("updating", function (mods, primKey, obj, trans) {
     if (obj.type === 'person') {
         if (mods.hasOwnProperty("label")) {
             if (typeof mods.label == 'string') {

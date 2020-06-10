@@ -1,7 +1,7 @@
 module ZScore.Model exposing
     ( Model, Msg(..), MaleAndFemale, ZScoreEntry, emptyModel
     , Length(..), Height(..), Centimetres(..), Kilograms(..), BMI(..), ZScore
-    , BmiForAgeTables, ByDaysAndMonths, LengthHeightForAgeTables, WeightForAgeTables, WeightForHeightTables, WeightForLengthTables
+    , BmiForAgeTables, ByDaysAndMonths, ChartStartingAges(..), LengthHeightForAgeTables, WeightForAgeTables, WeightForHeightTables, WeightForLengthTables
     )
 
 {-| Models our ZScore tables.
@@ -111,6 +111,12 @@ type Kilograms
 
 type BMI
     = BMI Float
+
+
+type ChartStartingAges
+    = ZeroYears
+    | TwoYears
+    | FiveYears
 
 
 type alias ByDaysAndMonths value =

@@ -13,6 +13,10 @@ import Pages.DemographicsReport.Fetch
 import Pages.Device.Fetch
 import Pages.IndividualEncounterParticipants.Fetch
 import Pages.IndividualEncounterTypes.Fetch
+import Pages.NutritionActivity.Fetch
+import Pages.NutritionEncounter.Fetch
+import Pages.NutritionParticipant.Fetch
+import Pages.NutritionProgressReport.Fetch
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.People.Fetch
 import Pages.Person.Fetch
@@ -118,6 +122,15 @@ fetch model =
                     )
                 |> Maybe.withDefault []
 
+        UserPage (NutritionParticipantPage personId) ->
+            getLoggedInData model
+                |> Maybe.map
+                    (\( _, loggedIn ) ->
+                        Pages.NutritionParticipant.Fetch.fetch personId model.indexedDb
+                            |> List.map MsgIndexedDb
+                    )
+                |> Maybe.withDefault []
+
         UserPage (IndividualEncounterParticipantsPage encounterType) ->
             getLoggedInData model
                 |> Maybe.map
@@ -132,7 +145,7 @@ fetch model =
                 |> List.map MsgIndexedDb
 
         UserPage (SessionPage sessionId sessionPage) ->
-            Pages.Session.Fetch.fetch sessionId sessionPage model.indexedDb
+            Pages.Session.Fetch.fetch currentDate sessionId sessionPage model.indexedDb
                 |> List.map MsgIndexedDb
 
         UserPage (PrenatalEncounterPage id) ->
@@ -149,6 +162,18 @@ fetch model =
 
         UserPage (PregnancyOutcomePage id) ->
             Pages.PregnancyOutcome.Fetch.fetch id model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (NutritionEncounterPage id) ->
+            Pages.NutritionEncounter.Fetch.fetch id model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (NutritionActivityPage nutritionEncounterId _) ->
+            Pages.NutritionActivity.Fetch.fetch nutritionEncounterId model.indexedDb
+                |> List.map MsgIndexedDb
+
+        UserPage (NutritionProgressReportPage nutritionEncounterId) ->
+            Pages.NutritionProgressReport.Fetch.fetch nutritionEncounterId model.indexedDb
                 |> List.map MsgIndexedDb
 
 

@@ -35,16 +35,6 @@ class HedleyRestfulPrenatalEncounters extends HedleyRestfulSyncBase {
   }
 
   /**
-   * Show the scheduled_date with date only.
-   */
-  public function renderDate($date) {
-    return [
-      'value' => $date['value'] ? hedley_restful_timestamp_only_date($date['value']) : NULL,
-      'value2' => $date['value2'] ? hedley_restful_timestamp_only_date($date['value2']) : NULL,
-    ];
-  }
-
-  /**
    * {@inheritdoc}
    */
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
@@ -58,7 +48,7 @@ class HedleyRestfulPrenatalEncounters extends HedleyRestfulSyncBase {
 
     hedley_restful_join_field_to_query($query, 'node', 'field_scheduled_date', FALSE, NULL, NULL, TRUE);
 
-    // Get the UUIDs of the Individyul participant.
+    // Get the UUIDs of the Individual participant.
     hedley_restful_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_individual_participant.field_individual_participant_target_id", 'uuid_individual_participant');
   }
 
@@ -72,12 +62,11 @@ class HedleyRestfulPrenatalEncounters extends HedleyRestfulSyncBase {
       $item->individual_participant = $item->uuid_individual_participant;
       unset($item->uuid_individual_participant);
 
-      $value1 = $item->scheduled_date;
-      $value2 = $item->field_scheduled_date_field_scheduled_date_value2;
-      $item->scheduled_date = [
-        'value' => $value1 ? hedley_restful_timestamp_only_date($value1) : NULL,
-        'value2' => $value2 ? hedley_restful_timestamp_only_date($value2) : NULL,
+      $date = [
+        'value' => $item->scheduled_date,
+        'value2' => $item->field_scheduled_date_field_scheduled_date_value2,
       ];
+      $item->scheduled_date = $this->renderDate($date);
       unset($item->field_scheduled_date_field_scheduled_date_value2);
 
       unset($item->label);

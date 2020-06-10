@@ -7,11 +7,6 @@ set -euo pipefail
 #
 # ---------------------------------------------------------------------------- #
 
-# Check the current build.
-if [ -z "${BUILD_SERVER+x}" ] || [ "$BUILD_SERVER" -ne 1 ]; then
- exit 0;
-fi
-
 # Simple Docker run to execute Behat.
 if [ -z "${BUILD_WEBDRIVERIO+x}" ]; then
   mkdir -p "$TRAVIS_BUILD_DIR"/travis-cache

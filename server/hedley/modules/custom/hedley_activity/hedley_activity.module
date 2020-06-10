@@ -16,6 +16,16 @@ define('HEDLEY_ACTIVITY_NUTRITION_CONTENT_TYPE', 'nutrition');
 define('HEDLEY_ACTIVITY_PHOTO_CONTENT_TYPE', 'photo');
 define('HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE', 'weight');
 
+const HEDLEY_ACTIVITY_HEIGHT_BUNDLES = [
+  'height',
+  'nutrition_height',
+];
+
+const HEDLEY_ACTIVITY_WEIGHT_BUNDLES = [
+  'weight',
+  'nutrition_weight',
+];
+
 /**
  * Get the measurements content types.
  *
@@ -37,7 +47,7 @@ function hedley_activity_get_measurements_content_types() {
  * Implements hook_node_insert().
  */
 function hedley_activity_node_insert($node) {
-  if ($node->type != 'height') {
+  if (!in_array($node->type, HEDLEY_ACTIVITY_HEIGHT_BUNDLES)) {
     return;
   }
 
@@ -50,7 +60,7 @@ function hedley_activity_node_insert($node) {
  * Implements hook_node_update().
  */
 function hedley_activity_node_update($node) {
-  if (!in_array($node->type, ['person', 'height'])) {
+  if (!in_array($node->type, array_merge(['person'], HEDLEY_ACTIVITY_HEIGHT_BUNDLES))) {
     return;
   }
 
@@ -74,7 +84,7 @@ function hedley_activity_node_update($node) {
     return;
   }
 
-  if ($node->type == 'height') {
+  if (in_array($node->type, HEDLEY_ACTIVITY_HEIGHT_BUNDLES)) {
     hedley_activity_handle_height($node->nid);
     return;
   }
@@ -87,12 +97,10 @@ function hedley_activity_node_update($node) {
  *   The node ID of the height.
  */
 function hedley_activity_handle_height($nid) {
-  $height = entity_metadata_wrapper('node', $nid);
+  $wrapper = entity_metadata_wrapper('node', $nid);
 
-  $session_id = $height->field_session->getIdentifier();
-  $child_id = $height->field_person->getIdentifier();
-
-  $weight_id = hedley_activity_weight_for_session($session_id, $child_id);
+  $child_id = $wrapper->field_person->getIdentifier();
+  $weight_id = hedley_activity_node_by_peer_in_session($wrapper, $child_id);
 
   if (empty($weight_id)) {
     // There is no weight node for this child/session combination.
@@ -118,10 +126,12 @@ function hedley_activity_handle_child_zscores($nid) {
   $batch_size = 50;
   $offset = 0;
 
+  $bundles = array_merge(HEDLEY_ACTIVITY_HEIGHT_BUNDLES, HEDLEY_ACTIVITY_WEIGHT_BUNDLES);
+
   $base_query = new EntityFieldQuery();
   $base_query
     ->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', ['height', 'weight'], 'IN')
+    ->entityCondition('bundle', $bundles, 'IN')
     ->fieldCondition('field_person', 'target_id', $nid)
     ->propertyCondition('status', NODE_PUBLISHED)
     ->propertyOrderBy('nid', 'ASC');
@@ -164,7 +174,8 @@ function hedley_activity_handle_child_zscores($nid) {
  * Calculate z-scores for measurements.
  */
 function hedley_activity_node_presave($node) {
-  if (!in_array($node->type, ['height', 'weight'])) {
+  $bundles = array_merge(HEDLEY_ACTIVITY_HEIGHT_BUNDLES, HEDLEY_ACTIVITY_WEIGHT_BUNDLES);
+  if (!in_array($node->type, $bundles)) {
     return;
   }
 
@@ -182,20 +193,18 @@ function hedley_activity_node_presave($node) {
   // 86400 seconds in a day.
   $days = ($measured - $birth) / 86400;
 
-  if ($node->type == 'height') {
+  if (in_array($node->type, HEDLEY_ACTIVITY_HEIGHT_BUNDLES)) {
     $zscore = hedley_zscore_length_for_age($days, $gender, $wrapper->field_height->value());
     $wrapper->field_zscore_age->set($zscore);
     return;
   }
 
-  if ($node->type == 'weight') {
+  if (in_array($node->type, HEDLEY_ACTIVITY_WEIGHT_BUNDLES)) {
     $zscore_for_age = hedley_zscore_weight_for_age($days, $gender, $wrapper->field_weight->value());
     $wrapper->field_zscore_age->set($zscore_for_age);
 
     $child_id = $wrapper->field_person->getIdentifier();
-    $session_id = $wrapper->field_session->getIdentifier();
-
-    $height_id = hedley_activity_height_for_session($session_id, $child_id);
+    $height_id = hedley_activity_node_by_peer_in_session($wrapper, $child_id);
 
     if (empty($height_id)) {
       // No height yet, so no zscore_length or BMI.
@@ -210,7 +219,7 @@ function hedley_activity_node_presave($node) {
 
       // For children older than two, we actually measure height rather than
       // length. So, we need to use the weight-for-height tables, rather than
-      // weight-for-length. But we store the result in the same field.
+      // weight-or-length. But we store the result in the same field.
       if ($days > (365 * 2)) {
         $zscore_for_length = hedley_zscore_weight_for_height($cm, $gender, $kg);
       }
@@ -230,55 +239,57 @@ function hedley_activity_node_presave($node) {
 }
 
 /**
- * Get the height for a child in a session.
+ * Get the height by weight / weight by height, for a child in a session.
  *
- * @param int $session_id
- *   The node ID of the session.
+ * @param \EntityMetadataWrapper $wrapper
+ *   Wrapper of source node.
  * @param int $child_id
  *   The node ID of the child.
  *
  * @return int|null
- *   The node ID of the height node, or NULL.
+ *   The node ID of the target node, or NULL.
  */
-function hedley_activity_height_for_session($session_id, $child_id) {
-  if (empty($session_id) || empty($child_id)) {
+function hedley_activity_node_by_peer_in_session(\EntityMetadataWrapper $wrapper, $child_id) {
+  if (empty($child_id)) {
+    return NULL;
+  }
+
+  $bundle = $wrapper->getBundle();
+  switch ($bundle) {
+    case 'height':
+      $session_field = 'field_session';
+      $target_bundle = 'weight';
+      break;
+
+    case 'nutrition_height':
+      $session_field = 'field_nutrition_encounter';
+      $target_bundle = 'nutrition_weight';
+      break;
+
+    case 'weight':
+      $session_field = 'field_session';
+      $target_bundle = 'height';
+      break;
+
+    case 'nutrition_weight':
+      $session_field = 'field_nutrition_encounter';
+      $target_bundle = 'nutrition_height';
+      break;
+
+    default:
+      return NULL;
+  }
+
+  $session_id = $wrapper->{$session_field}->getIdentifier();
+  if (empty($session_id)) {
     return NULL;
   }
 
   $query = new EntityFieldQuery();
   $result = $query
     ->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', 'height')
-    ->fieldCondition('field_session', 'target_id', $session_id)
-    ->fieldCondition('field_person', 'target_id', $child_id)
-    ->propertyCondition('status', NODE_PUBLISHED)
-    ->range(0, 1)
-    ->execute();
-
-  return !empty($result['node']) ? key($result['node']) : NULL;
-}
-
-/**
- * Get the weight for a child in a session.
- *
- * @param int $session_id
- *   The node ID of the session.
- * @param int $child_id
- *   The node ID of the child.
- *
- * @return int|null
- *   The node ID of the weight node, or NULL.
- */
-function hedley_activity_weight_for_session($session_id, $child_id) {
-  if (empty($session_id) || empty($child_id)) {
-    return NULL;
-  }
-
-  $query = new EntityFieldQuery();
-  $result = $query
-    ->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', 'weight')
-    ->fieldCondition('field_session', 'target_id', $session_id)
+    ->entityCondition('bundle', $target_bundle)
+    ->fieldCondition($session_field, 'target_id', $session_id)
     ->fieldCondition('field_person', 'target_id', $child_id)
     ->propertyCondition('status', NODE_PUBLISHED)
     ->range(0, 1)

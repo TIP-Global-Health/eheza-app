@@ -1,34 +1,4 @@
-module Backend.Measurement.Decoder exposing
-    ( decodeAttendance
-    , decodeBreastExam
-    , decodeChildMeasurementList
-    , decodeCorePhysicalExam
-    , decodeCounselingSession
-    , decodeDangerSigns
-    , decodeFamilyPlanning
-    , decodeFamilyPlanningSign
-    , decodeHeight
-    , decodeLastMenstrualPeriod
-    , decodeMedicalHistory
-    , decodeMedication
-    , decodeMotherMeasurementList
-    , decodeMuac
-    , decodeNutrition
-    , decodeObstetricHistory
-    , decodeObstetricHistoryStep2
-    , decodeObstetricalExam
-    , decodeParticipantConsent
-    , decodePhoto
-    , decodePrenatalFamilyPlanning
-    , decodePrenatalMeasurements
-    , decodePrenatalNutrition
-    , decodePrenatalPhoto
-    , decodeResource
-    , decodeSocialHistory
-    , decodeSocialHistoryHivTestingResult
-    , decodeVitals
-    , decodeWeight
-    )
+module Backend.Measurement.Decoder exposing (decodeAbdomenCPESign, decodeAttendance, decodeBreastExam, decodeBreastExamSign, decodeCSectionReason, decodeCSectionScar, decodeChildMeasurementList, decodeChildNutritionSign, decodeCorePhysicalExam, decodeCounselingSession, decodeDangerSign, decodeDangerSigns, decodeDistributionNotice, decodeEyesCPESign, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeFbf, decodeFbfValue, decodeFetalPresentation, decodeGroupMeasurement, decodeHairHeadCPESign, decodeHandsCPESign, decodeHead, decodeHeartCPESign, decodeHeight, decodeLactation, decodeLactationSign, decodeLastMenstrualPeriod, decodeLegsCPESign, decodeLungsCPESign, decodeMeasurement, decodeMedicalHistory, decodeMedicalHistorySign, decodeMedication, decodeMedicationSign, decodeMotherMeasurementList, decodeMuac, decodeNeckCPESign, decodeNutrition, decodeNutritionHeight, decodeNutritionMeasurement, decodeNutritionMeasurements, decodeNutritionMuac, decodeNutritionNutrition, decodeNutritionPhoto, decodeNutritionWeight, decodeObstetricHistory, decodeObstetricHistorySign, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodePrenatalFamilyPlanning, decodePrenatalMeasurement, decodePrenatalMeasurements, decodePrenatalNutrition, decodePrenatalPhoto, decodePreviousDeliveryPeriod, decodePreviousDeliverySign, decodeResource, decodeResourceSign, decodeSocialHistory, decodeSocialHistoryHivTestingResult, decodeSocialHistorySign, decodeVitals, decodeWeight, decodeWithEntityUuid)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
@@ -46,6 +16,11 @@ import Utils.Json exposing (decodeEverySet)
 decodeGroupMeasurement : Decoder value -> Decoder (Measurement SessionId value)
 decodeGroupMeasurement =
     decodeMeasurement "session"
+
+
+decodeNutritionMeasurement : Decoder value -> Decoder (Measurement NutritionEncounterId value)
+decodeNutritionMeasurement =
+    decodeMeasurement "nutrition_encounter"
 
 
 decodePrenatalMeasurement : Decoder value -> Decoder (Measurement PrenatalEncounterId value)
@@ -77,6 +52,8 @@ decodeMotherMeasurementList =
         |> optional "attendance" (map Dict.fromList <| list (decodeWithEntityUuid decodeAttendance)) Dict.empty
         |> optional "family_planning" (map Dict.fromList <| list (decodeWithEntityUuid decodeFamilyPlanning)) Dict.empty
         |> optional "participant_consent" (map Dict.fromList <| list (decodeWithEntityUuid decodeParticipantConsent)) Dict.empty
+        |> optional "lactation" (map Dict.fromList <| list (decodeWithEntityUuid decodeLactation)) Dict.empty
+        |> optional "mother_fbf" (map Dict.fromList <| list (decodeWithEntityUuid decodeFbf)) Dict.empty
 
 
 decodeChildMeasurementList : Decoder ChildMeasurementList
@@ -88,14 +65,11 @@ decodeChildMeasurementList =
         |> optional "photo" (map Dict.fromList <| list (decodeWithEntityUuid decodePhoto)) Dict.empty
         |> optional "weight" (map Dict.fromList <| list (decodeWithEntityUuid decodeWeight)) Dict.empty
         |> optional "counseling_session" (map Dict.fromList <| list (decodeWithEntityUuid decodeCounselingSession)) Dict.empty
+        |> optional "child_fbf" (map Dict.fromList <| list (decodeWithEntityUuid decodeFbf)) Dict.empty
 
 
 decodePrenatalMeasurements : Decoder PrenatalMeasurements
 decodePrenatalMeasurements =
-    let
-        decodeHead =
-            map List.head << list << decodeWithEntityUuid
-    in
     succeed PrenatalMeasurements
         |> optional "breast_exam" (decodeHead decodeBreastExam) Nothing
         |> optional "core_physical_exam" (decodeHead decodeCorePhysicalExam) Nothing
@@ -112,6 +86,21 @@ decodePrenatalMeasurements =
         |> optional "social_history" (decodeHead decodeSocialHistory) Nothing
         |> optional "vitals" (decodeHead decodeVitals) Nothing
         |> optional "prenatal_photo" (decodeHead decodePrenatalPhoto) Nothing
+
+
+decodeNutritionMeasurements : Decoder NutritionMeasurements
+decodeNutritionMeasurements =
+    succeed NutritionMeasurements
+        |> optional "nutrition_muac" (decodeHead decodeNutritionMuac) Nothing
+        |> optional "nutrition_height" (decodeHead decodeNutritionHeight) Nothing
+        |> optional "nutrition_nutrition" (decodeHead decodeNutritionNutrition) Nothing
+        |> optional "nutrition_photo" (decodeHead decodeNutritionPhoto) Nothing
+        |> optional "nutrition_weight" (decodeHead decodeNutritionWeight) Nothing
+
+
+decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
+decodeHead =
+    map List.head << list << decodeWithEntityUuid
 
 
 decodePhoto : Decoder Photo
@@ -154,6 +143,18 @@ decodeFamilyPlanning =
     decodeEverySet decodeFamilyPlanningSign
         |> field "family_planning_signs"
         |> decodeGroupMeasurement
+
+
+decodeLactation : Decoder Lactation
+decodeLactation =
+    decodeEverySet decodeLactationSign
+        |> field "lactation_signs"
+        |> decodeGroupMeasurement
+
+
+decodeFbf : Decoder Fbf
+decodeFbf =
+    decodeGroupMeasurement decodeFbfValue
 
 
 decodeAttendance : Decoder Attendance
@@ -287,6 +288,54 @@ decodeFamilyPlanningSign =
                         fail <|
                             sign
                                 ++ " is not a recognized FamilyPlanningSign"
+            )
+
+
+decodeLactationSign : Decoder LactationSign
+decodeLactationSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "breastfeeding" ->
+                        succeed Breastfeeding
+
+                    "none" ->
+                        succeed NoLactationSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized LactationSign"
+            )
+
+
+decodeFbfValue : Decoder FbfValue
+decodeFbfValue =
+    succeed FbfValue
+        |> required "distributed_amount" float
+        |> required "distribution_notice" decodeDistributionNotice
+
+
+decodeDistributionNotice : Decoder DistributionNotice
+decodeDistributionNotice =
+    string
+        |> andThen
+            (\notice ->
+                case notice of
+                    "complete" ->
+                        succeed DistributedFully
+
+                    "lack-of-stock" ->
+                        succeed DistributedPartiallyLackOfStock
+
+                    "other" ->
+                        succeed DistributedPartiallyOther
+
+                    _ ->
+                        fail <|
+                            notice
+                                ++ " is not a recognized DistributionNotice"
             )
 
 
@@ -938,3 +987,38 @@ decodeObstetricHistoryStep2 =
         |> required "previous_delivery_period" (decodeEverySet decodePreviousDeliveryPeriod)
         |> required "obstetric_history" (decodeEverySet decodeObstetricHistorySign)
         |> decodePrenatalMeasurement
+
+
+decodeNutritionMuac : Decoder NutritionMuac
+decodeNutritionMuac =
+    field "muac" decodeFloat
+        |> map MuacInCm
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionHeight : Decoder NutritionHeight
+decodeNutritionHeight =
+    field "height" decodeFloat
+        |> map HeightInCm
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionNutrition : Decoder NutritionNutrition
+decodeNutritionNutrition =
+    decodeEverySet decodeChildNutritionSign
+        |> field "nutrition_signs"
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionPhoto : Decoder NutritionPhoto
+decodeNutritionPhoto =
+    field "photo" string
+        |> map PhotoUrl
+        |> decodeNutritionMeasurement
+
+
+decodeNutritionWeight : Decoder NutritionWeight
+decodeNutritionWeight =
+    field "weight" decodeFloat
+        |> map WeightInKg
+        |> decodeNutritionMeasurement

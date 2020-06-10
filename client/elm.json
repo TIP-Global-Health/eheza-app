@@ -37,6 +37,7 @@
             "folkertdev/one-true-path-experiment": "4.0.3",
             "gampleman/elm-visualization": "2.0.1",
             "hecrj/html-parser": "2.3.4",
+            "ianmackenzie/elm-float-extra": "1.1.0",
             "justinmimbs/date": "3.1.2",
             "krisajenkins/remotedata": "5.0.0",
             "lukewestby/elm-http-builder": "6.0.0",

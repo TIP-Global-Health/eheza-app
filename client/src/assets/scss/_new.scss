@@ -297,16 +297,134 @@ div.page-people {
 }
 
 div.page-relationship {
-  margin: 0 auto;
-  padding: 0 35px 35px 35px;
-  height: 100%;
-  width: 100%;
-  overflow-y: hidden;
-  display: flex;
-  flex-direction: column;
+    margin: 0 auto;
+    padding: 0 35px 35px 35px;
+    height: 100%;
+    width: 100%;
+    overflow-y: hidden;
+    display: flex;
+    flex-direction: column;
 
-  label.relationship-selection {
-    font-size: 1.57rem; //22px light
+    label.relationship-selection {
+        font-size: 1.57rem; //22px light
+    }
+
+    div.relationship-selector {
+        margin-bottom: 50px;
+        margin-left: 60px;
+    }
+
+    div.current-groups {
+      margin-bottom: 30px;
+    }
+}
+
+div.page-person {
+    margin: 0 auto;
+    padding: 0 35px 35px 35px;
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+
+    .particiants-list {
+        margin-top: 50px;
+    }
+}
+
+div.page-participant,
+div.page-activity {
+
+  .ui.full.segment .content {
+
+    .fbf-to-receive {
+      border-bottom: 2px solid;
+      border-top: 2px solid;
+      font-size: 1.8rem;
+      font-weight: 500;
+      margin-bottom: 30px;
+      margin-top: 30px;
+      padding-bottom: 10px;
+      padding-top: 10px;
+    }
+
+    .label {
+      margin-bottom: 10px;
+    }
+
+    .form-input {
+      margin-bottom: 30px;
+
+      // Number inputs
+      &.measurement {
+        height: 50px;
+
+        .unit {
+          float: left;
+          font-weight: normal;
+          margin-left: 20px;
+          margin-top: 10px;
+          width: 35%;
+        }
+
+        input,
+        select {
+          background-color: $color-white;
+          border: 2px solid $color-gray-border;
+          color: $color-text;
+          float: left;
+          width: 60%;
+        }
+      }
+
+      // Bool inputs
+      &.yes-no {
+        padding-bottom: 15px;
+        margin-left: 25px;
+
+        label {
+          font-size: 25px;
+          margin-left: 10px;
+        }
+
+        label:before {
+          content: " ";
+          display: inline-block;
+          position: relative;
+          top: 5px;
+          margin-right: 10px;
+          width: 26px;
+          height: 26px;
+          border-radius: 13px;
+          border: 2px solid $color-gray-border;
+          background-color: transparent;
+        }
+
+        input[type=radio] {
+          display: none;
+        }
+
+        input[type=radio]:checked + label:after {
+          content: " ";
+          border-radius: 7px;
+          width: 14px;
+          height: 14px;
+          position: absolute;
+          top: 25px;
+          left: 30px;
+          display: block;
+          background: $color-text;
+        }
+      }
+    }
+  }
+}
+
+//Device Status Page
+.device-status {
+  button {
+    margin-bottom: 20px;
   }
 
   div.relationship-selector {
@@ -333,14 +451,16 @@ div.page-person {
   }
 }
 
-//Common for Prenatal Encounter and Prenatal Activity pages
+// Common for Prenatal Encounter and Prenatal Activity pages
 div.page-prenatal-activity,
+div.page-nutrition-activity,
 div.page-prenatal-encounter,
+div.page-nutrition-encounter,
 div.page-pregnancy-outcome {
-  padding: 0 35px 35px 35px;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 0 35px 35px 35px;
 
   .item .content {
     padding-top: 1em !important;
@@ -380,7 +500,57 @@ div.page-pregnancy-outcome {
 
 }
 
-// Prenatal Encounter page
+div.page-nutrition-activity,
+div.page-prenatal-activity {
+
+    .ui.task.segment {
+
+      .column.core-physical-exam {
+        width: 25%;
+
+        a {
+          width: 131px;
+        }
+      }
+    }
+
+    .tasks-count {
+      background: $color-primary;
+      padding: 5px 15px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .ui.full.segment {
+
+      .label {
+        font-weight: bold;
+        margin-bottom: 20px;
+
+        &.helper {
+          margin-bottom: 40px;
+        }
+      }
+
+      .form .ui.grid {
+
+        .measurement input {
+          width: 85%;
+        }
+
+        .measurement .unit {
+          width: unset;
+        }
+      }
+
+      .form.muac .ui.grid {
+        margin-top: 50px;
+      }
+    }
+}
+
+// Prenatal Encounter and Nutrition Encounter pages
+div.page-nutrition-encounter,
 div.page-prenatal-encounter {
 
   .ui.full.segment {
@@ -419,39 +589,13 @@ div.page-prenatal-encounter {
 }
 
 // Prenatal Activity page
-div.page-prenatal-activity {
-
-  .ui.task.segment {
-
-    .column.core-physical-exam {
-      width: 25%;
-
-      a {
-        width: 131px;
-      }
-    }
-  }
-
-  .tasks-count {
-    background: $color-primary;
-    padding: 5px 15px;
-    font-size: 18px;
-    font-weight: bold;
-  }
+div.page-prenatal-activity,
+div.page-nutrition-activity {
 
   .ui.full.segment {
 
-    .label {
-      font-weight: bold;
-      margin-bottom: 20px;
-
-      &.helper {
-        margin-bottom: 40px;
-      }
-    }
-
-    .form-input {
-      margin-bottom: 30px;
+      .form-input {
+        margin-bottom: 30px;
 
       // Pregnanacy Dating Inputs
       &.range {
@@ -506,9 +650,10 @@ div.page-prenatal-activity {
         }
       }
 
-      // Number inputs
-      &.measurement {
-        margin-bottom: 10px;
+        // Number inputs
+        &.measurement {
+          height: 50px;
+          margin-bottom: 10px;
 
         .unit {
           float: left;
@@ -1243,12 +1388,13 @@ div.page-encounter-types {
     text-align: center;
   }
 
-  button.ui.primary.button {
-    height: 60px;
-    margin-left: auto;
-    margin-right: auto;
-    padding: 0;
-    width: 100%;
+    button.ui.primary.button {
+      height: 60px;
+      margin-bottom: 10px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 0;
+      width: 100%;
 
     .text {
       float: left;

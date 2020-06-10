@@ -116,8 +116,6 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *   The "health center" node ID.
    */
   public function createHealthCenter() {
-    $this->createDevice();
-
     // Create the necessary catchment area.
     $catchment_area_nid = $this->createCatchmentArea();
 

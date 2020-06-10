@@ -317,23 +317,14 @@ applyDefaultValues currentDate maybeVillage isChw maybeRelatedPerson operation f
     in
     case operation of
         CreatePerson _ ->
-            let
-                nonChwForm =
-                    form
-                        |> applyDefaultSelectInput ubudehe defaultUbudehe (encodeUbudehe >> Debug.toString)
-                        |> applyDefaultSelectInput healthCenter defaultHealthCenter fromEntityUuid
-                        |> applyDefaultLocation province defaultProvinceId
-                        |> applyDefaultLocation district defaultDistrictId
-                        |> applyDefaultLocation sector defaultSectorId
-                        |> applyDefaultLocation cell defaultCellId
-                        |> applyDefaultLocation village defaultVillageId
-            in
-            if isChw then
-                nonChwForm
-                    |> applyDefaultSelectInput healthCenter defaultHealthCenter fromEntityUuid
-
-            else
-                nonChwForm
+            form
+                |> applyDefaultSelectInput ubudehe defaultUbudehe (encodeUbudehe >> Debug.toString)
+                |> applyDefaultLocation province defaultProvinceId
+                |> applyDefaultLocation district defaultDistrictId
+                |> applyDefaultLocation sector defaultSectorId
+                |> applyDefaultLocation cell defaultCellId
+                |> applyDefaultLocation village defaultVillageId
+                |> applyDefaultSelectInput healthCenter defaultHealthCenter fromEntityUuid
 
         EditPerson _ ->
             form
@@ -441,6 +432,7 @@ validatePerson maybeRelated operation maybeCurrentDate =
                 |> andMap (field village (validateVillage maybeRelated))
                 |> andMap (field phoneNumber <| nullable validateDigitsOnly)
                 |> andMap (field healthCenter (validateHealthCenterId maybeRelated))
+                |> andMap (succeed Nothing)
     in
     andThen withFirstName (field firstName (oneOf [ string, emptyString ]))
 

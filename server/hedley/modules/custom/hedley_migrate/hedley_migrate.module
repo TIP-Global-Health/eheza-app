@@ -17,9 +17,6 @@ function hedley_migrate_migrate_api() {
       'missing' => [
         'title' => t('Missing Data'),
       ],
-      'villages' => [
-        'title' => t('Villages'),
-      ],
       'batch_2019_02' => [
         'title' => t('Batch data added 2019/02'),
       ],
@@ -46,6 +43,9 @@ function hedley_migrate_migrate_api() {
       ],
       'batch_2019_05_3' => [
         'title' => t('Third batch data added 2019/05'),
+      ],
+      'chw_deploy' => [
+        'title' => t('CHW deploy'),
       ],
     ],
     'migrations' => [
@@ -172,7 +172,6 @@ function hedley_migrate_migrate_api() {
       ],
       'HedleyMigrateVillages' => [
         'class_name' => 'HedleyMigrateVillages',
-        'group_name' => 'villages',
       ],
       'HedleyMigrateMissingHeights' => [
         'class_name' => 'HedleyMigrateMissingHeights',
@@ -201,6 +200,10 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateParticipantForms' => [
         'class_name' => 'HedleyMigrateParticipantForms',
         'group_name' => 'forms',
+      ],
+      'HedleyMigrateVillagesChwDeploy' => [
+        'class_name' => 'HedleyMigrateVillagesChwDeploy',
+        'group_name' => 'chw_deploy',
       ],
     ],
   ];
@@ -446,9 +449,8 @@ function _hedley_migrate_get_children_by_parents(array $parents, $vocabulary_id 
     $query->innerJoin('taxonomy_term_data', 'data', 'hierarchy.tid = data.tid');
   }
 
-  $query
-    ->fields('hierarchy', ['tid'])
-    ->condition('hierarchy.parent', $parents, 'IN');
+  $query->addField('hierarchy', 'tid');
+  $query->condition('hierarchy.parent', $parents, 'IN');
 
   if ($vocabulary_id) {
     $query->condition('data.vid', $vocabulary_id);

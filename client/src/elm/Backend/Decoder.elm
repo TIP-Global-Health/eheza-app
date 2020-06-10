@@ -7,6 +7,7 @@ import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividual
 import Backend.Measurement.Decoder exposing (..)
 import Backend.Model exposing (..)
 import Backend.Nurse.Decoder exposing (decodeNurse)
+import Backend.NutritionEncounter.Decoder exposing (decodeNutritionEncounter)
 import Backend.ParticipantConsent.Decoder exposing (decodeParticipantForm)
 import Backend.Person.Decoder exposing (decodePerson)
 import Backend.PmtctParticipant.Decoder exposing (decodePmtctParticipant)
@@ -35,6 +36,9 @@ decodeRevision =
                     "catchment_area" ->
                         decodeWithUuid CatchmentAreaRevision decodeCatchmentArea
 
+                    "child_fbf" ->
+                        decodeWithUuid ChildFbfRevision decodeFbf
+
                     "clinic" ->
                         decodeWithUuid ClinicRevision decodeClinic
 
@@ -62,6 +66,9 @@ decodeRevision =
                     "height" ->
                         decodeWithUuid HeightRevision decodeHeight
 
+                    "lactation" ->
+                        decodeWithUuid LactationRevision decodeLactation
+
                     "last_menstrual_period" ->
                         decodeWithUuid LastMenstrualPeriodRevision decodeLastMenstrualPeriod
 
@@ -71,6 +78,9 @@ decodeRevision =
                     "medication" ->
                         decodeWithUuid MedicationRevision decodeMedication
 
+                    "mother_fbf" ->
+                        decodeWithUuid MotherFbfRevision decodeFbf
+
                     "muac" ->
                         decodeWithUuid MuacRevision decodeMuac
 
@@ -79,6 +89,24 @@ decodeRevision =
 
                     "nutrition" ->
                         decodeWithUuid ChildNutritionRevision decodeNutrition
+
+                    "nutrition_encounter" ->
+                        decodeWithUuid NutritionEncounterRevision decodeNutritionEncounter
+
+                    "nutrition_height" ->
+                        decodeWithUuid NutritionHeightRevision decodeNutritionHeight
+
+                    "nutrition_muac" ->
+                        decodeWithUuid NutritionMuacRevision decodeNutritionMuac
+
+                    "nutrition_nutrition" ->
+                        decodeWithUuid NutritionNutritionRevision decodeNutritionNutrition
+
+                    "nutrition_photo" ->
+                        decodeWithUuid NutritionPhotoRevision decodeNutritionPhoto
+
+                    "nutrition_weight" ->
+                        decodeWithUuid NutritionWeightRevision decodeNutritionWeight
 
                     "obstetric_history" ->
                         decodeWithUuid ObstetricHistoryRevision decodeObstetricHistory

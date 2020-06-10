@@ -87,10 +87,10 @@ ehezaGlobal =
     }
 
 
-prenatalPantheon : Model
-prenatalPantheon =
-    { backendUrl = "https://prenatal-ihangane.pantheonsite.io"
-    , name = "prenatalPantheon"
+***REMOVED*** : Model
+***REMOVED*** =
+    { backendUrl = "https://***REMOVED***"
+    , name = "***REMOVED***"
     , pusherKey = PusherAppKey "" UsEast1
     , debug = False
     , rollbarToken = Rollbar.token "***REMOVED***"
@@ -129,7 +129,7 @@ configs =
         , ( "***REMOVED***", ehezaGlobal )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
-        , ( "prenatal-ihangane.pantheonsite.io", prenatalPantheon )
+        , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
         , ( "***REMOVED***", ***REMOVED*** )
