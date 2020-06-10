@@ -79,7 +79,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             , []
             )
 
-        HandleFetchedComputedDashboard healthCenterId webData ->
+        HandleFetchedComputedDashboard healthCenterId_ webData ->
             let
                 modelUpdated =
                     RemoteData.toMaybe webData
@@ -88,7 +88,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                 let
                                     -- Check that we add only data that is related to the desired HC.
                                     data_ =
-                                        if Dict.member healthCenterId data then
+                                        if Dict.member healthCenterId_ data then
                                             data
 
                                         else
@@ -125,10 +125,10 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             , []
             )
 
-        FetchComputedDashboard healthCenterId ->
+        FetchComputedDashboard healthCenterId_ ->
             ( model
             , sw.select computedDashboardEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedComputedDashboard healthCenterId)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedComputedDashboard healthCenterId_)
             , []
             )
 
@@ -814,7 +814,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                         |> Maybe.withDefault Backend.PrenatalEncounter.Model.emptyModel
 
                 ( subModel, subCmd ) =
-                    Backend.PrenatalEncounter.Update.update nurseId maybeHealthCenterId encounterId encounter currentDate subMsg requests
+                    Backend.PrenatalEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
             in
             ( { model | prenatalEncounterRequests = Dict.insert encounterId subModel model.prenatalEncounterRequests }
             , Cmd.map (MsgPrenatalEncounter encounterId) subCmd
