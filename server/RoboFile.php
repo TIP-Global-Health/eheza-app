@@ -1,8 +1,6 @@
 <?php
 
-use Lurker\Event\FilesystemEvent;
 use Robo\Tasks;
-use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -77,7 +75,7 @@ class RoboFile extends Tasks {
       'client',
     ];
 
-    $rsyncExcludeString = '--exclude=' . join(' --exclude=', $rsyncExclude);
+    $rsyncExcludeString = '--exclude=' . implode(' --exclude=', $rsyncExclude);
 
     // Copy all files and folders of the Drupal installation.
     $server_sync_result = $this->_exec("rsync -az -q -L -K --delete $rsyncExcludeString www/. $pantheonDirectory")->getExitCode();
@@ -86,7 +84,13 @@ class RoboFile extends Tasks {
     }
 
     // Copy all the files and folders of the app.
-    $client_sync_result = $this->_exec("rsync -az -q -L -K --delete client/dist/. $pantheonDirectory/app")->getExitCode();
+    // Inside Docker, we do mount the client separately.
+    $client_source = '/var/client';
+    if (!file_exists($client_source)) {
+      $client_source = '../client';
+    }
+
+    $client_sync_result = $this->_exec("rsync -az -q -L -K --delete $client_source/dist/. $pantheonDirectory/app")->getExitCode();
     if ($client_sync_result != 0) {
       throw new Exception('Failed to sync the client-side');
     }
@@ -118,7 +122,7 @@ class RoboFile extends Tasks {
     }
 
     $this->_exec("cd $pantheonDirectory && git pull && git add . && git commit -am 'Site update' && git push");
-    $this->deployPantheonSync('dev', false);
+    $this->deployPantheonSync('dev', FALSE);
   }
 
   /**
@@ -132,7 +136,7 @@ class RoboFile extends Tasks {
    *
    * @throws \Robo\Exception\TaskException
    */
-  public function deployPantheonSync(string $env = 'test', bool $doDeploy = true) {
+  public function deployPantheonSync(string $env = 'test', bool $doDeploy = TRUE) {
     $pantheonName = self::PANTHEON_NAME;
     $pantheonTerminusEnvironment = $pantheonName . '.' . $env;
 
