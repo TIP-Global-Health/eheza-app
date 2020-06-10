@@ -322,3 +322,4 @@ type Revision
     | VillageRevision VillageId Village
     | VitalsRevision VitalsId Vitals
     | WeightRevision WeightId Weight
+    | DashboardStatsRevision HealthCenterId DashboardStats

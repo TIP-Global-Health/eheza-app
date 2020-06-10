@@ -1340,6 +1340,9 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        DashboardStatsRevision uuid data ->
+            ( { model | computedDashboard = Dict.insert uuid data model.computedDashboard }, recalc )
+
         FamilyPlanningRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId

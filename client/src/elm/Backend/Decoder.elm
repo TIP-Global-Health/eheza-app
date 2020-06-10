@@ -2,6 +2,7 @@ module Backend.Decoder exposing (decodeRevision)
 
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
+import Backend.Dashboard.Decoder exposing (decodeDashboardStats)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
 import Backend.Measurement.Decoder exposing (..)
@@ -56,6 +57,9 @@ decodeRevision =
 
                     "danger_signs" ->
                         decodeWithUuid DangerSignsRevision decodeDangerSigns
+
+                    "statistics" ->
+                        decodeWithUuid DashboardStatsRevision decodeDashboardStats
 
                     "family_planning" ->
                         decodeWithUuid FamilyPlanningRevision decodeFamilyPlanning
