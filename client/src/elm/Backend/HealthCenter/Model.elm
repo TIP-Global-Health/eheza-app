@@ -8,7 +8,6 @@ import Backend.Entities exposing (..)
 type alias HealthCenter =
     { catchmentAreaId : CatchmentAreaId
     , name : String
-    , fbfClinics : Bool
     }
 
 

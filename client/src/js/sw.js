@@ -204,14 +204,6 @@ dbSync.version(10).stores({
     shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult]',
 });
 
-dbSync.version(11).stores({
-    statistics: '&uuid',
-}).upgrade(function (tx) {
-    return tx.nodes.where({
-        type: 'health_center'
-    }).delete();
-});
-
 function gatherWords (text) {
     // Split on spaces, and remove blanks from result.
     return (text || '').split(/\s+/).flatMap(function (word) {
