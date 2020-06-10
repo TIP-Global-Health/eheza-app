@@ -437,8 +437,38 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityMuac identifier ->
                 viewMeasurement identifier "Muac"
 
+            BackendAuthorityNutrition identifier ->
+                viewMeasurement identifier "Nutrition"
+
+            BackendAuthorityNutritionEncounter identifier ->
+                text ("NutritionEncounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+
+            BackendAuthorityNutritionHeight identifier ->
+                viewMeasurement identifier "Nutrition Height"
+
+            BackendAuthorityNutritionMuac identifier ->
+                viewMeasurement identifier "Nutrition Muac"
+
+            BackendAuthorityNutritionNutrition identifier ->
+                viewMeasurement identifier "Nutrition Nutrition"
+
             BackendAuthorityNutritionPhoto identifier ->
                 viewMeasurement identifier "Nutrition Photo"
+
+            BackendAuthorityNutritionWeight identifier ->
+                viewMeasurement identifier "Nutrition Weight"
+
+            BackendAuthorityObstetricHistory identifier ->
+                viewMeasurement identifier "ObstetricHistory"
+
+            BackendAuthorityObstetricHistoryStep2 identifier ->
+                viewMeasurement identifier "Obstetric History Step 2"
+
+            BackendAuthorityObstetricalExam identifier ->
+                viewMeasurement identifier "ObstetricalExam"
+
+            BackendAuthorityParticipantConsent identifier ->
+                viewMeasurement identifier "Participant Consent"
 
             BackendAuthorityPhoto identifier ->
                 viewMeasurement identifier "Photo"
