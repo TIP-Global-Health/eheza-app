@@ -370,6 +370,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           $stats = hedley_stats_calculate_stats_for_health_center($health_center_nid);
 
           $output[] = $stats;
+          $count++;
         }
       }
     }
