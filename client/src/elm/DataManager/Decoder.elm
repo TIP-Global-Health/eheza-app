@@ -11,6 +11,7 @@ import Backend.HealthCenter.Decoder
 import Backend.IndividualEncounterParticipant.Decoder
 import Backend.Measurement.Decoder
 import Backend.Nurse.Decoder
+import Backend.NutritionEncounter.Decoder
 import Backend.Person.Decoder
 import Backend.PmtctParticipant.Decoder
 import Backend.Relationship.Decoder
@@ -367,10 +368,55 @@ decodeBackendAuthorityEntity =
                             Backend.Measurement.Decoder.decodeMuac
                             BackendAuthorityMuac
 
+                    "nutrition" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutrition
+                            BackendAuthorityNutrition
+
+                    "nutrition_encounter" ->
+                        doDecode
+                            Backend.NutritionEncounter.Decoder.decodeNutritionEncounter
+                            BackendAuthorityNutritionEncounter
+
+                    "nutrition_height" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionHeight
+                            BackendAuthorityNutritionHeight
+
+                    "nutrition_muac" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionMuac
+                            BackendAuthorityNutritionMuac
+
+                    "nutrition_nutrition" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionNutrition
+                            BackendAuthorityNutritionNutrition
+
                     "nutrition_photo" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeNutritionPhoto
                             BackendAuthorityNutritionPhoto
+
+                    "nutrition_weight" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionWeight
+                            BackendAuthorityNutritionWeight
+
+                    "obstetric_history" ->
+                        decodeWithUuid ObstetricHistoryRevision decodeObstetricHistory
+
+                    "obstetric_history_step2" ->
+                        decodeWithUuid ObstetricHistoryStep2Revision decodeObstetricHistoryStep2
+
+                    "obstetrical_exam" ->
+                        decodeWithUuid ObstetricalExamRevision decodeObstetricalExam
+
+                    "participant_consent" ->
+                        decodeWithUuid ParticipantConsentRevision decodeParticipantConsent
+
+                    "participant_form" ->
+                        decodeWithUuid ParticipantFormRevision decodeParticipantForm
 
                     "photo" ->
                         doDecode

@@ -52,7 +52,6 @@ var tableForType = {
     mother_fbf: 'shards',
     muac: 'shards',
     nurse: 'nodes',
-    // <--
     nutrition: 'shards',
     nutrition_encounter: 'shards',
     nutrition_height: 'shards',
@@ -64,6 +63,7 @@ var tableForType = {
     obstetric_history_step2: 'shards',
     obstetrical_exam: 'shards',
     participant_consent: 'shards',
+    // <--
     participant_form: 'nodes',
     person: 'shards',
     photo: 'shards',
