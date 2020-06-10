@@ -1235,8 +1235,17 @@ update currentDate dbVersion device msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
+    let
+        backendFetchMain =
+            case model.syncCycle of
+                DataManager.Model.SyncCyclePause ->
+                    Sub.none
+
+                _ ->
+                    Time.every (getSyncSpeedForSubscriptions model) (\_ -> BackendFetchMain)
+    in
     Sub.batch
-        [ Time.every (getSyncSpeedForSubscriptions model) (\_ -> BackendFetchMain)
+        [ backendFetchMain
         , getFromIndexDb QueryIndexDbHandle
         ]
 
