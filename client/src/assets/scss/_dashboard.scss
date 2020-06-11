@@ -91,6 +91,10 @@
       .row {
         position: relative;
 
+        .no-data-message {
+          margin-top: 40px;
+        }
+
         .content {
           width: 100%;
           text-align: center;

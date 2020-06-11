@@ -764,24 +764,23 @@ viewDonutChart language stats =
             getFamilyPlanningSignsCounter stats
     in
     if Dict.isEmpty dict then
-        div [] [ translateText language <| Translate.Dashboard Translate.NoDataForPeriod ]
+        div [ class "no-data-message" ] [ translateText language <| Translate.Dashboard Translate.NoDataForPeriod ]
 
     else
         let
-            totalCount =
-                dict
-                    |> Dict.values
-                    |> List.foldl (\val accum -> val + accum) 0
+            totalWomen =
+                stats.familyPlanning
+                    |> List.length
 
             totalNoFamilyPlanning =
                 Dict.get NoFamilyPlanning dict
                     |> Maybe.withDefault 0
 
             useFamilyPlanning =
-                totalCount - totalNoFamilyPlanning
+                totalWomen - totalNoFamilyPlanning
 
             totalPercent =
-                useFamilyPlanning * 100 // totalCount
+                useFamilyPlanning * 100 // totalWomen
         in
         div [ class "content" ]
             [ viewChart dict
@@ -794,7 +793,7 @@ viewDonutChart language stats =
                         [ translateText language <|
                             Translate.Dashboard <|
                                 Translate.FamilyPlanningOutOfWomen
-                                    { total = totalCount
+                                    { total = totalWomen
                                     , useFamilyPlanning = useFamilyPlanning
                                     }
                         ]
