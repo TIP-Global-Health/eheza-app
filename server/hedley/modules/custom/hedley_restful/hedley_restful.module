@@ -335,7 +335,6 @@ function hedley_restful_join_field_to_query(SelectQuery $query, $entity_type, $f
 
     default:
       $column_suffix = 'value';
-
   }
 
   $field_alias = $field_alias ?: $field_name;
@@ -353,5 +352,4 @@ function hedley_restful_join_field_to_query(SelectQuery $query, $entity_type, $f
   }
 
   $query->$join($table_name, $field_alias, implode(' AND ', $conditions), $arguments);
-
 }

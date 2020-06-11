@@ -253,28 +253,26 @@ function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_
     return $cache_data;
   }
 
-  $query = hedley_stats_get_base_query($health_center_id, 'person', $period);
+  $clinics = hedley_health_center_get_clinics_by_health_center($health_center_id, 'fbf');
+  $date = hedley_stats_get_period($period, TRUE);
 
-  // Get gender and age.
-  hedley_stats_join_field_to_query($query, 'node', 'field_gender');
-  hedley_stats_join_field_to_query($query, 'node', 'field_birth_date');
+  $query = db_select('node', 'node');
+  $query->fields('node', ['type', 'nid', 'created']);
+  $query->condition('node.type', 'pmtct_participant');
+  $query->condition('node.status', NODE_PUBLISHED);
+  $query->condition('node.created',  [$date['start'],$date['end']], 'BETWEEN');
 
-  // Get the group type.
-  hedley_stats_join_field_to_query($query, 'node', 'field_session');
-  hedley_stats_join_field_to_query($query, 'node', 'field_clinic', TRUE, "field_session.field_session_target_id");
-  hedley_stats_join_field_to_query($query, 'node', 'field_group_type', TRUE, "field_clinic.field_clinic_target_id");
-  // Only FBF groups.
-  $query->condition('field_group_type.field_group_type_value', 'fbf');
+  $field_names = [
+    'field_person',
+    'field_adult',
+    'field_clinic',
+  ];
 
-  // Currently our way of knowing who is kid, is checking they are under
-  // 13.
-  $birthdate_start = date('Y-m-d H:i:s', strtotime("13 years ago"));
-  $now_date = date('Y-m-d H:i:s');
+  foreach ($field_names as $field_name) {
+    hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
+  }
 
-  $query->condition('field_birth_date.field_birth_date_value', [
-    $birthdate_start,
-    $now_date,
-  ], 'BETWEEN');
+  $query->condition('field_clinic.field_clinic_target_id', $clinics);
 
   $result = $query
     ->execute()
@@ -283,26 +281,23 @@ function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_
   // Prepare data to be consumed by client side.
   foreach ($result as &$row) {
     $row->created = hedley_stats_convert_timestamp_to_nominal($row->created);
-    $row->field_birth_date = hedley_stats_convert_timestamp_to_nominal(strtotime($row->field_birth_date));
 
-    $person_wrapper = entity_metadata_wrapper('node', $row->nid);
-    $row->name = $person_wrapper->label();
-    $row->mother_name = "";
-    $row->phone_number = NULL;
+    $child_wrapper = entity_metadata_wrapper('node', $row->field_person);
+    $adult_wrapper = entity_metadata_wrapper('node', $row->field_adult);
 
-    // Get the parent/caregiver details.
-    $relationships = hedley_person_get_relationships($row->nid, HEDLEY_PERSON_RELATED_BY_CHILD);
-    if (!empty($relationships)) {
-      $relationship = reset($relationships);
-      $relation_wrapper = entity_metadata_wrapper('node', $relationship);
-      $row->mother_name = isset($relation_wrapper->field_person) ? $relation_wrapper->field_person->label() : NULL;
-      $row->phone_number = isset($relation_wrapper->field_person->field_phone_number) ? $relation_wrapper->field_person->field_phone_number->value() : NULL;
-    }
+    $row->name = $child_wrapper->label();
+    $birth_date = $child_wrapper->field_birth_date->value();
+    $row->field_birth_date = hedley_stats_convert_timestamp_to_nominal($birth_date);
+    $row->field_gender = $child_wrapper->field_gender->value();
+    $row->mother_name = $adult_wrapper->label();
+    $row->phone_number = $adult_wrapper->field_phone_number->value();
 
     // Remove unused data, to save bandwidth.
     unset($row->nid);
     unset($row->type);
-    unset($row->field_health_center);
+    unset($row->field_person);
+    unset($row->field_adult);
+    unset($row->field_clinic);
   }
 
   // Store in cache.
