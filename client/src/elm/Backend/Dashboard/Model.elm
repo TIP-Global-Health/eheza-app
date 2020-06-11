@@ -76,7 +76,8 @@ type alias FamilyPlanningStats =
 
 
 type alias MalnourishedStats =
-    { created : NominalDate
+    { identifier : String
+    , created : NominalDate
     , birthDate : NominalDate
     , gender : Gender
     , zscore : ZScore

@@ -155,6 +155,7 @@ decodeGoodNutrition =
 decodeMalnourishedStats : Decoder MalnourishedStats
 decodeMalnourishedStats =
     succeed MalnourishedStats
+        |> required "field_person" string
         |> required "created" decodeYYYYMMDD
         |> required "field_birth_date" decodeYYYYMMDD
         |> required "field_gender" decodeGender

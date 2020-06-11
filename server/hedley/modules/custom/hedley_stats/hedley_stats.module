@@ -388,7 +388,7 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
     return $cache_data;
   }
 
-  $query = hedley_stats_get_base_query($health_center_id, 'height', $period);
+  $query = hedley_stats_get_base_query($health_center_id, 'height', $period, 'field_date_measured', TRUE);
 
   // Join `Z-score age`.
   hedley_stats_join_field_to_query($query, 'node', 'field_zscore_age');
@@ -422,7 +422,9 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
     unset($row->nid);
     unset($row->type);
     unset($row->field_shards);
-    unset($row->field_person);
+    unset($row->field_clinic);
+    unset($row->field_session);
+    unset($row->field_group_type);
   }
 
   // Set the cache.

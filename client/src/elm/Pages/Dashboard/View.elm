@@ -314,6 +314,15 @@ viewMalnourishedCards language stats monthBeforeStats =
             calculatePercentage total totalBefore
                 |> round
 
+        malnourishedBeforeIdentifiers =
+            monthBeforeStats.malnourished
+                |> List.map .identifier
+
+        malnourishedNewCases =
+            stats.malnourished
+                |> List.filter (\malnourished -> List.member malnourished.identifier malnourishedBeforeIdentifiers |> not)
+                |> List.length
+
         totalCard =
             { title = translate language <| Translate.Dashboard Translate.TotalMalnourished
             , cardClasses = "stats-card total-malnourished"
@@ -323,7 +332,7 @@ viewMalnourishedCards language stats monthBeforeStats =
             , valueIsPercentage = False
             , previousPercentage = totalPercentage
             , previousPercentageLabel = ThisMonth
-            , newCases = Just (total - totalBefore)
+            , newCases = Just malnourishedNewCases
             }
 
         severe =
@@ -340,6 +349,15 @@ viewMalnourishedCards language stats monthBeforeStats =
             calculatePercentage severe severeBefore
                 |> round
 
+        severeBeforeIdentifiers =
+            monthBeforeStats.malnourished
+                |> List.map .identifier
+
+        severeNewCases =
+            stats.malnourished
+                |> List.filter (\severe_ -> List.member severe_.identifier severeBeforeIdentifiers |> not)
+                |> List.length
+
         severeCard =
             { title = translate language <| Translate.Dashboard Translate.SeverelyMalnourished
             , cardClasses = "stats-card severely-malnourished"
@@ -349,7 +367,7 @@ viewMalnourishedCards language stats monthBeforeStats =
             , valueIsPercentage = False
             , previousPercentage = severePercentage
             , previousPercentageLabel = ThisMonth
-            , newCases = Just (severe - severeBefore)
+            , newCases = Just severeNewCases
             }
 
         moderate =
@@ -366,6 +384,15 @@ viewMalnourishedCards language stats monthBeforeStats =
             calculatePercentage moderate moderateBefore
                 |> round
 
+        moderateBeforeIdentifiers =
+            monthBeforeStats.malnourished
+                |> List.map .identifier
+
+        moderateNewCases =
+            stats.malnourished
+                |> List.filter (\moderate_ -> List.member moderate_.identifier moderateBeforeIdentifiers |> not)
+                |> List.length
+
         moderateCard =
             { title = translate language <| Translate.Dashboard Translate.ModeratelyMalnourished
             , cardClasses = "stats-card moderately-malnourished"
@@ -375,7 +402,7 @@ viewMalnourishedCards language stats monthBeforeStats =
             , valueIsPercentage = False
             , previousPercentage = moderatePercentage
             , previousPercentageLabel = ThisMonth
-            , newCases = Just (moderate - moderateBefore)
+            , newCases = Just moderateNewCases
             }
     in
     div [ class "row" ]
