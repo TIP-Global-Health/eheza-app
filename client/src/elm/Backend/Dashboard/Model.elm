@@ -24,9 +24,9 @@ type alias DashboardStats =
     , maybeGoodNutrition : Maybe GoodNutrition
     , malnourished : List MalnourishedStats
     , missedSessions : List ParticipantStats
-    , maybeTotalBeneficiaries : Maybe (Dict Int TotalBeneficiaries)
-    , maybeTotalBeneficiariesIncidence : Maybe (Dict Int TotalBeneficiaries)
-    , maybeTotalEncounters : Maybe Periods
+    , totalBeneficiaries : Dict Int TotalBeneficiaries
+    , totalBeneficiariesIncidence : Dict Int TotalBeneficiaries
+    , totalEncounters : Periods
     }
 
 
@@ -39,9 +39,9 @@ emptyModel =
     , maybeGoodNutrition = Nothing
     , malnourished = []
     , missedSessions = []
-    , maybeTotalEncounters = Nothing
-    , maybeTotalBeneficiaries = Nothing
-    , maybeTotalBeneficiariesIncidence = Nothing
+    , totalBeneficiaries = Dict.empty
+    , totalBeneficiariesIncidence = Dict.empty
+    , totalEncounters = Periods 0 0
     }
 
 

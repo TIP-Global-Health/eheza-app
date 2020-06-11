@@ -21,9 +21,9 @@ decodeDashboardStats =
         |> optional "good_nutrition" (nullable decodeGoodNutrition) Nothing
         |> required "malnourished_beneficiaries" (list decodeMalnourishedStats)
         |> required "missed_sessions" (list decodeParticipantStats)
-        |> optional "total_beneficiaries" (nullable decodeTotalBeneficiariesDict) Nothing
-        |> optional "total_beneficiaries_incidence" (nullable decodeTotalBeneficiariesDict) Nothing
-        |> optional "total_encounters" (nullable decodePeriods) Nothing
+        |> optional "total_beneficiaries" decodeTotalBeneficiariesDict Dict.empty
+        |> optional "total_beneficiaries_incidence" decodeTotalBeneficiariesDict Dict.empty
+        |> required "total_encounters" decodePeriods
 
 
 decodeTotalBeneficiariesDict : Decoder (Dict Int TotalBeneficiaries)
