@@ -781,9 +781,15 @@ viewDonutChart language stats =
 
             totalPercent =
                 useFamilyPlanning * 100 // totalWomen
+
+            signs =
+                dict
+                    |> Dict.toList
+                    |> List.filter (\( sign, _ ) -> sign /= NoFamilyPlanning)
+                    |> List.sortBy (\( name, val ) -> Debug.toString name)
         in
         div [ class "content" ]
-            [ viewChart dict
+            [ viewChart signs
             , div [ class "in-chart" ]
                 [ div [ class "stats" ]
                     [ span [ class "percentage neutral" ] [ text <| String.fromInt totalPercent ++ "%" ]
@@ -799,7 +805,7 @@ viewDonutChart language stats =
                         ]
                     ]
                 ]
-            , viewFamilyPlanningChartLegend language dict
+            , viewFamilyPlanningChartLegend language signs
             ]
 
 
@@ -949,14 +955,8 @@ viewFilters filterType currentChartFilter filter =
         [ text <| toString filter ]
 
 
-viewFamilyPlanningChartLegend : Language -> FamilyPlanningSignsCounter -> Html Msg
-viewFamilyPlanningChartLegend language dict =
-    let
-        listSorted =
-            dict
-                |> Dict.toList
-                |> List.sortBy (\( name, val ) -> Debug.toString name)
-    in
+viewFamilyPlanningChartLegend : Language -> List ( FamilyPlanningSign, Int ) -> Html Msg
+viewFamilyPlanningChartLegend language signs =
     div [ class "legend" ]
         (List.map
             (\( sign, _ ) ->
@@ -967,21 +967,20 @@ viewFamilyPlanningChartLegend language dict =
                     , span [] [ translateText language <| Translate.FamilyPlanningSignLabel sign ]
                     ]
             )
-            listSorted
+            signs
         )
 
 
-viewChart : FamilyPlanningSignsCounter -> Svg msg
-viewChart dict =
+viewChart : List ( FamilyPlanningSign, Int ) -> Svg msg
+viewChart signs =
     let
         arcs =
-            dict
-                |> Dict.values
-                |> List.map toFloat
+            signs
+                |> List.map (Tuple.second >> toFloat)
 
         signsList =
-            dict
-                |> Dict.keys
+            signs
+                |> List.map Tuple.first
 
         pieData =
             arcs
