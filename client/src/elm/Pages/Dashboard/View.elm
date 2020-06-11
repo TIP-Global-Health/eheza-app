@@ -255,11 +255,8 @@ viewTotalEncounters language maybeEncounters =
     case maybeEncounters of
         Just encounters ->
             let
-                diff =
-                    encounters.thisYear - encounters.lastYear
-
                 percentageDiff =
-                    calculatePercentage encounters.thisYear diff
+                    calculatePercentage encounters.thisYear encounters.lastYear
                         |> round
 
                 statsCard =
@@ -313,11 +310,8 @@ viewMalnourishedCards language stats monthBeforeStats =
             monthBeforeStats.malnourished
                 |> List.length
 
-        totalDiff =
-            total - totalBefore
-
         totalPercentage =
-            calculatePercentage total totalDiff
+            calculatePercentage total totalBefore
                 |> round
 
         totalCard =
@@ -329,7 +323,7 @@ viewMalnourishedCards language stats monthBeforeStats =
             , valueIsPercentage = False
             , previousPercentage = totalPercentage
             , previousPercentageLabel = ThisMonth
-            , newCases = Just totalDiff
+            , newCases = Just (total - totalBefore)
             }
 
         severe =
@@ -342,11 +336,8 @@ viewMalnourishedCards language stats monthBeforeStats =
                 |> List.filter (\row -> row.zscore <= -2)
                 |> List.length
 
-        severeDiff =
-            severe - severeBefore
-
         severePercentage =
-            calculatePercentage severe severeDiff
+            calculatePercentage severe severeBefore
                 |> round
 
         severeCard =
@@ -358,7 +349,7 @@ viewMalnourishedCards language stats monthBeforeStats =
             , valueIsPercentage = False
             , previousPercentage = severePercentage
             , previousPercentageLabel = ThisMonth
-            , newCases = Just severeDiff
+            , newCases = Just (severe - severeBefore)
             }
 
         moderate =
@@ -371,11 +362,8 @@ viewMalnourishedCards language stats monthBeforeStats =
                 |> List.filter (\row -> row.zscore > -2)
                 |> List.length
 
-        moderateDiff =
-            moderate - moderateBefore
-
         moderatePercentage =
-            calculatePercentage moderate moderateDiff
+            calculatePercentage moderate moderateBefore
                 |> round
 
         moderateCard =
@@ -387,7 +375,7 @@ viewMalnourishedCards language stats monthBeforeStats =
             , valueIsPercentage = False
             , previousPercentage = moderatePercentage
             , previousPercentageLabel = ThisMonth
-            , newCases = Just moderateDiff
+            , newCases = Just (moderate - moderateBefore)
             }
     in
     div [ class "row" ]
@@ -423,11 +411,8 @@ viewMiscCards language currentDate stats monthBeforeStats =
                 []
                 stats.childrenBeneficiaries
 
-        totalNewBeneficiariesDiff =
-            totalNewBeneficiaries - totalNewBeneficiariesBefore
-
         totalNewBeneficiariesPercentage =
-            calculatePercentage totalNewBeneficiaries totalNewBeneficiariesDiff
+            calculatePercentage totalNewBeneficiaries totalNewBeneficiariesBefore
                 |> round
 
         totalNewBeneficiariesTitle =
@@ -451,11 +436,8 @@ viewMiscCards language currentDate stats monthBeforeStats =
         completedProgramBeforeCount =
             List.length monthBeforeStats.completedPrograms
 
-        completedProgramDiff =
-            completedProgramCount - completedProgramBeforeCount
-
         completedProgramPercentage =
-            calculatePercentage completedProgramCount completedProgramDiff
+            calculatePercentage completedProgramCount completedProgramBeforeCount
                 |> round
 
         completedProgramTitle =
@@ -479,11 +461,8 @@ viewMiscCards language currentDate stats monthBeforeStats =
         missedSessionsBeforeCount =
             List.length monthBeforeStats.missedSessions
 
-        missedSessionsDiff =
-            missedSessionsCount - missedSessionsBeforeCount
-
         missedSessionsPercentage =
-            calculatePercentage missedSessionsCount missedSessionsDiff
+            calculatePercentage missedSessionsCount missedSessionsBeforeCount
                 |> round
 
         missedSessionsTitle =
