@@ -297,7 +297,8 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       'start' => strtotime("-1 month"),
       'end' => time(),
     ];
-    list($completed_programs, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_health_center($this->healthCenterId);
+    $fbf_clinics = hedley_health_center_get_clinics_by_health_center($this->healthCenterId, 'fbf');
+    list($completed_programs, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_health_center($this->healthCenterId, $fbf_clinics);
 
     // Filter missed sessions.
     $count_missed_sessions = 0;

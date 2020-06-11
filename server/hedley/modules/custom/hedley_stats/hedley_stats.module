@@ -134,7 +134,7 @@ function hedley_stats_advanced_queue_info() {
  *   "status" and "result" keys.
  */
 function hedley_stats_calculate_stats_worker($queue_item) {
-  if (!$health_center_nid = $queue_item->data['health_center_nid']) {
+  if (!$health_center_id = $queue_item->data['health_center_nid']) {
     return [
       'status' => ADVANCEDQUEUE_STATUS_FAILURE,
       'result' => t('Does not have Health Center Node ID.'),
@@ -142,7 +142,7 @@ function hedley_stats_calculate_stats_worker($queue_item) {
   }
 
   try {
-    hedley_stats_calculate_stats_for_health_center($health_center_nid);
+    hedley_stats_calculate_stats_for_health_center($health_center_id);
   }
   catch (Exception $e) {
     return [
@@ -152,7 +152,7 @@ function hedley_stats_calculate_stats_worker($queue_item) {
   }
 
   $params = [
-    '@nid' => $health_center_nid,
+    '@nid' => $health_center_id,
   ];
   return [
     'status' => ADVANCEDQUEUE_STATUS_SUCCESS,
@@ -165,23 +165,23 @@ function hedley_stats_calculate_stats_worker($queue_item) {
  *
  * We don't worry about caching here because each function has its own caching.
  *
- * @param int $health_center_nid
+ * @param int $health_center_id
  *   The health center node ID.
  *
  * @return array|string
  *   The stats or error message if anything went wrong.
  */
-function hedley_stats_calculate_stats_for_health_center($health_center_nid) {
+function hedley_stats_calculate_stats_for_health_center($health_center_id) {
   try {
-    $wrapper = entity_metadata_wrapper('node', $health_center_nid);
+    $wrapper = entity_metadata_wrapper('node', $health_center_id);
     // First check if the HC has "FBF" clinics, only those have stats for
     // the dashboards and we shouldn't send any stats from a HC without
     // FBF clinics.
     // Get all clinics of type 'FBF' for the HC.
-    $fbf_clinic = hedley_health_center_get_clinics_by_health_center($health_center_nid, 'fbf', 1);
-    if (empty($fbf_clinic)) {
+    $fbf_clinics = hedley_health_center_get_clinics_by_health_center($health_center_id, 'fbf');
+    if (empty($fbf_clinics)) {
       // We send empty stats so we don't upset the decoder in elm.
-      $stats = [
+      return [
         'type' => 'statistics',
         // UUID of the health center.
         'uuid' => $wrapper->field_uuid->value(),
@@ -197,30 +197,29 @@ function hedley_stats_calculate_stats_for_health_center($health_center_nid) {
         'total_encounters' => NULL,
       ];
     }
-    else {
-      // Calculate the stats.
-      list($completed_program, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_health_center($health_center_nid);
-      $stats = [
-        'type' => 'statistics',
-        // UUID of the health center.
-        'uuid' => $wrapper->field_uuid->value(),
-        'case_management' => hedley_stats_get_case_management($health_center_nid),
-        'children_beneficiaries' => hedley_stats_get_children_beneficiaries_stats_by_period($health_center_nid, HEDLEY_STATS_PERIOD_THREE_MONTHS),
-        'completed_program' => $completed_program,
-        'good_nutrition' => hedley_stats_get_good_nutrition($health_center_nid),
-        'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_nid, HEDLEY_STATS_PERIOD_THREE_MONTHS),
-        'malnourished_beneficiaries' => hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_center_nid, HEDLEY_STATS_PERIOD_THREE_MONTHS),
-        'missed_sessions' => $missed_sessions,
-        'total_beneficiaries' => hedley_stats_get_fbf_beneficiaries_graphs_data($health_center_nid, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_GRAPH),
-        'total_beneficiaries_incidence' => hedley_stats_get_fbf_beneficiaries_graphs_data($health_center_nid, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_INCIDENCE_GRAPH),
-        'total_encounters' => hedley_stats_get_total_encounters($health_center_nid),
-      ];
-    }
+
+    // Calculate the stats.
+    list($completed_program, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_health_center($health_center_id, $fbf_clinics);
+    $stats = [
+      'type' => 'statistics',
+      // UUID of the health center.
+      'uuid' => $wrapper->field_uuid->value(),
+      'case_management' => hedley_stats_get_case_management($health_center_id),
+      'children_beneficiaries' => hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id, $fbf_clinics, HEDLEY_STATS_PERIOD_THREE_MONTHS),
+      'completed_program' => $completed_program,
+      'good_nutrition' => hedley_stats_get_good_nutrition($health_center_id),
+      'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_id, HEDLEY_STATS_PERIOD_THREE_MONTHS),
+      'malnourished_beneficiaries' => hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_center_id, HEDLEY_STATS_PERIOD_THREE_MONTHS),
+      'missed_sessions' => $missed_sessions,
+      'total_beneficiaries' => hedley_stats_get_fbf_beneficiaries_graphs_data($health_center_id, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_GRAPH),
+      'total_beneficiaries_incidence' => hedley_stats_get_fbf_beneficiaries_graphs_data($health_center_id, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_INCIDENCE_GRAPH),
+      'total_encounters' => hedley_stats_get_total_encounters($health_center_id),
+    ];
 
     $stats['stats_cache_hash'] = md5(serialize($stats));
 
     // Store in cache only the hash, all statistics have their own cache.
-    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_nid, NULL, $stats['stats_cache_hash']);
+    hedley_stats_handle_cache(HEDLEY_STATS_CACHE_SET, HEDLEY_STATS_SYNC_STATS_CACHE, $health_center_id, NULL, $stats['stats_cache_hash']);
 
     return $stats;
   }
@@ -237,6 +236,8 @@ function hedley_stats_calculate_stats_for_health_center($health_center_nid) {
  *
  * @param int $health_center_id
  *   The Health center node ID.
+ * @param array $fbf_clinics
+ *   A list of FBF clinics IDs that belong to health center.
  * @param string $period
  *   The period to calculate. Be default it is for one year, as on the client
  *   side we could filter out items, if requested to show smaller periods of
@@ -247,13 +248,12 @@ function hedley_stats_calculate_stats_for_health_center($health_center_nid) {
  *
  * @throws \Exception
  */
-function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
+function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id, array $fbf_clinics, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
   // Return the cache if exists.
   if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_CHILDREN_BENEFICIARIES, $health_center_id, $period)) {
     return $cache_data;
   }
 
-  $clinics = hedley_health_center_get_clinics_by_health_center($health_center_id, 'fbf');
   $date = hedley_stats_get_period($period, TRUE);
 
   $query = db_select('node', 'node');
@@ -272,7 +272,7 @@ function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_
     hedley_restful_join_field_to_query($query, 'node', $field_name, FALSE);
   }
 
-  $query->condition('field_clinic.field_clinic_target_id', $clinics);
+  $query->condition('field_clinic.field_clinic_target_id', $fbf_clinics);
 
   $result = $query
     ->execute()
@@ -440,13 +440,25 @@ function hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_cen
  *
  * @param int $health_center_id
  *   The Health center node ID.
+ * @param array $fbf_clinics
+ *   A list of FBF clinics IDs that belong to health center.
  *
  * @return array
  *   Array with the result.
  *
  * @throws \Exception
  */
-function hedley_stats_get_session_attendance_stats_by_health_center($health_center_id) {
+function hedley_stats_get_session_attendance_stats_by_health_center($health_center_id, array $fbf_clinics) {
+  if (empty($fbf_clinics)) {
+    // No clinics found.
+    return [];
+  }
+
+  // Return the cache if exists.
+  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center_id)) {
+    return $cache_data;
+  }
+
   $periods = [
     HEDLEY_STATS_PERIOD_THREE_MONTHS => [
       'start' => strtotime("first day of -2 months"),
@@ -462,19 +474,6 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
     ],
   ];
 
-  // Return the cache if exists.
-  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_SESSION_ATTENDANCE, $health_center_id)) {
-    return $cache_data;
-  }
-
-  // Get all clinics of type 'FBF' for the HC.
-  $clinic_ids = hedley_health_center_get_clinics_by_health_center($health_center_id, 'fbf', 1000);
-
-  if (empty($clinic_ids)) {
-    // No clinics found.
-    return [];
-  }
-
   $completed_program = [];
   $missed_session = [];
   $measurements_types = array_keys(heldey_stats_get_mapped_measurements_content_types());
@@ -483,7 +482,7 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
 
   // Loop through the clinics and get sessions for each clinic and from there
   // get expected people for each clinic.
-  foreach ($clinic_ids as $clinic_id) {
+  foreach ($fbf_clinics as $clinic_id) {
     // Get PMTCT participants by clinic and session dates
     // (all expected people).
     $pmtct_by_clinic = hedley_stats_get_pmtct_participants_by_clinic($clinic_id, 5000);
