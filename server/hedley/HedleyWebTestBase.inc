@@ -116,57 +116,15 @@ class HedleyWebTestBase extends DrupalWebTestCase {
    *   The "health center" node ID.
    */
   public function createHealthCenter() {
-    // Create the necessary catchment area.
-    $catchment_area_nid = $this->createCatchmentArea();
-
     $node = $this->drupalCreateNode([
       'type' => 'health_center',
     ]);
 
-    $wrapper = entity_metadata_wrapper('node', $node);
-    $wrapper->field_catchment_area->set($catchment_area_nid);
-    $wrapper->save();
-
     return $node->nid;
   }
 
   /**
-   * Create a Device with a pairing code.
-   *
-   * @return int
-   *   The node ID.
-   */
-  public function createDevice() {
-    $pairing_code = hedley_user_get_unique_pincode();
-
-    // Create a new device.
-    $node = $this->drupalCreateNode([
-      'type' => 'device',
-    ]);
-
-    $wrapper = entity_metadata_wrapper('node', $node);
-    $wrapper->field_pairing_code->set($pairing_code);
-    $wrapper->save();
-
-    return $node->nid;
-  }
-
-  /**
-   * Create a "Catchment Area" with a random name.
-   *
-   * @return int
-   *   The node ID.
-   */
-  public function createCatchmentArea() {
-    $node = $this->drupalCreateNode([
-      'type' => 'catchment_area',
-    ]);
-
-    return $node->nid;
-  }
-
-  /**
-   * Create a clinic with a random name.
+   * Create a clinic and assign it to health center.
    *
    * @param int $health_center_id
    *   Optional; The health center node ID.
