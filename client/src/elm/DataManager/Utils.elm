@@ -4,16 +4,24 @@ module DataManager.Utils exposing
     , getBackendAuthorityEntityIdentifier
     , getBackendGeneralEntityIdentifier
     , getDataToSendAuthority
+    , getDataToSendGeneral
     , getPhotoFromBackendAuthorityEntity
     , getPhotoFromBackendGeneralEntity
     , getSyncSpeedForSubscriptions
     )
 
 import Backend.Clinic.Encoder
+import Backend.Counseling.Encoder
+import Backend.HealthCenter.Encoder
 import Backend.IndividualEncounterParticipant.Encoder
 import Backend.Measurement.Encoder
 import Backend.Measurement.Model exposing (PhotoUrl(..))
+import Backend.Nurse.Encoder
 import Backend.NutritionEncounter.Encoder
+import Backend.ParticipantConsent.Encoder
+import Backend.Person.Encoder
+import Backend.PmtctParticipant.Encoder
+import Backend.Relationship.Encoder
 import DataManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), DownloadPhotos(..), Model, SyncStatus(..), emptyDownloadPhotosBatchRec, emptyUploadRec)
 import Editable
 import Json.Encode
@@ -454,16 +462,66 @@ getSyncSpeedForSubscriptions model =
             syncCycle
 
 
-encodeDataToSend : BackendEntity a -> List String -> (a -> Json.Encode.Value) -> List String
-encodeDataToSend identifier accum func =
-    (Json.Encode.object
-        [ ( "uuid", Json.Encode.string identifier.uuid )
-        , ( "vid", Json.Encode.int identifier.revision )
-        , ( "entity", func identifier.entity )
-        ]
-        |> Json.Encode.encode 0
-    )
-        :: accum
+getDataToSendGeneral : BackendGeneralEntity -> List String -> List String
+getDataToSendGeneral entity accum =
+    case entity of
+        BackendGeneralCatchmentArea identifier ->
+            encodeDataToSend
+                identifier
+                accum
+                Backend.HealthCenter.Encoder.encodeCatchmentArea
+
+        BackendGeneralCounselingSchedule identifier ->
+            encodeDataToSend
+                identifier
+                accum
+                Backend.Counseling.Encoder.encodeCounselingSchedule
+
+        BackendGeneralHealthCenter identifier ->
+            encodeDataToSend
+                identifier
+                accum
+                Backend.HealthCenter.Encoder.encodeHealthCenter
+
+        BackendGeneralCounselingTopic identifier ->
+            encodeDataToSend
+                identifier
+                accum
+                (Json.Encode.object << Backend.Counseling.Encoder.encodeCounselingTopic)
+
+        BackendGeneralNurse identifier ->
+            encodeDataToSend
+                identifier
+                accum
+                (Json.Encode.object << Backend.Nurse.Encoder.encodeNurse)
+
+        BackendGeneralParticipantForm identifier ->
+            encodeDataToSend
+                identifier
+                accum
+                (Json.Encode.object << Backend.ParticipantConsent.Encoder.encodeParticipantForm)
+
+        BackendGeneralPerson identifier ->
+            encodeDataToSend
+                identifier
+                accum
+                (Json.Encode.object << Backend.Person.Encoder.encodePerson)
+
+        BackendGeneralPmtctParticipant identifier ->
+            encodeDataToSend
+                identifier
+                accum
+                Backend.PmtctParticipant.Encoder.encodePmtctParticipant
+
+        BackendGeneralRelationship identifier ->
+            encodeDataToSend
+                identifier
+                accum
+                Backend.Relationship.Encoder.encodeRelationship
+
+        BackendGeneralEntityUnknown _ _ ->
+            -- Filter out the unknown entities.
+            accum
 
 
 getDataToSendAuthority : BackendAuthorityEntity -> List String -> List String
@@ -646,3 +704,15 @@ getDataToSendAuthority entity accum =
         BackendAuthorityEntityUnknown _ _ ->
             -- Filter out the unknown entities.
             accum
+
+
+encodeDataToSend : BackendEntity a -> List String -> (a -> Json.Encode.Value) -> List String
+encodeDataToSend identifier accum func =
+    (Json.Encode.object
+        [ ( "uuid", Json.Encode.string identifier.uuid )
+        , ( "vid", Json.Encode.int identifier.revision )
+        , ( "entity", func identifier.entity )
+        ]
+        |> Json.Encode.encode 0
+    )
+        :: accum

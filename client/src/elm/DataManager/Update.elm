@@ -1,16 +1,6 @@
 port module DataManager.Update exposing (subscriptions, update)
 
 import App.Model exposing (SubModelReturn)
-import Backend.Clinic.Encoder
-import Backend.Counseling.Encoder
-import Backend.HealthCenter.Encoder
-import Backend.IndividualEncounterParticipant.Encoder
-import Backend.Measurement.Encoder
-import Backend.Nurse.Encoder
-import Backend.ParticipantConsent.Encoder
-import Backend.Person.Encoder
-import Backend.PmtctParticipant.Encoder
-import Backend.Relationship.Encoder
 import DataManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseGeneral)
 import DataManager.Encoder
 import DataManager.Model exposing (BackendAuthorityEntity(..), BackendGeneralEntity(..), DownloadPhotos(..), IndexDbQueryType(..), IndexDbQueryTypeResult(..), Model, Msg(..), SyncStatus(..), emptyRevisionIdPerAuthority)
@@ -336,68 +326,7 @@ update currentDate dbVersion device msg model =
                             let
                                 dataToSend =
                                     data.entities
-                                        |> List.foldl
-                                            (\entity accum ->
-                                                case entity of
-                                                    BackendGeneralCatchmentArea identifier ->
-                                                        DataManager.Utils.encodeDataToSend
-                                                            identifier
-                                                            accum
-                                                            Backend.HealthCenter.Encoder.encodeCatchmentArea
-
-                                                    BackendGeneralCounselingSchedule identifier ->
-                                                        DataManager.Utils.encodeDataToSend
-                                                            identifier
-                                                            accum
-                                                            Backend.Counseling.Encoder.encodeCounselingSchedule
-
-                                                    BackendGeneralHealthCenter identifier ->
-                                                        DataManager.Utils.encodeDataToSend
-                                                            identifier
-                                                            accum
-                                                            Backend.HealthCenter.Encoder.encodeHealthCenter
-
-                                                    BackendGeneralCounselingTopic identifier ->
-                                                        DataManager.Utils.encodeDataToSend
-                                                            identifier
-                                                            accum
-                                                            (Json.Encode.object << Backend.Counseling.Encoder.encodeCounselingTopic)
-
-                                                    BackendGeneralNurse identifier ->
-                                                        DataManager.Utils.encodeDataToSend
-                                                            identifier
-                                                            accum
-                                                            (Json.Encode.object << Backend.Nurse.Encoder.encodeNurse)
-
-                                                    BackendGeneralParticipantForm identifier ->
-                                                        DataManager.Utils.encodeDataToSend
-                                                            identifier
-                                                            accum
-                                                            (Json.Encode.object << Backend.ParticipantConsent.Encoder.encodeParticipantForm)
-
-                                                    BackendGeneralPerson identifier ->
-                                                        DataManager.Utils.encodeDataToSend
-                                                            identifier
-                                                            accum
-                                                            (Json.Encode.object << Backend.Person.Encoder.encodePerson)
-
-                                                    BackendGeneralPmtctParticipant identifier ->
-                                                        DataManager.Utils.encodeDataToSend
-                                                            identifier
-                                                            accum
-                                                            Backend.PmtctParticipant.Encoder.encodePmtctParticipant
-
-                                                    BackendGeneralRelationship identifier ->
-                                                        DataManager.Utils.encodeDataToSend
-                                                            identifier
-                                                            accum
-                                                            Backend.Relationship.Encoder.encodeRelationship
-
-                                                    BackendGeneralEntityUnknown _ _ ->
-                                                        -- Filter out the unknown entities.
-                                                        accum
-                                            )
-                                            []
+                                        |> List.foldl (\entity accum -> DataManager.Utils.getDataToSendGeneral entity accum) []
                                         |> List.reverse
                             in
                             if List.isEmpty dataToSend then
