@@ -24,6 +24,7 @@ import Backend.PmtctParticipant.Encoder
 import Backend.PrenatalEncounter.Encoder
 import Backend.Relationship.Encoder
 import Backend.Session.Encoder
+import Backend.Village.Encoder
 import DataManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), DownloadPhotos(..), Model, SyncStatus(..), emptyDownloadPhotosBatchRec, emptyUploadRec)
 import Editable
 import Json.Encode exposing (Value, object)
@@ -243,6 +244,9 @@ getBackendGeneralEntityIdentifier backendGeneralEntity =
 
         BackendGeneralParticipantForm identifier ->
             getIdentifier identifier "participant_form"
+
+        BackendGeneralVillage identifier ->
+            getIdentifier identifier "village"
 
         BackendGeneralEntityUnknown uuid revision ->
             { uuid = uuid
@@ -501,6 +505,9 @@ encodeBackendGeneralEntity backendGeneralEntity =
 
         BackendGeneralParticipantForm identifier ->
             (object << Backend.ParticipantConsent.Encoder.encodeParticipantForm) identifier.entity
+
+        BackendGeneralVillage identifier ->
+            (object << Backend.Village.Encoder.encodeVillage) identifier.entity
 
         BackendGeneralEntityUnknown string int ->
             object []

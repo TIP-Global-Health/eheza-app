@@ -18,6 +18,7 @@ import Backend.PmtctParticipant.Decoder
 import Backend.PrenatalEncounter.Decoder
 import Backend.Relationship.Decoder
 import Backend.Session.Decoder
+import Backend.Village.Decoder
 import DataManager.Model
     exposing
         ( BackendAuthorityEntity(..)
@@ -265,6 +266,9 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
 
                     "participant_form" ->
                         doDecode Backend.ParticipantConsent.Decoder.decodeParticipantForm BackendGeneralParticipantForm
+
+                    "village" ->
+                        doDecode Backend.Village.Decoder.decodeVillage BackendGeneralVillage
 
                     _ ->
                         succeed (BackendGeneralEntityUnknown type_ revisionIdentifier)

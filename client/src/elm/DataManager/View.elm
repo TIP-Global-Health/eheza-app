@@ -312,6 +312,9 @@ viewGeneralEntity language backendGeneralEntity =
             BackendGeneralParticipantForm identifier ->
                 text <| "Participant Form " ++ identifier.entity.title.english
 
+            BackendGeneralVillage identifier ->
+                text <| "Village " ++ identifier.entity.name
+
             BackendGeneralEntityUnknown type_ _ ->
                 text <| type_ ++ " (we still don't decode it)"
         ]

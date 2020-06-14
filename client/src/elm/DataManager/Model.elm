@@ -43,6 +43,7 @@ import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Relationship.Model exposing (Relationship)
 import Backend.Session.Model exposing (Session)
+import Backend.Village.Model exposing (Village)
 import Editable exposing (Editable)
 import Json.Decode exposing (Value)
 import List.Zipper exposing (Zipper)
@@ -61,6 +62,7 @@ type BackendGeneralEntity
     | BackendGeneralHealthCenter (BackendEntity HealthCenter)
     | BackendGeneralNurse (BackendEntity Nurse)
     | BackendGeneralParticipantForm (BackendEntity ParticipantForm)
+    | BackendGeneralVillage (BackendEntity Village)
       -- Don't fail on unknown types. We'd like to keep the type name along with
       -- the `vid`. The reason we keep the vid, is that we fetched some content
       -- which we don't recognize, but we want to keep fetching later content.
