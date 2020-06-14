@@ -459,7 +459,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       })();
       break;
 
-
     case 'IndexDbQueryUploadGeneral':
       (async () => {
 
@@ -478,14 +477,41 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
           sendResultToElm(queryType, null);
         }
 
-        // Query by the localId the `generalUploadPhotos` to get the matching
+        const resultToSend = {
+          'entities': entitiesResult
+        };
+
+        sendResultToElm(queryType, resultToSend);
+
+      })();
+      break;
+
+    case 'IndexDbQueryUploadAuthority':
+      (async () => {
+
+        const batchSize = 50;
+
+        let entitiesResult = await dbSync
+            .shardChanges
+            .where('isSynced')
+            // Don't include items that were already synced.
+            .notEqual(1)
+            .limit(batchSize)
+            .toArray();
+
+        if (!entitiesResult[0]) {
+          // No entities for upload found.
+          sendResultToElm(queryType, null);
+        }
+
+        // Query by the localId the `authorityUploadPhotos` to get the matching
         // file ID.
         const localIds = entitiesResult.map(function(row) {
           return row.localId;
         });
 
         let uploadPhotosResult = await dbSync
-            .generalPhotoUploadChanges
+            .authorityPhotoUploadChanges
             .where('localId')
             .anyOf(localIds)
             .toArray();
