@@ -53,7 +53,7 @@ decodeIndexDbQueryTypeResult =
                                 |> andThen (\record -> succeed (IndexDbQueryUploadAuthorityResult (Just record)))
 
                             -- In case we have no entities to upload.
-                            , succeed (IndexDbQueryUploadAuthorityResult Nothing)
+                            -- , succeed (IndexDbQueryUploadAuthorityResult Nothing)
                             ]
 
                     "IndexDbQueryUploadGeneralResult" ->

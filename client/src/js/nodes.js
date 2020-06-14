@@ -301,7 +301,9 @@
                                     uuid: uuid,
                                     method: 'POST',
                                     data: json,
-                                    timestamp: Date.now()
+                                    timestamp: Date.now(),
+                                    // Mark if the entity was already synced.
+                                    isSynced: 0
                                 };
 
                                 var changeTable = dbSync.nodeChanges;
@@ -760,7 +762,7 @@
                 // The file name on Drupal.
                 remoteFileName: null,
                 // Indicate photo was not uploaded to Drupal yet.
-                // Dexie doesn't index Boolean, so we use an Int.
+                // IndexDB doesn't index Boolean, so we use an Int.
                 isSynced: 0,
             });
 
