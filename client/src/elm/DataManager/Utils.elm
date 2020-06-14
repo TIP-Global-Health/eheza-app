@@ -221,6 +221,9 @@ getBackendGeneralEntityIdentifier backendGeneralEntity =
         BackendGeneralNurse identifier ->
             getIdentifier identifier "nurse"
 
+        BackendGeneralParticipantForm identifier ->
+            getIdentifier identifier "participant_form"
+
         BackendGeneralPerson identifier ->
             getIdentifier identifier "person"
 

@@ -7,6 +7,7 @@ import Backend.HealthCenter.Encoder
 import Backend.IndividualEncounterParticipant.Encoder
 import Backend.Measurement.Encoder
 import Backend.Nurse.Encoder
+import Backend.ParticipantConsent.Encoder
 import Backend.Person.Encoder
 import Backend.PmtctParticipant.Encoder
 import Backend.Relationship.Encoder
@@ -367,6 +368,12 @@ update currentDate dbVersion device msg model =
                                                             identifier
                                                             accum
                                                             (Json.Encode.object << Backend.Nurse.Encoder.encodeNurse)
+
+                                                    BackendGeneralParticipantForm identifier ->
+                                                        DataManager.Utils.encodeDataToSend
+                                                            identifier
+                                                            accum
+                                                            (Json.Encode.object << Backend.ParticipantConsent.Encoder.encodeParticipantForm)
 
                                                     BackendGeneralPerson identifier ->
                                                         DataManager.Utils.encodeDataToSend

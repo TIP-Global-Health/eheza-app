@@ -246,6 +246,9 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
                     "pmtct_participant" ->
                         doDecode Backend.PmtctParticipant.Decoder.decodePmtctParticipant BackendGeneralPmtctParticipant
 
+                    "participant_form" ->
+                        doDecode Backend.ParticipantConsent.Decoder.decodeParticipantForm BackendGeneralParticipantForm
+
                     "relationship" ->
                         doDecode Backend.Relationship.Decoder.decodeRelationship BackendGeneralRelationship
 

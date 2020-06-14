@@ -309,6 +309,9 @@ viewGeneralEntity language backendGeneralEntity =
             BackendGeneralNurse identifier ->
                 text <| "Nurse " ++ identifier.entity.name
 
+            BackendGeneralParticipantForm identifier ->
+                text <| "Participant Form " ++ identifier.entity.title.english
+
             BackendGeneralPerson identifier ->
                 text <| "Person " ++ identifier.entity.name
 
