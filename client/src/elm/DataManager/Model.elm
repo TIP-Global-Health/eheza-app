@@ -63,11 +63,6 @@ type BackendGeneralEntity
     | BackendGeneralNurse (BackendEntity Nurse)
     | BackendGeneralParticipantForm (BackendEntity ParticipantForm)
     | BackendGeneralVillage (BackendEntity Village)
-      -- Don't fail on unknown types. We'd like to keep the type name along with
-      -- the `vid`. The reason we keep the vid, is that we fetched some content
-      -- which we don't recognize, but we want to keep fetching later content.
-      -- @todo: Remove after we decode all entity types.
-    | BackendGeneralEntityUnknown String Int
 
 
 {-| The "Authority" entities are ones that belong to a specific
@@ -115,11 +110,6 @@ type BackendAuthorityEntity
     | BackendAuthoritySocialHistory (BackendEntity SocialHistory)
     | BackendAuthorityVitals (BackendEntity Vitals)
     | BackendAuthorityWeight (BackendEntity Weight)
-      -- Don't fail on unknown types. We'd like to keep the type name along with
-      -- the `vid`. The reason we keep the vid, is that we fetched some content
-      -- which we don't recognize, but we want to keep fetching later content.
-      -- @todo: Remove after we decode all entity types.
-    | BackendAuthorityEntityUnknown String Int
 
 
 {-| Wrapper for a Backend entity (both General and Authority).

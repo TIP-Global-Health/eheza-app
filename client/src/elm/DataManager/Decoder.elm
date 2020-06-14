@@ -271,7 +271,7 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
                         doDecode Backend.Village.Decoder.decodeVillage BackendGeneralVillage
 
                     _ ->
-                        succeed (BackendGeneralEntityUnknown type_ revisionIdentifier)
+                        fail <| type_ ++ " is unknown BackendGeneralEntity"
             )
 
 
@@ -510,7 +510,7 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             BackendAuthorityWeight
 
                     _ ->
-                        succeed (BackendAuthorityEntityUnknown type_ revisionIdentifier)
+                        fail <| type_ ++ " is unknown BackendAuthorityEntity"
             )
 
 

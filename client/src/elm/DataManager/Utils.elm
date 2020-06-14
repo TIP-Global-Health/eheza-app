@@ -248,12 +248,6 @@ getBackendGeneralEntityIdentifier backendGeneralEntity =
         BackendGeneralVillage identifier ->
             getIdentifier identifier "village"
 
-        BackendGeneralEntityUnknown uuid revision ->
-            { uuid = uuid
-            , revision = revision
-            , type_ = "unknown"
-            }
-
 
 {-| Get info about an "Authority" entity. `revision` would be the Drupal revision
 in case of download, or the `localId` in case of upload.
@@ -388,12 +382,6 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityVitals identifier ->
             getIdentifier identifier "vitals"
 
-        BackendAuthorityEntityUnknown uuid revision ->
-            { uuid = uuid
-            , revision = revision
-            , type_ = "unknown"
-            }
-
 
 {-| Return a photo from a "Authority" entity.
 -}
@@ -511,9 +499,6 @@ encodeBackendGeneralEntity backendGeneralEntity =
 
         BackendGeneralVillage identifier ->
             (object << Backend.Village.Encoder.encodeVillage) identifier.entity
-
-        BackendGeneralEntityUnknown string int ->
-            object []
 
 
 encodeBackendAuthorityEntity : BackendAuthorityEntity -> Value
@@ -639,48 +624,34 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityWeight identifier ->
             (object << Backend.Measurement.Encoder.encodeWeight) identifier.entity
 
-        BackendAuthorityEntityUnknown _ _ ->
-            -- Filter out the unknown entities.
-            object []
-
 
 getDataToSendGeneral : BackendGeneralEntity -> List String -> List String
 getDataToSendGeneral entity accum =
-    case entity of
-        BackendGeneralEntityUnknown _ _ ->
-            accum
-
-        _ ->
-            let
-                identifier =
-                    getBackendGeneralEntityIdentifier entity
-            in
-            (Json.Encode.object
-                [ ( "uuid", Json.Encode.string identifier.uuid )
-                , ( "vid", Json.Encode.int identifier.revision )
-                , ( "entity", encodeBackendGeneralEntity entity )
-                ]
-                |> Json.Encode.encode 0
-            )
-                :: accum
+    let
+        identifier =
+            getBackendGeneralEntityIdentifier entity
+    in
+    (Json.Encode.object
+        [ ( "uuid", Json.Encode.string identifier.uuid )
+        , ( "vid", Json.Encode.int identifier.revision )
+        , ( "entity", encodeBackendGeneralEntity entity )
+        ]
+        |> Json.Encode.encode 0
+    )
+        :: accum
 
 
 getDataToSendAuthority : BackendAuthorityEntity -> List String -> List String
 getDataToSendAuthority entity accum =
-    case entity of
-        BackendAuthorityEntityUnknown _ _ ->
-            accum
-
-        _ ->
-            let
-                identifier =
-                    getBackendAuthorityEntityIdentifier entity
-            in
-            (Json.Encode.object
-                [ ( "uuid", Json.Encode.string identifier.uuid )
-                , ( "vid", Json.Encode.int identifier.revision )
-                , ( "entity", encodeBackendAuthorityEntity entity )
-                ]
-                |> Json.Encode.encode 0
-            )
-                :: accum
+    let
+        identifier =
+            getBackendAuthorityEntityIdentifier entity
+    in
+    (Json.Encode.object
+        [ ( "uuid", Json.Encode.string identifier.uuid )
+        , ( "vid", Json.Encode.int identifier.revision )
+        , ( "entity", encodeBackendAuthorityEntity entity )
+        ]
+        |> Json.Encode.encode 0
+    )
+        :: accum

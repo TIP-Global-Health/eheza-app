@@ -314,9 +314,6 @@ viewGeneralEntity language backendGeneralEntity =
 
             BackendGeneralVillage identifier ->
                 text <| "Village " ++ identifier.entity.name
-
-            BackendGeneralEntityUnknown type_ _ ->
-                text <| type_ ++ " (we still don't decode it)"
         ]
 
 
@@ -505,9 +502,6 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityWeight identifier ->
                 viewMeasurement identifier "Weight"
-
-            BackendAuthorityEntityUnknown type_ _ ->
-                text <| type_ ++ " (we still don't decode it)"
         ]
 
 
