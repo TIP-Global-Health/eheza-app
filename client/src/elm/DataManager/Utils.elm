@@ -56,18 +56,10 @@ determineSyncStatus model =
                 ( syncStatus, revisionIdPerAuthorityZipper )
 
             ( syncStatusUpdated, revisionIdPerAuthorityZipperUpdated ) =
+                -- Cases are ordered by the cycle order.
                 case syncStatus of
                     SyncIdle ->
                         ( SyncUploadPhotoAuthority RemoteData.NotAsked, revisionIdPerAuthorityZipper )
-
-                    SyncUploadGeneral record ->
-                        if record.indexDbRemoteData == RemoteData.Success Nothing then
-                            -- We tried to fetch entities for upload from IndexDB,
-                            -- but there we non matching the query.
-                            ( SyncDownloadGeneral RemoteData.NotAsked, revisionIdPerAuthorityZipper )
-
-                        else
-                            noChange
 
                     SyncUploadPhotoAuthority webData ->
                         case webData of
@@ -84,9 +76,23 @@ determineSyncStatus model =
                             _ ->
                                 noChange
 
-                    SyncUploadAuthority webData ->
-                        -- @todo
-                        noChange
+                    SyncUploadGeneral record ->
+                        if record.indexDbRemoteData == RemoteData.Success Nothing then
+                            -- We tried to fetch entities for upload from IndexDB,
+                            -- but there we non matching the query.
+                            ( SyncUploadAuthority emptyUploadRec, revisionIdPerAuthorityZipper )
+
+                        else
+                            noChange
+
+                    SyncUploadAuthority record ->
+                        if record.indexDbRemoteData == RemoteData.Success Nothing then
+                            -- We tried to fetch entities for upload from IndexDB,
+                            -- but there we non matching the query.
+                            ( SyncDownloadGeneral RemoteData.NotAsked, revisionIdPerAuthorityZipper )
+
+                        else
+                            noChange
 
                     SyncDownloadGeneral webData ->
                         case webData of
@@ -430,6 +436,9 @@ getSyncSpeedForSubscriptions model =
                 toFloat syncSpeed.idle
 
         SyncUploadGeneral record ->
+            checkWebData record.backendRemoteData
+
+        SyncUploadAuthority record ->
             checkWebData record.backendRemoteData
 
         SyncDownloadGeneral webData ->
