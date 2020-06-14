@@ -229,7 +229,15 @@ function hedley_device_assign_shards($node, $wrapper) {
     case 'clinic':
       // We only assign shards, when clinic is created, based on
       // HC clinic is assigned to. We do nothing when clinic is edited.
-      $shards = empty($node->original) ? [] : [$wrapper->field_health_center->getIdentifier()];
+      $shards = [];
+      if (empty($node->original)) {
+        $health_centeter_id = $wrapper->field_health_center->getIdentifier();
+        // Even though health_centeter is a required field on clinic,
+        // we have this check to allow SimpleTest to pass.
+        if (!empty($health_centeter_id)) {
+          $shards = [$health_centeter_id];
+        }
+      }
       break;
 
     case 'session':
