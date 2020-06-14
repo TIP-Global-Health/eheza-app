@@ -410,20 +410,16 @@ getSyncSpeedForSubscriptions model =
                 toFloat syncSpeed.cycle
 
         checkWebData webData =
-            case webData of
-                RemoteData.Failure error ->
-                    if Utils.WebData.isNetworkError error then
-                        if syncSpeed.offline < 1000 then
-                            1000
+            if RemoteData.isFailure webData then
+                -- We got an error, so don't hammer the server.
+                if syncSpeed.offline < 1000 then
+                    1000
 
-                        else
-                            toFloat syncSpeed.offline
+                else
+                    toFloat syncSpeed.offline
 
-                    else
-                        syncCycle
-
-                _ ->
-                    syncCycle
+            else
+                syncCycle
     in
     case model.syncStatus of
         SyncIdle ->
