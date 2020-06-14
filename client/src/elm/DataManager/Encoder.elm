@@ -20,20 +20,19 @@ import Json.Encode.Extra exposing (maybe)
 encodeIndexDbQueryUploadGeneralResultRecord : IndexDbQueryUploadGeneralResultRecord -> List ( String, Value )
 encodeIndexDbQueryUploadGeneralResultRecord record =
     let
-        replacePhotoWithFileId encodedEntity localId =
-            let
-                maybeFileId =
-                    Dict.get localId record.uploadPhotos
-                        |> Maybe.map (\row -> maybe int row.fileId)
-                        |> Maybe.withDefault null
-            in
-            encodedEntity
-                -- Remove existing photo key.
-                |> Dict.fromList
-                -- Replace with file ID.
-                |> Dict.insert "photo" maybeFileId
-                |> Dict.toList
-
+        --replacePhotoWithFileId encodedEntity localId =
+        --    let
+        --        maybeFileId =
+        --            Dict.get localId record.uploadPhotos
+        --                |> Maybe.map (\row -> maybe int row.fileId)
+        --                |> Maybe.withDefault null
+        --    in
+        --    encodedEntity
+        --        -- Remove existing photo key.
+        --        |> Dict.fromList
+        --        -- Replace with file ID.
+        --        |> Dict.insert "photo" maybeFileId
+        --        |> Dict.toList
         encodeData ( entity, method ) =
             let
                 identifier =

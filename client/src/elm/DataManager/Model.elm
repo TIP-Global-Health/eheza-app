@@ -10,6 +10,7 @@ module DataManager.Model exposing
     , IndexDbQueryDeferredPhotoResultRecord
     , IndexDbQueryType(..)
     , IndexDbQueryTypeResult(..)
+    , IndexDbQueryUploadAuthorityResultRecord
     , IndexDbQueryUploadGeneralResultRecord
     , IndexDbQueryUploadPhotoResultRecord
     , Model
@@ -332,6 +333,7 @@ type IndexDbQueryType
 type IndexDbQueryTypeResult
     = -- A single photo for upload, if exists.
       IndexDbQueryUploadPhotoAuthorityResult (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
+    | IndexDbQueryUploadAuthorityResult (Maybe IndexDbQueryUploadAuthorityResultRecord)
     | IndexDbQueryUploadGeneralResult (Maybe IndexDbQueryUploadGeneralResultRecord)
       -- A single deferred photo, if exists.
     | IndexDbQueryDeferredPhotoResult (Maybe IndexDbQueryDeferredPhotoResultRecord)
@@ -364,6 +366,11 @@ type UploadMethod
 
 type alias IndexDbQueryUploadGeneralResultRecord =
     { entities : List ( BackendGeneralEntity, UploadMethod )
+    }
+
+
+type alias IndexDbQueryUploadAuthorityResultRecord =
+    { entities : List ( BackendAuthorityEntity, UploadMethod )
 
     -- Instead of list, it is be handier to get a Dict, keyed by the `localId`
     -- so when we would like to switch the photo URL with Drupal's file ID, we
@@ -399,6 +406,7 @@ type Msg
       -- which would be harder in Elm, given we have elm/http@1.0.
       -- This is the reason it doesn't get as arguments the result of the IndexDB.
     | BackendPhotoUploadAuthority
+    | BackendUploadAuthority (Maybe IndexDbQueryUploadAuthorityResultRecord)
     | BackendUploadGeneral (Maybe IndexDbQueryUploadGeneralResultRecord)
     | BackendUploadGeneralHandle IndexDbQueryUploadGeneralResultRecord (WebData ())
     | BackendUploadPhotoAuthorityHandle (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))

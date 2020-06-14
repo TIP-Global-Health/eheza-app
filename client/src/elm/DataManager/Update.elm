@@ -509,6 +509,10 @@ update currentDate dbVersion device msg model =
                 _ ->
                     noChange
 
+        BackendUploadAuthority _ ->
+            -- @todo
+            noChange
+
         BackendUploadGeneral Nothing ->
             let
                 syncStatus =
@@ -861,6 +865,14 @@ update currentDate dbVersion device msg model =
                                 dbVersion
                                 device
                                 (BackendUploadPhotoAuthorityHandle remoteData)
+                                model
+
+                        IndexDbQueryUploadAuthorityResult result ->
+                            update
+                                currentDate
+                                dbVersion
+                                device
+                                (BackendUploadAuthority result)
                                 model
 
                         IndexDbQueryUploadGeneralResult result ->

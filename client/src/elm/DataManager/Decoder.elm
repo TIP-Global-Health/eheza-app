@@ -16,18 +16,7 @@ import Backend.ParticipantConsent.Decoder
 import Backend.Person.Decoder
 import Backend.PmtctParticipant.Decoder
 import Backend.Relationship.Decoder
-import DataManager.Model
-    exposing
-        ( BackendAuthorityEntity(..)
-        , BackendGeneralEntity(..)
-        , DownloadSyncResponse
-        , IndexDbQueryDeferredPhotoResultRecord
-        , IndexDbQueryTypeResult(..)
-        , IndexDbQueryUploadGeneralResultRecord
-        , IndexDbQueryUploadPhotoResultRecord
-        , UploadMethod(..)
-        , UploadPhotoError(..)
-        )
+import DataManager.Model exposing (BackendAuthorityEntity(..), BackendGeneralEntity(..), DownloadSyncResponse, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryTypeResult(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadGeneralResultRecord, IndexDbQueryUploadPhotoResultRecord, UploadMethod(..), UploadPhotoError(..))
 import Gizra.Date exposing (decodeDate)
 import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (..)
@@ -45,6 +34,15 @@ decodeIndexDbQueryTypeResult =
                     "IndexDbQueryUploadPhotoAuthorityResult" ->
                         decodeIndexDbQueryUploadPhotoResultRecordRemoteData
                             |> andThen (\val -> succeed (IndexDbQueryUploadPhotoAuthorityResult val))
+
+                    "IndexDbQueryUploadAuthorityResult" ->
+                        oneOf
+                            [ field "data" decodeIndexDbQueryUploadAuthorityResultRecord
+                                |> andThen (\record -> succeed (IndexDbQueryUploadAuthorityResult (Just record)))
+
+                            -- In case we have no entities to upload.
+                            , succeed (IndexDbQueryUploadAuthorityResult Nothing)
+                            ]
 
                     "IndexDbQueryUploadGeneralResult" ->
                         oneOf
@@ -122,7 +120,13 @@ decodeIndexDbQueryUploadPhotoResultRecord =
 decodeIndexDbQueryUploadGeneralResultRecord : Decoder IndexDbQueryUploadGeneralResultRecord
 decodeIndexDbQueryUploadGeneralResultRecord =
     succeed IndexDbQueryUploadGeneralResultRecord
-        |> required "entities" (list decodeBackendGeneralEntityAndUploadMethod)
+        |> required "entities" (list <| decodeBackendGeneralEntityAndUploadMethod (\uuid localId -> decodeBackendGeneralEntity (hardcoded uuid) (hardcoded localId)))
+
+
+decodeIndexDbQueryUploadAuthorityResultRecord : Decoder IndexDbQueryUploadAuthorityResultRecord
+decodeIndexDbQueryUploadAuthorityResultRecord =
+    succeed IndexDbQueryUploadAuthorityResultRecord
+        |> required "entities" (list <| decodeBackendGeneralEntityAndUploadMethod (\_ _ -> decodeBackendAuthorityEntity))
         |> required "uploadPhotos"
             (list decodeIndexDbQueryUploadPhotoResultRecord
                 |> andThen
@@ -148,8 +152,13 @@ decodeIndexDbQueryUploadGeneralResultRecord =
 So we grab the `localId` and `uuid`, and feed them to the decodeBackendGeneralEntity.
 
 -}
-decodeBackendGeneralEntityAndUploadMethod : Decoder ( BackendGeneralEntity, UploadMethod )
-decodeBackendGeneralEntityAndUploadMethod =
+
+
+
+--decodeBackendGeneralEntityAndUploadMethod : a -> Decoder ( BackendGeneralEntity, UploadMethod )
+
+
+decodeBackendGeneralEntityAndUploadMethod func =
     (succeed (\a b -> ( a, b ))
         |> required "uuid" string
         |> required "localId" int
@@ -157,7 +166,7 @@ decodeBackendGeneralEntityAndUploadMethod =
         |> andThen
             (\( uuid, localId ) ->
                 succeed (\c d -> ( c, d ))
-                    |> required "data" (decodeBackendGeneralEntity (hardcoded uuid) (hardcoded localId))
+                    |> required "data" (func uuid localId)
                     |> required "method" decodeUploadMethod
             )
 
