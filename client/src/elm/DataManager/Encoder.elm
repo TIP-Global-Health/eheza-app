@@ -4,9 +4,13 @@ module DataManager.Encoder exposing
     , encodeIndexDbQueryUploadGeneralResultRecord
     )
 
+import AssocList as Dict
+import Backend.Person.Encoder
 import DataManager.Model exposing (BackendAuthorityEntity(..), BackendEntityIdentifier, BackendGeneralEntity(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadGeneralResultRecord, UploadMethod(..))
 import DataManager.Utils
-import Json.Encode exposing (Value, int, list, object, string)
+import Json.Encode exposing (Value, int, list, null, object, string)
+import Json.Encode.Extra exposing (maybe)
+import Maybe.Extra exposing (isJust)
 
 
 encodeIndexDbQueryUploadGeneralResultRecord : IndexDbQueryUploadGeneralResultRecord -> List ( String, Value )
@@ -30,49 +34,48 @@ encodeIndexDbQueryUploadGeneralResultRecord record =
 encodeIndexDbQueryUploadAuthorityResultRecord : IndexDbQueryUploadAuthorityResultRecord -> List ( String, Value )
 encodeIndexDbQueryUploadAuthorityResultRecord record =
     let
-        --replacePhotoWithFileId encodedEntity localId =
-        --    let
-        --        maybeFileId =
-        --            Dict.get localId record.uploadPhotos
-        --                |> Maybe.map (\row -> maybe int row.fileId)
-        --                |> Maybe.withDefault null
-        --    in
-        --    encodedEntity
-        --        -- Remove existing photo key.
-        --        |> Dict.fromList
-        --        -- Replace with file ID.
-        --        |> Dict.insert "photo" maybeFileId
-        --        |> Dict.toList
+        replacePhotoWithFileId encodedEntity localId =
+            let
+                maybeFileId =
+                    Dict.get localId record.uploadPhotos
+                        |> Maybe.map (\row -> maybe int row.fileId)
+                        |> Maybe.withDefault null
+            in
+            encodedEntity
+                -- Remove existing photo key.
+                |> Dict.fromList
+                -- Replace with file ID.
+                |> Dict.insert "photo" maybeFileId
+                |> Dict.toList
+
         encodeData ( entity, method ) =
             let
                 identifier =
                     DataManager.Utils.getBackendAuthorityEntityIdentifier entity
 
-                --data =
-                --    case entity of
-                --        BackendAuthorityPerson identifier_ ->
-                --            let
-                --                encodedEntity =
-                --                    Backend.Person.Encoder.encodePerson identifier_.entity
-                --
-                --                encodedEntityUpdated =
-                --                    if isJust identifier_.entity.avatarUrl then
-                --                        replacePhotoWithFileId encodedEntity identifier_.revision
-                --
-                --                    else
-                --                        encodedEntity
-                --            in
-                --            Json.Encode.object encodedEntityUpdated
-                --
-                --        _ ->
-                --            -- @todo, get all the rest of entities that can have
-                --            -- photos.
-                --            Json.Encode.object []
+                data =
+                    case entity of
+                        BackendAuthorityPerson identifier_ ->
+                            let
+                                encodedEntity =
+                                    Backend.Person.Encoder.encodePerson identifier_.entity
+
+                                encodedEntityUpdated =
+                                    if isJust identifier_.entity.avatarUrl then
+                                        replacePhotoWithFileId encodedEntity identifier_.revision
+
+                                    else
+                                        encodedEntity
+                            in
+                            Json.Encode.object encodedEntityUpdated
+
+                        _ ->
+                            DataManager.Utils.encodeBackendAuthorityEntity entity
             in
             [ ( "uuid", string identifier.uuid )
             , ( "type", string identifier.type_ )
             , ( "method", encodeUploadMethod method )
-            , ( "data", DataManager.Utils.encodeBackendAuthorityEntity entity )
+            , ( "data", data )
             ]
                 |> object
     in

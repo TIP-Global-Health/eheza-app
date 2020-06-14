@@ -474,14 +474,14 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         if (!entitiesResult[0]) {
           // No entities for upload found.
-          sendResultToElm(queryType, null);
+          return sendResultToElm(queryType, null);
         }
 
         const resultToSend = {
           'entities': entitiesResult
         };
 
-        sendResultToElm(queryType, resultToSend);
+        return sendResultToElm(queryType, resultToSend);
 
       })();
       break;
@@ -501,7 +501,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         if (!entitiesResult[0]) {
           // No entities for upload found.
-          sendResultToElm(queryType, null);
+          return sendResultToElm(queryType, null);
         }
 
         // Query by the localId the `authorityUploadPhotos` to get the matching
@@ -521,7 +521,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
           'uploadPhotos': uploadPhotosResult,
         };
 
-        sendResultToElm(queryType, resultToSend);
+        return sendResultToElm(queryType, resultToSend);
 
       })();
       break;
@@ -538,7 +538,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             // Get attempts sorted, so we won't always grab the same one.
             .sortBy('attempts');
 
-        sendResultToElm(queryType, result);
+        return sendResultToElm(queryType, result);
 
       })();
       break;
