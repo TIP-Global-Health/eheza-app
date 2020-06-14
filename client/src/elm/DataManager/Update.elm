@@ -591,7 +591,7 @@ update currentDate dbVersion device msg model =
 
                                 else
                                     -- @todo: Add the UUID to the URL.
-                                    HttpBuilder.post (device.backendUrl ++ "/api/sync/FIXME-ADD-UUD")
+                                    HttpBuilder.post (device.backendUrl ++ "/api/sync")
                                         |> withQueryParams
                                             [ ( "access_token", device.accessToken )
                                             , ( "db_version", String.fromInt dbVersion )
