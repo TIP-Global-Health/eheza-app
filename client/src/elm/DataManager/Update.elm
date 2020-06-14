@@ -178,12 +178,12 @@ update currentDate dbVersion device msg model =
                 SyncIdle ->
                     returnDetermineSyncStatus
 
-                SyncUploadPhotoGeneral _ ->
+                SyncUploadPhotoAuthority _ ->
                     update
                         currentDate
                         dbVersion
                         device
-                        BackendPhotoUploadGeneral
+                        BackendPhotoUploadAuthority
                         model
 
                 SyncUploadGeneral _ ->
@@ -492,9 +492,9 @@ update currentDate dbVersion device msg model =
                 _ ->
                     noChange
 
-        BackendPhotoUploadGeneral ->
+        BackendPhotoUploadAuthority ->
             case model.syncStatus of
-                SyncUploadPhotoGeneral webData ->
+                SyncUploadPhotoAuthority webData ->
                     if RemoteData.isLoading webData then
                         noChange
 
@@ -503,8 +503,8 @@ update currentDate dbVersion device msg model =
                             currentDate
                             dbVersion
                             device
-                            (QueryIndexDb IndexDbQueryUploadPhotoGeneral)
-                            { model | syncStatus = SyncUploadPhotoGeneral RemoteData.Loading }
+                            (QueryIndexDb IndexDbQueryUploadPhotoAuthority)
+                            { model | syncStatus = SyncUploadPhotoAuthority RemoteData.Loading }
 
                 _ ->
                     noChange
@@ -625,14 +625,14 @@ update currentDate dbVersion device msg model =
                 _ ->
                     noChange
 
-        BackendUploadPhotoGeneralHandle remoteData ->
+        BackendUploadPhotoAuthorityHandle remoteData ->
             -- Uploading of photos happened through JS, since it involves working
             -- with file blobs. This handler however is for post upload attempt
             -- (success or not), to set RemoteData accordingly.
             case model.syncStatus of
-                SyncUploadPhotoGeneral _ ->
+                SyncUploadPhotoAuthority _ ->
                     SubModelReturn
-                        (DataManager.Utils.determineSyncStatus { model | syncStatus = SyncUploadPhotoGeneral remoteData })
+                        (DataManager.Utils.determineSyncStatus { model | syncStatus = SyncUploadPhotoAuthority remoteData })
                         Cmd.none
                         noError
                         []
@@ -804,7 +804,7 @@ update currentDate dbVersion device msg model =
             let
                 record =
                     case indexDbQueryType of
-                        IndexDbQueryUploadPhotoGeneral ->
+                        IndexDbQueryUploadPhotoAuthority ->
                             let
                                 -- Send the device info so on JS, we'd know how
                                 -- to contact the backend.
@@ -812,7 +812,7 @@ update currentDate dbVersion device msg model =
                                     Device.Encoder.encode device
                                         |> Json.Encode.encode 0
                             in
-                            { queryType = "IndexDbQueryUploadPhotoGeneral"
+                            { queryType = "IndexDbQueryUploadPhotoAuthority"
                             , data = Just encodedData
                             }
 
@@ -855,12 +855,12 @@ update currentDate dbVersion device msg model =
             case decodeValue DataManager.Decoder.decodeIndexDbQueryTypeResult val of
                 Ok indexDbQueryTypeResult ->
                     case indexDbQueryTypeResult of
-                        IndexDbQueryUploadPhotoGeneralResult remoteData ->
+                        IndexDbQueryUploadPhotoAuthorityResult remoteData ->
                             update
                                 currentDate
                                 dbVersion
                                 device
-                                (BackendUploadPhotoGeneralHandle remoteData)
+                                (BackendUploadPhotoAuthorityHandle remoteData)
                                 model
 
                         IndexDbQueryUploadGeneralResult result ->

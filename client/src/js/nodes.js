@@ -727,14 +727,6 @@
     }
 
     /**
-     * Create matching row in `generalPhotoUploadChanges`, if entity has a photo.
-     */
-    dbSync.nodeChanges.hook('creating', function (primKey, obj, transaction) {
-        const self = this;
-        return addPhotoUploadChanges(self, dbSync.generalPhotoUploadChanges, obj);
-    });
-
-    /**
      * Create matching row in `authorityPhotoUploadChanges`, if entity has a photo.
      */
     dbSync.shardChanges.hook('creating', function (primKey, obj, transaction) {
@@ -743,7 +735,7 @@
     });
 
     /**
-     * Helper function to add a record to general or authority PhotoUploadChanges.
+     * Helper function to add a record to authority PhotoUploadChanges.
      */
     function addPhotoUploadChanges(tableHook, table, obj) {
         if (!obj.data.hasOwnProperty('photo')) {

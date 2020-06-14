@@ -57,9 +57,9 @@ determineSyncStatus model =
             ( syncStatusUpdated, revisionIdPerAuthorityZipperUpdated ) =
                 case syncStatus of
                     SyncIdle ->
-                        ( SyncUploadPhotoGeneral RemoteData.NotAsked, revisionIdPerAuthorityZipper )
+                        ( SyncUploadPhotoAuthority RemoteData.NotAsked, revisionIdPerAuthorityZipper )
 
-                    SyncUploadPhotoGeneral webData ->
+                    SyncUploadPhotoAuthority webData ->
                         case webData of
                             RemoteData.Success maybeData ->
                                 case maybeData of

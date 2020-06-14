@@ -42,9 +42,9 @@ decodeIndexDbQueryTypeResult =
         |> andThen
             (\queryType ->
                 case queryType of
-                    "IndexDbQueryUploadPhotoGeneralResult" ->
+                    "IndexDbQueryUploadPhotoAuthorityResult" ->
                         decodeIndexDbQueryUploadPhotoResultRecordRemoteData
-                            |> andThen (\val -> succeed (IndexDbQueryUploadPhotoGeneralResult val))
+                            |> andThen (\val -> succeed (IndexDbQueryUploadPhotoAuthorityResult val))
 
                     "IndexDbQueryUploadGeneralResult" ->
                         oneOf

@@ -150,11 +150,11 @@ dbSync.version(11).stores({
   // the request, when creating or editing an entity such as a photo.
   // This property is a Maybe value, as at the time of creation of the photo
   // locally, we still don't have it.
-  // `isSynced` is a boolean index, since Dexie doesn't support IsNull query,
+  // `isSynced` is a boolean index, since IndexDB doesn't support IsNull query,
   // but we would need to fetch photos who were not synced yet.
-  generalPhotoUploadChanges: '&localId,photo,fileId,isSynced',
-
-  // Similar to `generalPhotoUploadChanges` but for `shardChanges`.
+  // Photos (such as a person photo, or nutrition photo), exist currently only
+  // in Authority context, that is why we don't have an equivalent
+  // `generalPhotoUploadChanges`.
   authorityPhotoUploadChanges: '&localId,photo,fileId,isSynced',
 }).upgrade(function (tx) {
   // Get the data from the deprecated `syncMetadata` and move to local storage.
@@ -373,11 +373,11 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
   const data = info.data;
   switch (queryType) {
 
-    case 'IndexDbQueryUploadPhotoGeneral':
+    case 'IndexDbQueryUploadPhotoAuthority':
       (async () => {
 
         let result = await dbSync
-            .generalPhotoUploadChanges
+            .authorityPhotoUploadChanges
             .where('isSynced')
             // IndexDB doesn't index Boolean, so we use an Int to indicate "false".
             .equals(0)
@@ -451,7 +451,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
           // For example, lets say a person's photo was changed, and later also
           // their name. So on the two records there were created on the
           // photoUploadChanges table, the same photo local URL will appear.
-          await dbSync.generalPhotoUploadChanges.where('photo').equals(row.photo).modify(changes);
+          await dbSync.authorityPhotoUploadChanges.where('photo').equals(row.photo).modify(changes);
 
           const completedResult = Object.assign(row, changes);
           return sendResultToElm(queryType, {tag: 'Success', result: completedResult});

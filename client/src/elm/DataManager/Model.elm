@@ -294,7 +294,7 @@ type alias IndexDbUploadRemoteData =
 -}
 type SyncStatus
     = SyncIdle
-    | SyncUploadPhotoGeneral (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
+    | SyncUploadPhotoAuthority (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
     | SyncUploadGeneral UploadRec
     | SyncDownloadGeneral (WebData (DownloadSyncResponse BackendGeneralEntity))
     | SyncDownloadAuthority (WebData (DownloadSyncResponse BackendAuthorityEntity))
@@ -316,8 +316,8 @@ type SyncCycle
 {-| Indicate what content, or query we'd like to get from IndexDB.
 -}
 type IndexDbQueryType
-    = -- Get a single photo pending uploading
-      IndexDbQueryUploadPhotoGeneral
+    = -- Get a single photo pending uploading.
+      IndexDbQueryUploadPhotoAuthority
     | IndexDbQueryUploadGeneral
       -- Get a single deferred photo.
     | IndexDbQueryDeferredPhoto
@@ -331,7 +331,7 @@ type IndexDbQueryType
 
 type IndexDbQueryTypeResult
     = -- A single photo for upload, if exists.
-      IndexDbQueryUploadPhotoGeneralResult (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
+      IndexDbQueryUploadPhotoAuthorityResult (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
     | IndexDbQueryUploadGeneralResult (Maybe IndexDbQueryUploadGeneralResultRecord)
       -- A single deferred photo, if exists.
     | IndexDbQueryDeferredPhotoResult (Maybe IndexDbQueryDeferredPhotoResultRecord)
@@ -398,10 +398,10 @@ type Msg
       -- uploading the photos happens in JS, since we have to deal with file blobs
       -- which would be harder in Elm, given we have elm/http@1.0.
       -- This is the reason it doesn't get as arguments the result of the IndexDB.
-    | BackendPhotoUploadGeneral
+    | BackendPhotoUploadAuthority
     | BackendUploadGeneral (Maybe IndexDbQueryUploadGeneralResultRecord)
     | BackendUploadGeneralHandle IndexDbQueryUploadGeneralResultRecord (WebData ())
-    | BackendUploadPhotoGeneralHandle (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
+    | BackendUploadPhotoAuthorityHandle (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
     | QueryIndexDb IndexDbQueryType
     | QueryIndexDbHandle Value
     | FetchFromIndexDbDeferredPhoto
