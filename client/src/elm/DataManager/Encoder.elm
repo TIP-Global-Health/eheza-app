@@ -12,6 +12,7 @@ import DataManager.Model
         , IndexDbQueryUploadGeneralResultRecord
         , UploadMethod(..)
         )
+import DataManager.Utils
 import Json.Encode exposing (Value, int, list, null, object, string)
 import Json.Encode.Extra exposing (maybe)
 
@@ -36,7 +37,7 @@ encodeIndexDbQueryUploadGeneralResultRecord record =
         encodeData ( entity, method ) =
             let
                 identifier =
-                    getBackendGeneralEntityIdentifier entity
+                    DataManager.Utils.getBackendGeneralEntityIdentifier entity
 
                 --data =
                 --    case entity of
@@ -62,7 +63,7 @@ encodeIndexDbQueryUploadGeneralResultRecord record =
             [ ( "uuid", string identifier.uuid )
             , ( "type", string identifier.type_ )
             , ( "method", encodeUploadMethod method )
-            , ( "data", encodeBackendGeneralEntity entity )
+            , ( "data", DataManager.Utils.encodeBackendGeneralEntity entity )
             ]
                 |> object
     in
