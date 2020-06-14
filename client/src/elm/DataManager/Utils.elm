@@ -438,6 +438,19 @@ getSyncSpeedForSubscriptions model =
 
             else
                 syncCycle
+
+        checkWebDataForPhotos webData =
+            case webData of
+                RemoteData.Failure error ->
+                    if Utils.WebData.isNetworkError error then
+                        -- It's a network error, so slow things down.
+                        checkWebData webData
+
+                    else
+                        syncCycle
+
+                _ ->
+                    syncCycle
     in
     case model.syncStatus of
         SyncIdle ->
@@ -467,10 +480,10 @@ getSyncSpeedForSubscriptions model =
                     syncCycle
 
                 DownloadPhotosBatch record ->
-                    checkWebData record.backendRemoteData
+                    checkWebDataForPhotos record.backendRemoteData
 
                 DownloadPhotosAll record ->
-                    checkWebData record.backendRemoteData
+                    checkWebDataForPhotos record.backendRemoteData
 
         _ ->
             syncCycle

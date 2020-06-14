@@ -1,4 +1,12 @@
-module Utils.WebData exposing (isNetworkError, resetError, resetSuccess, sendWithHandler, viewError, viewWebData, whenNotAsked)
+module Utils.WebData exposing
+    ( isNetworkError
+    , resetError
+    , resetSuccess
+    , sendWithHandler
+    , viewError
+    , viewWebData
+    , whenNotAsked
+    )
 
 import Html exposing (..)
 import Html.Attributes exposing (class)

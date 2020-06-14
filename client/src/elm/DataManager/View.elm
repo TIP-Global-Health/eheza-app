@@ -539,7 +539,12 @@ viewDownloadPhotosBatch language model deferredPhoto =
                             String.fromInt attempt ++ "th"
             in
             div []
-                [ text <| "Photos batch download (" ++ String.fromInt (deferredPhoto.batchCounter + 1) ++ " out of " ++ String.fromInt deferredPhoto.batchSize ++ ")"
+                [ text <|
+                    "Photos batch download ("
+                        ++ String.fromInt (deferredPhoto.batchCounter + 1)
+                        ++ " out of "
+                        ++ String.fromInt deferredPhoto.batchSize
+                        ++ ")"
                 , div []
                     [ text <| attemptString ++ " attempt to download "
                     , a [ href result.photo, target "_blank" ] [ text fileName ]

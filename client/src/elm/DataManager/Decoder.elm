@@ -464,7 +464,9 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             BackendAuthorityPrenatalPhoto
 
                     "pmtct_participant" ->
-                        doDecode Backend.PmtctParticipant.Decoder.decodePmtctParticipant BackendAuthorityPmtctParticipant
+                        doDecode
+                            Backend.PmtctParticipant.Decoder.decodePmtctParticipant
+                            BackendAuthorityPmtctParticipant
 
                     "prenatal_family_planning" ->
                         doDecode

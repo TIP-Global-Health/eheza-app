@@ -66,7 +66,6 @@ var tableForType = {
     participant_form: 'nodes',
     person: 'shards',
     photo: 'shards',
-
     prenatal_photo: 'shards',
     pmtct_participant: 'shards',
     prenatal_family_planning: 'shards',
@@ -76,7 +75,6 @@ var tableForType = {
     resource: 'shards',
     session: 'shards',
     social_history: 'shards',
-    // <--
     syncmetadata: 'syncMetadata',
     village: 'nodes',
     vitals: 'shards',
