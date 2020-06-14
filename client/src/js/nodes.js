@@ -85,57 +85,6 @@
         }
     });
 
-    var tableForType = {
-        attendance: 'shards',
-        breast_exam: 'shards',
-        catchment_area: 'nodes',
-        child_fbf: 'shards',
-        clinic: 'nodes',
-        counseling_schedule: 'nodes',
-        counseling_session: 'shards',
-        counseling_topic: 'nodes',
-        core_physical_exam: 'shards',
-        danger_signs: 'shards',
-        family_planning: 'shards',
-        lactation: 'shards',
-        health_center: 'nodes',
-        height: 'shards',
-        last_menstrual_period: 'shards',
-        medical_history: 'shards',
-        medication: 'shards',
-        mother_fbf: 'shards',
-        muac: 'shards',
-        nurse: 'nodes',
-        nutrition: 'shards',
-        nutrition_encounter: 'nodes',
-        nutrition_height: 'shards',
-        nutrition_muac: 'shards',
-        nutrition_nutrition: 'shards',
-        nutrition_photo: 'shards',
-        nutrition_weight: 'shards',
-        obstetric_history: 'shards',
-        obstetric_history_step2: 'shards',
-        obstetrical_exam: 'shards',
-        participant_consent: 'shards',
-        participant_form: 'nodes',
-        person: 'nodes',
-        photo: 'shards',
-        prenatal_photo: 'shards',
-        pmtct_participant: 'nodes',
-        prenatal_family_planning: 'shards',
-        prenatal_nutrition: 'shards',
-        individual_participant: 'nodes',
-        prenatal_encounter: 'nodes',
-        relationship: 'nodes',
-        resource: 'shards',
-        session: 'nodes',
-        social_history: 'shards',
-        syncmetadata: 'syncMetadata',
-        village: 'nodes',
-        vitals: 'shards',
-        weight: 'shards'
-    };
-
     var Status = {
         published: 1,
         unpublished: 0
@@ -664,31 +613,49 @@
         }).catch(sendErrorResponses);
     }
 
-    // It's not entirely clear whose job it ought to be to figure out what
-    // shard a node should be assigned to. For now, it seems simplest to do it
-    // here, but we can revisit that.
     function determineShard (node) {
+        // Shraded nodes that specifically specify their shard.
+        // To be more precise, these are individual participants,
+        // individual encounters, persons and relationships.
+        // This check must be first, so the shard field would not get
+        // overriden by health_center field, when both of them exist
+        // at node - for example, at perosn node.
+        if (node.shard) {
+            return Promise.resolve(node.shard);
+        }
+
+        // Resolving for group measurements.
+        if (node.session) {
+            return dbSync.shards.get(node.session).then (function (session) {
+                return resolveShardByClinicId(session.clinic)
+            });
+        }
+
+        // Resolving for individual measurements.
         if (node.health_center) {
             return Promise.resolve(node.health_center);
         }
 
-        if (node.session) {
-            return dbSync.nodes.get(node.session).then (function (session) {
-                return dbSync.nodes.get(session.clinic).then(function (clinic) {
-                    if (clinic) {
-                        if (clinic.health_center) {
-                            return Promise.resolve(clinic.health_center);
-                        } else {
-                            return Promise.reject('Clinic had no health_center: ' + clinic.uuid);
-                        }
-                    } else {
-                        return Promise.reject('Could not find clinic: ' + session.clinic);
-                    }
-                });
-            });
-        } else {
-            return Promise.reject('Node had no session field: ' + node.uuid);
+        // Resolving for pmtct_participant.
+        if (node.clinic) {
+            return resolveShardByClinicId(node.clinic);
         }
+
+        return Promise.reject('Node ' + node.uuid + ' got no fields using which shard can be resolved!' );
+    }
+
+    function resolveShardByClinicId (clinicId) {
+      return dbSync.shards.get(clinicId).then(function (clinic) {
+          if (clinic) {
+              if (clinic.health_center) {
+                  return Promise.resolve(clinic.health_center);
+              } else {
+                  return Promise.reject('Clinic had no health_center: ' + clinic.uuid);
+              }
+          } else {
+              return Promise.reject('Could not find clinic: ' + session.clinic);
+          }
+      });
     }
 
     // This is meant for the end of a promise chain. If we've rejected with a
