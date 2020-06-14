@@ -5,6 +5,7 @@ module DataManager.Encoder exposing
     )
 
 import AssocList as Dict
+import Backend.Measurement.Encoder
 import Backend.Person.Encoder
 import DataManager.Model exposing (BackendAuthorityEntity(..), BackendEntityIdentifier, BackendGeneralEntity(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadGeneralResultRecord, UploadMethod(..))
 import DataManager.Utils
@@ -34,7 +35,7 @@ encodeIndexDbQueryUploadGeneralResultRecord record =
 encodeIndexDbQueryUploadAuthorityResultRecord : IndexDbQueryUploadAuthorityResultRecord -> List ( String, Value )
 encodeIndexDbQueryUploadAuthorityResultRecord record =
     let
-        replacePhotoWithFileId encodedEntity localId =
+        replacePhotoWithFileId localId encodedEntity =
             let
                 maybeFileId =
                     Dict.get localId record.uploadPhotos
@@ -53,8 +54,18 @@ encodeIndexDbQueryUploadAuthorityResultRecord record =
                 identifier =
                     DataManager.Utils.getBackendAuthorityEntityIdentifier entity
 
+                doEncode encoder identifier_ =
+                    encoder identifier_.entity
+                        |> replacePhotoWithFileId identifier_.revision
+                        |> Json.Encode.object
+
                 data =
                     case entity of
+                        BackendAuthorityNutritionPhoto identifier_ ->
+                            doEncode
+                                Backend.Measurement.Encoder.encodeNutritionPhoto
+                                identifier_
+
                         BackendAuthorityPerson identifier_ ->
                             let
                                 encodedEntity =
@@ -62,12 +73,17 @@ encodeIndexDbQueryUploadAuthorityResultRecord record =
 
                                 encodedEntityUpdated =
                                     if isJust identifier_.entity.avatarUrl then
-                                        replacePhotoWithFileId encodedEntity identifier_.revision
+                                        replacePhotoWithFileId identifier_.revision encodedEntity
 
                                     else
                                         encodedEntity
                             in
                             Json.Encode.object encodedEntityUpdated
+
+                        BackendAuthorityPhoto identifier_ ->
+                            doEncode
+                                Backend.Measurement.Encoder.encodePhoto
+                                identifier_
 
                         _ ->
                             DataManager.Utils.encodeBackendAuthorityEntity entity
