@@ -5,17 +5,13 @@
  * Recalculate all shards.
  *
  * Drush scr
- * profiles/hedley/modules/custom/hedley_patient/scripts/populate-persons-shards.php.
+ * profiles/hedley/modules/custom/hedley_patient/scripts/populate-persons-shards-fix.php.
  */
 
 if (!drupal_is_cli()) {
   // Prevent execution from browser.
   return;
 }
-
-$nid = 0;
-$batch = 50;
-$memory_limit =  500;
 
 // Get the last node id.
 $nid = drush_get_option('nid', 0);
