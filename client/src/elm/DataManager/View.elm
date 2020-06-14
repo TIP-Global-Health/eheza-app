@@ -473,12 +473,6 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPhoto identifier ->
                 viewMeasurement identifier "Photo"
 
-            BackendAuthorityWeight identifier ->
-                viewMeasurement identifier "Weight"
-
-            BackendAuthorityEntityUnknown type_ _ ->
-                text <| type_ ++ " (we still don't decode it)"
-
             BackendAuthorityPrenatalPhoto identifier ->
                 viewMeasurement identifier "Photo"
 
@@ -505,6 +499,15 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthoritySocialHistory identifier ->
                 viewMeasurement identifier "Social History"
+
+            BackendAuthorityVitals identifier ->
+                viewMeasurement identifier "Vitals"
+
+            BackendAuthorityWeight identifier ->
+                viewMeasurement identifier "Weight"
+
+            BackendAuthorityEntityUnknown type_ _ ->
+                text <| type_ ++ " (we still don't decode it)"
         ]
 
 

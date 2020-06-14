@@ -385,6 +385,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityWeight identifier ->
             getIdentifier identifier "weight"
 
+        BackendAuthorityVitals identifier ->
+            getIdentifier identifier "vitals"
+
         BackendAuthorityEntityUnknown uuid revision ->
             { uuid = uuid
             , revision = revision
@@ -629,6 +632,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthoritySocialHistory identifier ->
             (object << Backend.Measurement.Encoder.encodeSocialHistory) identifier.entity
+
+        BackendAuthorityVitals identifier ->
+            (object << Backend.Measurement.Encoder.encodeVitals) identifier.entity
 
         BackendAuthorityWeight identifier ->
             (object << Backend.Measurement.Encoder.encodeWeight) identifier.entity

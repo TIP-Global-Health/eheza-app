@@ -499,6 +499,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeSocialHistory
                             BackendAuthoritySocialHistory
 
+                    "vitals" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeVitals
+                            BackendAuthorityVitals
+
                     "weight" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeWeight

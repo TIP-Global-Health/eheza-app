@@ -34,7 +34,7 @@ import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
 import Backend.Entities exposing (HealthCenterId)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Model exposing (Attendance, BreastExam, ChildNutrition, CorePhysicalExam, CounselingSession, DangerSigns, FamilyPlanning, Fbf, Height, Lactation, LastMenstrualPeriod, Measurement, MedicalHistory, Medication, Muac, NutritionHeight, NutritionMuac, NutritionNutrition, NutritionPhoto, NutritionWeight, ObstetricHistory, ObstetricHistoryStep2, ObstetricalExam, ParticipantConsent, Photo, PrenatalFamilyPlanning, PrenatalNutrition, PrenatalPhoto, Resource, SocialHistory, Weight)
+import Backend.Measurement.Model exposing (Attendance, BreastExam, ChildNutrition, CorePhysicalExam, CounselingSession, DangerSigns, FamilyPlanning, Fbf, Height, Lactation, LastMenstrualPeriod, Measurement, MedicalHistory, Medication, Muac, NutritionHeight, NutritionMuac, NutritionNutrition, NutritionPhoto, NutritionWeight, ObstetricHistory, ObstetricHistoryStep2, ObstetricalExam, ParticipantConsent, Photo, PrenatalFamilyPlanning, PrenatalNutrition, PrenatalPhoto, Resource, SocialHistory, Vitals, Weight)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
@@ -113,6 +113,7 @@ type BackendAuthorityEntity
     | BackendAuthorityResource (BackendEntity Resource)
     | BackendAuthoritySession (BackendEntity Session)
     | BackendAuthoritySocialHistory (BackendEntity SocialHistory)
+    | BackendAuthorityVitals (BackendEntity Vitals)
     | BackendAuthorityWeight (BackendEntity Weight)
       -- Don't fail on unknown types. We'd like to keep the type name along with
       -- the `vid`. The reason we keep the vid, is that we fetched some content
