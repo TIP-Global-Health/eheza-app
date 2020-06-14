@@ -132,13 +132,13 @@ decodeIndexDbQueryUploadPhotoResultRecord =
 decodeIndexDbQueryUploadGeneralResultRecord : Decoder IndexDbQueryUploadGeneralResultRecord
 decodeIndexDbQueryUploadGeneralResultRecord =
     succeed IndexDbQueryUploadGeneralResultRecord
-        |> required "entities" (list <| decodeBackendGeneralEntityAndUploadMethod (\uuid localId -> decodeBackendGeneralEntity (hardcoded uuid) (hardcoded localId)))
+        |> required "entities" (list <| decodeBackendEntityAndUploadMethod (\uuid localId -> decodeBackendGeneralEntity (hardcoded uuid) (hardcoded localId)))
 
 
 decodeIndexDbQueryUploadAuthorityResultRecord : Decoder IndexDbQueryUploadAuthorityResultRecord
 decodeIndexDbQueryUploadAuthorityResultRecord =
     succeed IndexDbQueryUploadAuthorityResultRecord
-        |> required "entities" (list <| decodeBackendGeneralEntityAndUploadMethod (\_ _ -> decodeBackendAuthorityEntity))
+        |> required "entities" (list <| decodeBackendEntityAndUploadMethod (\uuid localId -> decodeBackendAuthorityEntity (hardcoded uuid) (hardcoded localId)))
         |> required "uploadPhotos"
             (list decodeIndexDbQueryUploadPhotoResultRecord
                 |> andThen
@@ -170,7 +170,7 @@ So we grab the `localId` and `uuid`, and feed them to the decodeBackendGeneralEn
 --decodeBackendGeneralEntityAndUploadMethod : a -> Decoder ( BackendGeneralEntity, UploadMethod )
 
 
-decodeBackendGeneralEntityAndUploadMethod func =
+decodeBackendEntityAndUploadMethod func =
     (succeed (\a b -> ( a, b ))
         |> required "uuid" string
         |> required "localId" int
@@ -279,21 +279,24 @@ decodeDownloadSyncResponseAuthority : Decoder (DownloadSyncResponse BackendAutho
 decodeDownloadSyncResponseAuthority =
     field "data"
         (succeed DownloadSyncResponse
-            |> required "batch" (list decodeBackendAuthorityEntity)
+            |> required "batch" (list <| decodeBackendAuthorityEntity (required "uuid" string) (required "vid" decodeInt))
             |> required "last_timestamp" decodeDate
             |> required "revision_count" decodeInt
         )
 
 
-decodeBackendAuthorityEntity : Decoder BackendAuthorityEntity
-decodeBackendAuthorityEntity =
+
+--decodeBackendAuthorityEntity : Decoder BackendAuthorityEntity
+
+
+decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
     (succeed (\a b c -> ( a, b, c ))
         |> required "type" string
-        |> required "uuid" string
-        |> required "vid" decodeInt
+        |> uuidDecoder
+        |> identifierDecoder
     )
         |> andThen
-            (\( type_, uuid, vid ) ->
+            (\( type_, uuid, revisionIdentifier ) ->
                 let
                     doDecode decoder tag =
                         decoder
@@ -302,7 +305,7 @@ decodeBackendAuthorityEntity =
                                     let
                                         backendEntity =
                                             { uuid = uuid
-                                            , revision = vid
+                                            , revision = revisionIdentifier
                                             , entity = entity
                                             }
                                     in
@@ -461,7 +464,7 @@ decodeBackendAuthorityEntity =
                             BackendAuthorityWeight
 
                     _ ->
-                        succeed (BackendAuthorityEntityUnknown type_ vid)
+                        succeed (BackendAuthorityEntityUnknown type_ revisionIdentifier)
             )
 
 
