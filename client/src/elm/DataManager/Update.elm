@@ -178,6 +178,14 @@ update currentDate dbVersion device msg model =
                 SyncIdle ->
                     returnDetermineSyncStatus
 
+                SyncUploadGeneral _ ->
+                    update
+                        currentDate
+                        dbVersion
+                        device
+                        FetchFromIndexDbUploadGeneral
+                        model
+
                 SyncUploadPhotoAuthority _ ->
                     update
                         currentDate
@@ -186,12 +194,12 @@ update currentDate dbVersion device msg model =
                         BackendPhotoUploadAuthority
                         model
 
-                SyncUploadGeneral _ ->
+                SyncUploadAuthority _ ->
                     update
                         currentDate
                         dbVersion
                         device
-                        FetchFromIndexDbUploadGeneral
+                        FetchFromIndexDbUploadAuthority
                         model
 
                 SyncDownloadGeneral _ ->
@@ -492,6 +500,32 @@ update currentDate dbVersion device msg model =
                 _ ->
                     noChange
 
+        FetchFromIndexDbUploadAuthority ->
+            -- Get a entities for upload from IndexDB.
+            case model.syncStatus of
+                SyncUploadAuthority record ->
+                    if RemoteData.isLoading record.indexDbRemoteData || RemoteData.isLoading record.backendRemoteData then
+                        -- We are already loading.
+                        noChange
+
+                    else
+                        let
+                            recordUpdated =
+                                { record
+                                    | indexDbRemoteData = RemoteData.Loading
+                                    , backendRemoteData = RemoteData.NotAsked
+                                }
+                        in
+                        update
+                            currentDate
+                            dbVersion
+                            device
+                            (QueryIndexDb IndexDbQueryUploadAuthority)
+                            { model | syncStatus = SyncUploadAuthority recordUpdated }
+
+                _ ->
+                    noChange
+
         BackendPhotoUploadAuthority ->
             case model.syncStatus of
                 SyncUploadPhotoAuthority webData ->
@@ -509,14 +543,128 @@ update currentDate dbVersion device msg model =
                 _ ->
                     noChange
 
-        BackendUploadAuthority _ ->
-            -- @todo
-            noChange
+        BackendUploadAuthority Nothing ->
+            let
+                syncStatus =
+                    -- There are no entities for upload.
+                    case model.syncStatus of
+                        SyncUploadAuthority record ->
+                            SyncUploadAuthority { record | indexDbRemoteData = RemoteData.Success Nothing }
+
+                        _ ->
+                            model.syncStatus
+            in
+            SubModelReturn
+                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                Cmd.none
+                noError
+                []
+
+        BackendUploadAuthority (Just result) ->
+            case model.syncStatus of
+                SyncUploadAuthority record ->
+                    if RemoteData.isLoading record.backendRemoteData then
+                        -- We are already POSTing to the backend.
+                        noChange
+
+                    else
+                        let
+                            recordUpdated =
+                                { record
+                                    | backendRemoteData =
+                                        if List.isEmpty result.entities then
+                                            -- There were no entities for upload.
+                                            RemoteData.NotAsked
+
+                                        else
+                                            RemoteData.Loading
+                                    , indexDbRemoteData = RemoteData.Success (Just result)
+                                }
+
+                            modelUpdated =
+                                { model | syncStatus = SyncUploadAuthority recordUpdated }
+
+                            cmd =
+                                if List.isEmpty result.entities then
+                                    -- There were no entities for upload.
+                                    Cmd.none
+
+                                else
+                                    -- @todo: Add the UUID to the URL.
+                                    HttpBuilder.post (device.backendUrl ++ "/api/sync/FIXME-ADD-UUD")
+                                        |> withQueryParams
+                                            [ ( "access_token", device.accessToken )
+                                            , ( "db_version", String.fromInt dbVersion )
+                                            ]
+                                        |> withJsonBody (Json.Encode.object <| DataManager.Encoder.encodeIndexDbQueryUploadAuthorityResultRecord result)
+                                        -- We don't need to decode anything, as we just want to have
+                                        -- the browser download it.
+                                        |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadAuthorityHandle result)
+                        in
+                        SubModelReturn
+                            (DataManager.Utils.determineSyncStatus modelUpdated)
+                            cmd
+                            noError
+                            []
+
+                _ ->
+                    noChange
+
+        BackendUploadAuthorityHandle result webData ->
+            case model.syncStatus of
+                SyncUploadAuthority record ->
+                    case webData of
+                        RemoteData.Failure error ->
+                            let
+                                syncStatus =
+                                    SyncUploadAuthority { record | backendRemoteData = RemoteData.Failure error }
+                            in
+                            SubModelReturn
+                                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                                Cmd.none
+                                (maybeHttpError webData "Backend.DataManager.Update" "BackendUploadAuthorityHandle")
+                                []
+
+                        RemoteData.Success _ ->
+                            let
+                                syncStatus =
+                                    SyncUploadAuthority { record | backendRemoteData = RemoteData.Success () }
+
+                                -- We have successfully uploaded the entities, so
+                                -- we can mark them as `isSynced`.
+                                cmd =
+                                    let
+                                        localIds =
+                                            List.map
+                                                (\( entity, _ ) ->
+                                                    let
+                                                        identifier =
+                                                            DataManager.Utils.getBackendAuthorityEntityIdentifier entity
+                                                    in
+                                                    identifier.revision
+                                                )
+                                                result.entities
+                                    in
+                                    -- @todo: Implement on JS side.
+                                    sendLocalIdsForMarkAsUploaded { type_ = "Authority", localId = localIds }
+                            in
+                            SubModelReturn
+                                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                                cmd
+                                noError
+                                []
+
+                        _ ->
+                            -- Satisfy the compiler.
+                            noChange
+
+                _ ->
+                    noChange
 
         BackendUploadGeneral Nothing ->
             let
                 syncStatus =
-                    -- There are no deferred photos matching the query.
+                    -- There are no entities for upload.
                     case model.syncStatus of
                         SyncUploadGeneral record ->
                             SyncUploadGeneral { record | indexDbRemoteData = RemoteData.Success Nothing }
@@ -822,6 +970,11 @@ update currentDate dbVersion device msg model =
 
                         IndexDbQueryUploadGeneral ->
                             { queryType = "IndexDbQueryUploadGeneral"
+                            , data = Nothing
+                            }
+
+                        IndexDbQueryUploadAuthority ->
+                            { queryType = "IndexDbQueryUploadAuthority"
                             , data = Nothing
                             }
 

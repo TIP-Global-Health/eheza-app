@@ -16,7 +16,19 @@ import Backend.ParticipantConsent.Decoder
 import Backend.Person.Decoder
 import Backend.PmtctParticipant.Decoder
 import Backend.Relationship.Decoder
-import DataManager.Model exposing (BackendAuthorityEntity(..), BackendGeneralEntity(..), DownloadSyncResponse, IndexDbQueryDeferredPhotoResultRecord, IndexDbQueryTypeResult(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadGeneralResultRecord, IndexDbQueryUploadPhotoResultRecord, UploadMethod(..), UploadPhotoError(..))
+import DataManager.Model
+    exposing
+        ( BackendAuthorityEntity(..)
+        , BackendGeneralEntity(..)
+        , DownloadSyncResponse
+        , IndexDbQueryDeferredPhotoResultRecord
+        , IndexDbQueryTypeResult(..)
+        , IndexDbQueryUploadAuthorityResultRecord
+        , IndexDbQueryUploadGeneralResultRecord
+        , IndexDbQueryUploadPhotoResultRecord
+        , UploadMethod(..)
+        , UploadPhotoError(..)
+        )
 import Gizra.Date exposing (decodeDate)
 import Gizra.Json exposing (decodeInt)
 import Json.Decode exposing (..)

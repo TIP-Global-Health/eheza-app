@@ -1,5 +1,6 @@
 module DataManager.Utils exposing
     ( determineSyncStatus
+    , encodeBackendAuthorityEntity
     , encodeBackendGeneralEntity
     , getBackendAuthorityEntityIdentifier
     , getBackendGeneralEntityIdentifier
@@ -59,6 +60,15 @@ determineSyncStatus model =
                     SyncIdle ->
                         ( SyncUploadPhotoAuthority RemoteData.NotAsked, revisionIdPerAuthorityZipper )
 
+                    SyncUploadGeneral record ->
+                        if record.indexDbRemoteData == RemoteData.Success Nothing then
+                            -- We tried to fetch entities for upload from IndexDB,
+                            -- but there we non matching the query.
+                            ( SyncDownloadGeneral RemoteData.NotAsked, revisionIdPerAuthorityZipper )
+
+                        else
+                            noChange
+
                     SyncUploadPhotoAuthority webData ->
                         case webData of
                             RemoteData.Success maybeData ->
@@ -74,14 +84,9 @@ determineSyncStatus model =
                             _ ->
                                 noChange
 
-                    SyncUploadGeneral record ->
-                        if record.indexDbRemoteData == RemoteData.Success Nothing then
-                            -- We tried to fetch entities for upload from IndexDB,
-                            -- but there we non matching the query.
-                            ( SyncDownloadGeneral RemoteData.NotAsked, revisionIdPerAuthorityZipper )
-
-                        else
-                            noChange
+                    SyncUploadAuthority webData ->
+                        -- @todo
+                        noChange
 
                     SyncDownloadGeneral webData ->
                         case webData of

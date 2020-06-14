@@ -241,15 +241,15 @@ type DownloadPhotos
     | DownloadPhotosAll DownloadPhotosAllRec
 
 
-{-| Hold info related to uploading entities.
+{-| Hold info related to uploading General entities.
 -}
-type alias UploadRec =
-    { indexDbRemoteData : IndexDbUploadRemoteData
+type alias UploadRec a =
+    { indexDbRemoteData : IndexDbUploadRemoteData a
     , backendRemoteData : WebData ()
     }
 
 
-emptyUploadRec : UploadRec
+emptyUploadRec : UploadRec a
 emptyUploadRec =
     { indexDbRemoteData = RemoteData.NotAsked
     , backendRemoteData = RemoteData.NotAsked
@@ -287,16 +287,17 @@ type alias IndexDbDeferredPhotoRemoteData =
 
 {-| RemoteData to indicate fetching entities for upload info from IndexDB.
 -}
-type alias IndexDbUploadRemoteData =
-    RemoteData () (Maybe IndexDbQueryUploadGeneralResultRecord)
+type alias IndexDbUploadRemoteData a =
+    RemoteData () (Maybe a)
 
 
 {-| The Sync (download or upload), by its order.
 -}
 type SyncStatus
     = SyncIdle
+    | SyncUploadGeneral (UploadRec IndexDbQueryUploadGeneralResultRecord)
     | SyncUploadPhotoAuthority (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
-    | SyncUploadGeneral UploadRec
+    | SyncUploadAuthority (UploadRec IndexDbQueryUploadAuthorityResultRecord)
     | SyncDownloadGeneral (WebData (DownloadSyncResponse BackendGeneralEntity))
     | SyncDownloadAuthority (WebData (DownloadSyncResponse BackendAuthorityEntity))
     | SyncDownloadPhotos DownloadPhotos
@@ -320,6 +321,7 @@ type IndexDbQueryType
     = -- Get a single photo pending uploading.
       IndexDbQueryUploadPhotoAuthority
     | IndexDbQueryUploadGeneral
+    | IndexDbQueryUploadAuthority
       -- Get a single deferred photo.
     | IndexDbQueryDeferredPhoto
       -- When we successfully download a photo, we remove it from the `deferredPhotos` table.
@@ -407,6 +409,7 @@ type Msg
       -- This is the reason it doesn't get as arguments the result of the IndexDB.
     | BackendPhotoUploadAuthority
     | BackendUploadAuthority (Maybe IndexDbQueryUploadAuthorityResultRecord)
+    | BackendUploadAuthorityHandle IndexDbQueryUploadAuthorityResultRecord (WebData ())
     | BackendUploadGeneral (Maybe IndexDbQueryUploadGeneralResultRecord)
     | BackendUploadGeneralHandle IndexDbQueryUploadGeneralResultRecord (WebData ())
     | BackendUploadPhotoAuthorityHandle (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
@@ -414,6 +417,7 @@ type Msg
     | QueryIndexDbHandle Value
     | FetchFromIndexDbDeferredPhoto
     | FetchFromIndexDbUploadGeneral
+    | FetchFromIndexDbUploadAuthority
     | RevisionIdAuthorityAdd HealthCenterId
     | RevisionIdAuthorityRemove HealthCenterId
     | SetLastFetchedRevisionIdAuthority (Zipper RevisionIdPerAuthority) Int

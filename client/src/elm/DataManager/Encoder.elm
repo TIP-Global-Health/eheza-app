@@ -1,24 +1,34 @@
 module DataManager.Encoder exposing
     ( encodeDataForDeferredPhotos
+    , encodeIndexDbQueryUploadAuthorityResultRecord
     , encodeIndexDbQueryUploadGeneralResultRecord
     )
 
-import AssocList as Dict
-import DataManager.Model
-    exposing
-        ( BackendAuthorityEntity(..)
-        , BackendEntityIdentifier
-        , BackendGeneralEntity(..)
-        , IndexDbQueryUploadGeneralResultRecord
-        , UploadMethod(..)
-        )
+import DataManager.Model exposing (BackendAuthorityEntity(..), BackendEntityIdentifier, BackendGeneralEntity(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadGeneralResultRecord, UploadMethod(..))
 import DataManager.Utils
-import Json.Encode exposing (Value, int, list, null, object, string)
-import Json.Encode.Extra exposing (maybe)
+import Json.Encode exposing (Value, int, list, object, string)
 
 
 encodeIndexDbQueryUploadGeneralResultRecord : IndexDbQueryUploadGeneralResultRecord -> List ( String, Value )
 encodeIndexDbQueryUploadGeneralResultRecord record =
+    let
+        encodeData ( entity, method ) =
+            let
+                identifier =
+                    DataManager.Utils.getBackendGeneralEntityIdentifier entity
+            in
+            [ ( "uuid", string identifier.uuid )
+            , ( "type", string identifier.type_ )
+            , ( "method", encodeUploadMethod method )
+            , ( "data", DataManager.Utils.encodeBackendGeneralEntity entity )
+            ]
+                |> object
+    in
+    [ ( "changes", list encodeData record.entities ) ]
+
+
+encodeIndexDbQueryUploadAuthorityResultRecord : IndexDbQueryUploadAuthorityResultRecord -> List ( String, Value )
+encodeIndexDbQueryUploadAuthorityResultRecord record =
     let
         --replacePhotoWithFileId encodedEntity localId =
         --    let
@@ -36,7 +46,7 @@ encodeIndexDbQueryUploadGeneralResultRecord record =
         encodeData ( entity, method ) =
             let
                 identifier =
-                    DataManager.Utils.getBackendGeneralEntityIdentifier entity
+                    DataManager.Utils.getBackendAuthorityEntityIdentifier entity
 
                 --data =
                 --    case entity of
@@ -62,7 +72,7 @@ encodeIndexDbQueryUploadGeneralResultRecord record =
             [ ( "uuid", string identifier.uuid )
             , ( "type", string identifier.type_ )
             , ( "method", encodeUploadMethod method )
-            , ( "data", DataManager.Utils.encodeBackendGeneralEntity entity )
+            , ( "data", DataManager.Utils.encodeBackendAuthorityEntity entity )
             ]
                 |> object
     in
