@@ -1,12 +1,11 @@
 module DataManager.Utils exposing
     ( determineSyncStatus
-    , encodeDataToSend
+    , encodeBackendGeneralEntityToSend
     , getBackendAuthorityEntityIdentifier
     , getBackendGeneralEntityIdentifier
     , getDataToSendAuthority
     , getDataToSendGeneral
     , getPhotoFromBackendAuthorityEntity
-    , getPhotoFromBackendGeneralEntity
     , getSyncSpeedForSubscriptions
     )
 
@@ -22,9 +21,10 @@ import Backend.ParticipantConsent.Encoder
 import Backend.Person.Encoder
 import Backend.PmtctParticipant.Encoder
 import Backend.Relationship.Encoder
+import DataManager.Encoder
 import DataManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), DownloadPhotos(..), Model, SyncStatus(..), emptyDownloadPhotosBatchRec, emptyUploadRec)
 import Editable
-import Json.Encode
+import Json.Encode exposing (Value, object)
 import List.Zipper as Zipper
 import RemoteData
 import Utils.WebData
@@ -355,19 +355,6 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
             }
 
 
-{-| Return a photo from a "General" entity.
-
-Not all entities have a photo, and even if they do, it might be a Maybe value
-(for example the `avatar` of a `Person` entity).
-
-@todo: Remove.
-
--}
-getPhotoFromBackendGeneralEntity : BackendGeneralEntity -> Maybe String
-getPhotoFromBackendGeneralEntity backendGeneralEntity =
-    Nothing
-
-
 {-| Return a photo from a "Authority" entity.
 -}
 getPhotoFromBackendAuthorityEntity : BackendAuthorityEntity -> Maybe String
@@ -466,49 +453,49 @@ getDataToSendGeneral : BackendGeneralEntity -> List String -> List String
 getDataToSendGeneral entity accum =
     case entity of
         BackendGeneralCatchmentArea identifier ->
-            encodeDataToSend
+            encodeBackendGeneralEntityToSend
                 identifier
                 accum
                 Backend.HealthCenter.Encoder.encodeCatchmentArea
 
         BackendGeneralCounselingSchedule identifier ->
-            encodeDataToSend
+            encodeBackendGeneralEntityToSend
                 identifier
                 accum
                 Backend.Counseling.Encoder.encodeCounselingSchedule
 
         BackendGeneralHealthCenter identifier ->
-            encodeDataToSend
+            encodeBackendGeneralEntityToSend
                 identifier
                 accum
                 Backend.HealthCenter.Encoder.encodeHealthCenter
 
         BackendGeneralCounselingTopic identifier ->
-            encodeDataToSend
+            encodeBackendGeneralEntityToSend
                 identifier
                 accum
                 (Json.Encode.object << Backend.Counseling.Encoder.encodeCounselingTopic)
 
         BackendGeneralNurse identifier ->
-            encodeDataToSend
+            encodeBackendGeneralEntityToSend
                 identifier
                 accum
                 (Json.Encode.object << Backend.Nurse.Encoder.encodeNurse)
 
         BackendGeneralParticipantForm identifier ->
-            encodeDataToSend
+            encodeBackendGeneralEntityToSend
                 identifier
                 accum
                 (Json.Encode.object << Backend.ParticipantConsent.Encoder.encodeParticipantForm)
 
         BackendGeneralPmtctParticipant identifier ->
-            encodeDataToSend
+            encodeBackendGeneralEntityToSend
                 identifier
                 accum
                 Backend.PmtctParticipant.Encoder.encodePmtctParticipant
 
         BackendGeneralRelationship identifier ->
-            encodeDataToSend
+            encodeBackendGeneralEntityToSend
                 identifier
                 accum
                 Backend.Relationship.Encoder.encodeRelationship
@@ -522,196 +509,315 @@ getDataToSendAuthority : BackendAuthorityEntity -> List String -> List String
 getDataToSendAuthority entity accum =
     case entity of
         BackendAuthorityAttendance identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeAttendance)
 
         BackendAuthorityBreastExam identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeBreastExam)
 
         BackendAuthorityClinic identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Clinic.Encoder.encodeClinic)
 
         BackendAuthorityChildFbf identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeFbf)
 
         BackendAuthorityCounselingSession identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeCounselingSession)
 
         BackendAuthorityCorePhysicalExam identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeCorePhysicalExam)
 
         BackendAuthorityDangerSigns identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeDangerSigns)
 
         BackendAuthorityFamilyPlanning identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeFamilyPlanning)
 
         BackendAuthorityHeight identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeHeight)
 
         BackendAuthorityIndividualParticipant identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                Backend.IndividualEncounterParticipant.Encoder.encodeIndividualEncounterParticipant
 
         BackendAuthorityLactation identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeLactation)
 
         BackendAuthorityLastMenstrualPeriod identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeLastMenstrualPeriod)
 
         BackendAuthorityMedicalHistory identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeMedicalHistory)
 
         BackendAuthorityMedication identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeMedication)
 
         BackendAuthorityMotherFbf identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeFbf)
 
         BackendAuthorityMuac identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeMuac)
 
         BackendAuthorityNutrition identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeNutrition)
 
         BackendAuthorityNutritionEncounter identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.NutritionEncounter.Encoder.encodeNutritionEncounter)
 
         BackendAuthorityNutritionHeight identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeNutritionHeight)
 
         BackendAuthorityNutritionMuac identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeNutritionMuac)
 
         BackendAuthorityNutritionNutrition identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeNutritionNutrition)
 
         BackendAuthorityNutritionPhoto identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeNutritionPhoto)
 
         BackendAuthorityNutritionWeight identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeNutritionWeight)
 
         BackendAuthorityObstetricHistory identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeObstetricHistory)
 
         BackendAuthorityObstetricHistoryStep2 identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeObstetricHistoryStep2)
 
         BackendAuthorityObstetricalExam identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeObstetricalExam)
 
         BackendAuthorityParticipantConsent identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeParticipantConsent)
 
         BackendAuthorityPerson identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Person.Encoder.encodePerson)
 
         BackendAuthorityPhoto identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodePhoto)
 
         BackendAuthorityWeight identifier ->
-            encodeDataToSend
+            encodeBackendAuthorityEntityToSend
                 identifier
                 accum
-                (Json.Encode.object << Backend.Measurement.Encoder.encodeWeight)
 
         BackendAuthorityEntityUnknown _ _ ->
             -- Filter out the unknown entities.
             accum
 
 
-encodeDataToSend : BackendEntity a -> List String -> (a -> Json.Encode.Value) -> List String
-encodeDataToSend identifier accum func =
+encodeBackendGeneralEntity : BackendGeneralEntity -> Value
+encodeBackendGeneralEntity backendGeneralEntity =
+    case backendGeneralEntity of
+        BackendGeneralCatchmentArea identifier ->
+            Backend.HealthCenter.Encoder.encodeCatchmentArea identifier.entity
+
+        BackendGeneralCounselingSchedule identifier ->
+            Backend.Counseling.Encoder.encodeCounselingSchedule identifier.entity
+
+        BackendGeneralCounselingTopic identifier ->
+            (object << Backend.Counseling.Encoder.encodeCounselingTopic) identifier.entity
+
+        BackendGeneralHealthCenter identifier ->
+            Backend.HealthCenter.Encoder.encodeHealthCenter identifier.entity
+
+        BackendGeneralNurse identifier ->
+            (object << Backend.Nurse.Encoder.encodeNurse) identifier.entity
+
+        BackendGeneralParticipantForm identifier ->
+            (object << Backend.ParticipantConsent.Encoder.encodeParticipantForm) identifier.entity
+
+        BackendGeneralPmtctParticipant identifier ->
+            Backend.PmtctParticipant.Encoder.encodePmtctParticipant identifier.entity
+
+        BackendGeneralRelationship identifier ->
+            Backend.Relationship.Encoder.encodeRelationship identifier.entity
+
+        BackendGeneralEntityUnknown string int ->
+            object []
+
+
+encodeBackendAuthorityEntity : BackendAuthorityEntity -> Value
+encodeBackendAuthorityEntity entity =
+    case entity of
+        BackendAuthorityAttendance identifier ->
+            (object << Backend.Measurement.Encoder.encodeAttendance) identifier.entity
+
+        BackendAuthorityBreastExam identifier ->
+            (object << Backend.Measurement.Encoder.encodeBreastExam) identifier.entity
+
+        BackendAuthorityClinic identifier ->
+            (object << Backend.Clinic.Encoder.encodeClinic) identifier.entity
+
+        BackendAuthorityChildFbf identifier ->
+            (object << Backend.Measurement.Encoder.encodeFbf) identifier.entity
+
+        BackendAuthorityCounselingSession identifier ->
+            (object << Backend.Measurement.Encoder.encodeCounselingSession) identifier.entity
+
+        BackendAuthorityCorePhysicalExam identifier ->
+            (object << Backend.Measurement.Encoder.encodeCorePhysicalExam) identifier.entity
+
+        BackendAuthorityDangerSigns identifier ->
+            (object << Backend.Measurement.Encoder.encodeDangerSigns) identifier.entity
+
+        BackendAuthorityFamilyPlanning identifier ->
+            (object << Backend.Measurement.Encoder.encodeFamilyPlanning) identifier.entity
+
+        BackendAuthorityHeight identifier ->
+            (object << Backend.Measurement.Encoder.encodeHeight) identifier.entity
+
+        BackendAuthorityIndividualParticipant identifier ->
+            Backend.IndividualEncounterParticipant.Encoder.encodeIndividualEncounterParticipant identifier.entity
+
+        BackendAuthorityLactation identifier ->
+            (object << Backend.Measurement.Encoder.encodeLactation) identifier.entity
+
+        BackendAuthorityLastMenstrualPeriod identifier ->
+            (object << Backend.Measurement.Encoder.encodeLastMenstrualPeriod) identifier.entity
+
+        BackendAuthorityMedicalHistory identifier ->
+            (object << Backend.Measurement.Encoder.encodeMedicalHistory) identifier.entity
+
+        BackendAuthorityMedication identifier ->
+            (object << Backend.Measurement.Encoder.encodeMedication) identifier.entity
+
+        BackendAuthorityMotherFbf identifier ->
+            (object << Backend.Measurement.Encoder.encodeFbf) identifier.entity
+
+        BackendAuthorityMuac identifier ->
+            (object << Backend.Measurement.Encoder.encodeMuac) identifier.entity
+
+        BackendAuthorityNutrition identifier ->
+            (object << Backend.Measurement.Encoder.encodeNutrition) identifier.entity
+
+        BackendAuthorityNutritionEncounter identifier ->
+            (object << Backend.NutritionEncounter.Encoder.encodeNutritionEncounter) identifier.entity
+
+        BackendAuthorityNutritionHeight identifier ->
+            (object << Backend.Measurement.Encoder.encodeNutritionHeight) identifier.entity
+
+        BackendAuthorityNutritionMuac identifier ->
+            (object << Backend.Measurement.Encoder.encodeNutritionMuac) identifier.entity
+
+        BackendAuthorityNutritionNutrition identifier ->
+            (object << Backend.Measurement.Encoder.encodeNutritionNutrition) identifier.entity
+
+        BackendAuthorityNutritionPhoto identifier ->
+            (object << Backend.Measurement.Encoder.encodeNutritionPhoto) identifier.entity
+
+        BackendAuthorityNutritionWeight identifier ->
+            (object << Backend.Measurement.Encoder.encodeNutritionWeight) identifier.entity
+
+        BackendAuthorityObstetricHistory identifier ->
+            (object << Backend.Measurement.Encoder.encodeObstetricHistory) identifier.entity
+
+        BackendAuthorityObstetricHistoryStep2 identifier ->
+            (object << Backend.Measurement.Encoder.encodeObstetricHistoryStep2) identifier.entity
+
+        BackendAuthorityObstetricalExam identifier ->
+            (object << Backend.Measurement.Encoder.encodeObstetricalExam) identifier.entity
+
+        BackendAuthorityParticipantConsent identifier ->
+            (object << Backend.Measurement.Encoder.encodeParticipantConsent) identifier.entity
+
+        BackendAuthorityPerson identifier ->
+            (object << Backend.Person.Encoder.encodePerson) identifier.entity
+
+        BackendAuthorityPhoto identifier ->
+            (object << Backend.Measurement.Encoder.encodePhoto) identifier.entity
+
+        BackendAuthorityWeight identifier ->
+            (object << Backend.Measurement.Encoder.encodeWeight) identifier.entity
+
+        BackendAuthorityEntityUnknown _ _ ->
+            -- Filter out the unknown entities.
+            object []
+
+
+encodeBackendGeneralEntityToSend : BackendGeneralEntity -> List String -> List String
+encodeBackendGeneralEntityToSend entity accum =
+    let
+        identifier =
+            getBackendGeneralEntityIdentifier entity
+    in
     (Json.Encode.object
         [ ( "uuid", Json.Encode.string identifier.uuid )
         , ( "vid", Json.Encode.int identifier.revision )
-        , ( "entity", func identifier.entity )
+        , ( "entity", encodeBackendGeneralEntity entity )
+        ]
+        |> Json.Encode.encode 0
+    )
+        :: accum
+
+
+encodeBackendAuthorityEntityToSend : BackendAuthorityEntity -> List String -> List String
+encodeBackendAuthorityEntityToSend entity accum =
+    let
+        identifier =
+            getBackendAuthorityEntityIdentifier entity
+    in
+    (Json.Encode.object
+        [ ( "uuid", Json.Encode.string identifier.uuid )
+        , ( "vid", Json.Encode.int identifier.revision )
+        , ( "entity", encodeBackendAuthorityEntity entity )
         ]
         |> Json.Encode.encode 0
     )

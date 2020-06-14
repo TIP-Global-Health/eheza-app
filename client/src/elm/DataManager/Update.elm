@@ -385,39 +385,6 @@ update currentDate dbVersion device msg model =
                         Nothing ->
                             model.lastFetchedRevisionIdGeneral
 
-                deferredPhotosCmd =
-                    -- Prepare a list of the photos, so we could grab them in a later
-                    -- time.
-                    case RemoteData.toMaybe webData of
-                        Just data ->
-                            let
-                                dataToSend =
-                                    data.entities
-                                        |> List.foldl
-                                            (\entity accum ->
-                                                case DataManager.Utils.getPhotoFromBackendGeneralEntity entity of
-                                                    Just photoUrl ->
-                                                        (entity
-                                                            |> DataManager.Utils.getBackendGeneralEntityIdentifier
-                                                            |> DataManager.Encoder.encodeDataForDeferredPhotos photoUrl
-                                                        )
-                                                            :: accum
-
-                                                    Nothing ->
-                                                        accum
-                                            )
-                                            []
-                                        |> List.reverse
-                            in
-                            if List.isEmpty dataToSend then
-                                Cmd.none
-
-                            else
-                                sendSyncedDataToIndexDb { table = "DeferredPhotos", data = dataToSend }
-
-                        _ ->
-                            Cmd.none
-
                 modelWithSyncStatus =
                     DataManager.Utils.determineSyncStatus { model | syncStatus = SyncDownloadGeneral webData }
             in
@@ -425,7 +392,6 @@ update currentDate dbVersion device msg model =
                 { modelWithSyncStatus | lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral }
                 (Cmd.batch
                     [ cmd
-                    , deferredPhotosCmd
                     , deleteLocalIdsCmd
                     , sendLastFetchedRevisionIdGeneral lastFetchedRevisionIdGeneral
                     ]
