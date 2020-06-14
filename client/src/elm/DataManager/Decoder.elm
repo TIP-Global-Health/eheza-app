@@ -240,9 +240,6 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
                     "nurse" ->
                         doDecode Backend.Nurse.Decoder.decodeNurse BackendGeneralNurse
 
-                    "person" ->
-                        doDecode Backend.Person.Decoder.decodePerson BackendGeneralPerson
-
                     "pmtct_participant" ->
                         doDecode Backend.PmtctParticipant.Decoder.decodePmtctParticipant BackendGeneralPmtctParticipant
 
@@ -426,6 +423,11 @@ decodeBackendAuthorityEntity =
                         doDecode
                             Backend.Measurement.Decoder.decodeParticipantConsent
                             BackendAuthorityParticipantConsent
+
+                    "person" ->
+                        doDecode
+                            Backend.Person.Decoder.decodePerson
+                            BackendAuthorityPerson
 
                     "photo" ->
                         doDecode

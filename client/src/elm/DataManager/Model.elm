@@ -58,7 +58,6 @@ type BackendGeneralEntity
     | BackendGeneralHealthCenter (BackendEntity HealthCenter)
     | BackendGeneralNurse (BackendEntity Nurse)
     | BackendGeneralParticipantForm (BackendEntity ParticipantForm)
-    | BackendGeneralPerson (BackendEntity Person)
     | BackendGeneralPmtctParticipant (BackendEntity PmtctParticipant)
     | BackendGeneralRelationship (BackendEntity Relationship)
       -- Don't fail on unknown types. We'd like to keep the type name along with
@@ -100,6 +99,7 @@ type BackendAuthorityEntity
     | BackendAuthorityObstetricHistoryStep2 (BackendEntity ObstetricHistoryStep2)
     | BackendAuthorityObstetricalExam (BackendEntity ObstetricalExam)
     | BackendAuthorityParticipantConsent (BackendEntity ParticipantConsent)
+    | BackendAuthorityPerson (BackendEntity Person)
     | BackendAuthorityPhoto (BackendEntity Photo)
     | BackendAuthorityWeight (BackendEntity Weight)
       -- Don't fail on unknown types. We'd like to keep the type name along with

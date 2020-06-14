@@ -33,7 +33,7 @@ encodeIndexDbQueryUploadGeneralResultRecord record =
 
                 data =
                     case entity of
-                        BackendGeneralPerson identifier_ ->
+                        BackendAuthorityPerson identifier_ ->
                             let
                                 encodedEntity =
                                     Backend.Person.Encoder.encodePerson identifier_.entity

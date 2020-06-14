@@ -312,9 +312,6 @@ viewGeneralEntity language backendGeneralEntity =
             BackendGeneralParticipantForm identifier ->
                 text <| "Participant Form " ++ identifier.entity.title.english
 
-            BackendGeneralPerson identifier ->
-                text <| "Person " ++ identifier.entity.name
-
             BackendGeneralPmtctParticipant identifier ->
                 text <| "Pmtct Participant for child ID " ++ fromEntityUuid identifier.entity.child
 
@@ -472,6 +469,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityParticipantConsent identifier ->
                 viewMeasurement identifier "Participant Consent"
+
+            BackendAuthorityPerson identifier ->
+                text <| "Person " ++ identifier.entity.name
 
             BackendAuthorityPhoto identifier ->
                 viewMeasurement identifier "Photo"

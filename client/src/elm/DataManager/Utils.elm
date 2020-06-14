@@ -232,9 +232,6 @@ getBackendGeneralEntityIdentifier backendGeneralEntity =
         BackendGeneralParticipantForm identifier ->
             getIdentifier identifier "participant_form"
 
-        BackendGeneralPerson identifier ->
-            getIdentifier identifier "person"
-
         BackendGeneralPmtctParticipant identifier ->
             getIdentifier identifier "pmtct_participant"
 
@@ -342,6 +339,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityParticipantConsent identifier ->
             getIdentifier identifier "participant_consent"
 
+        BackendAuthorityPerson identifier ->
+            getIdentifier identifier "person"
+
         BackendAuthorityPhoto identifier ->
             getIdentifier identifier "photo"
 
@@ -360,15 +360,12 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 Not all entities have a photo, and even if they do, it might be a Maybe value
 (for example the `avatar` of a `Person` entity).
 
+@todo: Remove.
+
 -}
 getPhotoFromBackendGeneralEntity : BackendGeneralEntity -> Maybe String
 getPhotoFromBackendGeneralEntity backendGeneralEntity =
-    case backendGeneralEntity of
-        BackendGeneralPerson identifier ->
-            identifier.entity.avatarUrl
-
-        _ ->
-            Nothing
+    Nothing
 
 
 {-| Return a photo from a "Authority" entity.
@@ -384,6 +381,9 @@ getPhotoFromBackendAuthorityEntity backendAuthorityEntity =
             Just url
     in
     case backendAuthorityEntity of
+        BackendAuthorityPerson identifier ->
+            identifier.entity.avatarUrl
+
         BackendAuthorityPhoto identifier ->
             getPhotoFromMeasurement identifier
 
@@ -500,12 +500,6 @@ getDataToSendGeneral entity accum =
                 identifier
                 accum
                 (Json.Encode.object << Backend.ParticipantConsent.Encoder.encodeParticipantForm)
-
-        BackendGeneralPerson identifier ->
-            encodeDataToSend
-                identifier
-                accum
-                (Json.Encode.object << Backend.Person.Encoder.encodePerson)
 
         BackendGeneralPmtctParticipant identifier ->
             encodeDataToSend
@@ -688,6 +682,12 @@ getDataToSendAuthority entity accum =
                 identifier
                 accum
                 (Json.Encode.object << Backend.Measurement.Encoder.encodeParticipantConsent)
+
+        BackendAuthorityPerson identifier ->
+            encodeDataToSend
+                identifier
+                accum
+                (Json.Encode.object << Backend.Person.Encoder.encodePerson)
 
         BackendAuthorityPhoto identifier ->
             encodeDataToSend

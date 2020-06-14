@@ -63,9 +63,9 @@ var tableForType = {
     obstetric_history_step2: 'shards',
     obstetrical_exam: 'shards',
     participant_consent: 'shards',
-    // <--
     participant_form: 'nodes',
     person: 'shards',
+    // <--
     photo: 'shards',
     prenatal_photo: 'shards',
     pmtct_participant: 'shards',
