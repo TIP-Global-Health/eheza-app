@@ -16,7 +16,7 @@ decodeIndividualEncounterParticipant =
         |> requiredAt [ "expected", "value" ] decodeYYYYMMDD
         |> optionalAt [ "expected", "value2" ] (nullable decodeYYYYMMDD) Nothing
         |> optional "expected_date_concluded" (nullable decodeYYYYMMDD) Nothing
-        |> hardcoded Nothing
+        |> optional "shard" (nullable decodeEntityUuid) Nothing
 
 
 decodeIndividualEncounterType : Decoder IndividualEncounterType
