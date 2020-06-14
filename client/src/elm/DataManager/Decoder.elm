@@ -15,7 +15,9 @@ import Backend.NutritionEncounter.Decoder
 import Backend.ParticipantConsent.Decoder
 import Backend.Person.Decoder
 import Backend.PmtctParticipant.Decoder
+import Backend.PrenatalEncounter.Decoder
 import Backend.Relationship.Decoder
+import Backend.Session.Decoder
 import DataManager.Model
     exposing
         ( BackendAuthorityEntity(..)
@@ -261,14 +263,8 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
                     "nurse" ->
                         doDecode Backend.Nurse.Decoder.decodeNurse BackendGeneralNurse
 
-                    "pmtct_participant" ->
-                        doDecode Backend.PmtctParticipant.Decoder.decodePmtctParticipant BackendGeneralPmtctParticipant
-
                     "participant_form" ->
                         doDecode Backend.ParticipantConsent.Decoder.decodeParticipantForm BackendGeneralParticipantForm
-
-                    "relationship" ->
-                        doDecode Backend.Relationship.Decoder.decodeRelationship BackendGeneralRelationship
 
                     _ ->
                         succeed (BackendGeneralEntityUnknown type_ revisionIdentifier)
@@ -457,6 +453,47 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodePhoto
                             BackendAuthorityPhoto
+
+                    "prenatal_photo" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalPhoto
+                            BackendAuthorityPrenatalPhoto
+
+                    "pmtct_participant" ->
+                        doDecode Backend.PmtctParticipant.Decoder.decodePmtctParticipant BackendAuthorityPmtctParticipant
+
+                    "prenatal_family_planning" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalFamilyPlanning
+                            BackendAuthorityPrenatalFamilyPlanning
+
+                    "prenatal_nutrition" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalNutrition
+                            BackendAuthorityPrenatalNutrition
+
+                    "prenatal_encounter" ->
+                        doDecode
+                            Backend.PrenatalEncounter.Decoder.decodePrenatalEncounter
+                            BackendAuthorityPrenatalEncounter
+
+                    "relationship" ->
+                        doDecode Backend.Relationship.Decoder.decodeRelationship BackendAuthorityRelationship
+
+                    "resource" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeResource
+                            BackendAuthorityResource
+
+                    "session" ->
+                        doDecode
+                            Backend.Session.Decoder.decodeSession
+                            BackendAuthoritySession
+
+                    "social_history" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeSocialHistory
+                            BackendAuthoritySocialHistory
 
                     "weight" ->
                         doDecode

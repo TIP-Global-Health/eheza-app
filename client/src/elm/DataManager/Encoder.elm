@@ -85,6 +85,11 @@ encodeIndexDbQueryUploadAuthorityResultRecord record =
                                 Backend.Measurement.Encoder.encodePhoto
                                 identifier_
 
+                        BackendAuthorityPrenatalPhoto identifier_ ->
+                            doEncode
+                                Backend.Measurement.Encoder.encodePrenatalPhoto
+                                identifier_
+
                         _ ->
                             DataManager.Utils.encodeBackendAuthorityEntity entity
             in

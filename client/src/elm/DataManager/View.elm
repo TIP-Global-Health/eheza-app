@@ -312,12 +312,6 @@ viewGeneralEntity language backendGeneralEntity =
             BackendGeneralParticipantForm identifier ->
                 text <| "Participant Form " ++ identifier.entity.title.english
 
-            BackendGeneralPmtctParticipant identifier ->
-                text <| "Pmtct Participant for child ID " ++ fromEntityUuid identifier.entity.child
-
-            BackendGeneralRelationship identifier ->
-                text <| "Relationship for person ID " ++ fromEntityUuid identifier.entity.person
-
             BackendGeneralEntityUnknown type_ _ ->
                 text <| type_ ++ " (we still don't decode it)"
         ]
@@ -481,6 +475,33 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityEntityUnknown type_ _ ->
                 text <| type_ ++ " (we still don't decode it)"
+
+            BackendAuthorityPrenatalPhoto identifier ->
+                viewMeasurement identifier "Photo"
+
+            BackendAuthorityPmtctParticipant identifier ->
+                text <| "Pmtct Participant for child ID " ++ fromEntityUuid identifier.entity.child
+
+            BackendAuthorityPrenatalFamilyPlanning identifier ->
+                viewMeasurement identifier "Prenatal Family Planning"
+
+            BackendAuthorityPrenatalNutrition identifier ->
+                viewMeasurement identifier "Prenatal Nutrition"
+
+            BackendAuthorityPrenatalEncounter identifier ->
+                text <| "Prenatal Encounter for person ID " ++ fromEntityUuid identifier.entity.participant
+
+            BackendAuthorityRelationship identifier ->
+                text <| "Relationship for person ID " ++ fromEntityUuid identifier.entity.person
+
+            BackendAuthorityResource identifier ->
+                viewMeasurement identifier "Resource"
+
+            BackendAuthoritySession identifier ->
+                text <| "Session for Clinic ID " ++ fromEntityUuid identifier.entity.clinicId
+
+            BackendAuthoritySocialHistory identifier ->
+                viewMeasurement identifier "Social History"
         ]
 
 

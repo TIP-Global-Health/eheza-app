@@ -21,7 +21,9 @@ import Backend.NutritionEncounter.Encoder
 import Backend.ParticipantConsent.Encoder
 import Backend.Person.Encoder
 import Backend.PmtctParticipant.Encoder
+import Backend.PrenatalEncounter.Encoder
 import Backend.Relationship.Encoder
+import Backend.Session.Encoder
 import DataManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), DownloadPhotos(..), Model, SyncStatus(..), emptyDownloadPhotosBatchRec, emptyUploadRec)
 import Editable
 import Json.Encode exposing (Value, object)
@@ -242,12 +244,6 @@ getBackendGeneralEntityIdentifier backendGeneralEntity =
         BackendGeneralParticipantForm identifier ->
             getIdentifier identifier "participant_form"
 
-        BackendGeneralPmtctParticipant identifier ->
-            getIdentifier identifier "pmtct_participant"
-
-        BackendGeneralRelationship identifier ->
-            getIdentifier identifier "relationship"
-
         BackendGeneralEntityUnknown uuid revision ->
             { uuid = uuid
             , revision = revision
@@ -354,6 +350,33 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityPhoto identifier ->
             getIdentifier identifier "photo"
+
+        BackendAuthorityPrenatalPhoto identifier ->
+            getIdentifier identifier "prenatal_photo"
+
+        BackendAuthorityPmtctParticipant identifier ->
+            getIdentifier identifier "pmtct_participant"
+
+        BackendAuthorityPrenatalFamilyPlanning identifier ->
+            getIdentifier identifier "prenatal_family_planning"
+
+        BackendAuthorityPrenatalNutrition identifier ->
+            getIdentifier identifier "prenatal_nutrition"
+
+        BackendAuthorityPrenatalEncounter identifier ->
+            getIdentifier identifier "prenatal_encounter"
+
+        BackendAuthorityRelationship identifier ->
+            getIdentifier identifier "relationship"
+
+        BackendAuthorityResource identifier ->
+            getIdentifier identifier "resource"
+
+        BackendAuthoritySession identifier ->
+            getIdentifier identifier "session"
+
+        BackendAuthoritySocialHistory identifier ->
+            getIdentifier identifier "social_history"
 
         BackendAuthorityWeight identifier ->
             getIdentifier identifier "weight"
@@ -479,12 +502,6 @@ encodeBackendGeneralEntity backendGeneralEntity =
         BackendGeneralParticipantForm identifier ->
             (object << Backend.ParticipantConsent.Encoder.encodeParticipantForm) identifier.entity
 
-        BackendGeneralPmtctParticipant identifier ->
-            Backend.PmtctParticipant.Encoder.encodePmtctParticipant identifier.entity
-
-        BackendGeneralRelationship identifier ->
-            Backend.Relationship.Encoder.encodeRelationship identifier.entity
-
         BackendGeneralEntityUnknown string int ->
             object []
 
@@ -578,6 +595,33 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityPhoto identifier ->
             (object << Backend.Measurement.Encoder.encodePhoto) identifier.entity
+
+        BackendAuthorityPrenatalPhoto identifier ->
+            (object << Backend.Measurement.Encoder.encodePrenatalPhoto) identifier.entity
+
+        BackendAuthorityPmtctParticipant identifier ->
+            Backend.PmtctParticipant.Encoder.encodePmtctParticipant identifier.entity
+
+        BackendAuthorityPrenatalFamilyPlanning identifier ->
+            (object << Backend.Measurement.Encoder.encodePrenatalFamilyPlanning) identifier.entity
+
+        BackendAuthorityPrenatalNutrition identifier ->
+            (object << Backend.Measurement.Encoder.encodePrenatalNutrition) identifier.entity
+
+        BackendAuthorityPrenatalEncounter identifier ->
+            (object << Backend.PrenatalEncounter.Encoder.encodePrenatalEncounter) identifier.entity
+
+        BackendAuthorityRelationship identifier ->
+            Backend.Relationship.Encoder.encodeRelationship identifier.entity
+
+        BackendAuthorityResource identifier ->
+            (object << Backend.Measurement.Encoder.encodeResource) identifier.entity
+
+        BackendAuthoritySession identifier ->
+            (object << Backend.Session.Encoder.encodeSession) identifier.entity
+
+        BackendAuthoritySocialHistory identifier ->
+            (object << Backend.Measurement.Encoder.encodeSocialHistory) identifier.entity
 
         BackendAuthorityWeight identifier ->
             (object << Backend.Measurement.Encoder.encodeWeight) identifier.entity
