@@ -590,7 +590,6 @@ update currentDate dbVersion device msg model =
                                     Cmd.none
 
                                 else
-                                    -- @todo: Add the UUID to the URL.
                                     HttpBuilder.post (device.backendUrl ++ "/api/sync")
                                         |> withQueryParams
                                             [ ( "access_token", device.accessToken )
@@ -645,8 +644,7 @@ update currentDate dbVersion device msg model =
                                                 )
                                                 result.entities
                                     in
-                                    -- @todo: Implement on JS side.
-                                    sendLocalIdsForMarkAsUploaded { type_ = "Authority", localId = localIds }
+                                    deleteEntitiesThatWereUploaded { type_ = "Authority", localId = localIds }
                             in
                             SubModelReturn
                                 (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
@@ -762,7 +760,7 @@ update currentDate dbVersion device msg model =
                                                 )
                                                 result.entities
                                     in
-                                    sendLocalIdsForMarkAsUploaded { type_ = "General", localId = localIds }
+                                    deleteEntitiesThatWereUploaded { type_ = "General", localId = localIds }
                             in
                             SubModelReturn
                                 (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
@@ -1210,7 +1208,7 @@ port sendRevisionIdPerAuthority : List { uuid : String, revisionId : Int } -> Cm
 The `type_` can be `General` or `Authority`.
 
 -}
-port sendLocalIdsForMarkAsUploaded : { type_ : String, localId : List Int } -> Cmd msd
+port deleteEntitiesThatWereUploaded : { type_ : String, localId : List Int } -> Cmd msd
 
 
 {-| Send to JS a uuid list of local changes that can be deleted.

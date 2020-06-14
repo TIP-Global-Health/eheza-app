@@ -590,14 +590,13 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 /**
  * Mark local changes are uploaded, so later we could delete them.
  *
- * see elmApp.ports.sendLocalIdsForDelete
+ * see elmApp.ports.deleteEntitiesThatWereUploaded
  *
  */
-elmApp.ports.sendLocalIdsForMarkAsUploaded.subscribe(async function(info) {
+elmApp.ports.deleteEntitiesThatWereUploaded.subscribe(async function(info) {
   const type = info.type_;
 
   var table;
-  var photoUploadTable;
 
   switch (type) {
     case 'General':
@@ -614,7 +613,13 @@ elmApp.ports.sendLocalIdsForMarkAsUploaded.subscribe(async function(info) {
       throw type + " is not a known type for sendLocalIdsForDelete";
   }
 
-  await table.where('localId').anyOf(info.localId).modify({'isSynced': 1});
+  await table
+      .where('localId')
+      .anyOf(info.localId)
+      // For easier debug, we can modify `isSynced` instead, but on production
+      // we delete the records.
+      // .modify({'isSynced': 1});
+      .delete();
 });
 
 /**
