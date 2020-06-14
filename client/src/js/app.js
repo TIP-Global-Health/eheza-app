@@ -601,12 +601,10 @@ elmApp.ports.deleteEntitiesThatWereUploaded.subscribe(async function(info) {
   switch (type) {
     case 'General':
       table = dbSync.nodeChanges;
-      photoUploadTable = dbSync.generalPhotoUploadChanges;
       break;
 
     case 'Authority':
       table = dbSync.shardChanges;
-      photoUploadTable = dbSync.authorityPhotoUploadChanges;
       break;
 
     default:
