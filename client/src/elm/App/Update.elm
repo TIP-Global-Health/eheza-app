@@ -574,6 +574,11 @@ update msg model =
             )
                 |> sequence update extraMsgs
 
+        SetDeviceName name ->
+            ( { model | deviceName = name }
+            , Cmd.none
+            )
+
         Tick time ->
             let
                 extraMsgs =
