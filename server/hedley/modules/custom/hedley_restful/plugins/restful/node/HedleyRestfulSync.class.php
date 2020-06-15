@@ -195,12 +195,28 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       $output = array_merge($output, $rendered_items);
     }
 
-    return [
+    $return = [
       'base_revision' => $base,
       'last_timestamp' => $last_timestamp,
       'revision_count' => $count,
-      'batch' => $output,
     ];
+
+    if (!empty($request['access_token'])) {
+      $device_user_id = hedley_restful_resolve_device_by_token($request['access_token']);
+      if ($device_user_id) {
+        $device_user = user_load($device_user_id);
+        $device_name = $device_user->name;
+        $words = explode(' ', $device_name);
+        if (end($words) == 'Robot') {
+          array_splice( $words, -1 );
+        }
+        $return['device_name'] = implode(' ', $words);
+      }
+    }
+
+    $return['batch'] = $output;
+
+    return $return;
   }
 
   /**
