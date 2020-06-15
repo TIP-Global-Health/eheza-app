@@ -1776,9 +1776,11 @@ input::placeholder {
   .ui.full.segment {
     display: flex;
     flex-direction: column;
+    overflow-y: hidden;
 
     .wrap-list {
       flex: 1 1 auto;
+      overflow-y: hidden;
 
       .toggle-initial-display {
         line-height: 50px;
@@ -1790,12 +1792,21 @@ input::placeholder {
         }
       }
 
-      .ui.middle.aligned.divided.list .item .content .description {
-        font-size: 1.3rem;
-        padding-left: 1rem;
+      .ui.middle.aligned.divided.list {
+        height: 100%;
+        overflow-y: auto;
+
+        .item .content .description {
+          font-size: 1.3rem;
+          padding-left: 1rem;
+        }
       }
+
     }
 
+    .search-bottom {
+      padding-top: 10px;
+    }
   }
 
 }
