@@ -15,9 +15,9 @@ if (!drupal_is_cli()) {
 
 // For sample db: Rukura, Rwankuba, Test.
 $health_centers_data = [
-  7091 => ['anonymize' => TRUE],
-  7092 => ['anonymize' => TRUE],
-  28589 => ['anonymize' => FALSE],
+  4 => ['anonymize' => TRUE],
+//  7092 => ['anonymize' => TRUE],
+  5 => ['anonymize' => FALSE],
 ];
 
 // In case we need to pull real files, make sure
@@ -42,6 +42,7 @@ $catchment_areas = [
   [
     'id',
     'title',
+    'created',
   ],
 ];
 $health_centers = [
@@ -49,6 +50,7 @@ $health_centers = [
     'id',
     'title',
     'field_catchment_area',
+    'created',
   ],
 ];
 $villages = [
@@ -60,6 +62,7 @@ $villages = [
     'field_cell',
     'field_village',
     'field_health_center',
+    'created',
   ],
 ];
 $groups = [
@@ -68,6 +71,7 @@ $groups = [
     'title',
     'field_group_type',
     'field_health_center',
+    'created',
   ],
 ];
 $nurses = [
@@ -78,6 +82,7 @@ $nurses = [
     'field_health_centers',
     'field_villages',
     'field_pin_code',
+    'created',
   ],
 ];
 $group_encounters = [
@@ -85,6 +90,7 @@ $group_encounters = [
     'id',
     'field_clinic',
     'field_scheduled_date',
+    'created',
   ],
 ];
 $participants = [
@@ -95,6 +101,7 @@ $participants = [
     'field_adult_activities',
     'field_expected',
     'field_clinic',
+    'created',
   ],
 ];
 $people = [
@@ -122,6 +129,7 @@ $people = [
     'field_photo',
     'field_national_id_number',
     'field_phone_number',
+    'created',
   ],
 ];
 $relationships = [
@@ -130,6 +138,7 @@ $relationships = [
     'field_person',
     'field_related_by',
     'field_related_to',
+    'created',
   ],
 ];
 $measurements_fields = [
@@ -138,6 +147,7 @@ $measurements_fields = [
   'field_date_measured',
   'field_nurse',
   'field_session',
+  'created',
 ];
 $measurements = [
   'attendance' => [array_merge($measurements_fields, ['field_attended'])],
@@ -196,6 +206,7 @@ foreach ($health_centers_ids as $health_center_id) {
     $wrapper->getIdentifier(),
     str_replace(',', ' ', $wrapper->label()),
     $catchment_area_id,
+    $node->created,
   ];
 
   if (!in_array($catchment_area_id, $catchment_area_ids)) {
@@ -203,6 +214,7 @@ foreach ($health_centers_ids as $health_center_id) {
     $catchment_areas[] = [
       $wrapper->getIdentifier(),
       str_replace(',', ' ', $wrapper->label()),
+      $wrapper->created->raw(),
     ];
     $catchment_area_ids[] = $catchment_area_id;
   }
@@ -218,6 +230,7 @@ foreach ($health_centers_ids as $health_center_id) {
       $wrapper->field_cell->value(),
       $wrapper->field_village->value(),
       $wrapper->field_health_center->getIdentifier(),
+      $wrapper->created->raw(),
     ];
   }
 
@@ -238,6 +251,7 @@ foreach ($health_centers_ids as $health_center_id) {
       str_replace(',', ' ', $wrapper->label()),
       $group_type,
       $wrapper->field_health_center->getIdentifier(),
+      $wrapper->created->raw(),
     ];
   }
   $groups_ids = array_values($groups_ids);
@@ -270,6 +284,7 @@ foreach ($health_centers_ids as $health_center_id) {
       implode('|', array_values($hc_ids)),
       implode('|', array_values($villages_ids)),
       $wrapper->field_pin_code->value(),
+      $wrapper->created->raw(),
     ];
   }
 
@@ -280,6 +295,7 @@ foreach ($health_centers_ids as $health_center_id) {
       $wrapper->getIdentifier(),
       $wrapper->field_clinic->getIdentifier(),
       hedley_migrate_export_date_field($wrapper->field_scheduled_date->value(), TRUE),
+      $wrapper->created->raw(),
     ];
   }
 
@@ -297,6 +313,7 @@ foreach ($health_centers_ids as $health_center_id) {
       $wrapper->field_adult_activities->value(),
       hedley_migrate_export_date_field($wrapper->field_expected->value()),
       $wrapper->field_clinic->getIdentifier(),
+      $wrapper->created->raw(),
     ];
   }
 
@@ -364,6 +381,7 @@ foreach ($health_centers_ids as $health_center_id) {
       $photo,
       $national_id,
       $phone_number,
+      $wrapper->created->raw(),
     ];
   }
 
@@ -376,6 +394,7 @@ foreach ($health_centers_ids as $health_center_id) {
       $wrapper->field_person->getIdentifier(),
       $wrapper->field_related_by->value(),
       $wrapper->field_related_to->getIdentifier(),
+      $wrapper->created->raw(),
     ];
   }
 
@@ -390,6 +409,7 @@ foreach ($health_centers_ids as $health_center_id) {
         date('Y-m-d', $wrapper->field_date_measured->value()),
         $wrapper->field_nurse->getIdentifier(),
         $wrapper->field_session->getIdentifier(),
+        $wrapper->created->raw(),
       ];
 
       switch ($type) {
