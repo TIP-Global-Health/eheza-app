@@ -863,7 +863,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             , []
             )
 
-        PostRelationship personId myRelationship addGroup ->
+        PostRelationship personId myRelationship addGroup initiator ->
             let
                 normalized =
                     toRelationship personId myRelationship healthCenterId
@@ -991,7 +991,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                                 |> Task.map (always myRelationship)
                             )
                         |> RemoteData.fromTask
-                        |> Task.perform (HandlePostedRelationship personId)
+                        |> Task.perform (HandlePostedRelationship personId initiator)
             in
             ( { model | postRelationship = Dict.insert personId Loading model.postRelationship }
             , relationshipCmd
@@ -999,13 +999,13 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             )
                 |> sequenceExtra (updateIndexedDb currentDate nurseId healthCenterId isChw) extraMsgs
 
-        HandlePostedRelationship personId data ->
+        HandlePostedRelationship personId initiator data ->
             let
                 appMsgs =
                     data
                         |> RemoteData.map
                             (\relationship ->
-                                [ Pages.Relationship.Model.Reset
+                                [ Pages.Relationship.Model.Reset initiator
                                     |> App.Model.MsgPageRelationship personId relationship.relatedTo
                                     |> App.Model.MsgLoggedIn
                                 ]
@@ -1038,10 +1038,10 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                             ParticipantDirectoryOrigin ->
                                                 case relation of
                                                     Just id ->
-                                                        RelationshipPage id personId
+                                                        RelationshipPage id personId initiator
 
                                                     Nothing ->
-                                                        PersonPage personId
+                                                        PersonPage personId initiator
 
                                             IndividualEncounterOrigin encounterType ->
                                                 case encounterType of
@@ -1055,6 +1055,14 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                                         -- This will change as we add support for
                                                         -- new encounter types.
                                                         IndividualEncounterTypesPage
+
+                                            GroupEncounterOrigin sessionId ->
+                                                case relation of
+                                                    Just id ->
+                                                        RelationshipPage id personId initiator
+
+                                                    Nothing ->
+                                                        PersonPage personId initiator
                                 in
                                 [ Pages.Person.Model.ResetCreateForm
                                     |> App.Model.MsgPageCreatePerson
@@ -1089,7 +1097,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                 [ Pages.Person.Model.ResetEditForm
                                     |> App.Model.MsgPageEditPerson
                                     |> App.Model.MsgLoggedIn
-                                , PersonPage personId
+                                , PersonPage personId ParticipantDirectoryOrigin
                                     |> UserPage
                                     |> App.Model.SetActivePage
                                 ]

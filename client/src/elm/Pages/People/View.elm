@@ -31,8 +31,8 @@ import Utils.WebData exposing (viewWebData)
     family member for that person, either child, parent, etc.
 
 -}
-view : Language -> NominalDate -> Maybe VillageId -> Bool -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
-view language currentDate maybeVillageId isChw relation model db =
+view : Language -> NominalDate -> Maybe VillageId -> Bool -> RegistrationInitiator -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
+view language currentDate maybeVillageId isChw initiator relation model db =
     let
         title =
             case relation of
@@ -53,7 +53,7 @@ view language currentDate maybeVillageId isChw relation model db =
             [ class "search-wrapper" ]
             [ div
                 [ class "ui full segment" ]
-                [ viewSearchForm language currentDate maybeVillageId isChw relation model db ]
+                [ viewSearchForm language currentDate maybeVillageId isChw initiator relation model db ]
             ]
         ]
 
@@ -75,8 +75,8 @@ viewHeader title =
         ]
 
 
-viewSearchForm : Language -> NominalDate -> Maybe VillageId -> Bool -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
-viewSearchForm language currentDate maybeVillageId isChw relation model db =
+viewSearchForm : Language -> NominalDate -> Maybe VillageId -> Bool -> RegistrationInitiator -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
+viewSearchForm language currentDate maybeVillageId isChw initiator relation model db =
     let
         searchForm =
             Html.form []
@@ -204,7 +204,7 @@ viewSearchForm language currentDate maybeVillageId isChw relation model db =
             results
                 |> Maybe.withDefault (Success Dict.empty)
                 |> RemoteData.withDefault Dict.empty
-                |> Dict.map (viewParticipant language currentDate relation db)
+                |> Dict.map (viewParticipant language currentDate initiator relation db)
                 |> Dict.values
 
         searchHelper =
@@ -249,8 +249,8 @@ viewSearchForm language currentDate maybeVillageId isChw relation model db =
         ]
 
 
-viewParticipant : Language -> NominalDate -> Maybe PersonId -> ModelIndexedDb -> PersonId -> Person -> Html Msg
-viewParticipant language currentDate relation db id person =
+viewParticipant : Language -> NominalDate -> RegistrationInitiator -> Maybe PersonId -> ModelIndexedDb -> PersonId -> Person -> Html Msg
+viewParticipant language currentDate initiator relation db id person =
     let
         typeForThumbnail =
             case isPersonAnAdult currentDate person of
@@ -266,10 +266,10 @@ viewParticipant language currentDate relation db id person =
         nextPage =
             case relation of
                 Just relationId ->
-                    RelationshipPage relationId id
+                    RelationshipPage relationId id initiator
 
                 Nothing ->
-                    PersonPage id
+                    PersonPage id initiator
 
         action =
             div [ class "action" ]

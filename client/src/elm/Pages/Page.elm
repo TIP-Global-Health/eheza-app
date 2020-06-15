@@ -125,21 +125,27 @@ type UserPage
     | DemographicsReportPage PrenatalEncounterId
     | SessionPage SessionId SessionPage -- pages that manipulate a group session
     | MyAccountPage -- shows information about the logged-in user
-    | PersonPage PersonId -- Shows a particular person.
+      -- Shows a particular person.
+      -- RegistrationInitiator will be used to determine which actions are allowed for the person.
+    | PersonPage PersonId RegistrationInitiator
       -- Shows a form for creating a new person. If the person ID is provided, it means that
       -- we're in a flow in which we should offer to create a relationship between the new
       -- person and the specified person.
-      -- RegistrationInitiator indicates what was the origin of registration request,
-      -- so that it would be clear where to proceed after registration is completed / canceled.
+      -- RegistrationInitiator indicates what was the origin of request,
+      -- so that it would be clear where to proceed after action is completed / canceled.
     | CreatePersonPage (Maybe PersonId) RegistrationInitiator
       -- Shows a form for editing existing person.
     | EditPersonPage PersonId
       -- Shows list of people using search string. If the PersonId is provided,
       -- then we're in a context in which we're looking to add a family member.
-    | PersonsPage (Maybe PersonId)
+      -- RegistrationInitiator indicates what was the origin of request,
+      -- so that it would be clear where to proceed after action is completed / canceled.
+    | PersonsPage (Maybe PersonId) RegistrationInitiator
     | PrenatalParticipantPage PersonId
     | IndividualEncounterParticipantsPage IndividualEncounterType
-    | RelationshipPage PersonId PersonId -- create or edit a relationship between these persons.
+      -- Create or edit a relationship between these persons.
+      -- RegistrationInitiator will help to determine which actions are allowed.
+    | RelationshipPage PersonId PersonId RegistrationInitiator
     | PrenatalEncounterPage PrenatalEncounterId -- prenatal activities index
     | PrenatalActivityPage PrenatalEncounterId PrenatalActivity -- record prenatal activity
     | IndividualEncounterTypesPage -- this is where we select the type of encounter we're interested in.

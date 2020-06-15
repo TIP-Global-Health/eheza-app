@@ -236,7 +236,7 @@ type MsgIndexedDb
       -- Messages which mutate data
     | PostPerson (Maybe PersonId) RegistrationInitiator Person -- The first person is a person we ought to offer setting a relationship to.
     | PatchPerson PersonId Person
-    | PostRelationship PersonId MyRelationship (Maybe ClinicId)
+    | PostRelationship PersonId MyRelationship (Maybe ClinicId) RegistrationInitiator
     | PostPmtctParticipant PmtctParticipant
     | PostSession Session
     | PostIndividualSession IndividualEncounterParticipant
@@ -245,7 +245,7 @@ type MsgIndexedDb
       -- Messages which handle responses to mutating data
     | HandlePostedPerson (Maybe PersonId) RegistrationInitiator (WebData PersonId)
     | HandlePatchedPerson PersonId (WebData Person)
-    | HandlePostedRelationship PersonId (WebData MyRelationship)
+    | HandlePostedRelationship PersonId RegistrationInitiator (WebData MyRelationship)
     | HandlePostedPmtctParticipant PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
     | HandlePostedSession ClinicType (WebData SessionId)
     | HandlePostedIndividualSession PersonId IndividualEncounterType (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))

@@ -46,7 +46,7 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Person.Model exposing (..)
 import Pages.Utils exposing (viewPhotoThumb)
 import RemoteData exposing (RemoteData(..), WebData)
@@ -60,8 +60,8 @@ import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
 
 
-view : Language -> NominalDate -> Bool -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
-view language currentDate isChw id db =
+view : Language -> NominalDate -> Bool -> RegistrationInitiator -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
+view language currentDate isChw initiator id db =
     let
         person =
             Dict.get id db.people
@@ -77,7 +77,7 @@ view language currentDate isChw id db =
         [ viewHeader language headerName
         , div
             [ class "ui full segment blue" ]
-            [ viewWebData language (viewParticipantDetailsForm language currentDate isChw db id) identity person
+            [ viewWebData language (viewParticipantDetailsForm language currentDate isChw initiator db id) identity person
             ]
         ]
 
@@ -109,8 +109,8 @@ type alias OtherPerson =
     }
 
 
-viewParticipantDetailsForm : Language -> NominalDate -> Bool -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
-viewParticipantDetailsForm language currentDate isChw db id person =
+viewParticipantDetailsForm : Language -> NominalDate -> Bool -> RegistrationInitiator -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
+viewParticipantDetailsForm language currentDate isChw initiator db id person =
     let
         -- We re-organize our data about relatoinships and group participations
         -- so that we have one record per `OtherPerson`.
@@ -176,7 +176,7 @@ viewParticipantDetailsForm language currentDate isChw db id person =
                         Dict.get otherPersonId db.people
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.append db.clinics
-                            |> viewWebData language (viewOtherPerson language currentDate isChw id ( otherPersonId, otherPerson )) identity
+                            |> viewWebData language (viewOtherPerson language currentDate isChw initiator id ( otherPersonId, otherPerson )) identity
                     )
                 |> Dict.values
                 |> div [ class "ui unstackable items participants-list" ]
@@ -220,7 +220,7 @@ viewParticipantDetailsForm language currentDate isChw db id person =
                             [ class "action" ]
                             [ div
                                 [ class "add-participant-icon-wrapper"
-                                , onClick <| App.Model.SetActivePage <| UserPage <| PersonsPage (Just id)
+                                , onClick <| App.Model.SetActivePage <| UserPage <| PersonsPage (Just id) initiator
                                 ]
                                 [ span [ class "add-participant-icon" ] [] ]
                             ]
@@ -303,8 +303,8 @@ viewPerson language currentDate id person =
         ]
 
 
-viewOtherPerson : Language -> NominalDate -> Bool -> PersonId -> ( PersonId, OtherPerson ) -> ( Dict ClinicId Clinic, Person ) -> Html App.Model.Msg
-viewOtherPerson language currentDate isChw relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
+viewOtherPerson : Language -> NominalDate -> Bool -> RegistrationInitiator -> PersonId -> ( PersonId, OtherPerson ) -> ( Dict ClinicId Clinic, Person ) -> Html App.Model.Msg
+viewOtherPerson language currentDate isChw initiator relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
     let
         typeForThumbnail =
             case isPersonAnAdult currentDate person of
@@ -358,7 +358,7 @@ viewOtherPerson language currentDate isChw relationMainId ( otherPersonId, other
                         [ class "action-icon-wrapper" ]
                         [ span
                             [ class "action-icon forward"
-                            , onClick <| App.Model.SetActivePage <| UserPage <| RelationshipPage relationMainId otherPersonId
+                            , onClick <| App.Model.SetActivePage <| UserPage <| RelationshipPage relationMainId otherPersonId initiator
                             ]
                             []
                         ]
@@ -455,13 +455,13 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                         goBackPage =
                             case operation of
                                 CreatePerson _ ->
-                                    UserPage <| PersonsPage personId
+                                    UserPage <| PersonsPage personId initiator
 
                                 EditPerson _ ->
                                     personId
                                         |> Maybe.map
                                             (\personId_ ->
-                                                UserPage <| PersonPage personId_
+                                                UserPage <| PersonPage personId_ initiator
                                             )
                                         |> Maybe.withDefault PinCodePage
 
@@ -525,6 +525,41 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                             , birthDateSelectorFrom = Date.add Years -60 today
                             , birthDateSelectorTo = today
                             }
+
+                GroupEncounterOrigin sessionId ->
+                    let
+                        expectedAge =
+                            maybeRelatedPerson
+                                |> Maybe.map
+                                    (\related -> expectedAgeByPerson currentDate related operation)
+                                -- If we don't have a related person, or don't know whether
+                                -- that person is an adult, then we check whether a birthdate
+                                -- has been entered into the form so far.
+                                |> Maybe.withDefault (expectedAgeByForm currentDate personForm operation)
+
+                        ( birthDateSelectorFrom, birthDateSelectorTo ) =
+                            case operation of
+                                -- When creating without relation, allow full dates range.
+                                CreatePerson Nothing ->
+                                    ( Date.add Years -60 currentDate, currentDate )
+
+                                _ ->
+                                    case expectedAge of
+                                        ExpectChild ->
+                                            ( Date.add Years -13 currentDate, currentDate )
+
+                                        ExpectAdult ->
+                                            ( Date.add Years -60 currentDate, Date.add Years -13 currentDate )
+
+                                        ExpectAdultOrChild ->
+                                            ( Date.add Years -60 currentDate, currentDate )
+                    in
+                    { goBackPage = UserPage (SessionPage sessionId AttendancePage)
+                    , expectedAge = expectedAge
+                    , expectedGender = ExpectMaleOrFemale
+                    , birthDateSelectorFrom = birthDateSelectorFrom
+                    , birthDateSelectorTo = birthDateSelectorTo
+                    }
 
         header =
             div [ class "ui basic segment head" ]

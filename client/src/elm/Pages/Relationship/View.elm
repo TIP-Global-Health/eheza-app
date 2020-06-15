@@ -4,7 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic, ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (Person)
+import Backend.Person.Model exposing (Person, RegistrationInitiator(..))
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, Relationship)
@@ -28,14 +28,14 @@ import Utils.WebData exposing (viewError, viewWebData)
 {-| Offer to edit the relationship between these persons, from the point of
 view of the first person.
 -}
-view : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate ( healthCenterId, maybeVillageId ) isChw id1 id2 db model =
+view : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> RegistrationInitiator -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate ( healthCenterId, maybeVillageId ) isChw initiator id1 id2 db model =
     div
         [ class "page-relationship" ]
         [ viewHeader language
         , div
             [ class "ui full segment blue" ]
-            [ viewContent language currentDate ( healthCenterId, maybeVillageId ) isChw id1 id2 db model ]
+            [ viewContent language currentDate ( healthCenterId, maybeVillageId ) isChw initiator id1 id2 db model ]
         ]
 
 
@@ -56,8 +56,8 @@ viewHeader language =
         ]
 
 
-viewContent : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
-viewContent language currentDate ( healthCenterId, maybeVillageId ) isChw id1 id2 db model =
+viewContent : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> RegistrationInitiator -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
+viewContent language currentDate ( healthCenterId, maybeVillageId ) isChw initiator id1 id2 db model =
     let
         person1 =
             Dict.get id1 db.people
@@ -93,7 +93,7 @@ viewContent language currentDate ( healthCenterId, maybeVillageId ) isChw id1 id
             maybeVillageId
                 |> Maybe.andThen (\villageId -> getVillageClinicId villageId db)
     in
-    viewWebData language (viewFetchedContent language currentDate healthCenterId maybeVillageGroupId isChw id1 id2 model request) identity fetched
+    viewWebData language (viewFetchedContent language currentDate healthCenterId maybeVillageGroupId isChw initiator id1 id2 model request) identity fetched
 
 
 type alias FetchedData =
@@ -105,8 +105,8 @@ type alias FetchedData =
     }
 
 
-viewFetchedContent : Language -> NominalDate -> HealthCenterId -> Maybe ClinicId -> Bool -> PersonId -> PersonId -> Model -> WebData MyRelationship -> FetchedData -> Html Msg
-viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId isChw id1 id2 model request data =
+viewFetchedContent : Language -> NominalDate -> HealthCenterId -> Maybe ClinicId -> Bool -> RegistrationInitiator -> PersonId -> PersonId -> Model -> WebData MyRelationship -> FetchedData -> Html Msg
+viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId isChw initiator id1 id2 model request data =
     let
         savedRelationship =
             data.relationships
@@ -287,7 +287,7 @@ viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId
                     [ class "six wide column" ]
                     [ button
                         [ class "ui button secondary fluid"
-                        , onClick Reset
+                        , onClick <| Reset initiator
                         ]
                         [ text <| translate language Translate.Cancel ]
                     ]
@@ -302,7 +302,7 @@ viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId
                             , ( "loading", RemoteData.isLoading request )
                             , ( "disabled", RemoteData.isLoading request || isNothing assignToGroup || isNothing viewedRelationship )
                             ]
-                        , onClick <| Save viewedRelationship assignToGroup
+                        , onClick <| Save viewedRelationship assignToGroup initiator
                         ]
                         [ text <| translate language Translate.Save ]
                     ]

@@ -11,7 +11,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
-import Backend.Person.Model exposing (Person)
+import Backend.Person.Model exposing (Person, RegistrationInitiator(..))
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildren, getMotherMeasurementData)
 import Html exposing (..)
@@ -107,8 +107,7 @@ view language nurse ( sessionId, session ) model =
                     [ class "register-actions" ]
                     [ button
                         [ class "ui primary button fluid"
-
-                        -- , onClick <| SetActivePage <| UserPage <| CreatePersonPage relation ParticipantDirectoryOrigin
+                        , onClick <| SetActivePage <| UserPage <| CreatePersonPage Nothing (GroupEncounterOrigin sessionId)
                         ]
                         [ text <| translate language Translate.RegisterNewParticipant ]
                     ]

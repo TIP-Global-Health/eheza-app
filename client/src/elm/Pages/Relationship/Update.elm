@@ -31,16 +31,16 @@ update id1 id2 msg model =
             , [ App.Model.SetActivePage page ]
             )
 
-        Reset ->
+        Reset initiator ->
             ( emptyModel
             , Cmd.none
-            , [ PersonPage id1
+            , [ PersonPage id1 initiator
                     |> UserPage
                     |> App.Model.SetActivePage
               ]
             )
 
-        Save maybeRelatedBy assignToGroup ->
+        Save maybeRelatedBy assignToGroup initiator ->
             let
                 extraMsg =
                     case maybeRelatedBy of
@@ -50,6 +50,7 @@ update id1 id2 msg model =
                                 , relatedTo = id2
                                 }
                                 assignToGroup
+                                initiator
                                 |> App.Model.MsgIndexedDb
                             ]
 

@@ -4363,12 +4363,12 @@ translateActivePage page =
                     , kinyarwanda = Just "Compte"
                     }
 
-                PersonPage id ->
+                PersonPage _ _ ->
                     { english = "Person"
                     , kinyarwanda = Nothing
                     }
 
-                PersonsPage _ ->
+                PersonsPage _ _ ->
                     { english = "Participant Directory"
                     , kinyarwanda = Just "Ububiko bw'amakuru y'umurwayi"
                     }
@@ -4395,7 +4395,7 @@ translateActivePage page =
                             , kinyarwanda = Nothing
                             }
 
-                RelationshipPage _ _ ->
+                RelationshipPage _ _ _ ->
                     { english = "Relationship"
                     , kinyarwanda = Nothing
                     }

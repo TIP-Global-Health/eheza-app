@@ -1,10 +1,11 @@
-module Backend.Person.Utils exposing (ageInYears, decodeRegistrationInitiatorFromString, diffInYears, expectedAgeByPerson, isAdult, isPersonAFertileWoman, isPersonAnAdult, resolveExpectedAge)
+module Backend.Person.Utils exposing (ageInYears, diffInYears, expectedAgeByPerson, isAdult, isPersonAFertileWoman, isPersonAnAdult, registrationInitiatorFromUrlFragmemt, registrationInitiatorToUrlFragmemt, resolveExpectedAge)
 
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), ParticipantDirectoryOperation(..), Person, RegistrationInitiator(..))
 import Date
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 
 
 ageInYears : NominalDate -> Person -> Maybe Int
@@ -82,8 +83,29 @@ resolveExpectedAge currentDate birthDate operation =
             ExpectAdultOrChild
 
 
-decodeRegistrationInitiatorFromString : String -> Maybe RegistrationInitiator
-decodeRegistrationInitiatorFromString s =
+registrationInitiatorToUrlFragmemt : RegistrationInitiator -> String
+registrationInitiatorToUrlFragmemt initiator =
+    case initiator of
+        ParticipantDirectoryOrigin ->
+            "directory"
+
+        IndividualEncounterOrigin encounterType ->
+            case encounterType of
+                AntenatalEncounter ->
+                    "antenatal"
+
+                InmmunizationEncounter ->
+                    "inmmunization"
+
+                NutritionEncounter ->
+                    "nutrition"
+
+        GroupEncounterOrigin sessionId ->
+            "session-" ++ fromEntityUuid sessionId
+
+
+registrationInitiatorFromUrlFragmemt : String -> Maybe RegistrationInitiator
+registrationInitiatorFromUrlFragmemt s =
     case s of
         "directory" ->
             Just ParticipantDirectoryOrigin
@@ -98,4 +120,21 @@ decodeRegistrationInitiatorFromString s =
             IndividualEncounterOrigin NutritionEncounter |> Just
 
         _ ->
-            Nothing
+            let
+                split =
+                    String.split "-" s
+            in
+            case List.head split of
+                Just "session" ->
+                    if List.length split > 1 then
+                        -- Remove the "session-" prefix.
+                        String.dropLeft 8 s
+                            |> toEntityUuid
+                            |> GroupEncounterOrigin
+                            |> Just
+
+                    else
+                        Nothing
+
+                _ ->
+                    Nothing

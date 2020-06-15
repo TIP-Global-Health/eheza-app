@@ -5,6 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse, Role(..))
 import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker)
+import Backend.Person.Model exposing (RegistrationInitiator(..))
 import EverySet
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Html exposing (..)
@@ -188,7 +189,7 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) selectedAuthori
             participantDirectoryButton =
                 button
                     [ class "ui primary button"
-                    , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing
+                    , onClick <| SendOutMsg <| SetActivePage <| UserPage <| PersonsPage Nothing ParticipantDirectoryOrigin
                     ]
                     [ text <| translate language Translate.ParticipantDirectory ]
         in
