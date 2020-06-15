@@ -74,11 +74,6 @@ a {
   padding: 2.5rem 3rem;
 }
 
-.wrap-list {
-  padding: 2.5rem 3rem 3rem 3rem;
-}
-
-
 // Segments
 
 .ui.segment {
@@ -1778,20 +1773,31 @@ input::placeholder {
 
 .page-attendance {
 
-  .toggle-initial-display {
-    line-height: 50px;
+  .ui.full.segment {
+    display: flex;
+    flex-direction: column;
 
-    .toggle-text {
-      color: $color-primary;
-      font-weight: bold;
-      margin-left: 10px;
+    .wrap-list {
+      flex: 1 1 auto;
+
+      .toggle-initial-display {
+        line-height: 50px;
+
+        .toggle-text {
+          color: $color-primary;
+          font-weight: bold;
+          margin-left: 10px;
+        }
+      }
+
+      .ui.middle.aligned.divided.list .item .content .description {
+        font-size: 1.3rem;
+        padding-left: 1rem;
+      }
     }
+
   }
 
-  .ui.middle.aligned.divided.list .item .content .description {
-    font-size: 1.3rem;
-    padding-left: 1rem;
-  }
 }
 
 // Date Selector
