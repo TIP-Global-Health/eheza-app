@@ -16,7 +16,7 @@ import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMe
 import Backend.Model exposing (..)
 import Backend.NutritionEncounter.Model
 import Backend.NutritionEncounter.Update
-import Backend.Person.Model exposing (RegistrationInitiator(..))
+import Backend.Person.Model exposing (Initiator(..))
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Update

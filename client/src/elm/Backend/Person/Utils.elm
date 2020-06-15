@@ -1,7 +1,7 @@
-module Backend.Person.Utils exposing (ageInYears, diffInYears, expectedAgeByPerson, isAdult, isPersonAFertileWoman, isPersonAnAdult, registrationInitiatorFromUrlFragmemt, registrationInitiatorToUrlFragmemt, resolveExpectedAge)
+module Backend.Person.Utils exposing (ageInYears, diffInYears, expectedAgeByPerson, isAdult, isPersonAFertileWoman, isPersonAnAdult, initiatorFromUrlFragmemt, initiatorToUrlFragmemt, resolveExpectedAge)
 
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), ParticipantDirectoryOperation(..), Person, RegistrationInitiator(..))
+import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), ParticipantDirectoryOperation(..), Person, Initiator(..))
 import Date
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
@@ -83,8 +83,8 @@ resolveExpectedAge currentDate birthDate operation =
             ExpectAdultOrChild
 
 
-registrationInitiatorToUrlFragmemt : RegistrationInitiator -> String
-registrationInitiatorToUrlFragmemt initiator =
+initiatorToUrlFragmemt : Initiator -> String
+initiatorToUrlFragmemt initiator =
     case initiator of
         ParticipantDirectoryOrigin ->
             "directory"
@@ -104,8 +104,8 @@ registrationInitiatorToUrlFragmemt initiator =
             "session-" ++ fromEntityUuid sessionId
 
 
-registrationInitiatorFromUrlFragmemt : String -> Maybe RegistrationInitiator
-registrationInitiatorFromUrlFragmemt s =
+initiatorFromUrlFragmemt : String -> Maybe Initiator
+initiatorFromUrlFragmemt s =
     case s of
         "directory" ->
             Just ParticipantDirectoryOrigin

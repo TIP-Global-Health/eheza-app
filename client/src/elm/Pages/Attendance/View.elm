@@ -11,7 +11,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
-import Backend.Person.Model exposing (Person, RegistrationInitiator(..))
+import Backend.Person.Model exposing (Person, Initiator(..))
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildren, getMotherMeasurementData)
 import Html exposing (..)

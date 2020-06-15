@@ -3,7 +3,7 @@ module Pages.People.View exposing (view)
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (ExpectedAge(..), Person, RegistrationInitiator(..))
+import Backend.Person.Model exposing (ExpectedAge(..), Person, Initiator(..))
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.Village.Utils exposing (personLivesInVillage)
 import Gizra.Html exposing (emptyNode, showMaybe)
@@ -31,7 +31,7 @@ import Utils.WebData exposing (viewWebData)
     family member for that person, either child, parent, etc.
 
 -}
-view : Language -> NominalDate -> Maybe VillageId -> Bool -> RegistrationInitiator -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
+view : Language -> NominalDate -> Maybe VillageId -> Bool -> Initiator -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
 view language currentDate maybeVillageId isChw initiator relation model db =
     let
         title =
@@ -75,7 +75,7 @@ viewHeader title =
         ]
 
 
-viewSearchForm : Language -> NominalDate -> Maybe VillageId -> Bool -> RegistrationInitiator -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
+viewSearchForm : Language -> NominalDate -> Maybe VillageId -> Bool -> Initiator -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
 viewSearchForm language currentDate maybeVillageId isChw initiator relation model db =
     let
         searchForm =
@@ -249,7 +249,7 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
         ]
 
 
-viewParticipant : Language -> NominalDate -> RegistrationInitiator -> Maybe PersonId -> ModelIndexedDb -> PersonId -> Person -> Html Msg
+viewParticipant : Language -> NominalDate -> Initiator -> Maybe PersonId -> ModelIndexedDb -> PersonId -> Person -> Html Msg
 viewParticipant language currentDate initiator relation db id person =
     let
         typeForThumbnail =

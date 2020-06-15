@@ -8,7 +8,7 @@ module Backend.Person.Model exposing
     , ModeOfDelivery(..)
     , ParticipantDirectoryOperation(..)
     , Person
-    , RegistrationInitiator(..)
+    , Initiator(..)
     , Ubudehe(..)
     , VaginalDelivery(..)
     , allEducationLevels
@@ -148,7 +148,7 @@ allMaritalStatuses =
     ]
 
 
-type RegistrationInitiator
+type Initiator
     = ParticipantDirectoryOrigin
     | IndividualEncounterOrigin IndividualEncounterType
     | GroupEncounterOrigin SessionId

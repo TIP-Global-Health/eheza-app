@@ -4,8 +4,8 @@ import Activity.Model exposing (Activity)
 import Activity.Utils
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString, encoudeIndividualEncounterTypeAsString)
-import Backend.Person.Model exposing (RegistrationInitiator(..))
-import Backend.Person.Utils exposing (registrationInitiatorFromUrlFragmemt, registrationInitiatorToUrlFragmemt)
+import Backend.Person.Model exposing (Initiator(..))
+import Backend.Person.Utils exposing (initiatorFromUrlFragmemt, initiatorToUrlFragmemt)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import NutritionActivity.Utils
 import Pages.Page exposing (..)
@@ -66,7 +66,7 @@ pageToFragment current =
                 CreatePersonPage relationId initiator ->
                     let
                         fragment =
-                            registrationInitiatorToUrlFragmemt initiator
+                            initiatorToUrlFragmemt initiator
 
                         relation =
                             relationId
@@ -81,14 +81,14 @@ pageToFragment current =
                 PersonPage id initiator ->
                     let
                         fragment =
-                            registrationInitiatorToUrlFragmemt initiator
+                            initiatorToUrlFragmemt initiator
                     in
                     Just ("person/" ++ fromEntityUuid id ++ "/" ++ fragment)
 
                 PersonsPage related initiator ->
                     let
                         fragment =
-                            registrationInitiatorToUrlFragmemt initiator
+                            initiatorToUrlFragmemt initiator
 
                         url =
                             case related of
@@ -112,7 +112,7 @@ pageToFragment current =
                 RelationshipPage id1 id2 initiator ->
                     let
                         fragment =
-                            registrationInitiatorToUrlFragmemt initiator
+                            initiatorToUrlFragmemt initiator
                     in
                     Just
                         ("relationship/"
@@ -250,6 +250,6 @@ parseIndividualEncounterType =
     custom "IndividualEncounterType" decodeIndividualEncounterTypeFromString
 
 
-parseOrigin : Parser (RegistrationInitiator -> c) c
+parseOrigin : Parser (Initiator -> c) c
 parseOrigin =
-    custom "RegistrationInitiator" registrationInitiatorFromUrlFragmemt
+    custom "Initiator" initiatorFromUrlFragmemt

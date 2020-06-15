@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse, Role(..))
 import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker)
-import Backend.Person.Model exposing (RegistrationInitiator(..))
+import Backend.Person.Model exposing (Initiator(..))
 import EverySet
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Html exposing (..)

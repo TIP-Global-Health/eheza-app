@@ -4,7 +4,7 @@ import App.Model exposing (..)
 import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
-import Backend.Person.Model exposing (ParticipantDirectoryOperation(..), RegistrationInitiator(..))
+import Backend.Person.Model exposing (ParticipantDirectoryOperation(..), Initiator(..))
 import Browser
 import Config.View
 import Date

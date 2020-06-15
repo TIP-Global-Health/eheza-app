@@ -1,7 +1,7 @@
 module Pages.Relationship.Model exposing (Model, Msg(..), emptyModel)
 
 import Backend.Entities exposing (..)
-import Backend.Person.Model exposing (RegistrationInitiator(..))
+import Backend.Person.Model exposing (Initiator(..))
 import Backend.Relationship.Model exposing (..)
 import Pages.Page exposing (Page)
 
@@ -22,6 +22,6 @@ emptyModel =
 type Msg
     = AssignToClinicId String
     | RelationshipSelected MyRelatedBy
-    | Save (Maybe MyRelatedBy) (Maybe ClinicId) RegistrationInitiator
-    | Reset RegistrationInitiator
+    | Save (Maybe MyRelatedBy) (Maybe ClinicId) Initiator
+    | Reset Initiator
     | SetActivePage Page

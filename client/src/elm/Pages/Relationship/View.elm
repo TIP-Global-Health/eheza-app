@@ -4,7 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic, ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (Person, RegistrationInitiator(..))
+import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, Relationship)
@@ -28,7 +28,7 @@ import Utils.WebData exposing (viewError, viewWebData)
 {-| Offer to edit the relationship between these persons, from the point of
 view of the first person.
 -}
-view : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> RegistrationInitiator -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
+view : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> Initiator -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
 view language currentDate ( healthCenterId, maybeVillageId ) isChw initiator id1 id2 db model =
     div
         [ class "page-relationship" ]
@@ -56,7 +56,7 @@ viewHeader language =
         ]
 
 
-viewContent : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> RegistrationInitiator -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
+viewContent : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> Initiator -> PersonId -> PersonId -> ModelIndexedDb -> Model -> Html Msg
 viewContent language currentDate ( healthCenterId, maybeVillageId ) isChw initiator id1 id2 db model =
     let
         person1 =
@@ -105,7 +105,7 @@ type alias FetchedData =
     }
 
 
-viewFetchedContent : Language -> NominalDate -> HealthCenterId -> Maybe ClinicId -> Bool -> RegistrationInitiator -> PersonId -> PersonId -> Model -> WebData MyRelationship -> FetchedData -> Html Msg
+viewFetchedContent : Language -> NominalDate -> HealthCenterId -> Maybe ClinicId -> Bool -> Initiator -> PersonId -> PersonId -> Model -> WebData MyRelationship -> FetchedData -> Html Msg
 viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId isChw initiator id1 id2 model request data =
     let
         savedRelationship =

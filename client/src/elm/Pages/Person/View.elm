@@ -22,7 +22,7 @@ import Backend.Person.Model
         , Gender(..)
         , ParticipantDirectoryOperation(..)
         , Person
-        , RegistrationInitiator(..)
+        , Initiator(..)
         , allEducationLevels
         , allHivStatuses
         , allMaritalStatuses
@@ -60,7 +60,7 @@ import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
 
 
-view : Language -> NominalDate -> Bool -> RegistrationInitiator -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
+view : Language -> NominalDate -> Bool -> Initiator -> PersonId -> ModelIndexedDb -> Html App.Model.Msg
 view language currentDate isChw initiator id db =
     let
         person =
@@ -109,7 +109,7 @@ type alias OtherPerson =
     }
 
 
-viewParticipantDetailsForm : Language -> NominalDate -> Bool -> RegistrationInitiator -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
+viewParticipantDetailsForm : Language -> NominalDate -> Bool -> Initiator -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
 viewParticipantDetailsForm language currentDate isChw initiator db id person =
     let
         -- We re-organize our data about relatoinships and group participations
@@ -303,7 +303,7 @@ viewPerson language currentDate id person =
         ]
 
 
-viewOtherPerson : Language -> NominalDate -> Bool -> RegistrationInitiator -> PersonId -> ( PersonId, OtherPerson ) -> ( Dict ClinicId Clinic, Person ) -> Html App.Model.Msg
+viewOtherPerson : Language -> NominalDate -> Bool -> Initiator -> PersonId -> ( PersonId, OtherPerson ) -> ( Dict ClinicId Clinic, Person ) -> Html App.Model.Msg
 viewOtherPerson language currentDate isChw initiator relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
     let
         typeForThumbnail =
@@ -410,7 +410,7 @@ viewPhotoThumb url =
         ]
 
 
-viewCreateEditForm : Language -> NominalDate -> Maybe VillageId -> Bool -> ParticipantDirectoryOperation -> RegistrationInitiator -> Model -> ModelIndexedDb -> Html Msg
+viewCreateEditForm : Language -> NominalDate -> Maybe VillageId -> Bool -> ParticipantDirectoryOperation -> Initiator -> Model -> ModelIndexedDb -> Html Msg
 viewCreateEditForm language currentDate maybeVillageId isChw operation initiator model db =
     let
         formBeforeDefaults =
