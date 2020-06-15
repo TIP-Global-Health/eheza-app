@@ -358,7 +358,7 @@ function hedley_restful_join_field_to_query(SelectQuery $query, $entity_type, $f
  * Resolves UID of user that owns the access token.
  *
  * @param string $token
- *   The token
+ *   The token.
  *
  * @return bool|int
  *   UID of user that owns the access token. FALSE, if not found.

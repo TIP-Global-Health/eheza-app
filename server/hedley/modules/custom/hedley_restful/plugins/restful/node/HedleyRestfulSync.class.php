@@ -208,7 +208,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
         $device_name = $device_user->name;
         $words = explode(' ', $device_name);
         if (end($words) == 'Robot') {
-          array_splice( $words, -1 );
+          array_splice($words, -1);
         }
         $return['device_name'] = implode(' ', $words);
       }
