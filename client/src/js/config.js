@@ -23,6 +23,7 @@
 'use strict';
 
 (function () {
+
     self.addEventListener('fetch', function (event) {
         if (configUrlRegex.test(event.request.url)) {
             if (event.request.method === 'GET') {
