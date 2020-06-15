@@ -61,7 +61,9 @@ type IncomingMsg
     = RegistrationSucceeded
     | RegistrationFailed String
     | SetNewWorker NewWorker
-      -- @todo: Remove
+      -- @todo: Remove, as we don't get this info anymore from the service worker.
+      -- Instead, we could have the data be sent directly from the SyncManager.
+      -- Need to figure if we want to do it as part of this PR, or a follow up.
     | NewRevisions (List Revision)
 
 
