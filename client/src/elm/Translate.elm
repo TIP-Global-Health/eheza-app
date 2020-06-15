@@ -179,6 +179,7 @@ type TranslationId
     | AddChild
     | AddFamilyMember
     | AddFamilyMemberFor String
+    | AddNewParticipant
     | AddParentOrCaregiver
     | AddToGroup
     | Admin
@@ -727,6 +728,11 @@ translationSet trans =
 
         AddFamilyMemberFor name ->
             { english = "Add Family Member for " ++ name
+            , kinyarwanda = Nothing
+            }
+
+        AddNewParticipant ->
+            { english = "Add new participant"
             , kinyarwanda = Nothing
             }
 
