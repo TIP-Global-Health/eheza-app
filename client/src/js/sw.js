@@ -27,8 +27,8 @@ var photosUploadUrlRegex = /\/cache-upload\/images/;
 var nodesUuid = '78cf21d1-b3f4-496a-b312-d8ae73041f09';
 
 // All those entities are the entities we're going to get from the backend.
-// They should also be mapped in DataManager.Model.BackendGeneralEntity (for
-// General entities), or DataManager.Model.BackendAuthorityEntity (for Authority
+// They should also be mapped in SyncManager.Model.BackendGeneralEntity (for
+// General entities), or SyncManager.Model.BackendAuthorityEntity (for Authority
 // entities).
 var tableForType = {
     attendance: 'shards',

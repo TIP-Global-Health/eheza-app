@@ -1,10 +1,6 @@
-port module DataManager.Update exposing (subscriptions, update)
+port module SyncManager.Update exposing (subscriptions, update)
 
 import App.Model exposing (SubModelReturn)
-import DataManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseGeneral)
-import DataManager.Encoder
-import DataManager.Model exposing (BackendAuthorityEntity(..), BackendGeneralEntity(..), DownloadPhotos(..), IndexDbQueryType(..), IndexDbQueryTypeResult(..), Model, Msg(..), SyncStatus(..), emptyRevisionIdPerAuthority)
-import DataManager.Utils exposing (getSyncSpeedForSubscriptions)
 import Device.Encoder
 import Device.Model exposing (Device)
 import Editable
@@ -16,6 +12,10 @@ import Json.Encode
 import List.Zipper as Zipper
 import RemoteData
 import Restful.Endpoint exposing (fromEntityUuid)
+import SyncManager.Decoder exposing (decodeDownloadSyncResponseAuthority, decodeDownloadSyncResponseGeneral)
+import SyncManager.Encoder
+import SyncManager.Model exposing (BackendAuthorityEntity(..), BackendGeneralEntity(..), DownloadPhotos(..), IndexDbQueryType(..), IndexDbQueryTypeResult(..), Model, Msg(..), SyncStatus(..), emptyRevisionIdPerAuthority)
+import SyncManager.Utils exposing (getSyncSpeedForSubscriptions)
 import Time
 import Utils.WebData
 
@@ -28,7 +28,7 @@ update currentDate dbVersion device msg model =
 
         returnDetermineSyncStatus =
             SubModelReturn
-                (DataManager.Utils.determineSyncStatus model)
+                (SyncManager.Utils.determineSyncStatus model)
                 Cmd.none
                 noError
                 []
@@ -90,7 +90,7 @@ update currentDate dbVersion device msg model =
                                 dataToSend =
                                     data.entities
                                         |> List.foldl
-                                            (\entity accum -> DataManager.Utils.getDataToSendAuthority entity accum)
+                                            (\entity accum -> SyncManager.Utils.getDataToSendAuthority entity accum)
                                             []
                                         |> List.reverse
                             in
@@ -109,11 +109,11 @@ update currentDate dbVersion device msg model =
                                     data.entities
                                         |> List.foldl
                                             (\entity accum ->
-                                                case DataManager.Utils.getPhotoFromBackendAuthorityEntity entity of
+                                                case SyncManager.Utils.getPhotoFromBackendAuthorityEntity entity of
                                                     Just photoUrl ->
                                                         (entity
-                                                            |> DataManager.Utils.getBackendAuthorityEntityIdentifier
-                                                            |> DataManager.Encoder.encodeDataForDeferredPhotos photoUrl
+                                                            |> SyncManager.Utils.getBackendAuthorityEntityIdentifier
+                                                            |> SyncManager.Encoder.encodeDataForDeferredPhotos photoUrl
                                                         )
                                                             :: accum
 
@@ -141,7 +141,7 @@ update currentDate dbVersion device msg model =
                                 |> List.head
                                 |> Maybe.map
                                     (\entity ->
-                                        DataManager.Utils.getBackendAuthorityEntityIdentifier entity
+                                        SyncManager.Utils.getBackendAuthorityEntityIdentifier entity
                                             |> (\entityIdentifier -> entityIdentifier.revision)
                                     )
                                 |> Maybe.withDefault currentZipper.revisionId
@@ -153,7 +153,7 @@ update currentDate dbVersion device msg model =
                     Zipper.mapCurrent (\old -> { old | revisionId = lastFetchedRevisionId }) zipper
 
                 modelWithSyncStatus =
-                    DataManager.Utils.determineSyncStatus
+                    SyncManager.Utils.determineSyncStatus
                         { model
                             | syncStatus = SyncDownloadAuthority webData
                             , revisionIdPerAuthorityZipper = Just zipperUpdated
@@ -170,7 +170,7 @@ update currentDate dbVersion device msg model =
                     , sendRevisionIdPerAuthority (Zipper.toList zipperUpdated)
                     ]
                 )
-                (maybeHttpError webData "Backend.DataManager.Update" "BackendAuthorityFetchHandle")
+                (maybeHttpError webData "Backend.SyncManager.Update" "BackendAuthorityFetchHandle")
                 []
 
         BackendFetchMain ->
@@ -321,7 +321,7 @@ update currentDate dbVersion device msg model =
 
                 _ ->
                     SubModelReturn
-                        (DataManager.Utils.determineSyncStatus model)
+                        (SyncManager.Utils.determineSyncStatus model)
                         Cmd.none
                         noError
                         []
@@ -334,7 +334,7 @@ update currentDate dbVersion device msg model =
                             let
                                 dataToSend =
                                     data.entities
-                                        |> List.foldl (\entity accum -> DataManager.Utils.getDataToSendGeneral entity accum) []
+                                        |> List.foldl (\entity accum -> SyncManager.Utils.getDataToSendGeneral entity accum) []
                                         |> List.reverse
                             in
                             if List.isEmpty dataToSend then
@@ -358,7 +358,7 @@ update currentDate dbVersion device msg model =
                                         (\entity ->
                                             let
                                                 identifier =
-                                                    DataManager.Utils.getBackendGeneralEntityIdentifier entity
+                                                    SyncManager.Utils.getBackendGeneralEntityIdentifier entity
                                             in
                                             identifier.uuid
                                         )
@@ -384,7 +384,7 @@ update currentDate dbVersion device msg model =
                                     (\entity ->
                                         let
                                             identifier =
-                                                DataManager.Utils.getBackendGeneralEntityIdentifier entity
+                                                SyncManager.Utils.getBackendGeneralEntityIdentifier entity
                                         in
                                         identifier.revision
                                     )
@@ -394,7 +394,7 @@ update currentDate dbVersion device msg model =
                             model.lastFetchedRevisionIdGeneral
 
                 modelWithSyncStatus =
-                    DataManager.Utils.determineSyncStatus { model | syncStatus = SyncDownloadGeneral webData }
+                    SyncManager.Utils.determineSyncStatus { model | syncStatus = SyncDownloadGeneral webData }
             in
             SubModelReturn
                 { modelWithSyncStatus | lastFetchedRevisionIdGeneral = lastFetchedRevisionIdGeneral }
@@ -404,7 +404,7 @@ update currentDate dbVersion device msg model =
                     , sendLastFetchedRevisionIdGeneral lastFetchedRevisionIdGeneral
                     ]
                 )
-                (maybeHttpError webData "Backend.DataManager.Update" "BackendGeneralFetchHandle")
+                (maybeHttpError webData "Backend.SyncManager.Update" "BackendGeneralFetchHandle")
                 []
 
         SetLastFetchedRevisionIdAuthority zipper revisionId ->
@@ -555,7 +555,7 @@ update currentDate dbVersion device msg model =
                             model.syncStatus
             in
             SubModelReturn
-                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
                 Cmd.none
                 noError
                 []
@@ -595,13 +595,13 @@ update currentDate dbVersion device msg model =
                                             [ ( "access_token", device.accessToken )
                                             , ( "db_version", String.fromInt dbVersion )
                                             ]
-                                        |> withJsonBody (Json.Encode.object <| DataManager.Encoder.encodeIndexDbQueryUploadAuthorityResultRecord result)
+                                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadAuthorityResultRecord result)
                                         -- We don't need to decode anything, as we just want to have
                                         -- the browser download it.
                                         |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadAuthorityHandle result)
                         in
                         SubModelReturn
-                            (DataManager.Utils.determineSyncStatus modelUpdated)
+                            (SyncManager.Utils.determineSyncStatus modelUpdated)
                             cmd
                             noError
                             []
@@ -619,9 +619,9 @@ update currentDate dbVersion device msg model =
                                     SyncUploadAuthority { record | backendRemoteData = RemoteData.Failure error }
                             in
                             SubModelReturn
-                                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
                                 Cmd.none
-                                (maybeHttpError webData "Backend.DataManager.Update" "BackendUploadAuthorityHandle")
+                                (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadAuthorityHandle")
                                 []
 
                         RemoteData.Success _ ->
@@ -638,7 +638,7 @@ update currentDate dbVersion device msg model =
                                                 (\( entity, _ ) ->
                                                     let
                                                         identifier =
-                                                            DataManager.Utils.getBackendAuthorityEntityIdentifier entity
+                                                            SyncManager.Utils.getBackendAuthorityEntityIdentifier entity
                                                     in
                                                     identifier.revision
                                                 )
@@ -647,7 +647,7 @@ update currentDate dbVersion device msg model =
                                     deleteEntitiesThatWereUploaded { type_ = "Authority", localId = localIds }
                             in
                             SubModelReturn
-                                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
                                 cmd
                                 noError
                                 []
@@ -671,7 +671,7 @@ update currentDate dbVersion device msg model =
                             model.syncStatus
             in
             SubModelReturn
-                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
                 Cmd.none
                 noError
                 []
@@ -711,13 +711,13 @@ update currentDate dbVersion device msg model =
                                             [ ( "access_token", device.accessToken )
                                             , ( "db_version", String.fromInt dbVersion )
                                             ]
-                                        |> withJsonBody (Json.Encode.object <| DataManager.Encoder.encodeIndexDbQueryUploadGeneralResultRecord result)
+                                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadGeneralResultRecord result)
                                         -- We don't need to decode anything, as we just want to have
                                         -- the browser download it.
                                         |> HttpBuilder.send (RemoteData.fromResult >> BackendUploadGeneralHandle result)
                         in
                         SubModelReturn
-                            (DataManager.Utils.determineSyncStatus modelUpdated)
+                            (SyncManager.Utils.determineSyncStatus modelUpdated)
                             cmd
                             noError
                             []
@@ -735,9 +735,9 @@ update currentDate dbVersion device msg model =
                                     SyncUploadGeneral { record | backendRemoteData = RemoteData.Failure error }
                             in
                             SubModelReturn
-                                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
                                 Cmd.none
-                                (maybeHttpError webData "Backend.DataManager.Update" "BackendUploadGeneralHandle")
+                                (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadGeneralHandle")
                                 []
 
                         RemoteData.Success _ ->
@@ -754,7 +754,7 @@ update currentDate dbVersion device msg model =
                                                 (\( entity, _ ) ->
                                                     let
                                                         identifier =
-                                                            DataManager.Utils.getBackendGeneralEntityIdentifier entity
+                                                            SyncManager.Utils.getBackendGeneralEntityIdentifier entity
                                                     in
                                                     identifier.revision
                                                 )
@@ -763,7 +763,7 @@ update currentDate dbVersion device msg model =
                                     deleteEntitiesThatWereUploaded { type_ = "General", localId = localIds }
                             in
                             SubModelReturn
-                                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
                                 cmd
                                 noError
                                 []
@@ -782,7 +782,7 @@ update currentDate dbVersion device msg model =
             case model.syncStatus of
                 SyncUploadPhotoAuthority _ ->
                     SubModelReturn
-                        (DataManager.Utils.determineSyncStatus { model | syncStatus = SyncUploadPhotoAuthority remoteData })
+                        (SyncManager.Utils.determineSyncStatus { model | syncStatus = SyncUploadPhotoAuthority remoteData })
                         Cmd.none
                         noError
                         []
@@ -805,7 +805,7 @@ update currentDate dbVersion device msg model =
                             model.syncStatus
             in
             SubModelReturn
-                (DataManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
+                (SyncManager.Utils.determineSyncStatus { model | syncStatus = syncStatus })
                 Cmd.none
                 noError
                 []
@@ -868,7 +868,7 @@ update currentDate dbVersion device msg model =
                             |> HttpBuilder.send (RemoteData.fromResult >> BackendDeferredPhotoFetchHandle result)
                 in
                 SubModelReturn
-                    (DataManager.Utils.determineSyncStatus modelUpdated)
+                    (SyncManager.Utils.determineSyncStatus modelUpdated)
                     cmd
                     noError
                     []
@@ -1007,7 +1007,7 @@ update currentDate dbVersion device msg model =
                 []
 
         QueryIndexDbHandle val ->
-            case decodeValue DataManager.Decoder.decodeIndexDbQueryTypeResult val of
+            case decodeValue SyncManager.Decoder.decodeIndexDbQueryTypeResult val of
                 Ok indexDbQueryTypeResult ->
                     case indexDbQueryTypeResult of
                         IndexDbQueryUploadPhotoAuthorityResult remoteData ->
@@ -1057,7 +1057,7 @@ update currentDate dbVersion device msg model =
                     SubModelReturn
                         model
                         Cmd.none
-                        (decodeError "Backend.DataManager.Update" location error)
+                        (decodeError "Backend.SyncManager.Update" location error)
                         []
 
         ResetSettings ->
@@ -1175,7 +1175,7 @@ subscriptions model =
     let
         backendFetchMain =
             case model.syncCycle of
-                DataManager.Model.SyncCyclePause ->
+                SyncManager.Model.SyncCyclePause ->
                     Sub.none
 
                 _ ->

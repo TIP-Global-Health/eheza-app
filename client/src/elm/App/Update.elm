@@ -12,7 +12,6 @@ import Backend.Update
 import Browser
 import Browser.Navigation as Nav
 import Config
-import DataManager.Update
 import Device.Decoder
 import Device.Encoder
 import Dict as LegacyDict
@@ -53,6 +52,7 @@ import Restful.Endpoint exposing (fromEntityUuid, select, toCmd)
 import Rollbar
 import ServiceWorker.Model
 import ServiceWorker.Update
+import SyncManager.Update
 import Task
 import Time
 import Translate.Model exposing (Language(..))
@@ -608,7 +608,7 @@ update msg model =
             -- Normally handled automatically, but sometimes nice to trigger manually
             ( model, trySyncing () )
 
-        MsgDataManager subMsg ->
+        MsgSyncManager subMsg ->
             model.configuration
                 |> RemoteData.toMaybe
                 |> Maybe.andThen (\config -> RemoteData.toMaybe config.device)
@@ -616,10 +616,10 @@ update msg model =
                     (\device ->
                         updateSubModel
                             subMsg
-                            model.dataManager
-                            (\subMsg_ subModel -> DataManager.Update.update currentDate model.dbVersion device subMsg_ subModel)
-                            (\subModel model_ -> { model_ | dataManager = subModel })
-                            (\subCmds -> MsgDataManager subCmds)
+                            model.syncManager
+                            (\subMsg_ subModel -> SyncManager.Update.update currentDate model.dbVersion device subMsg_ subModel)
+                            (\subModel model_ -> { model_ | syncManager = subModel })
+                            (\subCmds -> MsgSyncManager subCmds)
                             model
                     )
                 |> Maybe.withDefault noChange
@@ -854,7 +854,7 @@ subscriptions model =
          , persistentStorage SetPersistentStorage
          , storageQuota SetStorageQuota
          , memoryQuota SetMemoryQuota
-         , Sub.map App.Model.MsgDataManager (DataManager.Update.subscriptions model.dataManager)
+         , Sub.map App.Model.MsgSyncManager (SyncManager.Update.subscriptions model.syncManager)
          ]
             ++ checkDataWanted
         )

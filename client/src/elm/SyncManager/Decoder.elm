@@ -1,4 +1,4 @@
-module DataManager.Decoder exposing
+module SyncManager.Decoder exposing
     ( decodeDownloadSyncResponseAuthority
     , decodeDownloadSyncResponseGeneral
     , decodeIndexDbQueryTypeResult
@@ -19,7 +19,12 @@ import Backend.PrenatalEncounter.Decoder
 import Backend.Relationship.Decoder
 import Backend.Session.Decoder
 import Backend.Village.Decoder
-import DataManager.Model
+import Gizra.Date exposing (decodeDate)
+import Gizra.Json exposing (decodeInt)
+import Json.Decode exposing (..)
+import Json.Decode.Pipeline exposing (..)
+import RemoteData exposing (RemoteData)
+import SyncManager.Model
     exposing
         ( BackendAuthorityEntity(..)
         , BackendGeneralEntity(..)
@@ -32,11 +37,6 @@ import DataManager.Model
         , UploadMethod(..)
         , UploadPhotoError(..)
         )
-import Gizra.Date exposing (decodeDate)
-import Gizra.Json exposing (decodeInt)
-import Json.Decode exposing (..)
-import Json.Decode.Pipeline exposing (..)
-import RemoteData exposing (RemoteData)
 import Time
 
 

@@ -7,7 +7,6 @@ import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (ParticipantDirectoryOperation(..), RegistrationInitiator(..))
 import Browser
 import Config.View
-import DataManager.View
 import Date
 import Error.View
 import EverySet
@@ -48,6 +47,7 @@ import Pages.Session.Model
 import Pages.Session.View exposing (view)
 import RemoteData exposing (RemoteData(..), WebData)
 import ServiceWorker.View
+import SyncManager.View
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (spinner, wrapPage)
@@ -81,7 +81,7 @@ flexPageWrapper model html =
 
         -- @todo: Move to sync page only.
         , Error.View.view model.language model.errors
-        , Html.map MsgDataManager (DataManager.View.view model.language model.configuration model.indexedDb model.dataManager)
+        , Html.map MsgSyncManager (SyncManager.View.view model.language model.configuration model.indexedDb model.syncManager)
         , div
             [ class "page-content" ]
             [ html ]

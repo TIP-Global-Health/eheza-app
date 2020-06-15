@@ -1,4 +1,4 @@
-module DataManager.Encoder exposing
+module SyncManager.Encoder exposing
     ( encodeDataForDeferredPhotos
     , encodeIndexDbQueryUploadAuthorityResultRecord
     , encodeIndexDbQueryUploadGeneralResultRecord
@@ -7,11 +7,11 @@ module DataManager.Encoder exposing
 import AssocList as Dict
 import Backend.Measurement.Encoder
 import Backend.Person.Encoder
-import DataManager.Model exposing (BackendAuthorityEntity(..), BackendEntityIdentifier, BackendGeneralEntity(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadGeneralResultRecord, UploadMethod(..))
-import DataManager.Utils
 import Json.Encode exposing (Value, int, list, null, object, string)
 import Json.Encode.Extra exposing (maybe)
 import Maybe.Extra exposing (isJust)
+import SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntityIdentifier, BackendGeneralEntity(..), IndexDbQueryUploadAuthorityResultRecord, IndexDbQueryUploadGeneralResultRecord, UploadMethod(..))
+import SyncManager.Utils
 
 
 encodeIndexDbQueryUploadGeneralResultRecord : IndexDbQueryUploadGeneralResultRecord -> List ( String, Value )
@@ -20,12 +20,12 @@ encodeIndexDbQueryUploadGeneralResultRecord record =
         encodeData ( entity, method ) =
             let
                 identifier =
-                    DataManager.Utils.getBackendGeneralEntityIdentifier entity
+                    SyncManager.Utils.getBackendGeneralEntityIdentifier entity
             in
             [ ( "uuid", string identifier.uuid )
             , ( "type", string identifier.type_ )
             , ( "method", encodeUploadMethod method )
-            , ( "data", DataManager.Utils.encodeBackendGeneralEntity entity )
+            , ( "data", SyncManager.Utils.encodeBackendGeneralEntity entity )
             ]
                 |> object
     in
@@ -52,7 +52,7 @@ encodeIndexDbQueryUploadAuthorityResultRecord record =
         encodeData ( entity, method ) =
             let
                 identifier =
-                    DataManager.Utils.getBackendAuthorityEntityIdentifier entity
+                    SyncManager.Utils.getBackendAuthorityEntityIdentifier entity
 
                 doEncode encoder identifier_ =
                     encoder identifier_.entity
@@ -91,7 +91,7 @@ encodeIndexDbQueryUploadAuthorityResultRecord record =
                                 identifier_
 
                         _ ->
-                            DataManager.Utils.encodeBackendAuthorityEntity entity
+                            SyncManager.Utils.encodeBackendAuthorityEntity entity
             in
             [ ( "uuid", string identifier.uuid )
             , ( "type", string identifier.type_ )

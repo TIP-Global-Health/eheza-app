@@ -1,11 +1,22 @@
-module DataManager.View exposing (view)
+module SyncManager.View exposing (view)
 
 import App.Model exposing (ConfiguredModel)
 import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
 import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.Model exposing (ModelIndexedDb)
-import DataManager.Model
+import Editable
+import Gizra.Html exposing (emptyNode)
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (onCheck, onClick, onInput)
+import Json.Encode
+import List.Extra
+import List.Zipper as Zipper
+import Maybe.Extra exposing (isJust)
+import RemoteData exposing (RemoteData, WebData)
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
+import SyncManager.Model
     exposing
         ( BackendAuthorityEntity(..)
         , BackendGeneralEntity(..)
@@ -18,17 +29,6 @@ import DataManager.Model
         , SyncCycle(..)
         , SyncStatus(..)
         )
-import Editable
-import Gizra.Html exposing (emptyNode)
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (onCheck, onClick, onInput)
-import Json.Encode
-import List.Extra
-import List.Zipper as Zipper
-import Maybe.Extra exposing (isJust)
-import RemoteData exposing (RemoteData, WebData)
-import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import Translate exposing (Language, translate)
 import Url
 import Utils.Html exposing (spinner)
@@ -42,7 +42,7 @@ view language configuration db model =
             details [ property "open" (Json.Encode.bool True) ]
                 [ summary [] [ text "Sync Status" ]
 
-                -- button [ onClick <| DataManager.Model.FetchFromIndexDb DataManager.Model.IndexDbQueryHealthCenters ] [ text "Fetch Health Centers" ]
+                -- button [ onClick <| SyncManager.Model.FetchFromIndexDb SyncManager.Model.IndexDbQueryHealthCenters ] [ text "Fetch Health Centers" ]
                 , div [] [ text <| "Sync status: " ++ Debug.toString model.syncStatus ]
                 , case model.syncStatus of
                     SyncDownloadGeneral webData ->
@@ -266,7 +266,7 @@ viewSyncDownloadGeneral : Language -> Model -> WebData (DownloadSyncResponse Bac
 viewSyncDownloadGeneral language model webData =
     div []
         [ div [] [ text <| "Fetch from General from revision ID " ++ String.fromInt model.lastFetchedRevisionIdGeneral ]
-        , button [ onClick <| DataManager.Model.SetLastFetchedRevisionIdGeneral 0 ] [ text "Reset revision ID to 0" ]
+        , button [ onClick <| SyncManager.Model.SetLastFetchedRevisionIdGeneral 0 ] [ text "Reset revision ID to 0" ]
         , div [] [ text "HTTP requests:" ]
         , case webData of
             RemoteData.Success data ->
@@ -349,7 +349,7 @@ viewSyncDownloadAuthority language db model webData =
             div []
                 [ div [] [ text <| "Fetch from Authority" ]
                 , ol [] authoritiesListHtml
-                , button [ onClick <| DataManager.Model.SetLastFetchedRevisionIdAuthority zipper 0 ] [ text "Reset revision ID to 0" ]
+                , button [ onClick <| SyncManager.Model.SetLastFetchedRevisionIdAuthority zipper 0 ] [ text "Reset revision ID to 0" ]
                 , case webData of
                     RemoteData.Success data ->
                         div []

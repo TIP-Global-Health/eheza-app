@@ -7,7 +7,6 @@ import Backend.Nurse.Model exposing (Nurse)
 import Browser
 import Browser.Navigation as Nav
 import Config.Model
-import DataManager.Model exposing (RevisionIdPerAuthority)
 import Device.Model exposing (Device)
 import Error.Model exposing (Error)
 import Http
@@ -34,6 +33,7 @@ import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (toEntityUuid)
 import Rollbar
 import ServiceWorker.Model
+import SyncManager.Model exposing (RevisionIdPerAuthority)
 import Time
 import Translate.Model exposing (Language(..))
 import Url exposing (Url)
@@ -106,7 +106,7 @@ type alias Model =
     -- This is outside of ModelIndexedDb, as it's a related system, which other
     -- pages/ backends shouldn't look into. It's data being synced (download or
     -- uploaded), and if some code needs it, they should access it via `ModelIndexedDb`.
-    , dataManager : DataManager.Model.Model
+    , syncManager : SyncManager.Model.Model
 
     -- List of errors we'll send to console.log
     , errors : List Error
@@ -209,7 +209,7 @@ type Msg
       MsgIndexedDb Backend.Model.MsgIndexedDb
     | MsgServiceWorker ServiceWorker.Model.Msg
     | TrySyncing
-    | MsgDataManager DataManager.Model.Msg
+    | MsgSyncManager SyncManager.Model.Msg
       -- Messages that require login, or manage the login process
     | MsgLoggedIn MsgLoggedIn
     | MsgPagePinCode Pages.PinCode.Model.Msg
@@ -269,9 +269,9 @@ type alias Flags =
 
     -- We may have multiple authorities, and each one has its own revision ID to
     -- fetch from.
-    , revisionIdPerAuthority : List DataManager.Model.RevisionIdPerAuthority
+    , revisionIdPerAuthority : List SyncManager.Model.RevisionIdPerAuthority
     , photoDownloadBatchSize : Int
-    , syncSpeed : DataManager.Model.SyncSpeed
+    , syncSpeed : SyncManager.Model.SyncSpeed
     }
 
 
@@ -295,7 +295,7 @@ emptyModel key url flags =
         revisionIdPerAuthorityZipper =
             Zipper.fromList flags.revisionIdPerAuthority
 
-        dataManagerFlags =
+        syncManagerFlags =
             { lastFetchedRevisionIdGeneral = flags.lastFetchedRevisionIdGeneral
             , revisionIdPerAuthorityZipper = revisionIdPerAuthorityZipper
             , batchSize = flags.photoDownloadBatchSize
@@ -319,7 +319,7 @@ emptyModel key url flags =
     , zscores = ZScore.Model.emptyModel
     , healthCenterId = healthCenterId
     , villageId = villageId
-    , dataManager = DataManager.Model.emptyModel dataManagerFlags
+    , syncManager = SyncManager.Model.emptyModel syncManagerFlags
     , errors = []
     }
 

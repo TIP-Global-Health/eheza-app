@@ -1,4 +1,4 @@
-module DataManager.Utils exposing
+module SyncManager.Utils exposing
     ( determineSyncStatus
     , encodeBackendAuthorityEntity
     , encodeBackendGeneralEntity
@@ -25,11 +25,11 @@ import Backend.PrenatalEncounter.Encoder
 import Backend.Relationship.Encoder
 import Backend.Session.Encoder
 import Backend.Village.Encoder
-import DataManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), DownloadPhotos(..), Model, SyncStatus(..), emptyDownloadPhotosBatchRec, emptyUploadRec)
 import Editable
 import Json.Encode exposing (Value, object)
 import List.Zipper as Zipper
 import RemoteData
+import SyncManager.Model exposing (BackendAuthorityEntity(..), BackendEntity, BackendEntityIdentifier, BackendGeneralEntity(..), DownloadPhotos(..), Model, SyncStatus(..), emptyDownloadPhotosBatchRec, emptyUploadRec)
 import Utils.WebData
 
 
@@ -41,7 +41,7 @@ determineSyncStatus model =
     let
         syncCycleRotate =
             case model.syncCycle of
-                DataManager.Model.SyncCycleOn ->
+                SyncManager.Model.SyncCycleOn ->
                     True
 
                 _ ->

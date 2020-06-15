@@ -203,7 +203,7 @@ const getRevisionIdPerAuthority = function() {
 
 /**
  * Return sync speed.
- * See DataManager.Model.syncSpeed
+ * See SyncManager.Model.syncSpeed
  */
 const getSyncSpeed = function() {
   const storage = localStorage.getItem('syncSpeed');
@@ -364,7 +364,7 @@ elmApp.ports.sendSyncedDataToIndexDb.subscribe(function(info) {
 /**
  * Fetch data from IndexDB, and send to Elm.
  *
- * See DataManager.Model.FetchFromIndexDbQueryType to see possible values.
+ * See SyncManager.Model.FetchFromIndexDbQueryType to see possible values.
  */
 elmApp.ports.askFromIndexDb.subscribe(function(info) {
   const queryType = info.queryType;
@@ -577,7 +577,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
    */
   function sendResultToElm(queryType, result) {
     const dataForSend = {
-      // Query type should match DataManager.Model.IndexDbQueryTypeResult
+      // Query type should match SyncManager.Model.IndexDbQueryTypeResult
       'queryType': queryType + 'Result',
       'data': result
     }

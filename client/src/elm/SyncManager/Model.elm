@@ -1,4 +1,4 @@
-module DataManager.Model exposing
+module SyncManager.Model exposing
     ( BackendAuthorityEntity(..)
     , BackendEntity
     , BackendEntityIdentifier

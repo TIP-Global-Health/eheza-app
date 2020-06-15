@@ -14,7 +14,7 @@ import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner)
 
 
-{-| We organize our DataManager by health center. However, there is also a bunch
+{-| We organize our SyncManager by health center. However, there is also a bunch
 of nodes that we get no matter which health center we're interesting in. So,
 this is the "magic" UUID that represents "all the health centers" (or, "no
 health center", depending on how you look at it).

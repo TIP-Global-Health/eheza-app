@@ -88,7 +88,7 @@ We only show clinics for the health centers that we are syncing. In principle,
 we could show something about the sync status here ... might want to know how
 up-to-date things are.
 
-@todo: Pass DataManager.Model instead of the Dict.
+@todo: Pass SyncManager.Model instead of the Dict.
 
 -}
 viewLoadedClinicList : Language -> Nurse -> HealthCenterId -> Model -> ( Dict ClinicId Clinic, Dict HealthCenterId () ) -> Html Msg

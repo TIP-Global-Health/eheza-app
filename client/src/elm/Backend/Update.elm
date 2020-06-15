@@ -27,7 +27,6 @@ import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSessio
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getMyMother)
 import Backend.Utils exposing (mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements)
-import DataManager.Model exposing (IndexDbQueryType(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -39,6 +38,7 @@ import Pages.Person.Model
 import Pages.Relationship.Model
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyBackendUrl, toCmd, toTask, withoutDecoder)
+import SyncManager.Model exposing (IndexDbQueryType(..))
 import Task
 
 
