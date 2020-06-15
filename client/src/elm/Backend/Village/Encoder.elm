@@ -14,4 +14,5 @@ encodeVillage village =
     , ( "sector", string village.sector )
     , ( "cell", string village.cell )
     , ( "village", string village.village )
+    , ( "type", string "village" )
     ]
