@@ -253,7 +253,7 @@ viewMuacContent language currentDate assembled data previousGroupValue =
             [ div [ class "ui form muac" ]
                 [ viewLabel language <| Translate.NutritionActivityTitle activity
                 , p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
-                , p [] [ text <| translate language (Translate.PleaseEnterValueInRange getInputConstraintsMuac) ]
+                , p [] [ text <| translate language (Translate.PleaseEnterValueInRange constraints) ]
                 , div [ class "ui grid" ]
                     [ div [ class "eleven wide column" ]
                         [ viewMeasurementInput
@@ -479,7 +479,7 @@ viewWeightContent language currentDate zscores isChw assembled data previousGrou
             [ div [ class "ui form weight" ]
                 [ viewLabel language <| Translate.NutritionActivityTitle activity
                 , p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
-                , p [] [ text <| translate language (Translate.PleaseEnterValueInRange getInputConstraintsWeight) ]
+                , p [] [ text <| translate language (Translate.PleaseEnterValueInRange constraints) ]
                 , div [ class "ui grid" ]
                     [ div [ class "eleven wide column" ]
                         [ viewMeasurementInput
