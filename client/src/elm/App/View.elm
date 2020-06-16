@@ -181,6 +181,7 @@ viewConfiguredModel model configured =
                     model.activePage
                     (RemoteData.map .nurse configured.loggedIn)
                     ( model.healthCenterId, model.villageId )
+                    model.deviceName
                     configured.pinCodePage
                     model.indexedDb
                     |> Html.map MsgPagePinCode
@@ -391,7 +392,13 @@ viewUserPage page model configured =
                             |> oldPageWrapper model
 
             else
-                Pages.PinCode.View.view model.language model.activePage (Success loggedInModel.nurse) ( model.healthCenterId, model.villageId ) configured.pinCodePage model.indexedDb
+                Pages.PinCode.View.view model.language
+                    model.activePage
+                    (Success loggedInModel.nurse)
+                    ( model.healthCenterId, model.villageId )
+                    model.deviceName
+                    configured.pinCodePage
+                    model.indexedDb
                     |> Html.map MsgPagePinCode
                     |> flexPageWrapper model
 
@@ -400,6 +407,7 @@ viewUserPage page model configured =
                 model.activePage
                 (RemoteData.map .nurse configured.loggedIn)
                 ( model.healthCenterId, model.villageId )
+                model.deviceName
                 configured.pinCodePage
                 model.indexedDb
                 |> Html.map MsgPagePinCode

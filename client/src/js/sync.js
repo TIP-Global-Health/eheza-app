@@ -668,6 +668,7 @@
                     }).then(function () {
                         return sendRevisions(saved).then(function () {
                             return Promise.resolve({
+                                device_name: json.data.device_name ? json.data.device_name : null,
                                 last_timestamp: parseInt(json.data.last_timestamp),
                                 last_contact: Date.now(),
                                 remaining: remaining - saved.length

@@ -94,8 +94,11 @@ type alias Model =
     -- Which health center a nurse is working at.
     , healthCenterId : Maybe HealthCenterId
 
-    -- Which health center a nurse is working at.
+    -- Which village center a nurse is working at.
     , villageId : Maybe VillageId
+
+    -- The name of device nurse is working with.
+    , deviceName : Maybe String
     }
 
 
@@ -220,6 +223,7 @@ type Msg
     | SetMemoryQuota MemoryQuota
     | SetHealthCenter (Maybe HealthCenterId)
     | SetVillage (Maybe VillageId)
+    | SetDeviceName (Maybe String)
     | Tick Time.Posix
     | CheckDataWanted
     | UrlRequested Browser.UrlRequest
@@ -288,4 +292,5 @@ emptyModel key url flags =
     , zscores = ZScore.Model.emptyModel
     , healthCenterId = healthCenterId
     , villageId = villageId
+    , deviceName = Nothing
     }
