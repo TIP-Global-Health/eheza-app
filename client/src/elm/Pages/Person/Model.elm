@@ -2,7 +2,7 @@ module Pages.Person.Model exposing (Model, Msg(..), emptyCreateModel, emptyEditM
 
 import Backend.Entities exposing (..)
 import Backend.Person.Form exposing (PersonForm)
-import Backend.Person.Model exposing (ParticipantDirectoryOperation, Initiator)
+import Backend.Person.Model exposing (Initiator, ParticipantDirectoryOperation)
 import Date exposing (Date)
 import Form
 import Measurement.Model exposing (DropZoneFile)

@@ -20,9 +20,9 @@ import Backend.Person.Model
         ( ExpectedAge(..)
         , ExpectedGender(..)
         , Gender(..)
+        , Initiator(..)
         , ParticipantDirectoryOperation(..)
         , Person
-        , Initiator(..)
         , allEducationLevels
         , allHivStatuses
         , allMaritalStatuses

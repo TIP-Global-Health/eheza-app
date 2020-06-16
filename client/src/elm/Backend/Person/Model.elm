@@ -4,11 +4,11 @@ module Backend.Person.Model exposing
     , ExpectedGender(..)
     , Gender(..)
     , HIVStatus(..)
+    , Initiator(..)
     , MaritalStatus(..)
     , ModeOfDelivery(..)
     , ParticipantDirectoryOperation(..)
     , Person
-    , Initiator(..)
     , Ubudehe(..)
     , VaginalDelivery(..)
     , allEducationLevels

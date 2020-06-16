@@ -1,7 +1,7 @@
-module Backend.Person.Utils exposing (ageInYears, diffInYears, expectedAgeByPerson, isAdult, isPersonAFertileWoman, isPersonAnAdult, initiatorFromUrlFragmemt, initiatorToUrlFragmemt, resolveExpectedAge)
+module Backend.Person.Utils exposing (ageInYears, diffInYears, expectedAgeByPerson, initiatorFromUrlFragmemt, initiatorToUrlFragmemt, isAdult, isPersonAFertileWoman, isPersonAnAdult, resolveExpectedAge)
 
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), ParticipantDirectoryOperation(..), Person, Initiator(..))
+import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), Initiator(..), ParticipantDirectoryOperation(..), Person)
 import Date
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
