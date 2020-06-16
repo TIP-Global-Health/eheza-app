@@ -16,14 +16,14 @@ import Pages.Session.Model
 
 getInputConstraintsHeight : FloatInputConstraints
 getInputConstraintsHeight =
-    { minVal = 0.5
-    , maxVal = 100
+    { minVal = 25
+    , maxVal = 250
     }
 
 
 getInputConstraintsMuac : FloatInputConstraints
 getInputConstraintsMuac =
-    { minVal = 0.5
+    { minVal = 5
     , maxVal = 40
     }
 
@@ -31,7 +31,7 @@ getInputConstraintsMuac =
 getInputConstraintsWeight : FloatInputConstraints
 getInputConstraintsWeight =
     { minVal = 0.5
-    , maxVal = 60
+    , maxVal = 200
     }
 
 
