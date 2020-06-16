@@ -318,9 +318,11 @@ type TranslationId
     | DateOfLastAssessment
     | DatePregnancyConcluded
     | Day
+    | DayAbbrev
     | DaySinglePlural Int
     | DateOfBirth
     | Days
+    | DaysAbbrev
     | Delete
     | DeliveryLocation
     | DeliveryOutcome
@@ -1651,6 +1653,11 @@ translationSet trans =
             , kinyarwanda = Just "Umunsi"
             }
 
+        DayAbbrev ->
+            { english = "Day"
+            , kinyarwanda = Just "Umu"
+            }
+
         DaySinglePlural value ->
             if value == 1 then
                 { english = "1 Day"
@@ -1670,6 +1677,11 @@ translationSet trans =
         Days ->
             { english = "days"
             , kinyarwanda = Just "Iminsi"
+            }
+
+        DaysAbbrev ->
+            { english = "days"
+            , kinyarwanda = Just "Imi"
             }
 
         Delete ->
@@ -2761,7 +2773,7 @@ translationSet trans =
 
         MonthAbbrev ->
             { english = "mo"
-            , kinyarwanda = Just "amezi"
+            , kinyarwanda = Just "am"
             }
 
         MonthsOld ->
