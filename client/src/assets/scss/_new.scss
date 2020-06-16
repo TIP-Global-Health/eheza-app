@@ -137,17 +137,16 @@ div.page-pincode {
       margin-left: -40px;
     }
 
-    p.logged-in-as {
-      font-size: 1.6rem;
-      font-weight: bold;
-      margin-bottom: 0;
-      margin-top: -3rem;
-    }
-
-    p.location-name {
+    div.general-info {
       font-size: 1.6rem;
       font-weight: bold;
       margin-bottom: 3rem;
+      margin-top: -2rem;
+
+      .logged-in-as,
+      .device-info {
+        margin-bottom: 0;
+      }
     }
 
     p.select-location {

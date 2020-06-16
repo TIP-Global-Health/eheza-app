@@ -18,8 +18,8 @@ import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner, viewLogo)
 
 
-view : Language -> Page -> WebData ( NurseId, Nurse ) -> ( Maybe HealthCenterId, Maybe VillageId ) -> Model -> ModelIndexedDb -> Html Msg
-view language activePage nurseData ( healthCenterId, villageId ) model db =
+view : Language -> Page -> WebData ( NurseId, Nurse ) -> ( Maybe HealthCenterId, Maybe VillageId ) -> Maybe String -> Model -> ModelIndexedDb -> Html Msg
+view language activePage nurseData ( healthCenterId, villageId ) deviceName model db =
     let
         ( header, content ) =
             case nurseData of
@@ -37,7 +37,7 @@ view language activePage nurseData ( healthCenterId, villageId ) model db =
                                     |> Maybe.withDefault False
                     in
                     ( viewLoggedInHeader language nurse selectedAuthorizedLocation
-                    , viewLoggedInContent language nurse ( healthCenterId, villageId ) selectedAuthorizedLocation db
+                    , viewLoggedInContent language nurse ( healthCenterId, villageId ) deviceName selectedAuthorizedLocation db
                     )
 
                 _ ->
@@ -143,8 +143,8 @@ viewAnonymousContent language activePage nurseData model =
     ]
 
 
-viewLoggedInContent : Language -> Nurse -> ( Maybe HealthCenterId, Maybe VillageId ) -> Bool -> ModelIndexedDb -> List (Html Msg)
-viewLoggedInContent language nurse ( healthCenterId, villageId ) selectedAuthorizedLocation db =
+viewLoggedInContent : Language -> Nurse -> ( Maybe HealthCenterId, Maybe VillageId ) -> Maybe String -> Bool -> ModelIndexedDb -> List (Html Msg)
+viewLoggedInContent language nurse ( healthCenterId, villageId ) deviceName selectedAuthorizedLocation db =
     let
         logoutButton =
             button
@@ -158,6 +158,17 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) selectedAuthori
     in
     if selectedAuthorizedLocation then
         let
+            deviceInfo =
+                deviceName
+                    |> Maybe.map
+                        (\name ->
+                            p [ class "device-info" ]
+                                [ text <| translate language Translate.Device
+                                , text <| ": " ++ name
+                                ]
+                        )
+                    |> Maybe.withDefault emptyNode
+
             loggedInAs =
                 p [ class "logged-in-as" ]
                     [ Translate.LoginPhrase Translate.LoggedInAs
@@ -179,6 +190,13 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) selectedAuthori
                         |> text
                     ]
 
+            generalInfo =
+                div [ class "general-info" ]
+                    [ deviceInfo
+                    , loggedInAs
+                    , viewLocationName nurse ( healthCenterId, villageId ) db
+                    ]
+
             clinicalButton =
                 button
                     [ class "ui primary button"
@@ -193,8 +211,7 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) selectedAuthori
                     ]
                     [ text <| translate language Translate.ParticipantDirectory ]
         in
-        [ loggedInAs
-        , viewLocationName nurse ( healthCenterId, villageId ) db
+        [ generalInfo
         , clinicalButton
         , participantDirectoryButton
         , deviceStatusButton
