@@ -260,7 +260,7 @@ function hedley_stats_get_children_beneficiaries_stats_by_period($health_center_
   $query->fields('node', ['type', 'nid', 'created']);
   $query->condition('node.type', 'pmtct_participant');
   $query->condition('node.status', NODE_PUBLISHED);
-  $query->condition('node.created',  [$date['start'],$date['end']], 'BETWEEN');
+  $query->condition('node.created', [$date['start'], $date['end']], 'BETWEEN');
 
   $field_names = [
     'field_person',
