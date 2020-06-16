@@ -17,7 +17,7 @@ import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
-import Measurement.Utils exposing (resolvePreviousValueInCommonContext)
+import Measurement.Utils exposing (..)
 import Measurement.View exposing (viewMeasurementFloatDiff, viewMuacIndication, zScoreForHeightOrLength)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.NutritionActivity.Model exposing (..)
@@ -160,6 +160,16 @@ viewHeightContent language currentDate zscores assembled data previousGroupValue
                     )
                 |> Maybe.map viewZScore
                 |> Maybe.withDefault (translate language Translate.NotAvailable)
+
+        constraints =
+            getInputConstraintsHeight
+
+        disabled =
+            (tasksCompleted /= totalTasks)
+                || (form.height
+                        |> Maybe.map (withinConstraints constraints >> not)
+                        |> Maybe.withDefault True
+                   )
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -167,6 +177,7 @@ viewHeightContent language currentDate zscores assembled data previousGroupValue
             [ div [ class "ui form height" ]
                 [ viewLabel language <| Translate.NutritionActivityTitle activity
                 , p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
+                , p [] [ text <| translate language (Translate.PleaseEnterValueInRange constraints) ]
                 , div [ class "ui grid" ]
                     [ div [ class "eleven wide column" ]
                         [ viewMeasurementInput
@@ -194,7 +205,7 @@ viewHeightContent language currentDate zscores assembled data previousGroupValue
             ]
         , div [ class "actions" ]
             [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
                 , onClick <| SaveHeight assembled.participant.person assembled.measurements.height
                 ]
                 [ text <| translate language Translate.Save ]
@@ -225,6 +236,16 @@ viewMuacContent language currentDate assembled data previousGroupValue =
 
         previousValue =
             resolvePreviousValueInCommonContext previousGroupValue previousIndividualValue
+
+        constraints =
+            getInputConstraintsMuac
+
+        disabled =
+            (tasksCompleted /= totalTasks)
+                || (form.muac
+                        |> Maybe.map (withinConstraints constraints >> not)
+                        |> Maybe.withDefault True
+                   )
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -232,6 +253,7 @@ viewMuacContent language currentDate assembled data previousGroupValue =
             [ div [ class "ui form muac" ]
                 [ viewLabel language <| Translate.NutritionActivityTitle activity
                 , p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
+                , p [] [ text <| translate language (Translate.PleaseEnterValueInRange getInputConstraintsMuac) ]
                 , div [ class "ui grid" ]
                     [ div [ class "eleven wide column" ]
                         [ viewMeasurementInput
@@ -252,7 +274,7 @@ viewMuacContent language currentDate assembled data previousGroupValue =
             ]
         , div [ class "actions" ]
             [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
                 , onClick <| SaveMuac assembled.participant.person assembled.measurements.muac
                 ]
                 [ text <| translate language Translate.Save ]
@@ -440,6 +462,16 @@ viewWeightContent language currentDate zscores isChw assembled data previousGrou
                     )
                 |> Maybe.map viewZScore
                 |> Maybe.withDefault (translate language Translate.NotAvailable)
+
+        constraints =
+            getInputConstraintsWeight
+
+        disabled =
+            (tasksCompleted /= totalTasks)
+                || (form.weight
+                        |> Maybe.map (withinConstraints constraints >> not)
+                        |> Maybe.withDefault True
+                   )
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -447,6 +479,7 @@ viewWeightContent language currentDate zscores isChw assembled data previousGrou
             [ div [ class "ui form weight" ]
                 [ viewLabel language <| Translate.NutritionActivityTitle activity
                 , p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
+                , p [] [ text <| translate language (Translate.PleaseEnterValueInRange getInputConstraintsWeight) ]
                 , div [ class "ui grid" ]
                     [ div [ class "eleven wide column" ]
                         [ viewMeasurementInput
@@ -481,7 +514,7 @@ viewWeightContent language currentDate zscores isChw assembled data previousGrou
             ]
         , div [ class "actions" ]
             [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
                 , onClick <| SaveWeight assembled.participant.person assembled.measurements.weight
                 ]
                 [ text <| translate language Translate.Save ]

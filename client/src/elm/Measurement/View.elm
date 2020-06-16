@@ -334,7 +334,7 @@ viewFloatForm config language currentDate isChw child measurements previousIndiv
             floatValue
                 |> Maybe.andThen
                     (\value ->
-                        if value < config.constraints.minVal || value > config.constraints.maxVal then
+                        if not <| withinConstraints config.constraints value then
                             Nothing
 
                         else
@@ -348,9 +348,8 @@ viewFloatForm config language currentDate isChw child measurements previousIndiv
                 [ class "ui header" ]
                 [ text <| translate language (Trans.ActivitiesTitle config.activity)
                 ]
-            , p
-                []
-                [ text <| translate language (Trans.PleaseEnterValueInRange config.constraints) ]
+            , p [] [ text <| translate language (Trans.ActivitiesHelp config.activity) ]
+            , p [] [ text <| translate language (Trans.PleaseEnterValueInRange config.constraints) ]
             , div
                 [ class "ui form" ]
                 [ div [ class "ui grid" ]
