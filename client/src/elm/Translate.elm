@@ -41,6 +41,7 @@ import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Http
+import Measurement.Model exposing (FloatInputConstraints)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Page exposing (..)
@@ -485,6 +486,7 @@ type TranslationId
     | PlaceholderEnterMUAC
     | PlaceholderEnterParticipantName
     | PlaceholderEnterWeight
+    | PleaseEnterValueInRange FloatInputConstraints
     | PleaseSelectGroup
     | PleaseSync
     | PreeclampsiaPreviousPregnancy
@@ -3242,6 +3244,11 @@ translationSet trans =
         PlaceholderEnterWeight ->
             { english = "Enter weight here…"
             , kinyarwanda = Just "Andika ibiro hano…"
+            }
+
+        PleaseEnterValueInRange constraints ->
+            { english = "Please enter value between " ++ Debug.toString constraints.minVal ++ " and " ++ Debug.toString constraints.maxVal ++ " :"
+            , kinyarwanda = Nothing
             }
 
         PleaseSelectGroup ->

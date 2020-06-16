@@ -24,7 +24,7 @@ getInputConstraintsHeight =
 getInputConstraintsMuac : FloatInputConstraints
 getInputConstraintsMuac =
     { minVal = 5
-    , maxVal = 40
+    , maxVal = 99
     }
 
 
