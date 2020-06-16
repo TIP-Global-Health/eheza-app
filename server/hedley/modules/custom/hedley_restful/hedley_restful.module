@@ -371,5 +371,12 @@ function hedley_restful_resolve_device_by_token($token) {
     ->range(0, 1)
     ->execute();
 
-  return empty($result['restful_token_auth']) ? FALSE : key($result['restful_token_auth']);
+  if (empty($result['restful_token_auth'])) {
+    return FALSE;
+  }
+
+  $auth_token_id = key($result['restful_token_auth']);
+  $auth_token = entity_load_single('restful_token_auth', $auth_token_id);
+
+  return $auth_token->uid;
 }
