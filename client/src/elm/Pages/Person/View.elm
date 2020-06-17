@@ -86,18 +86,7 @@ viewHeader : Language -> Initiator -> String -> Html App.Model.Msg
 viewHeader language initiator name =
     let
         goBackPage =
-            case initiator of
-                ParticipantDirectoryOrigin ->
-                    UserPage (PersonsPage Nothing initiator)
-
-                IndividualEncounterOrigin _ ->
-                    -- For now, we do not use this page for individual encounters.
-                    -- Those got their own dedicated page.
-                    -- Therefore, we default to Pincode page.
-                    PinCodePage
-
-                GroupEncounterOrigin _ ->
-                    UserPage (PersonsPage Nothing initiator)
+            UserPage (PersonsPage Nothing initiator)
     in
     div
         [ class "ui basic segment head" ]

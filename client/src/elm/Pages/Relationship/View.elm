@@ -32,15 +32,19 @@ view : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool ->
 view language currentDate ( healthCenterId, maybeVillageId ) isChw initiator id1 id2 db model =
     div
         [ class "page-relationship" ]
-        [ viewHeader language
+        [ viewHeader language initiator id1
         , div
             [ class "ui full segment blue" ]
             [ viewContent language currentDate ( healthCenterId, maybeVillageId ) isChw initiator id1 id2 db model ]
         ]
 
 
-viewHeader : Language -> Html Msg
-viewHeader language =
+viewHeader : Language -> Initiator -> PersonId -> Html Msg
+viewHeader language initiator id1 =
+    let
+        goBackPage =
+            UserPage (PersonPage id1 initiator)
+    in
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -48,7 +52,7 @@ viewHeader language =
             [ text <| translate language Translate.CreateRelationship ]
         , a
             [ class "link-back"
-            , onClick <| SetActivePage PinCodePage
+            , onClick <| SetActivePage goBackPage
             ]
             [ span [ class "icon-back" ] []
             , span [] []
