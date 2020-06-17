@@ -12,7 +12,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (unwrap)
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.People.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -48,7 +48,7 @@ view language currentDate maybeVillageId isChw initiator relation model db =
     in
     div
         [ class "page-people" ]
-        [ viewHeader title
+        [ viewHeader initiator relation title
         , div
             [ class "search-wrapper" ]
             [ div
@@ -58,8 +58,27 @@ view language currentDate maybeVillageId isChw initiator relation model db =
         ]
 
 
-viewHeader : String -> Html Msg
-viewHeader title =
+viewHeader : Initiator -> Maybe PersonId -> String -> Html Msg
+viewHeader initiator relation title =
+    let
+        goBackPage =
+            case initiator of
+                ParticipantDirectoryOrigin ->
+                    relation
+                        |> Maybe.map (\personId -> UserPage (PersonPage personId initiator))
+                        |> Maybe.withDefault PinCodePage
+
+                IndividualEncounterOrigin _ ->
+                    -- For now, we do not use this page for individual encounters.
+                    -- Those got their own dedicated page.
+                    -- Therefore, we default to Pincode page.
+                    PinCodePage
+
+                GroupEncounterOrigin sessionId ->
+                    relation
+                        |> Maybe.map (\personId -> UserPage (PersonPage personId initiator))
+                        |> Maybe.withDefault (UserPage (SessionPage sessionId AttendancePage))
+    in
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -67,7 +86,7 @@ viewHeader title =
             [ text title ]
         , a
             [ class "link-back"
-            , onClick <| SetActivePage PinCodePage
+            , onClick <| SetActivePage goBackPage
             ]
             [ span [ class "icon-back" ] []
             , span [] []

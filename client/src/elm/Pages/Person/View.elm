@@ -74,7 +74,7 @@ view language currentDate isChw initiator id db =
     in
     div
         [ class "page-person" ]
-        [ viewHeader language headerName
+        [ viewHeader language initiator headerName
         , div
             [ class "ui full segment blue" ]
             [ viewWebData language (viewParticipantDetailsForm language currentDate isChw initiator db id) identity person
@@ -82,8 +82,23 @@ view language currentDate isChw initiator id db =
         ]
 
 
-viewHeader : Language -> String -> Html App.Model.Msg
-viewHeader language name =
+viewHeader : Language -> Initiator -> String -> Html App.Model.Msg
+viewHeader language initiator name =
+    let
+        goBackPage =
+            case initiator of
+                ParticipantDirectoryOrigin ->
+                    UserPage (PersonsPage Nothing initiator)
+
+                IndividualEncounterOrigin _ ->
+                    -- For now, we do not use this page for individual encounters.
+                    -- Those got their own dedicated page.
+                    -- Therefore, we default to Pincode page.
+                    PinCodePage
+
+                GroupEncounterOrigin _ ->
+                    UserPage (PersonsPage Nothing initiator)
+    in
     div
         [ class "ui basic segment head" ]
         [ h1
@@ -91,7 +106,7 @@ viewHeader language name =
             [ text name ]
         , a
             [ class "link-back"
-            , onClick <| App.Model.SetActivePage PinCodePage
+            , onClick <| App.Model.SetActivePage goBackPage
             ]
             [ span [ class "icon-back" ] []
             , span [] []
@@ -176,7 +191,7 @@ viewParticipantDetailsForm language currentDate isChw initiator db id person =
                         Dict.get otherPersonId db.people
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.append db.clinics
-                            |> viewWebData language (viewOtherPerson language currentDate isChw initiator id ( otherPersonId, otherPerson )) identity
+                            |> viewWebData language (viewOtherPerson language currentDate isChw initiator db id ( otherPersonId, otherPerson )) identity
                     )
                 |> Dict.values
                 |> div [ class "ui unstackable items participants-list" ]
@@ -234,7 +249,7 @@ viewParticipantDetailsForm language currentDate isChw initiator db id person =
             [ text <| translate language Translate.DemographicInformation ++ ": " ]
         , div
             [ class "ui unstackable items participants-list" ]
-            [ viewPerson language currentDate initiator id person ]
+            [ viewPerson language currentDate initiator db id person ]
         , h3
             [ class "ui header" ]
             [ text <| translate language Translate.FamilyMembers ++ ": " ]
@@ -244,8 +259,8 @@ viewParticipantDetailsForm language currentDate isChw initiator db id person =
         ]
 
 
-viewPerson : Language -> NominalDate -> Initiator -> PersonId -> Person -> Html App.Model.Msg
-viewPerson language currentDate initiator id person =
+viewPerson : Language -> NominalDate -> Initiator -> ModelIndexedDb -> PersonId -> Person -> Html App.Model.Msg
+viewPerson language currentDate initiator db id person =
     let
         typeForThumbnail =
             case isPersonAnAdult currentDate person of
@@ -307,8 +322,8 @@ viewPerson language currentDate initiator id person =
         ]
 
 
-viewOtherPerson : Language -> NominalDate -> Bool -> Initiator -> PersonId -> ( PersonId, OtherPerson ) -> ( Dict ClinicId Clinic, Person ) -> Html App.Model.Msg
-viewOtherPerson language currentDate isChw initiator relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
+viewOtherPerson : Language -> NominalDate -> Bool -> Initiator -> ModelIndexedDb -> PersonId -> ( PersonId, OtherPerson ) -> ( Dict ClinicId Clinic, Person ) -> Html App.Model.Msg
+viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
     let
         typeForThumbnail =
             case isPersonAnAdult currentDate person of
@@ -356,17 +371,48 @@ viewOtherPerson language currentDate isChw initiator relationMainId ( otherPerso
                 emptyNode
 
             else
-                div
-                    [ class "action" ]
-                    [ div
-                        [ class "action-icon-wrapper" ]
-                        [ span
-                            [ class "action-icon forward"
-                            , onClick <| App.Model.SetActivePage <| UserPage <| RelationshipPage relationMainId otherPersonId initiator
+                let
+                    viewGoToRelationshipPageArrow =
+                        div
+                            [ class "action" ]
+                            [ div
+                                [ class "action-icon-wrapper" ]
+                                [ span
+                                    [ class "action-icon forward"
+                                    , onClick <| App.Model.SetActivePage <| UserPage <| RelationshipPage relationMainId otherPersonId initiator
+                                    ]
+                                    []
+                                ]
                             ]
-                            []
-                        ]
-                    ]
+                in
+                case initiator of
+                    ParticipantDirectoryOrigin ->
+                        viewGoToRelationshipPageArrow
+
+                    IndividualEncounterOrigin _ ->
+                        -- For now, we do not use this page for individual encounters.
+                        -- Those got their own dedicated page.
+                        emptyNode
+
+                    GroupEncounterOrigin sessionId ->
+                        -- We show action only when the person does not yet
+                        -- a participant of clinic, to which initating session belongs.
+                        Dict.get sessionId db.sessions
+                            |> Maybe.withDefault NotAsked
+                            |> RemoteData.toMaybe
+                            |> Maybe.map
+                                (\session ->
+                                    if
+                                        otherPerson.groups
+                                            |> List.map (Tuple.second >> .clinic)
+                                            |> List.member session.clinicId
+                                    then
+                                        emptyNode
+
+                                    else
+                                        viewGoToRelationshipPageArrow
+                                )
+                            |> Maybe.withDefault emptyNode
 
         content =
             div [ class "content" ]
