@@ -234,7 +234,7 @@ viewParticipantDetailsForm language currentDate isChw initiator db id person =
             [ text <| translate language Translate.DemographicInformation ++ ": " ]
         , div
             [ class "ui unstackable items participants-list" ]
-            [ viewPerson language currentDate id person ]
+            [ viewPerson language currentDate initiator id person ]
         , h3
             [ class "ui header" ]
             [ text <| translate language Translate.FamilyMembers ++ ": " ]
@@ -244,8 +244,8 @@ viewParticipantDetailsForm language currentDate isChw initiator db id person =
         ]
 
 
-viewPerson : Language -> NominalDate -> PersonId -> Person -> Html App.Model.Msg
-viewPerson language currentDate id person =
+viewPerson : Language -> NominalDate -> Initiator -> PersonId -> Person -> Html App.Model.Msg
+viewPerson language currentDate initiator id person =
     let
         typeForThumbnail =
             case isPersonAnAdult currentDate person of
@@ -259,17 +259,21 @@ viewPerson language currentDate id person =
                     "mother"
 
         action =
-            div
-                [ class "action" ]
-                [ div
-                    [ class "action-icon-wrapper" ]
-                    [ span
-                        [ class "action-icon edit"
-                        , onClick <| App.Model.SetActivePage <| UserPage <| EditPersonPage id
+            if initiator == ParticipantDirectoryOrigin then
+                div
+                    [ class "action" ]
+                    [ div
+                        [ class "action-icon-wrapper" ]
+                        [ span
+                            [ class "action-icon edit"
+                            , onClick <| App.Model.SetActivePage <| UserPage <| EditPersonPage id
+                            ]
+                            []
                         ]
-                        []
                     ]
-                ]
+
+            else
+                emptyNode
 
         content =
             div [ class "content" ]
