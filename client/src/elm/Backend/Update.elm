@@ -17,6 +17,7 @@ import Backend.Model exposing (..)
 import Backend.NutritionEncounter.Model
 import Backend.NutritionEncounter.Update
 import Backend.Person.Model exposing (Initiator(..))
+import Backend.Person.Utils exposing (graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Update
@@ -950,7 +951,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                                         (\clinic ->
                                                             let
                                                                 graduationDate =
-                                                                    Maybe.map (Date.add Months 26) childBirthDate
+                                                                    Maybe.map (Date.add Months graduatingAgeInMonth) childBirthDate
                                                             in
                                                             case clinic.clinicType of
                                                                 Pmtct ->

@@ -1,4 +1,4 @@
-module Backend.Person.Utils exposing (ageInYears, diffInYears, expectedAgeByPerson, initiatorFromUrlFragmemt, initiatorToUrlFragmemt, isAdult, isPersonAFertileWoman, isPersonAnAdult, resolveExpectedAge)
+module Backend.Person.Utils exposing (ageInYears, diffInYears, expectedAgeByPerson, graduatingAgeInMonth, initiatorFromUrlFragmemt, initiatorToUrlFragmemt, isAdult, isPersonAFertileWoman, isPersonAnAdult, resolveExpectedAge)
 
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), Initiator(..), ParticipantDirectoryOperation(..), Person)
@@ -138,3 +138,8 @@ initiatorFromUrlFragmemt s =
 
                 _ ->
                     Nothing
+
+
+graduatingAgeInMonth : Int
+graduatingAgeInMonth =
+    26

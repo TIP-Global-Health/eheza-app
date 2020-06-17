@@ -2,7 +2,7 @@ module Pages.Person.View exposing (view, viewCreateEditForm)
 
 import App.Model
 import AssocList as Dict exposing (Dict)
-import Backend.Clinic.Model exposing (Clinic)
+import Backend.Clinic.Model exposing (Clinic, ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
@@ -29,7 +29,7 @@ import Backend.Person.Model
         , allModesOfDelivery
         , allUbudehes
         )
-import Backend.Person.Utils exposing (expectedAgeByPerson, isAdult, isPersonAnAdult)
+import Backend.Person.Utils exposing (expectedAgeByPerson, graduatingAgeInMonth, isAdult, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
 import Backend.Village.Utils exposing (getVillageById)
@@ -39,7 +39,7 @@ import Form exposing (Form)
 import Form.Field
 import Form.Input
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -314,16 +314,16 @@ viewPerson language currentDate initiator db id person =
 viewOtherPerson : Language -> NominalDate -> Bool -> Initiator -> ModelIndexedDb -> PersonId -> ( PersonId, OtherPerson ) -> ( Dict ClinicId Clinic, Person ) -> Html App.Model.Msg
 viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPersonId, otherPerson ) ( clinics, person ) =
     let
+        isAdult =
+            isPersonAnAdult currentDate person
+                |> Maybe.withDefault True
+
         typeForThumbnail =
-            case isPersonAnAdult currentDate person of
-                Just True ->
-                    "mother"
+            if isAdult then
+                "mother"
 
-                Just False ->
-                    "child"
-
-                Nothing ->
-                    "mother"
+            else
+                "child"
 
         relationshipLabel =
             otherPerson.relationship
@@ -338,29 +338,18 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                     )
                 |> Maybe.withDefault emptyNode
 
-        groupNames =
-            otherPerson.groups
-                |> List.map (\( _, group ) -> Dict.get group.clinic clinics)
-                |> List.filterMap (Maybe.map .name)
-                |> String.join ", "
-
-        groups =
+        ( groups, action ) =
             if isChw then
-                emptyNode
-
-            else
-                p
-                    []
-                    [ label [] [ text <| translate language Translate.Groups ++ ": " ]
-                    , span [] [ text groupNames ]
-                    ]
-
-        action =
-            if isChw then
-                emptyNode
+                ( emptyNode, emptyNode )
 
             else
                 let
+                    groupNames =
+                        otherPerson.groups
+                            |> List.map (\( _, group ) -> Dict.get group.clinic clinics)
+                            |> List.filterMap (Maybe.map .name)
+                            |> String.join ", "
+
                     viewGoToRelationshipPageArrow =
                         div
                             [ class "action" ]
@@ -374,7 +363,11 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                                 ]
                             ]
                 in
-                case initiator of
+                ( p []
+                    [ label [] [ text <| translate language Translate.Groups ++ ": " ]
+                    , span [] [ text groupNames ]
+                    ]
+                , case initiator of
                     ParticipantDirectoryOrigin ->
                         viewGoToRelationshipPageArrow
 
@@ -384,24 +377,42 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                         emptyNode
 
                     GroupEncounterOrigin sessionId ->
-                        -- We show action only when the person does not yet
-                        -- a participant of clinic, to which initating session belongs.
+                        -- We show the arrow only when person does not yet
+                        -- a participant of clinic to which initating session belongs.
+                        -- Also, when person is a child, we examine clinic type and
+                        -- age, to determine whether or not to show the arrow.
                         Dict.get sessionId db.sessions
                             |> Maybe.withDefault NotAsked
                             |> RemoteData.toMaybe
                             |> Maybe.map
                                 (\session ->
-                                    if
-                                        otherPerson.groups
-                                            |> List.map (Tuple.second >> .clinic)
-                                            |> List.member session.clinicId
-                                    then
+                                    let
+                                        -- Allow any adult. Allow any child, when clinic type is other
+                                        -- than Sorwathe. When clinic is Sorwathe, do allow child
+                                        -- with age lower than 26 month.
+                                        qualifiesByAge =
+                                            isAdult || session.clinicType == Sorwathe || childAgeCondition
+
+                                        -- When clinic type is other than Sorwathe, we expect child age
+                                        -- to be less than 26 month.
+                                        childAgeCondition =
+                                            person.birthDate
+                                                |> Maybe.map (\birthDate -> diffMonths birthDate currentDate < graduatingAgeInMonth)
+                                                |> Maybe.withDefault False
+
+                                        alreadyParticipates =
+                                            otherPerson.groups
+                                                |> List.map (Tuple.second >> .clinic)
+                                                |> List.member session.clinicId
+                                    in
+                                    if alreadyParticipates || not qualifiesByAge then
                                         emptyNode
 
                                     else
                                         viewGoToRelationshipPageArrow
                                 )
                             |> Maybe.withDefault emptyNode
+                )
 
         content =
             div [ class "content" ]
