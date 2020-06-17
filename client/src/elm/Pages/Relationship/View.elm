@@ -243,6 +243,8 @@ viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId
 
                             initiatorCondition clinicId =
                                 case initiator of
+                                    -- When we're in session context, allow only
+                                    -- the group to which session blongs.
                                     GroupEncounterOrigin sessionId ->
                                         Dict.get sessionId db.sessions
                                             |> Maybe.withDefault NotAsked
@@ -263,6 +265,7 @@ viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId
                                                 && (clinic.clinicType /= Chw)
                                                 -- Clinic belongs to selected health center.
                                                 && (clinic.healthCenterId == selectedHealthCenter)
+                                                -- Intiator based condition.
                                                 && initiatorCondition clinicId
                                         )
                                     |> Dict.map
