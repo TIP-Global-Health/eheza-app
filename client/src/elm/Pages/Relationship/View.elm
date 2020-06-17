@@ -97,7 +97,7 @@ viewContent language currentDate ( healthCenterId, maybeVillageId ) isChw initia
             maybeVillageId
                 |> Maybe.andThen (\villageId -> getVillageClinicId villageId db)
     in
-    viewWebData language (viewFetchedContent language currentDate healthCenterId maybeVillageGroupId isChw initiator id1 id2 model request) identity fetched
+    viewWebData language (viewFetchedContent language currentDate healthCenterId maybeVillageGroupId isChw initiator id1 id2 model request db) identity fetched
 
 
 type alias FetchedData =
@@ -109,8 +109,8 @@ type alias FetchedData =
     }
 
 
-viewFetchedContent : Language -> NominalDate -> HealthCenterId -> Maybe ClinicId -> Bool -> Initiator -> PersonId -> PersonId -> Model -> WebData MyRelationship -> FetchedData -> Html Msg
-viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId isChw initiator id1 id2 model request data =
+viewFetchedContent : Language -> NominalDate -> HealthCenterId -> Maybe ClinicId -> Bool -> Initiator -> PersonId -> PersonId -> Model -> WebData MyRelationship -> ModelIndexedDb -> FetchedData -> Html Msg
+viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId isChw initiator id1 id2 model request db data =
     let
         savedRelationship =
             data.relationships
@@ -230,11 +230,28 @@ viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId
                     viewGroupSelector =
                         let
                             emptyOption =
-                                option
-                                    [ value ""
-                                    , selected (model.assignToGroup == Nothing)
-                                    ]
-                                    [ text "" ]
+                                case initiator of
+                                    GroupEncounterOrigin _ ->
+                                        emptyNode
+
+                                    _ ->
+                                        option
+                                            [ value ""
+                                            , selected (model.assignToGroup == Nothing)
+                                            ]
+                                            [ text "" ]
+
+                            initiatorCondition clinicId =
+                                case initiator of
+                                    GroupEncounterOrigin sessionId ->
+                                        Dict.get sessionId db.sessions
+                                            |> Maybe.withDefault NotAsked
+                                            |> RemoteData.toMaybe
+                                            |> Maybe.map (.clinicId >> (==) clinicId)
+                                            |> Maybe.withDefault False
+
+                                    _ ->
+                                        True
 
                             selector =
                                 data.clinics
@@ -246,6 +263,7 @@ viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId
                                                 && (clinic.clinicType /= Chw)
                                                 -- Clinic belongs to selected health center.
                                                 && (clinic.healthCenterId == selectedHealthCenter)
+                                                && initiatorCondition clinicId
                                         )
                                     |> Dict.map
                                         (\clinicId clinic ->
