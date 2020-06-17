@@ -237,7 +237,7 @@ type MsgIndexedDb
     | PostPerson (Maybe PersonId) Initiator Person -- The first person is a person we ought to offer setting a relationship to.
     | PatchPerson PersonId Person
     | PostRelationship PersonId MyRelationship (Maybe ClinicId) Initiator
-    | PostPmtctParticipant PmtctParticipant
+    | PostPmtctParticipant Initiator PmtctParticipant
     | PostSession Session
     | PostIndividualSession IndividualEncounterParticipant
     | PostPrenatalEncounter PrenatalEncounter
@@ -246,7 +246,7 @@ type MsgIndexedDb
     | HandlePostedPerson (Maybe PersonId) Initiator (WebData PersonId)
     | HandlePatchedPerson PersonId (WebData Person)
     | HandlePostedRelationship PersonId Initiator (WebData MyRelationship)
-    | HandlePostedPmtctParticipant PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
+    | HandlePostedPmtctParticipant PersonId Initiator (WebData ( PmtctParticipantId, PmtctParticipant ))
     | HandlePostedSession ClinicType (WebData SessionId)
     | HandlePostedIndividualSession PersonId IndividualEncounterType (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
     | HandlePostedPrenatalEncounter IndividualEncounterParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))

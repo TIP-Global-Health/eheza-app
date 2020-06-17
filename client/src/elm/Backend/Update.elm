@@ -33,6 +33,7 @@ import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
 import Maybe.Extra exposing (isJust, unwrap)
+import Measurement.Model exposing (OutMsgMother(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Person.Model
 import Pages.Relationship.Model
@@ -861,17 +862,40 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                 |> List.map App.Model.MsgIndexedDb
             )
 
-        PostPmtctParticipant data ->
+        PostPmtctParticipant initiator data ->
             ( { model | postPmtctParticipant = Dict.insert data.child Loading model.postPmtctParticipant }
             , sw.post pmtctParticipantEndpoint data
-                |> toCmd (RemoteData.fromResult >> HandlePostedPmtctParticipant data.child)
+                |> toCmd (RemoteData.fromResult >> HandlePostedPmtctParticipant data.child initiator)
             , []
             )
 
-        HandlePostedPmtctParticipant id data ->
+        HandlePostedPmtctParticipant id initiator data ->
+            let
+                appMsgs =
+                    case initiator of
+                        -- When in session context, automaticaly create
+                        -- create a new attendance for created participant.
+                        GroupEncounterOrigin sessionId ->
+                            data
+                                |> RemoteData.map
+                                    (Tuple.second
+                                        >> .adult
+                                        >> (\motherId ->
+                                                Measurement.Model.SaveAttendance Nothing True
+                                                    |> Backend.Session.Model.MeasurementOutMsgMother motherId
+                                                    |> MsgSession sessionId
+                                                    |> App.Model.MsgIndexedDb
+                                                    |> List.singleton
+                                           )
+                                    )
+                                |> RemoteData.withDefault []
+
+                        _ ->
+                            []
+            in
             ( { model | postPmtctParticipant = Dict.insert id data model.postPmtctParticipant }
             , Cmd.none
-            , []
+            , appMsgs
             )
 
         PostRelationship personId myRelationship addGroup initiator ->
@@ -943,7 +967,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                                         )
                                                 )
                                 in
-                                PostPmtctParticipant
+                                PostPmtctParticipant initiator
                                     { adult = normalized.person
                                     , child = normalized.relatedTo
                                     , adultActivities = defaultAdultActivities
