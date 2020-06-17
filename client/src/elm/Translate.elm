@@ -194,6 +194,7 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int Int
+    | AllowedValuesRangeHelper FloatInputConstraints
     | AppName
     | AreYouSure
     | Assessment
@@ -486,7 +487,6 @@ type TranslationId
     | PlaceholderEnterMUAC
     | PlaceholderEnterParticipantName
     | PlaceholderEnterWeight
-    | PleaseEnterValueInRange FloatInputConstraints
     | PleaseSelectGroup
     | PleaseSync
     | PreeclampsiaPreviousPregnancy
@@ -1049,6 +1049,11 @@ translationSet trans =
         AppName ->
             { english = "E-Heza System"
             , kinyarwanda = Just "E-heza sisiteme"
+            }
+
+        AllowedValuesRangeHelper constraints ->
+            { english = "Allowed values are between " ++ Debug.toString constraints.minVal ++ " and " ++ Debug.toString constraints.maxVal ++ "."
+            , kinyarwanda = Nothing
             }
 
         AreYouSure ->
@@ -3244,11 +3249,6 @@ translationSet trans =
         PlaceholderEnterWeight ->
             { english = "Enter weight here…"
             , kinyarwanda = Just "Andika ibiro hano…"
-            }
-
-        PleaseEnterValueInRange constraints ->
-            { english = "Please enter value between " ++ Debug.toString constraints.minVal ++ " and " ++ Debug.toString constraints.maxVal ++ " :"
-            , kinyarwanda = Nothing
             }
 
         PleaseSelectGroup ->

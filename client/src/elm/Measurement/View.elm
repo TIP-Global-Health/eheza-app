@@ -348,8 +348,8 @@ viewFloatForm config language currentDate isChw child measurements previousIndiv
                 [ class "ui header" ]
                 [ text <| translate language (Trans.ActivitiesTitle config.activity)
                 ]
-            , p [] [ text <| translate language (Trans.ActivitiesHelp config.activity) ]
-            , p [] [ text <| translate language (Trans.PleaseEnterValueInRange config.constraints) ]
+            , p [ class "activity-helper" ] [ text <| translate language (Trans.ActivitiesHelp config.activity) ]
+            , p [ class "range-helper" ] [ text <| translate language (Trans.AllowedValuesRangeHelper config.constraints) ]
             , div
                 [ class "ui form" ]
                 [ div [ class "ui grid" ]
