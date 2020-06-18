@@ -315,6 +315,14 @@ div.page-activity {
 
   .ui.full.segment .content {
 
+    .activity-helper {
+      margin-bottom: 5px;
+    }
+
+    .range-helper {
+      margin-top: 0;
+    }
+
     .fbf-to-receive {
       border-bottom: 2px solid;
       border-top: 2px solid;
@@ -512,7 +520,7 @@ div.page-prenatal-activity {
       }
 
       .form.muac .ui.grid {
-        margin-top: 50px;
+        margin-top: 30px;
       }
     }
 }
@@ -561,6 +569,14 @@ div.page-prenatal-activity,
 div.page-nutrition-activity {
 
     .ui.full.segment {
+
+      .activity-helper {
+        margin-bottom: 5px;
+      }
+
+      .range-helper {
+        margin-top: 0;
+      }
 
       .form-input {
         margin-bottom: 30px;
