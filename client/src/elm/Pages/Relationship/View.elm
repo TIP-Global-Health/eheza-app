@@ -8,6 +8,7 @@ import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, Relationship)
+import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (getVillageClinicId)
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
@@ -246,9 +247,7 @@ viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId
                                     -- When we're in session context, allow only
                                     -- the group to which session blongs.
                                     GroupEncounterOrigin sessionId ->
-                                        Dict.get sessionId db.sessions
-                                            |> Maybe.withDefault NotAsked
-                                            |> RemoteData.toMaybe
+                                        getSession sessionId db
                                             |> Maybe.map (.clinicId >> (==) clinicId)
                                             |> Maybe.withDefault False
 

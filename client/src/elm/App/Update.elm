@@ -9,6 +9,7 @@ import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Initiator(..))
+import Backend.Session.Utils exposing (getSession)
 import Backend.Update
 import Browser
 import Browser.Navigation as Nav
@@ -495,9 +496,7 @@ update msg model =
                         -- When navigating to relationship page in group encounter context,
                         -- we automaticaly select the clinic, to which session belongs.
                         UserPage (RelationshipPage id1 id2 (GroupEncounterOrigin sessionId)) ->
-                            Dict.get sessionId model.indexedDb.sessions
-                                |> Maybe.withDefault NotAsked
-                                |> RemoteData.toMaybe
+                            getSession sessionId model.indexedDb
                                 |> Maybe.map
                                     (.clinicId
                                         >> fromEntityUuid

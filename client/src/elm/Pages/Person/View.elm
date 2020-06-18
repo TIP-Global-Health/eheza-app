@@ -32,6 +32,7 @@ import Backend.Person.Model
 import Backend.Person.Utils exposing (expectedAgeByPerson, graduatingAgeInMonth, isAdult, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
+import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (getVillageById)
 import Date exposing (Unit(..))
 import DateSelector.SelectorDropdown
@@ -381,9 +382,7 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                         -- a participant of clinic to which initating session belongs.
                         -- Also, when person is a child, we examine clinic type and
                         -- age, to determine whether or not to show the arrow.
-                        Dict.get sessionId db.sessions
-                            |> Maybe.withDefault NotAsked
-                            |> RemoteData.toMaybe
+                        getSession sessionId db
                             |> Maybe.map
                                 (\session ->
                                     let
@@ -589,20 +588,37 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
 
                         ( birthDateSelectorFrom, birthDateSelectorTo ) =
                             case operation of
-                                -- When creating without relation, allow full dates range.
-                                CreatePerson Nothing ->
-                                    ( Date.add Years -60 currentDate, currentDate )
-
-                                _ ->
+                                -- When creating with relation, limit child age
+                                -- according to type of clinic to which session belongs.
+                                CreatePerson (Just _) ->
                                     case expectedAge of
                                         ExpectChild ->
-                                            ( Date.add Years -13 currentDate, currentDate )
+                                            let
+                                                defaultMaximalAge =
+                                                    Date.add Years -13 currentDate
+
+                                                maximalAge =
+                                                    getSession sessionId db
+                                                        |> Maybe.map
+                                                            (\session ->
+                                                                if session.clinicType /= Sorwathe then
+                                                                    Date.add Months (-1 * graduatingAgeInMonth) currentDate
+
+                                                                else
+                                                                    defaultMaximalAge
+                                                            )
+                                                        |> Maybe.withDefault defaultMaximalAge
+                                            in
+                                            ( maximalAge, currentDate )
 
                                         ExpectAdult ->
                                             ( Date.add Years -60 currentDate, Date.add Years -13 currentDate )
 
                                         ExpectAdultOrChild ->
                                             ( Date.add Years -60 currentDate, currentDate )
+
+                                _ ->
+                                    ( Date.add Years -60 currentDate, currentDate )
                     in
                     { goBackPage = UserPage (SessionPage sessionId AttendancePage)
                     , expectedAge = expectedAge

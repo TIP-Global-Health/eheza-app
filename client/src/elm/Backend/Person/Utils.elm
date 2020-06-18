@@ -85,6 +85,10 @@ resolveExpectedAge currentDate birthDate operation =
 
 initiatorToUrlFragmemt : Initiator -> String
 initiatorToUrlFragmemt initiator =
+    let
+        _ =
+            Debug.log "" initiator
+    in
     case initiator of
         ParticipantDirectoryOrigin ->
             "directory"
