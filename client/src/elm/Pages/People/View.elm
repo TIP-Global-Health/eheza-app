@@ -1,13 +1,15 @@
 module Pages.People.View exposing (view)
 
 import AssocList as Dict exposing (Dict)
+import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person)
-import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
+import Backend.Person.Utils exposing (ageInYears, graduatingAgeInMonth, isPersonAnAdult)
+import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (personLivesInVillage)
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -158,11 +160,29 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
                                 expectedAge /= ExpectChild
 
                             Just False ->
-                                -- We''ll show children unless we're expecting adults.
-                                expectedAge /= ExpectAdult
+                                -- We'll show children unless we're expecting adults.
+                                expectedAge /= ExpectAdult && childAgeCondition filteredPerson
 
                             Nothing ->
                                 -- If we don't know, then show it.
+                                True
+
+                    childAgeCondition filteredPerson =
+                        case initiator of
+                            GroupEncounterOrigin sessionId ->
+                                Maybe.map2
+                                    (\session birthDate ->
+                                        if session.clinicType /= Sorwathe then
+                                            diffMonths birthDate currentDate < graduatingAgeInMonth
+
+                                        else
+                                            True
+                                    )
+                                    (getSession sessionId db)
+                                    filteredPerson.birthDate
+                                    |> Maybe.withDefault True
+
+                            _ ->
                                 True
 
                     personRelationCondition filteredPersonId =
