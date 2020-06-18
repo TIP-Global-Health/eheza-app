@@ -260,7 +260,7 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
                 [ class "register-actions" ]
                 [ button
                     [ class "ui primary button fluid"
-                    , onClick <| SetActivePage <| UserPage <| CreatePersonPage relation ParticipantDirectoryOrigin
+                    , onClick <| SetActivePage <| UserPage <| CreatePersonPage relation initiator
                     ]
                     [ text <| translate language Translate.RegisterNewParticipant ]
                 ]
