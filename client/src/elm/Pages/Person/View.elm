@@ -620,7 +620,7 @@ viewCreateEditForm language currentDate maybeVillageId isChw operation initiator
                                 _ ->
                                     ( Date.add Years -60 currentDate, currentDate )
                     in
-                    { goBackPage = UserPage (SessionPage sessionId AttendancePage)
+                    { goBackPage = UserPage (PersonsPage personId initiator)
                     , expectedAge = expectedAge
                     , expectedGender = ExpectMaleOrFemale
                     , birthDateSelectorFrom = birthDateSelectorFrom
