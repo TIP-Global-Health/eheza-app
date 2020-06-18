@@ -329,6 +329,17 @@ viewFloatForm config language currentDate isChw child measurements previousIndiv
                                     ]
                                 ]
                         )
+
+        saveMsg =
+            floatValue
+                |> Maybe.andThen
+                    (\value ->
+                        if not <| withinConstraints config.constraints value then
+                            Nothing
+
+                        else
+                            config.saveMsg (Maybe.map Tuple.first measurements.current) value |> Just
+                    )
     in
     div
         [ class <| "ui full segment " ++ config.blockName ]
@@ -337,9 +348,8 @@ viewFloatForm config language currentDate isChw child measurements previousIndiv
                 [ class "ui header" ]
                 [ text <| translate language (Trans.ActivitiesTitle config.activity)
                 ]
-            , p
-                []
-                [ text <| translate language (Trans.ActivitiesLabel config.activity) ]
+            , p [ class "activity-helper" ] [ text <| translate language (Trans.ActivitiesHelp config.activity) ]
+            , p [ class "range-helper" ] [ text <| translate language (Trans.AllowedValuesRangeHelper config.constraints) ]
             , div
                 [ class "ui form" ]
                 [ div [ class "ui grid" ]
@@ -372,10 +382,7 @@ viewFloatForm config language currentDate isChw child measurements previousIndiv
             , showMaybe renderedZScoreForHeight
             ]
         , div [ class "actions" ] <|
-            saveButton language
-                (Maybe.map (config.saveMsg (Maybe.map Tuple.first measurements.current)) floatValue)
-                measurements
-                Nothing
+            saveButton language saveMsg measurements Nothing
         ]
 
 

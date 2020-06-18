@@ -44,6 +44,7 @@ import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Html exposing (Html, text)
 import Http
+import Measurement.Model exposing (FloatInputConstraints)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Dashboard.Model as Dashboard exposing (BeneficiariesTableLabels(..), FilterPeriod(..))
@@ -238,6 +239,7 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int Int
+    | AllowedValuesRangeHelper FloatInputConstraints
     | AppName
     | AreYouSure
     | Assessment
@@ -1093,6 +1095,11 @@ translationSet trans =
         AppName ->
             { english = "E-Heza System"
             , kinyarwanda = Just "E-heza sisiteme"
+            }
+
+        AllowedValuesRangeHelper constraints ->
+            { english = "Allowed values are between " ++ Debug.toString constraints.minVal ++ " and " ++ Debug.toString constraints.maxVal ++ "."
+            , kinyarwanda = Nothing
             }
 
         AreYouSure ->
