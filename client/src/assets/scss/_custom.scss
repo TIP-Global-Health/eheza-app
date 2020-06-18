@@ -1778,19 +1778,20 @@ input::placeholder {
     flex-direction: column;
     overflow-y: hidden;
 
-    .wrap-list {
+    .toggle-initial-display {
+      line-height: 50px;
+      margin-bottom: 10px;
+
+      .toggle-text {
+        color: $color-primary;
+        font-weight: bold;
+        margin-left: 10px;
+      }
+    }
+
+    .search-middle {
       flex: 1 1 auto;
       overflow-y: hidden;
-
-      .toggle-initial-display {
-        line-height: 50px;
-
-        .toggle-text {
-          color: $color-primary;
-          font-weight: bold;
-          margin-left: 10px;
-        }
-      }
 
       .ui.middle.aligned.divided.list {
         height: 100%;

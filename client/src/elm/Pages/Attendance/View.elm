@@ -93,15 +93,13 @@ view language nurse ( sessionId, session ) model =
             ]
         , div
             [ class "ui full blue segment" ]
-            [ div [ class "wrap-list" ]
-                [ h3
-                    [ class "ui header" ]
-                    [ text <| translate language Translate.CheckIn ]
-                , p [] [ text <| translate language Translate.ClickTheCheckMark ]
-                , viewNameFilter language model.filter SetFilter
-                , viewToggleDisplay language model
-                , div [ class "ui middle aligned divided list" ] mothers
-                ]
+            [ h3 [ class "ui header" ]
+                [ text <| translate language Translate.CheckIn ]
+            , p [] [ text <| translate language Translate.ClickTheCheckMark ]
+            , viewNameFilter language model.filter SetFilter
+            , viewToggleDisplay language model
+            , div [ class "search-middle" ]
+                [ div [ class "ui middle aligned divided list" ] mothers ]
             , div [ class "search-bottom" ]
                 [ div
                     [ class "register-actions" ]
