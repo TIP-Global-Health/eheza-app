@@ -631,7 +631,7 @@ viewBeneficiariesTable language currentDate stats model =
                 statsFilteredByGender
 
         stats0_5 =
-            filterStatsByAgeDo (\{ months } -> months >= 0 && months < 6)
+            filterStatsByAgeDo (\{ months } -> months <= 5)
 
         stats6_8 =
             filterStatsByAgeDo (\{ months } -> months >= 6 && months <= 8)
@@ -640,7 +640,7 @@ viewBeneficiariesTable language currentDate stats model =
             filterStatsByAgeDo (\{ months } -> months >= 9 && months <= 11)
 
         stats12_23 =
-            filterStatsByAgeDo (\{ months } -> months >= 12 && months <= 23)
+            filterStatsByAgeDo (\{ months } -> months >= 12)
 
         getNewBeneficiariesCount stats_ =
             stats_.childrenBeneficiaries
@@ -671,7 +671,7 @@ viewBeneficiariesTable language currentDate stats model =
                         , th [] [ text "0-5" ]
                         , th [] [ text "6-8" ]
                         , th [] [ text "9-11" ]
-                        , th [] [ text "12-23" ]
+                        , th [] [ text "12-25" ]
                         ]
                     ]
                 , tbody []
