@@ -220,7 +220,7 @@ viewLoggedInContent language nurse ( healthCenterId, villageId ) deviceName sele
                     |> Maybe.withDefault False
 
             dashboardButton =
-                if healthCenterGotFbfClinic then
+                if not (isCommunityHealthWorker nurse) && healthCenterGotFbfClinic then
                     button
                         [ class "ui primary button"
                         , onClick <| SendOutMsg <| SetActivePage <| UserPage <| DashboardPage MainPage
