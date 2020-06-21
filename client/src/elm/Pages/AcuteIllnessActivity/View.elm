@@ -411,21 +411,27 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) 
         getNextTask currentTask =
             case currentTask of
                 PhysicalExamVitals ->
-                    []
+                    [ PhysicalExamAcuteFindings ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
 
-                -- Todo
                 PhysicalExamAcuteFindings ->
-                    []
+                    [ PhysicalExamVitals ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
 
         actions =
             let
+                nextTask =
+                    getNextTask data.activeTask
+
                 saveMsg =
                     case data.activeTask of
                         PhysicalExamVitals ->
-                            SaveVitals personId measurements.vitals
+                            SaveVitals personId measurements.vitals nextTask
 
                         PhysicalExamAcuteFindings ->
-                            SaveAcuteFindings personId measurements.acuteFindings
+                            SaveAcuteFindings personId measurements.acuteFindings nextTask
             in
             div [ class "actions symptoms" ]
                 [ button

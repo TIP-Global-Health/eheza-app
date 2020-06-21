@@ -477,13 +477,21 @@ update currentDate id db msg model =
             , []
             )
 
-        SaveVitals personId saved ->
+        SaveVitals personId saved nextTask_ ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
 
                 measurement =
                     Maybe.map (Tuple.second >> .value) saved
+
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
+                            , PhysicalExamVitals
+                            )
 
                 appMsgs =
                     model.physicalExamData.vitalsForm
@@ -491,19 +499,23 @@ update currentDate id db msg model =
                         |> unwrap
                             []
                             (\value ->
-                                [ Backend.AcuteIllnessEncounter.Model.SaveVitals personId measurementId value
+                                (Backend.AcuteIllnessEncounter.Model.SaveVitals personId measurementId value
                                     |> Backend.Model.MsgAcuteIllnessEncounter id
                                     |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
-                                ]
+                                )
+                                    :: backToActivitiesMsg
                             )
+
+                updatedData =
+                    model.physicalExamData
+                        |> (\data -> { data | activeTask = nextTask })
             in
-            ( model
+            ( { model | physicalExamData = updatedData }
             , Cmd.none
             , appMsgs
             )
 
-        SaveAcuteFindings personId saved ->
+        SaveAcuteFindings personId saved nextTask_ ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -511,20 +523,32 @@ update currentDate id db msg model =
                 measurement =
                     Maybe.map (Tuple.second >> .value) saved
 
+                ( backToActivitiesMsg, nextTask ) =
+                    nextTask_
+                        |> Maybe.map (\task -> ( [], task ))
+                        |> Maybe.withDefault
+                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
+                            , PhysicalExamVitals
+                            )
+
                 appMsgs =
                     model.physicalExamData.acuteFindingsForm
                         |> toAcuteFindingsValueWithDefault measurement
                         |> unwrap
                             []
                             (\value ->
-                                [ Backend.AcuteIllnessEncounter.Model.SaveAcuteFindings personId measurementId value
+                                (Backend.AcuteIllnessEncounter.Model.SaveAcuteFindings personId measurementId value
                                     |> Backend.Model.MsgAcuteIllnessEncounter id
                                     |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
-                                ]
+                                )
+                                    :: backToActivitiesMsg
                             )
+
+                updatedData =
+                    model.physicalExamData
+                        |> (\data -> { data | activeTask = nextTask })
             in
-            ( model
+            ( { model | physicalExamData = updatedData }
             , Cmd.none
             , appMsgs
             )

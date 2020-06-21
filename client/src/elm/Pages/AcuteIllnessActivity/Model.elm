@@ -28,8 +28,8 @@ type Msg
     | SetVitalsBodyTemperature String
     | SetAcuteFindingsGeneralSign AcuteFindingsGeneralSign
     | SetAcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
-    | SaveVitals PersonId (Maybe ( AcuteIllnessVitalsId, AcuteIllnessVitals ))
-    | SaveAcuteFindings PersonId (Maybe ( AcuteFindingsId, AcuteFindings ))
+    | SaveVitals PersonId (Maybe ( AcuteIllnessVitalsId, AcuteIllnessVitals )) (Maybe PhysicalExamTask)
+    | SaveAcuteFindings PersonId (Maybe ( AcuteFindingsId, AcuteFindings )) (Maybe PhysicalExamTask)
       -- LABORATORY Msgs
     | SetActiveLaboratoryTask LaboratoryTask
     | SetRapidTestPositive Bool

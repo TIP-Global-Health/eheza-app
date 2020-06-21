@@ -163,8 +163,13 @@ physicalExamTasksCompletedFromTotal measurements data task =
             )
 
         PhysicalExamAcuteFindings ->
-            -- Todo
-            ( 0
+            let
+                form =
+                    measurements.acuteFindings
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> acuteFindingsFormWithDefault data.acuteFindingsForm
+            in
+            ( taskCompleted form.signsGeneral + taskCompleted form.signsRespiratory
             , 2
             )
 
