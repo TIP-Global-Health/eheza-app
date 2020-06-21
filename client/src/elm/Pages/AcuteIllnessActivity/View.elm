@@ -138,6 +138,9 @@ viewActivity language currentDate id activity isSuspected data model =
         AcuteIllnessPhysicalExam ->
             viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) model.physicalExamData
 
+        AcuteIllnessPriorTreatment ->
+            viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) model.priorTreatmentData
+
         AcuteIllnessLaboratory ->
             viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) model.laboratoryData
 
@@ -978,3 +981,227 @@ viewHCRecomendation language recomendation =
         , translate language Translate.And |> text
         , span [ class "strong" ] [ Translate.HCRecomendation recomendation |> translate language |> text ]
         ]
+
+
+viewAcuteIllnessPriorTreatment : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> PriorTreatmentData -> List (Html Msg)
+viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) data =
+    let
+        activity =
+            AcuteIllnessPriorTreatment
+
+        tasks =
+            [ TreatmentReview ]
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        TreatmentReview ->
+                            ( "treatment-review"
+                            , isJust measurements.treatmentReview
+                            )
+
+                isActive =
+                    task == data.activeTask
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActivePriorTreatmentTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ a attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.PriorTreatmentTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            tasks
+                |> List.map
+                    (\task ->
+                        ( task, treatmentTasksCompletedFromTotal measurements data task )
+                    )
+                |> Dict.fromList
+
+        ( tasksCompleted, totalTasks ) =
+            Dict.get data.activeTask tasksCompletedFromTotalDict
+                |> Maybe.withDefault ( 0, 0 )
+
+        viewForm =
+            case data.activeTask of
+                TreatmentReview ->
+                    measurements.treatmentReview
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> treatmentReviewFormWithDefault data.treatmentReviewForm
+                        |> viewTreatmentReviewForm language currentDate measurements
+
+        getNextTask currentTask =
+            case currentTask of
+                TreatmentReview ->
+                    []
+
+        actions =
+            let
+                saveMsg =
+                    case data.activeTask of
+                        TreatmentReview ->
+                            SaveTreatmentReview personId measurements.treatmentReview
+            in
+            div [ class "actions malaria-testing" ]
+                [ button
+                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                    , onClick saveMsg
+                    ]
+                    [ text <| translate language Translate.Save ]
+                ]
+    in
+    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+        [ div [ class "ui three column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , div [ class "ui full segment" ]
+        [ div [ class "full content" ]
+            [ viewForm
+            , actions
+            ]
+        ]
+    ]
+
+
+viewTreatmentReviewForm : Language -> NominalDate -> AcuteIllnessMeasurements -> TreatmentReviewForm -> Html Msg
+viewTreatmentReviewForm language currentDate measurements form =
+    let
+        feverPast6HoursUpdateFunc value form_ =
+            { form_ | feverPast6Hours = Just value }
+
+        feverPast6HoursHelpedUpdateFunc value form_ =
+            { form_ | feverPast6HoursHelped = Just value }
+
+        malariaTodayUpdateFunc value form_ =
+            { form_ | malariaToday = Just value }
+
+        malariaTodayHelpedUpdateFunc value form_ =
+            { form_ | malariaTodayHelped = Just value }
+
+        malariaWithinPastMonthUpdateFunc value form_ =
+            { form_ | malariaWithinPastMonth = Just value }
+
+        malariaWithinPastMonthHelpedUpdateFunc value form_ =
+            { form_ | malariaWithinPastMonthHelped = Just value }
+
+        medicationHelpedQuestion =
+            div [ class "ui grid" ]
+                [ div [ class "one wide column" ] []
+                , div [ class "fifteen wide column" ]
+                    [ viewQuestionLabel language Translate.MedicationHelpedQuestion ]
+                ]
+
+        feverPast6HoursSection =
+            let
+                feverPast6HoursPositive =
+                    form.feverPast6Hours
+                        |> Maybe.withDefault False
+
+                feverPast6HoursHelpedInput =
+                    if feverPast6HoursPositive then
+                        [ medicationHelpedQuestion
+                        , viewBoolInput
+                            language
+                            form.feverPast6HoursHelped
+                            (SetTreatmentReviewBoolInput feverPast6HoursHelpedUpdateFunc)
+                            "fever-past-6-hours-helped derived"
+                            Nothing
+                        ]
+
+                    else
+                        []
+            in
+            [ div [ class "ui grid" ]
+                [ div [ class "sixteen wide column" ]
+                    [ viewQuestionLabel language Translate.MedicationForFeverPast6HoursQuestion ]
+                ]
+            , viewBoolInput
+                language
+                form.feverPast6Hours
+                (SetTreatmentReviewBoolInput feverPast6HoursUpdateFunc)
+                "fever-past-6-hours"
+                Nothing
+            ]
+                ++ feverPast6HoursHelpedInput
+
+        malariaTodaySection =
+            let
+                malariaTodayPositive =
+                    form.malariaToday
+                        |> Maybe.withDefault False
+
+                malariaTodayHelpedInput =
+                    if malariaTodayPositive then
+                        [ medicationHelpedQuestion
+                        , viewBoolInput
+                            language
+                            form.malariaTodayHelped
+                            (SetTreatmentReviewBoolInput malariaTodayHelpedUpdateFunc)
+                            "malaria-today-helped derived"
+                            Nothing
+                        ]
+
+                    else
+                        []
+            in
+            [ div [ class "ui grid" ]
+                [ div [ class "sixteen wide column" ]
+                    [ viewQuestionLabel language Translate.MedicationForMalariaWithinPastMonthQuestion ]
+                ]
+            , viewBoolInput
+                language
+                form.malariaToday
+                (SetTreatmentReviewBoolInput malariaTodayUpdateFunc)
+                "malaria-today"
+                Nothing
+            ]
+                ++ malariaTodayHelpedInput
+
+        malariaWithinPastMonth =
+            let
+                malariaWithinPastMonthPositive =
+                    form.malariaWithinPastMonth
+                        |> Maybe.withDefault False
+
+                malariaWithinPastMonthHelpedInput =
+                    if malariaWithinPastMonthPositive then
+                        [ medicationHelpedQuestion
+                        , viewBoolInput
+                            language
+                            form.malariaWithinPastMonthHelped
+                            (SetTreatmentReviewBoolInput malariaWithinPastMonthHelpedUpdateFunc)
+                            "malaria-within-past-month-helped derived"
+                            Nothing
+                        ]
+
+                    else
+                        []
+            in
+            [ div [ class "ui grid" ]
+                [ div [ class "sixteen wide column" ]
+                    [ viewQuestionLabel language Translate.MedicationForMalariaTodayQuestion ]
+                ]
+            , viewBoolInput
+                language
+                form.malariaWithinPastMonth
+                (SetTreatmentReviewBoolInput malariaWithinPastMonthUpdateFunc)
+                "malaria-within-past-month"
+                Nothing
+            ]
+                ++ malariaWithinPastMonthHelpedInput
+    in
+    feverPast6HoursSection
+        ++ malariaTodaySection
+        ++ malariaWithinPastMonth
+        |> div [ class "ui form treatment-review" ]

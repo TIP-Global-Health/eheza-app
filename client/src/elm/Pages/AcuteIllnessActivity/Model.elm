@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Model exposing (ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptySymptomsData)
+module Pages.AcuteIllnessActivity.Model exposing (ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), PriorTreatmentData, PriorTreatmentTask(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, TreatmentReviewForm, VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptyPriorTreatmentData, emptySymptomsData, emptyTreatmentReviewForm)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -48,6 +48,10 @@ type Msg
     | SetResponsePeriod ResponsePeriod
     | SetAmbulanceArrivalPeriod ResponsePeriod
     | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe ExposureTask)
+      -- PRIOR TREATMNENT
+    | SetActivePriorTreatmentTask PriorTreatmentTask
+    | SetTreatmentReviewBoolInput (Bool -> TreatmentReviewForm -> TreatmentReviewForm) Bool
+    | SaveTreatmentReview PersonId (Maybe ( TreatmentReviewId, TreatmentReview ))
 
 
 type alias Model =
@@ -55,6 +59,7 @@ type alias Model =
     , physicalExamData : PhysicalExamData
     , laboratoryData : LaboratoryData
     , exposureData : ExposureData
+    , priorTreatmentData : PriorTreatmentData
     , showAlertsDialog : Bool
     , showCovid19Popup : Bool
     }
@@ -66,6 +71,7 @@ emptyModel =
     , physicalExamData = emptyPhysicalExamData
     , laboratoryData = emptyLaboratoryData
     , exposureData = emptyExposureData
+    , priorTreatmentData = emptyPriorTreatmentData
     , showAlertsDialog = False
     , showCovid19Popup = False
     }
@@ -221,4 +227,46 @@ type alias HCContactForm =
     , recomendations : Maybe HCRecomendation
     , responsePeriod : Maybe ResponsePeriod
     , ambulanceArrivalPeriod : Maybe ResponsePeriod
+    }
+
+
+
+-- PRIOR TREATMENT
+
+
+type alias PriorTreatmentData =
+    { treatmentReviewForm : TreatmentReviewForm
+    , activeTask : PriorTreatmentTask
+    }
+
+
+emptyPriorTreatmentData : PriorTreatmentData
+emptyPriorTreatmentData =
+    { treatmentReviewForm = emptyTreatmentReviewForm
+    , activeTask = TreatmentReview
+    }
+
+
+type PriorTreatmentTask
+    = TreatmentReview
+
+
+type alias TreatmentReviewForm =
+    { feverPast6Hours : Maybe Bool
+    , feverPast6HoursHelped : Maybe Bool
+    , malariaToday : Maybe Bool
+    , malariaTodayHelped : Maybe Bool
+    , malariaWithinPastMonth : Maybe Bool
+    , malariaWithinPastMonthHelped : Maybe Bool
+    }
+
+
+emptyTreatmentReviewForm : TreatmentReviewForm
+emptyTreatmentReviewForm =
+    { feverPast6Hours = Nothing
+    , feverPast6HoursHelped = Nothing
+    , malariaToday = Nothing
+    , malariaTodayHelped = Nothing
+    , malariaWithinPastMonth = Nothing
+    , malariaWithinPastMonthHelped = Nothing
     }

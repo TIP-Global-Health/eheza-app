@@ -854,3 +854,55 @@ update currentDate id db msg model =
             , Cmd.none
             , appMsgs
             )
+
+        SetActivePriorTreatmentTask task ->
+            let
+                updatedData =
+                    model.priorTreatmentData
+                        |> (\data -> { data | activeTask = task })
+            in
+            ( { model | priorTreatmentData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetTreatmentReviewBoolInput formUpdateFunc value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            formUpdateFunc value model.priorTreatmentData.treatmentReviewForm
+                    in
+                    model.priorTreatmentData
+                        |> (\data -> { data | treatmentReviewForm = updatedForm })
+            in
+            ( { model | priorTreatmentData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveTreatmentReview personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.priorTreatmentData.treatmentReviewForm
+                        |> toTreatmentReviewValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.AcuteIllnessEncounter.Model.SaveTreatmentReview personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )

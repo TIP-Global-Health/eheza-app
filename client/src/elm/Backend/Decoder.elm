@@ -193,6 +193,9 @@ decodeRevision =
                     "travel_history" ->
                         decodeWithUuid TravelHistoryRevision decodeTravelHistory
 
+                    "treatment_history" ->
+                        decodeWithUuid TreatmentReviewRevision decodeTreatmentReview
+
                     "vitals" ->
                         decodeWithUuid VitalsRevision decodeVitals
 

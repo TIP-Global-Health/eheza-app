@@ -442,6 +442,11 @@ h3.ui.header {
   background-size: 78px 78px;
 }
 
+.icon-task-prior-treatment {
+  background-image: url(#{$img-path}icon-prior-treatment.svg);
+  background-size: 78px 78px;
+}
+
 // Tasks horizontal scroll
 
 .ui.task.segment {
@@ -1807,6 +1812,20 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-contact-hc-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-treatment-review {
+  .active &:after {
+    background-image: url(#{$img-path}icon-treatment-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-treatment-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-treatment-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 

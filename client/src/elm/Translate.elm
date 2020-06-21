@@ -44,7 +44,7 @@ import Form.Error exposing (ErrorValue(..))
 import Http
 import Measurement.Model exposing (FloatInputConstraints)
 import NutritionActivity.Model exposing (NutritionActivity(..))
-import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..), LaboratoryTask(..), PhysicalExamTask(..), SymptomsTask(..))
+import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..), LaboratoryTask(..), PhysicalExamTask(..), PriorTreatmentTask(..), SymptomsTask(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
@@ -423,6 +423,10 @@ type TranslationId
     | MedicalDiagnosis
     | MedicalDiagnosisAlert MedicalDiagnosis
     | MedicalFormHelper
+    | MedicationForFeverPast6HoursQuestion
+    | MedicationForMalariaTodayQuestion
+    | MedicationForMalariaWithinPastMonthQuestion
+    | MedicationHelpedQuestion
     | MentalHealthHistory
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MMHGUnit
@@ -659,6 +663,7 @@ type TranslationId
     | TrainingGroupEncounterCreateSuccessMessage
     | TrainingGroupEncounterDeleteSuccessMessage
     | TraveledToCOVID19CountryQuestion
+    | PriorTreatmentTask PriorTreatmentTask
     | TrySyncing
     | TuberculosisPast
     | TuberculosisPresent
@@ -1055,6 +1060,11 @@ translationSet trans =
 
                 AcuteIllnessPhysicalExam ->
                     { english = "Physical Exam"
+                    , kinyarwanda = Nothing
+                    }
+
+                AcuteIllnessPriorTreatment ->
+                    { english = "Prior Treatment History"
                     , kinyarwanda = Nothing
                     }
 
@@ -2887,6 +2897,26 @@ translationSet trans =
             , kinyarwanda = Just "Andika niba umubyeyi yaragaragaweho indwara zikurikira"
             }
 
+        MedicationForFeverPast6HoursQuestion ->
+            { english = "Have you taken any medication to treat a fever in the past six hours"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationForMalariaTodayQuestion ->
+            { english = "Did you receive medication for malaria today before this visit"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationForMalariaWithinPastMonthQuestion ->
+            { english = "Have you received medication for malaria within the past month before today's visit"
+            , kinyarwanda = Nothing
+            }
+
+        MedicationHelpedQuestion ->
+            { english = "Do you feel better after taking this"
+            , kinyarwanda = Nothing
+            }
+
         MentalHealthHistory ->
             { english = "History of Mental Health Problems"
             , kinyarwanda = Just "Niba yaragize uburwayi bwo mumutwe"
@@ -4610,6 +4640,13 @@ translationSet trans =
             { english = "Have you traveled to any country known to have COVID-19 in the past 14 days"
             , kinyarwanda = Nothing
             }
+
+        PriorTreatmentTask task ->
+            case task of
+                TreatmentReview ->
+                    { english = "Treatment Review"
+                    , kinyarwanda = Nothing
+                    }
 
         TrySyncing ->
             { english = "Try syncing with backend"

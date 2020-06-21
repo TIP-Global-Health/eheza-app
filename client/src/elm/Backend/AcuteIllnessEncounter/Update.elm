@@ -366,3 +366,39 @@ update nurseId healthCenterId encounterId maybeEncounter currentDate msg model =
             ( { model | saveHCContact = data }
             , Cmd.none
             )
+
+        SaveTreatmentReview personId valueId value ->
+            let
+                cmd =
+                    case valueId of
+                        Nothing ->
+                            { participantId = personId
+                            , dateMeasured = currentDate
+                            , encounterId = Just encounterId
+                            , nurse = nurseId
+                            , healthCenter = healthCenterId
+                            , value = value
+                            }
+                                |> sw.post treatmentReviewEndpoint
+                                |> withoutDecoder
+                                |> toCmd (RemoteData.fromResult >> HandleSavedTreatmentReview)
+
+                        Just id ->
+                            encodeTreatmentReviewValue value
+                                |> List.append
+                                    [ ( "nurse", Json.Encode.Extra.maybe encodeEntityUuid nurseId )
+                                    , ( "health_center", Json.Encode.Extra.maybe encodeEntityUuid healthCenterId )
+                                    ]
+                                |> object
+                                |> sw.patchAny treatmentReviewEndpoint id
+                                |> withoutDecoder
+                                |> toCmd (RemoteData.fromResult >> HandleSavedTreatmentReview)
+            in
+            ( { model | saveTreatmentReview = Loading }
+            , cmd
+            )
+
+        HandleSavedTreatmentReview data ->
+            ( { model | saveTreatmentReview = data }
+            , Cmd.none
+            )

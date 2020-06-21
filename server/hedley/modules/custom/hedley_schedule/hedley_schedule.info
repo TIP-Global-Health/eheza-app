@@ -35,6 +35,7 @@ features[field_base][] = field_village_ref
 features[field_base][] = title_field
 features[field_instance][] = node-acute_illness_encounter-field_individual_participant
 features[field_instance][] = node-acute_illness_encounter-field_scheduled_date
+features[field_instance][] = node-acute_illness_encounter-field_shards
 features[field_instance][] = node-acute_illness_encounter-field_uuid
 features[field_instance][] = node-clinic-field_health_center
 features[field_instance][] = node-clinic-field_shards
