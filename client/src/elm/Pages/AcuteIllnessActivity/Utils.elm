@@ -1,9 +1,12 @@
-module Pages.AcuteIllnessActivity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, exposureFormWithDefault, exposureTasksCompletedFromTotal, fromExposureValue, fromHCContactValue, fromIsolationValue, fromListWithDefaultValue, fromMalariaTestingValue, fromTravelHistoryValue, fromTreatmentReviewValue, fromVitalsValue, hcContactFormWithDefault, hcContactValuePostProcess, isolationFormWithDefault, isolationValuePostProcess, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, naListTaskCompleted, naTaskCompleted, physicalExamTasksCompletedFromTotal, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toExposureValue, toExposureValueWithDefault, toHCContactValue, toHCContactValueWithDefault, toIsolationValue, toIsolationValueWithDefault, toMalariaTestingValue, toMalariaTestingValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValue, toTravelHistoryValueWithDefault, toTreatmentReviewValue, toTreatmentReviewValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vitalsFormWithDefault, withDefaultValue)
+module Pages.AcuteIllnessActivity.Utils exposing (acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, exposureFormWithDefault, exposureTasksCompletedFromTotal, fromAcuteFindingsValue, fromExposureValue, fromHCContactValue, fromIsolationValue, fromListWithDefaultValue, fromMalariaTestingValue, fromTravelHistoryValue, fromTreatmentReviewValue, fromVitalsValue, hcContactFormWithDefault, hcContactValuePostProcess, ifEmpty, isolationFormWithDefault, isolationValuePostProcess, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, naListTaskCompleted, naTaskCompleted, physicalExamTasksCompletedFromTotal, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toAcuteFindingsValue, toAcuteFindingsValueWithDefault, toExposureValue, toExposureValueWithDefault, toHCContactValue, toHCContactValueWithDefault, toIsolationValue, toIsolationValueWithDefault, toMalariaTestingValue, toMalariaTestingValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValue, toTravelHistoryValueWithDefault, toTreatmentReviewValue, toTreatmentReviewValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vitalsFormWithDefault, withDefaultValue)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model
     exposing
-        ( AcuteIllnessMeasurements
+        ( AcuteFindingsGeneralSign(..)
+        , AcuteFindingsRespiratorySign(..)
+        , AcuteFindingsValue
+        , AcuteIllnessMeasurements
         , AcuteIllnessVitalsValue
         , ExposureSign(..)
         , HCContactSign(..)
@@ -379,21 +382,6 @@ toSymptomsGeneralValueWithDefault saved form =
         |> .signs
 
 
-
---
---
--- toSymptomsGeneralValue : SymptomsGeneralForm -> Maybe (Dict SymptomsGeneralSign Int)
--- toSymptomsGeneralValue form =
---     form.signs
---
---
--- fromSymptomsRespiratoryValue : Maybe (Dict SymptomsRespiratorySign Int) -> SymptomsRespiratoryForm
--- fromSymptomsRespiratoryValue saved =
---     { signs = saved }
---
---
-
-
 symptomsRespiratoryFormWithDefault : SymptomsRespiratoryForm -> Maybe (Dict SymptomsRespiratorySign Int) -> SymptomsRespiratoryForm
 symptomsRespiratoryFormWithDefault form saved =
     saved
@@ -491,6 +479,46 @@ toVitalsValue : VitalsForm -> Maybe AcuteIllnessVitalsValue
 toVitalsValue form =
     Maybe.map AcuteIllnessVitalsValue form.respiratoryRate
         |> andMap form.bodyTemperature
+
+
+fromAcuteFindingsValue : Maybe AcuteFindingsValue -> AcuteFindingsForm
+fromAcuteFindingsValue saved =
+    { signsGeneral = Maybe.map (.signsGeneral >> EverySet.toList) saved
+    , signsRespiratory = Maybe.map (.signsRespiratory >> EverySet.toList) saved
+    }
+
+
+acuteFindingsFormWithDefault : AcuteFindingsForm -> Maybe AcuteFindingsValue -> AcuteFindingsForm
+acuteFindingsFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { signsGeneral = or form.signsGeneral (EverySet.toList value.signsGeneral |> Just)
+                , signsRespiratory = or form.signsRespiratory (EverySet.toList value.signsRespiratory |> Just)
+                }
+            )
+
+
+toAcuteFindingsValueWithDefault : Maybe AcuteFindingsValue -> AcuteFindingsForm -> Maybe AcuteFindingsValue
+toAcuteFindingsValueWithDefault saved form =
+    acuteFindingsFormWithDefault form saved
+        |> toAcuteFindingsValue
+
+
+toAcuteFindingsValue : AcuteFindingsForm -> Maybe AcuteFindingsValue
+toAcuteFindingsValue form =
+    let
+        signsGeneralSet =
+            form.signsGeneral
+                |> Maybe.map (EverySet.fromList >> ifEmpty NoAcuteFindingsGeneralSigns)
+
+        signsRespiratorySet =
+            form.signsRespiratory
+                |> Maybe.map (EverySet.fromList >> ifEmpty NoAcuteFindingsRespiratorySigns)
+    in
+    Maybe.map AcuteFindingsValue signsGeneralSet
+        |> andMap signsRespiratorySet
 
 
 fromMalariaTestingValue : Maybe (EverySet MalariaTestingSign) -> MalariaTestingForm
@@ -765,6 +793,15 @@ toTreatmentReviewValue form =
 
 
 -- HELPER FUNCTIONS
+
+
+ifEmpty : a -> EverySet a -> EverySet a
+ifEmpty value set =
+    if EverySet.isEmpty set then
+        EverySet.singleton value
+
+    else
+        set
 
 
 withDefaultValue : a -> Maybe a -> EverySet a

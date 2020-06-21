@@ -7,7 +7,9 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model
     exposing
-        ( HCRecomendation(..)
+        ( AcuteFindingsGeneralSign(..)
+        , AcuteFindingsRespiratorySign(..)
+        , HCRecomendation(..)
         , ReasonForNotIsolating(..)
         , ResponsePeriod(..)
         , SymptomsGISign(..)
@@ -62,6 +64,17 @@ update currentDate id db msg model =
                         >> symptomsGIFormWithDefault model.symptomsData.symptomsGIForm
                     )
                 |> Maybe.withDefault model.symptomsData.symptomsGIForm
+
+        acuteFindingsForm =
+            Dict.get id db.acuteIllnessMeasurements
+                |> Maybe.withDefault NotAsked
+                |> RemoteData.toMaybe
+                |> Maybe.map
+                    (.acuteFindings
+                        >> Maybe.map (Tuple.second >> .value)
+                        >> acuteFindingsFormWithDefault model.physicalExamData.acuteFindingsForm
+                    )
+                |> Maybe.withDefault model.physicalExamData.acuteFindingsForm
     in
     case msg of
         SetActivePage page ->
@@ -368,6 +381,102 @@ update currentDate id db msg model =
             , []
             )
 
+        SetAcuteFindingsGeneralSign sign ->
+            let
+                form =
+                    acuteFindingsForm
+
+                updatedForm =
+                    case form.signsGeneral of
+                        Just signs ->
+                            if List.member sign signs then
+                                let
+                                    updatedSigns =
+                                        if List.length signs == 1 then
+                                            Nothing
+
+                                        else
+                                            signs |> List.filter ((/=) sign) |> Just
+                                in
+                                { form | signsGeneral = updatedSigns }
+
+                            else
+                                case sign of
+                                    NoAcuteFindingsGeneralSigns ->
+                                        { form | signsGeneral = Just [ sign ] }
+
+                                    _ ->
+                                        let
+                                            updatedSigns =
+                                                case signs of
+                                                    [ NoAcuteFindingsGeneralSigns ] ->
+                                                        Just [ sign ]
+
+                                                    _ ->
+                                                        Just (sign :: signs)
+                                        in
+                                        { form | signsGeneral = updatedSigns }
+
+                        Nothing ->
+                            { form | signsGeneral = Just [ sign ] }
+
+                updatedData =
+                    model.physicalExamData
+                        |> (\data -> { data | acuteFindingsForm = updatedForm })
+            in
+            ( { model | physicalExamData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetAcuteFindingsRespiratorySign sign ->
+            let
+                form =
+                    acuteFindingsForm
+
+                updatedForm =
+                    case form.signsRespiratory of
+                        Just signs ->
+                            if List.member sign signs then
+                                let
+                                    updatedSigns =
+                                        if List.length signs == 1 then
+                                            Nothing
+
+                                        else
+                                            signs |> List.filter ((/=) sign) |> Just
+                                in
+                                { form | signsRespiratory = updatedSigns }
+
+                            else
+                                case sign of
+                                    NoAcuteFindingsRespiratorySigns ->
+                                        { form | signsRespiratory = Just [ sign ] }
+
+                                    _ ->
+                                        let
+                                            updatedSigns =
+                                                case signs of
+                                                    [ NoAcuteFindingsRespiratorySigns ] ->
+                                                        Just [ sign ]
+
+                                                    _ ->
+                                                        Just (sign :: signs)
+                                        in
+                                        { form | signsRespiratory = updatedSigns }
+
+                        Nothing ->
+                            { form | signsRespiratory = Just [ sign ] }
+
+                updatedData =
+                    model.physicalExamData
+                        |> (\data -> { data | acuteFindingsForm = updatedForm })
+            in
+            ( { model | physicalExamData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveVitals personId saved ->
             let
                 measurementId =
@@ -383,6 +492,32 @@ update currentDate id db msg model =
                             []
                             (\value ->
                                 [ Backend.AcuteIllnessEncounter.Model.SaveVitals personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
+        SaveAcuteFindings personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.physicalExamData.acuteFindingsForm
+                        |> toAcuteFindingsValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.AcuteIllnessEncounter.Model.SaveAcuteFindings personId measurementId value
                                     |> Backend.Model.MsgAcuteIllnessEncounter id
                                     |> App.Model.MsgIndexedDb
                                 , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id

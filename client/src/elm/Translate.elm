@@ -171,6 +171,8 @@ type TranslationId
     | Abortions
     | AccompaniedByPartner
     | AccessDenied
+    | AcuteFindingsGeneralSign AcuteFindingsGeneralSign
+    | AcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
     | Activities
     | ActivitiesCompleted Int
     | ActivitiesHelp Activity
@@ -504,6 +506,8 @@ type TranslationId
     | PartnerHivTestResult
     | PartnerReceivedHivCounseling
     | PartnerReceivedHivTesting
+    | PatientExhibitAnyFindings
+    | PatientExhibitAnyRespiratoryFindings
     | PatientGotAnySymptoms
     | PatientProgress
     | PatientInformation
@@ -764,6 +768,65 @@ translationSet trans =
             { english = "Access denied"
             , kinyarwanda = Just "Kwinjira ntibyemera"
             }
+
+        AcuteFindingsGeneralSign sign ->
+            case sign of
+                LethargicOrUnconscious ->
+                    { english = "Lethargic Or Unconscious"
+                    , kinyarwanda = Nothing
+                    }
+
+                AcuteFindingsPoorSuck ->
+                    { english = "Poor Suck"
+                    , kinyarwanda = Nothing
+                    }
+
+                SunkenEyes ->
+                    { english = "Sunken Eyes"
+                    , kinyarwanda = Nothing
+                    }
+
+                PoorSkinTurgor ->
+                    { english = "Poor Skin Turgor"
+                    , kinyarwanda = Nothing
+                    }
+
+                Jaundice ->
+                    { english = "Jaundice"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoAcuteFindingsGeneralSigns ->
+                    { english = "None of the above"
+                    , kinyarwanda = Nothing
+                    }
+
+        AcuteFindingsRespiratorySign sign ->
+            case sign of
+                Stridor ->
+                    { english = "Stridor"
+                    , kinyarwanda = Nothing
+                    }
+
+                NasalFlaring ->
+                    { english = "Nasal Flaring"
+                    , kinyarwanda = Nothing
+                    }
+
+                SevereWheezing ->
+                    { english = "Severe Wheezing"
+                    , kinyarwanda = Nothing
+                    }
+
+                SubCostalRetractions ->
+                    { english = "Sub-Costal Retractions"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoAcuteFindingsRespiratorySigns ->
+                    { english = "None of the above"
+                    , kinyarwanda = Nothing
+                    }
 
         AddChild ->
             { english = "Add Child"
@@ -3447,6 +3510,16 @@ translationSet trans =
         PartnerReceivedHivTesting ->
             { english = "Did partner receive HIV Testing during this pregnancy"
             , kinyarwanda = Just "Umugabo  yasuzumwe Virusi itera SIDA?"
+            }
+
+        PatientExhibitAnyFindings ->
+            { english = "Does the patient exhibit any of these findings"
+            , kinyarwanda = Nothing
+            }
+
+        PatientExhibitAnyRespiratoryFindings ->
+            { english = "Does the patient exhibit any of these Respiratory findings"
+            , kinyarwanda = Nothing
             }
 
         PatientGotAnySymptoms ->

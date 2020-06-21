@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Model exposing (ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), PriorTreatmentData, PriorTreatmentTask(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, TreatmentReviewForm, VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptyPriorTreatmentData, emptySymptomsData, emptyTreatmentReviewForm)
+module Pages.AcuteIllnessActivity.Model exposing (AcuteFindingsForm, ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), PriorTreatmentData, PriorTreatmentTask(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, TreatmentReviewForm, VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptyPriorTreatmentData, emptySymptomsData, emptyTreatmentReviewForm)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -26,7 +26,10 @@ type Msg
     | SetActivePhysicalExamTask PhysicalExamTask
     | SetVitalsResporatoryRate String
     | SetVitalsBodyTemperature String
+    | SetAcuteFindingsGeneralSign AcuteFindingsGeneralSign
+    | SetAcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
     | SaveVitals PersonId (Maybe ( AcuteIllnessVitalsId, AcuteIllnessVitals ))
+    | SaveAcuteFindings PersonId (Maybe ( AcuteFindingsId, AcuteFindings ))
       -- LABORATORY Msgs
     | SetActiveLaboratoryTask LaboratoryTask
     | SetRapidTestPositive Bool

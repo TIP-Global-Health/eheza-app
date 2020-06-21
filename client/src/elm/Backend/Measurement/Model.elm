@@ -599,11 +599,11 @@ type alias AcuteIllnessVitals =
 
 type AcuteFindingsGeneralSign
     = LethargicOrUnconscious
-    | PoorSuck
+    | AcuteFindingsPoorSuck
     | SunkenEyes
     | PoorSkinTurgor
     | Jaundice
-    | NoAcuteFindingsGeneralSign
+    | NoAcuteFindingsGeneralSigns
 
 
 type AcuteFindingsRespiratorySign
@@ -615,8 +615,8 @@ type AcuteFindingsRespiratorySign
 
 
 type alias AcuteFindingsValue =
-    { generalSigns : EverySet AcuteFindingsGeneralSign
-    , respiratorySigns : EverySet AcuteFindingsRespiratorySign
+    { signsGeneral : EverySet AcuteFindingsGeneralSign
+    , signsRespiratory : EverySet AcuteFindingsRespiratorySign
     }
 
 
@@ -840,6 +840,7 @@ type alias AcuteIllnessMeasurements =
     , symptomsRespiratory : Maybe ( SymptomsRespiratoryId, SymptomsRespiratory )
     , symptomsGI : Maybe ( SymptomsGIId, SymptomsGI )
     , vitals : Maybe ( AcuteIllnessVitalsId, AcuteIllnessVitals )
+    , acuteFindings : Maybe ( AcuteFindingsId, AcuteFindings )
     , malariaTesting : Maybe ( MalariaTestingId, MalariaTesting )
     , travelHistory : Maybe ( TravelHistoryId, TravelHistory )
     , exposure : Maybe ( ExposureId, Exposure )

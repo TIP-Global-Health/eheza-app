@@ -110,6 +110,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "symptoms_respiratory" (decodeHead decodeSymptomsRespiratory) Nothing
         |> optional "symptoms_gi" (decodeHead decodeSymptomsGI) Nothing
         |> optional "acute_illness_vitals" (decodeHead decodeAcuteIllnessVitals) Nothing
+        |> optional "acute_findings" (decodeHead decodeAcuteFindings) Nothing
         |> optional "malaria_testing" (decodeHead decodeMalariaTesting) Nothing
         |> optional "travel_history" (decodeHead decodeTravelHistory) Nothing
         |> optional "exposure" (decodeHead decodeExposure) Nothing
@@ -1205,8 +1206,8 @@ decodeAcuteIllnessVitals =
 decodeAcuteFindings : Decoder AcuteFindings
 decodeAcuteFindings =
     succeed AcuteFindingsValue
-        |> required "findings_signs_general" decodecuteAcuteFindingsGeneralSign
-        |> required "findings_signs_respiratory" decodecAcuteFindingsRespiratorySign
+        |> required "findings_signs_general" (decodeEverySet decodeAcuteFindingsGeneralSign)
+        |> required "findings_signs_respiratory" (decodeEverySet decodeAcuteFindingsRespiratorySign)
         |> decodeAcuteIllnessMeasurement
 
 
@@ -1220,7 +1221,7 @@ decodeAcuteFindingsGeneralSign =
                         succeed LethargicOrUnconscious
 
                     "poor-suck" ->
-                        succeed PoorSuck
+                        succeed AcuteFindingsPoorSuck
 
                     "sunken-eyes" ->
                         succeed SunkenEyes
@@ -1232,7 +1233,7 @@ decodeAcuteFindingsGeneralSign =
                         succeed Jaundice
 
                     "none" ->
-                        succeed NoAcuteFindingsGeneralSign
+                        succeed NoAcuteFindingsGeneralSigns
 
                     _ ->
                         fail <|
