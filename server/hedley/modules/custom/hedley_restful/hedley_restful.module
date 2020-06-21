@@ -343,7 +343,6 @@ function hedley_restful_join_field_to_query(SelectQuery $query, $entity_type, $f
 
     default:
       $column_suffix = 'value';
-
   }
 
   $field_alias = $field_alias ?: $field_name;
@@ -361,5 +360,31 @@ function hedley_restful_join_field_to_query(SelectQuery $query, $entity_type, $f
   }
 
   $query->$join($table_name, $field_alias, implode(' AND ', $conditions), $arguments);
+}
 
+/**
+ * Resolves UID of user that owns the access token.
+ *
+ * @param string $token
+ *   The token.
+ *
+ * @return bool|int
+ *   UID of user that owns the access token. FALSE, if not found.
+ */
+function hedley_restful_resolve_device_by_token($token) {
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'restful_token_auth')
+    ->propertyCondition('token', $token)
+    ->range(0, 1)
+    ->execute();
+
+  if (empty($result['restful_token_auth'])) {
+    return FALSE;
+  }
+
+  $auth_token_id = key($result['restful_token_auth']);
+  $auth_token = entity_load_single('restful_token_auth', $auth_token_id);
+
+  return $auth_token->uid;
 }

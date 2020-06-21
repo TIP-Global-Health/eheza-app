@@ -42,6 +42,7 @@ import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Http
+import Measurement.Model exposing (FloatInputConstraints)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..), LaboratoryTask(..), PhysicalExamTask(..), PriorTreatmentTask(..), SymptomsTask(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
@@ -196,6 +197,7 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int Int
+    | AllowedValuesRangeHelper FloatInputConstraints
     | AmbulancArrivalPeriodQuestion
     | And
     | AppName
@@ -281,9 +283,11 @@ type TranslationId
     | DateOfLastAssessment
     | DatePregnancyConcluded
     | Day
+    | DayAbbrev
     | DaySinglePlural Int
     | DateOfBirth
     | Days
+    | DaysAbbrev
     | DaysPresent
     | Delete
     | DeleteTrainingGroupEncounters
@@ -1132,6 +1136,11 @@ translationSet trans =
             , kinyarwanda = Just "E-heza sisiteme"
             }
 
+        AllowedValuesRangeHelper constraints ->
+            { english = "Allowed values are between " ++ Debug.toString constraints.minVal ++ " and " ++ Debug.toString constraints.maxVal ++ "."
+            , kinyarwanda = Nothing
+            }
+
         AreYouSure ->
             { english = "Are you sure?"
             , kinyarwanda = Just "Urabyizeye?"
@@ -1712,6 +1721,11 @@ translationSet trans =
             , kinyarwanda = Just "Umunsi"
             }
 
+        DayAbbrev ->
+            { english = "Day"
+            , kinyarwanda = Just "Umu"
+            }
+
         DaySinglePlural value ->
             if value == 1 then
                 { english = "1 Day"
@@ -1731,6 +1745,11 @@ translationSet trans =
         Days ->
             { english = "days"
             , kinyarwanda = Just "Iminsi"
+            }
+
+        DaysAbbrev ->
+            { english = "days"
+            , kinyarwanda = Just "Imi"
             }
 
         DaysPresent ->
@@ -2968,7 +2987,7 @@ translationSet trans =
 
         MonthAbbrev ->
             { english = "mo"
-            , kinyarwanda = Just "amezi"
+            , kinyarwanda = Just "am"
             }
 
         MonthsOld ->
