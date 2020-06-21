@@ -1095,6 +1095,13 @@ viewTreatmentReviewForm language currentDate measurements form =
         malariaWithinPastMonthHelpedUpdateFunc value form_ =
             { form_ | malariaWithinPastMonthHelped = Just value }
 
+        medicationHelpedQuestion =
+            div [ class "ui grid" ]
+                [ div [ class "one wide column" ] []
+                , div [ class "fifteen wide column" ]
+                    [ viewQuestionLabel language Translate.MedicationHelpedQuestion ]
+                ]
+
         feverPast6HoursSection =
             let
                 feverPast6HoursPositive =
@@ -1103,11 +1110,7 @@ viewTreatmentReviewForm language currentDate measurements form =
 
                 feverPast6HoursHelpedInput =
                     if feverPast6HoursPositive then
-                        [ div [ class "ui grid" ]
-                            [ div [ class "one wide column" ] []
-                            , div [ class "fifteen wide column" ]
-                                [ viewQuestionLabel language Translate.MedicationHelpedQuestion ]
-                            ]
+                        [ medicationHelpedQuestion
                         , viewBoolInput
                             language
                             form.feverPast6HoursHelped
@@ -1140,11 +1143,7 @@ viewTreatmentReviewForm language currentDate measurements form =
 
                 malariaTodayHelpedInput =
                     if malariaTodayPositive then
-                        [ div [ class "ui grid" ]
-                            [ div [ class "one wide column" ] []
-                            , div [ class "fifteen wide column" ]
-                                [ viewQuestionLabel language Translate.MedicationHelpedQuestion ]
-                            ]
+                        [ medicationHelpedQuestion
                         , viewBoolInput
                             language
                             form.malariaTodayHelped
@@ -1177,11 +1176,7 @@ viewTreatmentReviewForm language currentDate measurements form =
 
                 malariaWithinPastMonthHelpedInput =
                     if malariaWithinPastMonthPositive then
-                        [ div [ class "ui grid" ]
-                            [ div [ class "one wide column" ] []
-                            , div [ class "fifteen wide column" ]
-                                [ viewQuestionLabel language Translate.MedicationHelpedQuestion ]
-                            ]
+                        [ medicationHelpedQuestion
                         , viewBoolInput
                             language
                             form.malariaWithinPastMonthHelped
