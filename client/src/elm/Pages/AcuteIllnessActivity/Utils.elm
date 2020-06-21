@@ -159,6 +159,12 @@ physicalExamTasksCompletedFromTotal measurements data task =
             , 2
             )
 
+        PhysicalExamAcuteFindings ->
+            -- Todo
+            ( 0
+            , 2
+            )
+
 
 laboratoryTasksCompletedFromTotal : AcuteIllnessMeasurements -> LaboratoryData -> LaboratoryTask -> ( Int, Int )
 laboratoryTasksCompletedFromTotal measurements data task =

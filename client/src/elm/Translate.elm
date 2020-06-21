@@ -3514,6 +3514,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                PhysicalExamAcuteFindings ->
+                    { english = "Acute Findings"
+                    , kinyarwanda = Nothing
+                    }
+
         PlaceholderEnterHeight ->
             { english = "Enter height here…"
             , kinyarwanda = Just "Andika uburebure hano…"

@@ -126,6 +126,7 @@ type alias SymptomsGIForm =
 
 type alias PhysicalExamData =
     { vitalsForm : VitalsForm
+    , acuteFindingsForm : AcuteFindingsForm
     , activeTask : PhysicalExamTask
     }
 
@@ -133,17 +134,25 @@ type alias PhysicalExamData =
 emptyPhysicalExamData : PhysicalExamData
 emptyPhysicalExamData =
     { vitalsForm = VitalsForm Nothing Nothing
+    , acuteFindingsForm = AcuteFindingsForm Nothing Nothing
     , activeTask = PhysicalExamVitals
     }
 
 
 type PhysicalExamTask
     = PhysicalExamVitals
+    | PhysicalExamAcuteFindings
 
 
 type alias VitalsForm =
     { respiratoryRate : Maybe Int
     , bodyTemperature : Maybe Float
+    }
+
+
+type alias AcuteFindingsForm =
+    { signsGeneral : Maybe (List AcuteFindingsGeneralSign)
+    , signsRespiratory : Maybe (List AcuteFindingsRespiratorySign)
     }
 
 

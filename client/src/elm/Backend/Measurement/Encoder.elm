@@ -1067,6 +1067,61 @@ encodeAcuteIllnessVitalsValue value =
     ]
 
 
+encodeAcuteFindings : AcuteFindings -> List ( String, Value )
+encodeAcuteFindings =
+    encodeAcuteIllnessMeasurement encodeAcuteFindingsValue
+
+
+encodeAcuteFindingsValue : AcuteFindingsValue -> List ( String, Value )
+encodeAcuteFindingsValue value =
+    [ ( "findings_signs_general", encodeEverySet encodeAcuteFindingsGeneralSign value.generalSign )
+    , ( "findings_signs_respiratory", encodeEverySet encodeAcuteFindingsRespiratorySign value.respiratorySign )
+    ]
+
+
+encodeAcuteFindingsGeneralSign : AcuteFindingsGeneralSign -> Value
+encodeAcuteFindingsGeneralSign =
+    string <|
+        case sign of
+            LethargicOrUnconscious ->
+                "lethargic-or-unconscious"
+
+            PoorSuck ->
+                "poor-suck"
+
+            SunkenEyes ->
+                "sunken-eyes"
+
+            PoorSkinTurgor ->
+                "poor-skin-turgor"
+
+            Jaundice ->
+                "jaundice"
+
+            NoAcuteFindingsGeneralSign ->
+                "none"
+
+
+encodeAcuteFindingsRespiratorySign : AcuteFindingsRespiratorySign -> Value
+encodeAcuteFindingsRespiratorySign =
+    string <|
+        case sign of
+            Stridor ->
+                "stridor"
+
+            NasalFlaring ->
+                "nasal-flaring"
+
+            SevereWheezing ->
+                "severe-wheezing"
+
+            SubCostalRetractions ->
+                "sub-costal-retractions"
+
+            NoAcuteFindingsRespiratorySigns ->
+                "none"
+
+
 encodeMalariaTesting : MalariaTesting -> List ( String, Value )
 encodeMalariaTesting =
     encodeAcuteIllnessMeasurement encodeMalariaTestingValue
