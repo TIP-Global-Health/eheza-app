@@ -870,9 +870,9 @@ function hedley_stats_get_fbf_beneficiaries_graphs_data($health_center_id, $grap
  */
 function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_STATS_PERIOD_ONE_YEAR) {
   // Return the cache if exists.
-  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $health_center_id, $period)) {
-    return $cache_data;
-  }
+//  if ($cache_data = hedley_stats_handle_cache(HEDLEY_STATS_CACHE_GET, HEDLEY_STATS_SYNC_CASE_MANAGEMENT, $health_center_id, $period)) {
+//    return $cache_data;
+//  }
 
   // Set the data for each month.
   $data_per_month = [];
@@ -920,6 +920,15 @@ function hedley_stats_get_case_management($health_center_id, $period = HEDLEY_ST
         $month = date('n', strtotime($date));
 
         foreach ($values as $field_name => $value) {
+          // Some z-scores will not be present, when not all measurements
+          // are taken for child. For example, without height, there's no
+          // z-score length and z-score bmi.
+          // In such cases, there's nothing to calculate, and we move
+          // on to next value.
+          if (empty($value)) {
+            continue;
+          }
+
           // Round up the value, the class will indicate the zscore level.
           $formatted_value = number_format((float) $value, 2);
 
@@ -1197,7 +1206,7 @@ function hedley_stats_get_period($period, $as_timestamp = TRUE) {
  * @param int|bool $now
  *   A date that will represent current date.
  *   If not provided, assigned to current date.
- * 
+ *
  * @return array
  *   The start and the end of the period timestamps.
  */
