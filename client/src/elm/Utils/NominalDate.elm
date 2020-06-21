@@ -83,8 +83,8 @@ renderAgeMonthsDays language birthDate now =
         translate language <| Translate.Age months days
 
 
-renderAgeMonthsDaysAbbrev : Language -> NominalDate -> NominalDate -> String
-renderAgeMonthsDaysAbbrev language birthDate now =
+renderAgeMonthsDaysParts : Language -> NominalDate -> NominalDate -> List (Maybe String)
+renderAgeMonthsDaysParts language birthDate now =
     let
         diff =
             diffCalendarMonthsAndDays birthDate now
@@ -102,13 +102,13 @@ renderAgeMonthsDaysAbbrev language birthDate now =
             else if days == 1 then
                 Just <|
                     "1 "
-                        ++ translate language Translate.Day
+                        ++ translate language Translate.DayAbbrev
 
             else
                 Just <|
                     Debug.toString days
                         ++ " "
-                        ++ translate language Translate.Days
+                        ++ translate language Translate.DaysAbbrev
 
         monthPart =
             if months == 0 then
@@ -120,49 +120,19 @@ renderAgeMonthsDaysAbbrev language birthDate now =
                         ++ " "
                         ++ translate language Translate.MonthAbbrev
     in
-    [ monthPart, dayPart ]
+    [ dayPart, monthPart ]
+
+
+renderAgeMonthsDaysAbbrev : Language -> NominalDate -> NominalDate -> String
+renderAgeMonthsDaysAbbrev language birthDate now =
+    renderAgeMonthsDaysParts language birthDate now
         |> List.filterMap identity
         |> String.join " "
 
 
 renderAgeMonthsDaysHtml : Language -> NominalDate -> NominalDate -> List (Html any)
 renderAgeMonthsDaysHtml language birthDate now =
-    let
-        diff =
-            diffCalendarMonthsAndDays birthDate now
-
-        days =
-            diff.days
-
-        months =
-            diff.months
-
-        dayPart =
-            if days == 0 then
-                Nothing
-
-            else if days == 1 then
-                Just <|
-                    "1 "
-                        ++ translate language Translate.Day
-
-            else
-                Just <|
-                    Debug.toString days
-                        ++ " "
-                        ++ translate language Translate.Days
-
-        monthPart =
-            if months == 0 then
-                Nothing
-
-            else
-                Just <|
-                    Debug.toString months
-                        ++ " "
-                        ++ translate language Translate.MonthAbbrev
-    in
-    [ monthPart, dayPart ]
+    renderAgeMonthsDaysParts language birthDate now
         |> List.filterMap identity
         |> List.map Html.text
         |> List.intersperse (Html.br [] [])

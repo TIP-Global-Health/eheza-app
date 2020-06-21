@@ -13,3 +13,4 @@ decodeAcuteIllnessEncounter =
         |> required "individual_participant" decodeEntityUuid
         |> requiredAt [ "scheduled_date", "value" ] decodeYYYYMMDD
         |> optionalAt [ "scheduled_date", "value2" ] (nullable decodeYYYYMMDD) Nothing
+        |> hardcoded Nothing

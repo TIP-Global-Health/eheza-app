@@ -27,6 +27,7 @@ type alias DownloadStatus =
 
     -- How many revisions have we not downloaded yet?
     , remaining : Int
+    , deviceName : Maybe String
     }
 
 

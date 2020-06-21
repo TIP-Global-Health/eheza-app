@@ -29,7 +29,7 @@ import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getMyMother)
-import Backend.Utils exposing (mapAcuteIllnessMeasurements, mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements)
+import Backend.Utils exposing (mapAcuteIllnessMeasurements, mapChildMeasurements, mapMotherMeasurements, mapNutritionMeasurements, mapPrenatalMeasurements, nodesUuid)
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
@@ -703,9 +703,20 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             )
 
         HandleFetchedSyncData data ->
+            let
+                setDeviceNameMsg =
+                    RemoteData.toMaybe data
+                        |> Maybe.andThen
+                            (Dict.get nodesUuid
+                                >> Maybe.andThen .downloadStatus
+                                >> Maybe.map .deviceName
+                                >> Maybe.andThen (App.Model.SetDeviceName >> List.singleton >> Just)
+                            )
+                        |> Maybe.withDefault []
+            in
             ( { model | syncData = data }
             , Cmd.none
-            , []
+            , setDeviceNameMsg
             )
 
         HandleRevisions revisions ->
@@ -1355,7 +1366,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                         (\( sessionId, _ ) ->
                             case encounterType of
                                 AcuteIllnessEncounter ->
-                                    [ Backend.AcuteIllnessEncounter.Model.AcuteIllnessEncounter sessionId currentDate Nothing
+                                    [ Backend.AcuteIllnessEncounter.Model.AcuteIllnessEncounter sessionId currentDate Nothing healthCenterId
                                         |> Backend.Model.PostAcuteIllnessEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]
