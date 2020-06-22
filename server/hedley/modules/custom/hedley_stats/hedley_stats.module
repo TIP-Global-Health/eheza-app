@@ -522,7 +522,11 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
         }
 
         if (!empty($session_schedule['value2'])) {
-          $session_end_date = strtotime($session_schedule['value2']);
+          // Since start and end dates for session are always set to 00:00,
+          // we add one day to session end date.
+          // Otherwise, if session was started and ended at same day, it's
+          // as if session was stated and ended on exact same time.
+          $session_end_date = strtotime($session_schedule['value2']) + 24*60*60;
           // Participant has joined after the session has ended.
           if ($pmtct_join_date > $session_end_date) {
             continue;
