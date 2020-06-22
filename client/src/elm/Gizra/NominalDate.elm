@@ -328,6 +328,7 @@ allMonths =
     , Aug
     , Sep
     , Oct
+    , Nov
     , Dec
     ]
 
