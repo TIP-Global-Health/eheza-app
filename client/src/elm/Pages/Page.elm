@@ -143,7 +143,7 @@ type UserPage
     | PersonsPage (Maybe PersonId) Initiator
     | PrenatalParticipantPage PersonId
     | IndividualEncounterParticipantsPage IndividualEncounterType
-      -- Create or edit a relationship between these persons.
+      -- Create or edit a relationship between adult and child.
       -- Initiator will help to determine which actions are allowed.
     | RelationshipPage PersonId PersonId Initiator
     | PrenatalEncounterPage PrenatalEncounterId -- prenatal activities index

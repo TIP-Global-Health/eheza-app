@@ -875,7 +875,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                 appMsgs =
                     case initiator of
                         -- When in session context, automaticaly create
-                        -- create a new attendance for created participant.
+                        -- a new attendance for created participant.
                         GroupEncounterOrigin sessionId ->
                             data
                                 |> RemoteData.map

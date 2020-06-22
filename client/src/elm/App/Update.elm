@@ -494,7 +494,7 @@ update msg model =
                 extraMsgs =
                     case page of
                         -- When navigating to relationship page in group encounter context,
-                        -- we automaticaly select the clinic, to which session belongs.
+                        -- we automaticaly select the clinic, to which the session belongs.
                         UserPage (RelationshipPage id1 id2 (GroupEncounterOrigin sessionId)) ->
                             getSession sessionId model.indexedDb
                                 |> Maybe.map
