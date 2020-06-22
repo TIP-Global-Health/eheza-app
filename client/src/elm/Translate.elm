@@ -586,6 +586,7 @@ type TranslationId
     | RecentAndUpcomingGroupEncounters
     | ReportCompleted { pending : Int, completed : Int }
     | ResolveMonth Month Bool
+    | ResolveMonthYY Month Int Bool
     | RespiratoryRate
     | Retry
     | RhNegative
@@ -3650,6 +3651,9 @@ translationSet trans =
         ResolveMonth month short ->
             translateMonth month short
 
+        ResolveMonthYY month year short ->
+            translateMonthYY month year short
+
         RespiratoryRate ->
             { english = "Respiratory Rate"
             , kinyarwanda = Just "Inshuro ahumeka"
@@ -5144,6 +5148,16 @@ translateMonth month short =
                 { english = "December"
                 , kinyarwanda = Just "Ukuboza"
                 }
+
+
+translateMonthYY : Month -> Int -> Bool -> TranslationSet String
+translateMonthYY month year short =
+    translateMonth month short
+        |> (\set ->
+                { english = set.english ++ "-" ++ Debug.toString year
+                , kinyarwanda = Maybe.map (\kinyarwanda -> kinyarwanda ++ "-" ++ Debug.toString year) set.kinyarwanda
+                }
+           )
 
 
 translateHttpError : Http.Error -> TranslationSet String

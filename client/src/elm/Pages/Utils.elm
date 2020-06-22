@@ -1,4 +1,4 @@
-module Pages.Utils exposing (backFromSessionPage, calculatePercentage, filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, monthList, normalizeFilter, taskCompleted, taskListCompleted, viewBoolInput, viewCheckBoxMultipleSelectInput, viewCheckBoxSelectInput, viewCheckBoxSelectInputItem, viewCustomLabel, viewLabel, viewMeasurementInput, viewNameFilter, viewPhotoThumb, viewPhotoThumbFromPhotoUrl, viewPreviousMeasurement, viewQuestionLabel)
+module Pages.Utils exposing (backFromSessionPage, calculatePercentage, filterDependentNoResultsMessage, matchFilter, matchMotherAndHerChildren, normalizeFilter, taskCompleted, taskListCompleted, viewBoolInput, viewCheckBoxMultipleSelectInput, viewCheckBoxSelectInput, viewCheckBoxSelectInputItem, viewCustomLabel, viewLabel, viewMeasurementInput, viewNameFilter, viewPhotoThumb, viewPhotoThumbFromPhotoUrl, viewPreviousMeasurement, viewQuestionLabel)
 
 import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model exposing (PhotoUrl(..))
@@ -70,11 +70,6 @@ matchFilter filter filteredValue =
         filteredValue
             |> String.toLower
             |> String.contains filter
-
-
-monthList : List Month
-monthList =
-    [ Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec ]
 
 
 matchMotherAndHerChildren : String -> OfflineSession -> PersonId -> Person -> Bool

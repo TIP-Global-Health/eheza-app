@@ -10,7 +10,7 @@ import Color exposing (Color)
 import Date exposing (Month, Unit(..), isBetween, numberToMonth)
 import Debug exposing (toString)
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, isDiffTruthy)
+import Gizra.NominalDate exposing (NominalDate, allMonths, isDiffTruthy, yearYYNumber)
 import Html exposing (..)
 import Html.Attributes exposing (class, classList, src)
 import Html.Events exposing (onClick)
@@ -19,7 +19,7 @@ import Maybe exposing (Maybe)
 import Pages.Dashboard.GraphUtils exposing (..)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Page exposing (DashboardPage(..), Page(..), UserPage(..))
-import Pages.Utils exposing (calculatePercentage, monthList)
+import Pages.Utils exposing (calculatePercentage)
 import Path
 import Scale exposing (BandConfig, BandScale, ContinuousScale)
 import Shape exposing (Arc, defaultPieConfig)
@@ -151,34 +151,60 @@ viewCaseManagementPage language currentDate stats model =
                         (List.map (viewFilters FilterCaseManagement model.currentCaseManagementFilter) filterCharts)
                     ]
                 , div [ class "content" ]
-                    [ viewCaseManagementTable language model tableData
-                    ]
+                    [ viewCaseManagementTable language currentDate model tableData ]
                 ]
             ]
         ]
 
 
-viewCaseManagementTable : Language -> Model -> List { name : String, nutrition : Dict Int NutritionValue } -> Html Msg
-viewCaseManagementTable language model tableData =
+viewCaseManagementTable : Language -> NominalDate -> Model -> List { name : String, nutrition : Dict Int NutritionValue } -> Html Msg
+viewCaseManagementTable language currentDate model tableData =
+    let
+        currentMonth =
+            Date.month currentDate
+                |> Date.monthToNumber
+
+        currentYearYY =
+            yearYYNumber currentDate
+
+        previousYearYY =
+            currentYearYY - 1
+
+        ( thisYear, lastYear ) =
+            List.Extra.splitAt currentMonth allMonths
+
+        lastYearLabels =
+            List.map (\month -> Translate.ResolveMonthYY month previousYearYY True) lastYear
+
+        thisYearLabels =
+            List.map (\month -> Translate.ResolveMonthYY month currentYearYY True) thisYear
+
+        monthLabels =
+            lastYearLabels ++ thisYearLabels
+    in
     table [ class "ui very basic collapsing celled table" ]
         [ thead []
             [ tr []
                 (th [ class "name" ] [ translateText language <| Translate.Name ]
-                    :: List.map (\month -> th [] [ span [] [ translateText language <| Translate.ResolveMonth month True ] ]) monthList
+                    :: List.map (\month -> th [] [ span [] [ translateText language month ] ]) monthLabels
                 )
             ]
         , tbody []
-            (List.map viewCaseManagementTableRow tableData)
+            (List.map (viewCaseManagementTableRow currentMonth) tableData)
         ]
 
 
-viewCaseManagementTableRow : { name : String, nutrition : Dict Int NutritionValue } -> Html Msg
-viewCaseManagementTableRow rowData =
+viewCaseManagementTableRow : Int -> { name : String, nutrition : Dict Int NutritionValue } -> Html Msg
+viewCaseManagementTableRow currentMonth rowData =
     let
-        rowList =
+        ( thisYear, lastYear ) =
             rowData.nutrition
                 |> Dict.toList
                 |> List.sortBy Tuple.first
+                |> List.Extra.splitAt currentMonth
+
+        rowList =
+            lastYear ++ thisYear
     in
     tr []
         (td [ class "name" ] [ text rowData.name ]
