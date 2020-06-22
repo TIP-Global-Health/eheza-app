@@ -16,7 +16,8 @@ import Backend.Measurement.Utils exposing (splitChildMeasurements, splitMotherMe
 import Backend.Model exposing (..)
 import Backend.NutritionEncounter.Model
 import Backend.NutritionEncounter.Update
-import Backend.Person.Model exposing (RegistrationInitiator(..))
+import Backend.Person.Model exposing (Initiator(..))
+import Backend.Person.Utils exposing (graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Update
@@ -33,6 +34,7 @@ import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
 import Maybe.Extra exposing (isJust, unwrap)
+import Measurement.Model exposing (OutMsgMother(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Person.Model
 import Pages.Relationship.Model
@@ -861,20 +863,43 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                 |> List.map App.Model.MsgIndexedDb
             )
 
-        PostPmtctParticipant data ->
+        PostPmtctParticipant initiator data ->
             ( { model | postPmtctParticipant = Dict.insert data.child Loading model.postPmtctParticipant }
             , sw.post pmtctParticipantEndpoint data
-                |> toCmd (RemoteData.fromResult >> HandlePostedPmtctParticipant data.child)
+                |> toCmd (RemoteData.fromResult >> HandlePostedPmtctParticipant data.child initiator)
             , []
             )
 
-        HandlePostedPmtctParticipant id data ->
+        HandlePostedPmtctParticipant id initiator data ->
+            let
+                appMsgs =
+                    case initiator of
+                        -- When in session context, automaticaly create
+                        -- a new attendance for created participant.
+                        GroupEncounterOrigin sessionId ->
+                            data
+                                |> RemoteData.map
+                                    (Tuple.second
+                                        >> .adult
+                                        >> (\motherId ->
+                                                Measurement.Model.SaveAttendance Nothing True
+                                                    |> Backend.Session.Model.MeasurementOutMsgMother motherId
+                                                    |> MsgSession sessionId
+                                                    |> App.Model.MsgIndexedDb
+                                                    |> List.singleton
+                                           )
+                                    )
+                                |> RemoteData.withDefault []
+
+                        _ ->
+                            []
+            in
             ( { model | postPmtctParticipant = Dict.insert id data model.postPmtctParticipant }
             , Cmd.none
-            , []
+            , appMsgs
             )
 
-        PostRelationship personId myRelationship addGroup ->
+        PostRelationship personId myRelationship addGroup initiator ->
             let
                 normalized =
                     toRelationship personId myRelationship healthCenterId
@@ -926,7 +951,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                                         (\clinic ->
                                                             let
                                                                 graduationDate =
-                                                                    Maybe.map (Date.add Months 26) childBirthDate
+                                                                    Maybe.map (Date.add Months graduatingAgeInMonth) childBirthDate
                                                             in
                                                             case clinic.clinicType of
                                                                 Pmtct ->
@@ -943,7 +968,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                                         )
                                                 )
                                 in
-                                PostPmtctParticipant
+                                PostPmtctParticipant initiator
                                     { adult = normalized.person
                                     , child = normalized.relatedTo
                                     , adultActivities = defaultAdultActivities
@@ -1002,7 +1027,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                                 |> Task.map (always myRelationship)
                             )
                         |> RemoteData.fromTask
-                        |> Task.perform (HandlePostedRelationship personId)
+                        |> Task.perform (HandlePostedRelationship personId initiator)
             in
             ( { model | postRelationship = Dict.insert personId Loading model.postRelationship }
             , relationshipCmd
@@ -1010,13 +1035,13 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
             )
                 |> sequenceExtra (updateIndexedDb currentDate nurseId healthCenterId isChw) extraMsgs
 
-        HandlePostedRelationship personId data ->
+        HandlePostedRelationship personId initiator data ->
             let
                 appMsgs =
                     data
                         |> RemoteData.map
                             (\relationship ->
-                                [ Pages.Relationship.Model.Reset
+                                [ Pages.Relationship.Model.Reset initiator
                                     |> App.Model.MsgPageRelationship personId relationship.relatedTo
                                     |> App.Model.MsgLoggedIn
                                 ]
@@ -1049,10 +1074,10 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                             ParticipantDirectoryOrigin ->
                                                 case relation of
                                                     Just id ->
-                                                        RelationshipPage id personId
+                                                        RelationshipPage id personId initiator
 
                                                     Nothing ->
-                                                        PersonPage personId
+                                                        PersonPage personId initiator
 
                                             IndividualEncounterOrigin encounterType ->
                                                 case encounterType of
@@ -1066,6 +1091,14 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                                         -- This will change as we add support for
                                                         -- new encounter types.
                                                         IndividualEncounterTypesPage
+
+                                            GroupEncounterOrigin sessionId ->
+                                                case relation of
+                                                    Just id ->
+                                                        RelationshipPage id personId initiator
+
+                                                    Nothing ->
+                                                        PersonPage personId initiator
                                 in
                                 [ Pages.Person.Model.ResetCreateForm
                                     |> App.Model.MsgPageCreatePerson
@@ -1100,7 +1133,7 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                                 [ Pages.Person.Model.ResetEditForm
                                     |> App.Model.MsgPageEditPerson
                                     |> App.Model.MsgLoggedIn
-                                , PersonPage personId
+                                , PersonPage personId ParticipantDirectoryOrigin
                                     |> UserPage
                                     |> App.Model.SetActivePage
                                 ]

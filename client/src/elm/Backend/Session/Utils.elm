@@ -1,8 +1,9 @@
-module Backend.Session.Utils exposing (emptyMotherMeasurementData, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother, isClosed)
+module Backend.Session.Utils exposing (emptyMotherMeasurementData, getChild, getChildHistoricalMeasurements, getChildMeasurementData, getChildMeasurementData2, getChildren, getMother, getMotherHistoricalMeasurements, getMotherMeasurementData, getMotherMeasurementData2, getMyMother, getSession, isClosed)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
@@ -150,3 +151,10 @@ isClosed currentDate session =
             Gizra.NominalDate.compare currentDate session.startDate == LT
     in
     pastEnd || beforeBeginning
+
+
+getSession : SessionId -> ModelIndexedDb -> Maybe Session
+getSession sessionId db =
+    Dict.get sessionId db.sessions
+        |> Maybe.withDefault NotAsked
+        |> RemoteData.toMaybe
