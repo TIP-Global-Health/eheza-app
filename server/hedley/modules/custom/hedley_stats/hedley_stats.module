@@ -12,6 +12,7 @@ define('HEDLEY_STATS_CALCULATE_STATS', 'hedley_stats_calculate_stats');
 define('HEDLEY_STATS_PERIOD_THIS_MONTH', 'this_month');
 define('HEDLEY_STATS_PERIOD_LAST_MONTH', 'last_month');
 define('HEDLEY_STATS_PERIOD_TWO_MONTHS_AGO', 'two_months_ago');
+define('HEDLEY_STATS_PERIOD_PAST_TWO_MONTHS', 'past_two_month');
 define('HEDLEY_STATS_PERIOD_ONE_YEAR', 'one_year');
 define('HEDLEY_STATS_PERIOD_LAST_YEAR', 'last_year');
 define('HEDLEY_STATS_SEVERE', 'severe_nutrition');
@@ -205,11 +206,11 @@ function hedley_stats_calculate_stats_for_health_center($health_center_id) {
       // UUID of the health center.
       'uuid' => $wrapper->field_uuid->value(),
       'case_management' => hedley_stats_get_case_management($health_center_id),
-      'children_beneficiaries' => hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id, $fbf_clinics, HEDLEY_STATS_PERIOD_TWO_MONTHS_AGO),
+      'children_beneficiaries' => hedley_stats_get_children_beneficiaries_stats_by_period($health_center_id, $fbf_clinics, HEDLEY_STATS_PERIOD_PAST_TWO_MONTHS),
       'completed_program' => $completed_program,
       'good_nutrition' => hedley_stats_get_good_nutrition($health_center_id),
-      'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_id, HEDLEY_STATS_PERIOD_TWO_MONTHS_AGO),
-      'malnourished_beneficiaries' => hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_center_id, HEDLEY_STATS_PERIOD_TWO_MONTHS_AGO),
+      'family_planning' => hedley_stats_get_family_planning_stats_by_period($health_center_id, HEDLEY_STATS_PERIOD_PAST_TWO_MONTHS),
+      'malnourished_beneficiaries' => hedley_stats_get_malnourished_beneficiaries_stats_by_period($health_center_id, HEDLEY_STATS_PERIOD_PAST_TWO_MONTHS),
       'missed_sessions' => $missed_sessions,
       'total_beneficiaries' => hedley_stats_get_fbf_beneficiaries_graphs_data($health_center_id, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_GRAPH),
       'total_beneficiaries_incidence' => hedley_stats_get_fbf_beneficiaries_graphs_data($health_center_id, HEDLEY_STATS_SYNC_TOTAL_BENEFICIARIES_INCIDENCE_GRAPH),
@@ -1232,6 +1233,12 @@ function hedley_stats_get_range_for_period($period, $now = FALSE) {
       return [
         'start' => strtotime("first day of -2 months"),
         'end' => strtotime("last day of -2 months"),
+      ];
+
+    case HEDLEY_STATS_PERIOD_PAST_TWO_MONTHS:
+      return [
+        'start' => strtotime("first day of previous month"),
+        'end' => $now,
       ];
 
     case HEDLEY_STATS_PERIOD_ONE_YEAR:
