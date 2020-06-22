@@ -290,7 +290,8 @@ type MsgIndexedDb
 {-| Wrapper for all the revisions we can receive.
 -}
 type Revision
-    = AcuteIllnessEncounterRevision AcuteIllnessEncounterId AcuteIllnessEncounter
+    = AcuteFindingsRevision AcuteFindingsId AcuteFindings
+    | AcuteIllnessEncounterRevision AcuteIllnessEncounterId AcuteIllnessEncounter
     | AcuteIllnessVitalsRevision AcuteIllnessVitalsId AcuteIllnessVitals
     | AttendanceRevision AttendanceId Attendance
     | BreastExamRevision BreastExamId BreastExam

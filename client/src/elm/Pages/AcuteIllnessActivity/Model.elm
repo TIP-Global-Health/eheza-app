@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Model exposing (ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), PriorTreatmentData, PriorTreatmentTask(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, TreatmentReviewForm, VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptyPriorTreatmentData, emptySymptomsData, emptyTreatmentReviewForm)
+module Pages.AcuteIllnessActivity.Model exposing (AcuteFindingsForm, ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), PriorTreatmentData, PriorTreatmentTask(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, TreatmentReviewForm, VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptyPriorTreatmentData, emptySymptomsData, emptyTreatmentReviewForm)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -26,7 +26,10 @@ type Msg
     | SetActivePhysicalExamTask PhysicalExamTask
     | SetVitalsResporatoryRate String
     | SetVitalsBodyTemperature String
-    | SaveVitals PersonId (Maybe ( AcuteIllnessVitalsId, AcuteIllnessVitals ))
+    | SetAcuteFindingsGeneralSign AcuteFindingsGeneralSign
+    | SetAcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
+    | SaveVitals PersonId (Maybe ( AcuteIllnessVitalsId, AcuteIllnessVitals )) (Maybe PhysicalExamTask)
+    | SaveAcuteFindings PersonId (Maybe ( AcuteFindingsId, AcuteFindings )) (Maybe PhysicalExamTask)
       -- LABORATORY Msgs
     | SetActiveLaboratoryTask LaboratoryTask
     | SetRapidTestPositive Bool
@@ -126,6 +129,7 @@ type alias SymptomsGIForm =
 
 type alias PhysicalExamData =
     { vitalsForm : VitalsForm
+    , acuteFindingsForm : AcuteFindingsForm
     , activeTask : PhysicalExamTask
     }
 
@@ -133,17 +137,25 @@ type alias PhysicalExamData =
 emptyPhysicalExamData : PhysicalExamData
 emptyPhysicalExamData =
     { vitalsForm = VitalsForm Nothing Nothing
+    , acuteFindingsForm = AcuteFindingsForm Nothing Nothing
     , activeTask = PhysicalExamVitals
     }
 
 
 type PhysicalExamTask
     = PhysicalExamVitals
+    | PhysicalExamAcuteFindings
 
 
 type alias VitalsForm =
     { respiratoryRate : Maybe Int
     , bodyTemperature : Maybe Float
+    }
+
+
+type alias AcuteFindingsForm =
+    { signsGeneral : Maybe (List AcuteFindingsGeneralSign)
+    , signsRespiratory : Maybe (List AcuteFindingsRespiratorySign)
     }
 
 

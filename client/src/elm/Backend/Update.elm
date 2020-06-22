@@ -1465,6 +1465,14 @@ nuanced way.
 handleRevision : Revision -> ( ModelIndexedDb, Bool ) -> ( ModelIndexedDb, Bool )
 handleRevision revision (( model, recalc ) as noChange) =
     case revision of
+        AcuteFindingsRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | acuteFindings = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         AcuteIllnessEncounterRevision uuid data ->
             let
                 acuteIllnessEncounters =
