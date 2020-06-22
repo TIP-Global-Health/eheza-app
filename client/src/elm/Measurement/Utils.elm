@@ -1,4 +1,4 @@
-module Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getMotherForm, resolvePreviousValueInCommonContext)
+module Measurement.Utils exposing (fromChildMeasurementData, fromMotherMeasurementData, getChildForm, getInputConstraintsHeight, getInputConstraintsMuac, getInputConstraintsWeight, getMotherForm, resolvePreviousValueInCommonContext, withinConstraints)
 
 import Activity.Utils exposing (expectCounselingActivity, expectParticipantConsent)
 import AssocList as Dict exposing (Dict)
@@ -16,22 +16,22 @@ import Pages.Session.Model
 
 getInputConstraintsHeight : FloatInputConstraints
 getInputConstraintsHeight =
-    { minVal = 0.5
-    , maxVal = 100
+    { minVal = 25
+    , maxVal = 250
     }
 
 
 getInputConstraintsMuac : FloatInputConstraints
 getInputConstraintsMuac =
-    { minVal = 0.5
-    , maxVal = 40
+    { minVal = 5
+    , maxVal = 99
     }
 
 
 getInputConstraintsWeight : FloatInputConstraints
 getInputConstraintsWeight =
     { minVal = 0.5
-    , maxVal = 60
+    , maxVal = 200
     }
 
 
@@ -205,3 +205,8 @@ resolvePreviousValueInCommonContext previousGroupMeasurement previousIndividualM
 
         Nothing ->
             Maybe.map Tuple.second previousIndividualMeasurement
+
+
+withinConstraints : FloatInputConstraints -> Float -> Bool
+withinConstraints constraints value =
+    value >= constraints.minVal && value <= constraints.maxVal

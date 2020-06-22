@@ -27,6 +27,7 @@ import Pages.Session.Model
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, TranslationId, translate)
+import Translate.Model exposing (Language(..))
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (Days(..), Months(..), diffDays, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate)
 import Utils.WebData exposing (viewWebData)
@@ -576,24 +577,33 @@ viewAgeCell language =
         [ text <| translate language Translate.AgeWord ]
 
 
+resolveCellClass : Language -> String
+resolveCellClass language =
+    if language == Kinyarwanda then
+        "first kinyarwanda"
+
+    else
+        "first"
+
+
 viewHeightCell : Language -> Html any
 viewHeightCell language =
     td
-        [ class "first" ]
+        [ class <| resolveCellClass language ]
         [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Height)) ]
 
 
 viewWeightCell : Language -> Html any
 viewWeightCell language =
     td
-        [ class "first" ]
+        [ class <| resolveCellClass language ]
         [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Weight)) ]
 
 
 viewMuacCell : Language -> Html any
 viewMuacCell language =
     td
-        [ class "first" ]
+        [ class <| resolveCellClass language ]
         [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Muac)) ]
 
 
