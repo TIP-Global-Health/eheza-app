@@ -4597,7 +4597,7 @@ translateChartPhrase phrase =
     case phrase of
         AgeCompletedMonthsYears ->
             { english = "Age (completed months and years)"
-            , kinyarwanda = Just "Imyaka uzuza amazi n'imyaka"
+            , kinyarwanda = Just "Imyaka uzuza amezi n'imyaka"
             }
 
         Birth ->
@@ -4652,7 +4652,7 @@ translateChartPhrase phrase =
 
         LengthForAgeGirls ->
             { english = "Length-for-age GIRLS"
-            , kinyarwanda = Just "uburebure ku myaka umukobwa"
+            , kinyarwanda = Just "uburebure ku myaka UMUKOBWA"
             }
 
         Months ->
