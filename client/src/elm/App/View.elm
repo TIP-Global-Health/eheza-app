@@ -4,7 +4,7 @@ import App.Model exposing (..)
 import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
-import Backend.Person.Model exposing (ParticipantDirectoryOperation(..), RegistrationInitiator(..))
+import Backend.Person.Model exposing (Initiator(..), ParticipantDirectoryOperation(..))
 import Browser
 import Config.View
 import Date
@@ -268,12 +268,12 @@ viewUserPage page model configured =
                             |> Html.map (MsgLoggedIn << MsgPageEditPerson)
                             |> flexPageWrapper model
 
-                    PersonPage id ->
-                        Pages.Person.View.view model.language currentDate isChw id model.indexedDb
+                    PersonPage id initiator ->
+                        Pages.Person.View.view model.language currentDate isChw initiator id model.indexedDb
                             |> flexPageWrapper model
 
-                    PersonsPage relation ->
-                        Pages.People.View.view model.language currentDate model.villageId isChw relation loggedInModel.personsPage model.indexedDb
+                    PersonsPage relation initiator ->
+                        Pages.People.View.view model.language currentDate model.villageId isChw initiator relation loggedInModel.personsPage model.indexedDb
                             |> Html.map (MsgLoggedIn << MsgPagePersons)
                             |> flexPageWrapper model
 
@@ -300,7 +300,7 @@ viewUserPage page model configured =
                             |> Html.map (MsgLoggedIn << MsgPageIndividualEncounterParticipants)
                             |> flexPageWrapper model
 
-                    RelationshipPage id1 id2 ->
+                    RelationshipPage id1 id2 initiator ->
                         let
                             page_ =
                                 Dict.get ( id1, id2 ) loggedInModel.relationshipPages
@@ -310,6 +310,7 @@ viewUserPage page model configured =
                             currentDate
                             ( healthCenterId, model.villageId )
                             isChw
+                            initiator
                             id1
                             id2
                             model.indexedDb

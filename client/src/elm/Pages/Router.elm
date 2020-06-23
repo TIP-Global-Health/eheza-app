@@ -6,8 +6,8 @@ import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AcuteIllnessActivity.Utils
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.IndividualEncounterParticipant.Utils exposing (decodeIndividualEncounterTypeFromString, encoudeIndividualEncounterTypeAsString)
-import Backend.Person.Model exposing (RegistrationInitiator(..))
-import Backend.Person.Utils exposing (decodeRegistrationInitiatorFromString)
+import Backend.Person.Model exposing (Initiator(..))
+import Backend.Person.Utils exposing (initiatorFromUrlFragmemt, initiatorToUrlFragmemt)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import NutritionActivity.Utils
 import Pages.Page exposing (..)
@@ -67,40 +67,31 @@ pageToFragment current =
 
                 CreatePersonPage relationId initiator ->
                     let
-                        origin =
-                            case initiator of
-                                ParticipantDirectoryOrigin ->
-                                    "directory"
-
-                                IndividualEncounterOrigin encounterType ->
-                                    case encounterType of
-                                        AcuteIllnessEncounter ->
-                                            "acute-illness"
-
-                                        AntenatalEncounter ->
-                                            "antenatal"
-
-                                        InmmunizationEncounter ->
-                                            "inmmunization"
-
-                                        NutritionEncounter ->
-                                            "nutrition"
+                        fragment =
+                            initiatorToUrlFragmemt initiator
 
                         relation =
                             relationId
                                 |> Maybe.map (\id -> "/" ++ fromEntityUuid id)
                                 |> Maybe.withDefault ""
                     in
-                    Just ("person/" ++ origin ++ "/new" ++ relation)
+                    Just ("person/" ++ fragment ++ "/new" ++ relation)
 
                 EditPersonPage id ->
                     Just ("person/" ++ fromEntityUuid id ++ "/edit")
 
-                PersonPage id ->
-                    Just ("person/" ++ fromEntityUuid id)
-
-                PersonsPage related ->
+                PersonPage id initiator ->
                     let
+                        fragment =
+                            initiatorToUrlFragmemt initiator
+                    in
+                    Just ("person/" ++ fromEntityUuid id ++ "/" ++ fragment)
+
+                PersonsPage related initiator ->
+                    let
+                        fragment =
+                            initiatorToUrlFragmemt initiator
+
                         url =
                             case related of
                                 Nothing ->
@@ -109,7 +100,7 @@ pageToFragment current =
                                 Just relatedId ->
                                     "relations/" ++ fromEntityUuid relatedId
                     in
-                    Just url
+                    url ++ "/" ++ fragment |> Just
 
                 PrenatalParticipantPage id ->
                     Just <| "prenatal-participant/" ++ fromEntityUuid id
@@ -123,12 +114,18 @@ pageToFragment current =
                 IndividualEncounterParticipantsPage encounterType ->
                     Just <| "individual-participants/" ++ encoudeIndividualEncounterTypeAsString encounterType
 
-                RelationshipPage id1 id2 ->
+                RelationshipPage id1 id2 initiator ->
+                    let
+                        fragment =
+                            initiatorToUrlFragmemt initiator
+                    in
                     Just
                         ("relationship/"
                             ++ fromEntityUuid id1
                             ++ "/"
                             ++ fromEntityUuid id2
+                            ++ "/"
+                            ++ fragment
                         )
 
                 SessionPage sessionId sessionPage ->
@@ -200,16 +197,16 @@ parser =
         , map (UserPage MyAccountPage) (s "my-account")
         , map (UserPage ClinicalPage) (s "clinical")
         , map (\id page -> UserPage <| SessionPage id page) (s "session" </> parseUuid </> parseSessionPage)
-        , map (UserPage <| PersonsPage Nothing) (s "persons")
-        , map (\id -> UserPage <| PersonsPage (Just id)) (s "relations" </> parseUuid)
+        , map (\origin -> UserPage <| PersonsPage Nothing origin) (s "persons" </> parseOrigin)
+        , map (\id origin -> UserPage <| PersonsPage (Just id) origin) (s "relations" </> parseUuid </> parseOrigin)
         , map (\origin id -> UserPage <| CreatePersonPage (Just id) origin) (s "person" </> parseOrigin </> s "new" </> parseUuid)
         , map (\origin -> UserPage <| CreatePersonPage Nothing origin) (s "person" </> parseOrigin </> s "new")
         , map (\id -> UserPage <| EditPersonPage id) (s "person" </> parseUuid </> s "edit")
-        , map (\id -> UserPage <| PersonPage id) (s "person" </> parseUuid)
+        , map (\id origin -> UserPage <| PersonPage id origin) (s "person" </> parseUuid </> parseOrigin)
         , map (\id -> UserPage <| PrenatalParticipantPage id) (s "prenatal-participant" </> parseUuid)
         , map (\id -> UserPage <| NutritionParticipantPage id) (s "nutrition-participant" </> parseUuid)
         , map (\id -> UserPage <| AcuteIllnessParticipantPage id) (s "acute-illness-participant" </> parseUuid)
-        , map (\id1 id2 -> UserPage <| RelationshipPage id1 id2) (s "relationship" </> parseUuid </> parseUuid)
+        , map (\id1 id2 origin -> UserPage <| RelationshipPage id1 id2 origin) (s "relationship" </> parseUuid </> parseUuid </> parseOrigin)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
         , map (\id -> UserPage <| ClinicalProgressReportPage id) (s "clinical-progress-report" </> parseUuid)
@@ -271,6 +268,6 @@ parseIndividualEncounterType =
     custom "IndividualEncounterType" decodeIndividualEncounterTypeFromString
 
 
-parseOrigin : Parser (RegistrationInitiator -> c) c
+parseOrigin : Parser (Initiator -> c) c
 parseOrigin =
-    custom "RegistrationInitiator" decodeRegistrationInitiatorFromString
+    custom "Initiator" initiatorFromUrlFragmemt

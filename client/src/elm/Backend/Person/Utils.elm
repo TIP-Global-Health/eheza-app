@@ -1,10 +1,11 @@
-module Backend.Person.Utils exposing (ageInYears, decodeRegistrationInitiatorFromString, defaultIconForPerson, diffInYears, expectedAgeByPerson, isAdult, isPersonAFertileWoman, isPersonAnAdult, resolveExpectedAge)
+module Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, diffInYears, expectedAgeByPerson, graduatingAgeInMonth, initiatorFromUrlFragmemt, initiatorToUrlFragmemt, isAdult, isPersonAFertileWoman, isPersonAnAdult, resolveExpectedAge)
 
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
-import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), ParticipantDirectoryOperation(..), Person, RegistrationInitiator(..))
+import Backend.Person.Model exposing (ExpectedAge(..), Gender(..), Initiator(..), ParticipantDirectoryOperation(..), Person)
 import Date
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 
 
 ageInYears : NominalDate -> Person -> Maybe Int
@@ -82,8 +83,43 @@ resolveExpectedAge currentDate birthDate operation =
             ExpectAdultOrChild
 
 
-decodeRegistrationInitiatorFromString : String -> Maybe RegistrationInitiator
-decodeRegistrationInitiatorFromString s =
+defaultIconForPerson : NominalDate -> Person -> String
+defaultIconForPerson currentDate person =
+    isPersonAnAdult currentDate person
+        |> Maybe.map
+            (\adult ->
+                if adult then
+                    "mother"
+
+                else
+                    "child"
+            )
+        |> Maybe.withDefault "mother"
+
+
+initiatorToUrlFragmemt : Initiator -> String
+initiatorToUrlFragmemt initiator =
+    case initiator of
+        ParticipantDirectoryOrigin ->
+            "directory"
+
+        IndividualEncounterOrigin encounterType ->
+            case encounterType of
+                AntenatalEncounter ->
+                    "antenatal"
+
+                InmmunizationEncounter ->
+                    "inmmunization"
+
+                NutritionEncounter ->
+                    "nutrition"
+
+        GroupEncounterOrigin sessionId ->
+            "session-" ++ fromEntityUuid sessionId
+
+
+initiatorFromUrlFragmemt : String -> Maybe Initiator
+initiatorFromUrlFragmemt s =
     case s of
         "directory" ->
             Just ParticipantDirectoryOrigin
@@ -101,18 +137,26 @@ decodeRegistrationInitiatorFromString s =
             IndividualEncounterOrigin NutritionEncounter |> Just
 
         _ ->
-            Nothing
+            let
+                split =
+                    String.split "-" s
+            in
+            case List.head split of
+                Just "session" ->
+                    if List.length split > 1 then
+                        -- Remove the "session-" prefix.
+                        String.dropLeft 8 s
+                            |> toEntityUuid
+                            |> GroupEncounterOrigin
+                            |> Just
+
+                    else
+                        Nothing
+
+                _ ->
+                    Nothing
 
 
-defaultIconForPerson : NominalDate -> Person -> String
-defaultIconForPerson currentDate person =
-    isPersonAnAdult currentDate person
-        |> Maybe.map
-            (\adult ->
-                if adult then
-                    "mother"
-
-                else
-                    "child"
-            )
-        |> Maybe.withDefault "mother"
+graduatingAgeInMonth : Int
+graduatingAgeInMonth =
+    26

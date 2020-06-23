@@ -4,7 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (ExpectedAge(..), Person, RegistrationInitiator(..))
+import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person, RegistrationInitiator(..))
 import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isPersonAFertileWoman, isPersonAnAdult)
 import Backend.SyncData.Model
 import Backend.Village.Utils exposing (personLivesInVillage)
