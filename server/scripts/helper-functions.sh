@@ -168,10 +168,10 @@ function delete_www_content {
 ##
 function drupal_make {
   echo -e "${LBLUE}> Run the build script (scripts/build)${RESTORE}"
-  if ! [ -x "$(command -v ddev)" ]; then
-    bash "$ROOT"/scripts/build
-  else
+  if [ ! "$NATIVE_INSTALL" ]; then
     ddev . "cd .. && scripts/build"
+  else
+    bash "$ROOT"/scripts/build
   fi
   echo
 }
