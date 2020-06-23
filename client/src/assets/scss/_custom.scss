@@ -1742,15 +1742,15 @@ input::placeholder {
 
 .icon-laboratory-malaria-testing {
   .active &:after {
-    background-image: url(#{$img-path}icon-laboratory-white.svg), url(#{$img-path}icon-selected-circle.svg);
+    background-image: url(#{$img-path}icon-malaria-white.svg), url(#{$img-path}icon-selected-circle.svg);
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-laboratory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-malaria-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-laboratory-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+    background-image: url(#{$img-path}icon-malaria-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
   }
 }
 

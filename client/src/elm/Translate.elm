@@ -418,7 +418,7 @@ type TranslationId
     | Lungs
     | LungsCPESign LungsCPESign
     | MakeSureYouAreConnected
-    | MalatiaRapidDiagnosticTest
+    | MalariaRapidDiagnosticTest
     | MalariaRapidTestResult MalariaRapidTestResult
     | MaritalStatusLabel
     | MaritalStatus MaritalStatus
@@ -2863,8 +2863,8 @@ translationSet trans =
             , kinyarwanda = Just "Banza urebe ko ufite interineti. Ikibazo nigikomeza, hamagara The Ihangane Project kuri +250 788 817 542"
             }
 
-        MalatiaRapidDiagnosticTest ->
-            { english = "Malatia Rapid Diagnostic Test"
+        MalariaRapidDiagnosticTest ->
+            { english = "Malaria Rapid Diagnostic Test"
             , kinyarwanda = Nothing
             }
 

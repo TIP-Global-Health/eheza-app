@@ -652,7 +652,7 @@ viewMalariaTestingForm language currentDate measurements form =
     div [ class "ui form laboratory malaria-testing" ]
         [ div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.MalatiaRapidDiagnosticTest ]
+                [ viewLabel language Translate.MalariaRapidDiagnosticTest ]
             , div [ class "four wide column" ]
                 [-- viewConditionalAlert form.respiratoryRate
                  --    [ [ (>) 12 ], [ (<) 30 ] ]
