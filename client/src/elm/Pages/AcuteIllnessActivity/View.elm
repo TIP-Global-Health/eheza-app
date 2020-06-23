@@ -347,7 +347,7 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) 
             AcuteIllnessPhysicalExam
 
         tasks =
-            [ PhysicalExamVitals ]
+            [ PhysicalExamVitals, PhysicalExamAcuteFindings ]
 
         viewTask task =
             let
@@ -356,6 +356,11 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) 
                         PhysicalExamVitals ->
                             ( "physical-exam-vitals"
                             , isJust measurements.vitals
+                            )
+
+                        PhysicalExamAcuteFindings ->
+                            ( "acute-findings"
+                            , isJust measurements.acuteFindings
                             )
 
                 isActive =
@@ -397,17 +402,36 @@ viewAcuteIllnessPhysicalExam language currentDate id ( personId, measurements ) 
                         |> vitalsFormWithDefault data.vitalsForm
                         |> viewVitalsForm language currentDate measurements
 
+                PhysicalExamAcuteFindings ->
+                    measurements.acuteFindings
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> acuteFindingsFormWithDefault data.acuteFindingsForm
+                        |> viewAcuteFindingsForm language currentDate measurements
+
         getNextTask currentTask =
             case currentTask of
                 PhysicalExamVitals ->
-                    []
+                    [ PhysicalExamAcuteFindings ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
+
+                PhysicalExamAcuteFindings ->
+                    [ PhysicalExamVitals ]
+                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
+                        |> List.head
 
         actions =
             let
+                nextTask =
+                    getNextTask data.activeTask
+
                 saveMsg =
                     case data.activeTask of
                         PhysicalExamVitals ->
-                            SaveVitals personId measurements.vitals
+                            SaveVitals personId measurements.vitals nextTask
+
+                        PhysicalExamAcuteFindings ->
+                            SaveAcuteFindings personId measurements.acuteFindings nextTask
             in
             div [ class "actions symptoms" ]
                 [ button
@@ -479,6 +503,36 @@ viewVitalsForm language currentDate measurements form =
             "body-temperature"
             Translate.Celsius
         , viewPreviousMeasurement language bodyTemperaturePreviousValue Translate.Celsius
+        ]
+
+
+viewAcuteFindingsForm : Language -> NominalDate -> AcuteIllnessMeasurements -> AcuteFindingsForm -> Html Msg
+viewAcuteFindingsForm language currentDate measurements form_ =
+    let
+        form =
+            measurements.acuteFindings
+                |> Maybe.map (Tuple.second >> .value)
+                |> acuteFindingsFormWithDefault form_
+    in
+    div [ class "ui form examination acute-findings" ]
+        [ viewQuestionLabel language Translate.PatientExhibitAnyFindings
+        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+        , viewCheckBoxMultipleSelectInput language
+            [ LethargicOrUnconscious, AcuteFindingsPoorSuck, SunkenEyes, PoorSkinTurgor, Jaundice, NoAcuteFindingsGeneralSigns ]
+            []
+            (form.signsGeneral |> Maybe.withDefault [])
+            Nothing
+            SetAcuteFindingsGeneralSign
+            Translate.AcuteFindingsGeneralSign
+        , viewQuestionLabel language Translate.PatientExhibitAnyRespiratoryFindings
+        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+        , viewCheckBoxMultipleSelectInput language
+            [ Stridor, NasalFlaring, SevereWheezing, SubCostalRetractions, NoAcuteFindingsRespiratorySigns ]
+            []
+            (form.signsRespiratory |> Maybe.withDefault [])
+            Nothing
+            SetAcuteFindingsRespiratorySign
+            Translate.AcuteFindingsRespiratorySign
         ]
 
 

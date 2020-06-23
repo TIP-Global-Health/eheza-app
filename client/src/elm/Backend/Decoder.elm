@@ -28,6 +28,9 @@ decodeRevision =
                 -- Some of these aren't implemented yet, because they need
                 -- to be converted from ID to UUID references first.
                 case s of
+                    "acute_findings" ->
+                        decodeWithUuid AcuteFindingsRevision decodeAcuteFindings
+
                     "acute_illness_encounter" ->
                         decodeWithUuid AcuteIllnessEncounterRevision decodeAcuteIllnessEncounter
 

@@ -250,6 +250,63 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_findings_signs_general'.
+  $field_bases['field_findings_signs_general'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_findings_signs_general',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'lethargic-or-unconscious' => 'Lethargic or Unconscious',
+        'poor-suck' => 'Poor Suck',
+        'sunken-eyes' => 'Sunken Eyes',
+        'poor-skin-turgor' => 'Poor Skin Turgor',
+        'jaundice' => 'Jaundice',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_findings_signs_respiratory'.
+  $field_bases['field_findings_signs_respiratory'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_findings_signs_respiratory',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'stridor' => 'Stridor',
+        'nasal-flaring' => 'Nasal Flaring',
+        'severe-wheezing' => 'Severe Wheezing',
+        'sub-costal-retractions' => 'Sub-Costal Retractions',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_hc_contact'.
   $field_bases['field_hc_contact'] = array(
     'active' => 1,

@@ -1,4 +1,4 @@
-module Backend.Measurement.Decoder exposing (decodeAbdomenCPESign, decodeAcuteIllnessMeasurement, decodeAcuteIllnessMeasurements, decodeAcuteIllnessVitals, decodeAttendance, decodeBreastExam, decodeBreastExamSign, decodeCSectionReason, decodeCSectionScar, decodeChildMeasurementList, decodeChildNutritionSign, decodeCorePhysicalExam, decodeCounselingSession, decodeDangerSign, decodeDangerSigns, decodeDistributionNotice, decodeExposure, decodeExposureSign, decodeEyesCPESign, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeFbf, decodeFbfValue, decodeFetalPresentation, decodeGroupMeasurement, decodeHCContact, decodeHCContactSign, decodeHCRecomendation, decodeHairHeadCPESign, decodeHandsCPESign, decodeHead, decodeHeartCPESign, decodeHeight, decodeIsolation, decodeIsolationSign, decodeLactation, decodeLactationSign, decodeLastMenstrualPeriod, decodeLegsCPESign, decodeLungsCPESign, decodeMalariaTesting, decodeMalariaTestingSign, decodeMeasurement, decodeMedicalHistory, decodeMedicalHistorySign, decodeMedication, decodeMedicationSign, decodeMotherMeasurementList, decodeMuac, decodeNeckCPESign, decodeNutrition, decodeNutritionHeight, decodeNutritionMeasurement, decodeNutritionMeasurements, decodeNutritionMuac, decodeNutritionNutrition, decodeNutritionPhoto, decodeNutritionWeight, decodeObstetricHistory, decodeObstetricHistorySign, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodePrenatalFamilyPlanning, decodePrenatalMeasurement, decodePrenatalMeasurements, decodePrenatalNutrition, decodePrenatalPhoto, decodePreviousDeliveryPeriod, decodePreviousDeliverySign, decodeReasonForNotIsolating, decodeResource, decodeResourceSign, decodeResponsePeriod, decodeSocialHistory, decodeSocialHistoryHivTestingResult, decodeSocialHistorySign, decodeSymptomsGI, decodeSymptomsGIDerivedSign, decodeSymptomsGIDict, decodeSymptomsGeneral, decodeSymptomsRespiratory, decodeSymptomsRespiratorySign, decodeTravelHistory, decodeTravelHistorySign, decodeTreatmentReview, decodeTreatmentReviewSign, decodeVitals, decodeWeight, decodeWithEntityUuid, symptomsGIToDict, symptomsGeneralToDict, symptomsRespiratoryToDict)
+module Backend.Measurement.Decoder exposing (decodeAbdomenCPESign, decodeAcuteFindings, decodeAcuteFindingsGeneralSign, decodeAcuteFindingsRespiratorySign, decodeAcuteIllnessMeasurement, decodeAcuteIllnessMeasurements, decodeAcuteIllnessVitals, decodeAttendance, decodeBreastExam, decodeBreastExamSign, decodeCSectionReason, decodeCSectionScar, decodeChildMeasurementList, decodeChildNutritionSign, decodeCorePhysicalExam, decodeCounselingSession, decodeDangerSign, decodeDangerSigns, decodeDistributionNotice, decodeExposure, decodeExposureSign, decodeEyesCPESign, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeFbf, decodeFbfValue, decodeFetalPresentation, decodeGroupMeasurement, decodeHCContact, decodeHCContactSign, decodeHCRecomendation, decodeHairHeadCPESign, decodeHandsCPESign, decodeHead, decodeHeartCPESign, decodeHeight, decodeIsolation, decodeIsolationSign, decodeLactation, decodeLactationSign, decodeLastMenstrualPeriod, decodeLegsCPESign, decodeLungsCPESign, decodeMalariaTesting, decodeMalariaTestingSign, decodeMeasurement, decodeMedicalHistory, decodeMedicalHistorySign, decodeMedication, decodeMedicationSign, decodeMotherMeasurementList, decodeMuac, decodeNeckCPESign, decodeNutrition, decodeNutritionHeight, decodeNutritionMeasurement, decodeNutritionMeasurements, decodeNutritionMuac, decodeNutritionNutrition, decodeNutritionPhoto, decodeNutritionWeight, decodeObstetricHistory, decodeObstetricHistorySign, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodePrenatalFamilyPlanning, decodePrenatalMeasurement, decodePrenatalMeasurements, decodePrenatalNutrition, decodePrenatalPhoto, decodePreviousDeliveryPeriod, decodePreviousDeliverySign, decodeReasonForNotIsolating, decodeResource, decodeResourceSign, decodeResponsePeriod, decodeSocialHistory, decodeSocialHistoryHivTestingResult, decodeSocialHistorySign, decodeSymptomsGI, decodeSymptomsGIDerivedSign, decodeSymptomsGIDict, decodeSymptomsGeneral, decodeSymptomsRespiratory, decodeSymptomsRespiratorySign, decodeTravelHistory, decodeTravelHistorySign, decodeTreatmentReview, decodeTreatmentReviewSign, decodeVitals, decodeWeight, decodeWithEntityUuid, symptomsGIToDict, symptomsGeneralToDict, symptomsRespiratoryToDict)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
@@ -110,6 +110,7 @@ decodeAcuteIllnessMeasurements =
         |> optional "symptoms_respiratory" (decodeHead decodeSymptomsRespiratory) Nothing
         |> optional "symptoms_gi" (decodeHead decodeSymptomsGI) Nothing
         |> optional "acute_illness_vitals" (decodeHead decodeAcuteIllnessVitals) Nothing
+        |> optional "acute_findings" (decodeHead decodeAcuteFindings) Nothing
         |> optional "malaria_testing" (decodeHead decodeMalariaTesting) Nothing
         |> optional "travel_history" (decodeHead decodeTravelHistory) Nothing
         |> optional "exposure" (decodeHead decodeExposure) Nothing
@@ -1200,6 +1201,73 @@ decodeAcuteIllnessVitals =
         |> required "respiratory_rate" decodeInt
         |> required "body_temperature" decodeFloat
         |> decodeAcuteIllnessMeasurement
+
+
+decodeAcuteFindings : Decoder AcuteFindings
+decodeAcuteFindings =
+    succeed AcuteFindingsValue
+        |> required "findings_signs_general" (decodeEverySet decodeAcuteFindingsGeneralSign)
+        |> required "findings_signs_respiratory" (decodeEverySet decodeAcuteFindingsRespiratorySign)
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeAcuteFindingsGeneralSign : Decoder AcuteFindingsGeneralSign
+decodeAcuteFindingsGeneralSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "lethargic-or-unconscious" ->
+                        succeed LethargicOrUnconscious
+
+                    "poor-suck" ->
+                        succeed AcuteFindingsPoorSuck
+
+                    "sunken-eyes" ->
+                        succeed SunkenEyes
+
+                    "poor-skin-turgor" ->
+                        succeed PoorSkinTurgor
+
+                    "jaundice" ->
+                        succeed Jaundice
+
+                    "none" ->
+                        succeed NoAcuteFindingsGeneralSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized AcuteFindingsGeneralSign"
+            )
+
+
+decodeAcuteFindingsRespiratorySign : Decoder AcuteFindingsRespiratorySign
+decodeAcuteFindingsRespiratorySign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "stridor" ->
+                        succeed Stridor
+
+                    "nasal-flaring" ->
+                        succeed NasalFlaring
+
+                    "severe-wheezing" ->
+                        succeed SevereWheezing
+
+                    "sub-costal-retractions" ->
+                        succeed SubCostalRetractions
+
+                    "none" ->
+                        succeed NoAcuteFindingsRespiratorySigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized AcuteFindingsRespiratorySign"
+            )
 
 
 decodeMalariaTesting : Decoder MalariaTesting
