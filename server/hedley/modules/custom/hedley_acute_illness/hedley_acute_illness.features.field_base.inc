@@ -460,13 +460,13 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
-  // Exported field_base: 'field_malaria_testing'.
-  $field_bases['field_malaria_testing'] = array(
+  // Exported field_base: 'field_malaria_rapid_test'.
+  $field_bases['field_malaria_rapid_test'] = array(
     'active' => 1,
-    'cardinality' => -1,
+    'cardinality' => 1,
     'deleted' => 0,
     'entity_types' => array(),
-    'field_name' => 'field_malaria_testing',
+    'field_name' => 'field_malaria_rapid_test',
     'indexes' => array(
       'value' => array(
         0 => 'value',
@@ -476,8 +476,9 @@ function hedley_acute_illness_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'rapid-test-positive' => 'Rapid Test Positive',
-        'none' => 'None of these',
+        'positive' => 'Positive',
+        'negative' => 'Negative',
+        'indeterminate' => 'Indeterminate',
       ),
       'allowed_values_function' => '',
     ),
