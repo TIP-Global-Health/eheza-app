@@ -13,8 +13,8 @@ class HedleyRestfulMalariaTestings extends HedleyRestfulAcuteIllnessActivityBase
   /**
    * {@inheritdoc}
    */
-  protected $multiFields = [
-    'field_malaria_testing',
+  protected $fields = [
+    'field_malaria_rapid_test',
   ];
 
 }
