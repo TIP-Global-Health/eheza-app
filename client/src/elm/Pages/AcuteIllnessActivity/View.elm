@@ -5,6 +5,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
+import Backend.Measurement.Encoder exposing (malariaRapidTestResultAsString)
 import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
@@ -629,22 +630,36 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) da
 
 viewMalariaTestingForm : Language -> NominalDate -> AcuteIllnessMeasurements -> MalariaTestingForm -> Html Msg
 viewMalariaTestingForm language currentDate measurements form =
+    let
+        resultInput =
+            option
+                [ value ""
+                , selected (form.rapidTestResult == Nothing)
+                ]
+                [ text "" ]
+                :: ([ RapidTestNegative, RapidTestPositive, RapidTestIndeterminate ]
+                        |> List.map
+                            (\result ->
+                                option
+                                    [ value (malariaRapidTestResultAsString result)
+                                    , selected (form.rapidTestResult == Just result)
+                                    ]
+                                    [ text <| translate language <| Translate.MalariaRapidTestResult result ]
+                            )
+                   )
+                |> select [ onInput SetRapidTestResult, class "form-input rapid-test-result" ]
+    in
     div [ class "ui form laboratory malaria-testing" ]
         [ div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.RapidTestResult ]
+                [ viewLabel language Translate.MalatiaRapidDiagnosticTest ]
             , div [ class "four wide column" ]
                 [-- viewConditionalAlert form.respiratoryRate
                  --    [ [ (>) 12 ], [ (<) 30 ] ]
                  --    [ [ (<=) 21, (>=) 30 ] ]
                 ]
             ]
-        , viewBoolInput
-            language
-            form.rapidTestPositive
-            SetRapidTestPositive
-            "rapid-test-positive"
-            (Just ( Translate.PositiveLabel, Translate.NegativeLabel ))
+        , resultInput
         ]
 
 

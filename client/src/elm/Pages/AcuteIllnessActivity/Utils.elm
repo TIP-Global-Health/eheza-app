@@ -14,7 +14,7 @@ import Backend.Measurement.Model
         , HCRecomendation(..)
         , IsolationSign(..)
         , IsolationValue
-        , MalariaTestingSign(..)
+        , MalariaRapidTestResult(..)
         , ReasonForNotIsolating(..)
         , ResponsePeriod(..)
         , SymptomsGIDerivedSign(..)
@@ -184,7 +184,7 @@ laboratoryTasksCompletedFromTotal measurements data task =
                         |> Maybe.map (Tuple.second >> .value)
                         |> malariaTestingFormWithDefault data.malariaTestingForm
             in
-            ( taskCompleted form.rapidTestPositive
+            ( taskCompleted form.rapidTestResult
             , 1
             )
 
@@ -526,35 +526,32 @@ toAcuteFindingsValue form =
         |> andMap signsRespiratorySet
 
 
-fromMalariaTestingValue : Maybe (EverySet MalariaTestingSign) -> MalariaTestingForm
+fromMalariaTestingValue : Maybe MalariaRapidTestResult -> MalariaTestingForm
 fromMalariaTestingValue saved =
-    { rapidTestPositive = Maybe.map (EverySet.member RapidTestPositive) saved
+    { rapidTestResult = saved
     }
 
 
-malariaTestingFormWithDefault : MalariaTestingForm -> Maybe (EverySet MalariaTestingSign) -> MalariaTestingForm
+malariaTestingFormWithDefault : MalariaTestingForm -> Maybe MalariaRapidTestResult -> MalariaTestingForm
 malariaTestingFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { rapidTestPositive = or form.rapidTestPositive (EverySet.member RapidTestPositive value |> Just)
+                { rapidTestResult = or form.rapidTestResult (Just value)
                 }
             )
 
 
-toMalariaTestingValueWithDefault : Maybe (EverySet MalariaTestingSign) -> MalariaTestingForm -> Maybe (EverySet MalariaTestingSign)
+toMalariaTestingValueWithDefault : Maybe MalariaRapidTestResult -> MalariaTestingForm -> Maybe MalariaRapidTestResult
 toMalariaTestingValueWithDefault saved form =
     malariaTestingFormWithDefault form saved
         |> toMalariaTestingValue
 
 
-toMalariaTestingValue : MalariaTestingForm -> Maybe (EverySet MalariaTestingSign)
+toMalariaTestingValue : MalariaTestingForm -> Maybe MalariaRapidTestResult
 toMalariaTestingValue form =
-    [ Maybe.map (ifTrue RapidTestPositive) form.rapidTestPositive
-    ]
-        |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoMalariaTestingSigns)
+    form.rapidTestResult
 
 
 fromTravelHistoryValue : Maybe (EverySet TravelHistorySign) -> TravelHistoryForm

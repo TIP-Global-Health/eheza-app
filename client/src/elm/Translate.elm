@@ -418,6 +418,8 @@ type TranslationId
     | Lungs
     | LungsCPESign LungsCPESign
     | MakeSureYouAreConnected
+    | MalatiaRapidDiagnosticTest
+    | MalariaRapidTestResult MalariaRapidTestResult
     | MaritalStatusLabel
     | MaritalStatus MaritalStatus
     | MeasurementNoChange
@@ -549,7 +551,6 @@ type TranslationId
     | PrenatalParticipants
     | PreTermPregnancy
     | Province
-    | RapidTestResult
     | ReasonForCSection
     | ReasonForNotIsolating ReasonForNotIsolating
     | ReceivedDewormingPill
@@ -2862,6 +2863,28 @@ translationSet trans =
             , kinyarwanda = Just "Banza urebe ko ufite interineti. Ikibazo nigikomeza, hamagara The Ihangane Project kuri +250 788 817 542"
             }
 
+        MalatiaRapidDiagnosticTest ->
+            { english = "Malatia Rapid Diagnostic Test"
+            , kinyarwanda = Nothing
+            }
+
+        MalariaRapidTestResult result ->
+            case result of
+                RapidTestNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                RapidTestPositive ->
+                    { english = "Positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                RapidTestIndeterminate ->
+                    { english = "Indeterminate"
+                    , kinyarwanda = Nothing
+                    }
+
         MaritalStatusLabel ->
             { english = "Marital Status"
             , kinyarwanda = Just "Irangamimerere"
@@ -3824,11 +3847,6 @@ translationSet trans =
         Province ->
             { english = "Province"
             , kinyarwanda = Just "Intara"
-            }
-
-        RapidTestResult ->
-            { english = "Rapid Test Result"
-            , kinyarwanda = Nothing
             }
 
         ReasonForCSection ->

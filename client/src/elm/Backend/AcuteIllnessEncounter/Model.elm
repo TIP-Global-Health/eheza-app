@@ -65,7 +65,7 @@ type Msg
     | HandleSavedVitals (WebData ())
     | SaveAcuteFindings PersonId (Maybe AcuteFindingsId) AcuteFindingsValue
     | HandleSavedAcuteFindings (WebData ())
-    | SaveMalariaTesting PersonId (Maybe MalariaTestingId) (EverySet MalariaTestingSign)
+    | SaveMalariaTesting PersonId (Maybe MalariaTestingId) MalariaRapidTestResult
     | HandleSavedMalariaTesting (WebData ())
     | SaveTravelHistory PersonId (Maybe TravelHistoryId) (EverySet TravelHistorySign)
     | HandleSavedTravelHistory (WebData ())
