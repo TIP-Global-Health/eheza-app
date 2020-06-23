@@ -2711,7 +2711,7 @@ translationSet trans =
         LaboratoryTask task ->
             case task of
                 LaboratoryMalariaTesting ->
-                    { english = "Malaria Results"
+                    { english = "Malaria"
                     , kinyarwanda = Nothing
                     }
 
