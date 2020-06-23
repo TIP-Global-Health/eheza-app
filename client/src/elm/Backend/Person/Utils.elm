@@ -105,6 +105,9 @@ initiatorToUrlFragmemt initiator =
 
         IndividualEncounterOrigin encounterType ->
             case encounterType of
+                AcuteIllnessEncounter ->
+                    "acute-illness"
+
                 AntenatalEncounter ->
                     "antenatal"
 
