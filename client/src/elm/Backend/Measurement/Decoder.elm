@@ -1053,39 +1053,19 @@ decodeSymptomsGeneral =
         |> required "night_sweats_period" decodeInt
         |> required "body_aches_period" decodeInt
         |> required "headache_period" decodeInt
-        |> required "coke_colored_urine_period" decodeInt
-        |> required "convulsions_period" decodeInt
-        |> required "dry_mouth_period" decodeInt
-        |> required "increased_thirst_period" decodeInt
         |> required "lethargy_period" decodeInt
         |> required "poor_suck_period" decodeInt
-        |> required "severe_weakness_period" decodeInt
-        |> required "spontaneos_bleeding_period" decodeInt
         |> required "unable_to_drink_period" decodeInt
         |> required "unable_to_eat_period" decodeInt
+        |> required "increased_thirst_period" decodeInt
+        |> required "dry_mouth_period" decodeInt
+        |> required "severe_weakness_period" decodeInt
         |> required "yellow_eyes_period" decodeInt
+        |> required "coke_colored_urine_period" decodeInt
+        |> required "convulsions_period" decodeInt
+        |> required "spontaneos_bleeding_period" decodeInt
         |> map symptomsGeneralToDict
         |> decodeAcuteIllnessMeasurement
-
-
-
--- [ ( "fever_period", int fever )
--- , ( "chills_period", int chills )
--- , ( "night_sweats_period", int nightSweats )
--- , ( "body_aches_period", int bodyAches )
--- , ( "headache_period", int headache )
--- , ( "coke_colored_urine_period", int cokeColoredUrine )
--- , ( "convulsions_period", int convulsions )
--- , ( "dry_mouth_period", int dryMouth )
--- , ( "increased_thirst_period", int increasedThirst )
--- , ( "lethargy_period", int lethargy )
--- , ( "poor_suck_period", int poorSuck )
--- , ( "severe_weakness_period", int severeWeakness )
--- , ( "spontaneos_bleeding_period", int spontaneousBleeding )
--- , ( "unable_to_drink_period", int unableToDrink )
--- , ( "unable_to_eat_period", int unableToEat )
--- , ( "yellow_eyes_period", int yellowEyes )
--- ]
 
 
 symptomsGeneralToDict : SymptomsGeneralValue -> Dict SymptomsGeneralSign Int
