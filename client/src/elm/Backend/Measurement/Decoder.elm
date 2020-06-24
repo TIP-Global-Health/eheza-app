@@ -1053,6 +1053,17 @@ decodeSymptomsGeneral =
         |> required "night_sweats_period" decodeInt
         |> required "body_aches_period" decodeInt
         |> required "headache_period" decodeInt
+        |> required "coke_colored_urine_period" decodeInt
+        |> required "convulsions_period" decodeInt
+        |> required "dry_mouth_period" decodeInt
+        |> required "increased_thirst_period" decodeInt
+        |> required "lethargy_period" decodeInt
+        |> required "poor_suck_period" decodeInt
+        |> required "severe_weakness_period" decodeInt
+        |> required "spontaneos_bleeding_period" decodeInt
+        |> required "unable_to_drink_period" decodeInt
+        |> required "unable_to_eat_period" decodeInt
+        |> required "yellow_eyes_period" decodeInt
         |> map symptomsGeneralToDict
         |> decodeAcuteIllnessMeasurement
 
@@ -1084,6 +1095,17 @@ symptomsGeneralToDict value =
     , ( NightSweats, value.nightSweatsPeriod )
     , ( BodyAches, value.bodyAchesPeriod )
     , ( Headache, value.headachePeriod )
+    , ( Lethargy, value.lethargy )
+    , ( PoorSuck, value.poorSuck )
+    , ( UnableToDrink, value.unableToDrink )
+    , ( UnableToEat, value.unableToEat )
+    , ( IncreasedThirst, value.increasedThirst )
+    , ( DryMouth, value.dryMouth )
+    , ( SevereWeakness, value.severeWeakness )
+    , ( YellowEyes, value.yellowEyes )
+    , ( CokeColoredUrine, value.cokeColoredUrine )
+    , ( SymptomsGeneralConvulsions, value.convulsions )
+    , ( SpontaneousBleeding, value.spontaneousBleeding )
     ]
         |> List.filter (Tuple.second >> (/=) 0)
         |> (\list ->
