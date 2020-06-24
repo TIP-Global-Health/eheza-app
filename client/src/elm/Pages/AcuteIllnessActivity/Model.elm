@@ -65,7 +65,7 @@ type alias Model =
     , exposureData : ExposureData
     , priorTreatmentData : PriorTreatmentData
     , showAlertsDialog : Bool
-    , showWarningPopup : Maybe AcuteIllnessDiagnosis
+    , warningPopupState : Maybe AcuteIllnessDiagnosis
     }
 
 
@@ -77,7 +77,7 @@ emptyModel =
     , exposureData = emptyExposureData
     , priorTreatmentData = emptyPriorTreatmentData
     , showAlertsDialog = False
-    , showWarningPopup = Nothing
+    , warningPopupState = Nothing
     }
 
 

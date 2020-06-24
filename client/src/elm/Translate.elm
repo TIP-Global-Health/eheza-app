@@ -175,6 +175,7 @@ type TranslationId
     | AcuteFindingsGeneralSign AcuteFindingsGeneralSign
     | AcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
     | AcuteIllnessDiagnosis AcuteIllnessDiagnosis
+    | AcuteIllnessDiagnosisWarning AcuteIllnessDiagnosis
     | Activities
     | ActivitiesCompleted Int
     | ActivitiesHelp Activity
@@ -847,6 +848,23 @@ translationSet trans =
 
                 DiagnosisMalariaUncomplicated ->
                     { english = "Uncomplicated Malaria"
+                    , kinyarwanda = Nothing
+                    }
+
+        AcuteIllnessDiagnosisWarning diagnosis ->
+            case diagnosis of
+                DiagnosisCovid19 ->
+                    { english = "Suspected COVID-19 case"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalariaComplicated ->
+                    { english = "Suspected Malaria with complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalariaUncomplicated ->
+                    { english = "Suspected Malaria without complications"
                     , kinyarwanda = Nothing
                     }
 

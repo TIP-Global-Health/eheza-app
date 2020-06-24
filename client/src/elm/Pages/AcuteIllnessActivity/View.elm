@@ -61,7 +61,7 @@ view language currentDate id activity db model =
         , viewWebData language (viewContent language currentDate id activity model) identity data
         , viewModal <|
             warningPopup language
-                model.showWarningPopup
+                model.warningPopupState
                 SetWarningPopupState
         ]
 
@@ -104,24 +104,25 @@ warningPopup language maybeDiagnosis setStateMsg =
                     content =
                         case diagnosis of
                             DiagnosisCovid19 ->
-                                [ div [ class "popup-title" ] [ text <| translate language Translate.SuspectedCovid19CaseAlert ]
-                                , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
+                                [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
                                 , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
                                 ]
 
                             DiagnosisMalariaComplicated ->
-                                [ div [ class "popup-title" ] [ text <| translate language Translate.SuspectedCovid19CaseAlert ] ]
+                                []
 
                             DiagnosisMalariaUncomplicated ->
-                                [ div [ class "popup-title" ] [ text <| translate language Translate.SuspectedCovid19CaseAlert ] ]
+                                []
                 in
                 div [ class "ui active modal warning-popup" ]
-                    [ div [ class "popup-heading-wrapper" ]
-                        [ img [ src "assets/images/exclamation-red.png" ] []
-                        , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
+                    [ div [ class "content" ] <|
+                        [ div [ class "popup-heading-wrapper" ]
+                            [ img [ src "assets/images/exclamation-red.png" ] []
+                            , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
+                            ]
+                        , div [ class "popup-title" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis ]
                         ]
-                        :: content
-                        |> div [ class "content" ]
+                            ++ content
                     , div
                         [ class "actions" ]
                         [ button
