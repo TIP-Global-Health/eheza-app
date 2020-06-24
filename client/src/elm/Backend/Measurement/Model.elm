@@ -542,6 +542,17 @@ type alias SymptomsGeneralValue =
     , nightSweatsPeriod : Int
     , bodyAchesPeriod : Int
     , headachePeriod : Int
+    , lethargy : Int
+    , poorSuck : Int
+    , unableToDrink : Int
+    , unableToEat : Int
+    , increasedThirst : Int
+    , dryMouth : Int
+    , severeWeakness : Int
+    , yellowEyes : Int
+    , cokeColoredUrine : Int
+    , convulsions : Int
+    , spontaneousBleeding : Int
     }
 
 
