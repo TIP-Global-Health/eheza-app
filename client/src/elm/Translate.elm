@@ -45,6 +45,7 @@ import Http
 import Measurement.Model exposing (FloatInputConstraints)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..), LaboratoryTask(..), PhysicalExamTask(..), PriorTreatmentTask(..), SymptomsTask(..))
+import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
@@ -173,6 +174,7 @@ type TranslationId
     | AccessDenied
     | AcuteFindingsGeneralSign AcuteFindingsGeneralSign
     | AcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
+    | AcuteIllnessDiagnosis AcuteIllnessDiagnosis
     | Activities
     | ActivitiesCompleted Int
     | ActivitiesHelp Activity
@@ -302,6 +304,7 @@ type TranslationId
     | DeviceNotAuthorized
     | DeviceStatus
     | Diabetes
+    | Diagnosis
     | DistributionNotice DistributionNotice
     | District
     | DOB
@@ -827,6 +830,23 @@ translationSet trans =
 
                 NoAcuteFindingsRespiratorySigns ->
                     { english = "None of the above"
+                    , kinyarwanda = Nothing
+                    }
+
+        AcuteIllnessDiagnosis diagnosis ->
+            case diagnosis of
+                DiagnosisCovid19 ->
+                    { english = "COVID-19"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalariaComplicated ->
+                    { english = "Complicated Malaria"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalariaUncomplicated ->
+                    { english = "Uncomplicated Malaria"
                     , kinyarwanda = Nothing
                     }
 
@@ -1865,6 +1885,11 @@ translationSet trans =
         Diabetes ->
             { english = "Diabetes"
             , kinyarwanda = Just "Diyabete (Indwara y'igisukari)"
+            }
+
+        Diagnosis ->
+            { english = "Diagnosis"
+            , kinyarwanda = Nothing
             }
 
         DistributionNotice notice ->

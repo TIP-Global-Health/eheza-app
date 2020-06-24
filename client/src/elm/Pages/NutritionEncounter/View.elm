@@ -67,7 +67,7 @@ viewHeader language data =
 
 viewContent : Language -> NominalDate -> NutritionEncounterId -> Bool -> Model -> AssembledData -> Html Msg
 viewContent language currentDate id isChw model data =
-    ((viewPersonDetails language currentDate data.person |> div [ class "item" ])
+    ((viewPersonDetails language currentDate data.person Nothing |> div [ class "item" ])
         :: viewMainPageContent language currentDate id isChw data model
     )
         |> div [ class "ui unstackable items" ]

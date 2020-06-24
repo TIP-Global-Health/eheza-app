@@ -143,12 +143,12 @@ viewMotherDetails language currentDate data alertsDialogData =
                 |> Maybe.withDefault []
     in
     div [ class "item" ] <|
-        viewPersonDetails language currentDate mother
+        viewPersonDetails language currentDate mother Nothing
             ++ alertsDialogSection
 
 
-viewPersonDetails : Language -> NominalDate -> Person -> List (Html msg)
-viewPersonDetails language currentDate person =
+viewPersonDetails : Language -> NominalDate -> Person -> Maybe TranslationId -> List (Html msg)
+viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
     let
         isAdult =
             isPersonAnAdult currentDate person
@@ -170,7 +170,7 @@ viewPersonDetails language currentDate person =
     in
     [ div [ class "ui image" ]
         [ thumbnailImage thumbnailClass person.avatarUrl person.name thumbnailDimensions.height thumbnailDimensions.width ]
-    , div [ class "content" ]
+    , div [ class "content person-details" ]
         [ h2 [ class "ui header" ]
             [ text person.name ]
         , maybeAge
@@ -179,6 +179,15 @@ viewPersonDetails language currentDate person =
                     p [ class "age-wrapper" ]
                         [ span [ class "label" ] [ text <| translate language Translate.AgeWord ++ ":" ]
                         , span [] [ text age ]
+                        ]
+                )
+            |> Maybe.withDefault emptyNode
+        , maybeDiagnosisTranslationId
+            |> Maybe.map
+                (\disagnosis ->
+                    p [ class "disagnosis-wrapper" ]
+                        [ span [ class "label upper" ] [ text <| translate language Translate.Diagnosis ++ ":" ]
+                        , span [] [ text <| translate language disagnosis ]
                         ]
                 )
             |> Maybe.withDefault emptyNode

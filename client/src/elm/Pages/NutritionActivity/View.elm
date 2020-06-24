@@ -66,7 +66,7 @@ viewHeader language id activity =
 
 viewContent : Language -> NominalDate -> ZScore.Model.Model -> NutritionEncounterId -> NutritionActivity -> Bool -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
 viewContent language currentDate zscores id activity isChw db model assembled =
-    ((viewPersonDetails language currentDate assembled.person |> div [ class "item" ])
+    ((viewPersonDetails language currentDate assembled.person Nothing |> div [ class "item" ])
         :: viewActivity language currentDate zscores id activity isChw assembled db model
     )
         |> div [ class "ui unstackable items" ]

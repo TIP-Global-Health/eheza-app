@@ -446,6 +446,10 @@ div.page-pregnancy-outcome {
       .label {
         font-weight: bold;
         padding-right: 10px;
+
+        &.upper {
+          text-transform: uppercase;
+        }
       }
     }
 
@@ -576,6 +580,18 @@ div.page-encounter.prenatal {
 
 // Acute Illness Encounter page
 div.page-encounter.acute-illness {
+
+    .item .content.person-details {
+      padding-top: 0 !important;
+
+      h2 {
+        margin-bottom: 5px;
+      }
+
+      .age-wrapper {
+        margin-bottom: 5px;
+      }
+    }
 
     .ui.full.segment {
 
@@ -1609,7 +1625,9 @@ div.page-participants {
   }
 }
 
-div.page-participant {
+div.page-participant.acute-illness,
+div.page-participant.nutrition,
+div.page-participant.prenatal {
     padding-bottom: 35px;
 
     p {

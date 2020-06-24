@@ -19,7 +19,7 @@ import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
-import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
+import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AssembledData)
 import Pages.AcuteIllnessEncounter.Utils exposing (..)
 import Pages.AcuteIllnessEncounter.View exposing (viewPersonDetailsWithAlert)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -86,11 +86,11 @@ viewHeader language id activity =
 viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Model -> AssembledData -> Html Msg
 viewContent language currentDate id activity model data =
     let
-        isSuspected =
-            suspectedCovid19Case data.measurements
+        diagnosis =
+            resolveAcuteIllnessDiagnosis data.measurements
     in
-    (viewPersonDetailsWithAlert language currentDate data.person isSuspected model.showAlertsDialog SetAlertsDialogState
-        :: viewActivity language currentDate id activity isSuspected data model
+    (viewPersonDetailsWithAlert language currentDate data.person diagnosis model.showAlertsDialog SetAlertsDialogState
+        :: viewActivity language currentDate id activity diagnosis data model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -123,8 +123,8 @@ covid19Popup language isOpen setStateMsg =
         Nothing
 
 
-viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Bool -> AssembledData -> Model -> List (Html Msg)
-viewActivity language currentDate id activity isSuspected data model =
+viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> AssembledData -> Model -> List (Html Msg)
+viewActivity language currentDate id activity diagnosis data model =
     let
         personId =
             data.participant.person
@@ -146,7 +146,7 @@ viewActivity language currentDate id activity isSuspected data model =
             viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) model.laboratoryData
 
         AcuteIllnessExposure ->
-            viewAcuteIllnessExposure language currentDate id ( personId, measurements ) isSuspected model.exposureData
+            viewAcuteIllnessExposure language currentDate id ( personId, measurements ) (diagnosis == Just DiagnosisCovid19) model.exposureData
 
 
 viewAcuteIllnessSymptomsContent : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> SymptomsData -> List (Html Msg)
@@ -664,13 +664,13 @@ viewMalariaTestingForm language currentDate measurements form =
 
 
 viewAcuteIllnessExposure : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> Bool -> ExposureData -> List (Html Msg)
-viewAcuteIllnessExposure language currentDate id ( personId, measurements ) isSuspected data =
+viewAcuteIllnessExposure language currentDate id ( personId, measurements ) suspectedCovid19 data =
     let
         activity =
             AcuteIllnessExposure
 
         tasks =
-            resolveExposureTasks measurements isSuspected
+            resolveExposureTasks measurements suspectedCovid19
 
         viewTask task =
             let

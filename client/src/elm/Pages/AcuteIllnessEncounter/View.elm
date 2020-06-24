@@ -1,7 +1,7 @@
 module Pages.AcuteIllnessEncounter.View exposing (view, viewPersonDetailsWithAlert)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
-import AcuteIllnessActivity.Utils exposing (activityCompleted, expectActivity, getActivityIcon, getAllActivities)
+import AcuteIllnessActivity.Utils exposing (getActivityIcon, getAllActivities)
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.Entities exposing (..)
@@ -82,20 +82,20 @@ viewHeader language data =
 viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> Model -> AssembledData -> Html Msg
 viewContent language currentDate id model data =
     let
-        isSuspected =
-            suspectedCovid19Case data.measurements
+        diagnosis =
+            resolveAcuteIllnessDiagnosis data.measurements
     in
-    (viewPersonDetailsWithAlert language currentDate data.person isSuspected model.showAlertsDialog SetAlertsDialogState
-        :: viewMainPageContent language currentDate id data isSuspected model
+    (viewPersonDetailsWithAlert language currentDate data.person diagnosis model.showAlertsDialog SetAlertsDialogState
+        :: viewMainPageContent language currentDate id data diagnosis model
     )
         |> div [ class "ui unstackable items" ]
 
 
-viewPersonDetailsWithAlert : Language -> NominalDate -> Person -> Bool -> Bool -> (Bool -> msg) -> Html msg
-viewPersonDetailsWithAlert language currentDate person isSuspected isDialogOpen setAlertsDialogStateMsg =
+viewPersonDetailsWithAlert : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> Bool -> (Bool -> msg) -> Html msg
+viewPersonDetailsWithAlert language currentDate person diagnosis isDialogOpen setAlertsDialogStateMsg =
     let
         alertSign =
-            if isSuspected then
+            if diagnosis == Just DiagnosisCovid19 then
                 div
                     [ class "alerts"
                     , onClick <| setAlertsDialogStateMsg True
@@ -104,9 +104,12 @@ viewPersonDetailsWithAlert language currentDate person isSuspected isDialogOpen 
 
             else
                 emptyNode
+
+        diagnosisTranslationId =
+            Maybe.map Translate.AcuteIllnessDiagnosis diagnosis
     in
     div [ class "item" ] <|
-        viewPersonDetails language currentDate person
+        viewPersonDetails language currentDate person diagnosisTranslationId
             ++ [ alertSign
                , viewModal <|
                     alertsDialog language
@@ -152,16 +155,19 @@ alertsDialog language isOpen setAlertsDialogStateMsg =
         Nothing
 
 
-viewMainPageContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AssembledData -> Bool -> Model -> List (Html Msg)
-viewMainPageContent language currentDate id data isSuspected model =
+viewMainPageContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AssembledData -> Maybe AcuteIllnessDiagnosis -> Model -> List (Html Msg)
+viewMainPageContent language currentDate id data diagnosis model =
     let
         measurements =
             data.measurements
 
+        suspectedCovid19 =
+            diagnosis == Just DiagnosisCovid19
+
         ( completedActivities, pendingActivities ) =
             getAllActivities
-                |> List.filter (expectActivity currentDate measurements isSuspected)
-                |> List.partition (activityCompleted measurements isSuspected)
+                |> List.filter (expectActivity currentDate measurements suspectedCovid19)
+                |> List.partition (activityCompleted measurements suspectedCovid19)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -213,7 +219,7 @@ viewMainPageContent language currentDate id data isSuspected model =
                 ]
 
         allowEndEcounter =
-            if isSuspected then
+            if diagnosis == Just DiagnosisCovid19 then
                 isJust measurements.isolation && isJust measurements.hcContact
 
             else
