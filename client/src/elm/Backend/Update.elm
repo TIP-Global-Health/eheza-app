@@ -2056,12 +2056,6 @@ generateSuspectedDiagnosisMsgs before after id =
                 |> RemoteData.toMaybe
                 |> Maybe.andThen resolveAcuteIllnessDiagnosis
 
-        _ =
-            Debug.log "turnOnNewDiagnosisMsgs" turnOnNewDiagnosisMsgs
-
-        _ =
-            Debug.log "turnOffPreviousDiagnosisMsgs" turnOffPreviousDiagnosisMsgs
-
         turnOffPreviousDiagnosisMsgs =
             diagnosisBeforeChange
                 |> Maybe.map
@@ -2113,22 +2107,16 @@ generateSuspectedDiagnosisMsgs before after id =
         malariaComplicatedOnMsgs =
             [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
             , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaComplicated)
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessExposure
+                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
                 |> App.Model.MsgLoggedIn
             ]
 
         malariaUncomplicatedOnMsgs =
             [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
             , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicated)
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessExposure
+                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
                 |> App.Model.MsgLoggedIn
             ]
-
-        _ =
-            Debug.log "diagnosisBeforeChange" diagnosisBeforeChange
-
-        _ =
-            Debug.log "diagnosisAfterChange" diagnosisAfterChange
     in
     if diagnosisBeforeChange /= diagnosisAfterChange then
         turnOffPreviousDiagnosisMsgs ++ turnOnNewDiagnosisMsgs
