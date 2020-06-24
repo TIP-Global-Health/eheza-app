@@ -3,13 +3,14 @@ module Pages.AcuteIllnessActivity.Model exposing (AcuteFindingsForm, ExposureDat
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Pages.Page exposing (Page)
 
 
 type Msg
     = SetActivePage Page
     | SetAlertsDialogState Bool
-    | SetCovid19PopupState Bool
+    | SetWarningPopupState (Maybe AcuteIllnessDiagnosis)
       -- SYMPTOMS Msgs
     | SetActiveSymptomsTask SymptomsTask
     | ToggleSymptomsGeneralSign SymptomsGeneralSign
@@ -64,7 +65,7 @@ type alias Model =
     , exposureData : ExposureData
     , priorTreatmentData : PriorTreatmentData
     , showAlertsDialog : Bool
-    , showCovid19Popup : Bool
+    , showWarningPopup : Maybe AcuteIllnessDiagnosis
     }
 
 
@@ -76,7 +77,7 @@ emptyModel =
     , exposureData = emptyExposureData
     , priorTreatmentData = emptyPriorTreatmentData
     , showAlertsDialog = False
-    , showCovid19Popup = False
+    , showWarningPopup = Nothing
     }
 
 

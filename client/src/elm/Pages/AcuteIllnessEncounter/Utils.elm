@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, covid19Diagnosed, expectActivity, exposureTasksCompleted, generateAssembledData, generatePreviousMeasurements, mandatoryActivitiesCompleted, resolveAcuteIllnessDiagnosis, resolveExposureTasks, suspectedCovid19Case)
+module Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, covid19Diagnosed, expectActivity, exposureTasksCompleted, generateAssembledData, generatePreviousMeasurements, mandatoryActivitiesCompleted, resolveAcuteIllnessDiagnosis, resolveExposureTasks)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -253,11 +253,6 @@ resolveAcuteIllnessDiagnosisByLaboratoryResults measurements fever =
             )
 
 
-suspectedCovid19Case : AcuteIllnessMeasurements -> Bool
-suspectedCovid19Case measurements =
-    resolveAcuteIllnessDiagnosis measurements == Just DiagnosisCovid19
-
-
 covid19Diagnosed : AcuteIllnessMeasurements -> Bool -> Bool
 covid19Diagnosed measurements gotFever =
     let
@@ -398,6 +393,8 @@ malarialDangerSignsPresent measurements =
                     Dict.get symptom dict
                         |> Maybe.map ((<) 0)
                         |> Maybe.withDefault False
+
+                    Debug.log "symptomsGeneral" symptomsGeneral
 
                 lethargy =
                     symptomAppearsAtDict Lethargy symptomsGeneralDict

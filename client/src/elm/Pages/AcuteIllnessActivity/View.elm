@@ -60,9 +60,9 @@ view language currentDate id activity db model =
         [ viewHeader language id activity
         , viewWebData language (viewContent language currentDate id activity model) identity data
         , viewModal <|
-            covid19Popup language
-                model.showCovid19Popup
-                SetCovid19PopupState
+            warningPopup language
+                model.showWarningPopup
+                SetWarningPopupState
         ]
 
 
@@ -95,32 +95,43 @@ viewContent language currentDate id activity model data =
         |> div [ class "ui unstackable items" ]
 
 
-covid19Popup : Language -> Bool -> (Bool -> msg) -> Maybe (Html msg)
-covid19Popup language isOpen setStateMsg =
-    if isOpen then
-        Just <|
-            div [ class "ui active modal warning-popup" ]
-                [ div [ class "content" ]
+warningPopup : Language -> Maybe AcuteIllnessDiagnosis -> (Maybe AcuteIllnessDiagnosis -> msg) -> Maybe (Html msg)
+warningPopup language maybeDiagnosis setStateMsg =
+    maybeDiagnosis
+        |> Maybe.map
+            (\diagnosis ->
+                let
+                    content =
+                        case diagnosis of
+                            DiagnosisCovid19 ->
+                                [ div [ class "popup-title" ] [ text <| translate language Translate.SuspectedCovid19CaseAlert ]
+                                , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
+                                , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
+                                ]
+
+                            DiagnosisMalariaComplicated ->
+                                [ div [ class "popup-title" ] [ text <| translate language Translate.SuspectedCovid19CaseAlert ] ]
+
+                            DiagnosisMalariaUncomplicated ->
+                                [ div [ class "popup-title" ] [ text <| translate language Translate.SuspectedCovid19CaseAlert ] ]
+                in
+                div [ class "ui active modal warning-popup" ]
                     [ div [ class "popup-heading-wrapper" ]
                         [ img [ src "assets/images/exclamation-red.png" ] []
                         , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
                         ]
-                    , div [ class "popup-title" ] [ text <| translate language Translate.SuspectedCovid19CaseAlert ]
-                    , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
-                    , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
-                    ]
-                , div
-                    [ class "actions" ]
-                    [ button
-                        [ class "ui primary fluid button"
-                        , onClick <| setStateMsg False
+                        :: content
+                        |> div [ class "content" ]
+                    , div
+                        [ class "actions" ]
+                        [ button
+                            [ class "ui primary fluid button"
+                            , onClick <| setStateMsg Nothing
+                            ]
+                            [ text <| translate language Translate.Continue ]
                         ]
-                        [ text <| translate language Translate.Continue ]
                     ]
-                ]
-
-    else
-        Nothing
+            )
 
 
 viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> AssembledData -> Model -> List (Html Msg)
