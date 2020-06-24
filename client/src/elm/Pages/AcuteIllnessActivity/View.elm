@@ -631,12 +631,19 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) da
 viewMalariaTestingForm : Language -> NominalDate -> AcuteIllnessMeasurements -> MalariaTestingForm -> Html Msg
 viewMalariaTestingForm language currentDate measurements form =
     let
+        emptyOption =
+            if isNothing form.rapidTestResult then
+                option
+                    [ value ""
+                    , selected (form.rapidTestResult == Nothing)
+                    ]
+                    [ text "" ]
+
+            else
+                emptyNode
+
         resultInput =
-            option
-                [ value ""
-                , selected (form.rapidTestResult == Nothing)
-                ]
-                [ text "" ]
+            emptyOption
                 :: ([ RapidTestNegative, RapidTestPositive, RapidTestIndeterminate ]
                         |> List.map
                             (\result ->
