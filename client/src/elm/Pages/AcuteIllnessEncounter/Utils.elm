@@ -394,8 +394,6 @@ malarialDangerSignsPresent measurements =
                         |> Maybe.map ((<) 0)
                         |> Maybe.withDefault False
 
-                    Debug.log "symptomsGeneral" symptomsGeneral
-
                 lethargy =
                     symptomAppearsAtDict Lethargy symptomsGeneralDict
                         || EverySet.member LethargicOrUnconscious acuteFindingsValue.signsGeneral
