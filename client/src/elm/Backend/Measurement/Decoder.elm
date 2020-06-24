@@ -1053,17 +1053,17 @@ decodeSymptomsGeneral =
         |> required "night_sweats_period" decodeInt
         |> required "body_aches_period" decodeInt
         |> required "headache_period" decodeInt
-        |> required "coke_colored_urine_period" decodeInt
-        |> required "convulsions_period" decodeInt
-        |> required "dry_mouth_period" decodeInt
-        |> required "increased_thirst_period" decodeInt
         |> required "lethargy_period" decodeInt
         |> required "poor_suck_period" decodeInt
-        |> required "severe_weakness_period" decodeInt
-        |> required "spontaneos_bleeding_period" decodeInt
         |> required "unable_to_drink_period" decodeInt
         |> required "unable_to_eat_period" decodeInt
+        |> required "increased_thirst_period" decodeInt
+        |> required "dry_mouth_period" decodeInt
+        |> required "severe_weakness_period" decodeInt
         |> required "yellow_eyes_period" decodeInt
+        |> required "coke_colored_urine_period" decodeInt
+        |> required "convulsions_period" decodeInt
+        |> required "spontaneos_bleeding_period" decodeInt
         |> map symptomsGeneralToDict
         |> decodeAcuteIllnessMeasurement
 
