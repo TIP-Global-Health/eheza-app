@@ -556,7 +556,7 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) da
             AcuteIllnessLaboratory
 
         tasks =
-            [ LaboratoryMalariaTesting, LaboratoryMedicationDistribution, LaboratorySendToHC ]
+            resolveLaboratoryTasks measurements
 
         viewTask task =
             let

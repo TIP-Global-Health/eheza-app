@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, covid19Diagnosed, expectActivity, exposureTasksCompleted, generateAssembledData, generatePreviousMeasurements, mandatoryActivitiesCompleted, resolveAcuteIllnessDiagnosis, resolveExposureTasks)
+module Pages.AcuteIllnessEncounter.Utils exposing (activityCompleted, covid19Diagnosed, expectActivity, exposureTasksCompleted, generateAssembledData, generatePreviousMeasurements, mandatoryActivitiesCompleted, resolveAcuteIllnessDiagnosis, resolveExposureTasks, resolveLaboratoryTasks)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import AssocList as Dict exposing (Dict)
@@ -28,7 +28,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
-import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..))
+import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..), LaboratoryTask(..))
 import Pages.AcuteIllnessEncounter.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 
@@ -137,6 +137,27 @@ resolveExposureTasks measurements isSuspected =
                         False
     in
     [ ExposureTravel, ExposureExposure, ExposureIsolation, ExposureContactHC ]
+        |> List.filter expectTask
+
+
+resolveLaboratoryTasks : AcuteIllnessMeasurements -> List LaboratoryTask
+resolveLaboratoryTasks measurements =
+    let
+        diagnosis =
+            resolveAcuteIllnessDiagnosis measurements
+
+        expectTask task =
+            case task of
+                LaboratoryMalariaTesting ->
+                    True
+
+                LaboratoryMedicationDistribution ->
+                    diagnosis == Just DiagnosisMalariaUncomplicated
+
+                LaboratorySendToHC ->
+                    diagnosis == Just DiagnosisMalariaComplicated
+    in
+    [ LaboratoryMalariaTesting, LaboratoryMedicationDistribution, LaboratorySendToHC ]
         |> List.filter expectTask
 
 

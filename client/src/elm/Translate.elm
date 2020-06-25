@@ -2758,6 +2758,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                LaboratoryMedicationDistribution ->
+                    { english = "Medication Distribution"
+                    , kinyarwanda = Nothing
+                    }
+
+                LaboratorySendToHC ->
+                    { english = "Send to Health Center"
+                    , kinyarwanda = Nothing
+                    }
+
         LastChecked ->
             { english = "Last checked"
             , kinyarwanda = Just "Isuzuma riheruka"
