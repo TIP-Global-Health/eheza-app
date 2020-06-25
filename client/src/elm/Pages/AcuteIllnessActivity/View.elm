@@ -556,7 +556,7 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) da
             AcuteIllnessLaboratory
 
         tasks =
-            [ LaboratoryMalariaTesting ]
+            [ LaboratoryMalariaTesting, LaboratoryMedicationDistribution, LaboratorySendToHC ]
 
         viewTask task =
             let
@@ -565,6 +565,16 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) da
                         LaboratoryMalariaTesting ->
                             ( "laboratory-malaria-testing"
                             , isJust measurements.malariaTesting
+                            )
+
+                        LaboratoryMedicationDistribution ->
+                            ( "laboratory-medication-distribution"
+                            , False
+                            )
+
+                        LaboratorySendToHC ->
+                            ( "laboratory-send-to-hc"
+                            , False
                             )
 
                 isActive =
@@ -606,9 +616,23 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) da
                         |> malariaTestingFormWithDefault data.malariaTestingForm
                         |> viewMalariaTestingForm language currentDate measurements
 
+                LaboratoryMedicationDistribution ->
+                    div [] [ text "LaboratoryMedicationDistribution" ]
+
+                LaboratorySendToHC ->
+                    div [] [ text "LaboratorySendToHC" ]
+
         getNextTask currentTask =
             case currentTask of
                 LaboratoryMalariaTesting ->
+                    []
+
+                -- Todo:
+                LaboratoryMedicationDistribution ->
+                    []
+
+                -- Todo:
+                LaboratorySendToHC ->
                     []
 
         actions =
@@ -616,6 +640,14 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) da
                 saveMsg =
                     case data.activeTask of
                         LaboratoryMalariaTesting ->
+                            SaveMalariaTesting personId measurements.malariaTesting
+
+                        -- Todo:
+                        LaboratoryMedicationDistribution ->
+                            SaveMalariaTesting personId measurements.malariaTesting
+
+                        -- Todo:
+                        LaboratorySendToHC ->
                             SaveMalariaTesting personId measurements.malariaTesting
             in
             div [ class "actions malaria-testing" ]

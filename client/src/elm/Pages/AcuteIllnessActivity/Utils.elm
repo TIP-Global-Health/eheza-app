@@ -188,6 +188,12 @@ laboratoryTasksCompletedFromTotal measurements data task =
             , 1
             )
 
+        LaboratoryMedicationDistribution ->
+            ( 0, 0 )
+
+        LaboratorySendToHC ->
+            ( 0, 0 )
+
 
 exposureTasksCompletedFromTotal : AcuteIllnessMeasurements -> ExposureData -> ExposureTask -> ( Int, Int )
 exposureTasksCompletedFromTotal measurements data task =

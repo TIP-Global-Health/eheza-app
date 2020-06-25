@@ -1838,6 +1838,35 @@ input::placeholder {
   }
 }
 
+.icon-laboratory-medication-distribution {
+  .active &:after {
+    background-image: url(#{$img-path}icon-medication-distribution-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-medication-distribution-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-medication-distribution-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+.icon-laboratory-send-to-hc {
+  .active &:after {
+    background-image: url(#{$img-path}icon-health-center-white.svg), url(#{$img-path}icon-selected-circle.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-health-center-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-health-center-gray.svg), url(#{$img-path}icon-uncompleted-circle.svg);
+  }
+}
+
+
 // Lists
 
 .ui.list {

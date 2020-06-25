@@ -179,6 +179,8 @@ emptyLaboratoryData =
 
 type LaboratoryTask
     = LaboratoryMalariaTesting
+    | LaboratoryMedicationDistribution
+    | LaboratorySendToHC
 
 
 type alias MalariaTestingForm =
