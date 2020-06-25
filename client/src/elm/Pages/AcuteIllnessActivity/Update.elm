@@ -582,6 +582,40 @@ update currentDate id db msg model =
             , []
             )
 
+        SetReferToHealthCenter value ->
+            let
+                form =
+                    model.laboratoryData.sendToHCForm
+
+                updatedForm =
+                    { form | referToHealthCenter = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHandReferralForm value ->
+            let
+                form =
+                    model.laboratoryData.sendToHCForm
+
+                updatedForm =
+                    { form | handReferralForm = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveMalariaTesting personId saved ->
             let
                 measurementId =

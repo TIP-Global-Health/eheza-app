@@ -117,6 +117,8 @@ decodeAcuteIllnessMeasurements =
         |> optional "isolation" (decodeHead decodeIsolation) Nothing
         |> optional "hc_contact" (decodeHead decodeHCContact) Nothing
         |> optional "treatment_history" (decodeHead decodeTreatmentReview) Nothing
+        -- Todo "send_to_hc"
+        |> hardcoded Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))

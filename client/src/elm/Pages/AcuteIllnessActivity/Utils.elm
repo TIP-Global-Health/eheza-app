@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Utils exposing (acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, exposureFormWithDefault, exposureTasksCompletedFromTotal, fromAcuteFindingsValue, fromExposureValue, fromHCContactValue, fromIsolationValue, fromListWithDefaultValue, fromMalariaTestingValue, fromTravelHistoryValue, fromTreatmentReviewValue, fromVitalsValue, hcContactFormWithDefault, hcContactValuePostProcess, ifEmpty, isolationFormWithDefault, isolationValuePostProcess, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, naListTaskCompleted, naTaskCompleted, physicalExamTasksCompletedFromTotal, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toAcuteFindingsValue, toAcuteFindingsValueWithDefault, toExposureValue, toExposureValueWithDefault, toHCContactValue, toHCContactValueWithDefault, toIsolationValue, toIsolationValueWithDefault, toMalariaTestingValue, toMalariaTestingValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValue, toTravelHistoryValueWithDefault, toTreatmentReviewValue, toTreatmentReviewValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vitalsFormWithDefault, withDefaultValue)
+module Pages.AcuteIllnessActivity.Utils exposing (acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, exposureFormWithDefault, exposureTasksCompletedFromTotal, fromAcuteFindingsValue, fromExposureValue, fromHCContactValue, fromIsolationValue, fromListWithDefaultValue, fromMalariaTestingValue, fromSendToHCValue, fromTravelHistoryValue, fromTreatmentReviewValue, fromVitalsValue, hcContactFormWithDefault, hcContactValuePostProcess, ifEmpty, isolationFormWithDefault, isolationValuePostProcess, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, naListTaskCompleted, naTaskCompleted, physicalExamTasksCompletedFromTotal, sendToHCFormWithDefault, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toAcuteFindingsValue, toAcuteFindingsValueWithDefault, toExposureValue, toExposureValueWithDefault, toHCContactValue, toHCContactValueWithDefault, toIsolationValue, toIsolationValueWithDefault, toMalariaTestingValue, toMalariaTestingValueWithDefault, toSendToHCValue, toSendToHCValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValue, toTravelHistoryValueWithDefault, toTreatmentReviewValue, toTreatmentReviewValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vitalsFormWithDefault, withDefaultValue)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model
@@ -17,6 +17,7 @@ import Backend.Measurement.Model
         , MalariaRapidTestResult(..)
         , ReasonForNotIsolating(..)
         , ResponsePeriod(..)
+        , SendToHCSign(..)
         , SymptomsGIDerivedSign(..)
         , SymptomsGISign(..)
         , SymptomsGIValue
@@ -797,6 +798,40 @@ toTreatmentReviewValue form =
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoTreatmentReviewSigns)
+
+
+fromSendToHCValue : Maybe (EverySet SendToHCSign) -> SendToHCForm
+fromSendToHCValue saved =
+    { handReferralForm = Maybe.map (EverySet.member HandReferrerForm) saved
+    , referToHealthCenter = Maybe.map (EverySet.member ReferToHealthCenter) saved
+    }
+
+
+sendToHCFormWithDefault : SendToHCForm -> Maybe (EverySet SendToHCSign) -> SendToHCForm
+sendToHCFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value |> Just)
+                , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value |> Just)
+                }
+            )
+
+
+toSendToHCValueWithDefault : Maybe (EverySet SendToHCSign) -> SendToHCForm -> Maybe (EverySet SendToHCSign)
+toSendToHCValueWithDefault saved form =
+    sendToHCFormWithDefault form saved
+        |> toSendToHCValue
+
+
+toSendToHCValue : SendToHCForm -> Maybe (EverySet SendToHCSign)
+toSendToHCValue form =
+    [ Maybe.map (ifTrue HandReferrerForm) form.handReferralForm
+    , Maybe.map (ifTrue ReferToHealthCenter) form.referToHealthCenter
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoSendToHCSigns)
 
 
 

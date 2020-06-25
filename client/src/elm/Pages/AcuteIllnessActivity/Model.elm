@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Model exposing (AcuteFindingsForm, ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), PriorTreatmentData, PriorTreatmentTask(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, TreatmentReviewForm, VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptyPriorTreatmentData, emptySymptomsData, emptyTreatmentReviewForm)
+module Pages.AcuteIllnessActivity.Model exposing (AcuteFindingsForm, ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), PriorTreatmentData, PriorTreatmentTask(..), SendToHCForm, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, TreatmentReviewForm, VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptyPriorTreatmentData, emptySymptomsData, emptyTreatmentReviewForm)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
@@ -34,6 +34,8 @@ type Msg
       -- LABORATORY Msgs
     | SetActiveLaboratoryTask LaboratoryTask
     | SetRapidTestResult String
+    | SetReferToHealthCenter Bool
+    | SetHandReferralForm Bool
     | SaveMalariaTesting PersonId (Maybe ( MalariaTestingId, MalariaTesting ))
       -- EXPOSURE Msgs
     | SetActiveExposureTask ExposureTask
@@ -166,6 +168,7 @@ type alias AcuteFindingsForm =
 
 type alias LaboratoryData =
     { malariaTestingForm : MalariaTestingForm
+    , sendToHCForm : SendToHCForm
     , activeTask : LaboratoryTask
     }
 
@@ -173,6 +176,7 @@ type alias LaboratoryData =
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
     { malariaTestingForm = MalariaTestingForm Nothing
+    , sendToHCForm = SendToHCForm Nothing Nothing
     , activeTask = LaboratoryMalariaTesting
     }
 
@@ -185,6 +189,12 @@ type LaboratoryTask
 
 type alias MalariaTestingForm =
     { rapidTestResult : Maybe MalariaRapidTestResult
+    }
+
+
+type alias SendToHCForm =
+    { handReferralForm : Maybe Bool
+    , referToHealthCenter : Maybe Bool
     }
 
 

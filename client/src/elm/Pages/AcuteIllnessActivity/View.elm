@@ -620,7 +620,10 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) da
                     div [] [ text "LaboratoryMedicationDistribution" ]
 
                 LaboratorySendToHC ->
-                    div [] [ text "LaboratorySendToHC" ]
+                    measurements.sendToHC
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> sendToHCFormWithDefault data.sendToHCForm
+                        |> viewSendToHCForm language currentDate measurements
 
         getNextTask currentTask =
             case currentTask of
@@ -711,6 +714,32 @@ viewMalariaTestingForm language currentDate measurements form =
                 ]
             ]
         , resultInput
+        ]
+
+
+viewSendToHCForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SendToHCForm -> Html Msg
+viewSendToHCForm language currentDate measurements form =
+    div [ class "ui form send-to-hc" ]
+        [ div [ class "ui grid" ]
+            [ div [ class "sixteen wide column" ]
+                [ viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion ]
+            ]
+        , viewBoolInput
+            language
+            form.referToHealthCenter
+            SetReferToHealthCenter
+            "refer-to-hc"
+            Nothing
+        , div [ class "ui grid" ]
+            [ div [ class "sixteen wide column" ]
+                [ viewQuestionLabel language Translate.HandedReferralFormQuestion ]
+            ]
+        , viewBoolInput
+            language
+            form.handReferralForm
+            SetHandReferralForm
+            "hand-referral-form"
+            Nothing
         ]
 
 

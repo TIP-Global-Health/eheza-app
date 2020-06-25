@@ -362,6 +362,7 @@ type TranslationId
     | GroupAssessment
     | Gravida
     | GroupEncounter
+    | HandedReferralFormQuestion
     | Hands
     | HandsCPESign HandsCPESign
     | HCRecomendation HCRecomendation
@@ -562,6 +563,7 @@ type TranslationId
     | ReceivedMosquitoNet
     | RecordPregnancyOutcome
     | RecurringHighSeverityAlert RecurringHighSeverityAlert
+    | ReferredPatientToHealthCenterQuestion
     | Register
     | RegisterHelper
     | RegisterNewParticipant
@@ -2353,6 +2355,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        HandedReferralFormQuestion ->
+            { english = "Did you hand the refrral form to the patient"
+            , kinyarwanda = Nothing
+            }
+
         Hands ->
             { english = "Hands"
             , kinyarwanda = Just "Ibiganza"
@@ -3960,6 +3967,11 @@ translationSet trans =
                     { english = "Blood Pressure"
                     , kinyarwanda = Just "Umuvuduko w'amaraso"
                     }
+
+        ReferredPatientToHealthCenterQuestion ->
+            { english = "Have you referred the patient to the health center"
+            , kinyarwanda = Nothing
+            }
 
         Register ->
             { english = "Register"
