@@ -204,12 +204,8 @@ mandatoryActivitiesCompleted measurements =
 
 resolveAcuteIllnessDiagnosis : AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
 resolveAcuteIllnessDiagnosis measurements =
-    let
-        fever =
-            feverRecorded measurements
-    in
     -- First we check for Covid19.
-    if covid19Diagnosed measurements fever then
+    if covid19Diagnosed measurements then
         Just DiagnosisCovid19
         -- Check that we have enough data to make a decision on diagnosis.
 
@@ -217,44 +213,32 @@ resolveAcuteIllnessDiagnosis measurements =
         Nothing
 
     else
-        resolveAcuteIllnessDiagnosisByLaboratoryResults measurements fever
+        resolveAcuteIllnessDiagnosisByLaboratoryResults measurements
 
 
-resolveAcuteIllnessDiagnosisByLaboratoryResults : AcuteIllnessMeasurements -> Bool -> Maybe AcuteIllnessDiagnosis
-resolveAcuteIllnessDiagnosisByLaboratoryResults measurements fever =
-    measurements.malariaTesting
+resolveAcuteIllnessDiagnosisByLaboratoryResults : AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+resolveAcuteIllnessDiagnosisByLaboratoryResults measurements =
+    malariaRapidTestResult measurements
         |> Maybe.andThen
-            (\measurement ->
-                let
-                    testResult =
-                        Tuple.second measurement
-                            |> .value
-                in
+            (\testResult ->
                 case testResult of
                     RapidTestNegative ->
                         Nothing
 
                     RapidTestPositive ->
-                        let
-                            malariaDangerSigns =
-                                malarialDangerSignsPresent measurements
-                        in
-                        if fever && not malariaDangerSigns then
-                            Just DiagnosisMalariaUncomplicated
-
-                        else if fever && malariaDangerSigns then
+                        if malarialDangerSignsPresent measurements then
                             Just DiagnosisMalariaComplicated
 
                         else
-                            Nothing
+                            Just DiagnosisMalariaUncomplicated
 
                     RapidTestIndeterminate ->
                         Nothing
             )
 
 
-covid19Diagnosed : AcuteIllnessMeasurements -> Bool -> Bool
-covid19Diagnosed measurements gotFever =
+covid19Diagnosed : AcuteIllnessMeasurements -> Bool
+covid19Diagnosed measurements =
     let
         contactedPeopleWithSymptoms =
             measurements.exposure
@@ -322,54 +306,64 @@ covid19Diagnosed measurements gotFever =
             calculateSigns measurements.travelHistory NoTravelHistorySigns
                 + calculateSigns measurements.exposure NoExposureSigns
 
-        fever =
-            measurements.vitals
-                |> Maybe.map
-                    (\measurement ->
-                        let
-                            bodyTemperature =
-                                Tuple.second measurement |> .value |> .bodyTemperature
-                        in
-                        bodyTemperature >= 37.5
-                    )
-                |> Maybe.withDefault False
+        feverSymptoms =
+            feverAtSymptoms measurements
+
+        feverToday =
+            feverAtPhysicalExam measurements
+
+        rdtResult =
+            malariaRapidTestResult measurements
+
+        gotFever =
+            feverSymptoms
+                || (feverToday && rdtResult == Just RapidTestNegative)
     in
     contactedPeopleWithSymptoms || (totalSigns > 0 && (gotFever || totalSymptoms > 1))
 
 
 feverRecorded : AcuteIllnessMeasurements -> Bool
 feverRecorded measurements =
-    let
-        feverToday =
-            measurements.vitals
-                |> Maybe.map
-                    (\measurement ->
-                        let
-                            bodyTemperature =
-                                Tuple.second measurement
-                                    |> .value
-                                    |> .bodyTemperature
-                        in
-                        bodyTemperature > 37.5
-                    )
-                |> Maybe.withDefault False
+    feverAtSymptoms measurements || feverAtPhysicalExam measurements
 
-        symptomaticFever =
-            measurements.symptomsGeneral
-                |> Maybe.map
-                    (\measurement ->
-                        let
-                            feverPeriod =
-                                Tuple.second measurement
-                                    |> .value
-                                    |> Dict.get SymptomGeneralFever
-                                    |> Maybe.withDefault 0
-                        in
-                        feverPeriod > 0
-                    )
-                |> Maybe.withDefault False
-    in
-    feverToday || symptomaticFever
+
+feverAtSymptoms : AcuteIllnessMeasurements -> Bool
+feverAtSymptoms measurements =
+    measurements.symptomsGeneral
+        |> Maybe.map
+            (\measurement ->
+                let
+                    feverPeriod =
+                        Tuple.second measurement
+                            |> .value
+                            |> Dict.get SymptomGeneralFever
+                            |> Maybe.withDefault 0
+                in
+                feverPeriod > 0
+            )
+        |> Maybe.withDefault False
+
+
+feverAtPhysicalExam : AcuteIllnessMeasurements -> Bool
+feverAtPhysicalExam measurements =
+    measurements.vitals
+        |> Maybe.map
+            (\measurement ->
+                let
+                    bodyTemperature =
+                        Tuple.second measurement
+                            |> .value
+                            |> .bodyTemperature
+                in
+                bodyTemperature >= 37.5
+            )
+        |> Maybe.withDefault False
+
+
+malariaRapidTestResult : AcuteIllnessMeasurements -> Maybe MalariaRapidTestResult
+malariaRapidTestResult measurements =
+    measurements.malariaTesting
+        |> Maybe.map (Tuple.second >> .value)
 
 
 malarialDangerSignsPresent : AcuteIllnessMeasurements -> Bool
