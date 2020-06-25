@@ -561,6 +561,34 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_prescribed_medication'.
+  $field_bases['field_prescribed_medication'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_prescribed_medication',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'amoxicillin' => 'Amoxicillin',
+        'coartem' => 'Coartem',
+        'ors' => 'ORS',
+        'zinc' => 'Zinc',
+        'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_reason_for_not_isolating'.
   $field_bases['field_reason_for_not_isolating'] = array(
     'active' => 1,
@@ -582,6 +610,32 @@ function hedley_acute_illness_field_default_field_bases() {
         'can-not-separate' => 'Can not separate from family',
         'other' => 'Other',
         'n-a' => 'Not applicable',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_send_to_hc'.
+  $field_bases['field_send_to_hc'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_send_to_hc',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'refer-to-hc' => 'Refer to HC',
+        'referral-form' => 'Referral form',
+        'none' => 'None of these',
       ),
       'allowed_values_function' => '',
     ),
