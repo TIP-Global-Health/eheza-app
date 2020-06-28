@@ -112,6 +112,7 @@ type alias Model =
     , errors : List Error
 
     -- The name of device nurse is working with.
+    -- @todo: Keep this, or the one implemented in Device.Model?
     , deviceName : Maybe String
     }
 
