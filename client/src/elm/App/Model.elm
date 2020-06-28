@@ -110,6 +110,7 @@ type alias Model =
 
     -- List of errors we'll send to console.log
     , errors : List Error
+
     -- The name of device nurse is working with.
     , deviceName : Maybe String
     }
