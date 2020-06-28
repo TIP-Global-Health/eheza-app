@@ -536,14 +536,19 @@ function hedley_stats_get_session_attendance_stats_by_health_center($health_cent
         }
 
         $period = hedley_stats_get_range_for_period($period_name);
-        // Check if the person (patient) has any measurements.
-        $measurements = hedley_activity_get_measurements_by_period($child_id, $measurements_types, $period, 1);
-        if (empty($measurements)) {
-          // This person missed the session because they don't have any
-          // measurements found for that session on this date so we add it to
-          // the list of dates to be able to filter it in the frontend.
-          $expected_person['expected_date'] = hedley_stats_convert_timestamp_to_nominal($session_start_date);
-          $missed_session[] = $expected_person;
+
+        // Check if patient has missed the session. This can happen
+        // only if session has started before patient has graduated the program.
+        if ($session_start_date < $pmtct_graduate_date) {
+          // Check if the person (patient) has any measurements.
+          $measurements = hedley_activity_get_measurements_by_period($child_id, $measurements_types, $period, 1);
+          if (empty($measurements)) {
+            // This person missed the session because they don't have any
+            // measurements found for that session on this date so we add it to
+            // the list of dates, to be able to filter it in the frontend.
+            $expected_person['expected_date'] = hedley_stats_convert_timestamp_to_nominal($session_start_date);
+            $missed_session[] = $expected_person;
+          }
         }
 
         if ($pmtct_graduate_date >= $period['start'] && $pmtct_graduate_date <= $period['end']) {
