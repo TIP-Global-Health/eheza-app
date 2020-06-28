@@ -8,6 +8,7 @@ import Backend.Measurement.Utils exposing (currentValue, currentValueWithId, map
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (generatePreviousMeasurementsForChild)
 import Backend.Person.Model exposing (Gender(..), Person)
+import Backend.Person.Utils exposing (graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.Session.Model exposing (EditableSession, Session)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getMyMother)
@@ -27,6 +28,7 @@ import Pages.Session.Model
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate exposing (Language, TranslationId, translate)
+import Translate.Model exposing (Language(..))
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (Days(..), Months(..), diffDays, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderDate)
 import Utils.WebData exposing (viewWebData)
@@ -434,7 +436,7 @@ viewFoundChild language currentDate zscores ( childId, child ) individualChildMe
             -- With exception of Sortwathe, children graduate from all
             -- groups at the age of 26 month. Therefore, we will show
             -- 0-2 graph for all children that are less than 26 month old.
-            if childAgeInMonths < 26 then
+            if childAgeInMonths < graduatingAgeInMonth then
                 div
                     [ class "image-report" ]
                     [ ZScore.View.viewMarkers
@@ -576,24 +578,33 @@ viewAgeCell language =
         [ text <| translate language Translate.AgeWord ]
 
 
+resolveCellClass : Language -> String
+resolveCellClass language =
+    if language == Kinyarwanda then
+        "first kinyarwanda"
+
+    else
+        "first"
+
+
 viewHeightCell : Language -> Html any
 viewHeightCell language =
     td
-        [ class "first" ]
+        [ class <| resolveCellClass language ]
         [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Height)) ]
 
 
 viewWeightCell : Language -> Html any
 viewWeightCell language =
     td
-        [ class "first" ]
+        [ class <| resolveCellClass language ]
         [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Weight)) ]
 
 
 viewMuacCell : Language -> Html any
 viewMuacCell language =
     td
-        [ class "first" ]
+        [ class <| resolveCellClass language ]
         [ text <| translate language (Translate.ActivityProgressReport (ChildActivity Muac)) ]
 
 

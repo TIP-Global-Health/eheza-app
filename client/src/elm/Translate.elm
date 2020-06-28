@@ -41,6 +41,7 @@ import Backend.Relationship.Model exposing (MyRelatedBy(..))
 import Date exposing (Month)
 import Form.Error exposing (ErrorValue(..))
 import Http
+import Measurement.Model exposing (FloatInputConstraints)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Page exposing (..)
@@ -179,6 +180,7 @@ type TranslationId
     | AddChild
     | AddFamilyMember
     | AddFamilyMemberFor String
+    | AddNewParticipant
     | AddParentOrCaregiver
     | AddToGroup
     | Admin
@@ -193,6 +195,7 @@ type TranslationId
     | AgeSingleMonthWithoutDay Int
     | AgeSingleDayWithMonth Int Int
     | AgeSingleDayWithoutMonth Int Int
+    | AllowedValuesRangeHelper FloatInputConstraints
     | AppName
     | AreYouSure
     | Assessment
@@ -271,9 +274,11 @@ type TranslationId
     | DateOfLastAssessment
     | DatePregnancyConcluded
     | Day
+    | DayAbbrev
     | DaySinglePlural Int
     | DateOfBirth
     | Days
+    | DaysAbbrev
     | Delete
     | DeleteTrainingGroupEncounters
     | DeliveryLocation
@@ -728,6 +733,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        AddNewParticipant ->
+            { english = "Add new participant"
+            , kinyarwanda = Nothing
+            }
+
         AddParentOrCaregiver ->
             { english = "Add Parent or Caregiver"
             , kinyarwanda = Just "Ongeraho umubyeyi cyangwa umurezi"
@@ -854,7 +864,7 @@ translationSet trans =
 
                 ChildActivity Activity.Model.Height ->
                     { english = "Height:"
-                    , kinyarwanda = Just "Uburere:"
+                    , kinyarwanda = Just "Uburebure:"
                     }
 
                 ChildActivity Activity.Model.Muac ->
@@ -1045,6 +1055,11 @@ translationSet trans =
         AppName ->
             { english = "E-Heza System"
             , kinyarwanda = Just "E-heza sisiteme"
+            }
+
+        AllowedValuesRangeHelper constraints ->
+            { english = "Allowed values are between " ++ Debug.toString constraints.minVal ++ " and " ++ Debug.toString constraints.maxVal ++ "."
+            , kinyarwanda = Nothing
             }
 
         AreYouSure ->
@@ -1602,6 +1617,11 @@ translationSet trans =
             , kinyarwanda = Just "Umunsi"
             }
 
+        DayAbbrev ->
+            { english = "Day"
+            , kinyarwanda = Just "Umu"
+            }
+
         DaySinglePlural value ->
             if value == 1 then
                 { english = "1 Day"
@@ -1621,6 +1641,11 @@ translationSet trans =
         Days ->
             { english = "days"
             , kinyarwanda = Just "Iminsi"
+            }
+
+        DaysAbbrev ->
+            { english = "days"
+            , kinyarwanda = Just "Imi"
             }
 
         Delete ->
@@ -2712,7 +2737,7 @@ translationSet trans =
 
         MonthAbbrev ->
             { english = "mo"
-            , kinyarwanda = Just "amezi"
+            , kinyarwanda = Just "am"
             }
 
         MonthsOld ->
@@ -4351,12 +4376,12 @@ translateActivePage page =
                     , kinyarwanda = Just "Compte"
                     }
 
-                PersonPage id ->
+                PersonPage _ _ ->
                     { english = "Person"
                     , kinyarwanda = Nothing
                     }
 
-                PersonsPage _ ->
+                PersonsPage _ _ ->
                     { english = "Participant Directory"
                     , kinyarwanda = Just "Ububiko bw'amakuru y'umurwayi"
                     }
@@ -4383,7 +4408,7 @@ translateActivePage page =
                             , kinyarwanda = Nothing
                             }
 
-                RelationshipPage _ _ ->
+                RelationshipPage _ _ _ ->
                     { english = "Relationship"
                     , kinyarwanda = Nothing
                     }
@@ -4524,7 +4549,7 @@ translateChartPhrase phrase =
     case phrase of
         AgeCompletedMonthsYears ->
             { english = "Age (completed months and years)"
-            , kinyarwanda = Just "Imyaka uzuza amazi n'imyaka"
+            , kinyarwanda = Just "Imyaka uzuza amezi n'imyaka"
             }
 
         Birth ->
@@ -4554,22 +4579,22 @@ translateChartPhrase phrase =
 
         HeightCm ->
             { english = "Height (cm)"
-            , kinyarwanda = Just "Uburere cm"
+            , kinyarwanda = Just "Uburebure cm"
             }
 
         HeightForAgeBoys ->
             { english = "Height-for-age BOYS"
-            , kinyarwanda = Just "Uburere ku myaka/ umuhungu"
+            , kinyarwanda = Just "Uburebure ku myaka/ umuhungu"
             }
 
         HeightForAgeGirls ->
             { english = "Height-for-age GIRLS"
-            , kinyarwanda = Just "Uburere ku myaka/ umukobwa"
+            , kinyarwanda = Just "Uburebure ku myaka/ umukobwa"
             }
 
         LengthCm ->
             { english = "Length (cm)"
-            , kinyarwanda = Just "Uburere cm"
+            , kinyarwanda = Just "Uburebure cm"
             }
 
         LengthForAgeBoys ->
@@ -4579,7 +4604,7 @@ translateChartPhrase phrase =
 
         LengthForAgeGirls ->
             { english = "Length-for-age GIRLS"
-            , kinyarwanda = Just "uburebure ku myaka umukobwa"
+            , kinyarwanda = Just "uburebure ku myaka UMUKOBWA"
             }
 
         Months ->

@@ -33,6 +33,10 @@ div.page {
     flex-direction: column;
 }
 
+div.container {
+  height: 100%;
+}
+
 // This is for the content below the language switcher, which should
 // grow to fill the available height.
 div.page-content {
@@ -133,17 +137,16 @@ div.page-pincode {
       margin-left: -40px;
     }
 
-    p.logged-in-as {
-      font-size: 1.6rem;
-      font-weight: bold;
-      margin-bottom: 0;
-      margin-top: -3rem;
-    }
-
-    p.location-name {
+    div.general-info {
       font-size: 1.6rem;
       font-weight: bold;
       margin-bottom: 3rem;
+      margin-top: -2rem;
+
+      .logged-in-as,
+      .device-info {
+        margin-bottom: 0;
+      }
     }
 
     p.select-location {
@@ -315,6 +318,14 @@ div.page-participant,
 div.page-activity {
 
   .ui.full.segment .content {
+
+    .activity-helper {
+      margin-bottom: 5px;
+    }
+
+    .range-helper {
+      margin-top: 0;
+    }
 
     .fbf-to-receive {
       border-bottom: 2px solid;
@@ -513,7 +524,7 @@ div.page-prenatal-activity {
       }
 
       .form.muac .ui.grid {
-        margin-top: 50px;
+        margin-top: 30px;
       }
     }
 }
@@ -562,6 +573,14 @@ div.page-prenatal-activity,
 div.page-nutrition-activity {
 
     .ui.full.segment {
+
+      .activity-helper {
+        margin-bottom: 5px;
+      }
+
+      .range-helper {
+        margin-top: 0;
+      }
 
       .form-input {
         margin-bottom: 30px;

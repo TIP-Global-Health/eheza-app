@@ -8,6 +8,8 @@ import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
+import Backend.Person.Model exposing (Initiator(..))
+import Backend.Session.Utils exposing (getSession)
 import Backend.Update
 import Browser
 import Browser.Navigation as Nav
@@ -488,10 +490,30 @@ update msg model =
 
                 cmd =
                     Nav.pushUrl model.navigationKey (Url.toString redirectUrl)
+
+                extraMsgs =
+                    case page of
+                        -- When navigating to relationship page in group encounter context,
+                        -- we automaticaly select the clinic, to which the session belongs.
+                        UserPage (RelationshipPage id1 id2 (GroupEncounterOrigin sessionId)) ->
+                            getSession sessionId model.indexedDb
+                                |> Maybe.map
+                                    (.clinicId
+                                        >> fromEntityUuid
+                                        >> Pages.Relationship.Model.AssignToClinicId
+                                        >> MsgPageRelationship id1 id2
+                                        >> MsgLoggedIn
+                                        >> List.singleton
+                                    )
+                                |> Maybe.withDefault []
+
+                        _ ->
+                            []
             in
             ( { model | activePage = page }
             , cmd
             )
+                |> sequence update extraMsgs
 
         SendRollbar level message data ->
             updateConfigured
@@ -573,6 +595,11 @@ update msg model =
                 |> cacheVillage
             )
                 |> sequence update extraMsgs
+
+        SetDeviceName name ->
+            ( { model | deviceName = name }
+            , Cmd.none
+            )
 
         Tick time ->
             let

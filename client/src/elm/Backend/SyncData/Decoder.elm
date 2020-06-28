@@ -21,6 +21,7 @@ decodeDownloadStatus =
         |> custom (decodeTimeField "last_contact")
         |> required "last_timestamp" decodeInt
         |> required "remaining" decodeInt
+        |> optional "device_name" (nullable string) Nothing
 
 
 decodeUploadStatus : Decoder UploadStatus
