@@ -626,6 +626,31 @@ div.page-activity.acute-illness {
       margin-bottom: 30px;
     }
 
+    .ui.form.medication-distribution {
+
+      h2 {
+        text-transform: uppercase;
+        margin-bottom: 20px;
+      }
+
+      .instructions {
+        font-weight: bold;
+        margin-bottom: 30px;
+
+        span{
+          color: $color-light-blue;
+        }
+
+        .header {
+          margin-bottom: 5px;
+        }
+
+        .dosage {
+          margin-left: 10px;
+        }
+      }
+    }
+
     .label {
       margin-bottom: 5px;
     }

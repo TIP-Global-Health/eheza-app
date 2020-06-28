@@ -759,7 +759,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                     resolveCoartemDosage currentDate person
                         |> Maybe.map
                             (\dosage ->
-                                div [ class "actions-to-take" ]
+                                div [ class "instructions coartem" ]
                                     [ div [ class "header" ]
                                         [ text <| translate language Translate.Administer
                                         , text " "
@@ -770,6 +770,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                                         [ span [] [ text <| translate language (Translate.TabletSinglePlural dosage) ]
                                         , text " "
                                         , text <| translate language Translate.ByMouthTwiceADayFor3Days
+                                        , text "."
                                         ]
                                     ]
                             )
@@ -784,7 +785,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                         ++ "?"
             in
             div [ class "ui form medication-distribution" ]
-                [ h2 [ class "upper" ] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
                 , instructions
                 , div [ class "ui grid" ]
                     [ div [ class "sixteen wide column" ]

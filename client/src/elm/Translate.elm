@@ -1409,7 +1409,7 @@ translationSet trans =
             }
 
         ByMouthTwiceADayFor3Days ->
-            { english = "by m outh twice per day x 3 days"
+            { english = "by mouth twice per day x 3 days"
             , kinyarwanda = Nothing
             }
 
