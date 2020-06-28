@@ -11,7 +11,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
-import Backend.Person.Model exposing (Person)
+import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildren, getMotherMeasurementData)
 import Html exposing (..)
@@ -93,16 +93,21 @@ view language nurse ( sessionId, session ) model =
             ]
         , div
             [ class "ui full blue segment" ]
-            [ div
-                [ class "full content" ]
-                [ div [ class "wrap-list" ]
-                    [ h3
-                        [ class "ui header" ]
-                        [ text <| translate language Translate.CheckIn ]
-                    , p [] [ text <| translate language Translate.ClickTheCheckMark ]
-                    , viewNameFilter language model.filter SetFilter
-                    , viewToggleDisplay language model
-                    , div [ class "ui middle aligned divided list" ] mothers
+            [ h3 [ class "ui header" ]
+                [ text <| translate language Translate.CheckIn ]
+            , p [] [ text <| translate language Translate.ClickTheCheckMark ]
+            , viewNameFilter language model.filter SetFilter
+            , viewToggleDisplay language model
+            , div [ class "search-middle" ]
+                [ div [ class "ui middle aligned divided list" ] mothers ]
+            , div [ class "search-bottom" ]
+                [ div
+                    [ class "register-actions" ]
+                    [ button
+                        [ class "ui primary button fluid"
+                        , onClick <| SetActivePage <| UserPage <| PersonsPage Nothing (GroupEncounterOrigin sessionId)
+                        ]
+                        [ text <| translate language Translate.AddNewParticipant ]
                     ]
                 ]
             ]

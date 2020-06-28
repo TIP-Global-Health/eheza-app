@@ -100,7 +100,7 @@ type alias Model =
     -- Which health center a nurse is working at.
     , healthCenterId : Maybe HealthCenterId
 
-    -- Which health center a nurse is working at.
+    -- Which village center a nurse is working at.
     , villageId : Maybe VillageId
 
     -- This is outside of ModelIndexedDb, as it's a related system, which other
@@ -110,6 +110,8 @@ type alias Model =
 
     -- List of errors we'll send to console.log
     , errors : List Error
+    -- The name of device nurse is working with.
+    , deviceName : Maybe String
     }
 
 
@@ -233,6 +235,7 @@ type Msg
     | SetMemoryQuota MemoryQuota
     | SetHealthCenter (Maybe HealthCenterId)
     | SetVillage (Maybe VillageId)
+    | SetDeviceName (Maybe String)
     | Tick Time.Posix
     | CheckDataWanted
     | UrlRequested Browser.UrlRequest
@@ -321,6 +324,7 @@ emptyModel key url flags =
     , villageId = villageId
     , syncManager = SyncManager.Model.emptyModel syncManagerFlags
     , errors = []
+    , deviceName = Nothing
     }
 
 

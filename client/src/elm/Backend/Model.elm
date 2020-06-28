@@ -27,7 +27,7 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
-import Backend.Person.Model exposing (Person, RegistrationInitiator)
+import Backend.Person.Model exposing (Initiator, Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
@@ -223,19 +223,19 @@ type MsgIndexedDb
     | HandleFetchedSessionsByClinic ClinicId (WebData (Dict SessionId Session))
     | HandleFetchedVillages (WebData (Dict VillageId Village))
       -- Messages which mutate data
-    | PostPerson (Maybe PersonId) RegistrationInitiator Person -- The first person is a person we ought to offer setting a relationship to.
+    | PostPerson (Maybe PersonId) Initiator Person -- The first person is a person we ought to offer setting a relationship to.
     | PatchPerson PersonId Person
-    | PostRelationship PersonId MyRelationship (Maybe ClinicId)
-    | PostPmtctParticipant PmtctParticipant
+    | PostRelationship PersonId MyRelationship (Maybe ClinicId) Initiator
+    | PostPmtctParticipant Initiator PmtctParticipant
     | PostSession Session
     | PostIndividualSession IndividualEncounterParticipant
     | PostPrenatalEncounter PrenatalEncounter
     | PostNutritionEncounter NutritionEncounter
       -- Messages which handle responses to mutating data
-    | HandlePostedPerson (Maybe PersonId) RegistrationInitiator (WebData PersonId)
+    | HandlePostedPerson (Maybe PersonId) Initiator (WebData PersonId)
     | HandlePatchedPerson PersonId (WebData Person)
-    | HandlePostedRelationship PersonId (WebData MyRelationship)
-    | HandlePostedPmtctParticipant PersonId (WebData ( PmtctParticipantId, PmtctParticipant ))
+    | HandlePostedRelationship PersonId Initiator (WebData MyRelationship)
+    | HandlePostedPmtctParticipant PersonId Initiator (WebData ( PmtctParticipantId, PmtctParticipant ))
     | HandlePostedSession ClinicType (WebData SessionId)
     | HandlePostedIndividualSession PersonId IndividualEncounterType (WebData ( IndividualEncounterParticipantId, IndividualEncounterParticipant ))
     | HandlePostedPrenatalEncounter IndividualEncounterParticipantId (WebData ( PrenatalEncounterId, PrenatalEncounter ))

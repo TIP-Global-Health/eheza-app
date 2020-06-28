@@ -14,16 +14,6 @@ import Translate exposing (Language, translate)
 import Utils.Html exposing (spinner)
 
 
-{-| We organize our SyncManager by health center. However, there is also a bunch
-of nodes that we get no matter which health center we're interesting in. So,
-this is the "magic" UUID that represents "all the health centers" (or, "no
-health center", depending on how you look at it).
--}
-nodesUuid : HealthCenterId
-nodesUuid =
-    toEntityUuid "78cf21d1-b3f4-496a-b312-d8ae73041f09"
-
-
 {-| We call this if we have an active service worker. If the device is authorized,
 we show its status. Otherwise, we show a UI that allows for authorization.
 -}
