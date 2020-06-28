@@ -36,49 +36,28 @@ update currentDate id db msg model =
         noChange =
             ( model, Cmd.none, [] )
 
-        symptomsGeneralForm =
+        resolveFormWithDefaults getMeasurementFunc formWithDefaultsFunc form =
             Dict.get id db.acuteIllnessMeasurements
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
                 |> Maybe.map
-                    (.symptomsGeneral
+                    (getMeasurementFunc
                         >> Maybe.map (Tuple.second >> .value)
-                        >> symptomsGeneralFormWithDefault model.symptomsData.symptomsGeneralForm
+                        >> formWithDefaultsFunc form
                     )
-                |> Maybe.withDefault model.symptomsData.symptomsGeneralForm
+                |> Maybe.withDefault form
+
+        symptomsGeneralForm =
+            resolveFormWithDefaults .symptomsGeneral symptomsGeneralFormWithDefault model.symptomsData.symptomsGeneralForm
 
         symptomsRespiratoryForm =
-            Dict.get id db.acuteIllnessMeasurements
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
-                |> Maybe.map
-                    (.symptomsRespiratory
-                        >> Maybe.map (Tuple.second >> .value)
-                        >> symptomsRespiratoryFormWithDefault model.symptomsData.symptomsRespiratoryForm
-                    )
-                |> Maybe.withDefault model.symptomsData.symptomsRespiratoryForm
+            resolveFormWithDefaults .symptomsRespiratory symptomsRespiratoryFormWithDefault model.symptomsData.symptomsRespiratoryForm
 
         symptomsGIForm =
-            Dict.get id db.acuteIllnessMeasurements
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
-                |> Maybe.map
-                    (.symptomsGI
-                        >> Maybe.map (Tuple.second >> .value)
-                        >> symptomsGIFormWithDefault model.symptomsData.symptomsGIForm
-                    )
-                |> Maybe.withDefault model.symptomsData.symptomsGIForm
+            resolveFormWithDefaults .symptomsGI symptomsGIFormWithDefault model.symptomsData.symptomsGIForm
 
         acuteFindingsForm =
-            Dict.get id db.acuteIllnessMeasurements
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
-                |> Maybe.map
-                    (.acuteFindings
-                        >> Maybe.map (Tuple.second >> .value)
-                        >> acuteFindingsFormWithDefault model.physicalExamData.acuteFindingsForm
-                    )
-                |> Maybe.withDefault model.physicalExamData.acuteFindingsForm
+            resolveFormWithDefaults .acuteFindings acuteFindingsFormWithDefault model.physicalExamData.acuteFindingsForm
     in
     case msg of
         SetActivePage page ->

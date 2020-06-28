@@ -573,12 +573,12 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
 
                         LaboratoryMedicationDistribution ->
                             ( "laboratory-medication-distribution"
-                            , False
+                            , isJust measurements.medicationDistribution
                             )
 
                         LaboratorySendToHC ->
                             ( "laboratory-send-to-hc"
-                            , False
+                            , isJust measurements.sendToHC
                             )
 
                 isActive =
@@ -604,7 +604,7 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
             tasks
                 |> List.map
                     (\task ->
-                        ( task, laboratoryTasksCompletedFromTotal measurements data task )
+                        ( task, laboratoryTasksCompletedFromTotal diagnosis measurements data task )
                     )
                 |> Dict.fromList
 

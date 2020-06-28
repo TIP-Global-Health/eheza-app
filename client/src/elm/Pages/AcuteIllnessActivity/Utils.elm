@@ -33,6 +33,7 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
+import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Pages.PrenatalActivity.Utils exposing (ifNullableTrue, ifTrue)
 import Pages.Utils exposing (ifEverySetEmpty, taskCompleted)
 
@@ -179,8 +180,8 @@ physicalExamTasksCompletedFromTotal measurements data task =
             )
 
 
-laboratoryTasksCompletedFromTotal : AcuteIllnessMeasurements -> LaboratoryData -> LaboratoryTask -> ( Int, Int )
-laboratoryTasksCompletedFromTotal measurements data task =
+laboratoryTasksCompletedFromTotal : Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> LaboratoryData -> LaboratoryTask -> ( Int, Int )
+laboratoryTasksCompletedFromTotal diagnosis measurements data task =
     case task of
         LaboratoryMalariaTesting ->
             let
@@ -194,10 +195,31 @@ laboratoryTasksCompletedFromTotal measurements data task =
             )
 
         LaboratoryMedicationDistribution ->
-            ( 0, 0 )
+            let
+                form =
+                    measurements.medicationDistribution
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+            in
+            case diagnosis of
+                Just DiagnosisMalariaUncomplicated ->
+                    ( signTaskCompleted Coartem NoMedicationDistributionSigns form.signs
+                    , 1
+                    )
+
+                _ ->
+                    ( 0, 1 )
 
         LaboratorySendToHC ->
-            ( 0, 0 )
+            let
+                form =
+                    measurements.sendToHC
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> sendToHCFormWithDefault data.sendToHCForm
+            in
+            ( taskCompleted form.handReferralForm + taskCompleted form.handReferralForm
+            , 2
+            )
 
 
 exposureTasksCompletedFromTotal : AcuteIllnessMeasurements -> ExposureData -> ExposureTask -> ( Int, Int )
@@ -376,6 +398,15 @@ naListTaskCompleted na maybeList =
 
         _ ->
             taskCompleted maybeList
+
+
+signTaskCompleted : a -> a -> EverySet a -> Int
+signTaskCompleted sign noSigns set =
+    if EverySet.member sign set || EverySet.member noSigns set then
+        1
+
+    else
+        0
 
 
 symptomsGeneralFormWithDefault : SymptomsGeneralForm -> Maybe (Dict SymptomsGeneralSign Int) -> SymptomsGeneralForm
