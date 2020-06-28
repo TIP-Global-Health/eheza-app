@@ -117,6 +117,8 @@ decodeAcuteIllnessMeasurements =
         |> optional "isolation" (decodeHead decodeIsolation) Nothing
         |> optional "hc_contact" (decodeHead decodeHCContact) Nothing
         |> optional "treatment_history" (decodeHead decodeTreatmentReview) Nothing
+        -- Todo "MedicationDistribution"
+        |> hardcoded Nothing
         -- Todo "send_to_hc"
         |> hardcoded Nothing
 

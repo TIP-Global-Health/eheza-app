@@ -1,4 +1,4 @@
-module Pages.Utils exposing (backFromSessionPage, filterDependentNoResultsMessage, isTaskCompleted, matchFilter, matchMotherAndHerChildren, normalizeFilter, taskCompleted, taskListCompleted, tasksBarId, viewBoolInput, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxSelectInputItem, viewCheckBoxValueInput, viewCheckBoxValueInputItem, viewCheckBoxValueInputNone, viewCustomLabel, viewEndEncounterDialog, viewLabel, viewMeasurementInput, viewNameFilter, viewPhotoThumb, viewPhotoThumbFromPhotoUrl, viewPreviousMeasurement, viewQuestionLabel)
+module Pages.Utils exposing (backFromSessionPage, filterDependentNoResultsMessage, ifEverySetEmpty, isTaskCompleted, matchFilter, matchMotherAndHerChildren, normalizeFilter, taskCompleted, taskListCompleted, tasksBarId, viewBoolInput, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxSelectInputItem, viewCheckBoxValueInput, viewCheckBoxValueInputItem, viewCheckBoxValueInputNone, viewCustomLabel, viewEndEncounterDialog, viewLabel, viewMeasurementInput, viewNameFilter, viewPhotoThumb, viewPhotoThumbFromPhotoUrl, viewPreviousMeasurement, viewQuestionLabel)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PersonId)
@@ -8,6 +8,7 @@ import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (OfflineSession)
 import Backend.Session.Utils exposing (getChildren)
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -422,6 +423,15 @@ taskListCompleted list =
 
     else
         0
+
+
+ifEverySetEmpty : a -> EverySet a -> EverySet a
+ifEverySetEmpty value set =
+    if EverySet.isEmpty set then
+        EverySet.singleton value
+
+    else
+        set
 
 
 {-| Show a photo thumbnail.

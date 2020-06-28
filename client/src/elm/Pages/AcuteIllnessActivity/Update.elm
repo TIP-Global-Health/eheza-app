@@ -11,6 +11,7 @@ import Backend.Measurement.Model
         ( AcuteFindingsGeneralSign(..)
         , AcuteFindingsRespiratorySign(..)
         , HCRecomendation(..)
+        , MedicationDistributionSign(..)
         , ReasonForNotIsolating(..)
         , ResponsePeriod(..)
         , SymptomsGISign(..)
@@ -18,11 +19,13 @@ import Backend.Measurement.Model
         , SymptomsRespiratorySign(..)
         )
 import Backend.Model exposing (ModelIndexedDb)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Utils exposing (ifEverySetEmpty)
 import RemoteData exposing (RemoteData(..))
 import Result exposing (Result)
 
@@ -610,6 +613,36 @@ update currentDate id db msg model =
                 updatedData =
                     model.laboratoryData
                         |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        ToggleMedicationDistributionSign sign ->
+            let
+                form =
+                    model.laboratoryData.medicationDistributionForm
+
+                updatedSigns =
+                    if EverySet.member sign form.signs then
+                        EverySet.remove sign form.signs
+                            |> ifEverySetEmpty NoMedicationDistributionSigns
+
+                    else
+                        case EverySet.toList form.signs of
+                            [ NoMedicationDistributionSigns ] ->
+                                EverySet.singleton sign
+
+                            _ ->
+                                EverySet.insert sign form.signs
+
+                updatedForm =
+                    { form | signs = updatedSigns }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | medicationDistributionForm = updatedForm })
             in
             ( { model | laboratoryData = updatedData }
             , Cmd.none

@@ -617,7 +617,10 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) da
                         |> viewMalariaTestingForm language currentDate measurements
 
                 LaboratoryMedicationDistribution ->
-                    div [] [ text "LaboratoryMedicationDistribution" ]
+                    measurements.medicationDistribution
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+                        |> viewMedicationDistributionForm language currentDate measurements
 
                 LaboratorySendToHC ->
                     measurements.sendToHC
@@ -741,6 +744,12 @@ viewSendToHCForm language currentDate measurements form =
             "hand-referral-form"
             Nothing
         ]
+
+
+viewMedicationDistributionForm : Language -> NominalDate -> AcuteIllnessMeasurements -> MedicationDistributionForm -> Html Msg
+viewMedicationDistributionForm language currentDate measurements form =
+    div [ class "ui form medication-distribution" ]
+        [ text "viewMedicationDistributionForm" ]
 
 
 viewAcuteIllnessExposure : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> Bool -> ExposureData -> List (Html Msg)
