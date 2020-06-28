@@ -151,6 +151,9 @@ decodeRevision =
                     "photo" ->
                         decodeWithUuid PhotoRevision decodePhoto
 
+                    "prescribed_medication" ->
+                        decodeWithUuid MedicationDistributionRevision decodeMedicationDistribution
+
                     "village" ->
                         decodeWithUuid VillageRevision decodeVillage
 
@@ -177,6 +180,9 @@ decodeRevision =
 
                     "resource" ->
                         decodeWithUuid ResourceRevision decodeResource
+
+                    "send_to_hc" ->
+                        decodeWithUuid SendToHCRevision decodeSendToHC
 
                     "session" ->
                         decodeWithUuid SessionRevision decodeSession

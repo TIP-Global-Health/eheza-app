@@ -27,6 +27,8 @@ type alias Model =
     , saveVitals : WebData ()
     , saveAcuteFindings : WebData ()
     , saveMalariaTesting : WebData ()
+    , saveSendToHC : WebData ()
+    , saveMedicationDistribution : WebData ()
     , saveTravelHistory : WebData ()
     , saveExposure : WebData ()
     , saveIsolation : WebData ()
@@ -44,6 +46,8 @@ emptyModel =
     , saveVitals = NotAsked
     , saveAcuteFindings = NotAsked
     , saveMalariaTesting = NotAsked
+    , saveSendToHC = NotAsked
+    , saveMedicationDistribution = NotAsked
     , saveTravelHistory = NotAsked
     , saveExposure = NotAsked
     , saveIsolation = NotAsked
@@ -67,6 +71,10 @@ type Msg
     | HandleSavedAcuteFindings (WebData ())
     | SaveMalariaTesting PersonId (Maybe MalariaTestingId) MalariaRapidTestResult
     | HandleSavedMalariaTesting (WebData ())
+    | SaveSendToHC PersonId (Maybe SendToHCId) (EverySet SendToHCSign)
+    | HandleSavedSendToHC (WebData ())
+    | SaveMedicationDistribution PersonId (Maybe MedicationDistributionId) (EverySet MedicationDistributionSign)
+    | HandleSavedMedicationDistribution (WebData ())
     | SaveTravelHistory PersonId (Maybe TravelHistoryId) (EverySet TravelHistorySign)
     | HandleSavedTravelHistory (WebData ())
     | SaveExposure PersonId (Maybe ExposureId) (EverySet ExposureSign)

@@ -1,4 +1,4 @@
-module Backend.Measurement.Encoder exposing (encodeAbdomenCPESign, encodeAcuteFindings, encodeAcuteFindingsGeneralSign, encodeAcuteFindingsRespiratorySign, encodeAcuteFindingsValue, encodeAcuteIllnessMeasurement, encodeAcuteIllnessVitals, encodeAcuteIllnessVitalsValue, encodeAttendance, encodeAttendanceValue, encodeBreastExam, encodeBreastExamSign, encodeBreastExamValue, encodeCSectionReason, encodeCSectionScar, encodeCorePhysicalExam, encodeCorePhysicalExamValue, encodeCounselingSession, encodeCounselingSessionValue, encodeDangerSign, encodeDangerSigns, encodeDangerSignsValue, encodeDistributionNotice, encodeDistributionNoticeAsString, encodeEverySet, encodeExposure, encodeExposureSign, encodeExposureValue, encodeEyesCPESign, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeFbf, encodeFbfValue, encodeFetalPresentation, encodeGroupMeasurement, encodeHCContact, encodeHCContactSign, encodeHCContactValue, encodeHCRecomendation, encodeHairHeadCPESign, encodeHandsCPESign, encodeHeartCPESign, encodeHeight, encodeHeightInCm, encodeHeightValue, encodeIsolation, encodeIsolationSign, encodeIsolationValue, encodeLactation, encodeLactationSign, encodeLactationValue, encodeLastMenstrualPeriod, encodeLastMenstrualPeriodValue, encodeLegsCPESign, encodeLungsCPESign, encodeMalariaRapidTestResult, encodeMalariaTesting, encodeMalariaTestingValue, encodeMeasurement, encodeMedicalHistory, encodeMedicalHistorySign, encodeMedicalHistoryValue, encodeMedication, encodeMedicationSign, encodeMedicationValue, encodeMuac, encodeMuacInCm, encodeMuacValue, encodeNeckCPESign, encodeNutrition, encodeNutritionHeight, encodeNutritionMeasurement, encodeNutritionMuac, encodeNutritionNutrition, encodeNutritionPhoto, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeNutritionWeight, encodeObstetricHistory, encodeObstetricHistorySign, encodeObstetricHistoryStep2, encodeObstetricHistoryStep2Value, encodeObstetricHistoryValue, encodeObstetricalExam, encodeObstetricalExamValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodePrenatalFamilyPlanning, encodePrenatalMeasurement, encodePrenatalNutrition, encodePrenatalNutritionValue, encodePrenatalPhoto, encodePreviousDeliveryPeriod, encodePreviousDeliverySign, encodeReasonForNotIsolating, encodeResource, encodeResourceSign, encodeResourceValue, encodeResponsePeriod, encodeSocialHistory, encodeSocialHistoryHivTestingResult, encodeSocialHistorySign, encodeSocialHistoryValue, encodeSymptomsGI, encodeSymptomsGIDerivedSigns, encodeSymptomsGIValue, encodeSymptomsGeneral, encodeSymptomsGeneralValue, encodeSymptomsRespiratory, encodeSymptomsRespiratoryValue, encodeTravelHistory, encodeTravelHistorySign, encodeTravelHistoryValue, encodeTreatmentReview, encodeTreatmentReviewSign, encodeTreatmentReviewValue, encodeVitals, encodeVitalsValue, encodeWeight, encodeWeightInKg, encodeWeightValue, malariaRapidTestResultAsString, socialHistoryHivTestingResultToString)
+module Backend.Measurement.Encoder exposing (encodeAbdomenCPESign, encodeAcuteFindings, encodeAcuteFindingsGeneralSign, encodeAcuteFindingsRespiratorySign, encodeAcuteFindingsValue, encodeAcuteIllnessMeasurement, encodeAcuteIllnessVitals, encodeAcuteIllnessVitalsValue, encodeAttendance, encodeAttendanceValue, encodeBreastExam, encodeBreastExamSign, encodeBreastExamValue, encodeCSectionReason, encodeCSectionScar, encodeCorePhysicalExam, encodeCorePhysicalExamValue, encodeCounselingSession, encodeCounselingSessionValue, encodeDangerSign, encodeDangerSigns, encodeDangerSignsValue, encodeDistributionNotice, encodeDistributionNoticeAsString, encodeEverySet, encodeExposure, encodeExposureSign, encodeExposureValue, encodeEyesCPESign, encodeFamilyPlanning, encodeFamilyPlanningSign, encodeFamilyPlanningSignAsString, encodeFamilyPlanningValue, encodeFbf, encodeFbfValue, encodeFetalPresentation, encodeGroupMeasurement, encodeHCContact, encodeHCContactSign, encodeHCContactValue, encodeHCRecomendation, encodeHairHeadCPESign, encodeHandsCPESign, encodeHeartCPESign, encodeHeight, encodeHeightInCm, encodeHeightValue, encodeIsolation, encodeIsolationSign, encodeIsolationValue, encodeLactation, encodeLactationSign, encodeLactationValue, encodeLastMenstrualPeriod, encodeLastMenstrualPeriodValue, encodeLegsCPESign, encodeLungsCPESign, encodeMalariaRapidTestResult, encodeMalariaTesting, encodeMalariaTestingValue, encodeMeasurement, encodeMedicalHistory, encodeMedicalHistorySign, encodeMedicalHistoryValue, encodeMedication, encodeMedicationDistribution, encodeMedicationDistributionValue, encodeMedicationSign, encodeMedicationValue, encodeMuac, encodeMuacInCm, encodeMuacValue, encodeNeckCPESign, encodeNutrition, encodeNutritionHeight, encodeNutritionMeasurement, encodeNutritionMuac, encodeNutritionNutrition, encodeNutritionPhoto, encodeNutritionSign, encodeNutritionSignAsString, encodeNutritionValue, encodeNutritionWeight, encodeObstetricHistory, encodeObstetricHistorySign, encodeObstetricHistoryStep2, encodeObstetricHistoryStep2Value, encodeObstetricHistoryValue, encodeObstetricalExam, encodeObstetricalExamValue, encodeParticipantConsent, encodeParticipantConsentValue, encodePhoto, encodePhotoUrl, encodePrenatalFamilyPlanning, encodePrenatalMeasurement, encodePrenatalNutrition, encodePrenatalNutritionValue, encodePrenatalPhoto, encodePreviousDeliveryPeriod, encodePreviousDeliverySign, encodeReasonForNotIsolating, encodeResource, encodeResourceSign, encodeResourceValue, encodeResponsePeriod, encodeSendToHC, encodeSendToHCValue, encodeSocialHistory, encodeSocialHistoryHivTestingResult, encodeSocialHistorySign, encodeSocialHistoryValue, encodeSymptomsGI, encodeSymptomsGIDerivedSigns, encodeSymptomsGIValue, encodeSymptomsGeneral, encodeSymptomsGeneralValue, encodeSymptomsRespiratory, encodeSymptomsRespiratoryValue, encodeTravelHistory, encodeTravelHistorySign, encodeTravelHistoryValue, encodeTreatmentReview, encodeTreatmentReviewSign, encodeTreatmentReviewValue, encodeVitals, encodeVitalsValue, encodeWeight, encodeWeightInKg, encodeWeightValue, encondeMedicationDistributionSign, encondeSendToHCSign, malariaRapidTestResultAsString, socialHistoryHivTestingResultToString)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
@@ -1148,6 +1148,60 @@ malariaRapidTestResultAsString sign =
 
         RapidTestIndeterminate ->
             "indeterminate"
+
+
+encodeSendToHC : SendToHC -> List ( String, Value )
+encodeSendToHC =
+    encodeAcuteIllnessMeasurement encodeSendToHCValue
+
+
+encodeSendToHCValue : EverySet SendToHCSign -> List ( String, Value )
+encodeSendToHCValue value =
+    [ ( "send_to_hc", encodeEverySet encondeSendToHCSign value ) ]
+
+
+encondeSendToHCSign : SendToHCSign -> Value
+encondeSendToHCSign sign =
+    string <|
+        case sign of
+            HandReferrerForm ->
+                "referral-form"
+
+            ReferToHealthCenter ->
+                "refer-to-hc"
+
+            NoSendToHCSigns ->
+                "none"
+
+
+encodeMedicationDistribution : MedicationDistribution -> List ( String, Value )
+encodeMedicationDistribution =
+    encodeAcuteIllnessMeasurement encodeMedicationDistributionValue
+
+
+encodeMedicationDistributionValue : EverySet MedicationDistributionSign -> List ( String, Value )
+encodeMedicationDistributionValue value =
+    [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value ) ]
+
+
+encondeMedicationDistributionSign : MedicationDistributionSign -> Value
+encondeMedicationDistributionSign sign =
+    string <|
+        case sign of
+            Amoxicillin ->
+                "amoxicillin"
+
+            Coartem ->
+                "coartem"
+
+            ORS ->
+                "ors"
+
+            Zinc ->
+                "zinc"
+
+            NoMedicationDistributionSigns ->
+                "none"
 
 
 encodeTravelHistory : TravelHistory -> List ( String, Value )

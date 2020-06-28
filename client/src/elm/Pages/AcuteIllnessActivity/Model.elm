@@ -39,6 +39,8 @@ type Msg
     | SetHandReferralForm Bool
     | ToggleMedicationDistributionSign MedicationDistributionSign
     | SaveMalariaTesting PersonId (Maybe ( MalariaTestingId, MalariaTesting ))
+    | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC ))
+    | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution ))
       -- EXPOSURE Msgs
     | SetActiveExposureTask ExposureTask
     | SetCovid19Country Bool

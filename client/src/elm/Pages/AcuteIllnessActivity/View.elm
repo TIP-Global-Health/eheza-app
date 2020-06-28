@@ -652,13 +652,11 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
                         LaboratoryMalariaTesting ->
                             SaveMalariaTesting personId measurements.malariaTesting
 
-                        -- Todo:
-                        LaboratoryMedicationDistribution ->
-                            SaveMalariaTesting personId measurements.malariaTesting
-
-                        -- Todo:
                         LaboratorySendToHC ->
-                            SaveMalariaTesting personId measurements.malariaTesting
+                            SaveSendToHC personId measurements.sendToHC
+
+                        LaboratoryMedicationDistribution ->
+                            SaveMedicationDistribution personId measurements.medicationDistribution
             in
             div [ class "actions malaria-testing" ]
                 [ button

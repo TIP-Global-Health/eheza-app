@@ -1744,6 +1744,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             , recalc
             )
 
+        MedicationDistributionRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | medicationDistribution = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         MotherFbfRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId
@@ -1940,6 +1948,14 @@ handleRevision revision (( model, recalc ) as noChange) =
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | resource = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        SendToHCRevision uuid data ->
+            ( mapAcuteIllnessMeasurements
+                data.encounterId
+                (\measurements -> { measurements | sendToHC = Just ( uuid, data ) })
                 model
             , recalc
             )

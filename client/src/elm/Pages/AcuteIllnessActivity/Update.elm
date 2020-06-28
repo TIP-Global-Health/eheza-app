@@ -654,6 +654,58 @@ update currentDate id db msg model =
             , appMsgs
             )
 
+        SaveSendToHC personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.laboratoryData.sendToHCForm
+                        |> toSendToHCValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.AcuteIllnessEncounter.Model.SaveSendToHC personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
+        SaveMedicationDistribution personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.laboratoryData.medicationDistributionForm
+                        |> toMedicationDistributionValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.AcuteIllnessEncounter.Model.SaveMedicationDistribution personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
         SetActiveExposureTask task ->
             let
                 updatedData =
