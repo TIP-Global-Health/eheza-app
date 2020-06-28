@@ -172,6 +172,7 @@ type TranslationId
     | Abortions
     | AccompaniedByPartner
     | AccessDenied
+    | ActionsToTake
     | AcuteFindingsGeneralSign AcuteFindingsGeneralSign
     | AcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
     | AcuteIllnessDiagnosis AcuteIllnessDiagnosis
@@ -192,6 +193,8 @@ type TranslationId
     | AddParentOrCaregiver
     | AddToGroup
     | Admin
+    | Administer
+    | AdministeredMedicationQuestion
     | AddressInformation
     | Adherence Adherence
     | AgeWord
@@ -231,6 +234,7 @@ type TranslationId
     | BreastExamSign BreastExamSign
     | BreastExamQuestion
     | BrittleHair
+    | ByMouthTwiceADayFor3Days
     | Cancel
     | CardiacDisease
     | CaregiverName
@@ -432,6 +436,7 @@ type TranslationId
     | MeasurementLost Float
     | MedicalDiagnosis
     | MedicalDiagnosisAlert MedicalDiagnosis
+    | MedicationDistributionSign MedicationDistributionSign
     | MedicalFormHelper
     | MedicationForFeverPast6HoursQuestion
     | MedicationForMalariaTodayQuestion
@@ -664,6 +669,7 @@ type TranslationId
     | SubmitPairingCode
     | Success
     | SyncGeneral
+    | TabletSinglePlural Int
     | TakenCareOfBy
     | TasksCompleted Int Int
     | TelephoneNumber
@@ -671,6 +677,7 @@ type TranslationId
     | TermPregnancy
     | ThisActionCannotBeUndone
     | ThisGroupHasNoMothers
+    | ToThePatient
     | Training
     | TrainingGroupEncounterCreateSuccessMessage
     | TrainingGroupEncounterDeleteSuccessMessage
@@ -775,6 +782,11 @@ translationSet trans =
         AccessDenied ->
             { english = "Access denied"
             , kinyarwanda = Just "Kwinjira ntibyemera"
+            }
+
+        ActionsToTake ->
+            { english = "Actions To Take"
+            , kinyarwanda = Nothing
             }
 
         AcuteFindingsGeneralSign sign ->
@@ -903,6 +915,16 @@ translationSet trans =
         Admin ->
             { english = "Administration"
             , kinyarwanda = Just "Abakuriye"
+            }
+
+        Administer ->
+            { english = "Administer"
+            , kinyarwanda = Nothing
+            }
+
+        AdministeredMedicationQuestion ->
+            { english = "Have you administered"
+            , kinyarwanda = Nothing
             }
 
         AddressInformation ->
@@ -1384,6 +1406,11 @@ translationSet trans =
         BrittleHair ->
             { english = "Brittle Hair"
             , kinyarwanda = Just "Gucurama no guhindura ibara ku misatsi"
+            }
+
+        ByMouthTwiceADayFor3Days ->
+            { english = "by m outh twice per day x 3 days"
+            , kinyarwanda = Nothing
             }
 
         Cancel ->
@@ -3042,6 +3069,33 @@ translationSet trans =
                 DiagnosisMentalHealthHistory ->
                     { english = "History of Mental Health Problems"
                     , kinyarwanda = Just "Niba yaragize uburwayi bwo mumutwe"
+                    }
+
+        MedicationDistributionSign sign ->
+            case sign of
+                Amoxicillin ->
+                    { english = "Amoxicillin"
+                    , kinyarwanda = Nothing
+                    }
+
+                Coartem ->
+                    { english = "Coartem"
+                    , kinyarwanda = Nothing
+                    }
+
+                ORS ->
+                    { english = "Oral Rehydration Solution (ORS)"
+                    , kinyarwanda = Nothing
+                    }
+
+                Zinc ->
+                    { english = "Zinc"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoMedicationDistributionSigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
                     }
 
         MedicalFormHelper ->
@@ -4753,6 +4807,17 @@ translationSet trans =
             , kinyarwanda = Just "Ibijyanye no guhuza amakuru yafashwe n'igikoresho cy'ikoranabuhanga n'abitse kuri seriveri"
             }
 
+        TabletSinglePlural value ->
+            if value == 1 then
+                { english = "1 tablet"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = String.fromInt value ++ " tablets"
+                , kinyarwanda = Nothing
+                }
+
         TakenCareOfBy ->
             { english = "Taken care of by"
             , kinyarwanda = Nothing
@@ -4786,6 +4851,11 @@ translationSet trans =
         ThisGroupHasNoMothers ->
             { english = "This Group has no mothers assigned to it."
             , kinyarwanda = Just "Iki cyiciro nta mubyeyi cyagenewe."
+            }
+
+        ToThePatient ->
+            { english = "to the patient"
+            , kinyarwanda = Nothing
             }
 
         Training ->

@@ -35,6 +35,7 @@ import Pages.Utils
         , viewCheckBoxSelectInput
         , viewCheckBoxValueInput
         , viewCustomLabel
+        , viewEverySetInput
         , viewLabel
         , viewMeasurementInput
         , viewPhotoThumbFromPhotoUrl
@@ -155,7 +156,7 @@ viewActivity language currentDate id activity diagnosis data model =
             viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) model.priorTreatmentData
 
         AcuteIllnessLaboratory ->
-            viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) model.laboratoryData
+            viewAcuteIllnessLaboratory language currentDate id ( personId, data.person, measurements ) model.laboratoryData
 
         AcuteIllnessExposure ->
             viewAcuteIllnessExposure language currentDate id ( personId, measurements ) (diagnosis == Just DiagnosisCovid19) model.exposureData
@@ -549,14 +550,17 @@ viewAcuteFindingsForm language currentDate measurements form_ =
         ]
 
 
-viewAcuteIllnessLaboratory : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> LaboratoryData -> List (Html Msg)
-viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) data =
+viewAcuteIllnessLaboratory : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, Person, AcuteIllnessMeasurements ) -> LaboratoryData -> List (Html Msg)
+viewAcuteIllnessLaboratory language currentDate id ( personId, person, measurements ) data =
     let
         activity =
             AcuteIllnessLaboratory
 
+        diagnosis =
+            resolveAcuteIllnessDiagnosis measurements
+
         tasks =
-            resolveLaboratoryTasks measurements
+            resolveLaboratoryTasks diagnosis
 
         viewTask task =
             let
@@ -614,19 +618,19 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) da
                     measurements.malariaTesting
                         |> Maybe.map (Tuple.second >> .value)
                         |> malariaTestingFormWithDefault data.malariaTestingForm
-                        |> viewMalariaTestingForm language currentDate measurements
+                        |> viewMalariaTestingForm language currentDate
 
                 LaboratoryMedicationDistribution ->
                     measurements.medicationDistribution
                         |> Maybe.map (Tuple.second >> .value)
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
-                        |> viewMedicationDistributionForm language currentDate measurements
+                        |> viewMedicationDistributionForm language currentDate person diagnosis
 
                 LaboratorySendToHC ->
                     measurements.sendToHC
                         |> Maybe.map (Tuple.second >> .value)
                         |> sendToHCFormWithDefault data.sendToHCForm
-                        |> viewSendToHCForm language currentDate measurements
+                        |> viewSendToHCForm language currentDate
 
         getNextTask currentTask =
             case currentTask of
@@ -678,8 +682,8 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) da
     ]
 
 
-viewMalariaTestingForm : Language -> NominalDate -> AcuteIllnessMeasurements -> MalariaTestingForm -> Html Msg
-viewMalariaTestingForm language currentDate measurements form =
+viewMalariaTestingForm : Language -> NominalDate -> MalariaTestingForm -> Html Msg
+viewMalariaTestingForm language currentDate form =
     let
         emptyOption =
             if isNothing form.rapidTestResult then
@@ -720,8 +724,8 @@ viewMalariaTestingForm language currentDate measurements form =
         ]
 
 
-viewSendToHCForm : Language -> NominalDate -> AcuteIllnessMeasurements -> SendToHCForm -> Html Msg
-viewSendToHCForm language currentDate measurements form =
+viewSendToHCForm : Language -> NominalDate -> SendToHCForm -> Html Msg
+viewSendToHCForm language currentDate form =
     div [ class "ui form send-to-hc" ]
         [ div [ class "ui grid" ]
             [ div [ class "sixteen wide column" ]
@@ -746,10 +750,57 @@ viewSendToHCForm language currentDate measurements form =
         ]
 
 
-viewMedicationDistributionForm : Language -> NominalDate -> AcuteIllnessMeasurements -> MedicationDistributionForm -> Html Msg
-viewMedicationDistributionForm language currentDate measurements form =
-    div [ class "ui form medication-distribution" ]
-        [ text "viewMedicationDistributionForm" ]
+viewMedicationDistributionForm : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> MedicationDistributionForm -> Html Msg
+viewMedicationDistributionForm language currentDate person diagnosis form =
+    case diagnosis of
+        Just DiagnosisMalariaUncomplicated ->
+            let
+                instructions =
+                    resolveCoartemDosage currentDate person
+                        |> Maybe.map
+                            (\dosage ->
+                                div [ class "actions-to-take" ]
+                                    [ div [ class "header" ]
+                                        [ text <| translate language Translate.Administer
+                                        , text " "
+                                        , span [] [ text <| translate language (Translate.MedicationDistributionSign Coartem) ]
+                                        , text ":"
+                                        ]
+                                    , div [ class "dosage" ]
+                                        [ span [] [ text <| translate language (Translate.TabletSinglePlural dosage) ]
+                                        , text " "
+                                        , text <| translate language Translate.ByMouthTwiceADayFor3Days
+                                        ]
+                                    ]
+                            )
+                        |> Maybe.withDefault emptyNode
+
+                questionLabel =
+                    translate language Translate.AdministeredMedicationQuestion
+                        ++ " "
+                        ++ translate language (Translate.MedicationDistributionSign Coartem)
+                        ++ " "
+                        ++ translate language Translate.ToThePatient
+                        ++ "?"
+            in
+            div [ class "ui form medication-distribution" ]
+                [ h2 [ class "upper" ] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                , instructions
+                , div [ class "ui grid" ]
+                    [ div [ class "sixteen wide column" ]
+                        [ text questionLabel ]
+                    ]
+                , viewEverySetInput
+                    language
+                    form.signs
+                    Coartem
+                    ToggleMedicationDistributionSign
+                    "coartem-medication"
+                    Nothing
+                ]
+
+        _ ->
+            emptyNode
 
 
 viewAcuteIllnessExposure : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> Bool -> ExposureData -> List (Html Msg)

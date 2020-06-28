@@ -140,12 +140,9 @@ resolveExposureTasks measurements isSuspected =
         |> List.filter expectTask
 
 
-resolveLaboratoryTasks : AcuteIllnessMeasurements -> List LaboratoryTask
-resolveLaboratoryTasks measurements =
+resolveLaboratoryTasks : Maybe AcuteIllnessDiagnosis -> List LaboratoryTask
+resolveLaboratoryTasks diagnosis =
     let
-        diagnosis =
-            resolveAcuteIllnessDiagnosis measurements
-
         expectTask task =
             case task of
                 LaboratoryMalariaTesting ->

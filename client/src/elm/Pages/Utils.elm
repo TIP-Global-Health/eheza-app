@@ -1,4 +1,4 @@
-module Pages.Utils exposing (backFromSessionPage, filterDependentNoResultsMessage, ifEverySetEmpty, isTaskCompleted, matchFilter, matchMotherAndHerChildren, normalizeFilter, taskCompleted, taskListCompleted, tasksBarId, viewBoolInput, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxSelectInputItem, viewCheckBoxValueInput, viewCheckBoxValueInputItem, viewCheckBoxValueInputNone, viewCustomLabel, viewEndEncounterDialog, viewLabel, viewMeasurementInput, viewNameFilter, viewPhotoThumb, viewPhotoThumbFromPhotoUrl, viewPreviousMeasurement, viewQuestionLabel)
+module Pages.Utils exposing (backFromSessionPage, filterDependentNoResultsMessage, ifEverySetEmpty, isTaskCompleted, matchFilter, matchMotherAndHerChildren, normalizeFilter, taskCompleted, taskListCompleted, tasksBarId, viewBoolInput, viewCheckBoxMultipleSelectCustomInput, viewCheckBoxMultipleSelectInput, viewCheckBoxSelectCustomInput, viewCheckBoxSelectInput, viewCheckBoxSelectInputItem, viewCheckBoxValueInput, viewCheckBoxValueInputItem, viewCheckBoxValueInputNone, viewCustomLabel, viewEndEncounterDialog, viewEverySetInput, viewLabel, viewMeasurementInput, viewNameFilter, viewPhotoThumb, viewPhotoThumbFromPhotoUrl, viewPreviousMeasurement, viewQuestionLabel)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PersonId)
@@ -132,31 +132,95 @@ viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
             else
                 "four"
 
-        viewInput value currentValue_ setMsg_ =
+        viewInput value =
             let
                 isChecked =
-                    currentValue_ == Just value
+                    currentValue == Just value
+
+                transId =
+                    if value then
+                        yesTransId
+
+                    else
+                        noTransId
             in
-            input
+            [ input
                 [ type_ "radio"
                 , checked isChecked
                 , classList [ ( "checked", isChecked ) ]
-                , onCheck (always (setMsg_ value))
+                , onCheck (always (setMsg value))
                 ]
                 []
+            , label [ onClick <| setMsg value ]
+                [ text <| translate language transId ]
+            ]
     in
     div [ class <| "form-input yes-no " ++ inputClass ]
         [ div [ class "ui grid" ]
-            [ div [ class <| inputWidth ++ " wide column" ]
-                [ viewInput True currentValue setMsg
-                , label [ onClick <| setMsg True ]
-                    [ text <| translate language yesTransId ]
-                ]
-            , div [ class <| inputWidth ++ " wide column" ]
-                [ viewInput False currentValue setMsg
-                , label [ onClick <| setMsg False ]
-                    [ text <| translate language noTransId ]
-                ]
+            [ div [ class <| inputWidth ++ " wide column" ] <|
+                viewInput True
+            , div [ class <| inputWidth ++ " wide column" ] <|
+                viewInput False
+            ]
+        ]
+
+
+viewEverySetInput :
+    Language
+    -> EverySet a
+    -> a
+    -> (a -> msg)
+    -> String
+    -> Maybe ( TranslationId, TranslationId )
+    -> Html msg
+viewEverySetInput language currentValue sign setMsg inputClass optionsTranslationIds =
+    let
+        ( yesTransId, noTransId ) =
+            optionsTranslationIds |> Maybe.withDefault ( Translate.Yes, Translate.No )
+
+        inputWidth =
+            if isJust optionsTranslationIds then
+                "eight"
+
+            else
+                "four"
+
+        viewInput value =
+            let
+                isChecked =
+                    EverySet.member sign currentValue == value
+
+                transId =
+                    if value then
+                        yesTransId
+
+                    else
+                        noTransId
+
+                inputAttributes =
+                    [ type_ "radio"
+                    , checked isChecked
+                    , classList [ ( "checked", isChecked ) ]
+                    ]
+
+                labelAttributes =
+                    if isChecked then
+                        []
+
+                    else
+                        [ onClick <| setMsg sign ]
+            in
+            [ input inputAttributes []
+            , label labelAttributes
+                [ text <| translate language transId ]
+            ]
+    in
+    div [ class <| "form-input yes-no " ++ inputClass ]
+        [ div [ class "ui grid" ]
+            [ div [ class <| inputWidth ++ " wide column" ] <|
+                viewInput True
+            , div [ class <| inputWidth ++ " wide column" ] <|
+                viewInput False
             ]
         ]
 
