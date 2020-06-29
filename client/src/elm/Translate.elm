@@ -260,6 +260,7 @@ type TranslationId
     | ClinicType ClinicType
     | Clinical
     | ClinicalProgressReport
+    | CompleteHCReferralForm
     | ContactedHCQuestion
     | ContactWithCOVID19SymptomsHelper
     | ContactWithCOVID19SymptomsQuestion
@@ -660,6 +661,7 @@ type TranslationId
     | GroupEncounterLoading
     | GroupEncounterUnauthorized
     | GroupEncounterUnauthorized2
+    | SendPatientToHC
     | ShowAll
     | StartEndDate
     | StartDate
@@ -1630,6 +1632,11 @@ translationSet trans =
         ClinicalProgressReport ->
             { english = "Clinical Progress Report"
             , kinyarwanda = Just "Erekana raporo yibyavuye mu isuzuma"
+            }
+
+        CompleteHCReferralForm ->
+            { english = "Complete a health center referral form."
+            , kinyarwanda = Nothing
             }
 
         ContactedHCQuestion ->
@@ -4792,6 +4799,11 @@ translationSet trans =
                 """You are not authorized to view this health assessment.
         Please contact the Ihangane project for further
         instructions."""
+            , kinyarwanda = Nothing
+            }
+
+        SendPatientToHC ->
+            { english = "Send patient to the health center."
             , kinyarwanda = Nothing
             }
 

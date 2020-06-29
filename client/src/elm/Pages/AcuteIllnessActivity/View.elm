@@ -731,7 +731,12 @@ viewMalariaTestingForm language currentDate form =
 viewSendToHCForm : Language -> NominalDate -> SendToHCForm -> Html Msg
 viewSendToHCForm language currentDate form =
     div [ class "ui form send-to-hc" ]
-        [ div [ class "ui grid" ]
+        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , div [ class "instructions" ]
+            [ div [ class "header" ] [ text <| translate language Translate.CompleteHCReferralForm ]
+            , div [ class "header" ] [ text <| translate language Translate.SendPatientToHC ]
+            ]
+        , div [ class "ui grid" ]
             [ div [ class "sixteen wide column" ]
                 [ viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion ]
             ]

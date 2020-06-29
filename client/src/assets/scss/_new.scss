@@ -626,7 +626,8 @@ div.page-activity.acute-illness {
       margin-bottom: 30px;
     }
 
-    .ui.form.medication-distribution {
+    .ui.form.medication-distribution,
+    .ui.form.send-to-hc {
 
       h2 {
         text-transform: uppercase;
@@ -668,7 +669,7 @@ div.page-activity.acute-illness {
     .form-input.period {
       background: $color-white;
       border: 2px solid $color-light-gray;
-      margin-bottom: 0;
+      margin-ottom: 0;
       margin-top: -10px;
       padding: 5px;
       width: 100%;
