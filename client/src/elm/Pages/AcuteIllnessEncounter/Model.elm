@@ -53,5 +53,5 @@ type AcuteIllnessDiagnosis
     = DiagnosisCovid19
     | DiagnosisMalariaComplicated
     | DiagnosisMalariaUncomplicated
-    | DiagnosisGastrointestinalIfectionComplicated
-    | DiagnosisGastrointestinalIfectionUncomplicated
+    | DiagnosisGastrointestinalInfectionComplicated
+    | DiagnosisGastrointestinalInfectionUncomplicated

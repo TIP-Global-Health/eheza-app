@@ -238,7 +238,7 @@ resolveNonCovid19AcuteIllnessDiagnosis measurements =
             resolveAcuteIllnessDiagnosisByLaboratoryResults measurements
 
         else if nonBloodyDiarrheaAtSymptoms measurements then
-            Just DiagnosisGastrointestinalIfectionUncomplicated
+            Just DiagnosisGastrointestinalInfectionUncomplicated
 
         else
             Nothing
@@ -255,7 +255,7 @@ resolveAcuteIllnessDiagnosisByLaboratoryResults measurements =
                 case testResult of
                     RapidTestNegative ->
                         if bloodyDiarrheaAtSymptoms measurements && intractableVomitingAtSymptoms measurements then
-                            Just DiagnosisGastrointestinalIfectionComplicated
+                            Just DiagnosisGastrointestinalInfectionComplicated
 
                         else
                             Nothing

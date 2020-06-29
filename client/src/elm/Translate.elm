@@ -865,13 +865,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisGastrointestinalIfectionComplicated ->
-                    { english = "Gastrointestinal Ifection with Complications"
+                DiagnosisGastrointestinalInfectionComplicated ->
+                    { english = "Gastrointestinal Infection with Complications"
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisGastrointestinalIfectionUncomplicated ->
-                    { english = "Gastrointestinal Ifection without Complications"
+                DiagnosisGastrointestinalInfectionUncomplicated ->
+                    { english = "Gastrointestinal Infection without Complications"
                     , kinyarwanda = Nothing
                     }
 
@@ -892,13 +892,13 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisGastrointestinalIfectionComplicated ->
-                    { english = "Suspected Gastrointestinal Ifection with Complications"
+                DiagnosisGastrointestinalInfectionComplicated ->
+                    { english = "Suspected Gastrointestinal Infection with Complications"
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisGastrointestinalIfectionUncomplicated ->
-                    { english = "Suspected Gastrointestinal Ifection without Complications"
+                DiagnosisGastrointestinalInfectionUncomplicated ->
+                    { english = "Suspected Gastrointestinal Infection without Complications"
                     , kinyarwanda = Nothing
                     }
 

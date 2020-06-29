@@ -115,10 +115,10 @@ warningPopup language maybeDiagnosis setStateMsg =
                             DiagnosisMalariaUncomplicated ->
                                 []
 
-                            DiagnosisGastrointestinalIfectionComplicated ->
+                            DiagnosisGastrointestinalInfectionComplicated ->
                                 []
 
-                            DiagnosisGastrointestinalIfectionUncomplicated ->
+                            DiagnosisGastrointestinalInfectionUncomplicated ->
                                 []
                 in
                 div [ class "ui active modal warning-popup" ]
