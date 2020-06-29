@@ -58,14 +58,14 @@ import Backend.Person.Encoder
         , encodeUbudehe
         )
 import Backend.Person.Model exposing (..)
-import Backend.Person.Utils exposing (diffInYears, expectedAgeByPerson, isAdult, isPersonAnAdult, resolveExpectedAge)
+import Backend.Person.Utils exposing (expectedAgeByPerson, isAdult, isPersonAnAdult, resolveExpectedAge)
 import Backend.Village.Model exposing (Village)
 import Date
 import Form exposing (..)
 import Form.Field
 import Form.Init exposing (..)
 import Form.Validate exposing (..)
-import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, formatYYYYMMDD)
+import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffYears, formatYYYYMMDD)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Regex exposing (Regex)
@@ -580,17 +580,19 @@ validateBirthDate expectedAge maybeCurrentDate =
                         (fromDecoder DecoderError Nothing (Json.Decode.nullable decodeYYYYMMDD))
                         (\currentDate ->
                             let
-                                -- Convert to NominalDate.
                                 maybeBirthDate =
                                     Date.fromIsoString s
                                         |> Result.toMaybe
                             in
                             -- Calculate difference of years between input birth
                             -- date and current date.
-                            diffInYears currentDate maybeBirthDate
-                                |> unwrap
-                                    (fail <| customError InvalidBirthDate)
-                                    (\delta ->
+                            maybeBirthDate
+                                |> Maybe.map
+                                    (\birthDate ->
+                                        let
+                                            delta =
+                                                diffYears birthDate currentDate
+                                        in
                                         if delta > 12 && expectedAge == ExpectChild then
                                             fail <| customError InvalidBirthDateForChild
                                             -- Invalid age for child.
@@ -602,6 +604,7 @@ validateBirthDate expectedAge maybeCurrentDate =
                                         else
                                             succeed maybeBirthDate
                                     )
+                                |> Maybe.withDefault (fail <| customError InvalidBirthDate)
                         )
             )
 
