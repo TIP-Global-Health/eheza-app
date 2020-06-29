@@ -82,6 +82,9 @@ decodeRevision =
                     "height" ->
                         decodeWithUuid HeightRevision decodeHeight
 
+                    "individual_participant" ->
+                        decodeWithUuid IndividualEncounterParticipantRevision decodeIndividualEncounterParticipant
+
                     "isolation" ->
                         decodeWithUuid IsolationRevision decodeIsolation
 
@@ -99,6 +102,9 @@ decodeRevision =
 
                     "medication" ->
                         decodeWithUuid MedicationRevision decodeMedication
+
+                    "medication_distribution" ->
+                        decodeWithUuid MedicationDistributionRevision decodeMedicationDistribution
 
                     "mother_fbf" ->
                         decodeWithUuid MotherFbfRevision decodeFbf
@@ -151,12 +157,6 @@ decodeRevision =
                     "photo" ->
                         decodeWithUuid PhotoRevision decodePhoto
 
-                    "prescribed_medication" ->
-                        decodeWithUuid MedicationDistributionRevision decodeMedicationDistribution
-
-                    "village" ->
-                        decodeWithUuid VillageRevision decodeVillage
-
                     "pmtct_participant" ->
                         decodeWithUuid PmtctParticipantRevision decodePmtctParticipant
 
@@ -168,9 +168,6 @@ decodeRevision =
 
                     "prenatal_nutrition" ->
                         decodeWithUuid PrenatalNutritionRevision decodePrenatalNutrition
-
-                    "individual_participant" ->
-                        decodeWithUuid IndividualEncounterParticipantRevision decodeIndividualEncounterParticipant
 
                     "prenatal_photo" ->
                         decodeWithUuid PrenatalPhotoRevision decodePrenatalPhoto
@@ -204,6 +201,9 @@ decodeRevision =
 
                     "treatment_history" ->
                         decodeWithUuid TreatmentReviewRevision decodeTreatmentReview
+
+                    "village" ->
+                        decodeWithUuid VillageRevision decodeVillage
 
                     "vitals" ->
                         decodeWithUuid VitalsRevision decodeVitals

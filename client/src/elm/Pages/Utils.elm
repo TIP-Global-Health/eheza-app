@@ -188,7 +188,7 @@ viewEverySetInput language currentValue sign setMsg inputClass optionsTranslatio
         viewInput value =
             let
                 isChecked =
-                    EverySet.member sign currentValue == value
+                    not (EverySet.isEmpty currentValue) && EverySet.member sign currentValue == value
 
                 transId =
                     if value then
