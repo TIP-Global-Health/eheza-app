@@ -629,7 +629,6 @@ div.page-activity.acute-illness {
     .ui.form.medication-distribution {
 
       h2 {
-        margin-bottom: 20px;
         text-transform: uppercase;
       }
 
@@ -643,9 +642,10 @@ div.page-activity.acute-illness {
 
         .header {
           margin-bottom: 5px;
+          margin-top: 20px;
         }
 
-        .dosage {
+        .prescription {
           margin-left: 30px;
         }
       }

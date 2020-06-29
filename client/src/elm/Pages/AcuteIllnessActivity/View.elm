@@ -756,56 +756,107 @@ viewSendToHCForm language currentDate form =
 
 viewMedicationDistributionForm : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> MedicationDistributionForm -> Html Msg
 viewMedicationDistributionForm language currentDate person diagnosis form =
-    case diagnosis of
-        Just DiagnosisMalariaUncomplicated ->
-            let
-                instructions =
-                    resolveCoartemDosage currentDate person
+    let
+        viewAdministeredMedicationLabel medicineTranslationId =
+            div [ class "header" ]
+                [ text <| translate language Translate.Administer
+                , text " "
+                , span [] [ text <| translate language medicineTranslationId ]
+                , text ":"
+                ]
+
+        viewAdministeredMedicationQuestion medicineTranslationId =
+            div [ class "ui grid" ]
+                [ div [ class "sixteen wide column" ]
+                    [ text <|
+                        translate language Translate.AdministeredMedicationQuestion
+                            ++ " "
+                            ++ translate language medicineTranslationId
+                            ++ " "
+                            ++ translate language Translate.ToThePatient
+                            ++ "?"
+                    ]
+                ]
+
+        viewTabletsPrescription dosage duration =
+            div [ class "prescription" ]
+                [ span [] [ text <| translate language (Translate.TabletSinglePlural dosage) ]
+                , text " "
+                , text <| translate language duration
+                , text "."
+                ]
+
+        viewOralSolutionPrescription dosage =
+            div [ class "prescription" ]
+                [ span [] [ text <| dosage ++ " " ++ translate language Translate.Glass ]
+                , text " "
+                , text <| translate language Translate.AfterEachLiquidStool
+                , text "."
+                ]
+
+        ( instructions, questions ) =
+            case diagnosis of
+                Just DiagnosisMalariaUncomplicated ->
+                    ( resolveCoartemDosage currentDate person
                         |> Maybe.map
                             (\dosage ->
-                                div [ class "instructions coartem" ]
-                                    [ div [ class "header" ]
-                                        [ text <| translate language Translate.Administer
-                                        , text " "
-                                        , span [] [ text <| translate language (Translate.MedicationDistributionSign Coartem) ]
-                                        , text ":"
-                                        ]
-                                    , div [ class "dosage" ]
-                                        [ span [] [ text <| translate language (Translate.TabletSinglePlural dosage) ]
-                                        , text " "
-                                        , text <| translate language Translate.ByMouthTwiceADayFor3Days
-                                        , text "."
-                                        ]
+                                div [ class "instructions malaria-uncomplicated" ]
+                                    [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign Coartem)
+                                    , viewTabletsPrescription dosage (Translate.ByMouthTwiceADayForXDays 3)
                                     ]
                             )
                         |> Maybe.withDefault emptyNode
+                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Coartem)
+                      , viewEverySetInput
+                            language
+                            form.signs
+                            Coartem
+                            ToggleMedicationDistributionSign
+                            "coartem-medication"
+                            Nothing
+                      ]
+                    )
 
-                questionLabel =
-                    translate language Translate.AdministeredMedicationQuestion
-                        ++ " "
-                        ++ translate language (Translate.MedicationDistributionSign Coartem)
-                        ++ " "
-                        ++ translate language Translate.ToThePatient
-                        ++ "?"
-            in
-            div [ class "ui form medication-distribution" ]
-                [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-                , instructions
-                , div [ class "ui grid" ]
-                    [ div [ class "sixteen wide column" ]
-                        [ text questionLabel ]
-                    ]
-                , viewEverySetInput
-                    language
-                    form.signs
-                    Coartem
-                    ToggleMedicationDistributionSign
-                    "coartem-medication"
-                    Nothing
-                ]
+                Just DiagnosisGastrointestinalInfectionUncomplicated ->
+                    ( Maybe.map2
+                        (\orsDosage zincDosage ->
+                            div [ class "instructions gastrointestinal-uncomplicated" ]
+                                [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign ORS)
+                                , viewOralSolutionPrescription orsDosage
+                                , viewAdministeredMedicationLabel (Translate.MedicationDistributionSign Zinc)
+                                , viewTabletsPrescription zincDosage (Translate.ByMouthDaylyForXDays 10)
+                                ]
+                        )
+                        (resolveORSDosage currentDate person)
+                        (resolveZincDosage currentDate person)
+                        |> Maybe.withDefault emptyNode
+                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign ORS)
+                      , viewEverySetInput
+                            language
+                            form.signs
+                            ORS
+                            ToggleMedicationDistributionSign
+                            "ors-medication"
+                            Nothing
+                      , viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Zinc)
+                      , viewEverySetInput
+                            language
+                            form.signs
+                            Zinc
+                            ToggleMedicationDistributionSign
+                            "zinc-medication"
+                            Nothing
+                      ]
+                    )
 
-        _ ->
-            emptyNode
+                _ ->
+                    ( emptyNode, [] )
+    in
+    div [ class "ui form medication-distribution" ] <|
+        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+        , instructions
+        ]
+            ++ questions
 
 
 viewAcuteIllnessExposure : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> Bool -> ExposureData -> List (Html Msg)
