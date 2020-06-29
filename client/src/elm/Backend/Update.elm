@@ -2081,6 +2081,12 @@ generateSuspectedDiagnosisMsgs before after id =
 
                             Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicated ->
                                 []
+
+                            Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalIfectionComplicated ->
+                                []
+
+                            Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalIfectionUncomplicated ->
+                                []
                     )
                 |> Maybe.withDefault []
 
@@ -2097,6 +2103,12 @@ generateSuspectedDiagnosisMsgs before after id =
 
                             Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicated ->
                                 malariaUncomplicatedOnMsgs
+
+                            Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalIfectionComplicated ->
+                                gastrointestinalIfectionComplicatedOnMsgs
+
+                            Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalIfectionUncomplicated ->
+                                gastrointestinalIfectionUncomplicatedOnMsgs
                     )
                 |> Maybe.withDefault []
 
@@ -2129,6 +2141,26 @@ generateSuspectedDiagnosisMsgs before after id =
         malariaUncomplicatedOnMsgs =
             [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
             , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicated)
+                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
+                |> App.Model.MsgLoggedIn
+            , Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Model.LaboratoryMedicationDistribution
+                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
+                |> App.Model.MsgLoggedIn
+            ]
+
+        gastrointestinalIfectionComplicatedOnMsgs =
+            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
+            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalIfectionComplicated)
+                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
+                |> App.Model.MsgLoggedIn
+            , Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Model.LaboratorySendToHC
+                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
+                |> App.Model.MsgLoggedIn
+            ]
+
+        gastrointestinalIfectionUncomplicatedOnMsgs =
+            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
+            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalIfectionUncomplicated)
                 |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
                 |> App.Model.MsgLoggedIn
             , Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Model.LaboratoryMedicationDistribution

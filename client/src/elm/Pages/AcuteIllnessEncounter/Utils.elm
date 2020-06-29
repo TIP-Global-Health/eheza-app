@@ -225,13 +225,26 @@ resolveAcuteIllnessDiagnosis measurements =
     -- First we check for Covid19.
     if covid19Diagnosed measurements then
         Just DiagnosisCovid19
-        -- Check that we have enough data to make a decision on diagnosis.
-
-    else if not (mandatoryActivitiesCompleted measurements) then
-        Nothing
 
     else
-        resolveAcuteIllnessDiagnosisByLaboratoryResults measurements
+        resolveNonCovid19AcuteIllnessDiagnosis measurements
+
+
+resolveNonCovid19AcuteIllnessDiagnosis : AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+resolveNonCovid19AcuteIllnessDiagnosis measurements =
+    -- Verify that we have enough data to make a decision on diagnosis.
+    if mandatoryActivitiesCompleted measurements then
+        if feverRecorded measurements then
+            resolveAcuteIllnessDiagnosisByLaboratoryResults measurements
+
+        else if nonBloodyDiarrheaAtSymptoms measurements then
+            Just DiagnosisGastrointestinalIfectionUncomplicated
+
+        else
+            Nothing
+
+    else
+        Nothing
 
 
 resolveAcuteIllnessDiagnosisByLaboratoryResults : AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
@@ -241,7 +254,11 @@ resolveAcuteIllnessDiagnosisByLaboratoryResults measurements =
             (\testResult ->
                 case testResult of
                     RapidTestNegative ->
-                        Nothing
+                        if bloodyDiarrheaAtSymptoms measurements && intractableVomitingAtSymptoms measurements then
+                            Just DiagnosisGastrointestinalIfectionComplicated
+
+                        else
+                            Nothing
 
                     RapidTestPositive ->
                         if malarialDangerSignsPresent measurements then
@@ -348,17 +365,7 @@ feverRecorded measurements =
 feverAtSymptoms : AcuteIllnessMeasurements -> Bool
 feverAtSymptoms measurements =
     measurements.symptomsGeneral
-        |> Maybe.map
-            (\measurement ->
-                let
-                    feverPeriod =
-                        Tuple.second measurement
-                            |> .value
-                            |> Dict.get SymptomGeneralFever
-                            |> Maybe.withDefault 0
-                in
-                feverPeriod > 0
-            )
+        |> Maybe.map (Tuple.second >> .value >> symptomAppearsAtSymptomsDict SymptomGeneralFever)
         |> Maybe.withDefault False
 
 
@@ -375,6 +382,27 @@ feverAtPhysicalExam measurements =
                 in
                 bodyTemperature >= 37.5
             )
+        |> Maybe.withDefault False
+
+
+bloodyDiarrheaAtSymptoms : AcuteIllnessMeasurements -> Bool
+bloodyDiarrheaAtSymptoms measurements =
+    measurements.symptomsGI
+        |> Maybe.map (Tuple.second >> .value >> .signs >> symptomAppearsAtSymptomsDict BloodyDiarrhea)
+        |> Maybe.withDefault False
+
+
+nonBloodyDiarrheaAtSymptoms : AcuteIllnessMeasurements -> Bool
+nonBloodyDiarrheaAtSymptoms measurements =
+    measurements.symptomsGI
+        |> Maybe.map (Tuple.second >> .value >> .signs >> symptomAppearsAtSymptomsDict NonBloodyDiarrhea)
+        |> Maybe.withDefault False
+
+
+intractableVomitingAtSymptoms : AcuteIllnessMeasurements -> Bool
+intractableVomitingAtSymptoms measurements =
+    measurements.symptomsGI
+        |> Maybe.map (Tuple.second >> .value >> .derivedSigns >> EverySet.member IntractableVomiting)
         |> Maybe.withDefault False
 
 
@@ -401,36 +429,31 @@ malarialDangerSignsPresent measurements =
                 acuteFindingsValue =
                     Tuple.second acuteFindings |> .value
 
-                symptomAppearsAtDict symptom dict =
-                    Dict.get symptom dict
-                        |> Maybe.map ((<) 0)
-                        |> Maybe.withDefault False
-
                 lethargy =
-                    symptomAppearsAtDict Lethargy symptomsGeneralDict
+                    symptomAppearsAtSymptomsDict Lethargy symptomsGeneralDict
                         || EverySet.member LethargicOrUnconscious acuteFindingsValue.signsGeneral
 
                 poorSuck =
-                    symptomAppearsAtDict PoorSuck symptomsGeneralDict
+                    symptomAppearsAtSymptomsDict PoorSuck symptomsGeneralDict
                         || EverySet.member AcuteFindingsPoorSuck acuteFindingsValue.signsGeneral
 
                 unableToDrink =
-                    symptomAppearsAtDict UnableToDrink symptomsGeneralDict
+                    symptomAppearsAtSymptomsDict UnableToDrink symptomsGeneralDict
 
                 unableToEat =
-                    symptomAppearsAtDict UnableToEat symptomsGeneralDict
+                    symptomAppearsAtSymptomsDict UnableToEat symptomsGeneralDict
 
                 severeWeakness =
-                    symptomAppearsAtDict SevereWeakness symptomsGeneralDict
+                    symptomAppearsAtSymptomsDict SevereWeakness symptomsGeneralDict
 
                 cokeColoredUrine =
-                    symptomAppearsAtDict CokeColoredUrine symptomsGeneralDict
+                    symptomAppearsAtSymptomsDict CokeColoredUrine symptomsGeneralDict
 
                 convulsions =
-                    symptomAppearsAtDict SymptomsGeneralConvulsions symptomsGeneralDict
+                    symptomAppearsAtSymptomsDict SymptomsGeneralConvulsions symptomsGeneralDict
 
                 spontaneousBleeding =
-                    symptomAppearsAtDict SpontaneousBleeding symptomsGeneralDict
+                    symptomAppearsAtSymptomsDict SpontaneousBleeding symptomsGeneralDict
 
                 unconsciousness =
                     EverySet.member LethargicOrUnconscious acuteFindingsValue.signsGeneral
@@ -451,16 +474,16 @@ malarialDangerSignsPresent measurements =
                     EverySet.member SubCostalRetractions acuteFindingsValue.signsRespiratory
 
                 vomiting =
-                    symptomAppearsAtDict Vomiting symptomsGIDict
+                    symptomAppearsAtSymptomsDict Vomiting symptomsGIDict
 
                 intractableVomiting =
                     EverySet.member IntractableVomiting symptomsGISet
 
                 increasedThirst =
-                    symptomAppearsAtDict IncreasedThirst symptomsGeneralDict
+                    symptomAppearsAtSymptomsDict IncreasedThirst symptomsGeneralDict
 
                 dryMouth =
-                    symptomAppearsAtDict DryMouth symptomsGeneralDict
+                    symptomAppearsAtSymptomsDict DryMouth symptomsGeneralDict
 
                 severeDehydration =
                     intractableVomiting && increasedThirst && dryMouth
@@ -485,4 +508,11 @@ malarialDangerSignsPresent measurements =
         measurements.symptomsGeneral
         measurements.symptomsGI
         measurements.acuteFindings
+        |> Maybe.withDefault False
+
+
+symptomAppearsAtSymptomsDict : a -> Dict a Int -> Bool
+symptomAppearsAtSymptomsDict symptom dict =
+    Dict.get symptom dict
+        |> Maybe.map ((<) 0)
         |> Maybe.withDefault False

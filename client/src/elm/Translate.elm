@@ -865,6 +865,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisGastrointestinalIfectionComplicated ->
+                    { english = "Gastrointestinal Ifection with Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGastrointestinalIfectionUncomplicated ->
+                    { english = "Gastrointestinal Ifection without Complications"
+                    , kinyarwanda = Nothing
+                    }
+
         AcuteIllnessDiagnosisWarning diagnosis ->
             case diagnosis of
                 DiagnosisCovid19 ->
@@ -879,6 +889,16 @@ translationSet trans =
 
                 DiagnosisMalariaUncomplicated ->
                     { english = "Suspected Malaria without complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGastrointestinalIfectionComplicated ->
+                    { english = "Suspected Gastrointestinal Ifection with Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisGastrointestinalIfectionUncomplicated ->
+                    { english = "Suspected Gastrointestinal Ifection without Complications"
                     , kinyarwanda = Nothing
                     }
 
