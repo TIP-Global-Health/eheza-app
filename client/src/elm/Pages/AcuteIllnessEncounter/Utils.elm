@@ -149,10 +149,12 @@ resolveLaboratoryTasks diagnosis =
                     True
 
                 LaboratoryMedicationDistribution ->
-                    diagnosis == Just DiagnosisMalariaUncomplicated
+                    (diagnosis == Just DiagnosisMalariaUncomplicated)
+                        || (diagnosis == Just DiagnosisGastrointestinalInfectionUncomplicated)
 
                 LaboratorySendToHC ->
-                    diagnosis == Just DiagnosisMalariaComplicated
+                    (diagnosis == Just DiagnosisMalariaComplicated)
+                        || (diagnosis == Just DiagnosisGastrointestinalInfectionComplicated)
     in
     [ LaboratoryMalariaTesting, LaboratoryMedicationDistribution, LaboratorySendToHC ]
         |> List.filter expectTask
