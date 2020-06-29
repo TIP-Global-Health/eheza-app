@@ -578,8 +578,9 @@ div.page-encounter.prenatal {
     }
 }
 
-// Acute Illness Encounter page
-div.page-encounter.acute-illness {
+// Acute Illness pages
+div.page-encounter.acute-illness,
+div.page-activity.acute-illness {
 
     .item .content.person-details {
       padding-top: 0 !important;
@@ -591,7 +592,25 @@ div.page-encounter.acute-illness {
       .age-wrapper {
         margin-bottom: 5px;
       }
+
+      .disagnosis-wrapper {
+
+        .label {
+          float: left;
+          width: 24%;
+        }
+
+        .disagnosis {
+          float: left;
+          width: 75%;
+        }
+      }
     }
+}
+
+
+// Acute Illness Encounter page
+div.page-encounter.acute-illness {
 
     .ui.full.segment {
 
@@ -603,18 +622,6 @@ div.page-encounter.acute-illness {
 
 // Acute Illness Activity page
 div.page-activity.acute-illness {
-
-  .item .content.person-details {
-    padding-top: 0 !important;
-
-    h2 {
-      margin-bottom: 5px;
-    }
-
-    .age-wrapper {
-      margin-bottom: 5px;
-    }
-  }
 
   .ui.full.segment {
 
