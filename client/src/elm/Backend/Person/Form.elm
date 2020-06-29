@@ -579,19 +579,15 @@ validateBirthDate expectedAge maybeCurrentDate =
                         -- When we don't know current date, try to decode input value.
                         (fromDecoder DecoderError Nothing (Json.Decode.nullable decodeYYYYMMDD))
                         (\currentDate ->
-                            let
-                                maybeBirthDate =
-                                    Date.fromIsoString s
-                                        |> Result.toMaybe
-                            in
                             -- Calculate difference of years between input birth
                             -- date and current date.
-                            maybeBirthDate
+                            Date.fromIsoString s
+                                |> Result.toMaybe
                                 |> Maybe.map
-                                    (\birthDate ->
+                                    (\birthDate_ ->
                                         let
                                             delta =
-                                                diffYears birthDate currentDate
+                                                diffYears birthDate_ currentDate
                                         in
                                         if delta > 12 && expectedAge == ExpectChild then
                                             fail <| customError InvalidBirthDateForChild
@@ -602,7 +598,7 @@ validateBirthDate expectedAge maybeCurrentDate =
                                             -- Invalid age for adult.
 
                                         else
-                                            succeed maybeBirthDate
+                                            succeed (Just birthDate_)
                                     )
                                 |> Maybe.withDefault (fail <| customError InvalidBirthDate)
                         )
