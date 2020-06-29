@@ -30,6 +30,7 @@ class HedleyMigratePmtctParticipants extends HedleyMigrateBase {
     'field_adult_activities',
     'field_expected',
     'field_clinic',
+    'created',
   ];
 
   /**
