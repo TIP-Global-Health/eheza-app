@@ -1988,10 +1988,6 @@ handleRevision revision (( model, recalc ) as noChange) =
             )
 
         SymptomsGeneralRevision uuid data ->
-            let
-                _ =
-                    Debug.log "data" data
-            in
             ( mapAcuteIllnessMeasurements
                 data.encounterId
                 (\measurements -> { measurements | symptomsGeneral = Just ( uuid, data ) })
