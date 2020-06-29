@@ -2121,11 +2121,17 @@ generateSuspectedDiagnosisMsgs before after id =
             , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaComplicated)
                 |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
                 |> App.Model.MsgLoggedIn
+            , Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Model.LaboratorySendToHC
+                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
+                |> App.Model.MsgLoggedIn
             ]
 
         malariaUncomplicatedOnMsgs =
             [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
             , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicated)
+                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
+                |> App.Model.MsgLoggedIn
+            , Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Model.LaboratoryMedicationDistribution
                 |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
                 |> App.Model.MsgLoggedIn
             ]
