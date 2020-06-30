@@ -1843,7 +1843,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 5,
+      'weight' => 6,
     ),
   );
 
@@ -1899,12 +1899,12 @@ function hedley_acute_illness_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 
-  // Exported field_instance: 'node-malaria_testing-field_malaria_testing'.
-  $field_instances['node-malaria_testing-field_malaria_testing'] = array(
+  // Exported field_instance: 'node-malaria_testing-field_malaria_rapid_test'.
+  $field_instances['node-malaria_testing-field_malaria_rapid_test'] = array(
     'bundle' => 'malaria_testing',
     'default_value' => NULL,
     'deleted' => 0,
@@ -1915,7 +1915,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'module' => 'list',
         'settings' => array(),
         'type' => 'list_default',
-        'weight' => 6,
+        'weight' => 7,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -1925,8 +1925,8 @@ function hedley_acute_illness_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_malaria_testing',
-    'label' => 'Malaria Testing',
+    'field_name' => 'field_malaria_rapid_test',
+    'label' => 'Malaria Rapid Test',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -1935,8 +1935,8 @@ function hedley_acute_illness_field_default_field_instances() {
       'active' => 1,
       'module' => 'options',
       'settings' => array(),
-      'type' => 'options_buttons',
-      'weight' => 2,
+      'type' => 'options_select',
+      'weight' => 3,
     ),
   );
 
@@ -1980,7 +1980,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 4,
+      'weight' => 5,
     ),
   );
 
@@ -2068,7 +2068,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 7,
+      'weight' => 8,
     ),
   );
 
@@ -2108,7 +2108,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 6,
+      'weight' => 7,
     ),
   );
 
@@ -4869,7 +4869,7 @@ function hedley_acute_illness_field_default_field_instances() {
   t('Increased Thirst Period');
   t('Isolation');
   t('Lethargy Period');
-  t('Malaria Testing');
+  t('Malaria Rapid Test');
   t('Nasal Congestion Period');
   t('Nausea Period');
   t('Night Sweats Period');

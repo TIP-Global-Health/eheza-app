@@ -32,7 +32,7 @@ type Msg
     | SaveAcuteFindings PersonId (Maybe ( AcuteFindingsId, AcuteFindings )) (Maybe PhysicalExamTask)
       -- LABORATORY Msgs
     | SetActiveLaboratoryTask LaboratoryTask
-    | SetRapidTestPositive Bool
+    | SetRapidTestResult String
     | SaveMalariaTesting PersonId (Maybe ( MalariaTestingId, MalariaTesting ))
       -- EXPOSURE Msgs
     | SetActiveExposureTask ExposureTask
@@ -181,7 +181,7 @@ type LaboratoryTask
 
 
 type alias MalariaTestingForm =
-    { rapidTestPositive : Maybe Bool
+    { rapidTestResult : Maybe MalariaRapidTestResult
     }
 
 

@@ -12,7 +12,7 @@ import Backend.Measurement.Model
         , HCRecomendation(..)
         , IsolationSign(..)
         , IsolationValue
-        , MalariaTestingSign(..)
+        , MalariaRapidTestResult(..)
         , ReasonForNotIsolating(..)
         , ResponsePeriod(..)
         , SymptomsGISign(..)

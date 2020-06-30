@@ -418,6 +418,8 @@ type TranslationId
     | Lungs
     | LungsCPESign LungsCPESign
     | MakeSureYouAreConnected
+    | MalariaRapidDiagnosticTest
+    | MalariaRapidTestResult MalariaRapidTestResult
     | MaritalStatusLabel
     | MaritalStatus MaritalStatus
     | MeasurementNoChange
@@ -549,7 +551,6 @@ type TranslationId
     | PrenatalParticipants
     | PreTermPregnancy
     | Province
-    | RapidTestResult
     | ReasonForCSection
     | ReasonForNotIsolating ReasonForNotIsolating
     | ReceivedDewormingPill
@@ -2710,7 +2711,7 @@ translationSet trans =
         LaboratoryTask task ->
             case task of
                 LaboratoryMalariaTesting ->
-                    { english = "Malaria Results"
+                    { english = "Malaria"
                     , kinyarwanda = Nothing
                     }
 
@@ -2861,6 +2862,28 @@ translationSet trans =
             { english = "Make sure you are connected to the internet. If the issue continues, call The Ihangane Project at +250 788 817 542."
             , kinyarwanda = Just "Banza urebe ko ufite interineti. Ikibazo nigikomeza, hamagara The Ihangane Project kuri +250 788 817 542"
             }
+
+        MalariaRapidDiagnosticTest ->
+            { english = "Malaria Rapid Diagnostic Test"
+            , kinyarwanda = Nothing
+            }
+
+        MalariaRapidTestResult result ->
+            case result of
+                RapidTestNegative ->
+                    { english = "Negative"
+                    , kinyarwanda = Nothing
+                    }
+
+                RapidTestPositive ->
+                    { english = "Positive"
+                    , kinyarwanda = Nothing
+                    }
+
+                RapidTestIndeterminate ->
+                    { english = "Indeterminate"
+                    , kinyarwanda = Nothing
+                    }
 
         MaritalStatusLabel ->
             { english = "Marital Status"
@@ -3824,11 +3847,6 @@ translationSet trans =
         Province ->
             { english = "Province"
             , kinyarwanda = Just "Intara"
-            }
-
-        RapidTestResult ->
-            { english = "Rapid Test Result"
-            , kinyarwanda = Nothing
             }
 
         ReasonForCSection ->

@@ -5,6 +5,7 @@ import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Model
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
+import Backend.Measurement.Decoder exposing (malariaRapidTestResultFromString)
 import Backend.Measurement.Model
     exposing
         ( AcuteFindingsGeneralSign(..)
@@ -564,13 +565,13 @@ update currentDate id db msg model =
             , []
             )
 
-        SetRapidTestPositive value ->
+        SetRapidTestResult value ->
             let
                 form =
                     model.laboratoryData.malariaTestingForm
 
                 updatedForm =
-                    { form | rapidTestPositive = Just value }
+                    { form | rapidTestResult = malariaRapidTestResultFromString value }
 
                 updatedData =
                     model.laboratoryData
