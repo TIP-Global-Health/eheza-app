@@ -1,4 +1,4 @@
-module AcuteIllnessActivity.Utils exposing (decodeActivityFromString, encodeActivityAsString, getActivityIcon, getAllActivities)
+module AcuteIllnessActivity.Utils exposing (activityCompleted, decodeActivityFromString, encodeActivityAsString, expectActivity, getActivityIcon, getAllActivities)
 
 {-| Various utilities that deal with "activities". An activity represents the
 need for a nurse to do something with respect to a person who is checked in.
@@ -11,6 +11,11 @@ expected (and not completed).
 -}
 
 import AcuteIllnessActivity.Model exposing (..)
+import AssocList as Dict exposing (Dict)
+import Backend.Measurement.Model exposing (AcuteIllnessMeasurements, SymptomsGeneralSign(..))
+import Gizra.NominalDate exposing (NominalDate)
+import Maybe.Extra exposing (isJust)
+import Pages.AcuteIllnessEncounter.Utils exposing (exposureTasksCompleted)
 import Translate exposing (Language, translate)
 
 
@@ -78,3 +83,66 @@ getActivityIcon activity =
 getAllActivities : List AcuteIllnessActivity
 getAllActivities =
     [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPriorTreatment, AcuteIllnessPhysicalExam, AcuteIllnessLaboratory ]
+
+
+expectActivity : NominalDate -> AcuteIllnessMeasurements -> Bool -> AcuteIllnessActivity -> Bool
+expectActivity currentDate measurements covid19Suspected activity =
+    case activity of
+        AcuteIllnessLaboratory ->
+            let
+                feverToday =
+                    measurements.vitals
+                        |> Maybe.map
+                            (\measurement ->
+                                let
+                                    bodyTemperature =
+                                        Tuple.second measurement
+                                            |> .value
+                                            |> .bodyTemperature
+                                in
+                                bodyTemperature > 37.5
+                            )
+                        |> Maybe.withDefault False
+
+                symptomaticFever =
+                    measurements.symptomsGeneral
+                        |> Maybe.map
+                            (\measurement ->
+                                let
+                                    feverPeriod =
+                                        Tuple.second measurement
+                                            |> .value
+                                            |> Dict.get SymptomGeneralFever
+                                            |> Maybe.withDefault 0
+                                in
+                                feverPeriod > 0
+                            )
+                        |> Maybe.withDefault False
+            in
+            not covid19Suspected
+                && List.all (activityCompleted measurements covid19Suspected) [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPhysicalExam ]
+                && (feverToday || symptomaticFever)
+
+        _ ->
+            True
+
+
+activityCompleted : AcuteIllnessMeasurements -> Bool -> AcuteIllnessActivity -> Bool
+activityCompleted measurements isSuspected activity =
+    case activity of
+        AcuteIllnessSymptoms ->
+            isJust measurements.symptomsGeneral
+                && isJust measurements.symptomsRespiratory
+                && isJust measurements.symptomsGI
+
+        AcuteIllnessPhysicalExam ->
+            isJust measurements.vitals
+
+        AcuteIllnessPriorTreatment ->
+            isJust measurements.treatmentReview
+
+        AcuteIllnessLaboratory ->
+            isJust measurements.malariaTesting
+
+        AcuteIllnessExposure ->
+            exposureTasksCompleted measurements isSuspected

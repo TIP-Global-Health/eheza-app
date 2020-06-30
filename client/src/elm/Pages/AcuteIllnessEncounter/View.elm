@@ -1,7 +1,7 @@
 module Pages.AcuteIllnessEncounter.View exposing (view, viewPersonDetailsWithAlert)
 
 import AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
-import AcuteIllnessActivity.Utils exposing (getActivityIcon, getAllActivities)
+import AcuteIllnessActivity.Utils exposing (activityCompleted, expectActivity, getActivityIcon, getAllActivities)
 import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
 import Backend.Entities exposing (..)
@@ -160,26 +160,8 @@ viewMainPageContent language currentDate id data isSuspected model =
 
         ( completedActivities, pendingActivities ) =
             getAllActivities
-                |> List.partition
-                    (\activity ->
-                        case activity of
-                            AcuteIllnessSymptoms ->
-                                isJust measurements.symptomsGeneral
-                                    && isJust measurements.symptomsRespiratory
-                                    && isJust measurements.symptomsGI
-
-                            AcuteIllnessPhysicalExam ->
-                                isJust measurements.vitals
-
-                            AcuteIllnessPriorTreatment ->
-                                isJust measurements.treatmentReview
-
-                            AcuteIllnessLaboratory ->
-                                isJust measurements.malariaTesting
-
-                            AcuteIllnessExposure ->
-                                exposureTasksCompleted measurements isSuspected
-                    )
+                |> List.filter (expectActivity currentDate measurements isSuspected)
+                |> List.partition (activityCompleted measurements isSuspected)
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
