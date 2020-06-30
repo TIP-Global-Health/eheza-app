@@ -1200,6 +1200,9 @@ encondeMedicationDistributionSign sign =
             Zinc ->
                 "zinc"
 
+            LemonJuiceOrHoney ->
+                "lemon-juice-or-honey"
+
             NoMedicationDistributionSigns ->
                 "none"
 

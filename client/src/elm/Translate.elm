@@ -3148,6 +3148,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                LemonJuiceOrHoney ->
+                    { english = "Lemon Juice or Honey"
+                    , kinyarwanda = Nothing
+                    }
+
                 NoMedicationDistributionSigns ->
                     { english = ""
                     , kinyarwanda = Nothing

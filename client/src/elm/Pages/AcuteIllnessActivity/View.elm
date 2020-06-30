@@ -857,6 +857,21 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                       ]
                     )
 
+                Just DiagnosisSimlpeColdAndCough ->
+                    ( div [ class "instructions simple-cough-and-cold" ]
+                        [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign LemonJuiceOrHoney)
+                        ]
+                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign LemonJuiceOrHoney)
+                      , viewEverySetInput
+                            language
+                            form.signs
+                            LemonJuiceOrHoney
+                            ToggleMedicationDistributionSign
+                            "lemon-juice-or-honey-medication"
+                            Nothing
+                      ]
+                    )
+
                 _ ->
                     ( emptyNode, [] )
     in

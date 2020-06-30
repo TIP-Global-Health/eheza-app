@@ -581,6 +581,7 @@ function hedley_acute_illness_field_default_field_bases() {
         'coartem' => 'Coartem',
         'ors' => 'ORS',
         'zinc' => 'Zinc',
+        'lemon-juice-or-honey' => 'Lemon Juice or Honey',
         'none' => 'None of these',
       ),
       'allowed_values_function' => '',
