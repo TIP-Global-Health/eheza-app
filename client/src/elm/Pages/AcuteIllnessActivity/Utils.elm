@@ -207,8 +207,16 @@ laboratoryTasksCompletedFromTotal diagnosis measurements data task =
                     , 1
                     )
 
+                Just DiagnosisGastrointestinalInfectionUncomplicated ->
+                    ( signTaskCompleted ORS NoMedicationDistributionSigns form.signs
+                        + signTaskCompleted Zinc NoMedicationDistributionSigns form.signs
+                    , 2
+                    )
+
                 _ ->
-                    ( 0, 1 )
+                    ( signTaskCompleted LemonJuiceOrHoney NoMedicationDistributionSigns form.signs
+                    , 1
+                    )
 
         LaboratorySendToHC ->
             let
