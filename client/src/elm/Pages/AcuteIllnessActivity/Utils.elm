@@ -213,8 +213,13 @@ laboratoryTasksCompletedFromTotal diagnosis measurements data task =
                     , 2
                     )
 
-                _ ->
+                Just DiagnosisSimlpeColdAndCough ->
                     ( signTaskCompleted LemonJuiceOrHoney NoMedicationDistributionSigns form.signs
+                    , 1
+                    )
+
+                _ ->
+                    ( 0
                     , 1
                     )
 
