@@ -2060,7 +2060,7 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
                             Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionUncomplicated ->
                                 []
 
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisSimlpeColdAndCough ->
+                            Pages.AcuteIllnessEncounter.Model.DiagnosisSimpleColdAndCough ->
                                 []
                     )
                 |> Maybe.withDefault []
@@ -2085,7 +2085,7 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
                             Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionUncomplicated ->
                                 gastrointestinalInfectionUncomplicatedOnMsgs
 
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisSimlpeColdAndCough ->
+                            Pages.AcuteIllnessEncounter.Model.DiagnosisSimpleColdAndCough ->
                                 simlpeColdAndCoughOnMsgs
                     )
                 |> Maybe.withDefault []
@@ -2148,7 +2148,7 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
 
         simlpeColdAndCoughOnMsgs =
             [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
-            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just Pages.AcuteIllnessEncounter.Model.DiagnosisSimlpeColdAndCough)
+            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just Pages.AcuteIllnessEncounter.Model.DiagnosisSimpleColdAndCough)
                 |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
                 |> App.Model.MsgLoggedIn
             , Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Model.LaboratoryMedicationDistribution

@@ -880,8 +880,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisSimlpeColdAndCough ->
-                    { english = "Simlpe Cold and Cough"
+                DiagnosisSimpleColdAndCough ->
+                    { english = "Simple Cold and Cough"
                     , kinyarwanda = Nothing
                     }
 
@@ -912,8 +912,8 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
-                DiagnosisSimlpeColdAndCough ->
-                    { english = "Simlpe Cold and Cough"
+                DiagnosisSimpleColdAndCough ->
+                    { english = "Simple Cold and Cough"
                     , kinyarwanda = Nothing
                     }
 

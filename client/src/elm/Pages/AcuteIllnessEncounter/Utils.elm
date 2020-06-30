@@ -153,7 +153,7 @@ resolveLaboratoryTasks diagnosis =
                 LaboratoryMedicationDistribution ->
                     (diagnosis == Just DiagnosisMalariaUncomplicated)
                         || (diagnosis == Just DiagnosisGastrointestinalInfectionUncomplicated)
-                        || (diagnosis == Just DiagnosisSimlpeColdAndCough)
+                        || (diagnosis == Just DiagnosisSimpleColdAndCough)
 
                 LaboratorySendToHC ->
                     (diagnosis == Just DiagnosisMalariaComplicated)
@@ -249,7 +249,7 @@ resolveNonCovid19AcuteIllnessDiagnosis currentDate person measurements =
             coughAndNasalCongestionAtSymptoms measurements
                 && respiratoryRateElevatedForChild currentDate person measurements
         then
-            Just DiagnosisSimlpeColdAndCough
+            Just DiagnosisSimpleColdAndCough
 
         else
             Nothing

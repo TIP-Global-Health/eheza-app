@@ -55,4 +55,4 @@ type AcuteIllnessDiagnosis
     | DiagnosisMalariaUncomplicated
     | DiagnosisGastrointestinalInfectionComplicated
     | DiagnosisGastrointestinalInfectionUncomplicated
-    | DiagnosisSimlpeColdAndCough
+    | DiagnosisSimpleColdAndCough

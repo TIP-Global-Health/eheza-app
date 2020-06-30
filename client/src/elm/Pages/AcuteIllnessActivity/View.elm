@@ -132,7 +132,7 @@ warningPopup language maybeDiagnosis setStateMsg =
                             DiagnosisGastrointestinalInfectionUncomplicated ->
                                 ( infoHeading, [], "blue" )
 
-                            DiagnosisSimlpeColdAndCough ->
+                            DiagnosisSimpleColdAndCough ->
                                 ( infoHeading, [], "blue" )
                 in
                 div [ class <| "ui active modal diagnosis-popup " ++ color ]
@@ -865,7 +865,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                       ]
                     )
 
-                Just DiagnosisSimlpeColdAndCough ->
+                Just DiagnosisSimpleColdAndCough ->
                     ( div [ class "instructions simple-cough-and-cold" ]
                         [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign LemonJuiceOrHoney)
                         ]
