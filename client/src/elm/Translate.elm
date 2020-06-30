@@ -880,6 +880,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisSimlpeColdAndCough ->
+                    { english = "Simlpe Cold and Cough"
+                    , kinyarwanda = Nothing
+                    }
+
         AcuteIllnessDiagnosisWarning diagnosis ->
             case diagnosis of
                 DiagnosisCovid19 ->
@@ -904,6 +909,11 @@ translationSet trans =
 
                 DiagnosisGastrointestinalInfectionUncomplicated ->
                     { english = "Suspected Gastrointestinal Infection without Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisSimlpeColdAndCough ->
+                    { english = "Simlpe Cold and Cough"
                     , kinyarwanda = Nothing
                     }
 

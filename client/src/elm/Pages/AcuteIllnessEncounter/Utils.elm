@@ -25,6 +25,8 @@ import Backend.Measurement.Model
         , TravelHistorySign(..)
         )
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInMonths, ageInYears)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
@@ -151,6 +153,7 @@ resolveLaboratoryTasks diagnosis =
                 LaboratoryMedicationDistribution ->
                     (diagnosis == Just DiagnosisMalariaUncomplicated)
                         || (diagnosis == Just DiagnosisGastrointestinalInfectionUncomplicated)
+                        || (diagnosis == Just DiagnosisSimlpeColdAndCough)
 
                 LaboratorySendToHC ->
                     (diagnosis == Just DiagnosisMalariaComplicated)
@@ -222,18 +225,18 @@ mandatoryActivitiesCompleted measurements =
         |> List.all (activityCompleted measurements False)
 
 
-resolveAcuteIllnessDiagnosis : AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-resolveAcuteIllnessDiagnosis measurements =
+resolveAcuteIllnessDiagnosis : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+resolveAcuteIllnessDiagnosis currentDate person measurements =
     -- First we check for Covid19.
     if covid19Diagnosed measurements then
         Just DiagnosisCovid19
 
     else
-        resolveNonCovid19AcuteIllnessDiagnosis measurements
+        resolveNonCovid19AcuteIllnessDiagnosis currentDate person measurements
 
 
-resolveNonCovid19AcuteIllnessDiagnosis : AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
-resolveNonCovid19AcuteIllnessDiagnosis measurements =
+resolveNonCovid19AcuteIllnessDiagnosis : NominalDate -> Person -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
+resolveNonCovid19AcuteIllnessDiagnosis currentDate person measurements =
     -- Verify that we have enough data to make a decision on diagnosis.
     if mandatoryActivitiesCompleted measurements then
         if feverRecorded measurements then
@@ -241,6 +244,12 @@ resolveNonCovid19AcuteIllnessDiagnosis measurements =
 
         else if nonBloodyDiarrheaAtSymptoms measurements then
             Just DiagnosisGastrointestinalInfectionUncomplicated
+
+        else if
+            coughAndNasalCongestionAtSymptoms measurements
+                && respiratoryRateElevatedForChild currentDate person measurements
+        then
+            Just DiagnosisSimlpeColdAndCough
 
         else
             Nothing
@@ -387,6 +396,30 @@ feverAtPhysicalExam measurements =
         |> Maybe.withDefault False
 
 
+respiratoryRateElevatedForChild : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
+respiratoryRateElevatedForChild currentDate person measurements =
+    Maybe.map2
+        (\measurement ageMonths ->
+            let
+                respiratoryRate =
+                    Tuple.second measurement
+                        |> .value
+                        |> .respiratoryRate
+            in
+            if ageMonths < 12 then
+                respiratoryRate >= 50
+
+            else if ageMonths <= 60 then
+                respiratoryRate >= 40
+
+            else
+                False
+        )
+        measurements.vitals
+        (ageInMonths currentDate person)
+        |> Maybe.withDefault False
+
+
 bloodyDiarrheaAtSymptoms : AcuteIllnessMeasurements -> Bool
 bloodyDiarrheaAtSymptoms measurements =
     measurements.symptomsGI
@@ -405,6 +438,19 @@ intractableVomitingAtSymptoms : AcuteIllnessMeasurements -> Bool
 intractableVomitingAtSymptoms measurements =
     measurements.symptomsGI
         |> Maybe.map (Tuple.second >> .value >> .derivedSigns >> EverySet.member IntractableVomiting)
+        |> Maybe.withDefault False
+
+
+coughAndNasalCongestionAtSymptoms : AcuteIllnessMeasurements -> Bool
+coughAndNasalCongestionAtSymptoms measurements =
+    measurements.symptomsRespiratory
+        |> Maybe.map
+            (Tuple.second
+                >> .value
+                >> (\symptomsDict ->
+                        symptomAppearsAtSymptomsDict Cough symptomsDict && symptomAppearsAtSymptomsDict NasalCongestion symptomsDict
+                   )
+            )
         |> Maybe.withDefault False
 
 

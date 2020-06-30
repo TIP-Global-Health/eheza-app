@@ -88,7 +88,7 @@ viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllness
 viewContent language currentDate id activity model data =
     let
         diagnosis =
-            resolveAcuteIllnessDiagnosis data.measurements
+            resolveAcuteIllnessDiagnosis currentDate data.person data.measurements
     in
     (viewPersonDetailsWithAlert language currentDate data.person diagnosis model.showAlertsDialog SetAlertsDialogState
         :: viewActivity language currentDate id activity diagnosis data model
@@ -119,6 +119,9 @@ warningPopup language maybeDiagnosis setStateMsg =
                                 []
 
                             DiagnosisGastrointestinalInfectionUncomplicated ->
+                                []
+
+                            DiagnosisSimlpeColdAndCough ->
                                 []
                 in
                 div [ class "ui active modal warning-popup" ]
@@ -563,7 +566,7 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
             AcuteIllnessLaboratory
 
         diagnosis =
-            resolveAcuteIllnessDiagnosis measurements
+            resolveAcuteIllnessDiagnosis currentDate person measurements
 
         tasks =
             resolveLaboratoryTasks diagnosis
