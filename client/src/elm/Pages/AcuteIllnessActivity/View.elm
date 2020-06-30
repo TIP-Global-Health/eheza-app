@@ -102,41 +102,49 @@ warningPopup language maybeDiagnosis setStateMsg =
         |> Maybe.map
             (\diagnosis ->
                 let
-                    content =
+                    infoHeading =
+                        [ div [ class "popup-heading" ] [ text <| translate language Translate.Assessment ++ ":" ] ]
+
+                    warningHeading =
+                        [ img [ src "assets/images/exclamation-red.png" ] []
+                        , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
+                        ]
+
+                    ( heading, content, color ) =
                         case diagnosis of
                             DiagnosisCovid19 ->
-                                [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
-                                , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
-                                ]
+                                ( warningHeading
+                                , [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
+                                  , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
+                                  ]
+                                , "red"
+                                )
 
                             DiagnosisMalariaComplicated ->
-                                []
+                                ( infoHeading, [], "blue" )
 
                             DiagnosisMalariaUncomplicated ->
-                                []
+                                ( infoHeading, [], "blue" )
 
                             DiagnosisGastrointestinalInfectionComplicated ->
-                                []
+                                ( infoHeading, [], "blue" )
 
                             DiagnosisGastrointestinalInfectionUncomplicated ->
-                                []
+                                ( infoHeading, [], "blue" )
 
                             DiagnosisSimlpeColdAndCough ->
-                                []
+                                ( infoHeading, [], "blue" )
                 in
-                div [ class "ui active modal warning-popup" ]
+                div [ class <| "ui active modal diagnosis-popup " ++ color ]
                     [ div [ class "content" ] <|
-                        [ div [ class "popup-heading-wrapper" ]
-                            [ img [ src "assets/images/exclamation-red.png" ] []
-                            , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
-                            ]
+                        [ div [ class "popup-heading-wrapper" ] heading
                         , div [ class "popup-title" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis ]
                         ]
                             ++ content
                     , div
                         [ class "actions" ]
                         [ button
-                            [ class "ui primary fluid button"
+                            [ class <| "ui primary fluid button " ++ color
                             , onClick <| setStateMsg Nothing
                             ]
                             [ text <| translate language Translate.Continue ]
