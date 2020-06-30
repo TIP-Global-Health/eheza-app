@@ -1702,10 +1702,16 @@ makeEditableSession sessionId db =
 
         hasChildrenMeasurementsNotSuccess =
             hasNoSuccessValues db.childMeasurements
+
+        noPeopleLoaded =
+            db.people
+                |> Dict.values
+                |> List.filter (\v -> RemoteData.isSuccess v)
+                |> List.isEmpty
     in
-    -- Make sure we don't still have measurements being lazy loaded.
-    -- If we do, allow rebuilding the `EditableSession`.
-    if hasMothersMeasurementsNotSuccess || hasChildrenMeasurementsNotSuccess then
+    -- Make sure we don't still have measurements being lazy loaded, and at least
+    -- some of the people have loaded. Otherwise, allow rebuilding the `EditableSession`.
+    if hasMothersMeasurementsNotSuccess || hasChildrenMeasurementsNotSuccess || noPeopleLoaded then
         Loading
 
     else
