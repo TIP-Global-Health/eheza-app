@@ -2118,7 +2118,9 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
                             prescribeMedicationMsgs diagnosis
 
                         else
-                            []
+                            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessPhysicalExam))
+                            , triggerWarningPopupMsg diagnosis AcuteIllnessPhysicalExam
+                            ]
                     )
                 |> Maybe.withDefault []
 
