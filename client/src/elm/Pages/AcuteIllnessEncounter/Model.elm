@@ -56,3 +56,5 @@ type AcuteIllnessDiagnosis
     | DiagnosisGastrointestinalInfectionComplicated
     | DiagnosisGastrointestinalInfectionUncomplicated
     | DiagnosisSimpleColdAndCough
+    | DiagnosisRespiratoryInfectionComplicated
+    | DiagnosisRespiratoryInfectionUncomplicated

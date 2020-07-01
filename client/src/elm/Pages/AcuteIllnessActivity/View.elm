@@ -120,19 +120,7 @@ warningPopup language maybeDiagnosis setStateMsg =
                                 , "red"
                                 )
 
-                            DiagnosisMalariaComplicated ->
-                                ( infoHeading, [], "blue" )
-
-                            DiagnosisMalariaUncomplicated ->
-                                ( infoHeading, [], "blue" )
-
-                            DiagnosisGastrointestinalInfectionComplicated ->
-                                ( infoHeading, [], "blue" )
-
-                            DiagnosisGastrointestinalInfectionUncomplicated ->
-                                ( infoHeading, [], "blue" )
-
-                            DiagnosisSimpleColdAndCough ->
+                            _ ->
                                 ( infoHeading, [], "blue" )
                 in
                 div [ class <| "ui active modal diagnosis-popup " ++ color ]
@@ -577,7 +565,7 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, person, measureme
             resolveAcuteIllnessDiagnosis currentDate person measurements
 
         tasks =
-            resolveLaboratoryTasks diagnosis
+            resolveLaboratoryTasks currentDate person diagnosis
 
         viewTask task =
             let
@@ -867,8 +855,7 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
 
                 Just DiagnosisSimpleColdAndCough ->
                     ( div [ class "instructions simple-cough-and-cold" ]
-                        [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign LemonJuiceOrHoney)
-                        ]
+                        [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign LemonJuiceOrHoney) ]
                     , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign LemonJuiceOrHoney)
                       , viewEverySetInput
                             language
@@ -876,6 +863,27 @@ viewMedicationDistributionForm language currentDate person diagnosis form =
                             LemonJuiceOrHoney
                             ToggleMedicationDistributionSign
                             "lemon-juice-or-honey-medication"
+                            Nothing
+                      ]
+                    )
+
+                Just DiagnosisRespiratoryInfectionUncomplicated ->
+                    ( resolveAmoxicillinDosage currentDate person
+                        |> Maybe.map
+                            (\dosage ->
+                                div [ class "instructions respiratory-infection-uncomplicated" ]
+                                    [ viewAdministeredMedicationLabel (Translate.MedicationDistributionSign Amoxicillin)
+                                    , viewTabletsPrescription dosage (Translate.ByMouthTwiceADayForXDays 5)
+                                    ]
+                            )
+                        |> Maybe.withDefault emptyNode
+                    , [ viewAdministeredMedicationQuestion (Translate.MedicationDistributionSign Amoxicillin)
+                      , viewEverySetInput
+                            language
+                            form.signs
+                            Amoxicillin
+                            ToggleMedicationDistributionSign
+                            "amoxicillin-medication"
                             Nothing
                       ]
                     )

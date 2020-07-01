@@ -20,7 +20,7 @@ import Backend.Model exposing (..)
 import Backend.NutritionEncounter.Model
 import Backend.NutritionEncounter.Update
 import Backend.Person.Model exposing (Initiator(..), Person)
-import Backend.Person.Utils exposing (graduatingAgeInMonth)
+import Backend.Person.Utils exposing (ageInMonths, graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Update
@@ -2048,20 +2048,8 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
                             Pages.AcuteIllnessEncounter.Model.DiagnosisCovid19 ->
                                 covid19OffMsgs
 
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaComplicated ->
-                                []
-
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicated ->
-                                []
-
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionComplicated ->
-                                []
-
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionUncomplicated ->
-                                []
-
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisSimpleColdAndCough ->
-                                []
+                            _ ->
+                                [ setLaboratoryTaskMsg Pages.AcuteIllnessActivity.Model.LaboratoryMalariaTesting ]
                     )
                 |> Maybe.withDefault []
 
@@ -2073,88 +2061,79 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
                             Pages.AcuteIllnessEncounter.Model.DiagnosisCovid19 ->
                                 covid19OnMsgs
 
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaComplicated ->
-                                malariaComplicatedOnMsgs
-
                             Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicated ->
-                                malariaUncomplicatedOnMsgs
+                                prescribeMedicationMsgs newDiagnosis
 
-                            Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionComplicated ->
-                                gastrointestinalInfectionComplicatedOnMsgs
+                            Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaComplicated ->
+                                sendToHCMsgs newDiagnosis
 
                             Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionUncomplicated ->
-                                gastrointestinalInfectionUncomplicatedOnMsgs
+                                prescribeMedicationMsgs newDiagnosis
+
+                            Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionComplicated ->
+                                sendToHCMsgs newDiagnosis
 
                             Pages.AcuteIllnessEncounter.Model.DiagnosisSimpleColdAndCough ->
-                                simlpeColdAndCoughOnMsgs
+                                respiratoryInfectionUncomplicatedMsgs newDiagnosis
+
+                            Pages.AcuteIllnessEncounter.Model.DiagnosisRespiratoryInfectionUncomplicated ->
+                                respiratoryInfectionUncomplicatedMsgs newDiagnosis
+
+                            Pages.AcuteIllnessEncounter.Model.DiagnosisRespiratoryInfectionComplicated ->
+                                sendToHCMsgs newDiagnosis
                     )
                 |> Maybe.withDefault []
 
         covid19OnMsgs =
             [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessExposure))
-            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just Pages.AcuteIllnessEncounter.Model.DiagnosisCovid19)
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessExposure
-                |> App.Model.MsgLoggedIn
-            , Pages.AcuteIllnessActivity.Model.SetActiveExposureTask Pages.AcuteIllnessActivity.Model.ExposureIsolation
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessExposure
-                |> App.Model.MsgLoggedIn
+            , triggerWarningPopupMsg Pages.AcuteIllnessEncounter.Model.DiagnosisCovid19
+            , setExposureTaskMsg Pages.AcuteIllnessActivity.Model.ExposureIsolation
             ]
 
         covid19OffMsgs =
-            [ Pages.AcuteIllnessActivity.Model.SetActiveExposureTask Pages.AcuteIllnessActivity.Model.ExposureTravel
+            [ setExposureTaskMsg Pages.AcuteIllnessActivity.Model.ExposureTravel ]
+
+        prescribeMedicationMsgs diagnosis =
+            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
+            , triggerWarningPopupMsg diagnosis
+            , setLaboratoryTaskMsg Pages.AcuteIllnessActivity.Model.LaboratoryMedicationDistribution
+            ]
+
+        sendToHCMsgs diagnosis =
+            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
+            , triggerWarningPopupMsg diagnosis
+            , setLaboratoryTaskMsg Pages.AcuteIllnessActivity.Model.LaboratorySendToHC
+            ]
+
+        respiratoryInfectionUncomplicatedMsgs diagnosis =
+            ageInMonths currentDate person
+                |> Maybe.map
+                    (\ageMonths ->
+                        if ageMonths < 2 then
+                            sendToHCMsgs diagnosis
+
+                        else if ageMonths < 60 then
+                            prescribeMedicationMsgs diagnosis
+
+                        else
+                            []
+                    )
+                |> Maybe.withDefault []
+
+        triggerWarningPopupMsg diagnosis =
+            Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just diagnosis)
                 |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessExposure
                 |> App.Model.MsgLoggedIn
-            ]
 
-        malariaComplicatedOnMsgs =
-            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
-            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaComplicated)
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
+        setExposureTaskMsg task =
+            Pages.AcuteIllnessActivity.Model.SetActiveExposureTask task
+                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessExposure
                 |> App.Model.MsgLoggedIn
-            , Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Model.LaboratorySendToHC
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
-                |> App.Model.MsgLoggedIn
-            ]
 
-        malariaUncomplicatedOnMsgs =
-            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
-            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just Pages.AcuteIllnessEncounter.Model.DiagnosisMalariaUncomplicated)
+        setLaboratoryTaskMsg task =
+            Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask task
                 |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
                 |> App.Model.MsgLoggedIn
-            , Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Model.LaboratoryMedicationDistribution
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
-                |> App.Model.MsgLoggedIn
-            ]
-
-        gastrointestinalInfectionComplicatedOnMsgs =
-            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
-            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionComplicated)
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
-                |> App.Model.MsgLoggedIn
-            , Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Model.LaboratorySendToHC
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
-                |> App.Model.MsgLoggedIn
-            ]
-
-        gastrointestinalInfectionUncomplicatedOnMsgs =
-            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
-            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just Pages.AcuteIllnessEncounter.Model.DiagnosisGastrointestinalInfectionUncomplicated)
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
-                |> App.Model.MsgLoggedIn
-            , Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Model.LaboratoryMedicationDistribution
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
-                |> App.Model.MsgLoggedIn
-            ]
-
-        simlpeColdAndCoughOnMsgs =
-            [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
-            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just Pages.AcuteIllnessEncounter.Model.DiagnosisSimpleColdAndCough)
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
-                |> App.Model.MsgLoggedIn
-            , Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Model.LaboratoryMedicationDistribution
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
-                |> App.Model.MsgLoggedIn
-            ]
     in
     if diagnosisBeforeChange /= diagnosisAfterChange then
         turnOffPreviousDiagnosisMsgs ++ turnOnNewDiagnosisMsgs

@@ -885,6 +885,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisRespiratoryInfectionComplicated ->
+                    { english = "Acute Respiratory Infection with Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisRespiratoryInfectionUncomplicated ->
+                    { english = "Suspected Acute Respiratory Infection without Complications"
+                    , kinyarwanda = Nothing
+                    }
+
         AcuteIllnessDiagnosisWarning diagnosis ->
             case diagnosis of
                 DiagnosisCovid19 ->
@@ -914,6 +924,16 @@ translationSet trans =
 
                 DiagnosisSimpleColdAndCough ->
                     { english = "Simple Cold and Cough"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisRespiratoryInfectionComplicated ->
+                    { english = "Suspected Acute Respiratory Infection with Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisRespiratoryInfectionUncomplicated ->
+                    { english = "Suspected Acute Respiratory Infection without Complications"
                     , kinyarwanda = Nothing
                     }
 
