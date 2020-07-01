@@ -14,6 +14,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, unwrap)
+import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PrenatalEncounter.Model exposing (..)
 import Pages.PrenatalEncounter.Utils exposing (..)
@@ -184,10 +185,15 @@ viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
             |> Maybe.withDefault emptyNode
         , maybeDiagnosisTranslationId
             |> Maybe.map
-                (\disagnosis ->
-                    p [ class "disagnosis-wrapper" ]
+                (\diagnosis ->
+                    div
+                        [ classList
+                            [ ( "diagnosis-wrapper", True )
+                            , ( "covid-19", diagnosis == Translate.AcuteIllnessDiagnosis DiagnosisCovid19 )
+                            ]
+                        ]
                         [ div [ class "label upper" ] [ text <| translate language Translate.Diagnosis ++ ":" ]
-                        , div [ class "disagnosis" ] [ text <| translate language disagnosis ]
+                        , div [ class "diagnosis" ] [ text <| translate language diagnosis ]
                         ]
                 )
             |> Maybe.withDefault emptyNode

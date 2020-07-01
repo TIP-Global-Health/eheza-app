@@ -166,6 +166,7 @@ resolveLaboratoryTasks currentDate person diagnosis =
                         || (diagnosis == Just DiagnosisGastrointestinalInfectionComplicated)
                         || (diagnosis == Just DiagnosisRespiratoryInfectionUncomplicated && ageMonth0To2)
                         || (diagnosis == Just DiagnosisRespiratoryInfectionComplicated)
+                        || (diagnosis == Just DiagnosisFeverOfUnknownOrigin)
     in
     [ LaboratoryMalariaTesting, LaboratoryMedicationDistribution, LaboratorySendToHC ]
         |> List.filter expectTask
@@ -284,7 +285,7 @@ resolveAcuteIllnessDiagnosisByLaboratoryResults measurements =
                             Just DiagnosisRespiratoryInfectionComplicated
 
                         else
-                            Nothing
+                            Just DiagnosisFeverOfUnknownOrigin
 
                     RapidTestPositive ->
                         if malarialDangerSignsPresent measurements then

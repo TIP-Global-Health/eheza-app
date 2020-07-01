@@ -58,3 +58,4 @@ type AcuteIllnessDiagnosis
     | DiagnosisSimpleColdAndCough
     | DiagnosisRespiratoryInfectionComplicated
     | DiagnosisRespiratoryInfectionUncomplicated
+    | DiagnosisFeverOfUnknownOrigin

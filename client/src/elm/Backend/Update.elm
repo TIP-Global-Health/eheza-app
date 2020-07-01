@@ -811,7 +811,6 @@ updateIndexedDb currentDate nurseId healthCenterId isChw msg model =
                     , extraMsgs
                     )
 
-                -- When we see a suspected COVID 19 case, notify with a pop-up.
                 [ SymptomsGIRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
@@ -2081,12 +2080,15 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
 
                             Pages.AcuteIllnessEncounter.Model.DiagnosisRespiratoryInfectionComplicated ->
                                 sendToHCMsgs newDiagnosis
+
+                            Pages.AcuteIllnessEncounter.Model.DiagnosisFeverOfUnknownOrigin ->
+                                sendToHCMsgs newDiagnosis
                     )
                 |> Maybe.withDefault []
 
         covid19OnMsgs =
             [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessExposure))
-            , triggerWarningPopupMsg Pages.AcuteIllnessEncounter.Model.DiagnosisCovid19
+            , triggerWarningPopupMsg Pages.AcuteIllnessEncounter.Model.DiagnosisCovid19 AcuteIllnessExposure
             , setExposureTaskMsg Pages.AcuteIllnessActivity.Model.ExposureIsolation
             ]
 
@@ -2095,13 +2097,13 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
 
         prescribeMedicationMsgs diagnosis =
             [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
-            , triggerWarningPopupMsg diagnosis
+            , triggerWarningPopupMsg diagnosis AcuteIllnessLaboratory
             , setLaboratoryTaskMsg Pages.AcuteIllnessActivity.Model.LaboratoryMedicationDistribution
             ]
 
         sendToHCMsgs diagnosis =
             [ App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
-            , triggerWarningPopupMsg diagnosis
+            , triggerWarningPopupMsg diagnosis AcuteIllnessLaboratory
             , setLaboratoryTaskMsg Pages.AcuteIllnessActivity.Model.LaboratorySendToHC
             ]
 
@@ -2120,9 +2122,9 @@ generateSuspectedDiagnosisMsgs currentDate before after id person =
                     )
                 |> Maybe.withDefault []
 
-        triggerWarningPopupMsg diagnosis =
+        triggerWarningPopupMsg diagnosis activity =
             Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just diagnosis)
-                |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessExposure
+                |> App.Model.MsgPageAcuteIllnessActivity id activity
                 |> App.Model.MsgLoggedIn
 
         setExposureTaskMsg task =

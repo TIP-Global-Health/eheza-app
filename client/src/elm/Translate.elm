@@ -895,6 +895,11 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                DiagnosisFeverOfUnknownOrigin ->
+                    { english = "Fever of Unknown Origin"
+                    , kinyarwanda = Nothing
+                    }
+
         AcuteIllnessDiagnosisWarning diagnosis ->
             case diagnosis of
                 DiagnosisCovid19 ->
@@ -934,6 +939,11 @@ translationSet trans =
 
                 DiagnosisRespiratoryInfectionUncomplicated ->
                     { english = "Suspected Acute Respiratory Infection without Complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisFeverOfUnknownOrigin ->
+                    { english = "High Fever"
                     , kinyarwanda = Nothing
                     }
 

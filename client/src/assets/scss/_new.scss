@@ -593,16 +593,27 @@ div.page-activity.acute-illness {
         margin-bottom: 5px;
       }
 
-      .disagnosis-wrapper {
+      .diagnosis-wrapper {
 
         .label {
           float: left;
           width: 24%;
         }
 
-        .disagnosis {
+        .diagnosis {
           float: left;
           width: 75%;
+        }
+
+        &.covid-19 {
+
+          .label {
+            width: 26%;
+          }
+
+          .diagnosis {
+            width: 73%;
+          }
         }
       }
     }
