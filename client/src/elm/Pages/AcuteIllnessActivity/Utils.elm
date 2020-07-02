@@ -1,4 +1,4 @@
-module Pages.AcuteIllnessActivity.Utils exposing (acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, exposureFormWithDefault, exposureTasksCompletedFromTotal, fromAcuteFindingsValue, fromExposureValue, fromHCContactValue, fromIsolationValue, fromListWithDefaultValue, fromMalariaTestingValue, fromTravelHistoryValue, fromTreatmentReviewValue, fromVitalsValue, hcContactFormWithDefault, hcContactValuePostProcess, ifEmpty, isolationFormWithDefault, isolationValuePostProcess, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, naListTaskCompleted, naTaskCompleted, physicalExamTasksCompletedFromTotal, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toAcuteFindingsValue, toAcuteFindingsValueWithDefault, toExposureValue, toExposureValueWithDefault, toHCContactValue, toHCContactValueWithDefault, toIsolationValue, toIsolationValueWithDefault, toMalariaTestingValue, toMalariaTestingValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValue, toTravelHistoryValueWithDefault, toTreatmentReviewValue, toTreatmentReviewValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vitalsFormWithDefault, withDefaultValue)
+module Pages.AcuteIllnessActivity.Utils exposing (acuteFindingsFormWithDefault, allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns, exposureFormWithDefault, exposureTasksCompletedFromTotal, fromAcuteFindingsValue, fromExposureValue, fromHCContactValue, fromIsolationValue, fromListWithDefaultValue, fromMalariaTestingValue, fromMedicationDistributionValue, fromSendToHCValue, fromTravelHistoryValue, fromTreatmentReviewValue, fromVitalsValue, hcContactFormWithDefault, hcContactValuePostProcess, isolationFormWithDefault, isolationValuePostProcess, laboratoryTasksCompletedFromTotal, malariaTestingFormWithDefault, medicationDistributionFormWithDefault, naListTaskCompleted, naTaskCompleted, physicalExamTasksCompletedFromTotal, resolveCoartemDosage, sendToHCFormWithDefault, symptomsGIFormWithDefault, symptomsGeneralFormWithDefault, symptomsRespiratoryFormWithDefault, symptomsTasksCompletedFromTotal, taskNotCompleted, toAcuteFindingsValue, toAcuteFindingsValueWithDefault, toExposureValue, toExposureValueWithDefault, toHCContactValue, toHCContactValueWithDefault, toIsolationValue, toIsolationValueWithDefault, toMalariaTestingValue, toMalariaTestingValueWithDefault, toMedicationDistributionValue, toMedicationDistributionValueWithDefault, toSendToHCValue, toSendToHCValueWithDefault, toSymptomsGIValueWithDefault, toSymptomsGeneralValueWithDefault, toSymptomsRespiratoryValueWithDefault, toTravelHistoryValue, toTravelHistoryValueWithDefault, toTreatmentReviewValue, toTreatmentReviewValueWithDefault, toVitalsValue, toVitalsValueWithDefault, toggleSymptomsSign, travelHistoryFormWithDefault, treatmentReviewFormWithDefault, treatmentTasksCompletedFromTotal, vitalsFormWithDefault, withDefaultValue)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model
@@ -15,8 +15,10 @@ import Backend.Measurement.Model
         , IsolationSign(..)
         , IsolationValue
         , MalariaRapidTestResult(..)
+        , MedicationDistributionSign(..)
         , ReasonForNotIsolating(..)
         , ResponsePeriod(..)
+        , SendToHCSign(..)
         , SymptomsGIDerivedSign(..)
         , SymptomsGISign(..)
         , SymptomsGIValue
@@ -25,11 +27,15 @@ import Backend.Measurement.Model
         , TravelHistorySign(..)
         , TreatmentReviewSign(..)
         )
+import Backend.Person.Model exposing (Person)
+import Backend.Person.Utils exposing (ageInYears)
 import EverySet exposing (EverySet)
+import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
-import Pages.PrenatalActivity.Utils exposing (ifEmpty, ifNullableTrue, ifTrue)
-import Pages.Utils exposing (taskCompleted)
+import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Pages.PrenatalActivity.Utils exposing (ifNullableTrue, ifTrue)
+import Pages.Utils exposing (ifEverySetEmpty, taskCompleted)
 
 
 allSymptomsGeneralSigns : ( List SymptomsGeneralSign, SymptomsGeneralSign )
@@ -174,8 +180,8 @@ physicalExamTasksCompletedFromTotal measurements data task =
             )
 
 
-laboratoryTasksCompletedFromTotal : AcuteIllnessMeasurements -> LaboratoryData -> LaboratoryTask -> ( Int, Int )
-laboratoryTasksCompletedFromTotal measurements data task =
+laboratoryTasksCompletedFromTotal : Maybe AcuteIllnessDiagnosis -> AcuteIllnessMeasurements -> LaboratoryData -> LaboratoryTask -> ( Int, Int )
+laboratoryTasksCompletedFromTotal diagnosis measurements data task =
     case task of
         LaboratoryMalariaTesting ->
             let
@@ -186,6 +192,33 @@ laboratoryTasksCompletedFromTotal measurements data task =
             in
             ( taskCompleted form.rapidTestResult
             , 1
+            )
+
+        LaboratoryMedicationDistribution ->
+            let
+                form =
+                    measurements.medicationDistribution
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+            in
+            case diagnosis of
+                Just DiagnosisMalariaUncomplicated ->
+                    ( signTaskCompleted Coartem NoMedicationDistributionSigns form.signs
+                    , 1
+                    )
+
+                _ ->
+                    ( 0, 1 )
+
+        LaboratorySendToHC ->
+            let
+                form =
+                    measurements.sendToHC
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> sendToHCFormWithDefault data.sendToHCForm
+            in
+            ( taskCompleted form.handReferralForm + taskCompleted form.handReferralForm
+            , 2
             )
 
 
@@ -367,6 +400,15 @@ naListTaskCompleted na maybeList =
             taskCompleted maybeList
 
 
+signTaskCompleted : a -> a -> EverySet a -> Int
+signTaskCompleted sign noSigns set =
+    if EverySet.member sign set || EverySet.member noSigns set then
+        1
+
+    else
+        0
+
+
 symptomsGeneralFormWithDefault : SymptomsGeneralForm -> Maybe (Dict SymptomsGeneralSign Int) -> SymptomsGeneralForm
 symptomsGeneralFormWithDefault form saved =
     saved
@@ -516,11 +558,11 @@ toAcuteFindingsValue form =
     let
         signsGeneralSet =
             form.signsGeneral
-                |> Maybe.map (EverySet.fromList >> ifEmpty NoAcuteFindingsGeneralSigns)
+                |> Maybe.map (EverySet.fromList >> ifEverySetEmpty NoAcuteFindingsGeneralSigns)
 
         signsRespiratorySet =
             form.signsRespiratory
-                |> Maybe.map (EverySet.fromList >> ifEmpty NoAcuteFindingsRespiratorySigns)
+                |> Maybe.map (EverySet.fromList >> ifEverySetEmpty NoAcuteFindingsRespiratorySigns)
     in
     Maybe.map AcuteFindingsValue signsGeneralSet
         |> andMap signsRespiratorySet
@@ -582,7 +624,7 @@ toTravelHistoryValue form =
     [ Maybe.map (ifTrue COVID19Country) form.covid19Country
     ]
         |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoTravelHistorySigns)
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTravelHistorySigns)
 
 
 fromExposureValue : Maybe (EverySet ExposureSign) -> ExposureForm
@@ -616,7 +658,7 @@ toExposureValue form =
     , Maybe.map (ifTrue SimilarSymptoms) form.similarSymptoms
     ]
         |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoExposureSigns)
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoExposureSigns)
 
 
 fromIsolationValue : Maybe IsolationValue -> IsolationForm
@@ -658,7 +700,7 @@ toIsolationValue form =
             , Maybe.map (ifTrue HealthEducation) form.healthEducation
             ]
                 |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoIsolationSigns)
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoIsolationSigns)
 
         reasonsForNotIsolating =
             form.reasonsForNotIsolating
@@ -718,7 +760,7 @@ toHCContactValue form =
         signs =
             [ Maybe.map (ifTrue ContactedHealthCenter) form.contactedHC ]
                 |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoHCContactSigns)
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHCContactSigns)
     in
     Maybe.map HCContactValue signs
         |> andMap (form.recomendations |> withDefaultValue HCRecomendationNotApplicable |> Just)
@@ -790,20 +832,94 @@ toTreatmentReviewValue form =
     , ifNullableTrue MalariaWithinPastMonthHelped form.malariaWithinPastMonthHelped
     ]
         |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoTreatmentReviewSigns)
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTreatmentReviewSigns)
+
+
+fromSendToHCValue : Maybe (EverySet SendToHCSign) -> SendToHCForm
+fromSendToHCValue saved =
+    { handReferralForm = Maybe.map (EverySet.member HandReferrerForm) saved
+    , referToHealthCenter = Maybe.map (EverySet.member ReferToHealthCenter) saved
+    }
+
+
+sendToHCFormWithDefault : SendToHCForm -> Maybe (EverySet SendToHCSign) -> SendToHCForm
+sendToHCFormWithDefault form saved =
+    saved
+        |> unwrap
+            form
+            (\value ->
+                { handReferralForm = or form.handReferralForm (EverySet.member HandReferrerForm value |> Just)
+                , referToHealthCenter = or form.referToHealthCenter (EverySet.member ReferToHealthCenter value |> Just)
+                }
+            )
+
+
+toSendToHCValueWithDefault : Maybe (EverySet SendToHCSign) -> SendToHCForm -> Maybe (EverySet SendToHCSign)
+toSendToHCValueWithDefault saved form =
+    sendToHCFormWithDefault form saved
+        |> toSendToHCValue
+
+
+toSendToHCValue : SendToHCForm -> Maybe (EverySet SendToHCSign)
+toSendToHCValue form =
+    [ Maybe.map (ifTrue HandReferrerForm) form.handReferralForm
+    , Maybe.map (ifTrue ReferToHealthCenter) form.referToHealthCenter
+    ]
+        |> Maybe.Extra.combine
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSendToHCSigns)
+
+
+fromMedicationDistributionValue : Maybe (EverySet MedicationDistributionSign) -> MedicationDistributionForm
+fromMedicationDistributionValue saved =
+    saved
+        |> Maybe.map (\signs -> MedicationDistributionForm signs)
+        |> Maybe.withDefault (MedicationDistributionForm EverySet.empty)
+
+
+medicationDistributionFormWithDefault : MedicationDistributionForm -> Maybe (EverySet MedicationDistributionSign) -> MedicationDistributionForm
+medicationDistributionFormWithDefault form saved =
+    if EverySet.isEmpty form.signs then
+        saved
+            |> Maybe.map MedicationDistributionForm
+            |> Maybe.withDefault form
+
+    else
+        form
+
+
+toMedicationDistributionValueWithDefault : Maybe (EverySet MedicationDistributionSign) -> MedicationDistributionForm -> Maybe (EverySet MedicationDistributionSign)
+toMedicationDistributionValueWithDefault saved form =
+    medicationDistributionFormWithDefault form saved
+        |> toMedicationDistributionValue
+
+
+toMedicationDistributionValue : MedicationDistributionForm -> Maybe (EverySet MedicationDistributionSign)
+toMedicationDistributionValue form =
+    form.signs
+        |> (ifEverySetEmpty NoMedicationDistributionSigns >> Just)
+
+
+resolveCoartemDosage : NominalDate -> Person -> Maybe Int
+resolveCoartemDosage currentDate person =
+    ageInYears currentDate person
+        |> Maybe.map
+            (\age ->
+                if age < 3 then
+                    1
+
+                else if age < 8 then
+                    2
+
+                else if age < 14 then
+                    3
+
+                else
+                    4
+            )
 
 
 
 -- HELPER FUNCTIONS
-
-
-ifEmpty : a -> EverySet a -> EverySet a
-ifEmpty value set =
-    if EverySet.isEmpty set then
-        EverySet.singleton value
-
-    else
-        set
 
 
 withDefaultValue : a -> Maybe a -> EverySet a
@@ -816,7 +932,7 @@ fromListWithDefaultValue : a -> Maybe (List a) -> EverySet a
 fromListWithDefaultValue default maybeList =
     case maybeList of
         Just list ->
-            EverySet.fromList list |> ifEmpty default
+            EverySet.fromList list |> ifEverySetEmpty default
 
         Nothing ->
             EverySet.singleton default

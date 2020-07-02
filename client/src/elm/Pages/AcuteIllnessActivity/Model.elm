@@ -1,15 +1,17 @@
-module Pages.AcuteIllnessActivity.Model exposing (AcuteFindingsForm, ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), PriorTreatmentData, PriorTreatmentTask(..), SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, TreatmentReviewForm, VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptyPriorTreatmentData, emptySymptomsData, emptyTreatmentReviewForm)
+module Pages.AcuteIllnessActivity.Model exposing (AcuteFindingsForm, ExposureData, ExposureForm, ExposureTask(..), HCContactForm, IsolationForm, LaboratoryData, LaboratoryTask(..), MalariaTestingForm, MedicationDistributionForm, Model, Msg(..), PhysicalExamData, PhysicalExamTask(..), PriorTreatmentData, PriorTreatmentTask(..), SendToHCForm, SymptomsData, SymptomsGIForm, SymptomsGeneralForm, SymptomsRespiratoryForm, SymptomsTask(..), TravelHistoryForm, TreatmentReviewForm, VitalsForm, emptyExposureData, emptyLaboratoryData, emptyModel, emptyPhysicalExamData, emptyPriorTreatmentData, emptySymptomsData, emptyTreatmentReviewForm)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import EverySet exposing (EverySet)
+import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
 import Pages.Page exposing (Page)
 
 
 type Msg
     = SetActivePage Page
     | SetAlertsDialogState Bool
-    | SetCovid19PopupState Bool
+    | SetWarningPopupState (Maybe AcuteIllnessDiagnosis)
       -- SYMPTOMS Msgs
     | SetActiveSymptomsTask SymptomsTask
     | ToggleSymptomsGeneralSign SymptomsGeneralSign
@@ -33,7 +35,12 @@ type Msg
       -- LABORATORY Msgs
     | SetActiveLaboratoryTask LaboratoryTask
     | SetRapidTestResult String
+    | SetReferToHealthCenter Bool
+    | SetHandReferralForm Bool
+    | ToggleMedicationDistributionSign MedicationDistributionSign
     | SaveMalariaTesting PersonId (Maybe ( MalariaTestingId, MalariaTesting ))
+    | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC ))
+    | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution ))
       -- EXPOSURE Msgs
     | SetActiveExposureTask ExposureTask
     | SetCovid19Country Bool
@@ -64,7 +71,7 @@ type alias Model =
     , exposureData : ExposureData
     , priorTreatmentData : PriorTreatmentData
     , showAlertsDialog : Bool
-    , showCovid19Popup : Bool
+    , warningPopupState : Maybe AcuteIllnessDiagnosis
     }
 
 
@@ -76,7 +83,7 @@ emptyModel =
     , exposureData = emptyExposureData
     , priorTreatmentData = emptyPriorTreatmentData
     , showAlertsDialog = False
-    , showCovid19Popup = False
+    , warningPopupState = Nothing
     }
 
 
@@ -165,6 +172,8 @@ type alias AcuteFindingsForm =
 
 type alias LaboratoryData =
     { malariaTestingForm : MalariaTestingForm
+    , sendToHCForm : SendToHCForm
+    , medicationDistributionForm : MedicationDistributionForm
     , activeTask : LaboratoryTask
     }
 
@@ -172,16 +181,31 @@ type alias LaboratoryData =
 emptyLaboratoryData : LaboratoryData
 emptyLaboratoryData =
     { malariaTestingForm = MalariaTestingForm Nothing
+    , sendToHCForm = SendToHCForm Nothing Nothing
+    , medicationDistributionForm = MedicationDistributionForm EverySet.empty
     , activeTask = LaboratoryMalariaTesting
     }
 
 
 type LaboratoryTask
     = LaboratoryMalariaTesting
+    | LaboratoryMedicationDistribution
+    | LaboratorySendToHC
 
 
 type alias MalariaTestingForm =
     { rapidTestResult : Maybe MalariaRapidTestResult
+    }
+
+
+type alias SendToHCForm =
+    { handReferralForm : Maybe Bool
+    , referToHealthCenter : Maybe Bool
+    }
+
+
+type alias MedicationDistributionForm =
+    { signs : EverySet MedicationDistributionSign
     }
 
 

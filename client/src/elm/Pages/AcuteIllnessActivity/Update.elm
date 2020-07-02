@@ -11,6 +11,7 @@ import Backend.Measurement.Model
         ( AcuteFindingsGeneralSign(..)
         , AcuteFindingsRespiratorySign(..)
         , HCRecomendation(..)
+        , MedicationDistributionSign(..)
         , ReasonForNotIsolating(..)
         , ResponsePeriod(..)
         , SymptomsGISign(..)
@@ -18,11 +19,13 @@ import Backend.Measurement.Model
         , SymptomsRespiratorySign(..)
         )
 import Backend.Model exposing (ModelIndexedDb)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Utils exposing (ifEverySetEmpty)
 import RemoteData exposing (RemoteData(..))
 import Result exposing (Result)
 
@@ -33,49 +36,28 @@ update currentDate id db msg model =
         noChange =
             ( model, Cmd.none, [] )
 
-        symptomsGeneralForm =
+        resolveFormWithDefaults getMeasurementFunc formWithDefaultsFunc form =
             Dict.get id db.acuteIllnessMeasurements
                 |> Maybe.withDefault NotAsked
                 |> RemoteData.toMaybe
                 |> Maybe.map
-                    (.symptomsGeneral
+                    (getMeasurementFunc
                         >> Maybe.map (Tuple.second >> .value)
-                        >> symptomsGeneralFormWithDefault model.symptomsData.symptomsGeneralForm
+                        >> formWithDefaultsFunc form
                     )
-                |> Maybe.withDefault model.symptomsData.symptomsGeneralForm
+                |> Maybe.withDefault form
+
+        symptomsGeneralForm =
+            resolveFormWithDefaults .symptomsGeneral symptomsGeneralFormWithDefault model.symptomsData.symptomsGeneralForm
 
         symptomsRespiratoryForm =
-            Dict.get id db.acuteIllnessMeasurements
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
-                |> Maybe.map
-                    (.symptomsRespiratory
-                        >> Maybe.map (Tuple.second >> .value)
-                        >> symptomsRespiratoryFormWithDefault model.symptomsData.symptomsRespiratoryForm
-                    )
-                |> Maybe.withDefault model.symptomsData.symptomsRespiratoryForm
+            resolveFormWithDefaults .symptomsRespiratory symptomsRespiratoryFormWithDefault model.symptomsData.symptomsRespiratoryForm
 
         symptomsGIForm =
-            Dict.get id db.acuteIllnessMeasurements
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
-                |> Maybe.map
-                    (.symptomsGI
-                        >> Maybe.map (Tuple.second >> .value)
-                        >> symptomsGIFormWithDefault model.symptomsData.symptomsGIForm
-                    )
-                |> Maybe.withDefault model.symptomsData.symptomsGIForm
+            resolveFormWithDefaults .symptomsGI symptomsGIFormWithDefault model.symptomsData.symptomsGIForm
 
         acuteFindingsForm =
-            Dict.get id db.acuteIllnessMeasurements
-                |> Maybe.withDefault NotAsked
-                |> RemoteData.toMaybe
-                |> Maybe.map
-                    (.acuteFindings
-                        >> Maybe.map (Tuple.second >> .value)
-                        >> acuteFindingsFormWithDefault model.physicalExamData.acuteFindingsForm
-                    )
-                |> Maybe.withDefault model.physicalExamData.acuteFindingsForm
+            resolveFormWithDefaults .acuteFindings acuteFindingsFormWithDefault model.physicalExamData.acuteFindingsForm
     in
     case msg of
         SetActivePage page ->
@@ -87,8 +69,8 @@ update currentDate id db msg model =
         SetAlertsDialogState isOpen ->
             ( { model | showAlertsDialog = isOpen }, Cmd.none, [] )
 
-        SetCovid19PopupState isOpen ->
-            ( { model | showCovid19Popup = isOpen }, Cmd.none, [] )
+        SetWarningPopupState diagnosis ->
+            ( { model | warningPopupState = diagnosis }, Cmd.none, [] )
 
         SetActiveSymptomsTask task ->
             let
@@ -582,6 +564,70 @@ update currentDate id db msg model =
             , []
             )
 
+        SetReferToHealthCenter value ->
+            let
+                form =
+                    model.laboratoryData.sendToHCForm
+
+                updatedForm =
+                    { form | referToHealthCenter = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetHandReferralForm value ->
+            let
+                form =
+                    model.laboratoryData.sendToHCForm
+
+                updatedForm =
+                    { form | handReferralForm = Just value }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | sendToHCForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        ToggleMedicationDistributionSign sign ->
+            let
+                form =
+                    model.laboratoryData.medicationDistributionForm
+
+                updatedSigns =
+                    if EverySet.member sign form.signs then
+                        EverySet.remove sign form.signs
+                            |> ifEverySetEmpty NoMedicationDistributionSigns
+
+                    else
+                        case EverySet.toList form.signs of
+                            [ NoMedicationDistributionSigns ] ->
+                                EverySet.singleton sign
+
+                            _ ->
+                                EverySet.insert sign form.signs
+
+                updatedForm =
+                    { form | signs = updatedSigns }
+
+                updatedData =
+                    model.laboratoryData
+                        |> (\data -> { data | medicationDistributionForm = updatedForm })
+            in
+            ( { model | laboratoryData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveMalariaTesting personId saved ->
             let
                 measurementId =
@@ -597,6 +643,58 @@ update currentDate id db msg model =
                             []
                             (\value ->
                                 [ Backend.AcuteIllnessEncounter.Model.SaveMalariaTesting personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
+        SaveSendToHC personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.laboratoryData.sendToHCForm
+                        |> toSendToHCValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.AcuteIllnessEncounter.Model.SaveSendToHC personId measurementId value
+                                    |> Backend.Model.MsgAcuteIllnessEncounter id
+                                    |> App.Model.MsgIndexedDb
+                                , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
+                                ]
+                            )
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+
+        SaveMedicationDistribution personId saved ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    Maybe.map (Tuple.second >> .value) saved
+
+                appMsgs =
+                    model.laboratoryData.medicationDistributionForm
+                        |> toMedicationDistributionValueWithDefault measurement
+                        |> unwrap
+                            []
+                            (\value ->
+                                [ Backend.AcuteIllnessEncounter.Model.SaveMedicationDistribution personId measurementId value
                                     |> Backend.Model.MsgAcuteIllnessEncounter id
                                     |> App.Model.MsgIndexedDb
                                 , App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id

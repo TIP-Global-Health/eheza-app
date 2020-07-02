@@ -1,4 +1,4 @@
-module Pages.PrenatalActivity.Utils exposing (breastExamFormWithDefault, calculateBmi, corePhysicalExamFormWithDefault, dangerSignsFormWithDefault, examinationTasksCompletedFromTotal, familyPlanningFormWithDefault, fromBreastExamValue, fromCorePhysicalExamValue, fromDangerSignsValue, fromFamilyPlanningValue, fromLastMenstrualPeriodValue, fromMedicalHistoryValue, fromMedicationValue, fromObstetricHistoryValue, fromObstetricalExamValue, fromPrenatalNutritionValue, fromResourceValue, fromSocialHistoryValue, fromVitalsValue, historyTasksCompletedFromTotal, ifEmpty, ifNullableTrue, ifTrue, lastMenstrualPeriodFormWithDefault, medicalHistoryFormWithDefault, medicationFormWithDefault, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, patientProvisionsTasksCompletedFromTotal, prenatalNutritionFormWithDefault, resolvePreviousValue, resourceFormWithDefault, socialHistoryFormWithDefault, toBreastExamValue, toBreastExamValueWithDefault, toCorePhysicalExamValue, toCorePhysicalExamValueWithDefault, toDangerSignsValue, toDangerSignsValueWithDefault, toEverySet, toFamilyPlanningValue, toFamilyPlanningValueWithDefault, toLastMenstrualPeriodValue, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValue, toMedicalHistoryValueWithDefault, toMedicationValue, toMedicationValueWithDefault, toObstetricHistoryStep2Value, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValue, toObstetricalExamValueWithDefault, toPrenatalNutritionValue, toPrenatalNutritionValueWithDefault, toResourceValue, toResourceValueWithDefault, toSocialHistoryValue, toSocialHistoryValueWithDefault, toVitalsValue, toVitalsValueWithDefault, vitalsFormWithDefault)
+module Pages.PrenatalActivity.Utils exposing (breastExamFormWithDefault, calculateBmi, corePhysicalExamFormWithDefault, dangerSignsFormWithDefault, examinationTasksCompletedFromTotal, familyPlanningFormWithDefault, fromBreastExamValue, fromCorePhysicalExamValue, fromDangerSignsValue, fromFamilyPlanningValue, fromLastMenstrualPeriodValue, fromMedicalHistoryValue, fromMedicationValue, fromObstetricHistoryValue, fromObstetricalExamValue, fromPrenatalNutritionValue, fromResourceValue, fromSocialHistoryValue, fromVitalsValue, historyTasksCompletedFromTotal, ifNullableTrue, ifTrue, lastMenstrualPeriodFormWithDefault, medicalHistoryFormWithDefault, medicationFormWithDefault, obstetricHistoryFormWithDefault, obstetricHistoryStep2FormWithDefault, obstetricalExamFormWithDefault, patientProvisionsTasksCompletedFromTotal, prenatalNutritionFormWithDefault, resolvePreviousValue, resourceFormWithDefault, socialHistoryFormWithDefault, toBreastExamValue, toBreastExamValueWithDefault, toCorePhysicalExamValue, toCorePhysicalExamValueWithDefault, toDangerSignsValue, toDangerSignsValueWithDefault, toEverySet, toFamilyPlanningValue, toFamilyPlanningValueWithDefault, toLastMenstrualPeriodValue, toLastMenstrualPeriodValueWithDefault, toMedicalHistoryValue, toMedicalHistoryValueWithDefault, toMedicationValue, toMedicationValueWithDefault, toObstetricHistoryStep2Value, toObstetricHistoryStep2ValueWithDefault, toObstetricHistoryValue, toObstetricHistoryValueWithDefault, toObstetricalExamValue, toObstetricalExamValueWithDefault, toPrenatalNutritionValue, toPrenatalNutritionValueWithDefault, toResourceValue, toResourceValueWithDefault, toSocialHistoryValue, toSocialHistoryValueWithDefault, toVitalsValue, toVitalsValueWithDefault, vitalsFormWithDefault)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
@@ -8,7 +8,7 @@ import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Pages.PrenatalActivity.Model exposing (..)
 import Pages.PrenatalEncounter.Model exposing (AssembledData)
 import Pages.PrenatalEncounter.Utils exposing (getMotherHeightMeasurement)
-import Pages.Utils exposing (taskCompleted, taskListCompleted)
+import Pages.Utils exposing (ifEverySetEmpty, taskCompleted, taskListCompleted)
 
 
 {-| This is a convenience for cases where the form values ought to be redefined
@@ -36,15 +36,6 @@ ifNullableTrue : a -> Maybe Bool -> Maybe (EverySet a)
 ifNullableTrue value maybeCondition =
     Maybe.map (ifTrue value >> Just) maybeCondition
         |> Maybe.withDefault (Just EverySet.empty)
-
-
-ifEmpty : a -> EverySet a -> EverySet a
-ifEmpty value set =
-    if EverySet.isEmpty set then
-        EverySet.singleton value
-
-    else
-        set
 
 
 resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
@@ -268,7 +259,7 @@ toMedicalHistoryValue form =
     , Maybe.map (ifTrue MentalHealthHistory) form.mentalHealthHistory
     ]
         |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoMedicalHistorySigns)
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicalHistorySigns)
 
 
 fromMedicationValue : Maybe (EverySet MedicationSign) -> MedicationForm
@@ -302,7 +293,7 @@ toMedicationValue form =
     , ifNullableTrue DewormingPill form.receivedDewormingPill
     ]
         |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoMedication)
+        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedication)
 
 
 fromObstetricalExamValue : Maybe ObstetricalExamValue -> ObstetricalExamForm
@@ -500,7 +491,7 @@ toObstetricHistoryStep2Value form =
             , Maybe.map (ifTrue ConvulsionsAndUnconsciousPreviousDelivery) form.convulsionsAndUnconsciousPreviousDelivery
             ]
                 |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoPreviousDeliverySign)
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPreviousDeliverySign)
 
         obstetricHistorySet =
             [ Maybe.map (ifTrue SuccessiveAbortions) form.successiveAbortions
@@ -511,7 +502,7 @@ toObstetricHistoryStep2Value form =
             , Maybe.map (ifTrue RhNegative) form.rhNegative
             ]
                 |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoObstetricHistorySign)
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoObstetricHistorySign)
     in
     Maybe.map ObstetricHistoryStep2Value form.cSections
         |> andMap (Maybe.map EverySet.singleton form.cSectionReason)
@@ -543,7 +534,7 @@ toFamilyPlanningValueWithDefault saved form =
 
 toFamilyPlanningValue : FamilyPlanningForm -> Maybe (EverySet FamilyPlanningSign)
 toFamilyPlanningValue form =
-    Maybe.map (EverySet.fromList >> ifEmpty NoFamilyPlanning) form.signs
+    Maybe.map (EverySet.fromList >> ifEverySetEmpty NoFamilyPlanning) form.signs
 
 
 fromPrenatalNutritionValue : Maybe PrenatalNutritionValue -> NutritionAssessmentForm
@@ -645,7 +636,7 @@ toSocialHistoryValue form =
             , ifNullableTrue PartnerHivCounseling form.partnerReceivedCounseling
             ]
                 |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEmpty NoSocialHistorySign)
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSocialHistorySign)
     in
     Maybe.map SocialHistoryValue socialHistory
         |> andMap form.partnerTestingResult

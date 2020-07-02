@@ -71,6 +71,26 @@ function hedley_acute_illness_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create medication_distribution content'.
+  $permissions['create medication_distribution content'] = array(
+    'name' => 'create medication_distribution content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create send_to_hc content'.
+  $permissions['create send_to_hc content'] = array(
+    'name' => 'create send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create symptoms_general content'.
   $permissions['create symptoms_general content'] = array(
     'name' => 'create symptoms_general content',
@@ -175,6 +195,24 @@ function hedley_acute_illness_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any medication_distribution content'.
+  $permissions['delete any medication_distribution content'] = array(
+    'name' => 'delete any medication_distribution content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any send_to_hc content'.
+  $permissions['delete any send_to_hc content'] = array(
+    'name' => 'delete any send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any symptoms_general content'.
   $permissions['delete any symptoms_general content'] = array(
     'name' => 'delete any symptoms_general content',
@@ -268,6 +306,24 @@ function hedley_acute_illness_user_default_permissions() {
   // Exported permission: 'delete own malaria_testing content'.
   $permissions['delete own malaria_testing content'] = array(
     'name' => 'delete own malaria_testing content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own medication_distribution content'.
+  $permissions['delete own medication_distribution content'] = array(
+    'name' => 'delete own medication_distribution content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own send_to_hc content'.
+  $permissions['delete own send_to_hc content'] = array(
+    'name' => 'delete own send_to_hc content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -379,6 +435,26 @@ function hedley_acute_illness_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any medication_distribution content'.
+  $permissions['edit any medication_distribution content'] = array(
+    'name' => 'edit any medication_distribution content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any send_to_hc content'.
+  $permissions['edit any send_to_hc content'] = array(
+    'name' => 'edit any send_to_hc content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any symptoms_general content'.
   $permissions['edit any symptoms_general content'] = array(
     'name' => 'edit any symptoms_general content',
@@ -482,6 +558,26 @@ function hedley_acute_illness_user_default_permissions() {
   // Exported permission: 'edit own malaria_testing content'.
   $permissions['edit own malaria_testing content'] = array(
     'name' => 'edit own malaria_testing content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own medication_distribution content'.
+  $permissions['edit own medication_distribution content'] = array(
+    'name' => 'edit own medication_distribution content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own send_to_hc content'.
+  $permissions['edit own send_to_hc content'] = array(
+    'name' => 'edit own send_to_hc content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

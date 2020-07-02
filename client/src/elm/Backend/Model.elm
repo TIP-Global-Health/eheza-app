@@ -316,6 +316,7 @@ type Revision
     | MalariaTestingRevision MalariaTestingId MalariaTesting
     | MedicalHistoryRevision MedicalHistoryId MedicalHistory
     | MedicationRevision MedicationId Medication
+    | MedicationDistributionRevision MedicationDistributionId MedicationDistribution
     | MotherFbfRevision MotherFbfId Fbf
     | MuacRevision MuacId Muac
     | NurseRevision NurseId Nurse
@@ -339,6 +340,7 @@ type Revision
     | PrenatalPhotoRevision PrenatalPhotoId PrenatalPhoto
     | RelationshipRevision RelationshipId Relationship
     | ResourceRevision ResourceId Resource
+    | SendToHCRevision SendToHCId SendToHC
     | SessionRevision SessionId Session
     | SocialHistoryRevision SocialHistoryId SocialHistory
     | SymptomsGeneralRevision SymptomsGeneralId SymptomsGeneral

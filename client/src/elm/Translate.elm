@@ -45,6 +45,7 @@ import Http
 import Measurement.Model exposing (FloatInputConstraints)
 import NutritionActivity.Model exposing (NutritionActivity(..))
 import Pages.AcuteIllnessActivity.Model exposing (ExposureTask(..), LaboratoryTask(..), PhysicalExamTask(..), PriorTreatmentTask(..), SymptomsTask(..))
+import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
 import Pages.Attendance.Model exposing (InitialResultsDisplay(..))
 import Pages.Page exposing (..)
 import Pages.PrenatalActivity.Model
@@ -171,8 +172,11 @@ type TranslationId
     | Abortions
     | AccompaniedByPartner
     | AccessDenied
+    | ActionsToTake
     | AcuteFindingsGeneralSign AcuteFindingsGeneralSign
     | AcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
+    | AcuteIllnessDiagnosis AcuteIllnessDiagnosis
+    | AcuteIllnessDiagnosisWarning AcuteIllnessDiagnosis
     | Activities
     | ActivitiesCompleted Int
     | ActivitiesHelp Activity
@@ -189,6 +193,8 @@ type TranslationId
     | AddParentOrCaregiver
     | AddToGroup
     | Admin
+    | Administer
+    | AdministeredMedicationQuestion
     | AddressInformation
     | Adherence Adherence
     | AgeWord
@@ -228,6 +234,7 @@ type TranslationId
     | BreastExamSign BreastExamSign
     | BreastExamQuestion
     | BrittleHair
+    | ByMouthTwiceADayFor3Days
     | Cancel
     | CardiacDisease
     | CaregiverName
@@ -302,6 +309,7 @@ type TranslationId
     | DeviceNotAuthorized
     | DeviceStatus
     | Diabetes
+    | Diagnosis
     | DistributionNotice DistributionNotice
     | District
     | DOB
@@ -358,6 +366,7 @@ type TranslationId
     | GroupAssessment
     | Gravida
     | GroupEncounter
+    | HandedReferralFormQuestion
     | Hands
     | HandsCPESign HandsCPESign
     | HCRecomendation HCRecomendation
@@ -427,6 +436,7 @@ type TranslationId
     | MeasurementLost Float
     | MedicalDiagnosis
     | MedicalDiagnosisAlert MedicalDiagnosis
+    | MedicationDistributionSign MedicationDistributionSign
     | MedicalFormHelper
     | MedicationForFeverPast6HoursQuestion
     | MedicationForMalariaTodayQuestion
@@ -558,6 +568,7 @@ type TranslationId
     | ReceivedMosquitoNet
     | RecordPregnancyOutcome
     | RecurringHighSeverityAlert RecurringHighSeverityAlert
+    | ReferredPatientToHealthCenterQuestion
     | Register
     | RegisterHelper
     | RegisterNewParticipant
@@ -658,6 +669,7 @@ type TranslationId
     | SubmitPairingCode
     | Success
     | SyncGeneral
+    | TabletSinglePlural Int
     | TakenCareOfBy
     | TasksCompleted Int Int
     | TelephoneNumber
@@ -665,6 +677,7 @@ type TranslationId
     | TermPregnancy
     | ThisActionCannotBeUndone
     | ThisGroupHasNoMothers
+    | ToThePatient
     | Training
     | TrainingGroupEncounterCreateSuccessMessage
     | TrainingGroupEncounterDeleteSuccessMessage
@@ -771,6 +784,11 @@ translationSet trans =
             , kinyarwanda = Just "Kwinjira ntibyemera"
             }
 
+        ActionsToTake ->
+            { english = "Actions To Take"
+            , kinyarwanda = Nothing
+            }
+
         AcuteFindingsGeneralSign sign ->
             case sign of
                 LethargicOrUnconscious ->
@@ -830,6 +848,40 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+        AcuteIllnessDiagnosis diagnosis ->
+            case diagnosis of
+                DiagnosisCovid19 ->
+                    { english = "COVID-19"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalariaComplicated ->
+                    { english = "Complicated Malaria"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalariaUncomplicated ->
+                    { english = "Uncomplicated Malaria"
+                    , kinyarwanda = Nothing
+                    }
+
+        AcuteIllnessDiagnosisWarning diagnosis ->
+            case diagnosis of
+                DiagnosisCovid19 ->
+                    { english = "Suspected COVID-19 case"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalariaComplicated ->
+                    { english = "Suspected Malaria with complications"
+                    , kinyarwanda = Nothing
+                    }
+
+                DiagnosisMalariaUncomplicated ->
+                    { english = "Suspected Malaria without complications"
+                    , kinyarwanda = Nothing
+                    }
+
         AddChild ->
             { english = "Add Child"
             , kinyarwanda = Just "Ongeraho umwana"
@@ -863,6 +915,16 @@ translationSet trans =
         Admin ->
             { english = "Administration"
             , kinyarwanda = Just "Abakuriye"
+            }
+
+        Administer ->
+            { english = "Administer"
+            , kinyarwanda = Nothing
+            }
+
+        AdministeredMedicationQuestion ->
+            { english = "Have you administered"
+            , kinyarwanda = Nothing
             }
 
         AddressInformation ->
@@ -1344,6 +1406,11 @@ translationSet trans =
         BrittleHair ->
             { english = "Brittle Hair"
             , kinyarwanda = Just "Gucurama no guhindura ibara ku misatsi"
+            }
+
+        ByMouthTwiceADayFor3Days ->
+            { english = "by mouth twice per day x 3 days"
+            , kinyarwanda = Nothing
             }
 
         Cancel ->
@@ -1867,6 +1934,11 @@ translationSet trans =
             , kinyarwanda = Just "Diyabete (Indwara y'igisukari)"
             }
 
+        Diagnosis ->
+            { english = "Diagnosis"
+            , kinyarwanda = Nothing
+            }
+
         DistributionNotice notice ->
             case notice of
                 DistributedFully ->
@@ -2310,6 +2382,11 @@ translationSet trans =
             , kinyarwanda = Nothing
             }
 
+        HandedReferralFormQuestion ->
+            { english = "Did you hand the refrral form to the patient"
+            , kinyarwanda = Nothing
+            }
+
         Hands ->
             { english = "Hands"
             , kinyarwanda = Just "Ibiganza"
@@ -2715,6 +2792,16 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     }
 
+                LaboratoryMedicationDistribution ->
+                    { english = "Medication Distribution"
+                    , kinyarwanda = Nothing
+                    }
+
+                LaboratorySendToHC ->
+                    { english = "Send to Health Center"
+                    , kinyarwanda = Nothing
+                    }
+
         LastChecked ->
             { english = "Last checked"
             , kinyarwanda = Just "Isuzuma riheruka"
@@ -2982,6 +3069,33 @@ translationSet trans =
                 DiagnosisMentalHealthHistory ->
                     { english = "History of Mental Health Problems"
                     , kinyarwanda = Just "Niba yaragize uburwayi bwo mumutwe"
+                    }
+
+        MedicationDistributionSign sign ->
+            case sign of
+                Amoxicillin ->
+                    { english = "Amoxicillin"
+                    , kinyarwanda = Nothing
+                    }
+
+                Coartem ->
+                    { english = "Coartem"
+                    , kinyarwanda = Nothing
+                    }
+
+                ORS ->
+                    { english = "Oral Rehydration Solution (ORS)"
+                    , kinyarwanda = Nothing
+                    }
+
+                Zinc ->
+                    { english = "Zinc"
+                    , kinyarwanda = Nothing
+                    }
+
+                NoMedicationDistributionSigns ->
+                    { english = ""
+                    , kinyarwanda = Nothing
                     }
 
         MedicalFormHelper ->
@@ -3908,6 +4022,11 @@ translationSet trans =
                     , kinyarwanda = Just "Umuvuduko w'amaraso"
                     }
 
+        ReferredPatientToHealthCenterQuestion ->
+            { english = "Have you referred the patient to the health center"
+            , kinyarwanda = Nothing
+            }
+
         Register ->
             { english = "Register"
             , kinyarwanda = Nothing
@@ -4688,6 +4807,17 @@ translationSet trans =
             , kinyarwanda = Just "Ibijyanye no guhuza amakuru yafashwe n'igikoresho cy'ikoranabuhanga n'abitse kuri seriveri"
             }
 
+        TabletSinglePlural value ->
+            if value == 1 then
+                { english = "1 tablet"
+                , kinyarwanda = Nothing
+                }
+
+            else
+                { english = String.fromInt value ++ " tablets"
+                , kinyarwanda = Nothing
+                }
+
         TakenCareOfBy ->
             { english = "Taken care of by"
             , kinyarwanda = Nothing
@@ -4721,6 +4851,11 @@ translationSet trans =
         ThisGroupHasNoMothers ->
             { english = "This Group has no mothers assigned to it."
             , kinyarwanda = Just "Iki cyiciro nta mubyeyi cyagenewe."
+            }
+
+        ToThePatient ->
+            { english = "to the patient"
+            , kinyarwanda = Nothing
             }
 
         Training ->

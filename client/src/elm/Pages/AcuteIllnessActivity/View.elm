@@ -19,7 +19,7 @@ import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Pages.AcuteIllnessActivity.Model exposing (..)
 import Pages.AcuteIllnessActivity.Utils exposing (..)
-import Pages.AcuteIllnessEncounter.Model exposing (AssembledData)
+import Pages.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AssembledData)
 import Pages.AcuteIllnessEncounter.Utils exposing (..)
 import Pages.AcuteIllnessEncounter.View exposing (viewPersonDetailsWithAlert)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -35,6 +35,7 @@ import Pages.Utils
         , viewCheckBoxSelectInput
         , viewCheckBoxValueInput
         , viewCustomLabel
+        , viewEverySetInput
         , viewLabel
         , viewMeasurementInput
         , viewPhotoThumbFromPhotoUrl
@@ -60,9 +61,9 @@ view language currentDate id activity db model =
         [ viewHeader language id activity
         , viewWebData language (viewContent language currentDate id activity model) identity data
         , viewModal <|
-            covid19Popup language
-                model.showCovid19Popup
-                SetCovid19PopupState
+            warningPopup language
+                model.warningPopupState
+                SetWarningPopupState
         ]
 
 
@@ -86,45 +87,57 @@ viewHeader language id activity =
 viewContent : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Model -> AssembledData -> Html Msg
 viewContent language currentDate id activity model data =
     let
-        isSuspected =
-            suspectedCovid19Case data.measurements
+        diagnosis =
+            resolveAcuteIllnessDiagnosis data.measurements
     in
-    (viewPersonDetailsWithAlert language currentDate data.person isSuspected model.showAlertsDialog SetAlertsDialogState
-        :: viewActivity language currentDate id activity isSuspected data model
+    (viewPersonDetailsWithAlert language currentDate data.person diagnosis model.showAlertsDialog SetAlertsDialogState
+        :: viewActivity language currentDate id activity diagnosis data model
     )
         |> div [ class "ui unstackable items" ]
 
 
-covid19Popup : Language -> Bool -> (Bool -> msg) -> Maybe (Html msg)
-covid19Popup language isOpen setStateMsg =
-    if isOpen then
-        Just <|
-            div [ class "ui active modal warning-popup" ]
-                [ div [ class "content" ]
-                    [ div [ class "popup-heading-wrapper" ]
-                        [ img [ src "assets/images/exclamation-red.png" ] []
-                        , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
+warningPopup : Language -> Maybe AcuteIllnessDiagnosis -> (Maybe AcuteIllnessDiagnosis -> msg) -> Maybe (Html msg)
+warningPopup language maybeDiagnosis setStateMsg =
+    maybeDiagnosis
+        |> Maybe.map
+            (\diagnosis ->
+                let
+                    content =
+                        case diagnosis of
+                            DiagnosisCovid19 ->
+                                [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
+                                , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
+                                ]
+
+                            DiagnosisMalariaComplicated ->
+                                []
+
+                            DiagnosisMalariaUncomplicated ->
+                                []
+                in
+                div [ class "ui active modal warning-popup" ]
+                    [ div [ class "content" ] <|
+                        [ div [ class "popup-heading-wrapper" ]
+                            [ img [ src "assets/images/exclamation-red.png" ] []
+                            , div [ class "popup-heading" ] [ text <| translate language Translate.Warning ++ "!" ]
+                            ]
+                        , div [ class "popup-title" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosisWarning diagnosis ]
                         ]
-                    , div [ class "popup-title" ] [ text <| translate language Translate.SuspectedCovid19CaseAlert ]
-                    , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
-                    , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
-                    ]
-                , div
-                    [ class "actions" ]
-                    [ button
-                        [ class "ui primary fluid button"
-                        , onClick <| setStateMsg False
+                            ++ content
+                    , div
+                        [ class "actions" ]
+                        [ button
+                            [ class "ui primary fluid button"
+                            , onClick <| setStateMsg Nothing
+                            ]
+                            [ text <| translate language Translate.Continue ]
                         ]
-                        [ text <| translate language Translate.Continue ]
                     ]
-                ]
-
-    else
-        Nothing
+            )
 
 
-viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Bool -> AssembledData -> Model -> List (Html Msg)
-viewActivity language currentDate id activity isSuspected data model =
+viewActivity : Language -> NominalDate -> AcuteIllnessEncounterId -> AcuteIllnessActivity -> Maybe AcuteIllnessDiagnosis -> AssembledData -> Model -> List (Html Msg)
+viewActivity language currentDate id activity diagnosis data model =
     let
         personId =
             data.participant.person
@@ -143,10 +156,10 @@ viewActivity language currentDate id activity isSuspected data model =
             viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) model.priorTreatmentData
 
         AcuteIllnessLaboratory ->
-            viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) model.laboratoryData
+            viewAcuteIllnessLaboratory language currentDate id ( personId, data.person, measurements ) model.laboratoryData
 
         AcuteIllnessExposure ->
-            viewAcuteIllnessExposure language currentDate id ( personId, measurements ) isSuspected model.exposureData
+            viewAcuteIllnessExposure language currentDate id ( personId, measurements ) (diagnosis == Just DiagnosisCovid19) model.exposureData
 
 
 viewAcuteIllnessSymptomsContent : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> SymptomsData -> List (Html Msg)
@@ -537,14 +550,17 @@ viewAcuteFindingsForm language currentDate measurements form_ =
         ]
 
 
-viewAcuteIllnessLaboratory : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> LaboratoryData -> List (Html Msg)
-viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) data =
+viewAcuteIllnessLaboratory : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, Person, AcuteIllnessMeasurements ) -> LaboratoryData -> List (Html Msg)
+viewAcuteIllnessLaboratory language currentDate id ( personId, person, measurements ) data =
     let
         activity =
             AcuteIllnessLaboratory
 
+        diagnosis =
+            resolveAcuteIllnessDiagnosis measurements
+
         tasks =
-            [ LaboratoryMalariaTesting ]
+            resolveLaboratoryTasks diagnosis
 
         viewTask task =
             let
@@ -553,6 +569,16 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) da
                         LaboratoryMalariaTesting ->
                             ( "laboratory-malaria-testing"
                             , isJust measurements.malariaTesting
+                            )
+
+                        LaboratoryMedicationDistribution ->
+                            ( "laboratory-medication-distribution"
+                            , isJust measurements.medicationDistribution
+                            )
+
+                        LaboratorySendToHC ->
+                            ( "laboratory-send-to-hc"
+                            , isJust measurements.sendToHC
                             )
 
                 isActive =
@@ -578,7 +604,7 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) da
             tasks
                 |> List.map
                     (\task ->
-                        ( task, laboratoryTasksCompletedFromTotal measurements data task )
+                        ( task, laboratoryTasksCompletedFromTotal diagnosis measurements data task )
                     )
                 |> Dict.fromList
 
@@ -592,11 +618,31 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) da
                     measurements.malariaTesting
                         |> Maybe.map (Tuple.second >> .value)
                         |> malariaTestingFormWithDefault data.malariaTestingForm
-                        |> viewMalariaTestingForm language currentDate measurements
+                        |> viewMalariaTestingForm language currentDate
+
+                LaboratoryMedicationDistribution ->
+                    measurements.medicationDistribution
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+                        |> viewMedicationDistributionForm language currentDate person diagnosis
+
+                LaboratorySendToHC ->
+                    measurements.sendToHC
+                        |> Maybe.map (Tuple.second >> .value)
+                        |> sendToHCFormWithDefault data.sendToHCForm
+                        |> viewSendToHCForm language currentDate
 
         getNextTask currentTask =
             case currentTask of
                 LaboratoryMalariaTesting ->
+                    []
+
+                -- Todo:
+                LaboratoryMedicationDistribution ->
+                    []
+
+                -- Todo:
+                LaboratorySendToHC ->
                     []
 
         actions =
@@ -605,6 +651,12 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) da
                     case data.activeTask of
                         LaboratoryMalariaTesting ->
                             SaveMalariaTesting personId measurements.malariaTesting
+
+                        LaboratorySendToHC ->
+                            SaveSendToHC personId measurements.sendToHC
+
+                        LaboratoryMedicationDistribution ->
+                            SaveMedicationDistribution personId measurements.medicationDistribution
             in
             div [ class "actions malaria-testing" ]
                 [ button
@@ -628,15 +680,22 @@ viewAcuteIllnessLaboratory language currentDate id ( personId, measurements ) da
     ]
 
 
-viewMalariaTestingForm : Language -> NominalDate -> AcuteIllnessMeasurements -> MalariaTestingForm -> Html Msg
-viewMalariaTestingForm language currentDate measurements form =
+viewMalariaTestingForm : Language -> NominalDate -> MalariaTestingForm -> Html Msg
+viewMalariaTestingForm language currentDate form =
     let
+        emptyOption =
+            if isNothing form.rapidTestResult then
+                option
+                    [ value ""
+                    , selected (form.rapidTestResult == Nothing)
+                    ]
+                    [ text "" ]
+
+            else
+                emptyNode
+
         resultInput =
-            option
-                [ value ""
-                , selected (form.rapidTestResult == Nothing)
-                ]
-                [ text "" ]
+            emptyOption
                 :: ([ RapidTestNegative, RapidTestPositive, RapidTestIndeterminate ]
                         |> List.map
                             (\result ->
@@ -663,14 +722,94 @@ viewMalariaTestingForm language currentDate measurements form =
         ]
 
 
+viewSendToHCForm : Language -> NominalDate -> SendToHCForm -> Html Msg
+viewSendToHCForm language currentDate form =
+    div [ class "ui form send-to-hc" ]
+        [ div [ class "ui grid" ]
+            [ div [ class "sixteen wide column" ]
+                [ viewQuestionLabel language Translate.ReferredPatientToHealthCenterQuestion ]
+            ]
+        , viewBoolInput
+            language
+            form.referToHealthCenter
+            SetReferToHealthCenter
+            "refer-to-hc"
+            Nothing
+        , div [ class "ui grid" ]
+            [ div [ class "sixteen wide column" ]
+                [ viewQuestionLabel language Translate.HandedReferralFormQuestion ]
+            ]
+        , viewBoolInput
+            language
+            form.handReferralForm
+            SetHandReferralForm
+            "hand-referral-form"
+            Nothing
+        ]
+
+
+viewMedicationDistributionForm : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> MedicationDistributionForm -> Html Msg
+viewMedicationDistributionForm language currentDate person diagnosis form =
+    case diagnosis of
+        Just DiagnosisMalariaUncomplicated ->
+            let
+                instructions =
+                    resolveCoartemDosage currentDate person
+                        |> Maybe.map
+                            (\dosage ->
+                                div [ class "instructions coartem" ]
+                                    [ div [ class "header" ]
+                                        [ text <| translate language Translate.Administer
+                                        , text " "
+                                        , span [] [ text <| translate language (Translate.MedicationDistributionSign Coartem) ]
+                                        , text ":"
+                                        ]
+                                    , div [ class "dosage" ]
+                                        [ span [] [ text <| translate language (Translate.TabletSinglePlural dosage) ]
+                                        , text " "
+                                        , text <| translate language Translate.ByMouthTwiceADayFor3Days
+                                        , text "."
+                                        ]
+                                    ]
+                            )
+                        |> Maybe.withDefault emptyNode
+
+                questionLabel =
+                    translate language Translate.AdministeredMedicationQuestion
+                        ++ " "
+                        ++ translate language (Translate.MedicationDistributionSign Coartem)
+                        ++ " "
+                        ++ translate language Translate.ToThePatient
+                        ++ "?"
+            in
+            div [ class "ui form medication-distribution" ]
+                [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                , instructions
+                , div [ class "ui grid" ]
+                    [ div [ class "sixteen wide column" ]
+                        [ text questionLabel ]
+                    ]
+                , viewEverySetInput
+                    language
+                    form.signs
+                    Coartem
+                    ToggleMedicationDistributionSign
+                    "coartem-medication"
+                    Nothing
+                ]
+
+        _ ->
+            emptyNode
+
+
 viewAcuteIllnessExposure : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> Bool -> ExposureData -> List (Html Msg)
-viewAcuteIllnessExposure language currentDate id ( personId, measurements ) isSuspected data =
+viewAcuteIllnessExposure language currentDate id ( personId, measurements ) suspectedCovid19 data =
     let
         activity =
             AcuteIllnessExposure
 
         tasks =
-            resolveExposureTasks measurements isSuspected
+            resolveExposureTasks measurements suspectedCovid19
 
         viewTask task =
             let

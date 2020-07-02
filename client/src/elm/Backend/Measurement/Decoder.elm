@@ -1,4 +1,4 @@
-module Backend.Measurement.Decoder exposing (decodeAbdomenCPESign, decodeAcuteFindings, decodeAcuteFindingsGeneralSign, decodeAcuteFindingsRespiratorySign, decodeAcuteIllnessMeasurement, decodeAcuteIllnessMeasurements, decodeAcuteIllnessVitals, decodeAttendance, decodeBreastExam, decodeBreastExamSign, decodeCSectionReason, decodeCSectionScar, decodeChildMeasurementList, decodeChildNutritionSign, decodeCorePhysicalExam, decodeCounselingSession, decodeDangerSign, decodeDangerSigns, decodeDistributionNotice, decodeExposure, decodeExposureSign, decodeEyesCPESign, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeFbf, decodeFbfValue, decodeFetalPresentation, decodeGroupMeasurement, decodeHCContact, decodeHCContactSign, decodeHCRecomendation, decodeHairHeadCPESign, decodeHandsCPESign, decodeHead, decodeHeartCPESign, decodeHeight, decodeIsolation, decodeIsolationSign, decodeLactation, decodeLactationSign, decodeLastMenstrualPeriod, decodeLegsCPESign, decodeLungsCPESign, decodeMalariaRapidTestResult, decodeMalariaTesting, decodeMeasurement, decodeMedicalHistory, decodeMedicalHistorySign, decodeMedication, decodeMedicationSign, decodeMotherMeasurementList, decodeMuac, decodeNeckCPESign, decodeNutrition, decodeNutritionHeight, decodeNutritionMeasurement, decodeNutritionMeasurements, decodeNutritionMuac, decodeNutritionNutrition, decodeNutritionPhoto, decodeNutritionWeight, decodeObstetricHistory, decodeObstetricHistorySign, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodePrenatalFamilyPlanning, decodePrenatalMeasurement, decodePrenatalMeasurements, decodePrenatalNutrition, decodePrenatalPhoto, decodePreviousDeliveryPeriod, decodePreviousDeliverySign, decodeReasonForNotIsolating, decodeResource, decodeResourceSign, decodeResponsePeriod, decodeSocialHistory, decodeSocialHistoryHivTestingResult, decodeSocialHistorySign, decodeSymptomsGI, decodeSymptomsGIDerivedSign, decodeSymptomsGIDict, decodeSymptomsGeneral, decodeSymptomsRespiratory, decodeSymptomsRespiratorySign, decodeTravelHistory, decodeTravelHistorySign, decodeTreatmentReview, decodeTreatmentReviewSign, decodeVitals, decodeWeight, decodeWithEntityUuid, malariaRapidTestResultFromString, symptomsGIToDict, symptomsGeneralToDict, symptomsRespiratoryToDict)
+module Backend.Measurement.Decoder exposing (decodeAbdomenCPESign, decodeAcuteFindings, decodeAcuteFindingsGeneralSign, decodeAcuteFindingsRespiratorySign, decodeAcuteIllnessMeasurement, decodeAcuteIllnessMeasurements, decodeAcuteIllnessVitals, decodeAttendance, decodeBreastExam, decodeBreastExamSign, decodeCSectionReason, decodeCSectionScar, decodeChildMeasurementList, decodeChildNutritionSign, decodeCorePhysicalExam, decodeCounselingSession, decodeDangerSign, decodeDangerSigns, decodeDistributionNotice, decodeExposure, decodeExposureSign, decodeEyesCPESign, decodeFamilyPlanning, decodeFamilyPlanningSign, decodeFbf, decodeFbfValue, decodeFetalPresentation, decodeGroupMeasurement, decodeHCContact, decodeHCContactSign, decodeHCRecomendation, decodeHairHeadCPESign, decodeHandsCPESign, decodeHead, decodeHeartCPESign, decodeHeight, decodeIsolation, decodeIsolationSign, decodeLactation, decodeLactationSign, decodeLastMenstrualPeriod, decodeLegsCPESign, decodeLungsCPESign, decodeMalariaRapidTestResult, decodeMalariaTesting, decodeMeasurement, decodeMedicalHistory, decodeMedicalHistorySign, decodeMedication, decodeMedicationDistribution, decodeMedicationDistributionSign, decodeMedicationSign, decodeMotherMeasurementList, decodeMuac, decodeNeckCPESign, decodeNutrition, decodeNutritionHeight, decodeNutritionMeasurement, decodeNutritionMeasurements, decodeNutritionMuac, decodeNutritionNutrition, decodeNutritionPhoto, decodeNutritionWeight, decodeObstetricHistory, decodeObstetricHistorySign, decodeObstetricHistoryStep2, decodeObstetricalExam, decodeParticipantConsent, decodeParticipantConsentValue, decodePhoto, decodePrenatalFamilyPlanning, decodePrenatalMeasurement, decodePrenatalMeasurements, decodePrenatalNutrition, decodePrenatalPhoto, decodePreviousDeliveryPeriod, decodePreviousDeliverySign, decodeReasonForNotIsolating, decodeResource, decodeResourceSign, decodeResponsePeriod, decodeSendToHC, decodeSendToHCSign, decodeSocialHistory, decodeSocialHistoryHivTestingResult, decodeSocialHistorySign, decodeSymptomsGI, decodeSymptomsGIDerivedSign, decodeSymptomsGIDict, decodeSymptomsGeneral, decodeSymptomsRespiratory, decodeTravelHistory, decodeTravelHistorySign, decodeTreatmentReview, decodeTreatmentReviewSign, decodeVitals, decodeWeight, decodeWithEntityUuid, malariaRapidTestResultFromString, symptomsGIToDict, symptomsGeneralToDict, symptomsRespiratoryToDict)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
@@ -117,6 +117,8 @@ decodeAcuteIllnessMeasurements =
         |> optional "isolation" (decodeHead decodeIsolation) Nothing
         |> optional "hc_contact" (decodeHead decodeHCContact) Nothing
         |> optional "treatment_history" (decodeHead decodeTreatmentReview) Nothing
+        |> optional "send_to_hc" (decodeHead decodeSendToHC) Nothing
+        |> optional "medication_distribution" (decodeHead decodeMedicationDistribution) Nothing
 
 
 decodeHead : Decoder a -> Decoder (Maybe ( EntityUuid b, a ))
@@ -1130,37 +1132,6 @@ symptomsRespiratoryToDict cough shortnessOfBreath nasalCongestion bloodInSputum 
         |> Dict.fromList
 
 
-decodeSymptomsRespiratorySign : Decoder SymptomsRespiratorySign
-decodeSymptomsRespiratorySign =
-    string
-        |> andThen
-            (\sign ->
-                case sign of
-                    "blood-in-sputum" ->
-                        succeed BloodInSputum
-
-                    "cough" ->
-                        succeed Cough
-
-                    "nasal-congestion" ->
-                        succeed NasalCongestion
-
-                    "shortness-of-breath" ->
-                        succeed ShortnessOfBreath
-
-                    "sore-throat" ->
-                        succeed SoreThroat
-
-                    "none" ->
-                        succeed NoSymptomsRespiratory
-
-                    _ ->
-                        fail <|
-                            sign
-                                ++ " is not a recognized SymptomsRespiratorySign"
-            )
-
-
 decodeSymptomsGI : Decoder SymptomsGI
 decodeSymptomsGI =
     succeed SymptomsGIValue
@@ -1324,6 +1295,70 @@ malariaRapidTestResultFromString result =
 
         _ ->
             Nothing
+
+
+decodeSendToHC : Decoder SendToHC
+decodeSendToHC =
+    decodeEverySet decodeSendToHCSign
+        |> field "send_to_hc"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeSendToHCSign : Decoder SendToHCSign
+decodeSendToHCSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "referral-form" ->
+                        succeed HandReferrerForm
+
+                    "refer-to-hc" ->
+                        succeed ReferToHealthCenter
+
+                    "none" ->
+                        succeed NoSendToHCSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized SendToHCSign"
+            )
+
+
+decodeMedicationDistribution : Decoder MedicationDistribution
+decodeMedicationDistribution =
+    decodeEverySet decodeMedicationDistributionSign
+        |> field "prescribed_medication"
+        |> decodeAcuteIllnessMeasurement
+
+
+decodeMedicationDistributionSign : Decoder MedicationDistributionSign
+decodeMedicationDistributionSign =
+    string
+        |> andThen
+            (\sign ->
+                case sign of
+                    "amoxicillin" ->
+                        succeed Amoxicillin
+
+                    "coartem" ->
+                        succeed Coartem
+
+                    "ors" ->
+                        succeed ORS
+
+                    "zinc" ->
+                        succeed Zinc
+
+                    "none" ->
+                        succeed NoMedicationDistributionSigns
+
+                    _ ->
+                        fail <|
+                            sign
+                                ++ " is not a recognized MedicationDistributionSign"
+            )
 
 
 decodeTravelHistory : Decoder TravelHistory
