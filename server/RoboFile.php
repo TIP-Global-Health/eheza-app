@@ -36,9 +36,9 @@ class RoboFile extends Tasks {
       ->printOutput(FALSE)
       ->run();
 
-//    if ($result->getMessage()) {
-//      throw new Exception('The working directory is dirty. Please commit any pending changes.');
-//    }
+    if ($result->getMessage()) {
+      throw new Exception('The working directory is dirty. Please commit any pending changes.');
+    }
 
     $result = $this
       ->taskExec("cd $pantheonDirectory && git status -s")
