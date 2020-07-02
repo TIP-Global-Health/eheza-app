@@ -62,7 +62,7 @@ type Msg
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
     | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC ))
-    | ToggleMedicationDistributionSign MedicationDistributionSign
+    | ToggleMedicationDistributionSign MedicationDistributionSign Bool
     | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution ))
 
 

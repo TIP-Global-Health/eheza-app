@@ -169,7 +169,7 @@ viewEverySetInput :
     Language
     -> EverySet a
     -> a
-    -> (a -> msg)
+    -> (a -> Bool -> msg)
     -> String
     -> Maybe ( TranslationId, TranslationId )
     -> Html msg
@@ -208,7 +208,7 @@ viewEverySetInput language currentValue sign setMsg inputClass optionsTranslatio
                         []
 
                     else
-                        [ onClick <| setMsg sign ]
+                        [ onClick <| setMsg sign value ]
             in
             [ input inputAttributes []
             , label labelAttributes

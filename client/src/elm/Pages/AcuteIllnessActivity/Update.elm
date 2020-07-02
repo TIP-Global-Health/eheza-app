@@ -1120,13 +1120,16 @@ update currentDate id db msg model =
             , appMsgs
             )
 
-        ToggleMedicationDistributionSign sign ->
+        ToggleMedicationDistributionSign sign add ->
             let
                 form =
                     model.nextStepsData.medicationDistributionForm
 
                 updatedSigns =
-                    if EverySet.member sign form.signs then
+                    if EverySet.isEmpty form.signs && not add then
+                        EverySet.singleton NoMedicationDistributionSigns
+
+                    else if EverySet.member sign form.signs then
                         EverySet.remove sign form.signs
                             |> ifEverySetEmpty NoMedicationDistributionSigns
 
