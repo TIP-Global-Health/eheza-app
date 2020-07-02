@@ -36,6 +36,9 @@ encodeActivityAsString activity =
         AcuteIllnessExposure ->
             "exposure"
 
+        AcuteIllnessNextSteps ->
+            "next-steps"
+
 
 {-| The inverse of encodeActivityTypeAsString
 -}
@@ -56,6 +59,9 @@ decodeActivityFromString s =
 
         "exposure" ->
             Just AcuteIllnessExposure
+
+        "next-steps" ->
+            Just AcuteIllnessNextSteps
 
         _ ->
             Nothing
@@ -78,4 +84,4 @@ getActivityIcon activity =
 
 getAllActivities : List AcuteIllnessActivity
 getAllActivities =
-    [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPriorTreatment, AcuteIllnessPhysicalExam, AcuteIllnessLaboratory ]
+    [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPriorTreatment, AcuteIllnessPhysicalExam, AcuteIllnessLaboratory, AcuteIllnessNextSteps ]

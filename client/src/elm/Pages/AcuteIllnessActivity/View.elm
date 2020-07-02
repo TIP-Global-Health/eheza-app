@@ -166,6 +166,9 @@ viewActivity language currentDate id activity diagnosis data model =
         AcuteIllnessExposure ->
             viewAcuteIllnessExposure language currentDate id ( personId, measurements ) (diagnosis == Just DiagnosisCovid19) model.exposureData
 
+        AcuteIllnessNextSteps ->
+            viewAcuteIllnessNextSteps language currentDate id ( personId, data.person, measurements ) diagnosis model.laboratoryData
+
 
 viewAcuteIllnessSymptomsContent : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> SymptomsData -> List (Html Msg)
 viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements ) data =
@@ -1509,3 +1512,137 @@ viewTreatmentReviewForm language currentDate measurements form =
         ++ malariaTodaySection
         ++ malariaWithinPastMonth
         |> div [ class "ui form treatment-review" ]
+
+
+viewAcuteIllnessNextSteps : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, Person, AcuteIllnessMeasurements ) -> Maybe AcuteIllnessDiagnosis -> LaboratoryData -> List (Html Msg)
+viewAcuteIllnessNextSteps language currentDate id ( personId, person, measurements ) diagnosis data =
+    let
+        activity =
+            AcuteIllnessNextSteps
+    in
+    [ text "viewAcuteIllnessNextSteps" ]
+
+
+
+--     diagnosis =
+--         resolveAcuteIllnessDiagnosis currentDate person measurements
+--
+--     tasks =
+--         resolveLaboratoryTasks currentDate person diagnosis
+--
+--     viewTask task =
+--         let
+--             ( iconClass, isCompleted ) =
+--                 case task of
+--                     LaboratoryMalariaTesting ->
+--                         ( "laboratory-malaria-testing"
+--                         , isJust measurements.malariaTesting
+--                         )
+--
+--                     LaboratoryMedicationDistribution ->
+--                         ( "laboratory-medication-distribution"
+--                         , isJust measurements.medicationDistribution
+--                         )
+--
+--                     LaboratorySendToHC ->
+--                         ( "laboratory-send-to-hc"
+--                         , isJust measurements.sendToHC
+--                         )
+--
+--             isActive =
+--                 task == data.activeTask
+--
+--             attributes =
+--                 classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+--                     :: (if isActive then
+--                             []
+--
+--                         else
+--                             [ onClick <| SetActiveLaboratoryTask task ]
+--                        )
+--         in
+--         div [ class "column" ]
+--             [ a attributes
+--                 [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+--                 , text <| translate language (Translate.LaboratoryTask task)
+--                 ]
+--             ]
+--
+--     tasksCompletedFromTotalDict =
+--         tasks
+--             |> List.map
+--                 (\task ->
+--                     ( task, laboratoryTasksCompletedFromTotal diagnosis measurements data task )
+--                 )
+--             |> Dict.fromList
+--
+--     ( tasksCompleted, totalTasks ) =
+--         Dict.get data.activeTask tasksCompletedFromTotalDict
+--             |> Maybe.withDefault ( 0, 0 )
+--
+--     viewForm =
+--         case data.activeTask of
+--             LaboratoryMalariaTesting ->
+--                 measurements.malariaTesting
+--                     |> Maybe.map (Tuple.second >> .value)
+--                     |> malariaTestingFormWithDefault data.malariaTestingForm
+--                     |> viewMalariaTestingForm language currentDate
+--
+--             LaboratoryMedicationDistribution ->
+--                 measurements.medicationDistribution
+--                     |> Maybe.map (Tuple.second >> .value)
+--                     |> medicationDistributionFormWithDefault data.medicationDistributionForm
+--                     |> viewMedicationDistributionForm language currentDate person diagnosis
+--
+--             LaboratorySendToHC ->
+--                 measurements.sendToHC
+--                     |> Maybe.map (Tuple.second >> .value)
+--                     |> sendToHCFormWithDefault data.sendToHCForm
+--                     |> viewSendToHCForm language currentDate
+--
+--     getNextTask currentTask =
+--         case currentTask of
+--             LaboratoryMalariaTesting ->
+--                 []
+--
+--             -- Todo:
+--             LaboratoryMedicationDistribution ->
+--                 []
+--
+--             -- Todo:
+--             LaboratorySendToHC ->
+--                 []
+--
+--     actions =
+--         let
+--             saveMsg =
+--                 case data.activeTask of
+--                     LaboratoryMalariaTesting ->
+--                         SaveMalariaTesting personId measurements.malariaTesting
+--
+--                     LaboratorySendToHC ->
+--                         SaveSendToHC personId measurements.sendToHC
+--
+--                     LaboratoryMedicationDistribution ->
+--                         SaveMedicationDistribution personId measurements.medicationDistribution
+--         in
+--         div [ class "actions malaria-testing" ]
+--             [ button
+--                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+--                 , onClick saveMsg
+--                 ]
+--                 [ text <| translate language Translate.Save ]
+--             ]
+-- in
+-- [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
+--     [ div [ class "ui three column grid" ] <|
+--         List.map viewTask tasks
+--     ]
+-- , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+-- , div [ class "ui full segment" ]
+--     [ div [ class "full content" ]
+--         [ viewForm
+--         , actions
+--         ]
+--     ]
+-- ]
